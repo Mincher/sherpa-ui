@@ -1,75 +1,111 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-app-header",
   "figmaName": "App Header",
   "category": "nav",
-  "description": "the top application header bar (app-shell's header slot).",
-  "props": [
-    {
-      "name": "data-title",
-      "type": "_TODO",
-      "kind": "_TODO(style|content|visibility|template)",
-      "description": ""
+  "description": "The top application header bar: two rows (a back button + breadcrumb trail with trailing app actions, then a view icon + title with an embedded quick-filter toolbar) over a thin loading bar. Sits in the view frame's header region.",
+
+  "anatomy": {
+    "root": {
+      "el": "header",
+      "class": "bar",
+      "part": "bar",
+      "figma": { "node": "COMPONENT", "layout": "VERTICAL", "fillWidth": true },
+      "children": [
+        {
+          "el": "div",
+          "class": "content",
+          "part": "content",
+          "figma": { "node": "FRAME", "layout": "VERTICAL" },
+          "children": [
+            {
+              "el": "div",
+              "class": "row-history",
+              "part": "history-row",
+              "figma": { "node": "FRAME", "layout": "HORIZONTAL" },
+              "children": [
+                { "el": "button", "class": "back", "part": "back", "figma": { "node": "INSTANCE", "of": "Button" } },
+                { "el": "div", "class": "breadcrumb", "slot": "breadcrumb", "figma": { "node": "INSTANCE", "of": "Breadcrumbs" } },
+                { "el": "div", "class": "actions", "slot": "actions", "figma": { "node": "FRAME", "role": "trailing actions (Button + Notif Badge)" } }
+              ]
+            },
+            {
+              "el": "div",
+              "class": "row-view",
+              "part": "view-row",
+              "figma": { "node": "FRAME", "layout": "VERTICAL" },
+              "children": [
+                { "el": "span", "class": "view-icon", "figma": { "node": "INSTANCE", "of": "view-icon" } },
+                { "el": "h1", "class": "title", "figma": { "node": "TEXT", "role": "title" } },
+                { "el": "div", "class": "filters", "slot": "filters", "figma": { "node": "INSTANCE", "of": "Quick Filter Toolbar" } }
+              ]
+            }
+          ]
+        },
+        { "el": "div", "class": "loading-bar", "part": "loading-bar", "figma": { "node": "SLOT", "role": "brand-tinted progress line" } }
+      ]
     }
-  ],
-  "templates": [],
-  "slots": [
-    {
-      "name": "breadcrumb",
-      "accepts": [],
-      "description": ""
-    },
-    {
-      "name": "search",
-      "accepts": [],
-      "description": ""
-    },
-    {
-      "name": "actions",
-      "accepts": [],
-      "description": ""
-    }
-  ],
-  "parts": [
-    "bar",
-    "leading",
-    "title",
-    "search",
-    "actions"
-  ],
-  "nested": [],
-  "props_public": [],
-  "events": [],
-  "tokens": {
-    "bar:container-space-gap-sm": "container-space-gap-sm",
-    "bar:core-size-3xl": "core-size-3xl",
-    "bar:core-space-sm": "core-space-sm",
-    "bar:core-space-2xs": "core-space-2xs",
-    "leading:core-space-sm": "core-space-sm",
-    "title:core-fonts-scale-xl": "core-fonts-scale-xl",
-    "title:core-fonts-weight-700": "core-fonts-weight-700",
-    "title:core-color-brand-base": "core-color-brand-base",
-    "actions:core-space-xs": "core-space-xs"
   },
+
+  "props": [
+    { "name": "data-title", "type": "string", "default": null, "kind": "content", "description": "The view title (hidden when empty).", "figma": { "note": "View title text" } },
+    { "name": "data-icon", "type": "string", "default": null, "kind": "content", "description": "A glyph before the title.", "figma": { "node": "view-icon" } },
+    { "name": "data-notifications", "type": "string", "default": null, "kind": "content", "description": "Notification count — shows the badge; 0/unset hides it.", "figma": { "boolean": "hasNotifications", "node": "Notif Badge" } },
+    { "name": "data-loading", "type": "boolean", "default": false, "kind": "visibility", "description": "Show the loading bar.", "figma": { "boolean": "hasLoadingBar" } },
+    { "name": "data-favorite", "type": "boolean", "default": false, "kind": "content", "description": "Favourited state (the star toggle).", "figma": { "note": "favourite toggle" } }
+  ],
+
+  "templates": ["default"],
+
+  "slots": [
+    { "name": "breadcrumb", "accepts": ["nav"], "description": "Custom breadcrumb trail (else populate() stamps a sherpa-breadcrumbs)." },
+    { "name": "actions", "accepts": ["control"], "description": "Trailing app actions (buttons)." },
+    { "name": "filters", "accepts": ["control"], "description": "View-scope filter toolbar (else populate() stamps a sherpa-quick-filter-toolbar)." }
+  ],
+
+  "parts": ["bar", "content", "history-row", "history", "back", "breadcrumb", "actions", "divider", "favorite", "export", "notifications", "notif-btn", "notif-badge", "view-row", "title-row", "view-icon", "title", "filters", "loading-bar"],
+
+  "nested": [
+    { "component": "sherpa-breadcrumbs", "relationship": "slotted", "role": "the breadcrumb trail (populate stamps one)" },
+    { "component": "sherpa-quick-filter-toolbar", "relationship": "slotted", "role": "the view-scope filters (populate stamps one)" }
+  ],
+
+  "events": [
+    { "name": "view-header-back", "description": "The back button was pressed.", "bubbles": true, "composed": true, "cancelable": false, "detail": {}, "trigger": { "on": "click", "node": ".back" } },
+    { "name": "favorite-toggle", "description": "The favourite star was toggled.", "bubbles": true, "composed": true, "cancelable": false, "detail": { "favorite": "boolean" }, "trigger": { "on": "click", "node": ".favorite" } },
+    { "name": "view-export", "description": "The export action was pressed.", "bubbles": true, "composed": true, "cancelable": false, "detail": {}, "trigger": { "on": "click", "node": ".export" } },
+    { "name": "breadcrumb-click", "description": "A breadcrumb was chosen (re-dispatched from the slotted breadcrumbs).", "bubbles": true, "composed": true, "cancelable": false, "detail": { "index": "number", "label": "string", "href": "string" }, "trigger": { "on": "breadcrumb-select", "node": ".breadcrumb" } }
+  ],
+
+  "tokens": {
+    "bar.background": "surface-primary-base",
+    "content.gap": "space-sm",
+    "content.padding": "space-xs",
+    "divider.background": "border-primary",
+    "notif-badge.background": "badge-surface-default",
+    "notif-badge.color": "content-title-on-color",
+    "title.color": "content-title-base",
+    "loading-fill.background": "core-color-brand-base"
+  },
+
   "figma": {
     "_status": "matched",
     "figmaName": "App Header",
     "nodeType": "COMPONENT",
     "built": true,
     "variantAxes": [],
-    "booleanProps": [
-      "hasNotifications",
-      "hasLoadingBar"
-    ],
-    "textProps": [],
-    "instanceProps": [],
+    "booleanProps": ["hasNotifications", "hasLoadingBar"],
+    "textProps": ["View title"],
+    "instanceProps": ["Button", "Breadcrumbs", "Notif Badge", "view-icon", "Quick Filter Toolbar"],
     "modePins": {},
-    "figmaEvents": [
-      "view-header-back",
-      "favorite-toggle",
-      "breadcrumb-click",
-      "view-export"
-    ]
+    "note": "Rebuilt 2026-08-15 to match Figma App Header: two rows (history+actions, view details w/ embedded Quick Filter Toolbar) + loading bar + notification badge + back/favorite/export/breadcrumb events. Was a 3-region flex bar (needs-rebuild)."
+  },
+
+  "overrides": {
+    "note": "Consumers do not edit library source. They override from outside.",
+    "populate": "populate({ breadcrumb, filters }) stamps a sherpa-breadcrumbs + sherpa-quick-filter-toolbar.",
+    "listen": "Add view-header-back / favorite-toggle / view-export / breadcrumb-click listeners.",
+    "attributes": "Set data-title / data-icon / data-notifications / data-loading / data-favorite directly."
   }
 }

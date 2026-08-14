@@ -192,8 +192,8 @@
     },
     "sherpa-app-header": {
       "figma": "App Header",
-      "status": "needs-rebuild",
-      "rebuildNote": "3-region flex bar vs 28-node Figma (Breadcrumbs, Notif Badge, loading bar, embedded view-scope Quick Filter Toolbar, 4 events)"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: 2 rows (history+actions, view details w/ embedded quick-filter toolbar) + loading bar + notif badge + 4 events"
     },
     "sherpa-nav": {
       "figma": "Primary Navigation",

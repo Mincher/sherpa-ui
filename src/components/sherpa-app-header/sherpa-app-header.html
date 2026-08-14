@@ -1,34 +1,67 @@
 <!--
   sherpa-app-header — the top application header bar.
 
-  Sits in the view frame's `header` region (the `.sherpa-view` grid). A flex bar with three regions:
-    leading  — the view title (data-title) and/or a breadcrumb slot
-    search   — an optional search control
-    actions  — trailing app/view actions
+  Matches the Figma "App Header": two stacked rows over a loading bar.
+    Row 1 — History & Actions: a back button + breadcrumb trail on the lead,
+            trailing app actions (custom + a notifications control with a count
+            badge) on the end.
+    Row 2 — View Details: a view icon + title, then an embedded quick-filter
+            toolbar (the view's scope filters).
+    Loading bar — a thin brand-tinted progress line (data-loading).
+
+  Sits in the view frame's `header` region (the `.sherpa-view` grid).
 
   Public API:
-    data-title — the view title (hidden when empty)
+    data-title           — the view title (hidden when empty)
+    data-icon            — a glyph before the title
+    data-notifications   — notification count (shows the badge; hidden at 0/unset)
+    data-loading         — show the loading bar
+    data-favorite        — favourited state (the star toggle)
 
   Slots:
-    breadcrumb — leading breadcrumb trail (reflects data-has-breadcrumb)
-    search     — a centred search control (reflects data-has-search)
-    actions    — trailing actions (reflects data-has-actions)
+    breadcrumb — a custom breadcrumb trail (else populate() stamps a sherpa-breadcrumbs)
+    actions    — trailing app actions (buttons)
+    filters    — the view-scope filter toolbar (else populate() stamps a quick-filter-toolbar)
 
-  Fires: nothing itself — slotted controls emit their own events.
+  Fires:
+    view-header-back — detail: {}            (back button)
+    favorite-toggle  — detail: { favorite }  (star toggle)
+    view-export      — detail: {}            (export action)
+    breadcrumb-click — detail: { index, label, href }  (re-dispatched from breadcrumbs)
 -->
 <template id="default">
   <header class="bar" part="bar" role="banner">
-    <div class="leading" part="leading">
-      <slot name="breadcrumb"></slot>
-      <h1 class="title" part="title"></h1>
-    </div>
+    <div class="content" part="content">
 
-    <div class="search" part="search">
-      <slot name="search"></slot>
-    </div>
+      <div class="row-history" part="history-row">
+        <div class="history" part="history">
+          <button class="back" part="back" type="button" aria-label="Back">&#x2039;</button>
+          <div class="breadcrumb" part="breadcrumb"><slot name="breadcrumb"></slot></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="actions" part="actions">
+          <slot name="actions"></slot>
+          <span class="divider" part="divider" aria-hidden="true"></span>
+          <button class="favorite" part="favorite" type="button" aria-pressed="false" aria-label="Favourite">&#x2606;</button>
+          <button class="export" part="export" type="button" aria-label="Export">&#x2913;</button>
+          <span class="notifications" part="notifications">
+            <button class="notif-btn" part="notif-btn" type="button" aria-label="Notifications">&#x1F514;</button>
+            <span class="notif-badge" part="notif-badge" role="status"></span>
+          </span>
+        </div>
+      </div>
 
-    <div class="actions" part="actions">
-      <slot name="actions"></slot>
+      <div class="row-view" part="view-row">
+        <div class="title-row" part="title-row">
+          <span class="view-icon" part="view-icon" aria-hidden="true"></span>
+          <h1 class="title" part="title"></h1>
+        </div>
+        <div class="filters" part="filters"><slot name="filters"></slot></div>
+      </div>
+
+    </div>
+    <div class="loading-bar" part="loading-bar" role="progressbar" aria-hidden="true">
+      <span class="loading-fill"></span>
     </div>
   </header>
 </template>

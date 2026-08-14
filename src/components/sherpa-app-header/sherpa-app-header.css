@@ -1,14 +1,11 @@
 /**
  * sherpa-app-header.css — the top application header bar.
  *
- * A single flex row: leading title/breadcrumb, an optional centred search that
- * takes the free space, and trailing actions. Each region collapses when empty
- * (search/actions via data-has-{slot}; the title via :empty). All CSS.
- *
- * Figma bindings: surface fill = surface/primary/base; the product title ink =
- * color/brand/base (the brand accent); row gap = container-space/gap-sm; region
- * spacing = space/{2xs,sm,xs}. No border token is bound — the bar is a flat
- * surface, not a ruled one.
+ * Matches the Figma "App Header": two stacked rows (history+actions, then view
+ * details with an embedded filter toolbar) over a thin loading bar. Flat surface
+ * (surface/primary/base), border/primary dividers, brand-tinted loading fill,
+ * a badge-surface notification count. Regions collapse when empty. All CSS off
+ * data-* + slot presence; JS only mirrors text/count and wires the events.
  */
 
 :host {
@@ -20,55 +17,175 @@
 
 .bar {
   display: flex;
-  align-items: center;
-  gap: var(--sherpa-container-space-gap-sm, 8px);
-  min-height: var(--sherpa-core-size-3xl, 40px);
-  padding-inline: var(--sherpa-core-space-sm, 12px);
-  padding-block: var(--sherpa-core-space-2xs, 4px);
+  flex-direction: column;
 }
 
-/* ── Leading: breadcrumb + title ────────────────────────────────────── */
-.leading {
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-core-space-sm, 12px);
+  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
+}
+
+/* ── Row 1: history + actions ───────────────────────────────────────── */
+.row-history {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
-  min-width: 0;
+  gap: var(--sherpa-core-space-xs, 8px);
+  min-block-size: var(--sherpa-core-size-lg, 24px);
 }
+
+.history {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-core-space-2xs, 4px);
+  min-inline-size: 0;
+}
+
+.spacer { flex: 1 1 auto; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-core-space-xs, 8px);
+  flex: 0 0 auto;
+}
+
+.divider {
+  inline-size: var(--sherpa-core-border-width-base, 1px);
+  block-size: var(--sherpa-core-size-base, 16px);
+  background: var(--sherpa-border-primary, #d5d5d5);
+  flex-shrink: 0;
+}
+
+/* Icon-glyph buttons shared look (back / favorite / export / notif) */
+.back,
+.favorite,
+.export,
+.notif-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-core-size-lg, 24px);
+  block-size: var(--sherpa-core-size-lg, 24px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--sherpa-content-secondary-base, #5c5c66);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.back:hover,
+.favorite:hover,
+.export:hover,
+.notif-btn:hover {
+  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-title-base, #18191a);
+}
+.back:focus-visible,
+.favorite:focus-visible,
+.export:focus-visible,
+.notif-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+}
+
+.back { font-size: var(--sherpa-core-fonts-scale-xl, 20px); }
+
+/* Favourited state — brand-accent filled star */
+:host([data-favorite]) .favorite {
+  color: var(--sherpa-core-color-brand-base, #c046ff);
+}
+
+/* ── Notifications: button + count badge ────────────────────────────── */
+.notifications { position: relative; display: inline-flex; flex-shrink: 0; }
+
+.notif-badge {
+  display: none;
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-end: -2px;
+  min-inline-size: var(--sherpa-core-size-base, 16px);
+  block-size: var(--sherpa-core-size-base, 16px);
+  padding-inline: var(--sherpa-core-space-3xs, 2px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  background: var(--sherpa-badge-surface-default, #d92d20);
+  color: var(--sherpa-content-title-on-color, #ffffff);
+  font-size: var(--sherpa-core-fonts-scale-xs, 11px);
+  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  line-height: var(--sherpa-core-size-base, 16px);
+  text-align: center;
+}
+:host([data-notifications]) .notif-badge { display: block; }
+
+/* ── Row 2: view details ────────────────────────────────────────────── */
+.row-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-core-space-sm, 12px);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-core-space-xs, 8px);
+  min-inline-size: 0;
+}
+
+.view-icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-core-size-base, 16px);
+  flex-shrink: 0;
+}
+:host([data-icon]) .view-icon { display: inline-flex; }
 
 .title {
   margin: 0;
   font-size: var(--sherpa-core-fonts-scale-xl, 20px);
   font-weight: var(--sherpa-core-fonts-weight-700, 700);
-  color: var(--sherpa-core-color-brand-base, #c046ff);
+  color: var(--sherpa-content-title-base, #18191a);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .title:empty { display: none; }
 
-/* ── Search: takes the middle, collapses when unslotted ─────────────── */
-.search {
-  display: none;
-  flex: 1 1 auto;
-  min-width: 0;
-  justify-content: center;
+/* Filters row — the embedded quick-filter toolbar; collapses when empty */
+.filters { display: flex; min-inline-size: 0; }
+.filters:not(:has(*)) { display: none; }
+.filters ::slotted(*) { inline-size: 100%; }
+
+/* ── Loading bar ────────────────────────────────────────────────────── */
+.loading-bar {
+  block-size: var(--sherpa-core-border-width-lg, 2px);
+  background: transparent;
+  overflow: hidden;
 }
-:host([data-has-search]) .search { display: flex; }
-.search ::slotted(*) { width: 100%; max-width: 480px; }
-
-/* ── Actions: trailing, pushed to the end ───────────────────────────── */
-.actions {
-  display: none;
-  align-items: center;
-  gap: var(--sherpa-core-space-xs, 8px);
-  margin-inline-start: auto;
-  flex: 0 0 auto;
+.loading-fill {
+  display: block;
+  block-size: 100%;
+  inline-size: 40%;
+  background: var(--sherpa-core-color-brand-base, #c046ff);
+  transform: translateX(-100%);
 }
-:host([data-has-actions]) .actions { display: flex; }
+:host(:not([data-loading])) .loading-bar { visibility: hidden; }
+:host([data-loading]) .loading-fill {
+  animation: sherpa-app-header-loading 1.4s ease-in-out infinite;
+}
+@keyframes sherpa-app-header-loading {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(150%); }
+  100% { transform: translateX(400%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :host([data-loading]) .loading-fill { animation: none; inline-size: 100%; transform: none; opacity: 0.6; }
+}
 
-/* When there's no search, the leading region keeps actions on the far end. */
-:host(:not([data-has-search])) .leading { flex: 1 1 auto; }
-
+/* Narrow container: drop the embedded filters row */
 @container sherpa-app-header (max-width: 480px) {
-  .search { display: none; }
+  .filters { display: none; }
 }
