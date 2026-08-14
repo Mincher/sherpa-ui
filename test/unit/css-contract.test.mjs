@@ -90,13 +90,13 @@ test('interaction pseudo-classes are detected even without custom-prop declarati
   }
 });
 
-test('real component: sherpa-tag exposes all 10 data-color values (CSS-only enum)', async () => {
+test('real component: sherpa-tag exposes all 11 data-color values (CSS-only enum)', async () => {
   const { readFileSync } = await import('node:fs');
   const { fileURLToPath } = await import('node:url');
-  const path = fileURLToPath(new URL('../../components/sherpa-tag/sherpa-tag.css', import.meta.url));
+  const path = fileURLToPath(new URL('../../src/components/sherpa-tag/sherpa-tag.css', import.meta.url));
   const css = readFileSync(path, 'utf8');
   const c = extractCssContract(css, 'sherpa-tag');
   const color = c.attributes.find((a) => a.name === 'data-color');
   assert.ok(color, 'data-color present');
-  assert.equal(color.values.length, 10, 'all 10 colors captured from CSS');
+  assert.equal(color.values.length, 11, 'all 11 categorical colors captured from CSS');
 });

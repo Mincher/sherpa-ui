@@ -3,13 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Playwright config for Sherpa-UI component tests.
  *
- * Strategy: E2E-style. Specs navigate to a static harness page (test/e2e/harness.html)
- * served from the project root, which loads the compiled components (dist/components/index.js)
- * + the token CSS. Specs then inject/drive components and assert via page.evaluate + Playwright
- * expect. This exercises real Custom Elements + Shadow DOM in real browsers — the right fit for
- * a zero-dependency web-component library, and it scales cross-browser (chromium/firefox/webkit).
+ * Strategy: E2E-style. Specs navigate to the static harness (test/reforged/harness.html)
+ * served from the project root, which loads the compiled reforged bundle
+ * (dist-reforged/index.js) + the token CSS. Specs then inject/drive components and assert
+ * via page.evaluate + Playwright expect. This exercises real Custom Elements + Shadow DOM in
+ * real browsers — the right fit for a zero-dependency web-component library, and it scales
+ * cross-browser (chromium/firefox/webkit).
  *
- * The webServer builds TS + copies assets, then serves the repo root on :4173.
+ * The webServer builds the reforged tree, then serves the repo root on :4173.
  */
 export default defineConfig({
   testDir: './test/e2e',
@@ -34,8 +35,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run build:ts && npm run assets:copy && npx --yes serve . --listen 4173 --no-clipboard',
-    url: 'http://localhost:4173/test/e2e/harness.html',
+    command: 'npm run build && npx --yes serve . --listen 4173 --no-clipboard',
+    url: 'http://localhost:4173/test/reforged/harness.html',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

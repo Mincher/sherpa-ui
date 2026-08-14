@@ -8,8 +8,8 @@
     "types": ["@web/test-runner"],
 
     // Emit
-    "rootDir": "./",
-    "outDir": "./dist",
+    "rootDir": "./src",
+    "outDir": "./dist-reforged",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -52,12 +52,11 @@
     "allowUnusedLabels": false
   },
   "include": [
-    "components/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "**/*.d.ts",
-    "**/*.test.ts"
+    "dist-reforged",
+    "**/*.d.ts"
   ]
 }

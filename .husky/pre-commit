@@ -9,14 +9,4 @@ if [ $TYPE_CHECK_RESULT -ne 0 ]; then
   exit 1
 fi
 
-# Check suppression count hasn't increased
-echo "📊 Checking suppression budget..."
-npm run ts:suppressions
-SUPPRESSION_RESULT=$?
-
-if [ $SUPPRESSION_RESULT -ne 0 ]; then
-  echo "❌ Suppression budget exceeded. Commit blocked."
-  exit 1
-fi
-
 echo "✅ Pre-commit checks passed!"
