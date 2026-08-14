@@ -28,6 +28,7 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaNavItem extends SherpaElement {
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
+  static override tokens = new URL('./sherpa-nav-item.tokens.css', import.meta.url);
   static override html = new URL('./sherpa-nav-item.html', import.meta.url);
   static override observed = [
     'data-icon',

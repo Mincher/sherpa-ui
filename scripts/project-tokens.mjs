@@ -1,128 +1,106 @@
 /**
- * project-tokens.mjs — project the canonical Figma DTCG export into Sherpa's
- * CSS token layer.
+ * project-tokens.mjs — project the canonical Figma DTCG export into Sherpa's CSS.
  *
- * Source of truth: src/styles/tokens/figma.tokens.json (written by
- * figma_export_tokens, format:dtcg, scope:file — the full 28-collection dump).
+ * Source of truth: src/styles/tokens/figma.tokens.json (figma_export_tokens,
+ * format:dtcg, scope:file — the full 28-collection dump).
  *
- * This is the collection-AWARE projection. Figma has many mode axes, but only a
- * few are *document-global* CSS mechanisms; the rest are component-scoped and are
- * consumed inside each component's own CSS as :host([data-*]) rules. So the global
- * token layer (tokens.css) carries exactly:
+ * The output mirrors Figma's aliasing tiers as CASCADE LAYERS. The global token
+ * layer (src/styles/tokens/tokens.css) carries three layers:
  *
- *   • Primitives + Core   → the value layer, emitted flat into :root
- *   • Style (Sherpa) light → the semantic layer, emitted into :root
- *   • Style (Sherpa) dark  → the same vars re-pointed, emitted into
- *                            :root[data-mode="dark"] AND a
- *                            @media (prefers-color-scheme: dark) block guarded by
- *                            :not([data-mode="light"]) — the reforged themes.css
- *                            contract (explicit choice beats OS; OS beats default).
+ *   @layer core      — Core, the first alias tier (--sherpa-core-*). Primitive
+ *                      references are RESOLVED to their literal values, so the
+ *                      Primitives collection is reference-only and never compiled.
+ *   @layer style     — Style (Sherpa), the semantic tier (--sherpa-content-*,
+ *                      --sherpa-surface-*, --sherpa-border-*, status/data-viz/…).
+ *                      Light in :root; dark re-points in :root[data-mode="dark"]
+ *                      and @media(prefers-color-scheme:dark):not([data-mode=light]).
+ *   @layer overrides — the override tier: the [data-status] cascade (--_status-*),
+ *                      the Color-Sets / Grouping / Elevation override collections,
+ *                      and convenience aliases (font-family / shadow / categorical).
  *
- * Component-scoped collections (Button sizes, Control/Container/Input/Navigation/
- * Switch/Status/Badge/Elevation/Layout/Grouping/Color Sets/Data Viz/Typography and
- * their extensions) are NOT projected globally — they stay in figma.tokens.json and
- * are wired per-component. Projecting them into [data-theme="<mode>"] would collide
- * ("secondary" means Control-secondary AND Container-secondary) and break the
- * shadow-DOM :host model.
+ * Component-scoped collections (container-*, control-*, button-*, switch-*, …) are
+ * NOT in the global file — each is written to its OWN component partial
+ * (src/components/<comp>/<comp>.tokens.css) so the component owns its scoping. The
+ * component's variant/size modes become [data-*] blocks in that partial.
  *
  *   node scripts/project-tokens.mjs
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src/styles/tokens/figma.tokens.json');
 const OUT = join(ROOT, 'src/styles/tokens/tokens.css');
+const COMPONENTS = join(ROOT, 'src/components');
 const PREFIX = 'sherpa-';
-
-/** Collections whose PRIMARY (or only) mode feeds the global :root value/semantic layer. */
-const GLOBAL_COLLECTIONS = new Set(['primitives', 'core', 'style-sherpa']);
-/** The one collection that also contributes a dark-mode override block. */
-const DARK_COLLECTION = 'style-sherpa';
-
-/**
- * Component-scoped collections are thin ALIAS layers over the fundamentals
- * (Primitives → Core → Style → Overrides). A component binds its own scoped var
- * (e.g. --sherpa-container-space-padding-md) and the collection's MODE re-points
- * what that var resolves to per variant. We project each as:
- *   • primary mode  → :root                       (the default the component gets)
- *   • each mode     → :root selector keyed by the component's variant attribute
- * `attr` maps this collection's mode axis onto the data-* attribute the component
- * exposes; `default` is the mode that equals the primary (emitted only at :root).
- */
-const SCOPED_COLLECTIONS = {
-  // Override tier — aliased INTO by the component collections below.
-  'color-sets': { attr: 'data-color-set', default: null, emitModes: false },
-  grouping: { attr: 'data-group', default: null, emitModes: false }, // Snapping-radius + gap
-  elevation: { attr: 'data-elevation', default: null, emitModes: false }, // elevation-shadow parts
-  // Component tier — bound directly by components; modes = variant/size axes.
-  container: { attr: 'data-variant', default: 'default' },
-  control: { attr: 'data-variant', default: 'default' },
-  button: { attr: 'data-size', default: '2xs' },
-  badge: { attr: 'data-variant', default: 'default' },
-  input: { attr: 'data-state', default: 'default' },
-  navigation: { attr: 'data-nav-state', default: 'default' },
-  switch: { attr: 'data-variant', default: 'standard' },
-};
 
 const doc = JSON.parse(readFileSync(SRC, 'utf8'));
 
-/**
- * Normalise DTCG path segments into a single CSS-identifier tail. Figma names
- * carry spaces ("color 1"), arrows ("blue green -> pink"), and the DTCG writer's
- * "@" leaf-conflict marker — all must collapse to hyphens, identically for both
- * emitted var NAMES and resolved REFERENCES, or the two sides won't match.
- */
+// ── helpers ───────────────────────────────────────────────────────────
+
+/** Normalise DTCG path segments into one CSS-identifier tail (names AND refs). */
 function toIdent(segs) {
   return segs
     .filter((s) => s !== '@')
     .join('-')
-    .replace(/->/g, '-') // arrow separators
-    .replace(/[^a-zA-Z0-9-]+/g, '-') // spaces & any other non-ident char
-    .replace(/-+/g, '-') // collapse runs
-    .replace(/^-|-$/g, '') // trim edges
+    .replace(/->/g, '-')
+    .replace(/[^a-zA-Z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .toLowerCase();
 }
 
-/**
- * Collections whose leaf paths already embed the collection name as their first
- * path segment (style-sherpa emits WITHOUT the segment; the scoped collections'
- * leaves are like `container-border/…`). A reference into any of these carries a
- * redundant leading collection segment (`{color-sets.color-sets-surface.default}`)
- * that must be dropped so the ref resolves to the emitted var name.
- */
-const REF_STRIP_SEGMENTS = new Set(['style-sherpa']);
+/** A ref's leading collection segment is redundant when the leaf path repeats it. */
+const REF_STRIP = new Set(['style-sherpa']);
+function refName(ref) {
+  let segs = ref.slice(1, -1).split('.');
+  if (REF_STRIP.has(segs[0]) || (segs[1] && segs[1].startsWith(segs[0] + '-'))) segs = segs.slice(1);
+  return `--${PREFIX}${toIdent(segs)}`;
+}
+const isRef = (v) => typeof v === 'string' && v.startsWith('{') && v.endsWith('}');
 
-/** {a.b.c} reference → var(--sherpa-a-b-c). Literal hex/number → CSS value. */
-function toCss(value, type) {
-  if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
-    let segs = value.slice(1, -1).split('.');
-    // Drop a redundant leading collection segment: either style-sherpa (emitted
-    // segment-less) or a scoped collection whose next segment repeats its name
-    // (color-sets.color-sets-surface, control.control-border, container.container-…).
-    if (REF_STRIP_SEGMENTS.has(segs[0]) || (segs[1] && segs[1].startsWith(segs[0] + '-'))) {
-      segs = segs.slice(1);
-    }
-    return `var(--${PREFIX}${toIdent(segs)})`;
-  }
-  // literal
+/** literal → CSS value (px for dimensions, bare for unitless). */
+function literal(value, type) {
   if (typeof value === 'number') {
-    // dimensions/space/size get px; unitless numbers (line-height, weight, opacity, z) stay bare
     const unitless = type === 'number' || type === 'fontWeight';
     return unitless ? String(value) : `${value}px`;
   }
-  return String(value); // hex colours, font families, strings
+  return String(value);
 }
 
-/** Walk one collection subtree, yielding { name, value, darkValue } leaves. */
+// ── primitive resolution (so Primitives is reference-only) ──────────────
+// Build dot-path → literal for every Primitives leaf, then resolve any ref that
+// points into primitives down to its literal value.
+const primLiteral = {};
+(function walkPrim(node, path) {
+  if (node && typeof node === 'object' && '$value' in node) {
+    if (!isRef(node.$value)) primLiteral[path.join('.')] = literal(node.$value, node.$type);
+    return;
+  }
+  for (const k of Object.keys(node ?? {})) {
+    if (k.startsWith('$')) continue;
+    walkPrim(node[k], [...path, k]);
+  }
+})(doc.primitives ?? {}, ['primitives']);
+
+/** ref/literal → CSS value; primitive refs are inlined to their literal. */
+function toCss(value, type) {
+  if (isRef(value)) {
+    const dotPath = value.slice(1, -1);
+    if (dotPath.startsWith('primitives.') && primLiteral[dotPath] != null) return primLiteral[dotPath];
+    return `var(${refName(value)})`;
+  }
+  return literal(value, type);
+}
+
+/** Walk a collection subtree → { name, value, dark } leaves (dark = the dark-mode override). */
 function* leaves(node, path = []) {
   if (node && typeof node === 'object' && '$value' in node) {
-    const name = `--${PREFIX}${toIdent(path)}`;
     const ext = node.$extensions?.['figma-console-mcp'] ?? {};
     const darkRef = ext.modes?.dark;
     yield {
-      name,
+      name: `--${PREFIX}${toIdent(path)}`,
       value: toCss(node.$value, node.$type),
       dark: darkRef != null ? toCss(darkRef, node.$type) : null,
     };
@@ -134,20 +112,11 @@ function* leaves(node, path = []) {
   }
 }
 
-/**
- * Like leaves(), but for scoped collections: yields { name, primary, modes, type }
- * where `modes` is the raw per-mode override map (ref strings / literals), so the
- * caller can emit primary at :root and each mode under the component's variant attr.
- */
+/** Like leaves() but exposes the raw per-mode override map (for scoped collections). */
 function* leavesWithModes(node, path = []) {
   if (node && typeof node === 'object' && '$value' in node) {
     const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-    yield {
-      name: `--${PREFIX}${toIdent(path)}`,
-      primary: node.$value,
-      modes: ext.modes ?? {},
-      type: node.$type,
-    };
+    yield { name: `--${PREFIX}${toIdent(path)}`, primary: node.$value, modes: ext.modes ?? {}, type: node.$type };
     return;
   }
   for (const k of Object.keys(node ?? {})) {
@@ -156,118 +125,68 @@ function* leavesWithModes(node, path = []) {
   }
 }
 
-// ── collect ──────────────────────────────────────────────────────────
-const rootLines = [];
+// ── @layer core: Core, primitive refs inlined ──────────────────────────
+const coreLines = [];
+for (const leaf of leaves(doc.core ?? {}, ['core'])) coreLines.push(`  ${leaf.name}: ${leaf.value};`);
+
+// ── @layer style: Style (Sherpa), light + dark ─────────────────────────
+const styleLines = [];
 const darkLines = [];
-
-for (const collKey of GLOBAL_COLLECTIONS) {
-  const coll = doc[collKey];
-  if (!coll) continue;
-  // Path base per collection:
-  //  • primitives / core → keep the collection segment (--sherpa-core-color-…),
-  //    so references like {core.color.neutral.0} resolve to the same name.
-  //  • style-sherpa → DROP it. This is THE semantic layer components alias into;
-  //    its tokens are --sherpa-content-title-base, not --sherpa-style-sherpa-…
-  //    (nothing references style-sherpa vars by dot-path, so no chain breaks).
-  const base = collKey === DARK_COLLECTION ? [] : [collKey];
-  for (const leaf of leaves(coll, base)) {
-    rootLines.push(`  ${leaf.name}: ${leaf.value};`);
-    if (collKey === DARK_COLLECTION && leaf.dark) {
-      darkLines.push(`  ${leaf.name}: ${leaf.dark};`);
-    }
-  }
+for (const leaf of leaves(doc['style-sherpa'] ?? {}, [])) {
+  styleLines.push(`  ${leaf.name}: ${leaf.value};`);
+  if (leaf.dark) darkLines.push(`  ${leaf.name}: ${leaf.dark};`);
 }
 
-// ── status cascade ───────────────────────────────────────────────────
-// The Status collection has 4 vars (surface/border/content/shadow), each carrying
-// a value PER status mode (info/critical/warning/urgent/success + passthrough).
-// Project them into the CLAUDE.md [data-status] cascade: an ancestor data-status
-// emits --_status-* custom props that inherit through shadow boundaries.
+// ── @layer overrides: status cascade ───────────────────────────────────
+// Figma Status roles (verified): surface/default = box tint (color 1),
+// border/default = border + strong accent ink (color 5/7/4), content/title =
+// heading ink on the tint. border also feeds --_status-surface-strong (the badge).
 const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success'];
-const statusColl = doc.status;
-const statusBlocks = [];
-if (statusColl) {
-  // gather the collection's leaves once; each leaf's ext.modes holds per-status refs
-  const statusVars = [];
-  for (const k of Object.keys(statusColl)) {
+const ROLE_MAP = {
+  'status-surface-default': '_status-surface',
+  'status-border-default': '_status-border',
+  'status-content-title': '_status-text',
+};
+const ALSO = { 'status-border-default': '_status-surface-strong' };
+const statusRoles = [];
+(function collectStatus(node, path) {
+  if (node && typeof node === 'object' && '$value' in node) {
+    const ext = node.$extensions?.['figma-console-mcp'] ?? {};
+    statusRoles.push({ role: toIdent(path), modes: ext.modes ?? {} });
+    return;
+  }
+  for (const k of Object.keys(node ?? {})) {
     if (k.startsWith('$')) continue;
-    for (const leaf of leaves(statusColl[k], [])) {
-      // leaf.name is --sherpa-<...>; recover the DTCG node to read per-mode modes
-      statusVars.push({ key: k, path: leaf.name });
-    }
+    collectStatus(node[k], [...path, k]);
   }
-  // Map the Figma Status structure onto the cascade vocab components read.
-  // Figma roles (verified from the Status collection): surface/default = the box
-  // tint (color 1), border/default = the border/ink accent (color 5/7/4),
-  // content/title = the heading ink on that tint. The "badge/strong" accent a
-  // component wants for a status chip is the BORDER ink, so map border → both
-  // --_status-border and --_status-surface-strong.
-  const ROLE_MAP = {
-    'status-surface-default': '_status-surface', // the box tint (color 1)
-    'status-border-default': '_status-border', // the border + strong accent ink
-    'status-content-title': '_status-text', // heading ink on the tint
-  };
-  // border also feeds the "strong" accent (icon badge / fill chip)
-  const ALSO = { 'status-border-default': '_status-surface-strong' };
-  function collectStatus(node, path, out) {
-    if (node && typeof node === 'object' && '$value' in node) {
-      const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-      out.push({ figmaRole: toIdent(path), modes: ext.modes ?? {}, primary: node.$value });
-      return;
-    }
-    for (const k of Object.keys(node ?? {})) {
-      if (k.startsWith('$')) continue;
-      collectStatus(node[k], [...path, k], out);
-    }
+})(doc.status ?? {}, []);
+const statusBlocks = [];
+for (const mode of STATUS_MODES) {
+  const lines = [];
+  for (const r of statusRoles) {
+    if (r.modes[mode] == null) continue;
+    if (ROLE_MAP[r.role]) lines.push(`  --${ROLE_MAP[r.role]}: ${toCss(r.modes[mode])};`);
+    if (ALSO[r.role]) lines.push(`  --${ALSO[r.role]}: ${toCss(r.modes[mode])};`);
   }
-  const roles = [];
-  collectStatus(statusColl, [], roles);
-  for (const mode of STATUS_MODES) {
-    const lines = [];
-    for (const r of roles) {
-      if (r.modes[mode] == null) continue;
-      if (ROLE_MAP[r.figmaRole]) lines.push(`  --${ROLE_MAP[r.figmaRole]}: ${toCss(r.modes[mode])};`);
-      if (ALSO[r.figmaRole]) lines.push(`  --${ALSO[r.figmaRole]}: ${toCss(r.modes[mode])};`);
-    }
-    if (lines.length) {
-      statusBlocks.push(`[data-status="${mode}"] {\n${lines.join('\n')}\n}`);
-    }
+  if (lines.length) statusBlocks.push(`  [data-status="${mode}"] {\n${lines.map((l) => '  ' + l).join('\n')}\n  }`);
+}
+
+// ── @layer overrides: Override collections ─────────────────────────────
+// Shared alias bases that MULTIPLE components consume (control geometry/colour is
+// used by button/tag/switch/input; color-sets/grouping/elevation are override
+// ramps). These stay global in the overrides layer — a single-component partial
+// can't own a shared base. (Their variant modes, where used, are consumed by the
+// component via its own [data-*]; the primary values live here.)
+const OVERRIDE_COLLECTIONS = ['color-sets', 'grouping', 'elevation', 'control', 'badge'];
+const overrideLines = [];
+for (const collKey of OVERRIDE_COLLECTIONS) {
+  for (const leaf of leavesWithModes(doc[collKey] ?? {}, [])) {
+    if (typeof leaf.primary === 'boolean') continue;
+    overrideLines.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
   }
 }
 
-// ── component-scoped alias collections ───────────────────────────────
-// Each scoped collection (container-*, control-*, button-*, …) is an alias layer:
-// the component binds --sherpa-<coll>-<path>, and the collection's mode re-points
-// it per variant. Emit primary values at :root, mode overrides keyed by the
-// component's variant attribute so a component's own [data-*] switches the alias.
-const scopedRootLines = [];
-const scopedModeBlocks = [];
-for (const [collKey, cfg] of Object.entries(SCOPED_COLLECTIONS)) {
-  const coll = doc[collKey];
-  if (!coll) continue;
-  // The DTCG leaf path already begins with the collection name (container-border/…),
-  // so the var base is [] — passing [collKey] would double-prefix.
-  const byMode = {}; // mode → [lines]
-  for (const leaf of leavesWithModes(coll, [])) {
-    if (typeof leaf.primary === 'boolean') continue; // component-property flag, not a token
-    scopedRootLines.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
-    if (cfg.emitModes === false) continue; // override tier: primary only (modes are opt-in)
-    for (const [mode, val] of Object.entries(leaf.modes)) {
-      if (mode === cfg.default) continue; // default == primary, already at :root
-      (byMode[mode] ??= []).push(`  ${leaf.name}: ${toCss(val, leaf.type)};`);
-    }
-  }
-  for (const [mode, lines] of Object.entries(byMode)) {
-    scopedModeBlocks.push(`:root [${cfg.attr}="${mode}"],\n[${cfg.attr}="${mode}"] {\n${lines.join('\n')}\n}`);
-  }
-}
-
-// ── convenience aliases ──────────────────────────────────────────────
-// Stable public names components consume that don't map 1:1 to a single Figma var:
-//  • font families (Typography collection is text-style-driven, not a flat token)
-//  • composed box-shadows (Figma elevation = 5 separate offset/blur/spread/tint vars)
-//  • data-viz categorical series hues (the JS→CSS bridge in charts reads these)
-// Each is sourced from the projected Figma vars where one exists.
+// ── @layer overrides: convenience aliases ──────────────────────────────
 const aliasLines = [
   '  --sherpa-font-family-body: "Inter", system-ui, sans-serif;',
   '  --sherpa-font-family-mono: ui-monospace, "JetBrains Mono", monospace;',
@@ -275,56 +194,117 @@ const aliasLines = [
   '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x-base, 0) var(--sherpa-elevation-offset-y-base, 4px) var(--sherpa-elevation-blur-base, 12px) var(--sherpa-elevation-spread-base, 0) var(--sherpa-elevation-tint, #372f4f33);',
   '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x-large, 0) var(--sherpa-elevation-offset-y-large, 12px) var(--sherpa-elevation-blur-large, 32px) var(--sherpa-elevation-spread-large, 0) var(--sherpa-elevation-tint, #372f4f33);',
 ];
-for (let i = 1; i <= 11; i++) {
-  aliasLines.push(`  --sherpa-categorical-${i}: var(--sherpa-data-viz-categorical-color-${i});`);
+for (let i = 1; i <= 11; i++) aliasLines.push(`  --sherpa-categorical-${i}: var(--sherpa-data-viz-categorical-color-${i});`);
+
+// ── component-scoped partials (each component owns its scoping) ─────────
+// collection → { comp: the component dir, attr: variant attribute, default: the
+// mode equal to the primary (emitted once at :host, not repeated) }.
+const SCOPED = {
+  container: { comp: 'sherpa-container', attr: 'data-variant', default: 'default' },
+  button: { comp: 'sherpa-button', attr: 'data-size', default: '2xs' },
+  input: { comp: 'sherpa-input-text', attr: 'data-state', default: 'default' },
+  navigation: { comp: 'sherpa-nav-item', attr: 'data-nav-state', default: 'default' },
+  switch: { comp: 'sherpa-switch', attr: 'data-variant', default: 'standard' },
+};
+const partials = []; // { comp, css }
+for (const [collKey, cfg] of Object.entries(SCOPED)) {
+  if (!cfg.comp || !doc[collKey]) continue;
+  const rootVars = [];
+  const byMode = {};
+  for (const leaf of leavesWithModes(doc[collKey], [])) {
+    if (typeof leaf.primary === 'boolean') continue;
+    rootVars.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
+    for (const [mode, val] of Object.entries(leaf.modes)) {
+      if (mode === cfg.default) continue;
+      (byMode[mode] ??= []).push(`  ${leaf.name}: ${toCss(val, leaf.type)};`);
+    }
+  }
+  const modeBlocks = Object.entries(byMode).map(
+    ([mode, lines]) => `:host([${cfg.attr}="${mode}"]) {\n${lines.join('\n')}\n}`,
+  );
+  const css = `/**
+ * ${cfg.comp}.tokens.css — component-scoped token aliases, PROJECTED from Figma
+ * (the "${collKey}" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
+ * These alias up through overrides → style → core. The component's own [${cfg.attr}]
+ * re-points them per variant. Import/adopt this alongside the component's CSS.
+ */
+@layer components {
+  :host {
+${rootVars.map((l) => '  ' + l).join('\n')}
+  }
+
+${modeBlocks.map((b) => b.replace(/^/gm, '  ')).join('\n\n')}
+}
+`;
+  partials.push({ comp: cfg.comp, css });
 }
 
-// ── emit ─────────────────────────────────────────────────────────────
+// ── emit global tokens.css ─────────────────────────────────────────────
 const header = `/**
  * tokens.css — Sherpa's global token layer, PROJECTED from Figma.
  *
- * Generated by scripts/project-tokens.mjs from figma.tokens.json (the canonical
- * DTCG export). DO NOT EDIT BY HAND — edit in Figma, re-export, re-project.
+ * Generated by scripts/project-tokens.mjs from figma.tokens.json. DO NOT EDIT BY
+ * HAND — edit in Figma, re-export, re-project. Load once in the document; the
+ * resolved --sherpa-* values inherit into every component shadow root.
  *
- * Load once in the document; the resolved --sherpa-* values inherit into every
- * component shadow root. Primitives + Core are the value layer; Style (Sherpa) is
- * the semantic layer components alias into. Dark mode re-points the semantic vars
- * only — components stay mode-agnostic.
- */`;
+ * Layers mirror Figma's aliasing tiers (Primitives resolved away → reference-only):
+ *   core → style → overrides.  Component-scoped collections live in each
+ *   component's own <comp>.tokens.css partial (@layer components).
+ */
+@layer core, style, overrides, components;`;
 
 const css = `${header}
-:root {
-${rootLines.join('\n')}
 
-  /* component-scoped alias collections — components bind these; a component's
-     own [data-*] variant re-points them via the mode blocks below. */
-${scopedRootLines.join('\n')}
-
-  /* convenience aliases — stable public names (see project-tokens.mjs) */
-${aliasLines.join('\n')}
-}
-
-/* Dark mode: explicit choice wins. */
-:root[data-mode="dark"] {
-${darkLines.join('\n')}
-}
-
-/* Dark mode: follow the OS unless an explicit light choice overrides it. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) {
-${darkLines.join('\n')}
+@layer core {
+  :root {
+${coreLines.join('\n')}
   }
 }
 
-/* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
-${statusBlocks.join('\n\n')}
+@layer style {
+  :root {
+${styleLines.join('\n')}
+  }
 
-/* Component-scoped variant modes — a component's [data-*] re-points its scoped vars. */
-${scopedModeBlocks.join('\n\n')}
+  /* Dark mode: explicit choice wins. */
+  :root[data-mode="dark"] {
+${darkLines.map((l) => '  ' + l).join('\n')}
+  }
+
+  /* Dark mode: follow the OS unless an explicit light choice overrides it. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode="light"]) {
+${darkLines.map((l) => '    ' + l).join('\n')}
+    }
+  }
+}
+
+@layer overrides {
+  :root {
+${overrideLines.join('\n')}
+
+    /* convenience aliases — stable public names (see project-tokens.mjs) */
+${aliasLines.map((l) => '  ' + l).join('\n')}
+  }
+
+  /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
+${statusBlocks.join('\n\n')}
+}
 `;
 
 writeFileSync(OUT, css);
+
+// ── write component partials ───────────────────────────────────────────
+let wrote = 0;
+for (const { comp, css } of partials) {
+  const dir = join(COMPONENTS, comp);
+  if (!existsSync(dir)) continue;
+  writeFileSync(join(dir, `${comp}.tokens.css`), css);
+  wrote++;
+}
+
 console.log(
-  `✓ projected ${rootLines.length} global + ${scopedRootLines.length} scoped vars ` +
-    `(${darkLines.length} dark, ${aliasLines.length} aliases, ${statusBlocks.length} status, ${scopedModeBlocks.length} variant blocks) → tokens.css`,
+  `✓ tokens.css: @layer core(${coreLines.length}) style(${styleLines.length},${darkLines.length} dark) ` +
+    `overrides(${overrideLines.length}+${aliasLines.length} aliases,${statusBlocks.length} status) → global\n` +
+    `✓ ${wrote} component token partials written`,
 );

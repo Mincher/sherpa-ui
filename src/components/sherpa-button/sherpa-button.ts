@@ -9,6 +9,7 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaButton extends SherpaElement {
   static override css = new URL('./sherpa-button.css', import.meta.url);
+  static override tokens = new URL('./sherpa-button.tokens.css', import.meta.url);
   static override html = new URL('./sherpa-button.html', import.meta.url);
   static override observed = [
     'data-label',

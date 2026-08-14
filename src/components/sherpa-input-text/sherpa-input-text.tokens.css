@@ -1,0 +1,21 @@
+/**
+ * sherpa-input-text.tokens.css — component-scoped token aliases, PROJECTED from Figma
+ * (the "input" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
+ * These alias up through overrides → style → core. The component's own [data-state]
+ * re-points them per variant. Import/adopt this alongside the component's CSS.
+ */
+@layer components {
+  :host {
+    --sherpa-input-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+    --sherpa-input-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+    --sherpa-input-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+    --sherpa-input-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  }
+
+  :host([data-state="validation"]) {
+    --sherpa-input-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+    --sherpa-input-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+    --sherpa-input-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+    --sherpa-input-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  }
+}

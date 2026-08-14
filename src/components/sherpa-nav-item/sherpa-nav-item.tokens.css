@@ -1,0 +1,52 @@
+/**
+ * sherpa-nav-item.tokens.css — component-scoped token aliases, PROJECTED from Figma
+ * (the "navigation" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
+ * These alias up through overrides → style → core. The component's own [data-nav-state]
+ * re-points them per variant. Import/adopt this alongside the component's CSS.
+ */
+@layer components {
+  :host {
+    --sherpa-nav-container-header-label: Product name;
+    --sherpa-nav-container-pin-button: active;
+    --sherpa-nav-container-setting-button: default;
+    --sherpa-nav-container-size-width: 320px;
+    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+  }
+
+  :host([data-nav-state="collapsed"]) {
+    --sherpa-nav-container-header-label: Product name;
+    --sherpa-nav-container-pin-button: default;
+    --sherpa-nav-container-setting-button: default;
+    --sherpa-nav-container-size-width: 40px;
+    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-none);
+    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+  }
+
+  :host([data-nav-state="hover"]) {
+    --sherpa-nav-container-header-label: Product name;
+    --sherpa-nav-container-pin-button: default;
+    --sherpa-nav-container-setting-button: default;
+    --sherpa-nav-container-size-width: 320px;
+    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+  }
+
+  :host([data-nav-state="pinned"]) {
+    --sherpa-nav-container-header-label: Product name;
+    --sherpa-nav-container-pin-button: active;
+    --sherpa-nav-container-setting-button: default;
+    --sherpa-nav-container-size-width: 320px;
+    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+  }
+
+  :host([data-nav-state="settings"]) {
+    --sherpa-nav-container-header-label: Settings;
+    --sherpa-nav-container-pin-button: active;
+    --sherpa-nav-container-setting-button: active;
+    --sherpa-nav-container-size-width: 320px;
+    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+    --sherpa-nav-container-surface-default: var(--sherpa-surface-secondary-base);
+  }
+}

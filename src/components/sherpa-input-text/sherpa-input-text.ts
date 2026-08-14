@@ -27,6 +27,7 @@ type Control = HTMLInputElement | HTMLTextAreaElement;
 
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
+  static override tokens = new URL('./sherpa-input-text.tokens.css', import.meta.url);
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
   static override observed = ['data-label', 'data-description', 'data-error', ...MIRRORED];
 

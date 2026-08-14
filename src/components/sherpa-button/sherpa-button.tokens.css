@@ -1,0 +1,70 @@
+/**
+ * sherpa-button.tokens.css — component-scoped token aliases, PROJECTED from Figma
+ * (the "button" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
+ * These alias up through overrides → style → core. The component's own [data-size]
+ * re-points them per variant. Import/adopt this alongside the component's CSS.
+ */
+@layer components {
+  :host {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-sm);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-2xs);
+    --sherpa-button-size-height: var(--sherpa-core-size-xs);
+    --sherpa-button-size-icon: var(--sherpa-core-size-2xs);
+    --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+  }
+
+  :host([data-size="2xl"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-size-height: var(--sherpa-core-size-3xl);
+    --sherpa-button-size-icon: var(--sherpa-core-size-md);
+    --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-sm);
+  }
+
+  :host([data-size="3xl"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-size-height: var(--sherpa-core-size-4xl);
+    --sherpa-button-size-icon: var(--sherpa-core-size-md);
+    --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-sm);
+  }
+
+  :host([data-size="md"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-size-height: var(--sherpa-core-size-lg);
+    --sherpa-button-size-icon: var(--sherpa-core-size-sm);
+    --sherpa-button-space-gap: var(--sherpa-core-space-2xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-xs);
+  }
+
+  :host([data-size="sm"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-size-height: var(--sherpa-core-size-md);
+    --sherpa-button-size-icon: var(--sherpa-core-size-xs);
+    --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+  }
+
+  :host([data-size="xl"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-size-height: var(--sherpa-core-size-2xl);
+    --sherpa-button-size-icon: var(--sherpa-core-size-sm);
+    --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-xs);
+  }
+
+  :host([data-size="xs"]) {
+    --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-base);
+    --sherpa-button-font-size: var(--sherpa-core-fonts-scale-xs);
+    --sherpa-button-size-height: var(--sherpa-core-size-sm);
+    --sherpa-button-size-icon: var(--sherpa-core-size-xs);
+    --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+    --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+  }
+}
