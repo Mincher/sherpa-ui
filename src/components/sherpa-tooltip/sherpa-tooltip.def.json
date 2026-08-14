@@ -1,0 +1,57 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-tooltip",
+  "figmaName": "Tooltip",
+  "category": "_TODO",
+  "description": "sherpa-tooltip — a hover/focus tooltip that wraps a trigger.",
+  "props": [
+    {
+      "name": "data-text",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-placement",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "tip",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "anchor",
+    "bubble"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "bubble:core-space-2xs": "core-space-2xs",
+    "bubble:core-space-xs": "core-space-xs",
+    "bubble:font-family-body": "font-family-body",
+    "bubble:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "bubble:core-fonts-weight-600": "core-fonts-weight-600",
+    "bubble:core-border-rounding-base": "core-border-rounding-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-tooltip",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

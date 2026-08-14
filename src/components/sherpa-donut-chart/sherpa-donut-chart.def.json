@@ -1,0 +1,59 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-donut-chart",
+  "figmaName": "Donut Chart",
+  "category": "_TODO",
+  "description": "sherpa-donut-chart — a donut / pie for part-to-whole data.",
+  "props": [
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-sublabel",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "legend",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "layout",
+    "ring",
+    "value",
+    "sub"
+  ],
+  "nested": [
+    {
+      "component": "sherpa-chart-legend",
+      "relationship": "slotted"
+    }
+  ],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "layout:core-space-lg": "core-space-lg",
+    "value:core-fonts-scale-2xl": "core-fonts-scale-2xl",
+    "value:core-fonts-weight-700": "core-fonts-weight-700",
+    "value:content-title-base": "content-title-base",
+    "sub:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "sub:content-secondary-base": "content-secondary-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-donut-chart",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-callout",
+  "figmaName": "Callout",
+  "category": "_TODO",
+  "description": "sherpa-callout — a status message box.",
+  "props": [
+    {
+      "name": "data-title",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "box",
+    "icon",
+    "content",
+    "title",
+    "message",
+    "close"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "callout-dismiss",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".close"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "box:container-space-gap-md": "container-space-gap-md",
+    "box:container-space-padding-md": "container-space-padding-md",
+    "box:container-border-width": "container-border-width",
+    "box:container-border-radius-top-left": "container-border-radius-top-left",
+    "box:content-primary-base": "content-primary-base",
+    "box:core-fonts-scale-base": "core-fonts-scale-base",
+    "icon:size-icon-md": "size-icon-md",
+    "icon:content-title-on-color": "content-title-on-color",
+    "icon:core-fonts-weight-700": "core-fonts-weight-700",
+    "content:core-space-2xs": "core-space-2xs",
+    "title:content-title-base": "content-title-base",
+    "title:core-fonts-weight-600": "core-fonts-weight-600",
+    "title:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "message:content-primary-base": "content-primary-base",
+    "close:size-icon-md": "size-icon-md",
+    "close:core-space-2xs": "core-space-2xs",
+    "close:core-border-rounding-sm": "core-border-rounding-sm",
+    "close:content-secondary-base": "content-secondary-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-callout",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

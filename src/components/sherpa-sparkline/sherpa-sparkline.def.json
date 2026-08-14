@@ -1,0 +1,35 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-sparkline",
+  "figmaName": "Sparkline",
+  "category": "_TODO",
+  "description": "sherpa-sparkline — a compact inline trend chart.",
+  "props": [
+    {
+      "name": "data-values",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "chart"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "chart:core-space-3xs": "core-space-3xs",
+    "point:core-border-rounding-full": "core-border-rounding-full"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-sparkline",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

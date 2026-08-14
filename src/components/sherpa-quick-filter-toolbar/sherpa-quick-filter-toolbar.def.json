@@ -1,0 +1,61 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-quick-filter-toolbar",
+  "figmaName": "Quick Filter Toolbar",
+  "category": "_TODO",
+  "description": "sherpa-quick-filter-toolbar — a strip of quick-filter chips above a grid/list.",
+  "props": [],
+  "templates": [],
+  "slots": [
+    {
+      "name": "view",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "actions",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "bar",
+    "view-zone",
+    "chips",
+    "actions"
+  ],
+  "nested": [
+    {
+      "component": "sherpa-quick-filter",
+      "relationship": "owned"
+    }
+  ],
+  "props_public": [],
+  "events": [
+    {
+      "name": "quick-filter-change",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "bar:core-space-sm": "core-space-sm",
+    "bar:core-space-xs": "core-space-xs",
+    "view-zone:core-space-sm": "core-space-sm",
+    "view-zone:control-border-width": "control-border-width",
+    "view-zone:control-border-default": "control-border-default",
+    "chips:control-space-gap-sm": "control-space-gap-sm",
+    "actions-zone:core-space-xs": "core-space-xs"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-quick-filter-toolbar",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

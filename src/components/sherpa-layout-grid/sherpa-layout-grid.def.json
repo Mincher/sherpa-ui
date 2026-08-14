@@ -1,0 +1,53 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-layout-grid",
+  "figmaName": "Layout Grid",
+  "category": "_TODO",
+  "description": "sherpa-layout-grid — a responsive CSS-grid container for dashboard tiles.",
+  "props": [
+    {
+      "name": "data-cols",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-row-height",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "banner",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "banner",
+    "grid"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "grid:core-space-lg": "core-space-lg",
+    "grid:layout-grid-columns": "layout-grid-columns"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-layout-grid",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

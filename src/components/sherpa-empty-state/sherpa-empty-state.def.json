@@ -1,0 +1,76 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-empty-state",
+  "figmaName": "Empty State",
+  "category": "_TODO",
+  "description": "sherpa-empty-state — a centred placeholder for a blank list, grid, or region.",
+  "props": [
+    {
+      "name": "data-title",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-description",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "icon",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "action",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "empty",
+    "icon",
+    "heading",
+    "title",
+    "message",
+    "message-text",
+    "actions"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "empty:core-space-base": "core-space-base",
+    "icon:content-secondary-base": "content-secondary-base",
+    "glyph:font-family-body": "font-family-body",
+    "glyph:core-fonts-weight-400": "core-fonts-weight-400",
+    "heading:core-space-2xs": "core-space-2xs",
+    "title:content-title-base": "content-title-base",
+    "title:font-family-body": "font-family-body",
+    "title:core-fonts-scale-xl": "core-fonts-scale-xl",
+    "title:core-fonts-weight-600": "core-fonts-weight-600",
+    "message:content-secondary-base": "content-secondary-base",
+    "message:font-family-body": "font-family-body",
+    "message:core-fonts-scale-base": "core-fonts-scale-base",
+    "actions:core-space-sm": "core-space-sm",
+    "title:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "title:core-fonts-scale-2xl": "core-fonts-scale-2xl"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-empty-state",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

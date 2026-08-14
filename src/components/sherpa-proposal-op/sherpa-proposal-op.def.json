@@ -1,0 +1,41 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-proposal-op",
+  "figmaName": "Proposal Op",
+  "category": "_TODO",
+  "description": "sherpa-proposal-op — a single proposed operation row inside a proposal preview.",
+  "props": [
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "glyph",
+    "label"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "glyph:core-fonts-weight-700": "core-fonts-weight-700"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-proposal-op",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-nav",
+  "figmaName": "Nav",
+  "category": "_TODO",
+  "description": "sherpa-nav — a vertical navigation rail.",
+  "props": [
+    {
+      "name": "data-active-id",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "brand",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "footer",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "rail",
+    "brand",
+    "items",
+    "footer",
+    "link"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "nav-select",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".items"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "rail:core-space-sm": "core-space-sm",
+    "rail:core-space-xs": "core-space-xs",
+    "brand:core-space-xs": "core-space-xs",
+    "brand:core-size-3xl": "core-size-3xl",
+    "items:core-space-3xs": "core-space-3xs",
+    "link:core-space-sm": "core-space-sm",
+    "link:core-space-xs": "core-space-xs",
+    "link:core-border-rounding-base": "core-border-rounding-base",
+    "link:content-primary-base": "content-primary-base",
+    "link:core-fonts-scale-base": "core-fonts-scale-base",
+    "link:core-fonts-weight-500": "core-fonts-weight-500",
+    "icon:core-size-lg": "core-size-lg",
+    "link:surface-interactive-active-base": "surface-interactive-active-base",
+    "link:content-active-base": "content-active-base",
+    "link:core-fonts-weight-600": "core-fonts-weight-600"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-nav",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

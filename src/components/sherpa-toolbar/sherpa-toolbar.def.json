@@ -1,0 +1,51 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-toolbar",
+  "figmaName": "Toolbar",
+  "category": "_TODO",
+  "description": "sherpa-toolbar — a horizontal control strip.",
+  "props": [],
+  "templates": [],
+  "slots": [
+    {
+      "name": "start",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "center",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "end",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "bar",
+    "start",
+    "center",
+    "end"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "bar:container-space-padding-md": "container-space-padding-md",
+    "bar:control-border-width": "control-border-width",
+    "bar:status-border": {
+      "override": "status-border"
+    },
+    "bar:border-primary": "border-primary"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-toolbar",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

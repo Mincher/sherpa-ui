@@ -1,0 +1,84 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-chat-message",
+  "figmaName": "Chat Message",
+  "category": "_TODO",
+  "description": "sherpa-chat-message — a single chat bubble for AI / messaging threads.",
+  "props": [
+    {
+      "name": "data-author",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-time",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-content",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "avatar",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "message",
+    "avatar",
+    "meta",
+    "author",
+    "time",
+    "bubble"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "message:core-size-lg": "core-size-lg",
+    "message:core-space-xs": "core-space-xs",
+    "stack:core-space-2xs": "core-space-2xs",
+    "avatar:core-size-lg": "core-size-lg",
+    "avatar:core-border-rounding-full": "core-border-rounding-full",
+    "avatar:surface-interactive-primary-base": "surface-interactive-primary-base",
+    "avatar:content-title-on-color": "content-title-on-color",
+    "avatar:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "avatar:core-fonts-weight-600": "core-fonts-weight-600",
+    "avatar-glyph:size-icon-2xs": "size-icon-2xs",
+    "avatar-glyph:core-border-rounding-full": "core-border-rounding-full",
+    "meta:core-space-2xs": "core-space-2xs",
+    "meta:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "meta:content-secondary-base": "content-secondary-base",
+    "author:core-fonts-weight-500": "core-fonts-weight-500",
+    "time:content-secondary-base": "content-secondary-base",
+    "bubble:core-space-2xs": "core-space-2xs",
+    "bubble:core-space-sm": "core-space-sm",
+    "bubble:control-border-radius-top-left": "control-border-radius-top-left",
+    "bubble:control-border-radius-top-right": "control-border-radius-top-right",
+    "bubble:control-border-radius-bottom-right": "control-border-radius-bottom-right",
+    "bubble:control-border-radius-bottom-left": "control-border-radius-bottom-left",
+    "bubble:core-fonts-scale-sm": "core-fonts-scale-sm"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-chat-message",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

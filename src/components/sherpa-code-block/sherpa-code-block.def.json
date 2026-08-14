@@ -1,0 +1,90 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-code-block",
+  "figmaName": "Code Block",
+  "category": "_TODO",
+  "description": "sherpa-code-block — a monospace code display with a copy button.",
+  "props": [
+    {
+      "name": "data-code",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-language",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "header",
+    "language",
+    "copy",
+    "pre",
+    "code"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "code-copy",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".copy"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "header:core-space-sm": "core-space-sm",
+    "header:core-size-xl": "core-size-xl",
+    "header:core-space-2xs": "core-space-2xs",
+    "header:control-border-width": "control-border-width",
+    "header:status-border": {
+      "override": "status-border"
+    },
+    "header:border-primary": "border-primary",
+    "language:font-family-mono": "font-family-mono",
+    "language:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "language:core-fonts-weight-600": "core-fonts-weight-600",
+    "language:content-secondary-base": "content-secondary-base",
+    "copy:button-space-gap": "button-space-gap",
+    "copy:button-space-padding": "button-space-padding",
+    "copy:core-space-xs": "core-space-xs",
+    "copy:control-border-width": "control-border-width",
+    "copy:border-interactive-secondary": "border-interactive-secondary",
+    "copy:core-border-rounding-sm": "core-border-rounding-sm",
+    "copy:surface-interactive-secondary-base": "surface-interactive-secondary-base",
+    "copy:content-primary-base": "content-primary-base",
+    "copy:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "copied-label:status-success-color-4": "status-success-color-4",
+    "pre:core-space-sm": "core-space-sm",
+    "pre:surface-secondary-base": "surface-secondary-base",
+    "code:font-family-mono": "font-family-mono",
+    "code:core-fonts-scale-base": "core-fonts-scale-base",
+    "code:content-primary-base": "content-primary-base",
+    "code:core-fonts-scale-sm": "core-fonts-scale-sm"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-code-block",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

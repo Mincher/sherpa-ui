@@ -1,0 +1,90 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-input-text",
+  "figmaName": "Input Text",
+  "category": "_TODO",
+  "description": "sherpa-input-text — a labelled text field.",
+  "props": [
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-description",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-error",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [
+    "data-multiline",
+    "multiline",
+    "default"
+  ],
+  "slots": [],
+  "parts": [
+    "field",
+    "label",
+    "description",
+    "control",
+    "message"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "input",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "_todo": "confirm cancelable + default action + detail shape"
+    },
+    {
+      "name": "change",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "field:control-space-gap-base": "control-space-gap-base",
+    "label:core-fonts-scale-base": "core-fonts-scale-base",
+    "label:core-fonts-weight-600": "core-fonts-weight-600",
+    "label:content-title-base": "content-title-base",
+    "description:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "description:content-secondary-base": "content-secondary-base",
+    "description:control-space-padding-xs": "control-space-padding-xs",
+    "control:core-size-2xl": "core-size-2xl",
+    "control:control-space-padding-sm": "control-space-padding-sm",
+    "control:control-space-padding-md": "control-space-padding-md",
+    "control:control-border-width": "control-border-width",
+    "control:input-border-radius-top-left": "input-border-radius-top-left",
+    "control:surface-primary-base": "surface-primary-base",
+    "control:content-primary-base": "content-primary-base",
+    "control:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "message:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "control:content-inactive-base": "content-inactive-base",
+    "control:surface-primary-inactive": "surface-primary-inactive",
+    "control:border-interactive-inactive": "border-interactive-inactive",
+    "label:content-inactive-base": "content-inactive-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-input-text",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

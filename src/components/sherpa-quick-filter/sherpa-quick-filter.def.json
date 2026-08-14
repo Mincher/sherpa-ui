@@ -1,0 +1,83 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-quick-filter",
+  "figmaName": "Quick Filter",
+  "category": "_TODO",
+  "description": "sherpa-quick-filter — a toggleable filter chip for toolbars.",
+  "props": [
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-count",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "chip",
+    "count",
+    "caret"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "quick-filter-click",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".chip"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "chip:core-space-2xs": "core-space-2xs",
+    "chip:core-space-3xs": "core-space-3xs",
+    "chip:core-space-sm": "core-space-sm",
+    "chip:core-size-xl": "core-size-xl",
+    "chip:control-border-width": "control-border-width",
+    "chip:border-interactive-inactive": "border-interactive-inactive",
+    "chip:core-border-rounding-full": "core-border-rounding-full",
+    "chip:surface-primary-base": "surface-primary-base",
+    "chip:content-tertiary-base": "content-tertiary-base",
+    "chip:core-fonts-scale-base": "core-fonts-scale-base",
+    "chip:core-fonts-weight-500": "core-fonts-weight-500",
+    "chip:core-fonts-weight-600": "core-fonts-weight-600",
+    "count:core-size-sm": "core-size-sm",
+    "count:core-space-3xs": "core-space-3xs",
+    "count:control-border-width": "control-border-width",
+    "count:badge-border-default": "badge-border-default",
+    "count:core-border-rounding-full": "core-border-rounding-full",
+    "count:badge-surface-default": "badge-surface-default",
+    "count:badge-content-default": "badge-content-default",
+    "count:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "count:core-fonts-weight-600": "core-fonts-weight-600",
+    "chip:content-inactive-base": "content-inactive-base",
+    "chip:surface-interactive-inactive": "surface-interactive-inactive"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-quick-filter",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

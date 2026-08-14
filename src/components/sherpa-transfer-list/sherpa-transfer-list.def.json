@@ -1,0 +1,97 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-transfer-list",
+  "figmaName": "Transfer List",
+  "category": "_TODO",
+  "description": "sherpa-transfer-list — a two-pane shuttle (available ↔ selected).",
+  "props": [
+    {
+      "name": "data-source-heading",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-target-heading",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "panes",
+    "pane",
+    "heading",
+    "list",
+    "empty",
+    "moves"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "transfer-change",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".moves"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "pane:control-border-width": "control-border-width",
+    "pane:grouping-radius-top-left": "grouping-radius-top-left",
+    "pane:grouping-radius-top-right": "grouping-radius-top-right",
+    "pane:grouping-radius-bottom-right": "grouping-radius-bottom-right",
+    "pane:grouping-radius-bottom-left": "grouping-radius-bottom-left",
+    "pane-heading:core-space-xs": "core-space-xs",
+    "pane-heading:core-space-sm": "core-space-sm",
+    "pane-heading:control-border-width": "control-border-width",
+    "pane-heading:content-title-base": "content-title-base",
+    "pane-heading:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "pane-heading:core-fonts-weight-600": "core-fonts-weight-600",
+    "pane-list:control-space-padding-md": "control-space-padding-md",
+    "pane-empty:core-space-base": "core-space-base",
+    "pane-empty:content-secondary-base": "content-secondary-base",
+    "row:control-border-radius-top-left": "control-border-radius-top-left",
+    "row:control-border-radius-top-right": "control-border-radius-top-right",
+    "row:control-border-radius-bottom-right": "control-border-radius-bottom-right",
+    "row:control-border-radius-bottom-left": "control-border-radius-bottom-left",
+    "row-field:control-space-gap-base": "control-space-gap-base",
+    "row-field:core-space-2xs": "core-space-2xs",
+    "row-field:core-space-xs": "core-space-xs",
+    "row-field:control-border-radius-top-left": "control-border-radius-top-left",
+    "row-field:control-border-radius-top-right": "control-border-radius-top-right",
+    "row-field:control-border-radius-bottom-right": "control-border-radius-bottom-right",
+    "row-field:control-border-radius-bottom-left": "control-border-radius-bottom-left",
+    "row-check:core-size-sm": "core-size-sm",
+    "row-check:surface-interactive-primary-base": "surface-interactive-primary-base",
+    "moves:core-space-xs": "core-space-xs",
+    "move:button-size-height": "button-size-height",
+    "move:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "move:content-primary-base": "content-primary-base",
+    "move:surface-interactive-secondary-base": "surface-interactive-secondary-base",
+    "move:control-border-width": "control-border-width",
+    "move:border-interactive-secondary": "border-interactive-secondary",
+    "move:core-border-rounding-sm": "core-border-rounding-sm",
+    "move:content-inactive-base": "content-inactive-base",
+    "move:surface-interactive-inactive": "surface-interactive-inactive",
+    "move:border-interactive-inactive": "border-interactive-inactive",
+    "pane:border-interactive-inactive": "border-interactive-inactive",
+    "pane:surface-primary-inactive": "surface-primary-inactive"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-transfer-list",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

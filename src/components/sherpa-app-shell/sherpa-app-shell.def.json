@@ -1,0 +1,51 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-app-shell",
+  "figmaName": "App Shell",
+  "category": "_TODO",
+  "description": "sherpa-app-shell — the application frame.",
+  "props": [],
+  "templates": [],
+  "slots": [
+    {
+      "name": "nav",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "header",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "nav",
+    "main",
+    "header",
+    "content"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "nav:core-border-width-base": "core-border-width-base",
+    "nav:border-primary": "border-primary",
+    "nav:surface-primary-base": "surface-primary-base",
+    "header:core-border-width-base": "core-border-width-base",
+    "header:border-primary": "border-primary",
+    "content:core-space-lg": "core-space-lg"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-app-shell",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

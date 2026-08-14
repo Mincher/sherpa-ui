@@ -1,0 +1,32 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-loader",
+  "figmaName": "Loader",
+  "category": "_TODO",
+  "description": "sherpa-loader — an animated loading indicator.",
+  "props": [],
+  "templates": [],
+  "slots": [
+    {
+      "name": "label",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "spinner:core-border-rounding-full": "core-border-rounding-full",
+    "spinner:border-primary": "border-primary"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-loader",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-message",
+  "figmaName": "Message",
+  "category": "_TODO",
+  "description": "sherpa-message — a lightweight inline status strip.",
+  "props": [
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "icon",
+    "text",
+    "label",
+    "close"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "message-dismiss",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".close"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "icon:size-icon-2xs": "size-icon-2xs",
+    "icon:status-surface-strong": {
+      "override": "status-surface-strong"
+    },
+    "icon:status-info-color-5": "status-info-color-5",
+    "icon:content-title-on-color": "content-title-on-color",
+    "icon:core-fonts-weight-700": "core-fonts-weight-700",
+    "close:core-size-md": "core-size-md",
+    "close:core-space-2xs": "core-space-2xs",
+    "close:core-border-rounding-sm": "core-border-rounding-sm",
+    "close:status-text": {
+      "override": "status-text"
+    },
+    "close:content-title-base": "content-title-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-message",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

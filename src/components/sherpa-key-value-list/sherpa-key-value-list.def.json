@@ -1,0 +1,35 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-key-value-list",
+  "figmaName": "Key Value List",
+  "category": "_TODO",
+  "description": "sherpa-key-value-list — a semantic definition list.",
+  "props": [],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "list",
+    "key",
+    "value"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "list:core-space-xs": "core-space-xs",
+    "key:content-secondary-base": "content-secondary-base",
+    "key:core-fonts-weight-500": "core-fonts-weight-500",
+    "value:content-title-base": "content-title-base",
+    "list:core-space-base": "core-space-base",
+    "list:core-space-sm": "core-space-sm",
+    "key:core-space-3xs": "core-space-3xs"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-key-value-list",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

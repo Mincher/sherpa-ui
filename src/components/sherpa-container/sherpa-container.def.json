@@ -1,0 +1,76 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-container",
+  "figmaName": "Container",
+  "category": "_TODO",
+  "description": "sherpa-container — the base card surface.",
+  "props": [],
+  "templates": [],
+  "slots": [
+    {
+      "name": "header",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "footer",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "loading",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "empty",
+      "accepts": [],
+      "description": ""
+    },
+    {
+      "name": "error",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "header",
+    "body",
+    "footer",
+    "state"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [],
+  "tokens": {
+    "header:container-border-width": "container-border-width",
+    "header:status-border": {
+      "override": "status-border"
+    },
+    "header:container-border-default": "container-border-default",
+    "footer:container-border-width": "container-border-width",
+    "footer:status-border": {
+      "override": "status-border"
+    },
+    "footer:container-border-default": "container-border-default",
+    "state:surface-primary-base": "surface-primary-base",
+    "state-text:content-secondary-base": "content-secondary-base",
+    "state-text:core-fonts-scale-base": "core-fonts-scale-base",
+    "state-text:status-critical-color-5": "status-critical-color-5",
+    "spinner:border-primary": "border-primary",
+    "spinner:content-active-base": "content-active-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-container",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

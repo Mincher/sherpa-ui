@@ -1,0 +1,66 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-progress-step-tracker",
+  "figmaName": "Progress Step Tracker",
+  "category": "_TODO",
+  "description": "sherpa-progress-step-tracker — a horizontal stepper.",
+  "props": [
+    {
+      "name": "data-current-step",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "steps",
+    "marker"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "step-click",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".steps"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "step:core-space-2xs": "core-space-2xs",
+    "step:core-size-3xl": "core-size-3xl",
+    "marker:core-size-xl": "core-size-xl",
+    "marker:core-border-rounding-full": "core-border-rounding-full",
+    "marker:core-border-width-base": "core-border-width-base",
+    "marker:surface-primary-base": "surface-primary-base",
+    "marker:core-fonts-scale-base": "core-fonts-scale-base",
+    "marker:core-fonts-weight-600": "core-fonts-weight-600",
+    "text:core-space-3xs": "core-space-3xs",
+    "label:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "label:core-fonts-weight-500": "core-fonts-weight-500",
+    "label:content-primary-base": "content-primary-base",
+    "description:core-fonts-scale-sm": "core-fonts-scale-sm",
+    "description:content-secondary-base": "content-secondary-base",
+    "connector:core-border-width-lg": "core-border-width-lg",
+    "connector:core-size-xl": "core-size-xl",
+    "marker:content-title-on-color": "content-title-on-color",
+    "label:content-title-base": "content-title-base",
+    "label:core-fonts-weight-600": "core-fonts-weight-600"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-progress-step-tracker",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

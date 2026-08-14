@@ -1,0 +1,84 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-prompt-composer",
+  "figmaName": "Prompt Composer",
+  "category": "_TODO",
+  "description": "sherpa-prompt-composer — an AI prompt input.",
+  "props": [
+    {
+      "name": "data-placeholder",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "disabled",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [
+    {
+      "name": "actions",
+      "accepts": [],
+      "description": ""
+    }
+  ],
+  "parts": [
+    "form",
+    "input",
+    "tools",
+    "actions",
+    "send"
+  ],
+  "nested": [],
+  "props_public": [],
+  "events": [
+    {
+      "name": "prompt-submit",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "submit",
+        "node": ".form"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "form:core-space-xs": "core-space-xs",
+    "form:core-space-sm": "core-space-sm",
+    "form:control-border-width": "control-border-width",
+    "form:grouping-radius-top-left": "grouping-radius-top-left",
+    "form:grouping-radius-top-right": "grouping-radius-top-right",
+    "form:grouping-radius-bottom-right": "grouping-radius-bottom-right",
+    "form:grouping-radius-bottom-left": "grouping-radius-bottom-left",
+    "input:core-size-lg": "core-size-lg",
+    "input:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "input:content-primary-base": "content-primary-base",
+    "tools:core-space-2xs": "core-space-2xs",
+    "actions:core-space-2xs": "core-space-2xs",
+    "send:button-size-height": "button-size-height",
+    "send:core-border-rounding-full": "core-border-rounding-full",
+    "send:surface-interactive-primary-base": "surface-interactive-primary-base",
+    "send:content-title-on-color": "content-title-on-color",
+    "send-glyph:core-fonts-scale-lg": "core-fonts-scale-lg",
+    "form:surface-primary-inactive": "surface-primary-inactive",
+    "form:border-interactive-inactive": "border-interactive-inactive",
+    "input:content-inactive-base": "content-inactive-base",
+    "send:surface-interactive-inactive": "surface-interactive-inactive",
+    "send:content-inactive-base": "content-inactive-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-prompt-composer",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

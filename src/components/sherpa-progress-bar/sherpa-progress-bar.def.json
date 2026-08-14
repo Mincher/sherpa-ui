@@ -1,0 +1,60 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-progress-bar",
+  "figmaName": "Progress Bar",
+  "category": "_TODO",
+  "description": "sherpa-progress-bar — a horizontal progress indicator for a single ongoing task.",
+  "props": [
+    {
+      "name": "data-value",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-indeterminate",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-label",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "label",
+    "track",
+    "fill"
+  ],
+  "nested": [],
+  "props_public": [
+    {
+      "name": "value",
+      "type": "number",
+      "description": "the current percentage (read/write, clamped 0–100)"
+    }
+  ],
+  "events": [],
+  "tokens": {
+    "label:core-fonts-scale-base": "core-fonts-scale-base",
+    "label:content-primary-base": "content-primary-base",
+    "track:core-space-2xs": "core-space-2xs",
+    "track:surface-secondary-base": "surface-secondary-base",
+    "track:core-border-rounding-full": "core-border-rounding-full",
+    "track:surface-primary-inactive": "surface-primary-inactive",
+    "label:content-inactive-base": "content-inactive-base"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-progress-bar",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": true,
+  "name": "sherpa-pagination",
+  "figmaName": "Pagination",
+  "category": "_TODO",
+  "description": "sherpa-pagination — page navigation.",
+  "props": [
+    {
+      "name": "data-total-pages",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    },
+    {
+      "name": "data-current-page",
+      "type": "_TODO",
+      "kind": "_TODO(style|content|visibility|template)",
+      "description": ""
+    }
+  ],
+  "templates": [],
+  "slots": [],
+  "parts": [
+    "pager",
+    "numbers"
+  ],
+  "nested": [],
+  "props_public": [
+    {
+      "name": "page",
+      "type": "number",
+      "description": "current page (read/write)"
+    },
+    {
+      "name": "totalPages",
+      "type": "number",
+      "description": "total page count (read/write)"
+    }
+  ],
+  "events": [
+    {
+      "name": "page-change",
+      "bubbles": true,
+      "composed": true,
+      "cancelable": false,
+      "detail": {},
+      "trigger": {
+        "on": "click",
+        "node": ".pager"
+      },
+      "_todo": "confirm cancelable + default action + detail shape"
+    }
+  ],
+  "tokens": {
+    "pager:button-space-gap": "button-space-gap",
+    "numbers:button-space-gap": "button-space-gap",
+    "btn:button-space-padding": "button-space-padding",
+    "btn:control-border-width": "control-border-width",
+    "btn:grouping-radius-top-left": "grouping-radius-top-left",
+    "btn:core-fonts-scale-base": "core-fonts-scale-base",
+    "btn:core-fonts-weight-500": "core-fonts-weight-500",
+    "btn:content-primary-base": "content-primary-base",
+    "gap:content-secondary-base": "content-secondary-base",
+    "chev:core-border-width-lg": "core-border-width-lg"
+  },
+  "figma": {
+    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
+    "page": "sherpa-pagination",
+    "variantAxes": [],
+    "extendedCollections": {},
+    "modePins": {}
+  }
+}
