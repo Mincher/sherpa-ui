@@ -795,6 +795,90 @@
   --sherpa-surface-tertiary-down: var(--sherpa-primitives-color-basic-monochrome-450);
   --sherpa-surface-tertiary-hover: var(--sherpa-primitives-color-basic-monochrome-400);
 
+  /* component-scoped alias collections — components bind these; a component's
+     own [data-*] variant re-points them via the mode blocks below. */
+  --sherpa-color-sets-border-default: var(--sherpa-control-border-default);
+  --sherpa-color-sets-content-primary: var(--sherpa-content-primary-base);
+  --sherpa-color-sets-content-secondary: var(--sherpa-content-secondary-base);
+  --sherpa-color-sets-content-tertiary: var(--sherpa-content-tertiary-base);
+  --sherpa-color-sets-content-title: var(--sherpa-content-title-base);
+  --sherpa-color-sets-surface-default: var(--sherpa-control-surface-default);
+  --sherpa-color-sets-surface-down: var(--sherpa-control-surface-down);
+  --sherpa-color-sets-surface-hover: var(--sherpa-control-surface-hover);
+  --sherpa-color-sets-surface-subtle: var(--sherpa-control-surface-default);
+  --sherpa-grouping-radius-bottom-left: var(--sherpa-core-border-rounding-base);
+  --sherpa-grouping-radius-bottom-right: var(--sherpa-core-border-rounding-base);
+  --sherpa-grouping-radius-top-left: var(--sherpa-core-border-rounding-base);
+  --sherpa-grouping-radius-top-right: var(--sherpa-core-border-rounding-base);
+  --sherpa-grouping-space-gap: 0px;
+  --sherpa-container-border-default: var(--sherpa-color-sets-border-default);
+  --sherpa-container-border-inactive: var(--sherpa-border-primary-inactive);
+  --sherpa-container-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-container-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-container-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-container-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-container-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-container-content-default: var(--sherpa-content-primary-base);
+  --sherpa-container-space-gap-lg: var(--sherpa-core-space-base);
+  --sherpa-container-space-gap-md: var(--sherpa-core-space-sm);
+  --sherpa-container-space-gap-sm: var(--sherpa-core-space-xs);
+  --sherpa-container-space-padding-md: var(--sherpa-core-space-base);
+  --sherpa-container-space-padding-none: var(--sherpa-core-space-none);
+  --sherpa-container-space-padding-sm: var(--sherpa-core-space-xs);
+  --sherpa-container-surface-default: var(--sherpa-color-sets-surface-default);
+  --sherpa-container-surface-down: var(--sherpa-color-sets-surface-down);
+  --sherpa-container-surface-hover: var(--sherpa-color-sets-surface-hover);
+  --sherpa-container-surface-inactive: var(--sherpa-surface-primary-inactive);
+  --sherpa-control-border-accent: var(--sherpa-border-interactive-primary);
+  --sherpa-control-border-default: var(--sherpa-border-interactive);
+  --sherpa-control-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-control-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-control-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-control-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-control-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-control-content-default: var(--sherpa-content-primary-base);
+  --sherpa-control-content-inverse: var(--sherpa-content-primary-on-color);
+  --sherpa-control-space-gap-base: var(--sherpa-core-space-xs);
+  --sherpa-control-space-gap-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-md: var(--sherpa-core-space-xs);
+  --sherpa-control-space-padding-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-xs: var(--sherpa-core-space-3xs);
+  --sherpa-control-surface-accent: var(--sherpa-surface-interactive-primary-base);
+  --sherpa-control-surface-default: var(--sherpa-surface-interactive-base);
+  --sherpa-control-surface-down: var(--sherpa-surface-interactive-down);
+  --sherpa-control-surface-hover: var(--sherpa-surface-interactive-hover);
+  --sherpa-control-surface-inactive: var(--sherpa-surface-interactive-inactive);
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-sm);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-2xs);
+  --sherpa-button-size-height: var(--sherpa-core-size-xs);
+  --sherpa-button-size-icon: var(--sherpa-core-size-2xs);
+  --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+  --sherpa-badge-border-default: var(--sherpa-border-primary);
+  --sherpa-badge-content-default: var(--sherpa-content-title-base);
+  --sherpa-badge-surface-default: var(--sherpa-surface-primary-base);
+  --sherpa-input-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-input-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-input-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-input-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-nav-container-header-label: Product name;
+  --sherpa-nav-container-pin-button: active;
+  --sherpa-nav-container-setting-button: default;
+  --sherpa-nav-container-size-width: 320px;
+  --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+  --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+  --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
+  --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
+  --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
+  --sherpa-switch-radius-thumb: var(--sherpa-primitives-border-radius-150);
+  --sherpa-switch-radius-track: var(--sherpa-core-border-rounding-base);
+  --sherpa-switch-size-height: var(--sherpa-core-size-md);
+  --sherpa-switch-size-padding-horizontal: var(--sherpa-core-space-3xs);
+  --sherpa-switch-size-thumb: var(--sherpa-core-size-sm);
+  --sherpa-switch-size-width: var(--sherpa-core-size-4xl);
+  --sherpa-switch-surface-track-off: var(--sherpa-surface-tertiary-down);
+  --sherpa-switch-surface-track-on: var(--sherpa-status-success-color-4);
+
   /* convenience aliases — stable public names (see project-tokens.mjs) */
   --sherpa-font-family-body: "Inter", system-ui, sans-serif;
   --sherpa-font-family-mono: ui-monospace, "JetBrains Mono", monospace;
@@ -1346,4 +1430,255 @@
   --_status-text: var(--sherpa-content-title-on-color-subtle);
   --_status-surface-strong: var(--sherpa-status-success-color-1);
   --_status-surface: var(--sherpa-status-success-color-2);
+}
+
+/* Component-scoped variant modes — a component's [data-*] re-points its scoped vars. */
+:root [data-variant="secondary"],
+[data-variant="secondary"] {
+  --sherpa-container-border-default: var(--sherpa-border-primary);
+  --sherpa-container-border-inactive: var(--sherpa-border-primary-inactive);
+  --sherpa-container-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-container-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-container-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-container-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-container-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-container-content-default: var(--sherpa-content-primary-base);
+  --sherpa-container-space-gap-lg: var(--sherpa-core-space-base);
+  --sherpa-container-space-gap-md: var(--sherpa-core-space-sm);
+  --sherpa-container-space-gap-sm: var(--sherpa-core-space-xs);
+  --sherpa-container-space-padding-md: var(--sherpa-core-space-base);
+  --sherpa-container-space-padding-none: var(--sherpa-core-space-none);
+  --sherpa-container-space-padding-sm: var(--sherpa-core-space-base);
+  --sherpa-container-surface-default: var(--sherpa-surface-secondary-base);
+  --sherpa-container-surface-down: var(--sherpa-surface-secondary-down);
+  --sherpa-container-surface-hover: var(--sherpa-surface-secondary-hover);
+  --sherpa-container-surface-inactive: var(--sherpa-surface-primary-inactive);
+}
+
+:root [data-variant="tertiary"],
+[data-variant="tertiary"] {
+  --sherpa-container-border-default: var(--sherpa-border-primary);
+  --sherpa-container-border-inactive: var(--sherpa-border-primary-inactive);
+  --sherpa-container-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-container-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-container-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-container-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-container-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-container-content-default: var(--sherpa-content-primary-base);
+  --sherpa-container-space-gap-lg: var(--sherpa-core-space-base);
+  --sherpa-container-space-gap-md: var(--sherpa-core-space-sm);
+  --sherpa-container-space-gap-sm: var(--sherpa-core-space-xs);
+  --sherpa-container-space-padding-md: var(--sherpa-core-space-base);
+  --sherpa-container-space-padding-none: var(--sherpa-core-space-none);
+  --sherpa-container-space-padding-sm: var(--sherpa-core-space-base);
+  --sherpa-container-surface-default: var(--sherpa-surface-tertiary-base);
+  --sherpa-container-surface-down: var(--sherpa-surface-tertiary-down);
+  --sherpa-container-surface-hover: var(--sherpa-surface-tertiary-hover);
+  --sherpa-container-surface-inactive: var(--sherpa-surface-primary-inactive);
+}
+
+:root [data-variant="primary"],
+[data-variant="primary"] {
+  --sherpa-control-border-accent: var(--sherpa-border-interactive-primary);
+  --sherpa-control-border-default: var(--sherpa-border-interactive-primary);
+  --sherpa-control-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-control-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-control-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-control-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-control-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-control-content-default: var(--sherpa-content-primary-on-color);
+  --sherpa-control-content-inverse: var(--sherpa-content-primary-on-color);
+  --sherpa-control-space-gap-base: var(--sherpa-core-space-xs);
+  --sherpa-control-space-gap-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-md: var(--sherpa-core-space-xs);
+  --sherpa-control-space-padding-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-xs: var(--sherpa-core-space-3xs);
+  --sherpa-control-surface-accent: var(--sherpa-surface-interactive-primary-base);
+  --sherpa-control-surface-default: var(--sherpa-surface-interactive-primary-base);
+  --sherpa-control-surface-down: var(--sherpa-surface-interactive-primary-down);
+  --sherpa-control-surface-hover: var(--sherpa-surface-interactive-primary-hover);
+  --sherpa-control-surface-inactive: var(--sherpa-surface-interactive-inactive);
+}
+
+:root [data-variant="secondary"],
+[data-variant="secondary"] {
+  --sherpa-control-border-accent: var(--sherpa-border-interactive-primary);
+  --sherpa-control-border-default: var(--sherpa-border-interactive-secondary);
+  --sherpa-control-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-control-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-control-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-control-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-control-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-control-content-default: var(--sherpa-content-primary-base);
+  --sherpa-control-content-inverse: var(--sherpa-content-primary-base);
+  --sherpa-control-space-gap-base: var(--sherpa-core-space-xs);
+  --sherpa-control-space-gap-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-md: var(--sherpa-core-space-xs);
+  --sherpa-control-space-padding-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-xs: var(--sherpa-core-space-3xs);
+  --sherpa-control-surface-accent: var(--sherpa-surface-interactive-secondary-base);
+  --sherpa-control-surface-default: var(--sherpa-surface-interactive-secondary-base);
+  --sherpa-control-surface-down: var(--sherpa-surface-interactive-secondary-down);
+  --sherpa-control-surface-hover: var(--sherpa-surface-interactive-secondary-hover);
+  --sherpa-control-surface-inactive: var(--sherpa-surface-interactive-secondary-inactive);
+}
+
+:root [data-variant="tertiary"],
+[data-variant="tertiary"] {
+  --sherpa-control-border-accent: var(--sherpa-border-interactive-primary);
+  --sherpa-control-border-default: var(--sherpa-surface-interactive-tertiary-base);
+  --sherpa-control-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-control-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-control-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-control-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+  --sherpa-control-border-width: var(--sherpa-core-border-width-sm);
+  --sherpa-control-content-default: var(--sherpa-content-primary-base);
+  --sherpa-control-content-inverse: var(--sherpa-content-primary-base);
+  --sherpa-control-space-gap-base: var(--sherpa-core-space-xs);
+  --sherpa-control-space-gap-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-md: var(--sherpa-core-space-xs);
+  --sherpa-control-space-padding-sm: var(--sherpa-core-space-2xs);
+  --sherpa-control-space-padding-xs: var(--sherpa-core-space-3xs);
+  --sherpa-control-surface-accent: var(--sherpa-surface-interactive-tertiary-base);
+  --sherpa-control-surface-default: var(--sherpa-surface-interactive-tertiary-base);
+  --sherpa-control-surface-down: var(--sherpa-surface-interactive-tertiary-down);
+  --sherpa-control-surface-hover: var(--sherpa-surface-interactive-tertiary-hover);
+  --sherpa-control-surface-inactive: var(--sherpa-surface-interactive-tertiary-inactive);
+}
+
+:root [data-size="2xl"],
+[data-size="2xl"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-size-height: var(--sherpa-core-size-3xl);
+  --sherpa-button-size-icon: var(--sherpa-core-size-md);
+  --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-sm);
+}
+
+:root [data-size="3xl"],
+[data-size="3xl"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-size-height: var(--sherpa-core-size-4xl);
+  --sherpa-button-size-icon: var(--sherpa-core-size-md);
+  --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-sm);
+}
+
+:root [data-size="md"],
+[data-size="md"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-size-height: var(--sherpa-core-size-lg);
+  --sherpa-button-size-icon: var(--sherpa-core-size-sm);
+  --sherpa-button-space-gap: var(--sherpa-core-space-2xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-xs);
+}
+
+:root [data-size="sm"],
+[data-size="sm"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-size-height: var(--sherpa-core-size-md);
+  --sherpa-button-size-icon: var(--sherpa-core-size-xs);
+  --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+}
+
+:root [data-size="xl"],
+[data-size="xl"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-xl);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-size-height: var(--sherpa-core-size-2xl);
+  --sherpa-button-size-icon: var(--sherpa-core-size-sm);
+  --sherpa-button-space-gap: var(--sherpa-core-space-xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-xs);
+}
+
+:root [data-size="xs"],
+[data-size="xs"] {
+  --sherpa-button-font-line-height: var(--sherpa-core-fonts-scale-base);
+  --sherpa-button-font-size: var(--sherpa-core-fonts-scale-xs);
+  --sherpa-button-size-height: var(--sherpa-core-size-sm);
+  --sherpa-button-size-icon: var(--sherpa-core-size-xs);
+  --sherpa-button-space-gap: var(--sherpa-core-space-3xs);
+  --sherpa-button-space-padding: var(--sherpa-core-space-3xs);
+}
+
+:root [data-variant="accent"],
+[data-variant="accent"] {
+  --sherpa-badge-border-default: var(--sherpa-app-primary);
+  --sherpa-badge-content-default: var(--sherpa-content-title-on-color);
+  --sherpa-badge-surface-default: var(--sherpa-surface-interactive-primary-base);
+}
+
+:root [data-variant="brand"],
+[data-variant="brand"] {
+  --sherpa-badge-border-default: var(--sherpa-core-color-brand-base);
+  --sherpa-badge-content-default: var(--sherpa-core-color-brand-800);
+  --sherpa-badge-surface-default: var(--sherpa-core-color-brand-100);
+}
+
+:root [data-state="validation"],
+[data-state="validation"] {
+  --sherpa-input-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
+  --sherpa-input-border-radius-bottom-right: var(--sherpa-grouping-radius-bottom-right);
+  --sherpa-input-border-radius-top-left: var(--sherpa-grouping-radius-top-left);
+  --sherpa-input-border-radius-top-right: var(--sherpa-grouping-radius-top-right);
+}
+
+:root [data-nav-state="collapsed"],
+[data-nav-state="collapsed"] {
+  --sherpa-nav-container-header-label: Product name;
+  --sherpa-nav-container-pin-button: default;
+  --sherpa-nav-container-setting-button: default;
+  --sherpa-nav-container-size-width: 40px;
+  --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-none);
+  --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+}
+
+:root [data-nav-state="hover"],
+[data-nav-state="hover"] {
+  --sherpa-nav-container-header-label: Product name;
+  --sherpa-nav-container-pin-button: default;
+  --sherpa-nav-container-setting-button: default;
+  --sherpa-nav-container-size-width: 320px;
+  --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+  --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+}
+
+:root [data-nav-state="pinned"],
+[data-nav-state="pinned"] {
+  --sherpa-nav-container-header-label: Product name;
+  --sherpa-nav-container-pin-button: active;
+  --sherpa-nav-container-setting-button: default;
+  --sherpa-nav-container-size-width: 320px;
+  --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+  --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+}
+
+:root [data-nav-state="settings"],
+[data-nav-state="settings"] {
+  --sherpa-nav-container-header-label: Settings;
+  --sherpa-nav-container-pin-button: active;
+  --sherpa-nav-container-setting-button: active;
+  --sherpa-nav-container-size-width: 320px;
+  --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
+  --sherpa-nav-container-surface-default: var(--sherpa-surface-secondary-base);
+}
+
+:root [data-variant="simple"],
+[data-variant="simple"] {
+  --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
+  --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
+  --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
+  --sherpa-switch-radius-thumb: var(--sherpa-primitives-border-radius-1000);
+  --sherpa-switch-radius-track: var(--sherpa-core-border-rounding-full);
+  --sherpa-switch-size-height: var(--sherpa-core-size-sm);
+  --sherpa-switch-size-padding-horizontal: var(--sherpa-core-space-3xs);
+  --sherpa-switch-size-thumb: var(--sherpa-core-size-xs);
+  --sherpa-switch-size-width: var(--sherpa-core-size-xl);
+  --sherpa-switch-surface-track-off: var(--sherpa-surface-tertiary-down);
+  --sherpa-switch-surface-track-on: var(--sherpa-status-success-color-4);
 }
