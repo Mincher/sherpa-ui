@@ -1,0 +1,138 @@
+/**
+ * sherpa-file-upload.css — all presentation.
+ *
+ * A dashed drop zone + a file list. Drag state (data-dragover), file presence
+ * (data-has-files), and disabled are pure data-* selectors; JS never styles.
+ */
+
+:host {
+  display: block;
+  --_border: var(--sherpa-border-control-secondary-default, #c8c8d2);
+  --_accent: var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+
+.label {
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.label:empty,
+.helper:empty { display: none; }
+
+.helper {
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+
+/* ── Drop zone ───────────────────────────────────────────────────────── */
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  padding: var(--sherpa-space-xl, 24px) var(--sherpa-space-lg, 16px);
+  border: var(--sherpa-border-width-base, 1px) dashed var(--_border);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.drop-zone:hover { border-color: var(--_accent); }
+.drop-zone:focus-visible {
+  outline: none;
+  border-color: var(--_accent);
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+.drop-icon {
+  font-size: var(--sherpa-font-size-heading-base, 20px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+.browse {
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  text-decoration: underline;
+}
+
+/* ── Drag-over state ─────────────────────────────────────────────────── */
+:host([data-dragover]) .drop-zone {
+  border-color: var(--_accent);
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+}
+
+/* ── File list ───────────────────────────────────────────────────────── */
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-2xs, 4px);
+}
+.file-list:empty { display: none; }
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px) var(--sherpa-space-sm, 12px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e2e2e8);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+}
+.file-icon { color: var(--sherpa-content-default-secondary, #8a8a96); flex-shrink: 0; }
+.file-name {
+  flex: 1 1 auto;
+  color: var(--sherpa-content-default-body, #4a4a54);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-size {
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  flex-shrink: 0;
+}
+.file-remove {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-lg, 24px);
+  block-size: var(--sherpa-size-lg, 24px);
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+  font-size: var(--sherpa-font-size-body-base, 16px);
+  line-height: 1;
+  cursor: pointer;
+}
+.file-remove:hover {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-critical-default, #c8324f);
+}
+.file-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Disabled — inactive tokens, never opacity ───────────────────────── */
+:host([disabled]) .drop-zone {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+  background: var(--sherpa-surface-container-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}
+:host([disabled]) .label { color: var(--sherpa-content-inactive-default, #a6a6b2); }

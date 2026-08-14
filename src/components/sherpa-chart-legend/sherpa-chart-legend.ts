@@ -1,0 +1,66 @@
+/**
+ * sherpa-chart-legend — a legend for charts.
+ *
+ * Renders legend rows from populate([{ label, value?, colorIndex }]) by cloning
+ * a prototype. Each row's swatch colour is set via a --_hue custom property
+ * pointing at var(--sherpa-categorical-N) (a JS→CSS-var bridge, not styling — CSS
+ * owns the swatch rule). Clicking a row toggles its active state and emits
+ * legend-item-click.
+ */
+import { SherpaElement } from '../../core/sherpa-element.js';
+
+export interface LegendItem {
+  label: string;
+  value?: string | number;
+  colorIndex?: number;
+}
+
+export class SherpaChartLegend extends SherpaElement {
+  static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
+  static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
+
+  #items: LegendItem[] = [];
+
+  override onRender(): void {
+    this.$('.legend')?.addEventListener('click', this.#onClick);
+    if (this.#items.length) this.#render();
+  }
+
+  /** populate([{ label, value?, colorIndex }]) — the legend entries. */
+  protected override renderData(data: unknown): void {
+    this.#items = Array.isArray(data) ? (data as LegendItem[]) : [];
+    this.#render();
+  }
+
+  #render(): void {
+    const list = this.$('.legend');
+    const tpl = this.$<HTMLTemplateElement>('template.item-tpl');
+    if (!list || !tpl) return;
+
+    list.replaceChildren();
+    this.#items.forEach((item, i) => {
+      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      row.dataset['index'] = String(i);
+      // Categorical hue by 1-based index (wraps at 11).
+      const n = ((item.colorIndex ?? i + 1) - 1) % 11 + 1;
+      row.querySelector<HTMLElement>('.swatch')!.style.setProperty(
+        '--_hue',
+        `var(--sherpa-categorical-${n})`,
+      );
+      row.querySelector('.label')!.textContent = item.label;
+      row.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+      list.appendChild(row);
+    });
+  }
+
+  #onClick = (event: Event): void => {
+    const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
+    const raw = item?.dataset['index'];
+    if (raw == null) return;
+    // Toggle active state (default active → false → true).
+    item!.dataset['active'] = item!.dataset['active'] === 'false' ? 'true' : 'false';
+    this.emit('legend-item-click', { index: Number(raw), label: this.#items[Number(raw)]?.label ?? '' });
+  };
+}
+
+customElements.define('sherpa-chart-legend', SherpaChartLegend);

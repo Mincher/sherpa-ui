@@ -1,0 +1,26 @@
+<!--
+  sherpa-chart-legend — a legend for charts.
+
+  populate([{ label, value?, colorIndex }]) stamps legend rows (swatch + label +
+  optional value) from the cloning prototype. The swatch colour is a categorical
+  hue chosen by colorIndex. Clicking a row emits legend-item-click and toggles its
+  active state (CSS-driven).
+
+  Public API:
+    data-orientation  horizontal (default) | vertical
+
+  Fires: legend-item-click — detail: { index, label }
+-->
+<template id="default">
+  <ul class="legend" part="legend" role="list"></ul>
+
+  <template class="item-tpl">
+    <li class="item" role="listitem">
+      <button class="row" type="button">
+        <span class="swatch" part="swatch" aria-hidden="true"></span>
+        <span class="label" part="label"></span>
+        <span class="value" part="value"></span>
+      </button>
+    </li>
+  </template>
+</template>

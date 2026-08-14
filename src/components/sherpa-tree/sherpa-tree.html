@@ -1,0 +1,38 @@
+<!--
+  sherpa-tree — a hierarchical tree view.
+
+  Renders a forest of nodes from populate([{ value, label, children?, expanded?, icon? }]).
+  Nodes are cloned from the <template class="node-tpl"> prototype (class, no id — so the
+  base class's template parser skips it) and nested recursively into .tree-children.
+
+  All visibility (expand/collapse, selection, checkboxes) is CSS-driven off data-*
+  attributes on each .tree-node — JS only sets attributes and clones prototypes.
+
+  Public API:
+    data-selection  none | single | multi (default: single)
+    data-empty      reflected when the forest is empty
+
+  Fires:
+    tree-select — detail: { value, path }   (single-select leaf activated)
+    tree-expand — detail: { value, expanded } (branch toggled)
+    change      — detail: { value }          (multi-select set changed)
+-->
+<template id="default">
+  <div class="tree" role="tree" part="tree" aria-label="Tree">
+    <div class="empty" role="status" aria-live="polite" part="empty">
+      <slot name="empty">No items</slot>
+    </div>
+  </div>
+
+  <template class="node-tpl">
+    <div class="node" role="treeitem" part="node">
+      <div class="row" part="row" tabindex="-1">
+        <span class="toggle" part="toggle" aria-hidden="true"></span>
+        <span class="check" part="check" aria-hidden="true"></span>
+        <span class="icon" part="icon" aria-hidden="true"></span>
+        <span class="label" part="label"></span>
+      </div>
+      <div class="children" role="group" part="children"></div>
+    </div>
+  </template>
+</template>

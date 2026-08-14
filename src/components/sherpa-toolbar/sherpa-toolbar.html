@@ -1,0 +1,25 @@
+<!--
+  sherpa-toolbar — a horizontal control strip.
+
+  Three zones: start (leading, hugs), center (grows to fill), end (trailing, hugs).
+  Each zone is a named slot; the base class reflects data-has-{slot} on the host so
+  empty zones collapse (pure CSS). No data logic.
+
+  Public API:
+    data-variant   plain (default) | bordered (adds a bottom rule)
+    data-density   comfortable (default) | compact (tighter block padding)
+
+  Slots:
+    start   — leading zone (title, primary CTA)
+    center  — center zone (search — grows to fill)
+    end     — trailing zone (icon buttons, overflow menu)
+
+  Fires: nothing — it's a layout surface; consumers wire their own controls.
+-->
+<template id="default">
+  <div class="bar" part="bar" role="toolbar">
+    <div class="zone start" part="start"><slot name="start"></slot></div>
+    <div class="zone center" part="center"><slot name="center"></slot></div>
+    <div class="zone end" part="end"><slot name="end"></slot></div>
+  </div>
+</template>

@@ -1,0 +1,29 @@
+<!--
+  sherpa-layout-grid — a responsive CSS-grid container for dashboard tiles.
+
+  Slotted children flow into the grid. Each child sizes its footprint with
+  data-col-span / data-row-span; CSS reads those into grid-column / grid-row.
+  The default slot is the grid; a leading banner slot spans the full width above.
+
+  Public API:
+    data-cols        integer column count (also settable via --maxColCount)
+    data-row-height  CSS length for the row track (also via --row-height)
+    data-gap         sm | base (default) | lg — inter-tile gap
+    data-pad         present → adds padding inside the grid
+
+  Child attributes (honoured via CSS):
+    data-col-span    integer — columns the child occupies
+    data-row-span    integer — row tracks the child occupies
+
+  Slots:
+    banner     — full-width strip above the tiles (collapses when empty)
+    (default)  — grid tiles
+
+  Fires: nothing — it's a layout surface.
+-->
+<template id="default">
+  <slot name="banner" class="banner" part="banner"></slot>
+  <div class="grid" part="grid">
+    <slot></slot>
+  </div>
+</template>

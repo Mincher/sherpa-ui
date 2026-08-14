@@ -85,3 +85,11 @@ export { SherpaCodeBlock } from './components/sherpa-code-block/sherpa-code-bloc
 export { SherpaAppHeader } from './components/sherpa-app-header/sherpa-app-header.js';
 export { SherpaProductBarV2 } from './components/sherpa-product-bar-v2/sherpa-product-bar-v2.js';
 export { SherpaPromptComposer } from './components/sherpa-prompt-composer/sherpa-prompt-composer.js';
+export { SherpaToolbar } from './components/sherpa-toolbar/sherpa-toolbar.js';
+export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
+export { SherpaChartLegend, type LegendItem } from './components/sherpa-chart-legend/sherpa-chart-legend.js';
+export { SherpaFileUpload } from './components/sherpa-file-upload/sherpa-file-upload.js';
+export { SherpaProgressStepTracker } from './components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.js';
+export { SherpaInputDateRange, type DateRange } from './components/sherpa-input-date-range/sherpa-input-date-range.js';
+export { SherpaTree, type TreeNode } from './components/sherpa-tree/sherpa-tree.js';
+export { SherpaQuickFilter } from './components/sherpa-quick-filter/sherpa-quick-filter.js';

@@ -1,0 +1,98 @@
+/**
+ * sherpa-tree.css — a hierarchical tree view.
+ *
+ * Node depth is a --_level custom property the JS sets on each .row (indent =
+ * level × step). Branch/leaf, expanded/collapsed, and selected are data-*
+ * attributes on each .node; CSS owns every bit of the resulting look and the
+ * show/hide of child groups. JS only sets attributes + clones the prototype.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  color: var(--sherpa-content-default-body, #4a4a54);
+}
+
+.empty {
+  display: none;
+  padding: var(--sherpa-space-md, 16px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+:host([data-empty]) .empty { display: block; }
+:host([data-empty]) .tree > .node { display: none; }
+
+/* ── Row ───────────────────────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  /* indent by depth: --_level is set per node by the JS */
+  padding-block: var(--sherpa-space-3xs, 2px);
+  padding-inline-start: calc(var(--_level, 0) * var(--sherpa-space-md, 16px) + var(--sherpa-space-2xs, 4px));
+  padding-inline-end: var(--sherpa-space-xs, 8px);
+  border-radius: var(--sherpa-border-rounding-base, 6px);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease;
+}
+.row:hover { background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6); }
+.row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* ── Toggle chevron (branches only) ────────────────────────────────── */
+.toggle {
+  inline-size: 14px;
+  block-size: 14px;
+  flex-shrink: 0;
+  position: relative;
+}
+/* leaf nodes: no chevron (keep the space for alignment) */
+.node:not([data-branch]) > .row > .toggle::before { content: none; }
+.node[data-branch] > .row > .toggle::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-start: 4px;
+  inline-size: 5px;
+  block-size: 5px;
+  border-right: 2px solid var(--sherpa-content-default-secondary, #8a8a96);
+  border-bottom: 2px solid var(--sherpa-content-default-secondary, #8a8a96);
+  transform: rotate(-45deg); /* collapsed → points right */
+  transition: transform 120ms ease;
+}
+.node[data-branch][data-expanded="true"] > .row > .toggle::before {
+  transform: rotate(45deg); /* expanded → points down */
+}
+
+/* ── Icon + label ──────────────────────────────────────────────────── */
+.icon { display: none; flex-shrink: 0; }
+.icon:not(:empty) { display: inline-flex; }
+.label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Children group — collapsed unless the branch is expanded ──────── */
+.children { display: none; }
+.node[data-branch][data-expanded="true"] > .children { display: block; }
+
+/* ── Selected ──────────────────────────────────────────────────────── */
+.node[data-selected] > .row {
+  background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6);
+  color: var(--sherpa-content-primary-default, #3c5edd);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ── Checkbox (multi-select) ───────────────────────────────────────── */
+.check { display: none; }
+:host([data-selection="multi"]) .check {
+  display: inline-flex;
+  inline-size: 14px;
+  block-size: 14px;
+  flex-shrink: 0;
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #c8c8d2);
+  border-radius: var(--sherpa-border-rounding-sm, 2px);
+}
+:host([data-selection="multi"]) .node[data-selected] > .row > .check {
+  background: var(--sherpa-surface-control-primary-default, #3c5edd);
+  border-color: var(--sherpa-surface-control-primary-default, #3c5edd);
+}

@@ -1,0 +1,23 @@
+<!--
+  sherpa-quick-filter — a filter chip used in toolbars.
+
+  A pill that toggles an active/selected state on click. data-type styles the chip
+  (default neutral · ai brand-purple · populated has a value). An optional count
+  badge and a menu-trigger affordance.
+
+  Public API:
+    data-type    default | ai | populated
+    data-active  selected/on state (boolean)
+    data-label   chip text (or use the default slot)
+    data-count   badge number (shown when present)
+    data-menu    show a dropdown-trigger caret (boolean)
+
+  Fires: quick-filter-click — detail: { active }
+-->
+<template id="default">
+  <button class="chip" part="chip" type="button">
+    <span class="label"><slot></slot></span>
+    <span class="count" part="count" aria-hidden="true"></span>
+    <span class="caret" part="caret" aria-hidden="true"></span>
+  </button>
+</template>

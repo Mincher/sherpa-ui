@@ -1,0 +1,90 @@
+/**
+ * sherpa-quick-filter.css — a toggleable filter chip.
+ *
+ * A pill whose accent comes from a private --_accent token. data-type re-points it
+ * (neutral vs brand-purple for ai); data-active fills the chip with a soft tint +
+ * accent border. Count badge and menu caret are attribute-gated. Pure data-*.
+ */
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  --_accent: var(--sherpa-content-primary-default, #3c5edd);
+}
+
+/* AI type → brand purple accent. */
+:host([data-type="ai"]) {
+  --_accent: var(--sherpa-content-brand-default, #7b1ce6);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-2xs, 4px);
+  padding: var(--sherpa-space-3xs, 2px) var(--sherpa-space-sm, 12px);
+  min-height: var(--sherpa-size-xl, 28px);
+  border: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-control-secondary-default, #c8c8d2);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  background: var(--sherpa-surface-container-default, #ffffff);
+  color: var(--sherpa-content-default-body, #4a4a54);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
+}
+.chip:hover { background: var(--sherpa-surface-control-tertiary-hover, #f4f4f6); }
+.chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+}
+
+/* AI type carries the accent even when inactive. */
+:host([data-type="ai"]) .chip {
+  color: var(--_accent);
+  border-color: color-mix(in srgb, var(--_accent) 40%, transparent);
+}
+
+/* Active/selected → soft accent tint + accent border/text. */
+:host([data-active]) .chip {
+  background: color-mix(in srgb, var(--_accent) 12%, transparent);
+  border-color: var(--_accent);
+  color: var(--_accent);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* Count badge — shown only when data-count is present (JS mirrors the number). */
+.count { display: none; }
+:host([data-count]) .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 16px;
+  block-size: 16px;
+  padding-inline: var(--sherpa-space-3xs, 2px);
+  border-radius: var(--sherpa-border-rounding-full, 9999px);
+  background: var(--_accent);
+  color: var(--sherpa-content-default-on-color-body, #ffffff);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* Menu caret — shown only with data-menu. */
+.caret { display: none; }
+:host([data-menu]) .caret {
+  display: inline-block;
+  inline-size: 0;
+  block-size: 0;
+  border-inline: 4px solid transparent;
+  border-block-start: 5px solid currentColor;
+  opacity: 0.7;
+}
+
+:host([disabled]) .chip {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-content-inactive-default, #a6a6b2);
+  background: var(--sherpa-surface-control-inactive, #f4f4f6);
+  border-color: var(--sherpa-border-control-inactive, #e0e0e6);
+}

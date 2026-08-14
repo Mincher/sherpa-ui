@@ -1,0 +1,50 @@
+/**
+ * sherpa-toolbar.css — a horizontal control strip.
+ *
+ * A single flex row: start / center / end zones. Center grows (flex:1) and hugs
+ * to nothing when empty; start and end are shrink-proof. Zones collapse when their
+ * slot is empty (data-has-{slot}, reflected by the base class). Pure data-* CSS —
+ * JS never touches visibility.
+ */
+
+:host {
+  --_py: var(--sherpa-space-xs, 8px);
+  --_gap: var(--sherpa-space-xs, 8px);
+  display: block;
+  inline-size: 100%;
+}
+
+:host([data-density="compact"]) { --_py: var(--sherpa-space-2xs, 4px); }
+
+.bar {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  gap: var(--_gap);
+  padding-block: var(--_py);
+}
+
+/* Bordered variant adds the Figma toolbar's bottom rule. */
+:host([data-variant="bordered"]) .bar {
+  border-block-end: var(--sherpa-border-width-base, 1px) solid
+    var(--sherpa-border-container-default, #d5d5dc);
+}
+
+.zone {
+  display: flex;
+  align-items: center;
+  gap: var(--_gap);
+}
+
+.start,
+.end { flex-shrink: 0; }
+
+.center {
+  flex: 1 1 0;
+  min-inline-size: 0;
+}
+
+/* Collapse empty zones (base class reflects data-has-{slot} on the host). */
+:host(:not([data-has-start])) .start { display: none; }
+:host(:not([data-has-center])) .center { display: none; }
+:host(:not([data-has-end])) .end { display: none; }

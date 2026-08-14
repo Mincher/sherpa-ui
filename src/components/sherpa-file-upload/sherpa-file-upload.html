@@ -1,0 +1,42 @@
+<!--
+  sherpa-file-upload — a drag-and-drop file selection zone.
+
+  A dashed drop area triggers a hidden <input type="file"> on click / Enter /
+  Space, or accepts dropped files. Selected files render as a list (name + size +
+  remove) stamped from the .file-item-tpl cloning prototype.
+
+  Public API:
+    data-label      label above the drop zone (hidden when empty)
+    data-helper     constraint / helper text under the list (hidden when empty)
+    data-accept     comma-separated MIME types / extensions → native accept
+    data-multiple   allow selecting more than one file → native multiple
+    data-dragover   set automatically while a drag is over the zone (CSS hook)
+    disabled        disabled state
+
+  Fires: files-change — detail: { files: File[] }
+-->
+<template id="default">
+  <div class="field" part="field">
+    <span class="label" part="label"></span>
+
+    <div class="drop-zone" part="drop-zone" role="button" tabindex="0">
+      <span class="drop-icon" aria-hidden="true">⬆</span>
+      <span class="drop-text">Drag and drop files here, or <span class="browse">browse</span></span>
+    </div>
+
+    <ul class="file-list" part="file-list" role="list"></ul>
+
+    <span class="helper" part="helper"></span>
+  </div>
+
+  <input type="file" class="file-input" tabindex="-1" aria-hidden="true" />
+
+  <template class="file-item-tpl">
+    <li class="file-item" role="listitem">
+      <span class="file-icon" aria-hidden="true">🖹</span>
+      <span class="file-name"></span>
+      <span class="file-size"></span>
+      <button class="file-remove" type="button" aria-label="Remove file">×</button>
+    </li>
+  </template>
+</template>
