@@ -1,0 +1,44 @@
+/**
+ * sherpa-quick-filter-toolbar.css — the chip strip layout.
+ *
+ * A flex bar: an optional leading view zone, the wrapping chip run (flex-grows),
+ * and a trailing actions zone. Zones collapse when empty. All layout; the chips
+ * carry their own presentation (sherpa-quick-filter).
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-sm, 12px);
+  padding: var(--sherpa-space-xs, 8px) 0;
+}
+
+.view-zone { display: none; }
+:host([data-has-view]) .view-zone {
+  display: flex;
+  align-items: center;
+  padding-inline-end: var(--sherpa-space-sm, 12px);
+  border-inline-end: var(--sherpa-border-width-base, 1px) solid var(--sherpa-border-container-default, #e0e0e6);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.actions-zone { display: none; }
+:host([data-has-actions]) .actions-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-space-xs, 8px);
+  margin-inline-start: auto;
+}

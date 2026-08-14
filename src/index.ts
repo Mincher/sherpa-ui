@@ -98,3 +98,4 @@ export { SherpaDonutChart, type DonutSlice } from './components/sherpa-donut-cha
 export { SherpaBarchart, type BarDatum } from './components/sherpa-barchart/sherpa-barchart.js';
 export { SherpaLineChart } from './components/sherpa-line-chart/sherpa-line-chart.js';
 export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/sherpa-data-grid.js';
+export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';

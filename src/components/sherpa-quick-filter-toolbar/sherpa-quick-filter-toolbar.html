@@ -1,0 +1,32 @@
+<!--
+  sherpa-quick-filter-toolbar — a strip of quick-filter chips above a grid/list.
+
+  populate([{ id, label, type?, active?, count? }]) stamps sherpa-quick-filter
+  chips from a cloning prototype. Toggling a chip emits quick-filter-change with
+  the full set of active filter ids. A trailing actions slot holds add / clear
+  controls; an optional leading view slot (data-type="view") holds a view chip.
+
+  Public API:
+    data-type   data (default) | view   (view = the App-Header view-scope treatment)
+
+  Slots:
+    view     — leading view chip (view type)
+    actions  — trailing controls (add filter, clear, …)
+
+  Fires: quick-filter-change — detail: { active: string[] }
+-->
+<template id="default">
+  <div class="bar" part="bar">
+    <div class="view-zone" part="view-zone">
+      <slot name="view"></slot>
+    </div>
+    <div class="chips" part="chips"></div>
+    <div class="actions-zone" part="actions">
+      <slot name="actions"></slot>
+    </div>
+  </div>
+
+  <template class="qf-tpl">
+    <sherpa-quick-filter class="chip"></sherpa-quick-filter>
+  </template>
+</template>
