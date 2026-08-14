@@ -30,21 +30,19 @@
   max-width: 360px;
 }
 
-/* ── Icon disc ───────────────────────────────────────────────────────── */
+/* ── Icon — a plain outline glyph, no disc (matches Figma) ────────────── */
 .icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--_icon-size);
   height: var(--_icon-size);
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: color-mix(in srgb, var(--sherpa-content-secondary-base, #404047) 12%, transparent);
   color: var(--sherpa-content-secondary-base, #404047);
 }
 .glyph {
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: calc(var(--_icon-size) * 0.5);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--_icon-size); /* fill the icon box — a single outline glyph */
+  font-weight: var(--sherpa-core-fonts-weight-400, 400);
   line-height: 1;
 }
 .glyph::before { content: var(--_glyph); }
@@ -55,7 +53,7 @@
 /* ── Illustration glyphs (pure CSS, no icon font) ────────────────────── */
 :host([data-illustration="empty"])   { --_glyph: "\2205"; } /* ∅ */
 :host([data-illustration="search"])  { --_glyph: "\1F50D"; } /* 🔍 */
-:host([data-illustration="folder"])  { --_glyph: "\1F4C1"; } /* 📁 */
+:host([data-illustration="folder"])  { --_glyph: "\1F4C1"; } /* 📁 (SVG line-art upgrade: follow-up) */
 :host([data-illustration="data"])    { --_glyph: "\1F5C4"; } /* 🗄 */
 :host([data-illustration="error"])   { --_glyph: "\2715"; } /* ✕ */
 :host([data-illustration="success"]) { --_glyph: "\2713"; } /* ✓ */

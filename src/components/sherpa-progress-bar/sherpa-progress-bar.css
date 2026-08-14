@@ -17,8 +17,8 @@
   width: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Fill colour — the status cascade ink wins, else the primary accent link. */
-  --_fill: var(--_status-border, var(--sherpa-content-link-base, #3c5edd));
+  /* Fill colour — the status cascade ink wins, else the brand progress colour. */
+  --_fill: var(--_status-border, var(--sherpa-content-active-base, #8500cc));
   /* Percentage width, written by JS from data-value. */
   --_pct: 0%;
 }
