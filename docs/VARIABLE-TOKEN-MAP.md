@@ -62,18 +62,35 @@ custom props that inherit through shadow boundaries:
 
 Emitted as `[data-status="info|critical|warning|urgent|success"]` blocks.
 
-### Shared override collections → `:root`
+### Override collections — primaries in `:root`, MODES as attribute blocks
 
-These are alias bases MULTIPLE components consume, so they stay global:
+Each override collection's primary values live in `:root`; its mode variants become
+attribute blocks a consumer opts into:
 
+| Collection | Attribute | Modes | Drives |
+|---|---|---|---|
+| `color-sets` (9) | `[data-color-set]` | violet/purple/teal/cyan/blue/periwinkle/amber/pink/magenta/green/grey (11) | per-hue surface/border/content — a component takes a colour set |
+| `grouping` (5) | `[data-snap]` | top/middle/bottom/left/right/isolated | **seamless component groups** — corner radius per position (`middle` squares all + gap −1px overlap); button groups, segmented controls |
+| `elevation` (5) | `[data-elevation]` | sm/md/lg | shadow levels |
+| `control` (19) | — (via component `[data-variant]`) | primary/secondary/tertiary | control surface/border/content — shared by button/tag/switch/input |
+| `badge` (3) | — (primary only) | accent/brand | badge surface/border/content |
+
+### Layout Grid utility → `.sherpa-layout-grid`
+
+Figma `layout-grid` (6 vars) drives a real CSS Grid:
+
+```css
+.sherpa-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--sherpa-layout-grid-columns), minmax(0, 1fr));
+  column-gap / row-gap / grid-auto-rows / max-inline-size / padding-inline
+}
+@container (min-width: 768px)  { … --columns: 8  … }   /* tablet  */
+@container (min-width: 1280px) { … --columns: 12 … }   /* desktop */
+@container (min-width: 1600px) { … --columns: 12 … }   /* wide    */
 ```
-control-*      (19)  control-surface/border/content/space/radius — used by button/tag/switch/input
-                     modes: primary, secondary, tertiary
-color-sets-*   (9)   surface/border/content per colour — modes: violet…grey (11 hues)
-grouping-*     (5)   grouping-radius/{top-left,…} + gap — modes: left/middle/right/top/bottom/isolated
-elevation-*    (5)   elevation-shadow/{blur,color,offset-x/y,spread} — modes: sm/md/lg
-badge-*        (3)   badge-surface/border/content — modes: accent, brand
-```
+Mobile base = 4 columns. *(Breakpoints need the grid inside a sized container to
+fire — follow-up.)*
 
 ### Convenience aliases → `:root`
 
