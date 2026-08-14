@@ -54,7 +54,8 @@ const DARK_COLLECTION = 'style-sherpa';
 const SCOPED_COLLECTIONS = {
   // Override tier — aliased INTO by the component collections below.
   'color-sets': { attr: 'data-color-set', default: null, emitModes: false },
-  grouping: { attr: 'data-group', default: null, emitModes: false },
+  grouping: { attr: 'data-group', default: null, emitModes: false }, // Snapping-radius + gap
+  elevation: { attr: 'data-elevation', default: null, emitModes: false }, // elevation-shadow parts
   // Component tier — bound directly by components; modes = variant/size axes.
   container: { attr: 'data-variant', default: 'default' },
   control: { attr: 'data-variant', default: 'default' },

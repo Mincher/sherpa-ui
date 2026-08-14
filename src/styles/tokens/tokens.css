@@ -811,6 +811,11 @@
   --sherpa-grouping-radius-top-left: var(--sherpa-core-border-rounding-base);
   --sherpa-grouping-radius-top-right: var(--sherpa-core-border-rounding-base);
   --sherpa-grouping-space-gap: 0px;
+  --sherpa-elevation-shadow-blur: 0px;
+  --sherpa-elevation-shadow-color: #00000000;
+  --sherpa-elevation-shadow-offset-x: 0px;
+  --sherpa-elevation-shadow-offset-y: 0px;
+  --sherpa-elevation-shadow-spread: 0px;
   --sherpa-container-border-default: var(--sherpa-color-sets-border-default);
   --sherpa-container-border-inactive: var(--sherpa-border-primary-inactive);
   --sherpa-container-border-radius-bottom-left: var(--sherpa-grouping-radius-bottom-left);
