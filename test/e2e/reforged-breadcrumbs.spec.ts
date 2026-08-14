@@ -89,10 +89,10 @@ test('separators are drawn via CSS ::before on crumbs after the first', async ({
     const sep = (n: Element) => getComputedStyle(n, '::before').content;
     return { first: sep(crumbs[0]!), second: sep(crumbs[1]!), third: sep(crumbs[2]!) };
   });
-  // First crumb: no separator; subsequent crumbs render a "/" glyph.
+  // First crumb: no separator; subsequent crumbs render a chevron "›" (matches Figma).
   expect(r.first).toMatch(/none|""|normal/);
-  expect(r.second).toContain('/');
-  expect(r.third).toContain('/');
+  expect(r.second).toContain('›');
+  expect(r.third).toContain('›');
 });
 
 test('clicking a crumb fires breadcrumb-select with index/label/href', async ({ page }) => {

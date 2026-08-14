@@ -207,7 +207,11 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   #reflectSlot(slot: HTMLSlotElement): void {
-    const has = slot.assignedNodes({ flatten: true }).some((n) => {
+    // assignedNodes() WITHOUT flatten returns only nodes the light DOM actually
+    // assigned — NOT the slot's fallback content. (flatten:true would count a
+    // slot's own default children as "present", collapsing them by their own
+    // data-has-* rule.)
+    const has = slot.assignedNodes().some((n) => {
       if (n.nodeType === Node.TEXT_NODE) return (n.textContent ?? '').trim().length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
     });

@@ -33,10 +33,10 @@
   gap: var(--sherpa-core-space-xs, 8px);
 }
 
-/* Separator: every crumb except the first draws a leading slash, sized to the
-   icon token so it matches the chevron glyph in Figma. */
+/* Separator: every crumb except the first draws a leading chevron (matches Figma),
+   sized to the icon token. */
 .crumb + .crumb::before {
-  content: "/";
+  content: "\203A"; /* › */
   color: var(--sherpa-content-secondary-base, #404047);
   font-size: var(--sherpa-size-icon-2xs, 12px);
   user-select: none;
