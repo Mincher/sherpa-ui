@@ -1,10 +1,11 @@
 /**
- * sherpa-button.css — all button presentation.
+ * sherpa-button — presentation.
  *
- * The host is a thin wrapper (border, radius, overflow); the .trigger <button>
- * is the interactive surface. Colour comes from component-private --_* props that
- * alias --sherpa-* tokens (with hardcoded fallbacks so the button renders even
- * before the token layer loads). Variants/sizes/states are pure data-* selectors.
+ * Anatomy: the host is a thin wrapper (radius, overflow); .trigger is the button.
+ * Sizing is NOT set here — the token layer's [data-size] blocks re-point the
+ * --sherpa-button-* scoped vars per size, and the host just consumes them. Colour
+ * comes from --sherpa-control-* scoped vars, swapped per variant. Every rule is a
+ * data-* selector; JS only mirrors label/icon values and sets defaults.
  */
 
 :host {
@@ -12,32 +13,27 @@
   vertical-align: middle;
   border-radius: var(--sherpa-grouping-radius-top-left, 4px);
 
-  /* primary defaults — variants below re-point these */
-  --_surface: var(--sherpa-control-surface-default, #3c5edd);
-  --_surface-hover: var(--sherpa-control-surface-hover, #173382);
-  --_surface-down: var(--sherpa-control-surface-down, #0f0f57);
+  /* primary look — control surface accent; variants re-point below */
+  --_surface: var(--sherpa-control-surface-accent, #3c5edd);
+  --_surface-hover: var(--sherpa-surface-interactive-primary-hover, #173382);
+  --_surface-down: var(--sherpa-surface-interactive-primary-down, #0f0f57);
   --_content: var(--sherpa-content-title-on-color, #ffffff);
   --_border: transparent;
-
-  --_height: var(--sherpa-button-size-height, 32px);
-  --_pad-inline: var(--sherpa-button-space-padding, 12px);
-  --_gap: var(--sherpa-button-space-gap, 8px);
-  --_font-size: var(--sherpa-button-font-size, 14px);
 }
 
 .trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--_gap);
+  gap: var(--sherpa-button-space-gap, 8px);
   width: 100%;
-  min-height: var(--_height);
-  padding-inline: var(--_pad-inline);
+  min-height: var(--sherpa-button-size-height, 32px);
+  padding-inline: var(--sherpa-button-space-padding, 12px);
   border: 1px solid var(--_border);
   border-radius: inherit;
   margin: 0;
   font-family: inherit;
-  font-size: var(--_font-size);
+  font-size: var(--sherpa-button-font-size, 14px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1;
   color: var(--_content);
@@ -51,12 +47,14 @@
 
 .trigger:hover { background: var(--_surface-hover); }
 .trigger:active { background: var(--_surface-down); }
+:host([data-active]) .trigger { background: var(--_surface-down); }
 
 :host(:focus-visible) { outline: none; }
 .trigger:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-app-primary, #ffffff),
-    0 0 0 4px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow:
+    0 0 0 2px var(--sherpa-app-primary, #ffffff),
+    0 0 0 4px var(--sherpa-control-border-accent, #3c5edd);
 }
 
 /* ── Variants ─────────────────────────────────────────────────────── */
@@ -65,7 +63,7 @@
   --_surface: var(--sherpa-control-surface-default, #ffffff);
   --_surface-hover: var(--sherpa-control-surface-hover, #fafafa);
   --_surface-down: var(--sherpa-control-surface-down, #f2f2f2);
-  --_content: var(--sherpa-content-title-base, #18191a);
+  --_content: var(--sherpa-control-content-default, #18191a);
   --_border: var(--sherpa-control-border-default, #d5d5d5);
 }
 
@@ -85,43 +83,20 @@
   --_border: transparent;
 }
 
-/* ── Active / pressed ─────────────────────────────────────────────── */
-
-:host([data-active]) .trigger { background: var(--_surface-down); }
-
-/* ── Sizes ────────────────────────────────────────────────────────── */
-
-:host([data-size="2x-small"]) {
-  --_height: var(--sherpa-core-size-md, 20px);
-  --_pad-inline: var(--sherpa-core-space-xs, 8px);
-  --_font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-}
-:host([data-size="x-small"]) {
-  --_height: var(--sherpa-core-size-lg, 24px);
-  --_pad-inline: var(--sherpa-core-space-xs, 8px);
-}
-:host([data-size="small"]) {
-  --_height: var(--sherpa-core-size-xl, 28px);
-  --_pad-inline: var(--sherpa-core-space-sm, 12px);
-}
-:host([data-size="large"]) {
-  --_height: var(--sherpa-core-size-3xl, 40px);
-  --_pad-inline: var(--sherpa-core-space-base, 16px);
-  --_font-size: var(--sherpa-core-fonts-scale-lg, 16px);
-}
-
 /* ── Icon-only (square) ───────────────────────────────────────────── */
 
 :host([data-type="icon"]) .trigger {
   padding-inline: 0;
   aspect-ratio: 1;
-  min-width: var(--_height);
+  min-width: var(--sherpa-button-size-height, 32px);
 }
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ─────── */
 
 .icon {
   display: none;
+  inline-size: var(--sherpa-button-size-icon, 16px);
+  block-size: var(--sherpa-button-size-icon, 16px);
   font-style: normal;
   line-height: 1;
   color: var(--_content);
@@ -129,7 +104,6 @@
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end { display: inline-flex; }
 
-/* Hide the label wrapper when there's no slotted content and no data-label */
 .label { display: inline-flex; }
 :host([data-type="icon"]) .label { display: none; }
 

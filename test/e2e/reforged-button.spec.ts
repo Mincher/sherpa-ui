@@ -33,7 +33,7 @@ test('renders the template into a shadow root and applies default attrs', async 
   });
   expect(r.hasTrigger).toBe(true);
   expect(r.variant).toBe('primary'); // default applied in onRender
-  expect(r.size).toBe('base');
+  expect(r.size).toBe('md');
   expect(r.adopted).toBe(true); // stylesheets adopted into the shadow root
 });
 

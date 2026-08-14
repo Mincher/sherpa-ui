@@ -59,7 +59,7 @@ const SCOPED_COLLECTIONS = {
   // Component tier — bound directly by components; modes = variant/size axes.
   container: { attr: 'data-variant', default: 'default' },
   control: { attr: 'data-variant', default: 'default' },
-  button: { attr: 'data-size', default: 'base' },
+  button: { attr: 'data-size', default: '2xs' },
   badge: { attr: 'data-variant', default: 'default' },
   input: { attr: 'data-state', default: 'default' },
   navigation: { attr: 'data-nav-state', default: 'default' },

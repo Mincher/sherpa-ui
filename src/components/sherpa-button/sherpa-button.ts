@@ -27,7 +27,7 @@ export class SherpaButton extends SherpaElement {
     if (this.dataset['type'] !== 'icon' && !this.dataset['variant']) {
       this.dataset['variant'] = 'primary';
     }
-    if (!this.dataset['size']) this.dataset['size'] = 'base';
+    if (!this.dataset['size']) this.dataset['size'] = 'md';
 
     this.#syncLabel();
     this.#syncIcons();
