@@ -1,0 +1,72 @@
+/**
+ * sherpa-line-chart.css — a line/area chart.
+ *
+ * The plot is an inline SVG (viewBox 0 0 100 100, stretched via
+ * preserveAspectRatio=none) whose lines/areas the JS fills with computed points.
+ * Each series carries a --_hue (categorical) that colours its stroke + area. Grid
+ * lines are drawn in the SVG grid group. Line weight is kept constant via
+ * non-scaling-stroke so the stretch doesn't distort it.
+ */
+
+:host {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sherpa-space-sm, 12px);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  --_plot-height: 180px;
+}
+
+.title {
+  font-size: var(--sherpa-font-size-body-sm, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-content-default-heading, #18181f);
+}
+.title:empty { display: none; }
+
+.plot {
+  position: relative;
+  block-size: var(--_plot-height);
+}
+
+.svg {
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.grid line {
+  stroke: var(--sherpa-border-container-default, #e0e0e6);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.line {
+  stroke: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.area {
+  fill: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
+  opacity: 0.14;
+  stroke: none;
+}
+:host(:not([data-variant="area"])) .area { display: none; }
+
+.x-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-block-start: var(--sherpa-space-2xs, 4px);
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+.x-label {
+  flex: 1 1 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

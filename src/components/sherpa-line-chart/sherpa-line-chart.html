@@ -1,0 +1,37 @@
+<!--
+  sherpa-line-chart — a line/area chart over a numeric series.
+
+  populate({ labels, series }) — one or more series of numbers over shared x
+  labels. The JS computes SVG coordinates and writes the polyline points + area
+  path into an inline <svg> (viewBox 0 0 100 100, preserveAspectRatio none, so it
+  stretches). Colour is categorical per series. data-variant=area fills under the
+  line.
+
+  Public API:
+    data-label     chart title
+    data-variant   line (default) | area
+    data-min / data-max   y-scale bounds (else derived)
+
+  Fires: nothing — display only.
+-->
+<template id="default">
+  <div class="chart-header" part="header">
+    <span class="title"><slot name="title"></slot></span>
+  </div>
+  <div class="plot" part="plot">
+    <svg class="svg" part="svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <g class="grid"></g>
+      <g class="series-layer"></g>
+    </svg>
+    <div class="x-axis" part="x-axis"></div>
+  </div>
+
+  <!--
+    Series <g>/<path>/<polyline> are built in the TS via createElementNS (SVG
+    elements can't be cloned from an HTML template — they'd land in the wrong
+    namespace). This is data-driven structural DOM, which the golden rules allow.
+  -->
+  <template class="xlabel-tpl">
+    <span class="x-label"></span>
+  </template>
+</template>
