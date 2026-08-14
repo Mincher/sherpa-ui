@@ -58,8 +58,8 @@
     },
     "sherpa-slider": {
       "figma": "Slider",
-      "status": "needs-rebuild",
-      "rebuildNote": "read-only value read-out vs Figma editable value-input"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: editable value-input beside the track (was a read-only readout)"
     },
     "sherpa-file-upload": {
       "figma": "File Uploader",

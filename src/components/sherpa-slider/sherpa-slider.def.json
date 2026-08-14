@@ -1,10 +1,10 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-slider",
   "figmaName": "Slider",
   "category": "control",
-  "description": "a single-value range control.",
+  "description": "A single-value range control: a label over a row of [track][editable value input]. Type a value in the field or drag the track; the two stay in sync.",
   "props": [
     {
       "name": "data-label",
@@ -104,6 +104,7 @@
     "figmaEvents": [
       "input",
       "change"
-    ]
+    ],
+    "note": "Rebuilt 2026-08-15 to match Figma Slider: the read-only value read-out became an editable numeric value-input beside the track (mono, right-aligned; typing commits the value, clamped to min/max). data-show-value now shows the editable field; data-value-readonly makes it display-only."
   }
 }

@@ -15,7 +15,8 @@
  * @attr {number} data-max        — maximum value (default 100)
  * @attr {number} data-step       — step increment (default 1)
  * @attr {string} data-value      — current value
- * @attr {boolean} data-show-value — echo the value beside the label
+ * @attr {boolean} data-show-value — show the editable value input beside the track
+ * @attr {boolean} data-value-readonly — make the value display read-only (no typing)
  * @attr {boolean} disabled       — disabled state
  *
  * @prop {number} value — the current value (read/write, clamped to min/max)
@@ -43,11 +44,16 @@ export class SherpaSlider extends SherpaElement {
   ];
 
   #input: HTMLInputElement | null = null;
+  #valueField: HTMLInputElement | null = null;
 
   override onRender(): void {
     this.#input = this.$<HTMLInputElement>('.range');
+    this.#valueField = this.$<HTMLInputElement>('.value-input');
     this.#input?.addEventListener('input', this.#onInput);
     this.#input?.addEventListener('change', this.#onChange);
+    // The editable value field is the second way to set the value.
+    this.#valueField?.addEventListener('input', this.#onFieldInput);
+    this.#valueField?.addEventListener('change', this.#onFieldChange);
     this.#syncInputAttrs();
     this.#sync();
   }
@@ -55,6 +61,8 @@ export class SherpaSlider extends SherpaElement {
   override onDisconnect(): void {
     this.#input?.removeEventListener('input', this.#onInput);
     this.#input?.removeEventListener('change', this.#onChange);
+    this.#valueField?.removeEventListener('input', this.#onFieldInput);
+    this.#valueField?.removeEventListener('change', this.#onFieldChange);
   }
 
   override onChange(name: string): void {
@@ -102,21 +110,29 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Sync ────────────────────────────────────────────────────────────── */
 
-  /** Mirror min/max/step/disabled onto the native input. */
+  /** Mirror min/max/step/disabled onto the native range + the value field. */
   #syncInputAttrs(): void {
-    const input = this.#input;
-    if (!input) return;
-    input.min = String(this.#min);
-    input.max = String(this.#max);
-    input.step = String(this.#step);
-    input.disabled = this.hasAttribute('disabled');
+    const min = String(this.#min), max = String(this.#max), step = String(this.#step);
+    const disabled = this.hasAttribute('disabled');
+    if (this.#input) {
+      this.#input.min = min; this.#input.max = max; this.#input.step = step;
+      this.#input.disabled = disabled;
+    }
+    if (this.#valueField) {
+      this.#valueField.min = min; this.#valueField.max = max; this.#valueField.step = step;
+      this.#valueField.disabled = disabled;
+    }
   }
 
-  /** Mirror the value onto the input, the read-out, and the --_pct fill bridge. */
+  /** Mirror the value onto the range input, the value field, and the --_pct fill bridge. */
   #sync(): void {
     const value = this.#clamp(this.dataset['value']);
     if (this.#input && this.#input.value !== String(value)) {
       this.#input.value = String(value);
+    }
+    // Don't clobber the value field while the user is typing in it.
+    if (this.#valueField && this.#valueField !== this.shadowRoot?.activeElement && this.#valueField.value !== String(value)) {
+      this.#valueField.value = String(value);
     }
 
     const range = this.#max - this.#min || 1;
@@ -127,8 +143,6 @@ export class SherpaSlider extends SherpaElement {
 
     const label = this.$('.label');
     if (label) label.textContent = this.dataset['label'] ?? '';
-    const out = this.$('.value-out');
-    if (out) out.textContent = String(value);
   }
 
   /* ── Native → re-dispatched events ───────────────────────────────────── */
@@ -147,6 +161,24 @@ export class SherpaSlider extends SherpaElement {
   #onChange = (): void => {
     const value = this.#readInput();
     this.dataset['value'] = String(value);
+    this.emit('change', { value });
+  };
+
+  /* ── Editable value field → the value ────────────────────────────────── */
+
+  #onFieldInput = (): void => {
+    const raw = this.#valueField?.value ?? '';
+    // While typing an intermediate value (empty, "-", "1."), don't fight the user.
+    if (raw === '' || raw === '-' || raw.endsWith('.')) return;
+    const value = this.#clamp(raw);
+    this.dataset['value'] = String(value); // #sync leaves the focused field alone
+    this.emit('input', { value });
+  };
+
+  #onFieldChange = (): void => {
+    const value = this.#clamp(this.#valueField?.value ?? '');
+    this.dataset['value'] = String(value);
+    if (this.#valueField) this.#valueField.value = String(value); // snap the field to the clamped value on commit
     this.emit('change', { value });
   };
 }

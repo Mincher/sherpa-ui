@@ -134,3 +134,50 @@ test('disabled reflects onto the input and is non-interactive', async ({ page })
   expect(r.inputDisabled).toBe(true);
   expect(r.pointerEvents).toBe('none');
 });
+
+test('data-show-value reveals an editable value input; typing updates the slider', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-slider') as SliderEl;
+    el.setAttribute('data-min', '0');
+    el.setAttribute('data-max', '100');
+    el.setAttribute('data-value', '20');
+    el.setAttribute('data-show-value', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const field = el.shadowRoot!.querySelector('.value-input') as HTMLInputElement;
+    const visible = getComputedStyle(field).display !== 'none';
+    const initial = field.value;
+
+    let changed = -1;
+    el.addEventListener('change', (e) => (changed = (e as CustomEvent).detail.value));
+    field.value = '65';
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((res) => setTimeout(res, 10));
+
+    return { visible, initial, changed, hostValue: el.getAttribute('data-value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
+  });
+  expect(r.visible).toBe(true);
+  expect(r.initial).toBe('20'); // field mirrors the initial value
+  expect(r.changed).toBe(65);   // typing + commit fires change with the new value
+  expect(r.hostValue).toBe('65');
+  expect(r.pct).toBe('65%');    // the fill bridge tracks the typed value
+});
+
+test('the value input clamps out-of-range entries to min/max on commit', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-slider') as SliderEl;
+    el.setAttribute('data-min', '10');
+    el.setAttribute('data-max', '50');
+    el.setAttribute('data-value', '30');
+    el.setAttribute('data-show-value', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const field = el.shadowRoot!.querySelector('.value-input') as HTMLInputElement;
+    field.value = '999';
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((res) => setTimeout(res, 10));
+    return { fieldValue: field.value, hostValue: el.getAttribute('data-value') };
+  });
+  expect(r.fieldValue).toBe('50'); // snapped to max
+  expect(r.hostValue).toBe('50');
+});
