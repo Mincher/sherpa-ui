@@ -1,0 +1,6165 @@
+{
+  "Core::border/rounding/none": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/0"
+    },
+    "cb": [
+      "Snapping::snapping-radius/top-left",
+      "Snapping::snapping-radius/top-right",
+      "Snapping::snapping-radius/bottom-left",
+      "Snapping::snapping-radius/bottom-right"
+    ]
+  },
+  "Core::border/rounding/sm": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/100"
+    },
+    "cb": []
+  },
+  "Core::border/rounding/base": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/200"
+    },
+    "cb": [
+      "Snapping::snapping-radius/top-left",
+      "Snapping::snapping-radius/top-right",
+      "Switch::switch-radius/track",
+      "Snapping::snapping-radius/bottom-left",
+      "Snapping::snapping-radius/bottom-right"
+    ]
+  },
+  "Core::border/rounding/lg": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/300"
+    },
+    "cb": []
+  },
+  "Core::border/rounding/xl": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/400"
+    },
+    "cb": []
+  },
+  "Core::border/rounding/2xl": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/450"
+    },
+    "cb": []
+  },
+  "Core::border/rounding/full": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "value": "Primitives::border/radius/1000"
+    },
+    "cb": [
+      "Switch::switch-radius/track"
+    ]
+  },
+  "Core::border/width/none": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/0"
+    },
+    "cb": []
+  },
+  "Core::border/width/xs": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/100"
+    },
+    "cb": []
+  },
+  "Core::border/width/sm": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/200"
+    },
+    "cb": [
+      "Control::control-border/width",
+      "Container::container-border/width"
+    ]
+  },
+  "Core::border/width/base": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/300"
+    },
+    "cb": []
+  },
+  "Core::border/width/lg": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/400"
+    },
+    "cb": []
+  },
+  "Core::border/width/xl": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/500"
+    },
+    "cb": []
+  },
+  "Core::border/width/2xl": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/600"
+    },
+    "cb": []
+  },
+  "Core::border/width/3xl": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "value": "Primitives::border/stroke/700"
+    },
+    "cb": []
+  },
+  "Core::color/brand/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/250"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/active/base",
+      "Badge::badge-surface/default"
+    ]
+  },
+  "Core::color/brand/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/300"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/active/hover"
+    ]
+  },
+  "Core::color/brand/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/350"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/active/down",
+      "Style (Sherpa)::border/interactive/active/hover"
+    ]
+  },
+  "Core::color/brand/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/400"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/active/down"
+    ]
+  },
+  "Core::color/brand/base": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/500"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/gradient/ai/stop 2",
+      "Style (Sherpa)::border/interactive/active",
+      "Style (Sherpa)::border/interactive/gradient/ai/stop 1",
+      "Style (Sherpa)::border/interactive/gradient/ai/stop 5",
+      "Badge::badge-border/default"
+    ]
+  },
+  "Core::color/brand/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/550"
+    },
+    "cb": []
+  },
+  "Core::color/brand/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/600"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/active/base",
+      "Style (Sherpa)::surface/interactive/active/hover",
+      "Style (Sherpa)::content/active/base"
+    ]
+  },
+  "Core::color/brand/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/phlox/650"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/active/hover",
+      "Badge::badge-content/default"
+    ]
+  },
+  "Core::color/brand/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/deep-purple/550"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/active/down"
+    ]
+  },
+  "Core::color/brand/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/deep-purple/600"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/active/down"
+    ]
+  },
+  "Core::color/accent/classic/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/0"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/100"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/200"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/300"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/500"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/600"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/650": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/650"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/base": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/700"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/725": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/725"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/750": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/750"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/800"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/900"
+    },
+    "cb": []
+  },
+  "Core::color/accent/classic/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/1000"
+    },
+    "cb": []
+  },
+  "Core::color/accent/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue/0"
+    },
+    "cb": []
+  },
+  "Core::color/accent/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue/100"
+    },
+    "cb": []
+  },
+  "Core::color/accent/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue/200"
+    },
+    "cb": [
+      "Style (Sherpa)::content/link/base"
+    ]
+  },
+  "Core::color/accent/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue/300"
+    },
+    "cb": [
+      "Style (Sherpa)::content/link/visited"
+    ]
+  },
+  "Core::color/accent/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/500"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/primary/hover"
+    ]
+  },
+  "Core::color/accent/base": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/550"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/primary/base",
+      "Style (Sherpa)::border/interactive/primary",
+      "Style (Sherpa)::content/link/base"
+    ]
+  },
+  "Core::color/accent/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/600"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/primary/hover",
+      "Style (Sherpa)::border/interactive/primary/hover"
+    ]
+  },
+  "Core::color/accent/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/650"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/primary/down",
+      "Style (Sherpa)::border/interactive/primary/down"
+    ]
+  },
+  "Core::color/accent/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/700"
+    },
+    "cb": [
+      "Style (Sherpa)::content/link/visited"
+    ]
+  },
+  "Core::color/accent/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/neon-blue/750"
+    },
+    "cb": []
+  },
+  "Core::color/info/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/0"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 1",
+      "Style (Sherpa)::status/info/color 2"
+    ]
+  },
+  "Core::color/info/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/100"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 2"
+    ]
+  },
+  "Core::color/info/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/200"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 3"
+    ]
+  },
+  "Core::color/info/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/400"
+    },
+    "cb": []
+  },
+  "Core::color/info/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/500"
+    },
+    "cb": []
+  },
+  "Core::color/info/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/600"
+    },
+    "cb": []
+  },
+  "Core::color/info/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/700"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 4"
+    ]
+  },
+  "Core::color/info/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/800"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 5"
+    ]
+  },
+  "Core::color/info/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/900"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 6"
+    ]
+  },
+  "Core::color/info/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/blue-green/1000"
+    },
+    "cb": []
+  },
+  "Core::color/warning/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/0"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 1",
+      "Style (Sherpa)::status/warning/color 2"
+    ]
+  },
+  "Core::color/warning/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/100"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 2"
+    ]
+  },
+  "Core::color/warning/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/200"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 3"
+    ]
+  },
+  "Core::color/warning/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/400"
+    },
+    "cb": []
+  },
+  "Core::color/warning/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/500"
+    },
+    "cb": []
+  },
+  "Core::color/warning/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/600"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 4"
+    ]
+  },
+  "Core::color/warning/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/700"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 5"
+    ]
+  },
+  "Core::color/warning/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/800"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 6"
+    ]
+  },
+  "Core::color/warning/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/900"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 7"
+    ]
+  },
+  "Core::color/warning/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/warm-yellow/1000"
+    },
+    "cb": []
+  },
+  "Core::color/urgent/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/0"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 1",
+      "Style (Sherpa)::status/urgent/color 2"
+    ]
+  },
+  "Core::color/urgent/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/100"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 2"
+    ]
+  },
+  "Core::color/urgent/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/200"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 3"
+    ]
+  },
+  "Core::color/urgent/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/400"
+    },
+    "cb": []
+  },
+  "Core::color/urgent/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/500"
+    },
+    "cb": []
+  },
+  "Core::color/urgent/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/600"
+    },
+    "cb": []
+  },
+  "Core::color/urgent/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/700"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 4"
+    ]
+  },
+  "Core::color/urgent/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/800"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 5"
+    ]
+  },
+  "Core::color/urgent/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/900"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 6"
+    ]
+  },
+  "Core::color/urgent/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/orange/1000"
+    },
+    "cb": []
+  },
+  "Core::color/critical/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/0"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 1"
+    ]
+  },
+  "Core::color/critical/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/100"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 2"
+    ]
+  },
+  "Core::color/critical/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/200"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 3"
+    ]
+  },
+  "Core::color/critical/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/300"
+    },
+    "cb": []
+  },
+  "Core::color/critical/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/400"
+    },
+    "cb": []
+  },
+  "Core::color/critical/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/500"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 4"
+    ]
+  },
+  "Core::color/critical/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/600"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 5"
+    ]
+  },
+  "Core::color/critical/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/700"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 6"
+    ]
+  },
+  "Core::color/critical/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/800"
+    },
+    "cb": []
+  },
+  "Core::color/critical/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/red/900"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 2"
+    ]
+  },
+  "Core::color/success/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/0"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 1",
+      "Style (Sherpa)::status/success/color 2"
+    ]
+  },
+  "Core::color/success/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/100"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 2"
+    ]
+  },
+  "Core::color/success/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/300"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 3"
+    ]
+  },
+  "Core::color/success/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/400"
+    },
+    "cb": []
+  },
+  "Core::color/success/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/500"
+    },
+    "cb": []
+  },
+  "Core::color/success/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/600"
+    },
+    "cb": []
+  },
+  "Core::color/success/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/700"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 4"
+    ]
+  },
+  "Core::color/success/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/800"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 5"
+    ]
+  },
+  "Core::color/success/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/900"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 6"
+    ]
+  },
+  "Core::color/success/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/green/1000"
+    },
+    "cb": []
+  },
+  "Core::color/neutral/0": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/0"
+    },
+    "cb": [
+      "Style (Sherpa)::app/primary",
+      "Style (Sherpa)::app/secondary",
+      "Style (Sherpa)::surface/primary/base",
+      "Style (Sherpa)::surface/interactive/base",
+      "Style (Sherpa)::surface/interactive/secondary/base",
+      "Style (Sherpa)::content/title/on-color",
+      "Style (Sherpa)::content/primary/on-color",
+      "Style (Sherpa)::border/interactive/tertiary/hover",
+      "Style (Sherpa)::border/interactive/tertiary/down"
+    ]
+  },
+  "Core::color/neutral/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/25"
+    },
+    "cb": []
+  },
+  "Core::color/neutral/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/50"
+    },
+    "cb": [
+      "Style (Sherpa)::app/tertiary",
+      "Style (Sherpa)::surface/tertiary/base",
+      "Style (Sherpa)::surface/interactive/hover",
+      "Style (Sherpa)::surface/interactive/secondary/hover",
+      "Style (Sherpa)::content/title/base",
+      "Style (Sherpa)::content/primary/on-color"
+    ]
+  },
+  "Core::color/neutral/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/100"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/primary/inactive",
+      "Style (Sherpa)::surface/interactive/down",
+      "Style (Sherpa)::surface/interactive/secondary/down",
+      "Style (Sherpa)::content/primary/base",
+      "Style (Sherpa)::content/secondary/on-color"
+    ]
+  },
+  "Core::color/neutral/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/400"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/primary/down",
+      "Style (Sherpa)::surface/interactive/inactive",
+      "Style (Sherpa)::surface/interactive/secondary/inactive",
+      "Style (Sherpa)::content/tertiary/on-color",
+      "Style (Sherpa)::content/inactive/on-color",
+      "Style (Sherpa)::border/primary",
+      "Style (Sherpa)::border/interactive/secondary"
+    ]
+  },
+  "Core::color/neutral/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/400"
+    },
+    "cb": [
+      "Style (Sherpa)::content/secondary/base",
+      "Style (Sherpa)::content/tertiary/on-color",
+      "Style (Sherpa)::content/inactive/base",
+      "Style (Sherpa)::content/inactive/on-color-subtle",
+      "Style (Sherpa)::border/primary/inactive",
+      "Style (Sherpa)::border/interactive/secondary/hover"
+    ]
+  },
+  "Core::color/neutral/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/600"
+    },
+    "cb": [
+      "Style (Sherpa)::content/tertiary/base",
+      "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "Style (Sherpa)::content/inactive/on-color",
+      "Style (Sherpa)::border/interactive/inactive",
+      "Style (Sherpa)::border/interactive/secondary/down"
+    ]
+  },
+  "Core::color/neutral/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/700"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/secondary/inactive",
+      "Style (Sherpa)::content/tertiary/base",
+      "Style (Sherpa)::content/secondary/on-color-subtle",
+      "Style (Sherpa)::content/inactive/base",
+      "Style (Sherpa)::border/primary",
+      "Style (Sherpa)::border/interactive/secondary"
+    ]
+  },
+  "Core::color/neutral/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/900"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/primary/inactive",
+      "Style (Sherpa)::content/secondary/base",
+      "Style (Sherpa)::content/secondary/on-color-subtle",
+      "Style (Sherpa)::content/inactive/on-color-subtle",
+      "Style (Sherpa)::border/primary/inactive",
+      "Style (Sherpa)::border/interactive/secondary/hover"
+    ]
+  },
+  "Core::color/neutral/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/1000"
+    },
+    "cb": [
+      "Style (Sherpa)::app/tertiary",
+      "Style (Sherpa)::surface/primary/hover",
+      "Style (Sherpa)::surface/interactive/hover",
+      "Style (Sherpa)::surface/interactive/inactive",
+      "Style (Sherpa)::surface/interactive/secondary/hover",
+      "Style (Sherpa)::content/primary/base",
+      "Style (Sherpa)::content/primary/on-color-subtle",
+      "Style (Sherpa)::border/interactive/secondary/down"
+    ]
+  },
+  "Core::color/neutral/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/950"
+    },
+    "cb": [
+      "Style (Sherpa)::app/secondary",
+      "Style (Sherpa)::surface/primary/down",
+      "Style (Sherpa)::surface/tertiary/down",
+      "Style (Sherpa)::surface/interactive/secondary/down",
+      "Style (Sherpa)::content/title/base",
+      "Style (Sherpa)::content/title/on-color-subtle"
+    ]
+  },
+  "Core::color/tones/100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/100"
+    },
+    "cb": []
+  },
+  "Core::color/tones/200": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/200"
+    },
+    "cb": []
+  },
+  "Core::color/tones/300": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/300"
+    },
+    "cb": []
+  },
+  "Core::color/tones/400": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/500"
+    },
+    "cb": []
+  },
+  "Core::color/tones/500": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/550"
+    },
+    "cb": []
+  },
+  "Core::color/tones/600": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/600"
+    },
+    "cb": []
+  },
+  "Core::color/tones/700": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/extended/slate/750"
+    },
+    "cb": []
+  },
+  "Core::color/tones/800": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/greyscale/1000"
+    },
+    "cb": [
+      "Style (Sherpa)::border/interactive/tertiary/hover"
+    ]
+  },
+  "Core::color/tones/900": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/900"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/secondary/hover",
+      "Style (Sherpa)::surface/tertiary/hover",
+      "Style (Sherpa)::surface/interactive/base"
+    ]
+  },
+  "Core::color/tones/1000": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "Primitives::color/basic/monochrome/950"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/secondary/down",
+      "Style (Sherpa)::surface/interactive/down",
+      "Style (Sherpa)::border/interactive/tertiary/down"
+    ]
+  },
+  "Core::fonts/scale/0": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 0
+    },
+    "cb": [
+      "Typography::paragraph"
+    ]
+  },
+  "Core::fonts/scale/2xs": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 8
+    },
+    "cb": [
+      "Typography::size",
+      "Typography::paragraph",
+      "Button::button-font/size"
+    ]
+  },
+  "Core::fonts/scale/xs": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 10
+    },
+    "cb": [
+      "Typography::size",
+      "Typography::paragraph",
+      "Button::button-font/size"
+    ]
+  },
+  "Core::fonts/scale/sm": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 12
+    },
+    "cb": [
+      "Typography::size",
+      "Typography::line-height",
+      "Button::button-font/line-height"
+    ]
+  },
+  "Core::fonts/scale/base": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 14
+    },
+    "cb": [
+      "Typography::size",
+      "Typography::line-height",
+      "Button::button-font/size",
+      "Button::button-font/line-height"
+    ]
+  },
+  "Core::fonts/scale/lg": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 16
+    },
+    "cb": [
+      "Typography::size",
+      "Typography::line-height",
+      "Typography::paragraph"
+    ]
+  },
+  "Core::fonts/scale/xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 20
+    },
+    "cb": [
+      "Typography::line-height",
+      "Button::button-font/line-height"
+    ]
+  },
+  "Core::fonts/scale/2xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 24
+    },
+    "cb": [
+      "Typography::line-height"
+    ]
+  },
+  "Core::fonts/scale/3xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 28
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/4xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 30
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/5xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 32
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/6xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 36
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/7xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 40
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/8xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 42
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/9xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 44
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/10xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 48
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/11xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 52
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/12xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 56
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/13xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 64
+    },
+    "cb": []
+  },
+  "Core::fonts/scale/14xl": {
+    "t": "FLOAT",
+    "s": "FONT_SIZE",
+    "a": {
+      "value": 72
+    },
+    "cb": []
+  },
+  "Core::size/none": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/0"
+    },
+    "cb": []
+  },
+  "Core::size/3xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/50"
+    },
+    "cb": []
+  },
+  "Core::size/2xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/100"
+    },
+    "cb": [
+      "Button::button-size/icon"
+    ]
+  },
+  "Core::size/xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/150"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Button::button-size/icon",
+      "Switch::switch-size/thumb",
+      "Style (Sherpa)::size/icon/2xs"
+    ]
+  },
+  "Core::size/sm": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/200"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Button::button-size/icon",
+      "Switch::switch-size/height",
+      "Switch::switch-size/thumb",
+      "Style (Sherpa)::size/icon/xs"
+    ]
+  },
+  "Core::size/md": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/250"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Button::button-size/icon",
+      "Switch::switch-size/height",
+      "Style (Sherpa)::size/icon/sm"
+    ]
+  },
+  "Core::size/lg": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/300"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Style (Sherpa)::size/icon/md"
+    ]
+  },
+  "Core::size/xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/350"
+    },
+    "cb": [
+      "Switch::switch-size/width",
+      "Style (Sherpa)::size/icon/lg"
+    ]
+  },
+  "Core::size/2xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/400"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Style (Sherpa)::size/icon/xl"
+    ]
+  },
+  "Core::size/3xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/500"
+    },
+    "cb": [
+      "Button::button-size/height"
+    ]
+  },
+  "Core::size/4xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/600"
+    },
+    "cb": [
+      "Button::button-size/height",
+      "Switch::switch-size/width"
+    ]
+  },
+  "Core::size/5xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/700"
+    },
+    "cb": []
+  },
+  "Core::size/6xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "value": "Primitives::scale/800"
+    },
+    "cb": []
+  },
+  "Core::space/grouped": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": -1
+    },
+    "cb": []
+  },
+  "Core::space/none": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/0"
+    },
+    "cb": [
+      "Container::container-space/padding-none"
+    ]
+  },
+  "Core::space/3xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/25"
+    },
+    "cb": [
+      "Button::button-space/padding",
+      "Button::button-space/gap",
+      "Switch::switch-size/padding-horizontal",
+      "Control::control-space/padding-xs"
+    ]
+  },
+  "Core::space/2xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/50"
+    },
+    "cb": [
+      "Button::button-space/gap",
+      "Control::control-space/padding-sm",
+      "Control::control-space/gap-sm"
+    ]
+  },
+  "Core::space/xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/100"
+    },
+    "cb": [
+      "Button::button-space/padding",
+      "Button::button-space/gap",
+      "Control::control-space/padding-md",
+      "Control::control-space/gap-base",
+      "Container::container-space/padding-sm",
+      "Container::container-space/gap-sm",
+      "Layout (Grid)::layout-grid/row-height"
+    ]
+  },
+  "Core::space/sm": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/150"
+    },
+    "cb": [
+      "Button::button-space/padding",
+      "Container::container-space/gap-md"
+    ]
+  },
+  "Core::space/base": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/200"
+    },
+    "cb": [
+      "Container::container-space/padding-md",
+      "Container::container-space/padding-sm",
+      "Container::container-space/gap-lg",
+      "Layout (Grid)::layout-grid/padding",
+      "Layout (Grid)::layout-grid/gap-horizontal",
+      "Layout (Grid)::layout-grid/gap-vertical"
+    ]
+  },
+  "Core::space/lg": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/250"
+    },
+    "cb": []
+  },
+  "Core::space/xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/300"
+    },
+    "cb": []
+  },
+  "Core::space/2xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/400"
+    },
+    "cb": []
+  },
+  "Core::space/3xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/500"
+    },
+    "cb": []
+  },
+  "Core::space/4xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/600"
+    },
+    "cb": []
+  },
+  "Core::space/5xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/700"
+    },
+    "cb": []
+  },
+  "Core::space/6xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT,GAP",
+    "a": {
+      "value": "Primitives::scale/800"
+    },
+    "cb": []
+  },
+  "Core::color/brand/overlay-low": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8500cc"
+    },
+    "cb": []
+  },
+  "Core::color/brand/overlay-high": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#8500cc"
+    },
+    "cb": []
+  },
+  "Core::color/critical/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#361c16"
+    },
+    "cb": [
+      "Style (Sherpa)::status/critical/color 1"
+    ]
+  },
+  "Core::color/info/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3f4447"
+    },
+    "cb": [
+      "Style (Sherpa)::status/info/color 1"
+    ]
+  },
+  "Core::color/warning/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#46391e"
+    },
+    "cb": [
+      "Style (Sherpa)::status/warning/color 1"
+    ]
+  },
+  "Core::color/success/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#142e22"
+    },
+    "cb": [
+      "Style (Sherpa)::status/success/color 1"
+    ]
+  },
+  "Core::color/urgent/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#3e2816"
+    },
+    "cb": [
+      "Style (Sherpa)::status/urgent/color 1"
+    ]
+  },
+  "Core::color/neutral/1100": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "value": "#333438"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::app/primary": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Primitives::color/basic/monochrome/950"
+    },
+    "cb": [
+      "Badge::badge-border/default"
+    ]
+  },
+  "Style (Sherpa)::app/secondary": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Core::color/neutral/1000"
+    },
+    "cb": [
+      "Navigation::nav-container-surface/default"
+    ]
+  },
+  "Style (Sherpa)::app/tertiary": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/neutral/200",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/primary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Primitives::color/basic/monochrome/925"
+    },
+    "cb": [
+      "Badge::badge-surface/default"
+    ]
+  },
+  "Style (Sherpa)::surface/primary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/50",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/primary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/400",
+      "dark": "Core::color/neutral/1000"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/primary/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/300",
+      "dark": "Core::color/neutral/800"
+    },
+    "cb": [
+      "Container::container-surface/inactive"
+    ]
+  },
+  "Style (Sherpa)::surface/secondary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/25",
+      "dark": "Primitives::color/basic/monochrome/900"
+    },
+    "cb": [
+      "Container::container-surface/default",
+      "Navigation::nav-container-surface/default"
+    ]
+  },
+  "Style (Sherpa)::surface/secondary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/250",
+      "dark": "Core::color/tones/900"
+    },
+    "cb": [
+      "Container::container-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/secondary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/300",
+      "dark": "Core::color/tones/1000"
+    },
+    "cb": [
+      "Container::container-surface/down"
+    ]
+  },
+  "Style (Sherpa)::surface/tertiary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/200",
+      "dark": "Primitives::color/basic/monochrome/875"
+    },
+    "cb": [
+      "Container::container-surface/default"
+    ]
+  },
+  "Style (Sherpa)::surface/tertiary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/400",
+      "dark": "Core::color/tones/900"
+    },
+    "cb": [
+      "Container::container-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/tertiary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/450",
+      "dark": "Core::color/neutral/1000"
+    },
+    "cb": [
+      "Container::container-surface/down",
+      "Switch::switch-surface/track-off"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Core::color/tones/900"
+    },
+    "cb": [
+      "Control::control-surface/default"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/200",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": [
+      "Control::control-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/300",
+      "dark": "Core::color/tones/1000"
+    },
+    "cb": [
+      "Control::control-surface/down"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/400",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": [
+      "Control::control-surface/inactive"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/primary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/accent/base",
+      "dark": "Core::color/accent/base"
+    },
+    "cb": [
+      "Control::control-surface/default",
+      "Control::control-surface/accent",
+      "Badge::badge-surface/default"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/primary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/accent/700",
+      "dark": "Core::color/accent/700"
+    },
+    "cb": [
+      "Control::control-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/primary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/accent/800",
+      "dark": "Core::color/accent/800"
+    },
+    "cb": [
+      "Control::control-surface/down"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/secondary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Primitives::color/basic/monochrome/925"
+    },
+    "cb": [
+      "Control::control-surface/default",
+      "Control::control-surface/accent"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/secondary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/200",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": [
+      "Control::control-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/secondary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/300",
+      "dark": "Core::color/neutral/1000"
+    },
+    "cb": [
+      "Control::control-surface/down"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/secondary/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/neutral/400",
+      "dark": "Core::color/neutral/700"
+    },
+    "cb": [
+      "Control::control-surface/inactive"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/tertiary/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/transparent/0",
+      "dark": "Primitives::color/basic/transparent/0"
+    },
+    "cb": [
+      "Control::control-surface/default",
+      "Control::control-border/default",
+      "Control::control-surface/accent"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/tertiary/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/transparent/400",
+      "dark": "Primitives::color/basic/transparent/300"
+    },
+    "cb": [
+      "Control::control-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/tertiary/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/transparent/600",
+      "dark": "Primitives::color/basic/transparent/600"
+    },
+    "cb": [
+      "Control::control-surface/down"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/tertiary/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/basic/transparent/400",
+      "dark": "Primitives::color/basic/transparent/600"
+    },
+    "cb": [
+      "Control::control-surface/inactive"
+    ]
+  },
+  "Style (Sherpa)::surface/interactive/active/base": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/brand/100",
+      "dark": "Core::color/brand/700"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/gradient/neutral/stop 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/gradient/neutral/stop 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/gradient/ai/stop 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/500",
+      "dark": "Primitives::color/extended/neon-blue/500"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/gradient/ai/stop 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/brand/base",
+      "dark": "Core::color/brand/base"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/active/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/brand/200",
+      "dark": "Core::color/brand/700"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::surface/interactive/active/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "light": "Core::color/brand/300",
+      "dark": "Core::color/brand/1000"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/info/color 1": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/100",
+      "dark": "Core::color/info/1100"
+    },
+    "cb": [
+      "Status::status-surface/default"
+    ]
+  },
+  "Style (Sherpa)::status/success/color 1": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/100",
+      "dark": "Core::color/success/1100"
+    },
+    "cb": [
+      "Status::status-surface/default"
+    ]
+  },
+  "Style (Sherpa)::status/success/color 2": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/200",
+      "dark": "Core::color/success/100"
+    },
+    "cb": [
+      "Status::status-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::status/success/color 3": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/300",
+      "dark": "Core::color/success/300"
+    },
+    "cb": [
+      "Status::status-surface/down"
+    ]
+  },
+  "Style (Sherpa)::status/success/color 4": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/700",
+      "dark": "Core::color/success/700"
+    },
+    "cb": [
+      "Status::status-border/default",
+      "Switch::switch-surface/track-on"
+    ]
+  },
+  "Style (Sherpa)::status/success/color 5": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/800",
+      "dark": "Core::color/success/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/success/color 6": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/success/900",
+      "dark": "Core::color/success/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/info/color 2": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/200",
+      "dark": "Core::color/info/100"
+    },
+    "cb": [
+      "Status::status-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::status/info/color 3": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/300",
+      "dark": "Core::color/info/300"
+    },
+    "cb": [
+      "Status::status-surface/down"
+    ]
+  },
+  "Style (Sherpa)::status/info/color 4": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/700",
+      "dark": "Core::color/info/700"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/info/color 5": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/800",
+      "dark": "Core::color/info/800"
+    },
+    "cb": [
+      "Status::status-border/default"
+    ]
+  },
+  "Style (Sherpa)::status/info/color 6": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/info/900",
+      "dark": "Core::color/info/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/urgent/color 1": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/100",
+      "dark": "Core::color/urgent/1100"
+    },
+    "cb": [
+      "Status::status-surface/default"
+    ]
+  },
+  "Style (Sherpa)::status/warning/color 1": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/100",
+      "dark": "Core::color/warning/1100"
+    },
+    "cb": [
+      "Status::status-surface/default"
+    ]
+  },
+  "Style (Sherpa)::status/critical/color 1": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/100",
+      "dark": "Core::color/critical/1100"
+    },
+    "cb": [
+      "Status::status-surface/default"
+    ]
+  },
+  "Style (Sherpa)::status/critical/color 2": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/200",
+      "dark": "Core::color/critical/1000"
+    },
+    "cb": [
+      "Status::status-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::status/critical/color 3": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/300",
+      "dark": "Core::color/critical/300"
+    },
+    "cb": [
+      "Status::status-surface/down"
+    ]
+  },
+  "Style (Sherpa)::status/critical/color 4": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/600",
+      "dark": "Core::color/critical/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/critical/color 5": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/700",
+      "dark": "Core::color/critical/700"
+    },
+    "cb": [
+      "Status::status-border/default"
+    ]
+  },
+  "Style (Sherpa)::status/critical/color 6": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/critical/800",
+      "dark": "Core::color/critical/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/warning/color 2": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/200",
+      "dark": "Core::color/warning/100"
+    },
+    "cb": [
+      "Status::status-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::status/warning/color 3": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/300",
+      "dark": "Core::color/warning/300"
+    },
+    "cb": [
+      "Status::status-surface/down"
+    ]
+  },
+  "Style (Sherpa)::status/warning/color 4": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/600",
+      "dark": "Core::color/warning/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/warning/color 5": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/700",
+      "dark": "Core::color/warning/700"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/warning/color 6": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/800",
+      "dark": "Core::color/warning/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/urgent/color 2": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/200",
+      "dark": "Core::color/urgent/100"
+    },
+    "cb": [
+      "Status::status-surface/hover"
+    ]
+  },
+  "Style (Sherpa)::status/urgent/color 3": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/300",
+      "dark": "Core::color/urgent/300"
+    },
+    "cb": [
+      "Status::status-surface/down"
+    ]
+  },
+  "Style (Sherpa)::status/urgent/color 4": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/700",
+      "dark": "Core::color/urgent/700"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/urgent/color 5": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/800",
+      "dark": "Core::color/urgent/800"
+    },
+    "cb": [
+      "Status::status-border/default"
+    ]
+  },
+  "Style (Sherpa)::status/urgent/color 6": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/urgent/900",
+      "dark": "Core::color/urgent/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/title/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/1000",
+      "dark": "Core::color/neutral/200"
+    },
+    "cb": [
+      "Status::status-content/title",
+      "Badge::badge-content/default",
+      "Color Sets::color-sets-content/title"
+    ]
+  },
+  "Style (Sherpa)::content/primary/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/900",
+      "dark": "Core::color/neutral/300"
+    },
+    "cb": [
+      "Control::control-content/default",
+      "Status::status-content/primary",
+      "Control::control-content/inverse",
+      "Container::container-content/default",
+      "Color Sets::color-sets-content/primary"
+    ]
+  },
+  "Style (Sherpa)::content/tertiary/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/700",
+      "dark": "Core::color/neutral/600"
+    },
+    "cb": [
+      "Status::status-content/tertiary",
+      "Color Sets::color-sets-content/tertiary"
+    ]
+  },
+  "Style (Sherpa)::content/secondary/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/800",
+      "dark": "Core::color/neutral/500"
+    },
+    "cb": [
+      "Status::status-content/secondary",
+      "Color Sets::color-sets-content/secondary"
+    ]
+  },
+  "Style (Sherpa)::content/title/on-color": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Core::color/neutral/0"
+    },
+    "cb": [
+      "Badge::badge-content/default"
+    ]
+  },
+  "Style (Sherpa)::content/primary/on-color": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/200",
+      "dark": "Core::color/neutral/0"
+    },
+    "cb": [
+      "Control::control-content/default",
+      "Control::control-content/inverse"
+    ]
+  },
+  "Style (Sherpa)::content/tertiary/on-color": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/500",
+      "dark": "Core::color/neutral/400"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/secondary/on-color": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/300",
+      "dark": "Core::color/neutral/300"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/title/on-color-subtle": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/1000",
+      "dark": "Core::color/neutral/1000"
+    },
+    "cb": [
+      "Status::status-content/title",
+      "Color Sets::color-sets-content/title"
+    ]
+  },
+  "Style (Sherpa)::content/primary/on-color-subtle": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/900",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": [
+      "Status::status-content/primary",
+      "Color Sets::color-sets-content/primary"
+    ]
+  },
+  "Style (Sherpa)::content/tertiary/on-color-subtle": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/600",
+      "dark": "Core::color/neutral/600"
+    },
+    "cb": [
+      "Status::status-content/tertiary",
+      "Color Sets::color-sets-content/tertiary"
+    ]
+  },
+  "Style (Sherpa)::content/secondary/on-color-subtle": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/700",
+      "dark": "Core::color/neutral/800"
+    },
+    "cb": [
+      "Status::status-content/secondary",
+      "Color Sets::color-sets-content/secondary"
+    ]
+  },
+  "Style (Sherpa)::content/inactive/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/700",
+      "dark": "Core::color/neutral/500"
+    },
+    "cb": [
+      "Switch::switch-content/inactive"
+    ]
+  },
+  "Style (Sherpa)::content/inactive/on-color": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/600",
+      "dark": "Core::color/neutral/400"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/inactive/on-color-subtle": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/neutral/800",
+      "dark": "Core::color/neutral/500"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/primary": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/400",
+      "dark": "Core::color/neutral/700"
+    },
+    "cb": [
+      "Container::container-border/default",
+      "Badge::badge-border/default"
+    ]
+  },
+  "Style (Sherpa)::border/primary/inactive": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/500",
+      "dark": "Core::color/neutral/800"
+    },
+    "cb": [
+      "Container::container-border/inactive"
+    ]
+  },
+  "Style (Sherpa)::border/interactive": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/500",
+      "dark": "Primitives::color/basic/greyscale/800"
+    },
+    "cb": [
+      "Style (Sherpa)::surface/interactive/gradient/neutral/stop 1",
+      "Style (Sherpa)::surface/interactive/gradient/neutral/stop 2",
+      "Style (Sherpa)::border/interactive/gradient/neutral/stop 1",
+      "Style (Sherpa)::border/interactive/gradient/neutral/stop 2",
+      "Style (Sherpa)::border/interactive/gradient/neutral/stop 3",
+      "Style (Sherpa)::border/interactive/gradient/neutral/stop 4",
+      "Style (Sherpa)::border/interactive/gradient/neutral/stop 5",
+      "Control::control-border/default"
+    ]
+  },
+  "Style (Sherpa)::border/interactive/hover": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/400",
+      "dark": "Primitives::color/basic/greyscale/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/down": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/600",
+      "dark": "Primitives::color/basic/greyscale/1000"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/inactive": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/600",
+      "dark": "Core::color/neutral/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/primary": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/accent/base",
+      "dark": "Core::color/accent/base"
+    },
+    "cb": [
+      "Control::control-border/default",
+      "Control::control-border/accent"
+    ]
+  },
+  "Style (Sherpa)::border/interactive/primary/hover": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/accent/700",
+      "dark": "Core::color/accent/500"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/primary/down": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/accent/800",
+      "dark": "Core::color/accent/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/secondary": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/400",
+      "dark": "Core::color/neutral/700"
+    },
+    "cb": [
+      "Control::control-border/default"
+    ]
+  },
+  "Style (Sherpa)::border/interactive/secondary/hover": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/500",
+      "dark": "Core::color/neutral/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/secondary/down": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/600",
+      "dark": "Core::color/neutral/900"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/tertiary": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/transparent/0",
+      "dark": "Primitives::color/basic/transparent/0"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/tertiary/hover": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Core::color/tones/800"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/tertiary/down": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/neutral/0",
+      "dark": "Core::color/tones/1000"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/active": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/brand/base",
+      "dark": "Core::color/brand/base"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/neutral/stop 1": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/neutral/stop 2": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/neutral/stop 3": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/neutral/stop 4": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/neutral/stop 5": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Style (Sherpa)::border/interactive",
+      "dark": "Style (Sherpa)::border/interactive"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/ai/stop 1": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/brand/base",
+      "dark": "Core::color/brand/base"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/ai/stop 2": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/500",
+      "dark": "Primitives::color/extended/neon-blue/500"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/ai/stop 3": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/300",
+      "dark": "Primitives::color/extended/phlox/300"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/ai/stop 4": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/500",
+      "dark": "Primitives::color/extended/razamatazz/500"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/gradient/ai/stop 5": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/brand/base",
+      "dark": "Core::color/brand/base"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/active/hover": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/brand/800",
+      "dark": "Core::color/brand/300"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::border/interactive/active/down": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "light": "Core::color/brand/900",
+      "dark": "Core::color/brand/400"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/tint": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#372f4f",
+      "dark": "#2e2e33"
+    },
+    "cb": [
+      "Status::status-shadow/color"
+    ]
+  },
+  "Style (Sherpa)::elevation/tint/info": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#0c303e",
+      "dark": "#0c303e"
+    },
+    "cb": [
+      "Status::status-shadow/color"
+    ]
+  },
+  "Style (Sherpa)::elevation/tint/success": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#004f26",
+      "dark": "#004f26"
+    },
+    "cb": [
+      "Status::status-shadow/color"
+    ]
+  },
+  "Style (Sherpa)::elevation/tint/warning": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#805500",
+      "dark": "#805500"
+    },
+    "cb": [
+      "Status::status-shadow/color"
+    ]
+  },
+  "Style (Sherpa)::elevation/tint/urgent": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#673106",
+      "dark": "#673106"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/tint/critical": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#601b0b",
+      "dark": "#601b0b"
+    },
+    "cb": [
+      "Status::status-shadow/color"
+    ]
+  },
+  "Style (Sherpa)::elevation/blur/small": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/700",
+      "dark": "Primitives::effects/offset/700"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/blur"
+    ]
+  },
+  "Style (Sherpa)::elevation/blur/base": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/800",
+      "dark": "Primitives::effects/offset/800"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/blur"
+    ]
+  },
+  "Style (Sherpa)::elevation/blur/large": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/900",
+      "dark": "Primitives::effects/offset/900"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/blur"
+    ]
+  },
+  "Style (Sherpa)::elevation/blur/sunken": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/600",
+      "dark": "Primitives::effects/offset/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/offset/y/small": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/500",
+      "dark": "Primitives::effects/offset/500"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-y"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/y/base": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/600",
+      "dark": "Primitives::effects/offset/600"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-y"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/y/large": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/700",
+      "dark": "Primitives::effects/offset/700"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-y"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/y/sunken": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/600",
+      "dark": "Primitives::effects/offset/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/offset/x/small": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/500",
+      "dark": "Primitives::effects/offset/500"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-x"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/x/base": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/600",
+      "dark": "Primitives::effects/offset/600"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-x"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/x/large": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/700",
+      "dark": "Primitives::effects/offset/700"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/offset-x"
+    ]
+  },
+  "Style (Sherpa)::elevation/offset/x/sunken": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/300",
+      "dark": "Primitives::effects/offset/300"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/spread/small": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/300",
+      "dark": "Primitives::effects/offset/300"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/spread"
+    ]
+  },
+  "Style (Sherpa)::elevation/spread/base": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/400",
+      "dark": "Primitives::effects/offset/400"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/spread"
+    ]
+  },
+  "Style (Sherpa)::elevation/spread/large": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/500",
+      "dark": "Primitives::effects/offset/500"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/spread"
+    ]
+  },
+  "Style (Sherpa)::elevation/spread/sunken": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": "Primitives::effects/offset/600",
+      "dark": "Primitives::effects/offset/600"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/700",
+      "dark": "Primitives::color/basic/purple/600"
+    },
+    "cb": [
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/500",
+      "dark": "Primitives::color/basic/purple/500"
+    },
+    "cb": [
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/400",
+      "dark": "Primitives::color/basic/purple/400"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/300",
+      "dark": "Primitives::color/basic/purple/300"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/200",
+      "dark": "Primitives::color/basic/purple/200"
+    },
+    "cb": [
+      "Data Viz::series/5"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 6": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/200",
+      "dark": "Primitives::color/basic/monochrome/200"
+    },
+    "cb": [
+      "Data Viz::series/6"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 7": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/200",
+      "dark": "Primitives::color/extended/warm-yellow/300"
+    },
+    "cb": [
+      "Data Viz::series/7"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 8": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/400",
+      "dark": "Primitives::color/extended/warm-yellow/500"
+    },
+    "cb": [
+      "Data Viz::series/8"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 9": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/800",
+      "dark": "Primitives::color/extended/warm-yellow/700"
+    },
+    "cb": [
+      "Data Viz::series/9"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 10": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/900",
+      "dark": "Primitives::color/extended/warm-yellow/800"
+    },
+    "cb": [
+      "Data Viz::series/10"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 11": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/1000",
+      "dark": "Primitives::color/extended/warm-yellow/900"
+    },
+    "cb": [
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/800",
+      "dark": "Primitives::color/basic/blue-green/650"
+    },
+    "cb": [
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/700",
+      "dark": "Primitives::color/basic/blue-green/600"
+    },
+    "cb": [
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/500",
+      "dark": "Primitives::color/basic/blue-green/500"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/200",
+      "dark": "Primitives::color/basic/blue-green/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/100",
+      "dark": "Primitives::color/basic/blue-green/300"
+    },
+    "cb": [
+      "Data Viz::series/5"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 6": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/200",
+      "dark": "Primitives::color/basic/monochrome/200"
+    },
+    "cb": [
+      "Data Viz::series/6"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 7": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/200",
+      "dark": "Primitives::color/basic/pink/200"
+    },
+    "cb": [
+      "Data Viz::series/7"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 8": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/300",
+      "dark": "Primitives::color/basic/pink/300"
+    },
+    "cb": [
+      "Data Viz::series/8"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 9": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/400",
+      "dark": "Primitives::color/basic/pink/400"
+    },
+    "cb": [
+      "Data Viz::series/9"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 10": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/600",
+      "dark": "Primitives::color/basic/pink/500"
+    },
+    "cb": [
+      "Data Viz::series/10"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 11": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/700",
+      "dark": "Primitives::color/basic/pink/600"
+    },
+    "cb": [
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/700",
+      "dark": "Primitives::color/extended/turquoise/600"
+    },
+    "cb": [
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/650",
+      "dark": "Primitives::color/extended/turquoise/550"
+    },
+    "cb": [
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/600",
+      "dark": "Primitives::color/extended/turquoise/450"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/400",
+      "dark": "Primitives::color/extended/turquoise/350"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/300",
+      "dark": "Primitives::color/extended/turquoise/300"
+    },
+    "cb": [
+      "Data Viz::series/5"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 6": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/monochrome/200",
+      "dark": "Primitives::color/basic/monochrome/200"
+    },
+    "cb": [
+      "Data Viz::series/6"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 7": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/300",
+      "dark": "Primitives::color/extended/razamatazz/250"
+    },
+    "cb": [
+      "Data Viz::series/7"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 8": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/400",
+      "dark": "Primitives::color/extended/razamatazz/350"
+    },
+    "cb": [
+      "Data Viz::series/8"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 9": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/450",
+      "dark": "Primitives::color/extended/razamatazz/450"
+    },
+    "cb": [
+      "Data Viz::series/9"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 10": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/600",
+      "dark": "Primitives::color/extended/razamatazz/500"
+    },
+    "cb": [
+      "Data Viz::series/10"
+    ]
+  },
+  "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 11": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/650",
+      "dark": "Primitives::color/extended/razamatazz/600"
+    },
+    "cb": [
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/purple/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/200",
+      "dark": "Primitives::color/basic/purple/100"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/purple/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/300",
+      "dark": "Primitives::color/basic/purple/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/purple/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/500",
+      "dark": "Primitives::color/basic/purple/300"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/purple/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/600",
+      "dark": "Primitives::color/basic/purple/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/purple/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/800",
+      "dark": "Primitives::color/basic/purple/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/phlox/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/350",
+      "dark": "Primitives::color/extended/phlox/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/phlox/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/450",
+      "dark": "Primitives::color/extended/phlox/350"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/phlox/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/550",
+      "dark": "Primitives::color/extended/phlox/400"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/phlox/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/600",
+      "dark": "Primitives::color/extended/phlox/450"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/phlox/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/650",
+      "dark": "Primitives::color/extended/phlox/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/turquoise/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/300",
+      "dark": "Primitives::color/extended/turquoise/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/turquoise/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/400",
+      "dark": "Primitives::color/extended/turquoise/350"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/turquoise/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/550",
+      "dark": "Primitives::color/extended/turquoise/400"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/turquoise/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/650",
+      "dark": "Primitives::color/extended/turquoise/450"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/turquoise/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/700",
+      "dark": "Primitives::color/extended/turquoise/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue green/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/200",
+      "dark": "Primitives::color/basic/blue-green/100"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue green/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/400",
+      "dark": "Primitives::color/basic/blue-green/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue green/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/500",
+      "dark": "Primitives::color/basic/blue-green/300"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue green/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/700",
+      "dark": "Primitives::color/basic/blue-green/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue green/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/800",
+      "dark": "Primitives::color/basic/blue-green/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/200",
+      "dark": "Primitives::color/basic/blue/100"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/400",
+      "dark": "Primitives::color/basic/blue/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/500",
+      "dark": "Primitives::color/basic/blue/300"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/600",
+      "dark": "Primitives::color/basic/blue/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/blue/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/700",
+      "dark": "Primitives::color/basic/blue/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/neon blue/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/300",
+      "dark": "Primitives::color/extended/neon-blue/250"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/neon blue/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/400",
+      "dark": "Primitives::color/extended/neon-blue/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/neon blue/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/450",
+      "dark": "Primitives::color/extended/neon-blue/350"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/neon blue/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/500",
+      "dark": "Primitives::color/extended/neon-blue/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/neon blue/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/550",
+      "dark": "Primitives::color/extended/neon-blue/450"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/orange/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/200",
+      "dark": "Primitives::color/extended/warm-yellow/100"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/orange/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/400",
+      "dark": "Primitives::color/extended/warm-yellow/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/orange/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/600",
+      "dark": "Primitives::color/extended/warm-yellow/300"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/orange/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/800",
+      "dark": "Primitives::color/extended/warm-yellow/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/orange/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/warm-yellow/900",
+      "dark": "Primitives::color/extended/warm-yellow/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/pink/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/100",
+      "dark": "Primitives::color/basic/pink/100"
+    },
+    "cb": [
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/pink/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/200",
+      "dark": "Primitives::color/basic/pink/200"
+    },
+    "cb": [
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/pink/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/400",
+      "dark": "Primitives::color/basic/pink/300"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/pink/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/700",
+      "dark": "Primitives::color/basic/pink/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/pink/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/pink/800",
+      "dark": "Primitives::color/basic/pink/500"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/razamatazz/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/300",
+      "dark": "Primitives::color/extended/razamatazz/250"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/razamatazz/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/400",
+      "dark": "Primitives::color/extended/razamatazz/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/razamatazz/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/500",
+      "dark": "Primitives::color/extended/razamatazz/350"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/razamatazz/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/600",
+      "dark": "Primitives::color/extended/razamatazz/400"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/razamatazz/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/650",
+      "dark": "Primitives::color/extended/razamatazz/450"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/green/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/200",
+      "dark": "Primitives::color/basic/green/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/green/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/300",
+      "dark": "Primitives::color/basic/green/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/green/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/500",
+      "dark": "Primitives::color/basic/green/400"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/green/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/600",
+      "dark": "Primitives::color/basic/green/500"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/green/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/800",
+      "dark": "Primitives::color/basic/green/600"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/greyscale/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/200",
+      "dark": "Primitives::color/basic/greyscale/200"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/greyscale/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/300",
+      "dark": "Primitives::color/basic/greyscale/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover",
+      "Color Sets::color-sets-surface/down",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/greyscale/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/500",
+      "dark": "Primitives::color/basic/greyscale/400"
+    },
+    "cb": [
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/greyscale/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/600",
+      "dark": "Primitives::color/basic/greyscale/500"
+    },
+    "cb": [
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/sequential/greyscale/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/700",
+      "dark": "Primitives::color/basic/greyscale/600"
+    },
+    "cb": [
+      "Data Viz::series/5",
+      "Data Viz::series/6",
+      "Data Viz::series/7",
+      "Data Viz::series/8",
+      "Data Viz::series/9",
+      "Data Viz::series/10",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 1": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/purple/500",
+      "dark": "Primitives::color/basic/purple/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/1"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 2": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/phlox/500",
+      "dark": "Primitives::color/extended/phlox/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/2"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 3": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/turquoise/550",
+      "dark": "Primitives::color/extended/turquoise/450"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/3"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 4": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue-green/500",
+      "dark": "Primitives::color/basic/blue-green/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/4"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 5": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/blue/500",
+      "dark": "Primitives::color/basic/blue/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/5"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 6": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/neon-blue/400",
+      "dark": "Primitives::color/extended/neon-blue/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/6"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 7": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/chrome-orange/500",
+      "dark": "Primitives::color/extended/chrome-orange/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/7"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 8": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/400",
+      "dark": "Primitives::color/extended/razamatazz/350"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/8"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 9": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/extended/razamatazz/550",
+      "dark": "Primitives::color/extended/razamatazz/450"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/9"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 10": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/green/500",
+      "dark": "Primitives::color/basic/green/400"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/10"
+    ]
+  },
+  "Style (Sherpa)::data-viz/categorical/color 11": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL,STROKE_COLOR",
+    "a": {
+      "light": "Primitives::color/basic/greyscale/500",
+      "dark": "Primitives::color/basic/greyscale/300"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default",
+      "Data Viz::series/11"
+    ]
+  },
+  "Style (Sherpa)::elevation/blur/xl": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": 24,
+      "dark": 24
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/spread/xl": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": 4,
+      "dark": 4
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/offset/x/xl": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": 12,
+      "dark": 12
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/offset/y/xl": {
+    "t": "FLOAT",
+    "s": "EFFECT_FLOAT",
+    "a": {
+      "light": 12,
+      "dark": 12
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::elevation/tint/focus": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "light": "#3c5edd",
+      "dark": "#3c5edd"
+    },
+    "cb": []
+  },
+  "Button::button-size/height": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "xl": "Core::size/2xl",
+      "xs": "Core::size/sm",
+      "sm": "Core::size/md",
+      "md": "Core::size/lg",
+      "3xl": "Core::size/4xl",
+      "2xs": "Core::size/xs",
+      "2xl": "Core::size/3xl"
+    },
+    "cb": []
+  },
+  "Button::button-space/padding": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "xl": "Core::space/xs",
+      "xs": "Core::space/3xs",
+      "sm": "Core::space/3xs",
+      "md": "Core::space/xs",
+      "3xl": "Core::space/sm",
+      "2xs": "Core::space/3xs",
+      "2xl": "Core::space/sm"
+    },
+    "cb": []
+  },
+  "Button::button-space/gap": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "xl": "Core::space/xs",
+      "xs": "Core::space/3xs",
+      "sm": "Core::space/3xs",
+      "md": "Core::space/2xs",
+      "3xl": "Core::space/xs",
+      "2xs": "Core::space/3xs",
+      "2xl": "Core::space/xs"
+    },
+    "cb": []
+  },
+  "Button::button-size/icon": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "xl": "Core::size/sm",
+      "xs": "Core::size/xs",
+      "sm": "Core::size/xs",
+      "md": "Core::size/sm",
+      "3xl": "Core::size/md",
+      "2xs": "Core::size/2xs",
+      "2xl": "Core::size/md"
+    },
+    "cb": []
+  },
+  "Control::control-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/interactive/base",
+      "primary": "Style (Sherpa)::surface/interactive/primary/base",
+      "secondary": "Style (Sherpa)::surface/interactive/secondary/base",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/base"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/default",
+      "Color Sets::color-sets-surface/subtle"
+    ]
+  },
+  "Control::control-surface/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/interactive/hover",
+      "primary": "Style (Sherpa)::surface/interactive/primary/hover",
+      "secondary": "Style (Sherpa)::surface/interactive/secondary/hover",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/hover"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/hover"
+    ]
+  },
+  "Control::control-surface/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/interactive/down",
+      "primary": "Style (Sherpa)::surface/interactive/primary/down",
+      "secondary": "Style (Sherpa)::surface/interactive/secondary/down",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/down"
+    },
+    "cb": [
+      "Color Sets::color-sets-surface/down"
+    ]
+  },
+  "Control::control-border/default": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::border/interactive",
+      "primary": "Style (Sherpa)::border/interactive/primary",
+      "secondary": "Style (Sherpa)::border/interactive/secondary",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/base"
+    },
+    "cb": [
+      "Color Sets::color-sets-border/default"
+    ]
+  },
+  "Control::control-content/default": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::content/primary/base",
+      "primary": "Style (Sherpa)::content/primary/on-color",
+      "secondary": "Style (Sherpa)::content/primary/base",
+      "tertiary": "Style (Sherpa)::content/primary/base"
+    },
+    "cb": [
+      "Switch::switch-content/track-off"
+    ]
+  },
+  "Status::status-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Color Sets::color-sets-surface/default",
+      "info": "Style (Sherpa)::status/info/color 1",
+      "critical": "Style (Sherpa)::status/critical/color 1",
+      "warning": "Style (Sherpa)::status/warning/color 1",
+      "urgent": "Style (Sherpa)::status/urgent/color 1",
+      "success": "Style (Sherpa)::status/success/color 1"
+    },
+    "cb": []
+  },
+  "Status::status-surface/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Color Sets::color-sets-surface/hover",
+      "info": "Style (Sherpa)::status/info/color 2",
+      "critical": "Style (Sherpa)::status/critical/color 2",
+      "warning": "Style (Sherpa)::status/warning/color 2",
+      "urgent": "Style (Sherpa)::status/urgent/color 2",
+      "success": "Style (Sherpa)::status/success/color 2"
+    },
+    "cb": []
+  },
+  "Status::status-surface/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Color Sets::color-sets-surface/down",
+      "info": "Style (Sherpa)::status/info/color 3",
+      "critical": "Style (Sherpa)::status/critical/color 3",
+      "warning": "Style (Sherpa)::status/warning/color 3",
+      "urgent": "Style (Sherpa)::status/urgent/color 3",
+      "success": "Style (Sherpa)::status/success/color 3"
+    },
+    "cb": []
+  },
+  "Status::status-border/default": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "passthrough": "Color Sets::color-sets-border/default",
+      "info": "Style (Sherpa)::status/info/color 5",
+      "critical": "Style (Sherpa)::status/critical/color 5",
+      "warning": "Style (Sherpa)::status/warning/color 7",
+      "urgent": "Style (Sherpa)::status/urgent/color 5",
+      "success": "Style (Sherpa)::status/success/color 4"
+    },
+    "cb": []
+  },
+  "Status::status-content/primary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/primary/base",
+      "info": "Style (Sherpa)::content/primary/base",
+      "critical": "Style (Sherpa)::content/primary/on-color-subtle",
+      "warning": "Style (Sherpa)::content/primary/on-color-subtle",
+      "urgent": "Style (Sherpa)::content/primary/on-color-subtle",
+      "success": "Style (Sherpa)::content/primary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Control::control-border/width": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "default": "Core::border/width/sm",
+      "primary": "Core::border/width/sm",
+      "secondary": "Core::border/width/sm",
+      "tertiary": "Core::border/width/sm"
+    },
+    "cb": []
+  },
+  "Control::control-space/padding-md": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/xs",
+      "primary": "Core::space/xs",
+      "secondary": "Core::space/xs",
+      "tertiary": "Core::space/xs"
+    },
+    "cb": []
+  },
+  "Control::control-space/gap-base": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/xs",
+      "primary": "Core::space/xs",
+      "secondary": "Core::space/xs",
+      "tertiary": "Core::space/xs"
+    },
+    "cb": []
+  },
+  "Control::control-surface/accent": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/interactive/primary/base",
+      "primary": "Style (Sherpa)::surface/interactive/primary/base",
+      "secondary": "Style (Sherpa)::surface/interactive/secondary/base",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/base"
+    },
+    "cb": []
+  },
+  "Control::control-content/inverse": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::content/primary/on-color",
+      "primary": "Style (Sherpa)::content/primary/on-color",
+      "secondary": "Style (Sherpa)::content/primary/base",
+      "tertiary": "Style (Sherpa)::content/primary/base"
+    },
+    "cb": [
+      "Switch::switch-content/track-on"
+    ]
+  },
+  "Switch::switch-size/padding-horizontal": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "standard": "Core::space/3xs",
+      "simple": "Core::space/3xs"
+    },
+    "cb": []
+  },
+  "Container::container-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Color Sets::color-sets-surface/default",
+      "secondary": "Style (Sherpa)::surface/secondary/base",
+      "tertiary": "Style (Sherpa)::surface/tertiary/base"
+    },
+    "cb": []
+  },
+  "Container::container-surface/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Color Sets::color-sets-surface/hover",
+      "secondary": "Style (Sherpa)::surface/secondary/hover",
+      "tertiary": "Style (Sherpa)::surface/tertiary/hover"
+    },
+    "cb": []
+  },
+  "Container::container-surface/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Color Sets::color-sets-surface/down",
+      "secondary": "Style (Sherpa)::surface/secondary/down",
+      "tertiary": "Style (Sherpa)::surface/tertiary/down"
+    },
+    "cb": []
+  },
+  "Container::container-surface/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/primary/inactive",
+      "secondary": "Style (Sherpa)::surface/primary/inactive",
+      "tertiary": "Style (Sherpa)::surface/primary/inactive"
+    },
+    "cb": []
+  },
+  "Container::container-border/default": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "default": "Color Sets::color-sets-border/default",
+      "secondary": "Style (Sherpa)::border/primary",
+      "tertiary": "Style (Sherpa)::border/primary"
+    },
+    "cb": []
+  },
+  "Container::container-border/inactive": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::border/primary/inactive",
+      "secondary": "Style (Sherpa)::border/primary/inactive",
+      "tertiary": "Style (Sherpa)::border/primary/inactive"
+    },
+    "cb": []
+  },
+  "Container::container-content/default": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::content/primary/base",
+      "secondary": "Style (Sherpa)::content/primary/base",
+      "tertiary": "Style (Sherpa)::content/primary/base"
+    },
+    "cb": []
+  },
+  "Container::container-border/radius/top-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-left",
+      "secondary": "Snapping::snapping-radius/top-left",
+      "tertiary": "Snapping::snapping-radius/top-left"
+    },
+    "cb": []
+  },
+  "Container::container-border/width": {
+    "t": "FLOAT",
+    "s": "STROKE_FLOAT",
+    "a": {
+      "default": "Core::border/width/sm",
+      "secondary": "Core::border/width/sm",
+      "tertiary": "Core::border/width/sm"
+    },
+    "cb": []
+  },
+  "Container::container-space/padding-md": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/base",
+      "secondary": "Core::space/base",
+      "tertiary": "Core::space/base"
+    },
+    "cb": []
+  },
+  "Container::container-space/gap-md": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/sm",
+      "secondary": "Core::space/sm",
+      "tertiary": "Core::space/sm"
+    },
+    "cb": []
+  },
+  "Switch::switch-size/height": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "standard": "Core::size/md",
+      "simple": "Core::size/sm"
+    },
+    "cb": []
+  },
+  "Elevation::elevation-shadow/offset-x": {
+    "t": "FLOAT",
+    "s": "",
+    "a": {
+      "passthrough": 0,
+      "sm": "Style (Sherpa)::elevation/offset/x/small",
+      "md": "Style (Sherpa)::elevation/offset/x/base",
+      "lg": "Style (Sherpa)::elevation/offset/x/large"
+    },
+    "cb": []
+  },
+  "Elevation::elevation-shadow/offset-y": {
+    "t": "FLOAT",
+    "s": "",
+    "a": {
+      "passthrough": 0,
+      "sm": "Style (Sherpa)::elevation/offset/y/small",
+      "md": "Style (Sherpa)::elevation/offset/y/base",
+      "lg": "Style (Sherpa)::elevation/offset/y/large"
+    },
+    "cb": []
+  },
+  "Elevation::elevation-shadow/blur": {
+    "t": "FLOAT",
+    "s": "",
+    "a": {
+      "passthrough": 0,
+      "sm": "Style (Sherpa)::elevation/blur/small",
+      "md": "Style (Sherpa)::elevation/blur/base",
+      "lg": "Style (Sherpa)::elevation/blur/large"
+    },
+    "cb": []
+  },
+  "Elevation::elevation-shadow/spread": {
+    "t": "FLOAT",
+    "s": "",
+    "a": {
+      "passthrough": 0,
+      "sm": "Style (Sherpa)::elevation/spread/small",
+      "md": "Style (Sherpa)::elevation/spread/base",
+      "lg": "Style (Sherpa)::elevation/spread/large"
+    },
+    "cb": []
+  },
+  "Elevation::elevation-shadow/color": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "passthrough": "#000000",
+      "sm": "Status::status-shadow/color",
+      "md": "Status::status-shadow/color",
+      "lg": "Status::status-shadow/color"
+    },
+    "cb": []
+  },
+  "Status::status-shadow/color": {
+    "t": "COLOR",
+    "s": "EFFECT_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::elevation/tint",
+      "info": "Style (Sherpa)::elevation/tint/info",
+      "critical": "Style (Sherpa)::elevation/tint/critical",
+      "warning": "Style (Sherpa)::elevation/tint/warning",
+      "urgent": "Style (Sherpa)::elevation/tint/warning",
+      "success": "Style (Sherpa)::elevation/tint/success"
+    },
+    "cb": [
+      "Elevation::elevation-shadow/color"
+    ]
+  },
+  "Status::status-content/title": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/title/base",
+      "info": "Style (Sherpa)::content/title/on-color-subtle",
+      "critical": "Style (Sherpa)::content/title/on-color-subtle",
+      "warning": "Style (Sherpa)::content/title/on-color-subtle",
+      "urgent": "Style (Sherpa)::content/title/on-color-subtle",
+      "success": "Style (Sherpa)::content/title/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Status::status-content/secondary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/secondary/base",
+      "info": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "critical": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "warning": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "urgent": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "success": "Style (Sherpa)::content/secondary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/link/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/accent/base",
+      "dark": "Core::color/accent/300"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/link/visited": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/accent/900",
+      "dark": "Core::color/accent/400"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::content/active/base": {
+    "t": "COLOR",
+    "s": "TEXT_FILL",
+    "a": {
+      "light": "Core::color/brand/700",
+      "dark": "Core::color/brand/700"
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::app/secondary",
+      "collapsed": "Style (Sherpa)::app/secondary",
+      "hover": "Style (Sherpa)::app/secondary",
+      "pinned": "Style (Sherpa)::app/secondary",
+      "settings": "Style (Sherpa)::surface/secondary/base"
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-size/width": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "default": 320,
+      "collapsed": 40,
+      "hover": 320,
+      "pinned": 320,
+      "settings": 320
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-space/padding": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Container::container-space/padding-sm",
+      "collapsed": "Container::container-space/padding-none",
+      "hover": "Container::container-space/padding-sm",
+      "pinned": "Container::container-space/padding-sm",
+      "settings": "Container::container-space/padding-sm"
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-is-maximised": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": true,
+      "collapsed": false,
+      "hover": true,
+      "pinned": true,
+      "settings": true
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-has-child-items": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": true,
+      "collapsed": false,
+      "hover": true,
+      "pinned": true,
+      "settings": true
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-has-search-input": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": true,
+      "collapsed": false,
+      "hover": true,
+      "pinned": true,
+      "settings": true
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-has-search-button": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": false,
+      "collapsed": true,
+      "hover": false,
+      "pinned": false,
+      "settings": false
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-header-label": {
+    "t": "STRING",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": "Product name",
+      "collapsed": "Product name",
+      "hover": "Product name",
+      "pinned": "Product name",
+      "settings": "Settings"
+    },
+    "cb": []
+  },
+  "Container::container-border/radius/top-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-right",
+      "secondary": "Snapping::snapping-radius/top-right",
+      "tertiary": "Snapping::snapping-radius/top-right"
+    },
+    "cb": []
+  },
+  "Container::container-border/radius/bottom-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-left",
+      "secondary": "Snapping::snapping-radius/bottom-left",
+      "tertiary": "Snapping::snapping-radius/bottom-left"
+    },
+    "cb": []
+  },
+  "Container::container-border/radius/bottom-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-right",
+      "secondary": "Snapping::snapping-radius/bottom-right",
+      "tertiary": "Snapping::snapping-radius/bottom-right"
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-setting-button": {
+    "t": "STRING",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": "default",
+      "collapsed": "default",
+      "hover": "default",
+      "pinned": "default",
+      "settings": "active"
+    },
+    "cb": []
+  },
+  "Navigation::nav-container-pin-button": {
+    "t": "STRING",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": "active",
+      "collapsed": "default",
+      "hover": "default",
+      "pinned": "active",
+      "settings": "active"
+    },
+    "cb": []
+  },
+  "Container::container-space/padding-sm": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/xs",
+      "secondary": "Core::space/base",
+      "tertiary": "Core::space/base"
+    },
+    "cb": [
+      "Navigation::nav-container-space/padding"
+    ]
+  },
+  "Container::container-space/gap-lg": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/base",
+      "secondary": "Core::space/base",
+      "tertiary": "Core::space/base"
+    },
+    "cb": []
+  },
+  "Container::container-space/gap-sm": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/xs",
+      "secondary": "Core::space/xs",
+      "tertiary": "Core::space/xs"
+    },
+    "cb": []
+  },
+  "Container::container-space/padding-none": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/none",
+      "secondary": "Core::space/none",
+      "tertiary": "Core::space/none"
+    },
+    "cb": [
+      "Navigation::nav-container-space/padding"
+    ]
+  },
+  "Control::control-space/padding-sm": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/2xs",
+      "primary": "Core::space/2xs",
+      "secondary": "Core::space/2xs",
+      "tertiary": "Core::space/2xs"
+    },
+    "cb": []
+  },
+  "Control::control-space/gap-sm": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/2xs",
+      "primary": "Core::space/2xs",
+      "secondary": "Core::space/2xs",
+      "tertiary": "Core::space/2xs"
+    },
+    "cb": []
+  },
+  "Input::input-border/radius/top-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-left",
+      "validation": "Snapping::snapping-radius/top-left"
+    },
+    "cb": []
+  },
+  "Input::input-border/radius/top-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-right",
+      "validation": "Snapping::snapping-radius/top-right"
+    },
+    "cb": []
+  },
+  "Input::input-border/radius/bottom-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-left",
+      "validation": "Snapping::snapping-radius/bottom-left"
+    },
+    "cb": []
+  },
+  "Input::input-border/radius/bottom-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-right",
+      "validation": "Snapping::snapping-radius/bottom-right"
+    },
+    "cb": []
+  },
+  "Input::hasValidation": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "default": false,
+      "validation": true
+    },
+    "cb": []
+  },
+  "Layout (Grid)::layout-grid/columns": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "mobile": 4,
+      "tablet": 8,
+      "desktop": 12,
+      "wide": 12
+    },
+    "cb": []
+  },
+  "Layout (Grid)::layout-grid/padding": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "mobile": "Core::space/base",
+      "tablet": "Core::space/base",
+      "desktop": "Core::space/base",
+      "wide": "Core::space/base"
+    },
+    "cb": []
+  },
+  "Layout (Grid)::layout-grid/gap-horizontal": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "mobile": "Core::space/base",
+      "tablet": "Core::space/base",
+      "desktop": "Core::space/base",
+      "wide": "Core::space/base"
+    },
+    "cb": []
+  },
+  "Layout (Grid)::layout-grid/row-height": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "mobile": "Core::space/xs",
+      "tablet": "Core::space/xs",
+      "desktop": "Core::space/xs",
+      "wide": "Core::space/xs"
+    },
+    "cb": []
+  },
+  "Layout (Grid)::layout-grid/max-width": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "mobile": 480,
+      "tablet": 768,
+      "desktop": 1280,
+      "wide": 1600
+    },
+    "cb": []
+  },
+  "Snapping::snapping-radius/top-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "passthrough": "Core::border/rounding/base",
+      "right-edge": "Core::border/rounding/base",
+      "all-edges": "Core::border/rounding/none",
+      "left-edge": "Core::border/rounding/none",
+      "bottom-edge": "Core::border/rounding/base",
+      "top-edge": "Core::border/rounding/none",
+      "isolated": "Primitives::border/radius/1000"
+    },
+    "cb": [
+      "Container::container-border/radius/top-left",
+      "Input::input-border/radius/top-left",
+      "Control::control-border/radius/top-left"
+    ]
+  },
+  "Snapping::snapping-radius/top-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "passthrough": "Core::border/rounding/base",
+      "right-edge": "Core::border/rounding/none",
+      "all-edges": "Core::border/rounding/none",
+      "left-edge": "Core::border/rounding/base",
+      "bottom-edge": "Core::border/rounding/base",
+      "top-edge": "Core::border/rounding/none",
+      "isolated": "Primitives::border/radius/1000"
+    },
+    "cb": [
+      "Container::container-border/radius/top-right",
+      "Input::input-border/radius/top-right",
+      "Control::control-border/radius/top-right"
+    ]
+  },
+  "Snapping::snapping-space/gap": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "passthrough": 0,
+      "right-edge": -1,
+      "all-edges": -1,
+      "left-edge": -1,
+      "bottom-edge": -1,
+      "top-edge": -1,
+      "isolated": 0
+    },
+    "cb": []
+  },
+  "Typography::size": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "h1": "Core::fonts/scale/lg",
+      "h2": "Core::fonts/scale/lg",
+      "h3": "Core::fonts/scale/sm",
+      "h4": "Core::fonts/scale/sm",
+      "h5": "Core::fonts/scale/base",
+      "default/lg": "Core::fonts/scale/lg",
+      "default/base": "Core::fonts/scale/base",
+      "default/sm": "Core::fonts/scale/sm",
+      "default/xs": "Core::fonts/scale/xs",
+      "emphasised/lg": "Core::fonts/scale/lg",
+      "emphasised/base": "Core::fonts/scale/base",
+      "emphasised/sm": "Core::fonts/scale/sm",
+      "emphasised/xs": "Core::fonts/scale/xs",
+      "light/lg": "Core::fonts/scale/lg",
+      "light/base": "Core::fonts/scale/base",
+      "light/sm": "Core::fonts/scale/sm",
+      "default/2xs": "Core::fonts/scale/2xs",
+      "emphasised/2xs": "Core::fonts/scale/2xs",
+      "light/xs": "Core::fonts/scale/xs",
+      "light/2xs": "Core::fonts/scale/2xs"
+    },
+    "cb": []
+  },
+  "Typography::line-height": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "h1": "Core::fonts/scale/2xl",
+      "h2": "Core::fonts/scale/2xl",
+      "h3": "Core::fonts/scale/lg",
+      "h4": "Core::fonts/scale/lg",
+      "h5": "Core::fonts/scale/xl",
+      "default/lg": "Core::fonts/scale/2xl",
+      "default/base": "Core::fonts/scale/xl",
+      "default/sm": "Core::fonts/scale/lg",
+      "default/xs": "Core::fonts/scale/base",
+      "emphasised/lg": "Core::fonts/scale/2xl",
+      "emphasised/base": "Core::fonts/scale/xl",
+      "emphasised/sm": "Core::fonts/scale/lg",
+      "emphasised/xs": "Core::fonts/scale/base",
+      "light/lg": "Core::fonts/scale/2xl",
+      "light/base": "Core::fonts/scale/xl",
+      "light/sm": "Core::fonts/scale/lg",
+      "default/2xs": "Core::fonts/scale/sm",
+      "emphasised/2xs": "Core::fonts/scale/sm",
+      "light/xs": "Core::fonts/scale/base",
+      "light/2xs": "Core::fonts/scale/sm"
+    },
+    "cb": []
+  },
+  "Typography::letter-spacing": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "h1": -0.019999999552965164,
+      "h2": -0.019999999552965164,
+      "h3": -0.019999999552965164,
+      "h4": -0.019999999552965164,
+      "h5": -0.019999999552965164,
+      "default/lg": 0,
+      "default/base": 0,
+      "default/sm": 0,
+      "default/xs": 0,
+      "emphasised/lg": 0,
+      "emphasised/base": 0,
+      "emphasised/sm": 0,
+      "emphasised/xs": 0,
+      "light/lg": 0,
+      "light/base": 0,
+      "light/sm": 0,
+      "default/2xs": 0,
+      "emphasised/2xs": 0,
+      "light/xs": 0,
+      "light/2xs": 0
+    },
+    "cb": []
+  },
+  "Typography::paragraph": {
+    "t": "FLOAT",
+    "s": "ALL_SCOPES",
+    "a": {
+      "h1": "Core::fonts/scale/lg",
+      "h2": "Core::fonts/scale/lg",
+      "h3": "Core::fonts/scale/xs",
+      "h4": "Core::fonts/scale/2xs",
+      "h5": "Core::fonts/scale/0",
+      "default/lg": "Core::fonts/scale/2xs",
+      "default/base": "Core::fonts/scale/2xs",
+      "default/sm": "Core::fonts/scale/2xs",
+      "default/xs": "Core::fonts/scale/2xs",
+      "emphasised/lg": "Core::fonts/scale/2xs",
+      "emphasised/base": "Core::fonts/scale/2xs",
+      "emphasised/sm": "Core::fonts/scale/2xs",
+      "emphasised/xs": "Core::fonts/scale/2xs",
+      "light/lg": "Core::fonts/scale/2xs",
+      "light/base": "Core::fonts/scale/2xs",
+      "light/sm": "Core::fonts/scale/2xs",
+      "default/2xs": "Core::fonts/scale/2xs",
+      "emphasised/2xs": "Core::fonts/scale/2xs",
+      "light/xs": "Core::fonts/scale/2xs",
+      "light/2xs": "Core::fonts/scale/2xs"
+    },
+    "cb": []
+  },
+  "Typography::family": {
+    "t": "STRING",
+    "s": "ALL_SCOPES",
+    "a": {
+      "h1": "Inter",
+      "h2": "Inter",
+      "h3": "Inter",
+      "h4": "Inter",
+      "h5": "Inter",
+      "default/lg": "Inter",
+      "default/base": "Inter",
+      "default/sm": "Inter",
+      "default/xs": "Inter",
+      "emphasised/lg": "Inter",
+      "emphasised/base": "Inter",
+      "emphasised/sm": "Inter",
+      "emphasised/xs": "Inter",
+      "light/lg": "Inter",
+      "light/base": "Inter",
+      "light/sm": "Inter",
+      "default/2xs": "Inter",
+      "emphasised/2xs": "Inter",
+      "light/xs": "Inter",
+      "light/2xs": "Inter"
+    },
+    "cb": []
+  },
+  "Typography::weight": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "h1": "Core::fonts/weight/700",
+      "h2": "Core::fonts/weight/600",
+      "h3": "Core::fonts/weight/600",
+      "h4": "Core::fonts/weight/700",
+      "h5": "Core::fonts/weight/600",
+      "default/lg": "Core::fonts/weight/400",
+      "default/base": "Core::fonts/weight/400",
+      "default/sm": "Core::fonts/weight/400",
+      "default/xs": "Core::fonts/weight/400",
+      "emphasised/lg": "Core::fonts/weight/600",
+      "emphasised/base": "Core::fonts/weight/600",
+      "emphasised/sm": "Core::fonts/weight/600",
+      "emphasised/xs": "Core::fonts/weight/600",
+      "light/lg": "Core::fonts/weight/300",
+      "light/base": "Core::fonts/weight/300",
+      "light/sm": "Core::fonts/weight/300",
+      "default/2xs": "Core::fonts/weight/400",
+      "emphasised/2xs": "Core::fonts/weight/600",
+      "light/xs": "Core::fonts/weight/300",
+      "light/2xs": "Core::fonts/weight/300"
+    },
+    "cb": []
+  },
+  "Core::fonts/weight/300": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 300
+    },
+    "cb": [
+      "Typography::weight"
+    ]
+  },
+  "Core::fonts/weight/400": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 400
+    },
+    "cb": [
+      "Typography::weight"
+    ]
+  },
+  "Core::fonts/weight/500": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 500
+    },
+    "cb": []
+  },
+  "Core::fonts/weight/600": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 600
+    },
+    "cb": [
+      "Typography::weight"
+    ]
+  },
+  "Core::fonts/weight/700": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 700
+    },
+    "cb": [
+      "Typography::weight"
+    ]
+  },
+  "Core::fonts/weight/900": {
+    "t": "FLOAT",
+    "s": "FONT_WEIGHT",
+    "a": {
+      "value": 900
+    },
+    "cb": []
+  },
+  "Color Sets::color-sets-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Control::control-surface/default",
+      "violet": "Style (Sherpa)::data-viz/sequential/purple/color 1",
+      "purple": "Style (Sherpa)::data-viz/sequential/phlox/color 1",
+      "teal": "Style (Sherpa)::data-viz/sequential/turquoise/color 1",
+      "cyan": "Style (Sherpa)::data-viz/sequential/blue green/color 1",
+      "blue": "Style (Sherpa)::data-viz/sequential/blue/color 1",
+      "periwinkle": "Style (Sherpa)::data-viz/sequential/neon blue/color 1",
+      "amber": "Style (Sherpa)::data-viz/sequential/orange/color 1",
+      "pink": "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "magenta": "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "green": "Style (Sherpa)::data-viz/sequential/green/color 1",
+      "grey": "Style (Sherpa)::data-viz/sequential/greyscale/color 1"
+    },
+    "cb": [
+      "Status::status-surface/default",
+      "Container::container-surface/default"
+    ]
+  },
+  "Color Sets::color-sets-surface/hover": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Control::control-surface/hover",
+      "violet": "Style (Sherpa)::data-viz/sequential/purple/color 2",
+      "purple": "Style (Sherpa)::data-viz/sequential/phlox/color 2",
+      "teal": "Style (Sherpa)::data-viz/sequential/turquoise/color 2",
+      "cyan": "Style (Sherpa)::data-viz/sequential/blue green/color 2",
+      "blue": "Style (Sherpa)::data-viz/sequential/blue/color 2",
+      "periwinkle": "Style (Sherpa)::data-viz/sequential/neon blue/color 2",
+      "amber": "Style (Sherpa)::data-viz/sequential/orange/color 2",
+      "pink": "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "magenta": "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "green": "Style (Sherpa)::data-viz/sequential/green/color 2",
+      "grey": "Style (Sherpa)::data-viz/sequential/greyscale/color 2"
+    },
+    "cb": [
+      "Status::status-surface/hover",
+      "Container::container-surface/hover"
+    ]
+  },
+  "Color Sets::color-sets-surface/down": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Control::control-surface/down",
+      "violet": "Style (Sherpa)::data-viz/sequential/purple/color 2",
+      "purple": "Style (Sherpa)::data-viz/sequential/phlox/color 2",
+      "teal": "Style (Sherpa)::data-viz/sequential/turquoise/color 2",
+      "cyan": "Style (Sherpa)::data-viz/sequential/blue green/color 2",
+      "blue": "Style (Sherpa)::data-viz/sequential/blue/color 2",
+      "periwinkle": "Style (Sherpa)::data-viz/sequential/neon blue/color 2",
+      "amber": "Style (Sherpa)::data-viz/sequential/orange/color 2",
+      "pink": "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "magenta": "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "green": "Style (Sherpa)::data-viz/sequential/green/color 2",
+      "grey": "Style (Sherpa)::data-viz/sequential/greyscale/color 2"
+    },
+    "cb": [
+      "Status::status-surface/down",
+      "Container::container-surface/down"
+    ]
+  },
+  "Color Sets::color-sets-surface/subtle": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "passthrough": "Control::control-surface/default",
+      "violet": "Style (Sherpa)::data-viz/sequential/purple/color 1",
+      "purple": "Style (Sherpa)::data-viz/sequential/phlox/color 1",
+      "teal": "Style (Sherpa)::data-viz/sequential/turquoise/color 1",
+      "cyan": "Style (Sherpa)::data-viz/sequential/blue green/color 1",
+      "blue": "Style (Sherpa)::data-viz/sequential/blue/color 1",
+      "periwinkle": "Style (Sherpa)::data-viz/sequential/neon blue/color 1",
+      "amber": "Style (Sherpa)::data-viz/sequential/orange/color 1",
+      "pink": "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "magenta": "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "green": "Style (Sherpa)::data-viz/sequential/green/color 1",
+      "grey": "Style (Sherpa)::data-viz/sequential/greyscale/color 1"
+    },
+    "cb": []
+  },
+  "Color Sets::color-sets-border/default": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "passthrough": "Control::control-border/default",
+      "violet": "Style (Sherpa)::data-viz/categorical/color 1",
+      "purple": "Style (Sherpa)::data-viz/categorical/color 2",
+      "teal": "Style (Sherpa)::data-viz/categorical/color 3",
+      "cyan": "Style (Sherpa)::data-viz/categorical/color 4",
+      "blue": "Style (Sherpa)::data-viz/categorical/color 5",
+      "periwinkle": "Style (Sherpa)::data-viz/categorical/color 6",
+      "amber": "Style (Sherpa)::data-viz/categorical/color 7",
+      "pink": "Style (Sherpa)::data-viz/categorical/color 8",
+      "magenta": "Style (Sherpa)::data-viz/categorical/color 9",
+      "green": "Style (Sherpa)::data-viz/categorical/color 10",
+      "grey": "Style (Sherpa)::data-viz/categorical/color 11"
+    },
+    "cb": [
+      "Status::status-border/default",
+      "Container::container-border/default"
+    ]
+  },
+  "Color Sets::color-sets-content/primary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/primary/base",
+      "violet": "Style (Sherpa)::content/primary/on-color-subtle",
+      "purple": "Style (Sherpa)::content/primary/on-color-subtle",
+      "teal": "Style (Sherpa)::content/primary/on-color-subtle",
+      "cyan": "Style (Sherpa)::content/primary/on-color-subtle",
+      "blue": "Style (Sherpa)::content/primary/on-color-subtle",
+      "periwinkle": "Style (Sherpa)::content/primary/on-color-subtle",
+      "amber": "Style (Sherpa)::content/primary/on-color-subtle",
+      "pink": "Style (Sherpa)::content/primary/on-color-subtle",
+      "magenta": "Style (Sherpa)::content/primary/on-color-subtle",
+      "green": "Style (Sherpa)::content/primary/on-color-subtle",
+      "grey": "Style (Sherpa)::content/primary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Control::control-space/padding-xs": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "default": "Core::space/3xs",
+      "primary": "Core::space/3xs",
+      "secondary": "Core::space/3xs",
+      "tertiary": "Core::space/3xs"
+    },
+    "cb": []
+  },
+  "Badge::badge-surface/default": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/primary/base",
+      "brand": "Core::color/brand/100",
+      "accent": "Style (Sherpa)::surface/interactive/primary/base"
+    },
+    "cb": []
+  },
+  "Badge::badge-border/default": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::border/primary",
+      "brand": "Core::color/brand/base",
+      "accent": "Style (Sherpa)::app/primary"
+    },
+    "cb": []
+  },
+  "Badge::badge-content/default": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::content/title/base",
+      "brand": "Core::color/brand/800",
+      "accent": "Style (Sherpa)::content/title/on-color"
+    },
+    "cb": []
+  },
+  "Switch::switch-surface/track-on": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "standard": "Style (Sherpa)::status/success/color 4",
+      "simple": "Style (Sherpa)::status/success/color 4"
+    },
+    "cb": []
+  },
+  "Switch::switch-radius/track": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "standard": "Core::border/rounding/base",
+      "simple": "Core::border/rounding/full"
+    },
+    "cb": []
+  },
+  "Switch::switch-radius/thumb": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "standard": "Primitives::border/radius/150",
+      "simple": "Primitives::border/radius/1000"
+    },
+    "cb": []
+  },
+  "Switch::switch-size/width": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "standard": "Core::size/4xl",
+      "simple": "Core::size/xl"
+    },
+    "cb": []
+  },
+  "Switch::switch-size/thumb": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "standard": "Core::size/sm",
+      "simple": "Core::size/xs"
+    },
+    "cb": []
+  },
+  "Switch::switch-surface/track-off": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "standard": "Style (Sherpa)::surface/tertiary/down",
+      "simple": "Style (Sherpa)::surface/tertiary/down"
+    },
+    "cb": []
+  },
+  "Switch::switch-content/track-on": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "standard": "Control::control-content/inverse",
+      "simple": "Control::control-content/inverse"
+    },
+    "cb": []
+  },
+  "Switch::switch-content/track-off": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "standard": "Control::control-content/default",
+      "simple": "Control::control-content/default"
+    },
+    "cb": []
+  },
+  "Switch::switch-content/inactive": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "standard": "Style (Sherpa)::content/inactive/base",
+      "simple": "Style (Sherpa)::content/inactive/base"
+    },
+    "cb": []
+  },
+  "Switch::hasLabel": {
+    "t": "BOOLEAN",
+    "s": "ALL_SCOPES",
+    "a": {
+      "standard": true,
+      "simple": false
+    },
+    "cb": []
+  },
+  "Snapping::snapping-radius/bottom-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "passthrough": "Core::border/rounding/base",
+      "right-edge": "Core::border/rounding/base",
+      "all-edges": "Core::border/rounding/none",
+      "left-edge": "Core::border/rounding/none",
+      "bottom-edge": "Core::border/rounding/none",
+      "top-edge": "Core::border/rounding/base",
+      "isolated": "Primitives::border/radius/1000"
+    },
+    "cb": [
+      "Container::container-border/radius/bottom-left",
+      "Input::input-border/radius/bottom-left",
+      "Control::control-border/radius/bottom-left"
+    ]
+  },
+  "Snapping::snapping-radius/bottom-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "passthrough": "Core::border/rounding/base",
+      "right-edge": "Core::border/rounding/none",
+      "all-edges": "Core::border/rounding/none",
+      "left-edge": "Core::border/rounding/base",
+      "bottom-edge": "Core::border/rounding/none",
+      "top-edge": "Core::border/rounding/base",
+      "isolated": "Primitives::border/radius/1000"
+    },
+    "cb": [
+      "Container::container-border/radius/bottom-right",
+      "Input::input-border/radius/bottom-right",
+      "Control::control-border/radius/bottom-right"
+    ]
+  },
+  "Layout (Grid)::layout-grid/gap-vertical": {
+    "t": "FLOAT",
+    "s": "GAP",
+    "a": {
+      "mobile": "Core::space/base",
+      "tablet": "Core::space/base",
+      "desktop": "Core::space/base",
+      "wide": "Core::space/base"
+    },
+    "cb": []
+  },
+  "Control::control-border/radius/top-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-left",
+      "primary": "Snapping::snapping-radius/top-left",
+      "secondary": "Snapping::snapping-radius/top-left",
+      "tertiary": "Snapping::snapping-radius/top-left"
+    },
+    "cb": []
+  },
+  "Control::control-border/radius/top-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/top-right",
+      "primary": "Snapping::snapping-radius/top-right",
+      "secondary": "Snapping::snapping-radius/top-right",
+      "tertiary": "Snapping::snapping-radius/top-right"
+    },
+    "cb": []
+  },
+  "Control::control-border/radius/bottom-left": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-left",
+      "primary": "Snapping::snapping-radius/bottom-left",
+      "secondary": "Snapping::snapping-radius/bottom-left",
+      "tertiary": "Snapping::snapping-radius/bottom-left"
+    },
+    "cb": []
+  },
+  "Control::control-border/radius/bottom-right": {
+    "t": "FLOAT",
+    "s": "CORNER_RADIUS",
+    "a": {
+      "default": "Snapping::snapping-radius/bottom-right",
+      "primary": "Snapping::snapping-radius/bottom-right",
+      "secondary": "Snapping::snapping-radius/bottom-right",
+      "tertiary": "Snapping::snapping-radius/bottom-right"
+    },
+    "cb": []
+  },
+  "Control::control-border/accent": {
+    "t": "COLOR",
+    "s": "STROKE_COLOR",
+    "a": {
+      "default": "Style (Sherpa)::border/interactive/primary",
+      "primary": "Style (Sherpa)::border/interactive/primary",
+      "secondary": "Style (Sherpa)::border/interactive/primary",
+      "tertiary": "Style (Sherpa)::border/interactive/primary"
+    },
+    "cb": []
+  },
+  "Status::status-content/tertiary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/tertiary/base",
+      "info": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "critical": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "warning": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "urgent": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "success": "Style (Sherpa)::content/tertiary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Color Sets::color-sets-content/title": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/title/base",
+      "violet": "Style (Sherpa)::content/title/on-color-subtle",
+      "purple": "Style (Sherpa)::content/title/on-color-subtle",
+      "teal": "Style (Sherpa)::content/title/on-color-subtle",
+      "cyan": "Style (Sherpa)::content/title/on-color-subtle",
+      "blue": "Style (Sherpa)::content/title/on-color-subtle",
+      "periwinkle": "Style (Sherpa)::content/title/on-color-subtle",
+      "amber": "Style (Sherpa)::content/title/on-color-subtle",
+      "pink": "Style (Sherpa)::content/title/on-color-subtle",
+      "magenta": "Style (Sherpa)::content/title/on-color-subtle",
+      "green": "Style (Sherpa)::content/title/on-color-subtle",
+      "grey": "Style (Sherpa)::content/title/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Color Sets::color-sets-content/secondary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/secondary/base",
+      "violet": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "purple": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "teal": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "cyan": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "blue": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "periwinkle": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "amber": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "pink": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "magenta": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "green": "Style (Sherpa)::content/secondary/on-color-subtle",
+      "grey": "Style (Sherpa)::content/secondary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Color Sets::color-sets-content/tertiary": {
+    "t": "COLOR",
+    "s": "SHAPE_FILL,TEXT_FILL,STROKE_COLOR",
+    "a": {
+      "passthrough": "Style (Sherpa)::content/tertiary/base",
+      "violet": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "purple": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "teal": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "cyan": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "blue": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "periwinkle": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "amber": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "pink": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "magenta": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "green": "Style (Sherpa)::content/tertiary/on-color-subtle",
+      "grey": "Style (Sherpa)::content/tertiary/on-color-subtle"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::status/warning/color 7": {
+    "t": "COLOR",
+    "s": "ALL_SCOPES",
+    "a": {
+      "light": "Core::color/warning/900",
+      "dark": "Core::color/warning/900"
+    },
+    "cb": [
+      "Status::status-border/default"
+    ]
+  },
+  "Button::button-font/size": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "xl": "Core::fonts/scale/base",
+      "xs": "Core::fonts/scale/xs",
+      "sm": "Core::fonts/scale/base",
+      "md": "Core::fonts/scale/base",
+      "3xl": "Core::fonts/scale/base",
+      "2xs": "Core::fonts/scale/2xs",
+      "2xl": "Core::fonts/scale/base"
+    },
+    "cb": []
+  },
+  "Button::button-font/line-height": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "xl": "Core::fonts/scale/xl",
+      "xs": "Core::fonts/scale/base",
+      "sm": "Core::fonts/scale/xl",
+      "md": "Core::fonts/scale/xl",
+      "3xl": "Core::fonts/scale/xl",
+      "2xs": "Core::fonts/scale/sm",
+      "2xl": "Core::fonts/scale/xl"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/2xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/xs",
+      "dark": "Core::size/xs"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/xs": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/sm",
+      "dark": "Core::size/sm"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/sm": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/md",
+      "dark": "Core::size/md"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/md": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/lg",
+      "dark": "Core::size/lg"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/lg": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/xl",
+      "dark": "Core::size/xl"
+    },
+    "cb": []
+  },
+  "Style (Sherpa)::size/icon/xl": {
+    "t": "FLOAT",
+    "s": "WIDTH_HEIGHT",
+    "a": {
+      "light": "Core::size/2xl",
+      "dark": "Core::size/2xl"
+    },
+    "cb": []
+  },
+  "Control::control-surface/inactive": {
+    "t": "COLOR",
+    "s": "FRAME_FILL,SHAPE_FILL",
+    "a": {
+      "default": "Style (Sherpa)::surface/interactive/inactive",
+      "primary": "Style (Sherpa)::surface/interactive/inactive",
+      "secondary": "Style (Sherpa)::surface/interactive/secondary/inactive",
+      "tertiary": "Style (Sherpa)::surface/interactive/tertiary/inactive"
+    },
+    "cb": []
+  },
+  "Data Viz::series/1": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 1",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 1",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 1",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 1",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 1",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 1",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 1",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 1",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 1",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 1",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 1",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 1",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 1",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 1",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 1"
+    },
+    "cb": []
+  },
+  "Data Viz::series/2": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 2",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 2",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 2",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 2",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 2",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 2",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 2",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 2",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 2",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 2",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 2",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 2",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 2",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 2",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 2"
+    },
+    "cb": []
+  },
+  "Data Viz::series/3": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 3",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 3",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 3",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 3",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 3",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 3",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 3",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 3",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 3",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 3",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 3",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 3",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 3",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 3",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 3"
+    },
+    "cb": []
+  },
+  "Data Viz::series/4": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 4",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 4",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 4",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 4",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 4",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 4",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 4",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 4",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 4",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 4",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 4",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 4",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 4",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 4",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 4"
+    },
+    "cb": []
+  },
+  "Data Viz::series/5": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 5",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 5",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 5",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 5"
+    },
+    "cb": []
+  },
+  "Data Viz::series/6": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 6",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 6",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 6",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 6"
+    },
+    "cb": []
+  },
+  "Data Viz::series/7": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 7",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 7",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 7",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 7"
+    },
+    "cb": []
+  },
+  "Data Viz::series/8": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 8",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 8",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 8",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 8"
+    },
+    "cb": []
+  },
+  "Data Viz::series/9": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 9",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 9",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 9",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 9"
+    },
+    "cb": []
+  },
+  "Data Viz::series/10": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 10",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 10",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 10",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 10"
+    },
+    "cb": []
+  },
+  "Data Viz::series/11": {
+    "t": "COLOR",
+    "s": "ALL_FILLS,STROKE_COLOR",
+    "a": {
+      "categorical": "Style (Sherpa)::data-viz/categorical/color 11",
+      "sequential/purple": "Style (Sherpa)::data-viz/sequential/purple/color 5",
+      "sequential/phlox": "Style (Sherpa)::data-viz/sequential/phlox/color 5",
+      "sequential/turquoise": "Style (Sherpa)::data-viz/sequential/turquoise/color 5",
+      "sequential/blue-green": "Style (Sherpa)::data-viz/sequential/blue green/color 5",
+      "sequential/blue": "Style (Sherpa)::data-viz/sequential/blue/color 5",
+      "sequential/neon-blue": "Style (Sherpa)::data-viz/sequential/neon blue/color 5",
+      "sequential/orange": "Style (Sherpa)::data-viz/sequential/orange/color 5",
+      "sequential/pink": "Style (Sherpa)::data-viz/sequential/pink/color 5",
+      "sequential/razamatazz": "Style (Sherpa)::data-viz/sequential/razamatazz/color 5",
+      "sequential/green": "Style (Sherpa)::data-viz/sequential/green/color 5",
+      "sequential/greyscale": "Style (Sherpa)::data-viz/sequential/greyscale/color 5",
+      "divergent/purple-yellow": "Style (Sherpa)::data-viz/divergent/purple -> yellow/color 11",
+      "divergent/blue-green-pink": "Style (Sherpa)::data-viz/divergent/blue green -> pink/color 11",
+      "divergent/turquoise-razamatazz": "Style (Sherpa)::data-viz/divergent/turquoise -> razamatazz/color 11"
+    },
+    "cb": []
+  }
+}
