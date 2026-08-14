@@ -1,0 +1,28 @@
+<!--
+  sherpa-barchart — a vertical bar chart for categorical comparison.
+
+  populate([{ label, value, colorIndex? }]) stamps a bar per category from a
+  cloning prototype. Each bar's height is a --_h custom property (its value as a
+  percentage of the max) that CSS turns into the bar height. Colour is categorical.
+
+  Public API:
+    data-label   chart title
+    data-max     explicit y-max (else derived from the data)
+
+  Fires: bar-click — detail: { index, label, value }
+-->
+<template id="default">
+  <div class="chart-header" part="header">
+    <span class="title"><slot name="title"></slot></span>
+  </div>
+  <div class="plot" part="plot">
+    <div class="bars" part="bars"></div>
+  </div>
+
+  <template class="bar-tpl">
+    <button class="bar-col" type="button">
+      <span class="bar" part="bar"></span>
+      <span class="bar-label" part="bar-label"></span>
+    </button>
+  </template>
+</template>

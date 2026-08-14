@@ -1,0 +1,72 @@
+/**
+ * sherpa-barchart — a vertical bar chart for categorical comparison.
+ *
+ * From populate([{ label, value, colorIndex? }]) the JS stamps a bar per category
+ * and sets each bar's --_h (value as a % of the max) + --_hue (categorical) — the
+ * geometry bridge; CSS turns --_h into the bar height and grows it from the
+ * baseline. A click emits bar-click.
+ */
+import { SherpaElement } from '../../core/sherpa-element.js';
+
+export interface BarDatum {
+  label: string;
+  value: number;
+  colorIndex?: number;
+}
+
+export class SherpaBarchart extends SherpaElement {
+  static override css = new URL('./sherpa-barchart.css', import.meta.url);
+  static override html = new URL('./sherpa-barchart.html', import.meta.url);
+  static override observed = ['data-max'];
+
+  #data: BarDatum[] = [];
+
+  override onRender(): void {
+    this.$('.bars')?.addEventListener('click', this.#onClick);
+    if (this.#data.length) this.#render();
+  }
+
+  override onChange(): void {
+    this.#render();
+  }
+
+  /** populate([{ label, value, colorIndex? }]) — the bars. */
+  protected override renderData(data: unknown): void {
+    this.#data = Array.isArray(data) ? (data as BarDatum[]) : [];
+    this.#render();
+  }
+
+  #render(): void {
+    const bars = this.$('.bars');
+    const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
+    if (!bars || !tpl) return;
+
+    const explicitMax = Number(this.dataset['max']);
+    const max = Number.isFinite(explicitMax) && explicitMax > 0
+      ? explicitMax
+      : Math.max(1, ...this.#data.map((d) => d.value));
+
+    bars.replaceChildren();
+    this.#data.forEach((d, i) => {
+      const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      col.dataset['index'] = String(i);
+      const n = ((d.colorIndex ?? i + 1) - 1) % 11 + 1;
+      const bar = col.querySelector<HTMLElement>('.bar')!;
+      bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
+      bar.style.setProperty('--_hue', `var(--sherpa-categorical-${n})`);
+      col.querySelector('.bar-label')!.textContent = d.label;
+      bars.appendChild(col);
+    });
+  }
+
+  #onClick = (event: Event): void => {
+    const col = (event.target as HTMLElement).closest<HTMLElement>('.bar-col');
+    const raw = col?.dataset['index'];
+    if (raw == null) return;
+    const i = Number(raw);
+    const d = this.#data[i];
+    this.emit('bar-click', { index: i, label: d?.label ?? '', value: d?.value ?? 0 });
+  };
+}
+
+customElements.define('sherpa-barchart', SherpaBarchart);
