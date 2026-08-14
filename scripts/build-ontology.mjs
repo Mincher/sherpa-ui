@@ -86,6 +86,30 @@ function proseFor(role, tier, entry) {
   return { purpose, whenToUse: base.use, whenNOT: base.not };
 }
 
+/**
+ * CAVEATS — per-token gotchas learned from real build defects (see
+ * docs/DEF-TO-FIGMA-BUILD-RULES.md). Keyed by exact var id or a name regex.
+ * Surfaced by explain_token so the next build avoids the trap.
+ */
+const CAVEATS = [
+  {
+    match: /^Status::status-content\//,
+    text: 'DO NOT bind a control label (button/tag text) to this directly — under a status pin it resolves to the ON-COLOR (light) ink meant for text on a SATURATED fill. A secondary/tertiary control has a LIGHT surface, so the text vanishes (the sherpa-button secondary-in-status bug). Bind a control-aware content token that flips with the look tier instead.',
+  },
+  {
+    match: /^Status::status-surface\//,
+    text: 'A CONTAINER should bind its own container-surface/* (which aliases through Status), not this directly — only CONTROLS bind status-surface, because status IS their surface. Binding status-surface on a container bypasses the container semantics.',
+  },
+  {
+    match: /^Control::control-content\/inverse$/,
+    text: 'Flips with the Control look tier: on-color (light) ink on a filled primary surface; dark ink on a light secondary/tertiary surface. This is the token a control label should use so text stays readable under any tier + status.',
+  },
+];
+function caveatFor(id) {
+  for (const c of CAVEATS) if (c.match.test(id)) return c.text;
+  return null;
+}
+
 // seeAlso: same group, adjacent role (a border's sibling surface, etc.)
 function seeAlsoFor(id, all) {
   const [coll, name] = id.split('::');
@@ -104,12 +128,14 @@ for (const [id, entry] of Object.entries(graph)) {
   // opaque names with no consumer + open scope → human prose
   const opaque = role === 'palette' && (entry.cb || []).length === 0;
   if (opaque) needsReview++;
+  const caveat = caveatFor(id);
   out[id] = {
     id, kind: 'variable', tier, resolvedType: TYPE[entry.t] || entry.t,
     role, scope: (entry.s || '').split(',').filter(Boolean),
     purpose: prose.purpose, whenToUse: prose.whenToUse, whenNOT: prose.whenNOT,
     aliasedFrom: entry.a, consumedBy: entry.cb || [],
     seeAlso: seeAlsoFor(id, graph),
+    ...(caveat ? { caveat } : {}),
     ...(opaque ? { needsReview: true } : {}),
   };
 }

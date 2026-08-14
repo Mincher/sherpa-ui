@@ -1,0 +1,163 @@
+{
+  "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
+  "generated": false,
+  "name": "sherpa-alert-card",
+  "figmaName": "Alert Card",
+  "category": "container",
+  "description": "FICTITIOUS proof #2 — a status alert card with variants + nested components. A container surface with a leading status icon, title + message, an owned dismiss Button, an owned count Badge, and an owned action Button. Exercises variants (Type), a boolean (hasAction), status tinting, and TWO levels of owned nesting.",
+
+  "anatomy": {
+    "root": {
+      "el": "div",
+      "class": "card",
+      "part": "card",
+      "figma": { "node": "FRAME", "layout": "HORIZONTAL", "hugHeight": true, "counterAxisAlignItems": "MIN" },
+      "children": [
+        {
+          "component": "sherpa-tag",
+          "relationship": "owned",
+          "class": "status-dot",
+          "attrs": { "data-collapsed": "", "data-status": "info" },
+          "figma": { "node": "INSTANCE", "source": "sherpa-tag", "variant": "Type=dot" }
+        },
+        {
+          "el": "div",
+          "class": "body",
+          "figma": { "node": "FRAME", "layout": "VERTICAL", "grow": 1 },
+          "children": [
+            {
+              "el": "div",
+              "class": "title-row",
+              "figma": { "node": "FRAME", "layout": "HORIZONTAL" },
+              "children": [
+                { "el": "span", "class": "title", "slot": "", "figma": { "node": "TEXT", "prop": "title", "role": "heading" } },
+                {
+                  "component": "sherpa-tag",
+                  "relationship": "owned",
+                  "class": "count",
+                  "attrs": { "data-status": "info" },
+                  "figma": { "node": "INSTANCE", "source": "sherpa-tag", "variant": "Type=full" }
+                }
+              ]
+            },
+            { "el": "p", "class": "message", "slot": "message", "figma": { "node": "TEXT", "prop": "message", "role": "default" } },
+            {
+              "component": "sherpa-button",
+              "relationship": "owned",
+              "class": "action",
+              "part": "action",
+              "showWhen": "hasAction",
+              "attrs": { "data-variant": "secondary", "data-size": "sm", "data-label": "View" },
+              "figma": { "node": "INSTANCE", "source": "sherpa-button" },
+              "listen": [ { "event": "button-click", "action": "reemit", "as": "alert-action" } ]
+            }
+          ]
+        },
+        {
+          "component": "sherpa-button",
+          "relationship": "owned",
+          "class": "dismiss",
+          "part": "dismiss",
+          "attrs": { "data-type": "icon", "data-variant": "tertiary", "data-size": "2xs", "data-icon-start": "✕", "aria-label": "Dismiss" },
+          "figma": { "node": "INSTANCE", "source": "sherpa-button" },
+          "listen": [ { "event": "button-click", "action": "reemit", "as": "alert-dismiss" } ]
+        }
+      ]
+    }
+  },
+
+  "props": [
+    {
+      "name": "data-type",
+      "type": "enum",
+      "values": ["inline", "banner", "toast"],
+      "default": "inline",
+      "kind": "style",
+      "description": "Card density/layout variant.",
+      "figma": { "axis": "Type", "values": ["inline", "banner", "toast"] }
+    },
+    {
+      "name": "data-status",
+      "type": "enum",
+      "values": ["info", "success", "warning", "critical", "urgent"],
+      "default": "info",
+      "kind": "content",
+      "description": "Status colour, via the [data-status] cascade (tints the card + dot + count).",
+      "figma": { "modePin": { "collection": "Status", "mode": "info" } }
+    },
+    {
+      "name": "data-count",
+      "type": "number",
+      "default": 0,
+      "kind": "content",
+      "description": "Count shown in the trailing tag.",
+      "figma": { "textProp": "count" }
+    },
+    {
+      "name": "data-has-action",
+      "type": "boolean",
+      "default": false,
+      "kind": "visibility",
+      "description": "Show the action button.",
+      "figma": { "boolean": "hasAction" }
+    }
+  ],
+
+  "templates": ["default"],
+
+  "slots": [
+    { "name": "", "accepts": ["content"], "description": "The title." },
+    { "name": "message", "accepts": ["content"], "description": "The message body." }
+  ],
+
+  "parts": ["card", "action", "dismiss"],
+
+  "nested": [
+    { "component": "sherpa-tag", "relationship": "owned" },
+    { "component": "sherpa-button", "relationship": "owned" }
+  ],
+
+  "events": [
+    {
+      "name": "alert-dismiss",
+      "description": "Fired when the dismiss button is clicked.",
+      "bubbles": true, "composed": true, "cancelable": true, "detail": {},
+      "trigger": { "from": "child", "component": "sherpa-button", "event": "button-click" },
+      "default": { "action": "remove-self", "cancelableBy": "preventDefault" }
+    },
+    {
+      "name": "alert-action",
+      "description": "Fired when the action button is clicked.",
+      "bubbles": true, "composed": true, "cancelable": false, "detail": {},
+      "trigger": { "from": "child", "component": "sherpa-button", "event": "button-click" }
+    }
+  ],
+
+  "tokens": {
+    "card.gap": "container-space-gap-sm",
+    "card.padding": "container-space-padding-md",
+    "card.borderWidth": "container-border-width",
+    "card.borderColor": { "override": "status-border", "fallback": "container-border-default" },
+    "card.borderRadius": "core-border-rounding-lg",
+    "card.background": { "override": "status-surface", "fallback": "container-surface-default" },
+    "title.color": { "override": "status-content-title", "fallback": "content-title-base" },
+    "message.color": "content-secondary-base",
+    "title.fontSize": "core-fonts-scale-md",
+    "title.fontWeight": "core-fonts-weight-700",
+    "message.fontSize": "core-fonts-scale-sm"
+  },
+
+  "figma": {
+    "_status": "figma-only-proof",
+    "figmaName": "Alert Card",
+    "nodeType": "COMPONENT_SET",
+    "built": false,
+    "baseCollection": "Container",
+    "variantAxes": [ { "name": "Type", "values": ["inline", "banner", "toast"] } ],
+    "booleanProps": ["hasAction"],
+    "textProps": ["title", "message", "count"],
+    "instanceProps": [],
+    "modePins": { "Status": { "mode": "info" }, "Elevation": { "mode": "none" } },
+    "note": "Fictitious proof #2 — variants + 2-level owned nesting (Tag dot, Tag count, Button action, Button dismiss)."
+  }
+}

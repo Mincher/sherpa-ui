@@ -72,6 +72,7 @@ function renderEntry(e) {
     lines.push(`- aliased from: ${a}`);
   }
   if (e.consumedBy?.length) lines.push(`- consumed by: ${e.consumedBy.join(", ")}`);
+  if (e.caveat) lines.push(`- ⚠️ CAVEAT: ${e.caveat}`);
   if (e.seeAlso?.length) lines.push(`- see also: ${e.seeAlso.join(", ")}`);
   if (e.needsReview) lines.push(`- ⚠️ needs human review (opaque name, no direct consumer)`);
   return lines.join("\n");
