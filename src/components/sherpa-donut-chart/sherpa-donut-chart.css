@@ -1,0 +1,66 @@
+/**
+ * sherpa-donut-chart.css — a donut/pie ring.
+ *
+ * The ring is a conic-gradient JS composes from the slice shares (--_ring). A
+ * radial mask punches the centre hole (donut); data-variant="pie" removes it.
+ * The centre label sits in the hole. Everything drawable is CSS.
+ */
+
+:host {
+  display: inline-block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  --_size: 180px;
+  --_hole: 62%; /* inner radius as a fraction of the circle */
+  --_ring: conic-gradient(var(--sherpa-border-container-default, #e0e0e6) 0 100%);
+}
+
+.layout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-space-lg, 20px);
+}
+
+.ring-wrap {
+  position: relative;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+}
+.ring {
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 50%;
+  background: var(--_ring);
+  /* mask clips the ring into a donut; the centre label is a SIBLING, unaffected */
+  mask: radial-gradient(circle, transparent var(--_hole), #000 calc(var(--_hole) + 0.5px));
+}
+:host([data-variant="pie"]) {
+  --_hole: 0%;
+}
+:host([data-variant="pie"]) .ring {
+  mask: none;
+}
+
+.centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+:host([data-variant="pie"]) .centre { display: none; }
+
+.value {
+  font-size: var(--sherpa-font-size-heading-base, 22px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  color: var(--sherpa-content-default-heading, #18181f);
+  font-variant-numeric: tabular-nums;
+}
+.value:empty { display: none; }
+.sub {
+  font-size: var(--sherpa-font-size-body-xs, 12px);
+  color: var(--sherpa-content-default-secondary, #8a8a96);
+}
+.sub:empty { display: none; }

@@ -1,0 +1,29 @@
+<!--
+  sherpa-donut-chart — a donut / pie for part-to-whole data.
+
+  The ring is a single conic-gradient built by JS from populate([{ label, value }]):
+  each slice becomes a categorical-coloured band spanning its share of the circle.
+  JS sets the gradient as one --_ring custom property; CSS draws the ring (a circle
+  masked to a donut). A centre label sits in the hole.
+
+  Public API:
+    data-variant   donut (default) | pie   (pie removes the centre hole)
+    data-label     centre big text
+    data-sublabel  centre small text
+
+  Slots: legend — an optional legend beside the ring.
+
+  Fires: nothing — display only (compose with sherpa-chart-legend).
+-->
+<template id="default">
+  <div class="layout" part="layout">
+    <div class="ring-wrap">
+      <div class="ring" part="ring"></div>
+      <div class="centre">
+        <span class="value" part="value"></span>
+        <span class="sub" part="sub"></span>
+      </div>
+    </div>
+    <slot name="legend"></slot>
+  </div>
+</template>

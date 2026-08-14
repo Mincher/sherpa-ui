@@ -94,3 +94,4 @@ export { SherpaInputDateRange, type DateRange } from './components/sherpa-input-
 export { SherpaTree, type TreeNode } from './components/sherpa-tree/sherpa-tree.js';
 export { SherpaQuickFilter } from './components/sherpa-quick-filter/sherpa-quick-filter.js';
 export { SherpaGaugeChart } from './components/sherpa-gauge-chart/sherpa-gauge-chart.js';
+export { SherpaDonutChart, type DonutSlice } from './components/sherpa-donut-chart/sherpa-donut-chart.js';
