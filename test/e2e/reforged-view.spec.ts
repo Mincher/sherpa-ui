@@ -20,7 +20,7 @@ test('renderElement builds an element with props, slots and children', async ({ 
     const el = renderElement({
       type: 'sherpa-container',
       props: { 'data-elevation': 'md' },
-      slots: { header: { type: 'sherpa-tag', props: { 'data-color': '5' }, children: [] } },
+      slots: { header: { type: 'sherpa-tag', props: {}, children: [] } },
       children: [{ type: 'sherpa-button', props: { 'data-label': 'Go' } }],
     }) as HTMLElement & { rendered?: Promise<void> };
     document.getElementById('root')!.appendChild(el);
@@ -45,7 +45,7 @@ test('renderView composes an id-addressed tree into a shell', async ({ page }) =
       shell: { nav: 'nav', header: 'hdr' },
       elements: {
         body: { type: 'sherpa-container', children: ['tag'] },
-        tag: { type: 'sherpa-tag', props: { 'data-color': '9' } },
+        tag: { type: 'sherpa-tag', props: {} },
         nav: { type: 'sherpa-nav' },
         hdr: { type: 'sherpa-container' },
       },

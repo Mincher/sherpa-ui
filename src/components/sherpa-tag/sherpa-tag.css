@@ -1,71 +1,54 @@
 /**
- * sherpa-tag.css — all tag presentation.
+ * sherpa-tag.css — a compact labelled pill (matches Figma Tag).
  *
- * A pill whose colour is one of 11 fixed categorical hues, selected by
- * data-color. Each swatch sets a private --_hue; the variant (solid vs soft)
- * decides how that hue is used, and the swatch's lightness decides text colour.
- * primary = solid fill; secondary = soft tint. Pure data-* selectors.
+ * Neutral by default: a white/greyscale pill with dark text, from the
+ * [data-status] cascade (--_status-surface/-border/-text) with neutral fallbacks.
+ * An ancestor (or own) [data-status] colours it — the pill fills with the status
+ * surface, borders with the status border, and re-inks the text. A leading icon
+ * and a trailing dismiss (removable template) sit inside. No categorical hues —
+ * those live in the data-viz layer (chart-legend), not on tags.
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
-
-  /* default swatch — categorical 1 (purple); on-color text */
-  --_hue: var(--sherpa-categorical-1, #7b1ce6);
-  --_ink: var(--sherpa-content-title-on-color, #ffffff);
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-control-space-gap-sm, 2px);
+  gap: var(--sherpa-control-space-gap-sm, 4px);
   padding: var(--sherpa-control-space-padding-xs, 2px) var(--sherpa-control-space-padding-sm, 8px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--_hue);
+  border: var(--sherpa-control-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-control-border-default, #b2b2bf));
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  background: var(--_status-surface, var(--sherpa-control-surface-default, #ffffff));
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   font-family: inherit;
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
   line-height: 1.4;
   white-space: nowrap;
-
-  /* primary (default): solid hue fill */
-  background: var(--_hue);
-  color: var(--_ink);
 }
 
-/* ── Secondary: soft tint of the hue, dark ink ─────────────────────── */
-:host([data-variant="secondary"]) .pill {
-  background: color-mix(in srgb, var(--_hue) 16%, transparent);
-  color: var(--sherpa-content-title-base, #18191a);
-  border-color: color-mix(in srgb, var(--_hue) 40%, transparent);
+/* ── Leading icon (default slot content or a slotted glyph) ─────────── */
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-size-icon-2xs, 12px);
+  block-size: var(--sherpa-size-icon-2xs, 12px);
+  color: inherit;
 }
-
-/* ── Colour swatches (fixed categorical order) ─────────────────────── */
-:host([data-color="1"])  { --_hue: var(--sherpa-categorical-1,  #7b1ce6); }
-:host([data-color="2"])  { --_hue: var(--sherpa-categorical-2,  #c046ff); }
-:host([data-color="3"])  { --_hue: var(--sherpa-categorical-3,  #2bd1c1); }
-:host([data-color="4"])  { --_hue: var(--sherpa-categorical-4,  #16abe2); }
-:host([data-color="5"])  { --_hue: var(--sherpa-categorical-5,  #4141ef); }
-:host([data-color="6"])  { --_hue: var(--sherpa-categorical-6,  #8197f1); }
-:host([data-color="7"])  { --_hue: var(--sherpa-categorical-7,  #ffaa01); }
-:host([data-color="8"])  { --_hue: var(--sherpa-categorical-8,  #f3689d); }
-:host([data-color="9"])  { --_hue: var(--sherpa-categorical-9,  #d1105a); }
-:host([data-color="10"]) { --_hue: var(--sherpa-categorical-10, #20c173); }
-:host([data-color="11"]) { --_hue: var(--sherpa-categorical-11, #b2b2bf); }
-
-/* Light swatches (solid fill needs dark ink for contrast) */
-:host(:is([data-color="3"], [data-color="7"], [data-color="10"], [data-color="11"])) {
-  --_ink: var(--sherpa-content-title-base, #18191a);
-}
+:host(:not([data-icon])) .icon { display: none; }
 
 /* ── Removable close button ────────────────────────────────────────── */
 .close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  inline-size: var(--sherpa-size-icon-2xs, 14px);
+  block-size: var(--sherpa-size-icon-2xs, 14px);
   margin-inline-start: var(--sherpa-control-space-gap-sm, 2px);
   padding: 0;
   border: none;
@@ -75,21 +58,26 @@
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
-  opacity: 0.75;
-  transition: opacity 100ms ease, background-color 100ms ease;
+  transition:
+    background-color 100ms ease,
+    color 100ms ease;
 }
-.close:hover { opacity: 1; background: color-mix(in srgb, currentColor 22%, transparent); }
+.close:hover {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-control-border-accent, #3c5edd);
 }
 
 /* ── Collapsed: small circular indicator ───────────────────────────── */
 :host([data-collapsed]) .pill {
-  width: var(--sherpa-core-space-xs, 8px);
-  height: var(--sherpa-core-space-xs, 8px);
+  inline-size: var(--sherpa-core-space-xs, 8px);
+  block-size: var(--sherpa-core-space-xs, 8px);
   padding: 0;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   overflow: hidden;
   font-size: 0;
+  /* the collapsed dot fills with the status colour (or neutral) */
+  background: var(--_status-surface-strong, var(--_status-border, var(--sherpa-control-border-default, #b2b2bf)));
 }

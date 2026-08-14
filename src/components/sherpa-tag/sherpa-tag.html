@@ -1,29 +1,36 @@
 <!--
-  sherpa-tag — a compact labelled pill.
+  sherpa-tag — a compact labelled pill (Figma Tag).
+
+  Neutral by default (white/grey pill, dark text). Colour comes from the
+  [data-status] cascade on an ancestor (or the tag itself): the pill fills with
+  the status surface, borders with the status border, and re-inks its text.
 
   Templates (via data-removable):
-    default   — label pill
-    removable — label pill + a close button (fires tag-remove)
-
-  Colour comes from the [data-status] cascade on an ancestor: the pill fills with
-  the status surface (primary) or shows a status border on a plain surface
-  (secondary). No ancestor status → a neutral pill.
+    default   — leading icon + label
+    removable — leading icon + label + a close button (fires tag-remove)
 
   Public API:
-    data-variant    primary (filled status surface) | secondary (status border)
+    data-status     info | success | warning | critical | urgent (via the cascade)
+    data-icon       show the leading icon slot (boolean)
     data-collapsed  render as a small circular indicator (boolean)
     data-removable  show the close button (selects the removable template)
+
+  Slots:
+    icon      — a leading glyph (shown when data-icon is set)
+    (default) — the label
 
   Fires: tag-remove
 -->
 <template id="default">
   <span class="pill" part="pill">
-    <slot></slot>
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+    <span class="label"><slot></slot></span>
   </span>
 </template>
 
 <template id="removable">
   <span class="pill" part="pill">
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
     <span class="label"><slot></slot></span>
     <button class="close" part="close" type="button" aria-label="Remove">
       <span aria-hidden="true">&#215;</span>
