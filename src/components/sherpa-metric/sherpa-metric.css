@@ -35,11 +35,9 @@
 /* ── Label ─────────────────────────────────────────────────────────── */
 .label {
   margin: 0;
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -64,11 +62,11 @@
 /* ── Value ─────────────────────────────────────────────────────────── */
 .value {
   margin: 0;
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-  font-size: var(--sherpa-core-fonts-scale-2xl, 24px);
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
-  line-height: 1.2;
-  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
+  font-family: inherit; /* body font, not mono — Figma's value is bold display text */
+  font-size: var(--sherpa-core-fonts-scale-6xl, 36px);
+  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  line-height: 1.1;
+  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
 }
 
 /* ── Trend + delta ─────────────────────────────────────────────────── */

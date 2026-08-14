@@ -18,7 +18,9 @@
   height: var(--sherpa-core-size-xl, 28px);
 
   /* Trend colour — status cascade wins, else the primary accent. */
-  --_line: var(--_status-text, var(--sherpa-content-link-base, #3c5edd));
+  /* Neutral grey line by default (Figma: status-border/default passthrough);
+     a status context re-inks it. */
+  --_line: var(--_status-border, var(--sherpa-border-interactive, #b2b2bf));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
