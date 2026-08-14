@@ -70,7 +70,7 @@
 /* ── Active tab — accent underline + accent label ─────────────────────── */
 .tab[data-active] {
   border-bottom-width: var(--sherpa-core-border-width-lg, 2px);
-  border-bottom-color: var(--sherpa-border-interactive-primary, #3c5edd);
+  border-bottom-color: var(--sherpa-border-interactive-active, #3c5edd);
   color: var(--sherpa-content-link-base, #3c5edd);
 }
 

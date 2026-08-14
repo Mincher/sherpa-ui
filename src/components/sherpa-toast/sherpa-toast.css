@@ -23,10 +23,10 @@
   gap: var(--sherpa-core-space-sm, 12px);
   min-width: 260px;
   max-width: 420px;
-  padding: var(--sherpa-core-space-sm, 12px) var(--sherpa-core-space-base, 16px);
-  border: var(--sherpa-core-border-width-base, 1px) solid
+  padding: var(--sherpa-container-space-padding-md, 12px) var(--sherpa-container-space-padding-md, 16px);
+  border: var(--sherpa-container-border-width, 1px) solid
     color-mix(in srgb, var(--_accent) 45%, transparent);
-  border-radius: var(--sherpa-core-border-rounding-lg, 8px);
+  border-radius: var(--sherpa-container-border-radius-top-left, 8px);
   background: color-mix(in srgb, var(--_accent) 12%, var(--sherpa-surface-primary-base, #ffffff));
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(26, 26, 32, 0.16));
 }

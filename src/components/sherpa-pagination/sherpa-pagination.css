@@ -11,21 +11,21 @@
 :host {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-button-space-gap, 2px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  --_btn: var(--sherpa-core-size-xl, 28px);
+  --_btn: var(--sherpa-button-size-height, 28px);
 }
 
 .pager {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-button-space-gap, 2px);
 }
 
 .numbers {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-button-space-gap, 2px);
 }
 
 /* ── Buttons ───────────────────────────────────────────────────────────── */
@@ -35,9 +35,9 @@
   justify-content: center;
   min-inline-size: var(--_btn);
   block-size: var(--_btn);
-  padding-inline: var(--sherpa-core-space-2xs, 4px);
-  border: var(--sherpa-core-border-width-base, 1px) solid transparent;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  padding-inline: var(--sherpa-button-space-padding, 4px);
+  border: var(--sherpa-control-border-width, 1px) solid transparent;
+  border-radius: var(--sherpa-grouping-radius-top-left, 4px);
   background: transparent;
   font-family: inherit;
   font-size: var(--sherpa-core-fonts-scale-base, 14px);

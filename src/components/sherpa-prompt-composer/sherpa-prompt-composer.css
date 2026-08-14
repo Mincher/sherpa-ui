@@ -16,8 +16,12 @@
   gap: var(--sherpa-core-space-xs, 8px);
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
   background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
-  border-radius: var(--sherpa-core-border-rounding-lg, 8px);
+  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-radius:
+    var(--sherpa-grouping-radius-top-left, 8px)
+    var(--sherpa-grouping-radius-top-right, 8px)
+    var(--sherpa-grouping-radius-bottom-right, 8px)
+    var(--sherpa-grouping-radius-bottom-left, 8px);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 .form:focus-within {
@@ -41,7 +45,7 @@
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 .input:focus { outline: none; }
-.input::placeholder { color: var(--sherpa-content-secondary-base, #404047); }
+.input::placeholder { color: var(--sherpa-content-tertiary-base, #404047); }
 
 /* ── Tools row (actions + send) ─────────────────────────────────────── */
 .tools {
@@ -62,8 +66,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-2xl, 32px);
-  block-size: var(--sherpa-core-size-2xl, 32px);
+  inline-size: var(--sherpa-button-size-height, 32px);
+  block-size: var(--sherpa-button-size-height, 32px);
   border: none;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: var(--sherpa-content-active-base, #8500cc);

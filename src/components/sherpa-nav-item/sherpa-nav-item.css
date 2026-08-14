@@ -16,8 +16,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
-  padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-control-space-gap-base, 12px);
+  padding: var(--sherpa-control-space-padding-xs, 8px) var(--sherpa-control-space-padding-sm, 12px);
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
@@ -63,7 +63,7 @@
 
 /* ── Hover / focus ─────────────────────────────────────────────────── */
 :host(:hover) .row {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
+  background: var(--sherpa-control-surface-hover, #f4f4f6);
   color: var(--sherpa-content-title-base, #18191a);
 }
 :host(:focus-visible) { outline: none; }

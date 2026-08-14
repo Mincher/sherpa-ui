@@ -12,11 +12,11 @@
   flex-direction: column;
   position: relative;
   min-width: 0;
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
-  border-radius: var(--sherpa-core-border-rounding-lg, 8px);
+  background: var(--sherpa-container-surface-default, #ffffff);
+  border: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
+  border-radius: var(--sherpa-container-border-radius-top-left, 8px);
 
-  --_pad: var(--sherpa-core-space-base, 16px);
+  --_pad: var(--sherpa-container-space-padding-md, 16px);
   --_shadow: none;
   box-shadow: var(--_shadow);
 }
@@ -39,7 +39,7 @@
 
 /* ── Padding scale ─────────────────────────────────────────────────── */
 :host([data-padding="none"]) { --_pad: 0; }
-:host([data-padding="sm"]) { --_pad: var(--sherpa-core-space-sm, 12px); }
+:host([data-padding="sm"]) { --_pad: var(--sherpa-container-space-padding-sm, 12px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-core-space-lg, 20px); }
 
 /* ── Regions ───────────────────────────────────────────────────────── */
@@ -57,11 +57,11 @@
 /* header/footer appear only when their slot has content */
 :host([data-has-header]) .header {
   display: block;
-  border-bottom: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-bottom: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-top: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-top: var(--sherpa-container-border-width, 1px) solid var(--sherpa-container-border-default, #d5d5d5);
 }
 
 /* ── State overlay — one region, the active state shown by data-state ─ */

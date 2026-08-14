@@ -30,7 +30,7 @@
 .row {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-control-space-gap-base, 4px);
   padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-core-space-2xs, 4px);
   border: none;
   border-radius: var(--sherpa-core-border-rounding-base, 4px);

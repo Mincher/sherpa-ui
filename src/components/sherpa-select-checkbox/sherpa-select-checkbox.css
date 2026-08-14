@@ -13,9 +13,9 @@
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   --_size: var(--sherpa-core-size-sm, 16px);
-  --_border: var(--sherpa-border-interactive-primary, #3c5edd);
-  --_fill: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  --_focus: var(--sherpa-border-interactive-primary, #3c5edd);
+  --_border: var(--sherpa-control-border-accent, #3c5edd);
+  --_fill: var(--sherpa-control-surface-accent, #3c5edd);
+  --_focus: var(--sherpa-control-border-accent, #3c5edd);
 }
 
 /* Compact variant: the control alone, no label/description text. */
@@ -103,7 +103,7 @@
 /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
 .control:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-control-border-default, #3c5edd);
 }
 
 /* ── Label + description ──────────────────────────────────────────── */
@@ -134,12 +134,12 @@
 :host([disabled]) .control {
   cursor: not-allowed;
   border-color: var(--sherpa-border-interactive-inactive, #c0c0cc);
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  background: var(--sherpa-control-surface-inactive, #d5d5d5);
 }
 :host([disabled]) .control:checked,
 :host([disabled]) .control:indeterminate {
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
-  border-color: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  background: var(--sherpa-control-surface-inactive, #d5d5d5);
+  border-color: var(--sherpa-control-surface-inactive, #d5d5d5);
 }
 :host([disabled]) .control:checked::after,
 :host([disabled]) .control:indeterminate::after {

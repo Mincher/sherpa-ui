@@ -13,10 +13,10 @@
   align-items: baseline;
   gap: var(--sherpa-core-space-xs, 8px);
   width: 100%;
-  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-sm, 12px);
-  border: var(--sherpa-core-border-width-base, 1px) solid
+  padding: var(--sherpa-container-space-padding-md, 4px) var(--sherpa-container-space-padding-md, 12px);
+  border: var(--sherpa-container-border-width, 1px) solid
     color-mix(in srgb, var(--_hue) 30%, transparent);
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
   background: color-mix(in srgb, var(--_hue) 10%, transparent);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -34,8 +34,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-core-size-sm, 16px);
-  height: var(--sherpa-core-size-sm, 16px);
+  width: var(--sherpa-size-icon-2xs, 16px);
+  height: var(--sherpa-size-icon-2xs, 16px);
   color: var(--_hue);
   font-weight: var(--sherpa-core-fonts-weight-700, 700);
   line-height: 1;

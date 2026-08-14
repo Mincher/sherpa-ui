@@ -17,12 +17,12 @@
 .box {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-core-space-sm, 12px);
-  padding: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-container-space-gap-md, 12px);
+  padding: var(--sherpa-container-space-padding-md, 12px);
   /* Leading accent bar on the inline-start edge only, over a soft status tint. */
   border: 0 solid var(--_accent);
   border-inline-start-width: var(--sherpa-core-border-width-lg, 2px);
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
   background: color-mix(in srgb, var(--_accent) 12%, transparent);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);

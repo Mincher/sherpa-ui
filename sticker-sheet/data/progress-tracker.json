@@ -1,8 +1,0 @@
-{
-  "steps": [
-    { "label": "Submitted",  "completed": true },
-    { "label": "In review",  "completed": true },
-    { "label": "Approved",   "completed": false },
-    { "label": "Published",  "completed": false }
-  ]
-}

@@ -37,9 +37,9 @@
   align-items: center;
   gap: var(--sherpa-core-space-xs, 8px);
   padding: var(--sherpa-core-space-xl, 24px) var(--sherpa-core-space-lg, 20px);
-  border: var(--sherpa-core-border-width-base, 1px) dashed var(--_border);
+  border: var(--sherpa-control-border-width, 1px) dashed var(--_border);
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  background: var(--sherpa-surface-tertiary-base, #ffffff);
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
   text-align: center;
@@ -85,9 +85,13 @@
   align-items: center;
   gap: var(--sherpa-core-space-sm, 12px);
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-radius:
+    var(--sherpa-grouping-radius-top-left, 4px)
+    var(--sherpa-grouping-radius-top-right, 4px)
+    var(--sherpa-grouping-radius-bottom-right, 4px)
+    var(--sherpa-grouping-radius-bottom-left, 4px);
+  background: var(--sherpa-surface-tertiary-base, #ffffff);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 .file-icon { color: var(--sherpa-content-secondary-base, #404047); flex-shrink: 0; }
@@ -108,8 +112,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-lg, 24px);
-  block-size: var(--sherpa-core-size-lg, 24px);
+  inline-size: var(--sherpa-button-size-height, 24px);
+  block-size: var(--sherpa-button-size-height, 24px);
   border: none;
   border-radius: var(--sherpa-core-border-rounding-sm, 2px);
   background: transparent;

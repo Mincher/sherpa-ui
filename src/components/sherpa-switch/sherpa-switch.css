@@ -9,14 +9,14 @@
 
 :host {
   /* private knobs, overridden by data-style */
-  --_track-rounding: var(--sherpa-core-border-rounding-base, 4px);
-  --_knob-rounding: var(--sherpa-core-border-rounding-sm, 2px);
-  --_knob-size: var(--sherpa-core-size-md, 20px);
+  --_track-rounding: var(--sherpa-switch-radius-track, 4px);
+  --_knob-rounding: var(--sherpa-switch-radius-thumb, 2px);
+  --_knob-size: var(--sherpa-switch-size-thumb, 20px);
   /* One fill token the track consumes; the ON state re-points it. Routing state
      through a single custom property (not swapping the `background` rule) keeps
      the computed value reliable — a swapped rule can go stale after an early
      getComputedStyle read. */
-  --_fill: var(--sherpa-content-secondary-base, #404047);
+  --_fill: var(--sherpa-switch-surface-track-off, #404047);
 
   display: inline-flex;
   vertical-align: middle;
@@ -27,10 +27,10 @@
   display: inline-flex;
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
-  gap: var(--sherpa-core-space-2xs, 4px);
-  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-core-space-2xs, 4px);
-  border: var(--sherpa-core-border-width-base, 1px) solid
-    var(--sherpa-border-interactive-secondary, #d5d5d5);
+  gap: var(--sherpa-control-space-gap-sm, 4px);
+  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-switch-size-padding-horizontal, 4px);
+  border: var(--sherpa-core-border-width-sm, 1px) solid
+    var(--sherpa-control-border-default, #d5d5d5);
   border-radius: var(--_track-rounding);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -58,14 +58,14 @@
 .label {
   min-width: 24px;
   text-align: center;
-  color: var(--sherpa-content-title-on-color, #ffffff);
+  color: var(--sherpa-switch-content-track-on, #ffffff);
 }
 :host([data-state="on"]) .label::after { content: "ON"; }
 :host(:not([data-state="on"])) .label::after { content: "OFF"; }
 
 /* ── ON state — re-point the single fill token; slide the knob to the end ── */
 :host([data-state="on"]) {
-  --_fill: var(--sherpa-content-success-default, #16915a);
+  --_fill: var(--sherpa-switch-surface-track-on, #16915a);
 }
 :host([data-state="on"]) .track {
   flex-direction: row-reverse;
@@ -73,9 +73,9 @@
 
 /* ── Simple (pill) variant — rounded, no label, smaller knob ───────────── */
 :host([data-style="simple"]) {
-  --_track-rounding: var(--sherpa-core-border-rounding-full, 999px);
-  --_knob-rounding: var(--sherpa-core-border-rounding-full, 999px);
-  --_knob-size: var(--sherpa-core-size-xs, 12px);
+  --_track-rounding: var(--sherpa-switch-radius-track, 999px);
+  --_knob-rounding: var(--sherpa-switch-radius-thumb, 999px);
+  --_knob-size: var(--sherpa-switch-size-thumb, 12px);
 }
 :host([data-style="simple"]) .label { display: none; }
 
@@ -92,5 +92,5 @@
   background: var(--sherpa-surface-primary-inactive, #f2f2f2);
 }
 :host([disabled]) .label {
-  color: var(--sherpa-content-inactive-base, #5c5c66);
+  color: var(--sherpa-switch-content-inactive, #5c5c66);
 }

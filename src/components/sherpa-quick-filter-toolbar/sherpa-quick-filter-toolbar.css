@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   padding-inline-end: var(--sherpa-core-space-sm, 12px);
-  border-inline-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-inline-end: var(--sherpa-control-border-width, 1px) solid var(--sherpa-control-border-default, #d5d5d5);
 }
 
 .chips {

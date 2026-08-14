@@ -19,9 +19,9 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-3xs, 2px);
-  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-core-space-xs, 8px);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_hue);
+  gap: var(--sherpa-control-space-gap-sm, 2px);
+  padding: var(--sherpa-control-space-padding-xs, 2px) var(--sherpa-control-space-padding-sm, 8px);
+  border: var(--sherpa-control-border-width, 1px) solid var(--_hue);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   font-family: inherit;
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
@@ -66,7 +66,7 @@
   justify-content: center;
   width: 14px;
   height: 14px;
-  margin-inline-start: var(--sherpa-core-space-3xs, 2px);
+  margin-inline-start: var(--sherpa-control-space-gap-sm, 2px);
   padding: 0;
   border: none;
   border-radius: var(--sherpa-core-border-rounding-full, 999px);

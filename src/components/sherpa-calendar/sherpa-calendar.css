@@ -16,11 +16,15 @@
 .cal {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-container-space-gap-sm, 8px);
   inline-size: fit-content;
-  padding: var(--sherpa-core-space-sm, 12px);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_border);
-  border-radius: var(--sherpa-core-border-rounding-lg, 8px);
+  padding: var(--sherpa-container-space-padding-md, 12px);
+  border: var(--sherpa-control-border-width, 1px) solid var(--_border);
+  border-radius:
+    var(--sherpa-grouping-radius-top-left, 8px)
+    var(--sherpa-grouping-radius-top-right, 8px)
+    var(--sherpa-grouping-radius-bottom-right, 8px)
+    var(--sherpa-grouping-radius-bottom-left, 8px);
   background: var(--sherpa-surface-primary-base, #ffffff);
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
@@ -45,8 +49,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-xl, 28px);
-  block-size: var(--sherpa-core-size-xl, 28px);
+  inline-size: var(--sherpa-button-size-height, 28px);
+  block-size: var(--sherpa-button-size-height, 28px);
   padding: 0;
   border: none;
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
@@ -89,7 +93,7 @@
   justify-content: center;
   block-size: var(--sherpa-core-size-2xl, 32px);
   padding: 0;
-  border: var(--sherpa-core-border-width-base, 1px) solid transparent;
+  border: var(--sherpa-control-border-width, 1px) solid transparent;
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-primary-base, #2e2e33);

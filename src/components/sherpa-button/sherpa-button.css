@@ -10,19 +10,19 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-grouping-radius-top-left, 4px);
 
   /* primary defaults — variants below re-point these */
-  --_surface: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  --_surface-hover: var(--sherpa-surface-interactive-primary-hover, #173382);
-  --_surface-down: var(--sherpa-surface-interactive-primary-down, #0f0f57);
+  --_surface: var(--sherpa-control-surface-default, #3c5edd);
+  --_surface-hover: var(--sherpa-control-surface-hover, #173382);
+  --_surface-down: var(--sherpa-control-surface-down, #0f0f57);
   --_content: var(--sherpa-content-title-on-color, #ffffff);
   --_border: transparent;
 
-  --_height: var(--sherpa-core-size-2xl, 32px);
-  --_pad-inline: var(--sherpa-core-space-sm, 12px);
-  --_gap: var(--sherpa-core-space-xs, 8px);
-  --_font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  --_height: var(--sherpa-button-size-height, 32px);
+  --_pad-inline: var(--sherpa-button-space-padding, 12px);
+  --_gap: var(--sherpa-button-space-gap, 8px);
+  --_font-size: var(--sherpa-button-font-size, 14px);
 }
 
 .trigger {
@@ -62,17 +62,17 @@
 /* ── Variants ─────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
-  --_surface: var(--sherpa-surface-interactive-secondary-base, #ffffff);
-  --_surface-hover: var(--sherpa-surface-interactive-secondary-hover, #fafafa);
-  --_surface-down: var(--sherpa-surface-interactive-secondary-down, #f2f2f2);
+  --_surface: var(--sherpa-control-surface-default, #ffffff);
+  --_surface-hover: var(--sherpa-control-surface-hover, #fafafa);
+  --_surface-down: var(--sherpa-control-surface-down, #f2f2f2);
   --_content: var(--sherpa-content-title-base, #18191a);
-  --_border: var(--sherpa-border-interactive-secondary, #d5d5d5);
+  --_border: var(--sherpa-control-border-default, #d5d5d5);
 }
 
 :host([data-variant="tertiary"]) {
   --_surface: transparent;
-  --_surface-hover: var(--sherpa-surface-interactive-tertiary-hover, #f2f2f5);
-  --_surface-down: var(--sherpa-surface-interactive-tertiary-down, #e6e6ec);
+  --_surface-hover: var(--sherpa-control-surface-hover, #f2f2f5);
+  --_surface-down: var(--sherpa-control-surface-down, #e6e6ec);
   --_content: var(--sherpa-content-link-base, #3c5edd);
   --_border: transparent;
 }
@@ -139,7 +139,7 @@
   cursor: not-allowed;
   pointer-events: none;
   color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-surface-interactive-inactive, #d5d5d5);
+  background: var(--sherpa-control-surface-inactive, #d5d5d5);
   border-color: var(--sherpa-border-interactive-inactive, #d5d5dc);
 }
 :host([disabled]) .icon { color: var(--sherpa-content-inactive-base, #5c5c66); }

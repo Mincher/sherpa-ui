@@ -54,7 +54,7 @@
   position: absolute;
   inset-inline: 0;
   height: var(--_rail);
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  background: var(--sherpa-surface-interactive-inactive, #f2f2f2);
   border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   overflow: hidden;
@@ -116,7 +116,7 @@
 :host([disabled]) { --_accent: var(--sherpa-content-inactive-base, #5c5c66); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 :host([disabled]) .track {
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  background: var(--sherpa-surface-interactive-inactive, #f2f2f2);
   border-color: var(--sherpa-border-interactive-inactive, #e0e0e6);
 }
 :host([disabled]) .label,

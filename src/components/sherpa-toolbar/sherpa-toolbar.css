@@ -8,7 +8,7 @@
  */
 
 :host {
-  --_py: var(--sherpa-core-space-xs, 8px);
+  --_py: var(--sherpa-container-space-padding-md, 8px);
   --_gap: var(--sherpa-core-space-xs, 8px);
   display: block;
   inline-size: 100%;
@@ -26,7 +26,7 @@
 
 /* Bordered variant adds the Figma toolbar's bottom rule. */
 :host([data-variant="bordered"]) .bar {
-  border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+  border-block-end: var(--sherpa-control-border-width, 1px) solid
     var(--sherpa-border-primary, #d5d5d5);
 }
 

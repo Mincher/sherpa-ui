@@ -21,7 +21,7 @@ import { register as registerPrompts }         from "./prompts/index.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT            = path.resolve(__dirname, "..");
 const CSS_UTIL_DIR    = path.join(__dirname, "data", "css-utilities");
-const COMPONENTS_DIR  = path.join(ROOT, "components");
+const COMPONENTS_DIR  = path.join(ROOT, "src", "components");
 const PATTERNS_DIR    = path.join(ROOT, "patterns");
 const DOCS_DIR        = path.join(ROOT, "docs");
 const CSS_DIR         = path.join(ROOT, "css");

@@ -97,7 +97,7 @@ test('the on state paints the success fill', async ({ page }) => {
     };
     return { off: await paint(false), on: await paint(true) };
   });
-  expect(r.on).toBe('rgb(22, 145, 90)'); // content-success-default #16915a
+  expect(r.on).toBe('rgb(5, 129, 66)'); // switch-surface-track-on → success #058142 (Figma)
   expect(r.off).not.toBe(r.on);
 });
 
