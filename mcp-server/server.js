@@ -14,6 +14,7 @@ import { register as registerTokenTools }      from "./tools/tokens.js";
 import { register as registerUtilityTools }    from "./tools/utilities.js";
 import { register as registerSearchTools }     from "./tools/search.js";
 import { register as registerMetaTools }       from "./tools/meta.js";
+import { register as registerOntologyTools }   from "./tools/ontology.js";
 import { register as registerResources }       from "./resources/index.js";
 import { register as registerPrompts }         from "./prompts/index.js";
 
@@ -69,6 +70,7 @@ export async function createServer() {
   registerUtilityTools(server, data);
   registerSearchTools(server, data);
   registerMetaTools(server, data, { docsDir: DOCS_DIR, cssDir: CSS_DIR, copilotPath: COPILOT_PATH });
+  registerOntologyTools(server);
 
   // Resources
   registerResources(server, data, PATHS);

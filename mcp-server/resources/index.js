@@ -183,4 +183,35 @@ export function register(server, { schemas, cssUtilities, utilities }, paths) {
       };
     }
   );
+
+  // ── Design-system ontology (per-token purpose) ──────────────────────
+  const ONTOLOGY_PATH = path.join(rootDir, "docs", "ontology", "tokens.json");
+  const loadOntology = () =>
+    fs.existsSync(ONTOLOGY_PATH) ? JSON.parse(fs.readFileSync(ONTOLOGY_PATH, "utf8")) : {};
+
+  server.registerResource(
+    "Token Ontology",
+    new ResourceTemplate("sherpa://ontology/{id}", {
+      list: async () => ({
+        resources: Object.values(loadOntology()).map((e) => ({
+          uri:         `sherpa://ontology/${encodeURIComponent(e.id)}`,
+          name:        e.id,
+          description: e.purpose,
+          mimeType:    "application/json",
+        })),
+      }),
+    }),
+    { description: "Purpose/usage ontology for a Sherpa design-system variable", mimeType: "application/json" },
+    async (uri, { id }) => {
+      const o = loadOntology();
+      const entry = o[decodeURIComponent(id)];
+      return {
+        contents: [{
+          uri:      uri.href,
+          mimeType: "application/json",
+          text:     entry ? JSON.stringify(entry, null, 2) : `{"error":"Unknown token: ${id}"}`,
+        }],
+      };
+    }
+  );
 }
