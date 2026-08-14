@@ -244,6 +244,24 @@
     {
       "figma": "Time Picker",
       "note": "placeholder in Figma; folded into calendar in code"
+    },
+    {
+      "figma": ".Grid Selection Column",
+      "tier": "sub-component",
+      "note": "sub-component of Data Grid; pinned selection column — folded into sherpa-grid-column (data-pinned=left, data-type=selection) in code, no separate element"
+    },
+    {
+      "figma": ".Grid Actions Column",
+      "tier": "sub-component",
+      "note": "sub-component of Data Grid; pinned actions column — folded into sherpa-grid-column (data-pinned=right, data-type=actions) in code, no separate element"
+    },
+    {
+      "figma": "Calendar",
+      "note": "composition-covered — sherpa-calendar renders the date Grid + Time Picker; no standalone code element binds Calendar directly"
+    },
+    {
+      "figma": "Chart Legend",
+      "note": "composition-covered — sherpa-chart-legend binds the atomic Legend Item; the composed Chart Legend is assembled from Legend Items"
     }
   ]
 }

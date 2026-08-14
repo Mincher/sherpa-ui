@@ -2,7 +2,7 @@
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
   "generated": true,
   "name": "sherpa-progress-step-tracker",
-  "figmaName": "Progress Step Tracker",
+  "figmaName": "Progress Steps",
   "category": "control",
   "description": "a horizontal stepper.",
   "props": [
