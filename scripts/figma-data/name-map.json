@@ -48,9 +48,10 @@
     },
     "sherpa-list-item": {
       "figma": "Menu List Item",
-      "status": "matched",
+      "status": "needs-rebuild",
       "note": "Figma name differs",
-      "tier": "sub-component"
+      "tier": "sub-component",
+      "rebuildNote": "missing drag-handle, leading selection control, expand; no hover/inactive state parity vs Menu List Item"
     },
     "sherpa-list": {
       "figma": "List",
@@ -58,11 +59,13 @@
     },
     "sherpa-slider": {
       "figma": "Slider",
-      "status": "matched"
+      "status": "needs-rebuild",
+      "rebuildNote": "read-only value read-out vs Figma editable value-input"
     },
     "sherpa-file-upload": {
       "figma": "File Uploader",
-      "status": "matched"
+      "status": "needs-rebuild",
+      "rebuildNote": "bare drag-drop list vs Figma with upload-button + remove-all-button; only files-change event"
     },
     "sherpa-key-value-list": {
       "figma": "Key Value Pair",
@@ -83,7 +86,8 @@
     },
     "sherpa-container-header": {
       "figma": "Container Header",
-      "status": "matched"
+      "status": "needs-rebuild",
+      "rebuildNote": "missing all 4 Figma affordances: drag-handle, icon, close/dismiss, collapse toggle"
     },
     "sherpa-container-footer": {
       "figma": "Container Footer",
@@ -164,7 +168,8 @@
     },
     "sherpa-transfer-list": {
       "figma": "Transfer List",
-      "status": "matched"
+      "status": "needs-rebuild",
+      "rebuildNote": "raw DOM vs Figma composing Menu List Item + Button (composes zero DS children)"
     },
     "sherpa-chat-message": {
       "figma": "Chat Message",
@@ -176,8 +181,9 @@
     },
     "sherpa-calendar": {
       "figma": "Grid",
-      "status": "matched",
-      "note": "Calendar's date Grid + Time Picker"
+      "status": "needs-rebuild",
+      "note": "Calendar's date Grid + Time Picker",
+      "rebuildNote": "month day-grid only vs Figma Grid Layout[month|year|day] + Time Picker"
     },
     "sherpa-nav-section": {
       "figma": "Navigation Section",
@@ -186,7 +192,8 @@
     },
     "sherpa-app-header": {
       "figma": "App Header",
-      "status": "matched"
+      "status": "needs-rebuild",
+      "rebuildNote": "3-region flex bar vs 28-node Figma (Breadcrumbs, Notif Badge, loading bar, embedded view-scope Quick Filter Toolbar, 4 events)"
     },
     "sherpa-nav": {
       "figma": "Primary Navigation",
@@ -201,8 +208,9 @@
     },
     "sherpa-data-grid": {
       "figma": "Data Grid",
-      "status": "matched",
-      "tier": "top-level"
+      "status": "needs-rebuild",
+      "tier": "top-level",
+      "rebuildNote": "plain <table> vs flat pinned-column Figma grid (Figma rebuilt this session; code still legacy table)"
     },
     "sherpa-grid-cell": {
       "figma": ".Grid Cell",
