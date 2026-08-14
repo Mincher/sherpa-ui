@@ -1,36 +1,76 @@
 <!--
-  sherpa-nav — a vertical navigation rail.
+  sherpa-nav — the primary application navigation rail.
 
-  Renders a flat list of items from populate([{ id, label, icon?, href? }]).
-  The active item is marked by data-active-id on the host. Clicking an item
-  fires nav-select with the item's id.
+  Matches the Figma "Primary Navigation": a fixed header (brand row + search +
+  quick items) over a scrolling content area of grouped sections, plus a footer.
 
-  Data-driven rows use a cloning prototype (<template class="item-tpl">, no id —
-  so the base class's template parser ignores it).
+  populate() accepts a rich config:
+    {
+      product?:    { name?, icon? },                    // brand row
+      quickItems?: [{ id, label, icon?, href?, badge? }],
+      sections?:   [{ label?, items: [{ id, label, icon?, href?, badge?, indicator? }] }]
+    }
+  A plain array is still accepted (legacy): treated as one unlabelled section.
+
+  Rows are stamped as <sherpa-nav-item> (composition — the same component the
+  Figma nests). Section labels are lightweight headers. The active item is
+  data-active-id on the host; clicking an item fires nav-select.
 
   Public API:
     data-active-id  — id of the currently active item
-    data-collapsed  — icon-only rail (labels hidden)
+    data-collapsed  — icon-only rail (labels, search, section labels hidden)
+    data-searchable — show the search field (auto-set when product/search config given)
 
-  Fires: nav-select — detail: { id }
+  Slots:
+    brand-actions   — action buttons in the brand row (e.g. collapse, settings)
+    footer          — pinned footer content (account / user)
+
+  Fires:
+    nav-select        — detail: { id }         (a nav item was chosen)
+    nav-search        — detail: { query }      (the search input changed)
 -->
 <template id="default">
   <nav class="rail" part="rail" aria-label="Main">
-    <div class="brand" part="brand">
-      <slot name="brand"></slot>
+    <div class="header" part="header">
+      <div class="brand" part="brand">
+        <span class="brand-icon" part="brand-icon" aria-hidden="true">
+          <slot name="brand-icon"></slot>
+        </span>
+        <span class="product" part="product"></span>
+        <span class="brand-actions" part="brand-actions">
+          <slot name="brand-actions"></slot>
+        </span>
+      </div>
+
+      <div class="search" part="search">
+        <span class="search-icon" aria-hidden="true">&#x1F50D;</span>
+        <input class="search-input" part="search-input" type="search"
+               placeholder="Search" aria-label="Search navigation" />
+      </div>
+
+      <ul class="quick" part="quick" role="list"></ul>
     </div>
-    <ul class="items" part="items" role="list"></ul>
+
+    <div class="content" part="content">
+      <slot></slot>
+    </div>
+
     <div class="footer" part="footer">
       <slot name="footer"></slot>
     </div>
   </nav>
 
+  <!-- Cloning prototypes (data-driven, no id so the parser ignores them) -->
+  <template class="section-tpl">
+    <section class="section">
+      <h2 class="section-label" part="section-label"></h2>
+      <ul class="section-items" role="list"></ul>
+    </section>
+  </template>
+
   <template class="item-tpl">
-    <li class="item" role="listitem">
-      <a class="link" part="link">
-        <span class="icon" aria-hidden="true"></span>
-        <span class="label"></span>
-      </a>
+    <li class="nav-row" role="listitem">
+      <sherpa-nav-item></sherpa-nav-item>
     </li>
   </template>
 </template>

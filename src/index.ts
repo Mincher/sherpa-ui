@@ -37,7 +37,13 @@ export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';
-export { SherpaNav, type NavItem } from './components/sherpa-nav/sherpa-nav.js';
+export {
+  SherpaNav,
+  type NavEntry,
+  type NavItem,
+  type NavSection,
+  type NavConfig,
+} from './components/sherpa-nav/sherpa-nav.js';
 export { SherpaLoader } from './components/sherpa-loader/sherpa-loader.js';
 export { SherpaSwitch } from './components/sherpa-switch/sherpa-switch.js';
 export { SherpaSelectCheckbox } from './components/sherpa-select-checkbox/sherpa-select-checkbox.js';

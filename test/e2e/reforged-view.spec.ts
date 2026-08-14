@@ -80,7 +80,7 @@ test('$state data binding populates from state and re-populates on write', async
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => setTimeout(res, 20));
-    const before = el.shadowRoot!.querySelectorAll('.item').length;
+    const before = el.shadowRoot!.querySelectorAll('.nav-row').length;
 
     state.set('/items', [
       { id: 'a', label: 'Alpha' },
@@ -88,7 +88,7 @@ test('$state data binding populates from state and re-populates on write', async
       { id: 'c', label: 'Gamma' },
     ]);
     await new Promise((res) => setTimeout(res, 20));
-    const after = el.shadowRoot!.querySelectorAll('.item').length;
+    const after = el.shadowRoot!.querySelectorAll('.nav-row').length;
     return { before, after };
   });
   expect(r.before).toBe(1);
@@ -120,10 +120,12 @@ test('writes wiring: one element writes state, a bound consumer reacts', async (
     const nav = el.querySelector('sherpa-nav') as HTMLElement & { rendered?: Promise<void> };
     await nav.rendered;
     await new Promise((res) => setTimeout(res, 20));
-    const yRow = Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.item')).find(
+    const yRow = Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
       (r) => r.dataset['id'] === 'y'
     )!;
-    yRow.querySelector<HTMLElement>('.link')!.click();
+    const yItem = yRow.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
+    await yItem.rendered;
+    (yItem.shadowRoot!.querySelector('.row') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 20));
 
     const echo = el.querySelector('sherpa-tag')!;

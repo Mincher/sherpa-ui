@@ -197,8 +197,8 @@
     },
     "sherpa-nav": {
       "figma": "Primary Navigation",
-      "status": "needs-rebuild",
-      "note": "legacy nav shell — predates the current Figma 'Primary Navigation'; rebuild anew to match"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15 to match Figma Primary Navigation (header + search + quick + grouped sections composing sherpa-nav-item)"
     },
     "sherpa-nav-item": {
       "figma": "Menu List Item",
