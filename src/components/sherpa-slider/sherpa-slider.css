@@ -20,7 +20,8 @@
   width: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  --_accent: var(--sherpa-content-secondary-base, #404047);
+  /* Filled range + thumb take the primary accent (Figma: surface/interactive/primary). */
+  --_accent: var(--sherpa-surface-interactive-primary-base, #3c5edd);
   --_thumb: var(--sherpa-core-size-md, 20px);
   --_rail: var(--sherpa-core-space-2xs, 4px);
   --_pct: 0%;
