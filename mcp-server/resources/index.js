@@ -12,7 +12,7 @@ const GUIDE_FILES = {
   "text-styles":          { file: "TEXT-STYLES.md", name: "Text Styles Reference" },
 };
 
-export function register(server, { schemas, patterns, cssUtilities, utilities }, paths) {
+export function register(server, { schemas, cssUtilities, utilities }, paths) {
   const { docsDir, cssDir, copilotPath, componentsDir, rootDir } = paths;
 
   // ── Guideline documents ─────────────────────────────────────────────
@@ -130,42 +130,6 @@ export function register(server, { schemas, patterns, cssUtilities, utilities },
       }
     );
   }
-
-  // ── Pattern HTML files ──────────────────────────────────────────────
-  server.registerResource(
-    "Pattern",
-    new ResourceTemplate("sherpa://pattern/{patternId}", {
-      list: async () => ({
-        resources: [...patterns.entries()].map(([id, entry]) => ({
-          uri:         `sherpa://pattern/${id}`,
-          name:        entry.name,
-          description: `${entry.category}: ${entry.description ?? entry.name}`,
-          mimeType:    "text/html",
-        })),
-      }),
-    }),
-    { description: "View layout or UX pattern HTML", mimeType: "text/html" },
-    async (uri, { patternId }) => {
-      const entry = patterns.get(patternId);
-      if (!entry) {
-        return {
-          contents: [{
-            uri: uri.href, mimeType: "text/html",
-            text: `<!-- Unknown pattern: ${patternId} -->`,
-          }],
-        };
-      }
-      const filePath = path.join(rootDir, entry.file);
-      const html = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
-      return {
-        contents: [{
-          uri:      uri.href,
-          mimeType: "text/html",
-          text:     html ?? `<!-- Pattern file not found: ${entry.file} -->`,
-        }],
-      };
-    }
-  );
 
   // ── CSS utility class schemas ───────────────────────────────────────
   server.registerResource(

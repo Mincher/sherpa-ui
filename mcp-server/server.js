@@ -4,14 +4,13 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { log } from "./lib/logger.js";
 import {
-  SchemaRegistry, loadTokens, buildTokenMap, loadPatterns,
+  SchemaRegistry, loadTokens, buildTokenMap,
   loadCssUtilities, loadUtilities, parseTemplateIds,
 } from "./lib/loader.js";
 
 import { register as registerComponentTools } from "./tools/component.js";
 import { register as registerExampleTools }   from "./tools/examples.js";
 import { register as registerTokenTools }      from "./tools/tokens.js";
-import { register as registerPatternTools }    from "./tools/patterns.js";
 import { register as registerUtilityTools }    from "./tools/utilities.js";
 import { register as registerSearchTools }     from "./tools/search.js";
 import { register as registerMetaTools }       from "./tools/meta.js";
@@ -22,7 +21,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT            = path.resolve(__dirname, "..");
 const CSS_UTIL_DIR    = path.join(__dirname, "data", "css-utilities");
 const COMPONENTS_DIR  = path.join(ROOT, "src", "components");
-const PATTERNS_DIR    = path.join(ROOT, "patterns");
 const DOCS_DIR        = path.join(ROOT, "docs");
 // Reforged: tokens live in src/styles/tokens/ (projected from Figma). The old
 // css/ tree is gone; CSS_DIR now aliases docs/ (a harmless guideline fallback).
@@ -33,7 +31,7 @@ const COPILOT_PATH    = path.join(ROOT, ".github", "instructions", "copilot-inst
 const PATHS = {
   rootDir:       ROOT,
   componentsDir: COMPONENTS_DIR,
-  patternsDir:   PATTERNS_DIR,
+
   docsDir:       DOCS_DIR,
   cssDir:        CSS_DIR,
   copilotPath:   COPILOT_PATH,
@@ -47,13 +45,13 @@ export async function createServer() {
   const schemas      = new SchemaRegistry(COMPONENTS_DIR);
   const tokens       = loadTokens(CSS_STYLES_DIR, ROOT);
   const tokenMap     = buildTokenMap(tokens);
-  const patterns     = loadPatterns(PATTERNS_DIR);
+  const patterns     = new Map(); // patterns/ removed from the reforged tree
   const cssUtilities = loadCssUtilities(CSS_UTIL_DIR);
   const utilities    = loadUtilities(COMPONENTS_DIR);
 
   log.info(
     `Data loaded — ${schemas.size} components (lazy), ${tokens.length} tokens, ` +
-    `${patterns.size} patterns, ${utilities.size} utilities in ${Date.now() - startTime}ms`
+    `${utilities.size} utilities in ${Date.now() - startTime}ms`
   );
 
   const server = new McpServer(
@@ -68,7 +66,6 @@ export async function createServer() {
   registerComponentTools(server, data, loaderHelpers);
   registerExampleTools(server, data, loaderHelpers);
   registerTokenTools(server, data);
-  registerPatternTools(server, data, { patternsDir: PATTERNS_DIR, rootDir: ROOT, componentsDir: COMPONENTS_DIR });
   registerUtilityTools(server, data);
   registerSearchTools(server, data);
   registerMetaTools(server, data, { docsDir: DOCS_DIR, cssDir: CSS_DIR, copilotPath: COPILOT_PATH });

@@ -76,21 +76,6 @@ export function resolveTokenChain(name, tokenMap, depth = 0) {
   }
   return { resolved: entry.value, chain: [step] };
 }
-
-/** Load pattern index from patterns/index.json. Returns Map<id, entry>. */
-export function loadPatterns(patternsDir) {
-  const indexPath = path.join(patternsDir, "index.json");
-  if (!fs.existsSync(indexPath)) {
-    log.warn(`Pattern index not found at ${indexPath} — run npm run patterns`);
-    return new Map();
-  }
-  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
-  const patterns = new Map();
-  for (const entry of index) patterns.set(entry.id, entry);
-  log.info(`Loaded ${patterns.size} patterns`);
-  return patterns;
-}
-
 /** Load CSS utility class schemas from mcp-server/data/css-utilities/. */
 export function loadCssUtilities(cssUtilDir) {
   const indexPath = path.join(cssUtilDir, "index.json");
