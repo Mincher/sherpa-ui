@@ -76,7 +76,10 @@
   --_surface: transparent;
   --_surface-hover: var(--sherpa-control-surface-hover, #f2f2f5);
   --_surface-down: var(--sherpa-control-surface-down, #e6e6ec);
-  --_content: var(--sherpa-content-link-base, #3c5edd);
+  /* Neutral content, NOT a blue link. control-content-default resolves to
+     content-primary-base, which the theme layer INVERTS by mode: dark ink on a
+     light background, light ink on a dark background. Matches Figma tertiary. */
+  --_content: var(--sherpa-control-content-default, #2e2e33);
   --_border: transparent;
 }
 
