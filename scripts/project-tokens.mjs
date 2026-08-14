@@ -248,8 +248,11 @@ ${Object.entries(grid)
     max-inline-size: var(--sherpa-layout-grid-max-width);
     padding-inline: var(--sherpa-layout-grid-padding);
     margin-inline: auto;
-    container-type: inline-size;
   }
+
+  /* The grid adapts to its nearest inline-size container. Give the grid's parent
+     (or an app-shell region) container-type:inline-size so these breakpoints fire;
+     without a container ancestor the grid stays at the mobile base (4 columns). */
 ${['tablet', 'desktop', 'wide']
   .map((bp) => {
     const w = gv('max-width')?.modes?.[bp];

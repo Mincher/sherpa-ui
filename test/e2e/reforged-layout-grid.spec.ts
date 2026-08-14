@@ -42,3 +42,23 @@ test('banner slot spans above and collapses when empty', async ({ page }) => {
   expect(r.withBanner).toBe(true);
   expect(r.bare).toBe(false);
 });
+
+test('responsive columns follow the Figma layout-grid breakpoints (4→8→12)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const cols = async (w: number) => {
+      const el = document.createElement('sherpa-layout-grid') as HTMLElement & { rendered?: Promise<void> };
+      el.style.width = `${w}px`;
+      el.style.display = 'block';
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      const g = el.shadowRoot!.querySelector('.grid')!;
+      const n = getComputedStyle(g).gridTemplateColumns.split(' ').length;
+      el.remove();
+      return n;
+    };
+    return { mobile: await cols(500), tablet: await cols(900), desktop: await cols(1400) };
+  });
+  expect(r.mobile).toBe(4); // mobile base
+  expect(r.tablet).toBe(8); // ≥768
+  expect(r.desktop).toBe(12); // ≥1280
+});
