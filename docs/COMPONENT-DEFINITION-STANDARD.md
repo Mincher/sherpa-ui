@@ -53,8 +53,36 @@ Rules:
 | status | Meaning |
 |---|---|
 | `matched` | both a code component and a Figma component exist |
-| `no-figma` | code only (backlog / utility: app-shell, data-grid, layout-grid, proposal-*) |
-| `figma-only` | Figma only, no code yet (Banner, Chip, Select Card, Badge, Menu, View Header) — listed in `name-map.json → figmaOnly` |
+| `no-figma` | code only, no Figma component — **a drift target.** Every code component should map to a Figma component (top-level or sub-component). `no-figma` means it is unbuilt in Figma; either build it or remove it. |
+| `figma-only` | Figma only, no code yet — listed in `name-map.json → figmaOnly` |
+
+**Figma is the source of truth. Only components that exist in Figma should exist in
+code.** A `no-figma` code component is legacy/drift, not a valid state to leave — it
+gets built in Figma or deleted. (The former `sherpa-app-shell` / `sherpa-layout-grid`
+/ `sherpa-proposal-op` / `sherpa-proposal-preview` were removed for exactly this; the
+app frame is now the light-DOM `.sherpa-view` grid, not a custom element.)
+
+### 2.3 `tier` — top-level vs sub-component
+
+Not every Figma component is a shipped top-level product. Some exist only as **atomic
+building blocks** inside a parent (built in Figma for composition). The `tier` field
+plus a **Figma name prefix** distinguish them:
+
+| tier | Figma name | Meaning |
+|---|---|---|
+| `top-level` | plain (`Data Grid`, `Button`) | a shipped Sherpa component / product page |
+| `sub-component` | **dot-prefixed** (`.Grid Cell`, `.Grid Column`) | an atomic block of a parent; not a standalone product |
+
+- A sub-component def sets `"tier": "sub-component"` and `"parentComponent": "<parent>"`.
+- Its Figma node name starts with `.` (Figma's native private/helper convention).
+- Parity tooling treats a **dotted** Figma name as a sub-component: it does **not**
+  expect a standalone top-level product page, and does not flag it as missing one.
+- A sub-component MAY still ship as a code element (e.g. `sherpa-grid-cell` is a real
+  web component) — `tier` marks its role in the system, not whether code exists.
+
+Example: `sherpa-data-grid` (`tier: top-level`, Figma `Data Grid`) is composed of
+`.Grid Cell` / `.Grid Column` / `.Grid Column Header` (`tier: sub-component`), all on
+the one `sherpa-data-grid` page in named Sections.
 
 ### 2.3 Attributes (props)
 

@@ -1,66 +1,249 @@
 {
   "_note": "code component (sherpa-*) ↔ Figma page/node name. The names DIFFER — this is the authoritative bridge. status: matched = both exist; no-figma = code has no Figma component (backlog/deprecated); split = one code comp maps to several Figma parts or vice-versa.",
   "map": {
-    "sherpa-button":               { "figma": "Button",            "status": "matched" },
-    "sherpa-tag":                  { "figma": "Tag",               "status": "matched" },
-    "sherpa-switch":               { "figma": "Switch",            "status": "matched" },
-    "sherpa-select-checkbox":      { "figma": "Select Checkbox",   "status": "matched" },
-    "sherpa-select-radio":         { "figma": "Select Radio",      "status": "matched" },
-    "sherpa-select-group":         { "figma": "Select Group",      "status": "matched" },
-    "sherpa-loader":               { "figma": "Loader",            "status": "matched" },
-    "sherpa-progress-bar":         { "figma": "Progress Bar",      "status": "matched" },
-    "sherpa-progress-step-tracker":{ "figma": "Progress Steps",    "status": "matched" },
-    "sherpa-input-text":           { "figma": "Input",             "status": "matched", "note": "one Figma Input covers all input types via props" },
-    "sherpa-pagination":           { "figma": "Pagination",        "status": "matched" },
-    "sherpa-list-item":            { "figma": "Menu List Item",    "status": "matched", "note": "Figma name differs" },
-    "sherpa-list":                 { "figma": "List",              "status": "matched" },
-    "sherpa-slider":               { "figma": "Slider",            "status": "matched" },
-    "sherpa-file-upload":          { "figma": "File Uploader",     "status": "matched" },
-    "sherpa-key-value-list":       { "figma": "Key Value Pair",    "status": "matched", "note": "Figma models the row (Pair); list is composition" },
-    "sherpa-quick-filter":         { "figma": "Quick Filter Chip", "status": "matched" },
-    "sherpa-quick-filter-toolbar": { "figma": "Quick Filter Toolbar", "status": "matched" },
-    "sherpa-container":            { "figma": "Container",         "status": "matched" },
-    "sherpa-container-header":     { "figma": "Container Header",  "status": "matched" },
-    "sherpa-container-footer":     { "figma": "Container Footer",  "status": "matched" },
-    "sherpa-callout":              { "figma": "Callout",           "status": "matched" },
-    "sherpa-toast":                { "figma": "Toast",             "status": "matched" },
-    "sherpa-message":              { "figma": "Message",           "status": "matched" },
-    "sherpa-tabs":                 { "figma": "Tabs",              "status": "matched" },
-    "sherpa-tooltip":              { "figma": "Tooltip",           "status": "matched" },
-    "sherpa-section-header":       { "figma": "Section Header",    "status": "matched" },
-    "sherpa-empty-state":          { "figma": "Empty State",       "status": "matched" },
-    "sherpa-breadcrumbs":          { "figma": "Breadcrumbs",       "status": "matched" },
-    "sherpa-toolbar":              { "figma": "Toolbar",           "status": "matched" },
-    "sherpa-metric":               { "figma": "Metric",            "status": "matched" },
-    "sherpa-code-block":           { "figma": "Code Block",        "status": "matched" },
-    "sherpa-chart-legend":         { "figma": "Legend Item",       "status": "matched", "note": "Figma models the Legend Item; legend is composition" },
-    "sherpa-barchart":             { "figma": "Data Field",        "status": "matched", "note": "Chart 2D — Data Field is the category slot" },
-    "sherpa-line-chart":           { "figma": "Data Field",        "status": "matched", "note": "same 2D Chart primitive as barchart, line orientation" },
-    "sherpa-donut-chart":          { "figma": "Donut Chart",       "status": "matched" },
-    "sherpa-gauge-chart":          { "figma": "Gauge Chart",       "status": "matched" },
-    "sherpa-sparkline":            { "figma": "Data Field",        "status": "matched", "note": "mini 2D chart; shares Data Field marks" },
-    "sherpa-transfer-list":        { "figma": "Transfer List",     "status": "matched" },
-    "sherpa-chat-message":         { "figma": "Chat Message",      "status": "matched" },
-    "sherpa-prompt-composer":      { "figma": "Prompt Composer",   "status": "matched" },
-    "sherpa-calendar":             { "figma": "Grid",              "status": "matched", "note": "Calendar's date Grid + Time Picker" },
-    "sherpa-nav-section":          { "figma": "Navigation Section","status": "matched" },
-    "sherpa-app-header":           { "figma": "App Header",        "status": "matched" },
-
-    "sherpa-nav":                  { "figma": null, "status": "no-figma", "note": "nav shell — Figma models Navigation Section, not the whole nav" },
-    "sherpa-nav-item":             { "figma": "Menu List Item", "status": "matched", "note": "nav rows reuse Menu List Item" },
-    "sherpa-app-shell":            { "figma": null, "status": "no-figma", "note": "backlog — App Shell page not built" },
-    "sherpa-data-grid":            { "figma": null, "status": "no-figma", "note": "backlog — Data Grid page not built" },
-    "sherpa-layout-grid":          { "figma": null, "status": "no-figma", "note": "layout utility, no Figma component" },
-    "sherpa-proposal-op":          { "figma": null, "status": "no-figma", "note": "backlog — Proposal Op page not built" },
-    "sherpa-proposal-preview":     { "figma": null, "status": "no-figma", "note": "backlog — Proposal Preview page not built" }
+    "sherpa-button": {
+      "figma": "Button",
+      "status": "matched"
+    },
+    "sherpa-tag": {
+      "figma": "Tag",
+      "status": "matched"
+    },
+    "sherpa-switch": {
+      "figma": "Switch",
+      "status": "matched"
+    },
+    "sherpa-select-checkbox": {
+      "figma": "Select Checkbox",
+      "status": "matched"
+    },
+    "sherpa-select-radio": {
+      "figma": "Select Radio",
+      "status": "matched"
+    },
+    "sherpa-select-group": {
+      "figma": "Select Group",
+      "status": "matched"
+    },
+    "sherpa-loader": {
+      "figma": "Loader",
+      "status": "matched"
+    },
+    "sherpa-progress-bar": {
+      "figma": "Progress Bar",
+      "status": "matched"
+    },
+    "sherpa-progress-step-tracker": {
+      "figma": "Progress Steps",
+      "status": "matched"
+    },
+    "sherpa-input-text": {
+      "figma": "Input",
+      "status": "matched",
+      "note": "one Figma Input covers all input types via props"
+    },
+    "sherpa-pagination": {
+      "figma": "Pagination",
+      "status": "matched"
+    },
+    "sherpa-list-item": {
+      "figma": "Menu List Item",
+      "status": "matched",
+      "note": "Figma name differs"
+    },
+    "sherpa-list": {
+      "figma": "List",
+      "status": "matched"
+    },
+    "sherpa-slider": {
+      "figma": "Slider",
+      "status": "matched"
+    },
+    "sherpa-file-upload": {
+      "figma": "File Uploader",
+      "status": "matched"
+    },
+    "sherpa-key-value-list": {
+      "figma": "Key Value Pair",
+      "status": "matched",
+      "note": "Figma models the row (Pair); list is composition"
+    },
+    "sherpa-quick-filter": {
+      "figma": "Quick Filter Chip",
+      "status": "matched"
+    },
+    "sherpa-quick-filter-toolbar": {
+      "figma": "Quick Filter Toolbar",
+      "status": "matched"
+    },
+    "sherpa-container": {
+      "figma": "Container",
+      "status": "matched"
+    },
+    "sherpa-container-header": {
+      "figma": "Container Header",
+      "status": "matched"
+    },
+    "sherpa-container-footer": {
+      "figma": "Container Footer",
+      "status": "matched"
+    },
+    "sherpa-callout": {
+      "figma": "Callout",
+      "status": "matched"
+    },
+    "sherpa-toast": {
+      "figma": "Toast",
+      "status": "matched"
+    },
+    "sherpa-message": {
+      "figma": "Message",
+      "status": "matched"
+    },
+    "sherpa-tabs": {
+      "figma": "Tabs",
+      "status": "matched"
+    },
+    "sherpa-tooltip": {
+      "figma": "Tooltip",
+      "status": "matched"
+    },
+    "sherpa-section-header": {
+      "figma": "Section Header",
+      "status": "matched"
+    },
+    "sherpa-empty-state": {
+      "figma": "Empty State",
+      "status": "matched"
+    },
+    "sherpa-breadcrumbs": {
+      "figma": "Breadcrumbs",
+      "status": "matched"
+    },
+    "sherpa-toolbar": {
+      "figma": "Toolbar",
+      "status": "matched"
+    },
+    "sherpa-metric": {
+      "figma": "Metric",
+      "status": "matched"
+    },
+    "sherpa-code-block": {
+      "figma": "Code Block",
+      "status": "matched"
+    },
+    "sherpa-chart-legend": {
+      "figma": "Legend Item",
+      "status": "matched",
+      "note": "Figma models the Legend Item; legend is composition"
+    },
+    "sherpa-barchart": {
+      "figma": "Data Field",
+      "status": "matched",
+      "note": "Chart 2D — Data Field is the category slot"
+    },
+    "sherpa-line-chart": {
+      "figma": "Data Field",
+      "status": "matched",
+      "note": "same 2D Chart primitive as barchart, line orientation"
+    },
+    "sherpa-donut-chart": {
+      "figma": "Donut Chart",
+      "status": "matched"
+    },
+    "sherpa-gauge-chart": {
+      "figma": "Gauge Chart",
+      "status": "matched"
+    },
+    "sherpa-sparkline": {
+      "figma": "Data Field",
+      "status": "matched",
+      "note": "mini 2D chart; shares Data Field marks"
+    },
+    "sherpa-transfer-list": {
+      "figma": "Transfer List",
+      "status": "matched"
+    },
+    "sherpa-chat-message": {
+      "figma": "Chat Message",
+      "status": "matched"
+    },
+    "sherpa-prompt-composer": {
+      "figma": "Prompt Composer",
+      "status": "matched"
+    },
+    "sherpa-calendar": {
+      "figma": "Grid",
+      "status": "matched",
+      "note": "Calendar's date Grid + Time Picker"
+    },
+    "sherpa-nav-section": {
+      "figma": "Navigation Section",
+      "status": "matched"
+    },
+    "sherpa-app-header": {
+      "figma": "App Header",
+      "status": "matched"
+    },
+    "sherpa-nav": {
+      "figma": null,
+      "status": "no-figma",
+      "note": "nav shell — Figma models Navigation Section, not the whole nav"
+    },
+    "sherpa-nav-item": {
+      "figma": "Menu List Item",
+      "status": "matched",
+      "note": "nav rows reuse Menu List Item"
+    },
+    "sherpa-data-grid": {
+      "figma": "Data Grid",
+      "status": "matched",
+      "tier": "top-level"
+    },
+    "sherpa-grid-cell": {
+      "figma": ".Grid Cell",
+      "status": "matched",
+      "tier": "sub-component"
+    },
+    "sherpa-grid-column": {
+      "figma": ".Grid Column",
+      "status": "matched",
+      "tier": "sub-component"
+    },
+    "sherpa-grid-column-header": {
+      "figma": ".Grid Column Header",
+      "status": "matched",
+      "tier": "sub-component"
+    }
   },
   "figmaOnly": [
-    { "figma": "Banner",      "note": "no code component yet — full-width status banner" },
-    { "figma": "Chip",        "note": "no code component — status-tinted pill (sherpa-tag covers the neutral case)" },
-    { "figma": "Select Card", "note": "no code component — selectable gallery card" },
-    { "figma": "Badge",       "note": "no code component — overlay count/dot indicator" },
-    { "figma": "Menu",        "note": "no code component — elevated List (composition)" },
-    { "figma": "View Header", "note": "no code component — overlaps app-header" },
-    { "figma": "Time Picker", "note": "placeholder in Figma; folded into calendar in code" }
+    {
+      "figma": "Banner",
+      "note": "no code component yet — full-width status banner"
+    },
+    {
+      "figma": "Chip",
+      "note": "no code component — status-tinted pill (sherpa-tag covers the neutral case)"
+    },
+    {
+      "figma": "Select Card",
+      "note": "no code component — selectable gallery card"
+    },
+    {
+      "figma": "Badge",
+      "note": "no code component — overlay count/dot indicator"
+    },
+    {
+      "figma": "Menu",
+      "note": "no code component — elevated List (composition)"
+    },
+    {
+      "figma": "View Header",
+      "note": "no code component — overlaps app-header"
+    },
+    {
+      "figma": "Time Picker",
+      "note": "placeholder in Figma; folded into calendar in code"
+    }
   ]
 }

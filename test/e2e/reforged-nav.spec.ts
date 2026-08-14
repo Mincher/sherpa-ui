@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-app-shell + sherpa-nav on the reforged base — the layout composite.
- * app-shell: region grid + header collapse + nav-collapsed width. nav: data-driven
- * item list (cloning prototype), active reflection, nav-select event delegation.
+ * sherpa-nav on the reforged base — data-driven item list (cloning prototype),
+ * active reflection, nav-select event delegation, and icon-only collapse.
+ * (The view frame is now the light-DOM `.sherpa-view` grid — see reforged-view.spec.ts.)
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -11,42 +11,6 @@ const HARNESS = '/test/reforged/harness.html';
 test.beforeEach(async ({ page }) => {
   await page.goto(HARNESS);
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
-
-test('app-shell lays out nav / header / content regions', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const shell = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
-    shell.innerHTML =
-      '<div slot="nav">rail</div><div slot="header">Header</div><main>Content</main>';
-    document.getElementById('root')!.appendChild(shell);
-    await shell.rendered;
-    await new Promise((res) => setTimeout(res, 0));
-    const s = shell.shadowRoot!;
-    return {
-      hasNav: !!s.querySelector('[slot="nav"]') || !!s.querySelector('.nav slot'),
-      headerAttr: shell.hasAttribute('data-has-header'),
-      headerVisible: getComputedStyle(s.querySelector('.header')!).display !== 'none',
-      cols: getComputedStyle(shell).gridTemplateColumns,
-    };
-  });
-  expect(r.headerAttr).toBe(true); // header slot filled
-  expect(r.headerVisible).toBe(true);
-  // two columns: a fixed nav width + the flexible main column
-  expect(r.cols.split(' ').length).toBe(2);
-});
-
-test('data-nav-collapsed narrows the nav column', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const shell = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
-    shell.innerHTML = '<div slot="nav">rail</div><main>c</main>';
-    document.getElementById('root')!.appendChild(shell);
-    await shell.rendered;
-    const wide = getComputedStyle(shell).gridTemplateColumns.split(' ')[0];
-    shell.setAttribute('data-nav-collapsed', '');
-    const narrow = getComputedStyle(shell).gridTemplateColumns.split(' ')[0];
-    return { wide: parseFloat(wide!), narrow: parseFloat(narrow!) };
-  });
-  expect(r.narrow).toBeLessThan(r.wide);
 });
 
 test('nav renders items from populate() and marks the active one', async ({ page }) => {

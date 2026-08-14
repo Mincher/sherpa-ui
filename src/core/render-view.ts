@@ -4,8 +4,8 @@
  * The composition layer on top of renderElement(). Where an ElementNode is a
  * single self-contained element, a VIEW DEFINITION is a normalised description: a
  * flat `elements` registry keyed by id, a layout tree expressed by id references,
- * the app-shell regions each element fills, and state-mediated wiring between
- * elements.
+ * the view-frame regions (nav / header / body) each element fills, and
+ * state-mediated wiring between elements.
  *
  *   {
  *     root: 'layout',
@@ -164,7 +164,8 @@ function whenRendered(el: Populatable, fn: () => void): void {
 /**
  * Build a live view from a view-definition. Resolves the id registry into a DOM
  * tree, binds `$state` references reactively, wires `writes`, and fills the
- * app-shell regions. Returns the element to append plus the live state store.
+ * view-frame regions (nav / header / body). Returns the element to append plus
+ * the live state store.
  */
 export function renderView(view: ViewDefinition): RenderedView {
   if (!view || typeof view !== 'object' || !view.elements || typeof view.root !== 'string') {
@@ -251,17 +252,23 @@ export function renderView(view: ViewDefinition): RenderedView {
 
   if (!shell) return { el: bodyEl, state: store };
 
-  const shellEl = renderElement({ type: 'sherpa-app-shell' });
-  for (const [key, slotName] of [
+  // A view with nav/header regions is framed by a light-DOM view container: a
+  // two-column grid (nav rail + main column, header row over scrolling body)
+  // styled by the global `.sherpa-view` utility class. Regions are ordered
+  // children marked with a data-region attribute the utility grid places.
+  const shellEl = document.createElement('div');
+  shellEl.className = 'sherpa-view';
+  for (const [key, region] of [
     ['nav', 'nav'],
     ['header', 'header'],
   ] as const) {
     const elId = shell[key];
     if (!elId) continue;
     const regionEl = build(elId);
-    regionEl.slot = slotName;
+    regionEl.dataset['region'] = region;
     shellEl.appendChild(regionEl);
   }
-  shellEl.appendChild(bodyEl); // body → default slot
+  bodyEl.dataset['region'] = 'body';
+  shellEl.appendChild(bodyEl);
   return { el: shellEl, state: store };
 }

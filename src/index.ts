@@ -37,7 +37,6 @@ export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';
-export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaNav, type NavItem } from './components/sherpa-nav/sherpa-nav.js';
 export { SherpaLoader } from './components/sherpa-loader/sherpa-loader.js';
 export { SherpaSwitch } from './components/sherpa-switch/sherpa-switch.js';
@@ -64,8 +63,6 @@ export { SherpaContainerFooter } from './components/sherpa-container-footer/sher
 export { SherpaNavItem } from './components/sherpa-nav-item/sherpa-nav-item.js';
 export { SherpaNavSection } from './components/sherpa-nav-section/sherpa-nav-section.js';
 export { SherpaChatMessage } from './components/sherpa-chat-message/sherpa-chat-message.js';
-export { SherpaProposalOp } from './components/sherpa-proposal-op/sherpa-proposal-op.js';
-export { SherpaProposalPreview } from './components/sherpa-proposal-preview/sherpa-proposal-preview.js';
 export { SherpaCalendar } from './components/sherpa-calendar/sherpa-calendar.js';
 export { SherpaSelectGroup } from './components/sherpa-select-group/sherpa-select-group.js';
 export { SherpaTransferList } from './components/sherpa-transfer-list/sherpa-transfer-list.js';
@@ -73,7 +70,6 @@ export { SherpaCodeBlock } from './components/sherpa-code-block/sherpa-code-bloc
 export { SherpaAppHeader } from './components/sherpa-app-header/sherpa-app-header.js';
 export { SherpaPromptComposer } from './components/sherpa-prompt-composer/sherpa-prompt-composer.js';
 export { SherpaToolbar } from './components/sherpa-toolbar/sherpa-toolbar.js';
-export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export { SherpaChartLegend, type LegendItem } from './components/sherpa-chart-legend/sherpa-chart-legend.js';
 export { SherpaFileUpload } from './components/sherpa-file-upload/sherpa-file-upload.js';
 export { SherpaProgressStepTracker } from './components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.js';

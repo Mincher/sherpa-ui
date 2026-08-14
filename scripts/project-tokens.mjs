@@ -251,8 +251,8 @@ ${Object.entries(grid)
   }
 
   /* The grid adapts to its nearest inline-size container. Give the grid's parent
-     (or an app-shell region) container-type:inline-size so these breakpoints fire;
-     without a container ancestor the grid stays at the mobile base (4 columns). */
+     (or a .sherpa-view body region) container-type:inline-size so these breakpoints
+     fire; without a container ancestor the grid stays at the mobile base (4 columns). */
 ${['tablet', 'desktop', 'wide']
   .map((bp) => {
     const w = gv('max-width')?.modes?.[bp];
@@ -267,6 +267,54 @@ ${['tablet', 'desktop', 'wide']
   })
   .filter(Boolean)
   .join('\n')}`;
+
+// ── @layer overrides: view frame (.sherpa-view) ────────────────────────
+// The light-DOM application shell that renderView() wraps a view in: a two-column
+// grid (nav rail + main column, header row over scrolling body). Regions are placed
+// by their data-region attribute. A fixed structural utility (not Figma-var driven);
+// replaced the former sherpa-app-shell custom element.
+const viewFrameBlock = `  .sherpa-view {
+    --sherpa-view-nav-width: 240px;
+
+    display: grid;
+    grid-template-columns: var(--sherpa-view-nav-width) 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'nav header'
+      'nav body';
+    block-size: 100%;
+    min-block-size: 100vh;
+    background: var(--sherpa-app-primary, #ffffff);
+    color: var(--sherpa-content-primary-base, #2e2e33);
+  }
+  .sherpa-view[data-nav-collapsed] {
+    --sherpa-view-nav-width: 56px;
+  }
+  .sherpa-view > [data-region='nav'] {
+    grid-area: nav;
+    min-inline-size: 0;
+    border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
+      var(--sherpa-border-primary, #d5d5d5);
+    background: var(--sherpa-surface-primary-base, #ffffff);
+    overflow: hidden;
+  }
+  .sherpa-view > [data-region='header'] {
+    grid-area: header;
+    border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+      var(--sherpa-border-primary, #d5d5d5);
+  }
+  .sherpa-view > [data-region='body'] {
+    grid-area: body;
+    min-block-size: 0;
+    overflow: auto;
+    padding: var(--sherpa-core-space-lg, 20px);
+  }
+  /* A view with no header region lets the body span both rows. */
+  .sherpa-view:not(:has(> [data-region='header'])) {
+    grid-template-areas:
+      'nav body'
+      'nav body';
+  }`;
 
 // ── component-scoped partials (each component owns its scoping) ─────────
 // collection → { comp: the component dir, attr: variant attribute, default: the
@@ -379,6 +427,9 @@ ${overrideModeBlocks.join('\n\n')}
 
   /* Layout Grid utility — a real CSS Grid with responsive @container breakpoints. */
 ${layoutGridBlock}
+
+  /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
+${viewFrameBlock}
 }
 `;
 

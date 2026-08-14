@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * renderElement + renderView on the reforged base — the JSON→view path. Proves the
  * reforged components compose declaratively from data: an element node builds an
  * element (props/slots/children/data), and a view-definition composes an id-addressed
- * tree with reactive $state binding, `writes` wiring, and the app-shell frame.
+ * tree with reactive $state binding, `writes` wiring, and the light-DOM view frame.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -37,7 +37,7 @@ test('renderElement builds an element with props, slots and children', async ({ 
   expect(r.childButton).toBe(true);
 });
 
-test('renderView composes an id-addressed tree into a shell', async ({ page }) => {
+test('renderView composes an id-addressed tree into the view frame', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { renderView } = await import('/dist-reforged/index.js');
     const { el } = renderView({
@@ -53,15 +53,17 @@ test('renderView composes an id-addressed tree into a shell', async ({ page }) =
     document.getElementById('root')!.appendChild(el);
     await new Promise((res) => setTimeout(res, 10));
     return {
-      shell: el.tagName.toLowerCase(),
-      navSlot: el.querySelector('[slot="nav"]')?.tagName.toLowerCase() ?? null,
-      headerSlot: el.querySelector('[slot="header"]')?.tagName.toLowerCase() ?? null,
+      frame: el.className,
+      navRegion: el.querySelector('[data-region="nav"]')?.tagName.toLowerCase() ?? null,
+      headerRegion: el.querySelector('[data-region="header"]')?.tagName.toLowerCase() ?? null,
+      bodyRegion: el.querySelector('[data-region="body"]')?.tagName.toLowerCase() ?? null,
       bodyTag: !!el.querySelector('sherpa-container sherpa-tag'),
     };
   });
-  expect(r.shell).toBe('sherpa-app-shell');
-  expect(r.navSlot).toBe('sherpa-nav');
-  expect(r.headerSlot).toBe('sherpa-container');
+  expect(r.frame).toBe('sherpa-view'); // light-DOM view frame, not a custom element
+  expect(r.navRegion).toBe('sherpa-nav');
+  expect(r.headerRegion).toBe('sherpa-container');
+  expect(r.bodyRegion).toBe('sherpa-container');
   expect(r.bodyTag).toBe(true);
 });
 

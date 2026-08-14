@@ -1,85 +1,256 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-data-grid",
   "figmaName": "Data Grid",
   "category": "data",
-  "description": "a sortable data table.",
+  "description": "A sortable, selectable data grid assembled from flat columns. A leading Selection column (pinned left) and a trailing Actions column (pinned right) bracket the data columns; a toolbar and a data-variant quick-filter toolbar sit above, pagination below. Rows are visual — each column is a vertical stack of cells, so the grid stays flat.",
+  "anatomy": {
+    "root": {
+      "el": "div",
+      "class": "grid",
+      "part": "grid",
+      "figma": {
+        "node": "COMPONENT",
+        "layout": "VERTICAL",
+        "hugHeight": true,
+        "fixedWidth": 1200
+      },
+      "children": [
+        {
+          "el": "sherpa-toolbar",
+          "class": "toolbar",
+          "component": "sherpa-toolbar",
+          "relationship": "owned",
+          "figma": {
+            "node": "INSTANCE",
+            "of": "Toolbar"
+          }
+        },
+        {
+          "el": "sherpa-quick-filter-toolbar",
+          "class": "quick-filter",
+          "component": "sherpa-quick-filter-toolbar",
+          "relationship": "owned",
+          "attrs": {
+            "data-variant": "data"
+          },
+          "figma": {
+            "node": "INSTANCE",
+            "of": "Quick Filter Toolbar",
+            "note": "replaces the old Filter Bar (user request)"
+          }
+        },
+        {
+          "el": "div",
+          "class": "columns",
+          "part": "columns",
+          "figma": {
+            "node": "FRAME",
+            "layout": "GRID",
+            "fillWidth": true,
+            "hugHeight": true
+          },
+          "children": [
+            {
+              "el": "sherpa-grid-column",
+              "class": "selection-column",
+              "component": "sherpa-grid-column",
+              "relationship": "owned",
+              "attrs": {
+                "data-pinned": "left",
+                "data-type": "selection"
+              },
+              "figma": {
+                "node": "INSTANCE",
+                "of": "Grid Selection Column"
+              }
+            },
+            {
+              "el": "div",
+              "class": "data-columns",
+              "slot": "",
+              "figma": {
+                "node": "SLOT",
+                "note": "app supplies N Grid Column instances"
+              }
+            },
+            {
+              "el": "sherpa-grid-column",
+              "class": "actions-column",
+              "component": "sherpa-grid-column",
+              "relationship": "owned",
+              "attrs": {
+                "data-pinned": "right",
+                "data-type": "actions"
+              },
+              "figma": {
+                "node": "INSTANCE",
+                "of": "Grid Actions Column"
+              }
+            }
+          ]
+        },
+        {
+          "el": "sherpa-pagination",
+          "class": "pagination",
+          "component": "sherpa-pagination",
+          "relationship": "owned",
+          "figma": {
+            "node": "INSTANCE",
+            "of": "Pagination"
+          }
+        },
+        {
+          "el": "div",
+          "class": "empty",
+          "part": "empty",
+          "slot": "empty",
+          "figma": {
+            "node": "TEXT",
+            "role": "secondary"
+          }
+        }
+      ]
+    }
+  },
   "props": [
     {
       "name": "data-sort-field",
-      "type": "_TODO",
-      "kind": "_TODO(style|content|visibility|template)",
-      "description": ""
+      "type": "string",
+      "default": null,
+      "kind": "content",
+      "description": "The field the grid is currently sorted by.",
+      "figma": {
+        "note": "sort state — reflected on the host; the sorted column header shows the direction glyph"
+      }
     },
     {
       "name": "data-sort-direction",
-      "type": "_TODO",
-      "kind": "_TODO(style|content|visibility|template)",
-      "description": ""
+      "type": "enum",
+      "values": [
+        "asc",
+        "desc"
+      ],
+      "default": null,
+      "kind": "content",
+      "description": "Current sort direction.",
+      "figma": {
+        "note": "asc | desc"
+      }
     }
   ],
-  "templates": [],
+  "templates": [
+    "default"
+  ],
   "slots": [
     {
+      "name": "",
+      "accepts": [
+        "data"
+      ],
+      "description": "The data columns (Grid Column instances) between the pinned Selection and Actions columns."
+    },
+    {
       "name": "empty",
-      "accepts": [],
-      "description": ""
+      "accepts": [
+        "content"
+      ],
+      "description": "Shown when there are no rows."
     }
   ],
   "parts": [
     "grid",
-    "head",
-    "body",
+    "columns",
     "empty"
   ],
-  "nested": [],
-  "props_public": [],
+  "nested": [
+    {
+      "component": "sherpa-toolbar",
+      "relationship": "owned",
+      "role": "top bar (add / search / export / columns / settings)"
+    },
+    {
+      "component": "sherpa-quick-filter-toolbar",
+      "relationship": "owned",
+      "role": "data-variant quick filter (replaces the old filter bar)"
+    },
+    {
+      "component": "sherpa-grid-column",
+      "relationship": "owned",
+      "role": "pinned Selection (left) + Actions (right) columns"
+    },
+    {
+      "component": "sherpa-grid-column",
+      "relationship": "slotted",
+      "role": "the data columns (app supplies)"
+    },
+    {
+      "component": "sherpa-pagination",
+      "relationship": "owned",
+      "role": "bottom pager"
+    }
+  ],
   "events": [
     {
       "name": "grid-sort-change",
+      "description": "Fires when the user changes the sort by clicking a sortable column header.",
       "bubbles": true,
       "composed": true,
       "cancelable": false,
-      "detail": {},
+      "detail": {
+        "field": "string",
+        "direction": "asc|desc"
+      },
       "trigger": {
         "on": "click",
         "node": ".head-row"
-      },
-      "_todo": "confirm cancelable + default action + detail shape"
+      }
     },
     {
       "name": "row-click",
+      "description": "Fires when a row (a horizontal slice of cells) is clicked.",
       "bubbles": true,
       "composed": true,
       "cancelable": false,
-      "detail": {},
+      "detail": {
+        "index": "number",
+        "row": "object"
+      },
       "trigger": {
         "on": "click",
-        "node": ".head-row"
-      },
-      "_todo": "confirm cancelable + default action + detail shape"
+        "node": ".body"
+      }
     }
   ],
   "tokens": {
-    "head-cell:surface-primary-inactive": "surface-primary-inactive",
-    "head-cell:core-border-width-base": "core-border-width-base",
-    "head-cell:border-primary": "border-primary",
-    "head-btn:core-space-2xs": "core-space-2xs",
-    "head-btn:core-space-xs": "core-space-xs",
-    "head-btn:core-space-sm": "core-space-sm",
-    "head-btn:core-fonts-weight-600": "core-fonts-weight-600",
-    "head-btn:content-title-base": "content-title-base",
-    "cell:core-border-width-base": "core-border-width-base",
-    "cell:border-primary": "border-primary",
-    "cell:core-space-xs": "core-space-xs",
-    "cell:core-space-sm": "core-space-sm",
-    "empty:core-space-2xl": "core-space-2xl",
-    "empty:content-secondary-base": "content-secondary-base"
+    "columns.gap": "space-none",
+    "empty.color": "content-secondary-base"
   },
   "figma": {
-    "_status": "no-figma",
-    "figmaName": null,
-    "note": "backlog — Data Grid page not built"
-  }
+    "_status": "built",
+    "figmaName": "Data Grid",
+    "page": "sherpa-data-grid (section: Data Grid (assembled))",
+    "nodeType": "COMPONENT",
+    "built": true,
+    "variantAxes": [],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [
+      "Toolbar",
+      "Quick Filter Toolbar",
+      "Grid Selection Column",
+      "Grid Column",
+      "Grid Actions Column",
+      "Pagination"
+    ],
+    "modePins": {},
+    "note": "Assembled from a GRID layout of columns. Selection column pinned left, Actions column pinned right, data columns as slotted Grid Column instances. Filter bar swapped for the data-variant Quick Filter Toolbar.",
+    "consolidated": "All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections — not one page per sub-component.",
+    "tier": "top-level"
+  },
+  "_divergence": {
+    "note": "The shipped code (sherpa-data-grid.ts) is a plain <table> — head row + body rows, sortable, no pinning/selection/per-column filters. This def + the Figma build capture the RICHER designed architecture (flat pinned columns). Reconcile later: either enrich the code to the column model, or scope the Figma component to match. Public API (data-sort-field/direction, grid-sort-change, row-click) is preserved on both sides."
+  },
+  "tier": "top-level"
 }
