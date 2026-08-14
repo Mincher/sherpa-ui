@@ -93,3 +93,4 @@ export { SherpaProgressStepTracker } from './components/sherpa-progress-step-tra
 export { SherpaInputDateRange, type DateRange } from './components/sherpa-input-date-range/sherpa-input-date-range.js';
 export { SherpaTree, type TreeNode } from './components/sherpa-tree/sherpa-tree.js';
 export { SherpaQuickFilter } from './components/sherpa-quick-filter/sherpa-quick-filter.js';
+export { SherpaGaugeChart } from './components/sherpa-gauge-chart/sherpa-gauge-chart.js';

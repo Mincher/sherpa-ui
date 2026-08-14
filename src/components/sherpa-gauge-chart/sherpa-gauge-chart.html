@@ -1,0 +1,32 @@
+<!--
+  sherpa-gauge-chart — a half-circle gauge for a single 0–100 value.
+
+  The fill arc is a conic-gradient whose sweep is driven by a --_fill-pct custom
+  property the JS sets from data-value (a JS→CSS-var geometry bridge — CSS owns the
+  drawing). A needle rotates over the arc. data-status colours the fill.
+
+  Public API:
+    data-value   0–100 (drives the fill sweep + needle angle)
+    data-label   centre value label (defaults to the value)
+    data-status  critical | warning | success | info  (fill colour)
+    data-min / data-max   scale bounds shown beneath (default 0 / 100)
+
+  Fires: nothing — display only.
+-->
+<template id="default">
+  <div class="chart-header" part="header">
+    <span class="title"><slot name="title"></slot></span>
+  </div>
+  <div class="gauge" part="gauge">
+    <div class="track" part="track"></div>
+    <div class="fill" part="fill"></div>
+    <div class="hub"><div class="needle" part="needle"></div></div>
+    <div class="centre">
+      <span class="value" part="value"></span>
+    </div>
+  </div>
+  <div class="scale" part="scale">
+    <span class="min"></span>
+    <span class="max"></span>
+  </div>
+</template>
