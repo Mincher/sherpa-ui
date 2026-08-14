@@ -57,10 +57,22 @@
     "divider:border-primary": "border-primary"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-section-header",
+    "_status": "matched",
+    "figmaName": "Section Header",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasDivider",
+      "hasActions",
+      "hasDescription"
+    ],
+    "textProps": [
+      "heading",
+      "description"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

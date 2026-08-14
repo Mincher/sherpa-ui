@@ -52,10 +52,34 @@
     "actions-zone:core-space-xs": "core-space-xs"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-quick-filter-toolbar",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Quick Filter Toolbar",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "data",
+          "view"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "quick-filter-toolbar-filter-change",
+      "quick-filter-toolbar-filter-clear",
+      "container-filter-change",
+      "global-filter-change",
+      "view-menu-open",
+      "view-change",
+      "view-save",
+      "view-favorite",
+      "data-refresh",
+      "ai-filter-request"
+    ]
   }
 }

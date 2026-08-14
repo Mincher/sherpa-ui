@@ -65,10 +65,23 @@
     "chev:core-border-width-lg": "core-border-width-lg"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-pagination",
+    "_status": "matched",
+    "figmaName": "Pagination",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasResults"
+    ],
+    "textProps": [
+      "pageSize",
+      "currentPage",
+      "totalPages"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "page-change"
+    ]
   }
 }

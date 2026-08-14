@@ -61,10 +61,24 @@
     "row:core-space-2xs": "core-space-2xs"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-container-header",
+    "_status": "matched",
+    "figmaName": "Container Header",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasDescription",
+      "hasDragHandle",
+      "dismissible",
+      "hasIcon",
+      "hasToggle"
+    ],
+    "textProps": [
+      "heading",
+      "description"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

@@ -67,10 +67,21 @@
     "title:core-fonts-scale-2xl": "core-fonts-scale-2xl"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-empty-state",
+    "_status": "matched",
+    "figmaName": "Empty State",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasSmallPrint",
+      "hasActions"
+    ],
+    "textProps": [
+      "heading",
+      "description"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

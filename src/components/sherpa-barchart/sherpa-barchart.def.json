@@ -58,10 +58,24 @@
     "bar-label:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-barchart",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Data Field",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Orientation",
+        "values": [
+          "vertical",
+          "horizontal"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "Chart 2D — Data Field is the category slot"
   }
 }

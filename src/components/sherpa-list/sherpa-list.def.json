@@ -53,10 +53,15 @@
     "empty:core-fonts-scale-base": "core-fonts-scale-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-list",
+    "_status": "matched",
+    "figmaName": "List",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

@@ -83,15 +83,15 @@
       "kind": "template",
       "template": "removable",
       "description": "Show the dismiss button (selects the removable template).",
-      "figma": { "boolean": "isRemovable" }
+      "figma": { "boolean": "hasDismiss" }
     },
     {
       "name": "data-collapsed",
       "type": "boolean",
       "default": false,
       "kind": "style",
-      "description": "Render as a small circular indicator.",
-      "figma": { "axis": "State", "value": "Collapsed" }
+      "description": "Render as a small circular indicator (the Figma Type=dot variant).",
+      "figma": { "axis": "Type", "value": "dot" }
     }
   ],
 
@@ -149,15 +149,18 @@
   },
 
   "figma": {
-    "page": "sherpa-tag",
-    "baseCollection": "Controls",
+    "_status": "matched",
+    "figmaName": "Tag",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
     "variantAxes": [
-      { "name": "State", "values": ["Default", "Collapsed"] }
+      { "name": "Type", "values": ["dot", "full"] }
     ],
-    "booleanProps": ["hasIcon", "isRemovable"],
-    "modePins": {
-      "Controls": "Default",
-      "Elevation": "none"
-    }
+    "booleanProps": ["hasIcon", "hasDismiss"],
+    "textProps": ["label"],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "Type=dot is the collapsed indicator; status is the [data-status] cascade (no mode pin). hasDismiss = the owned dismiss Button."
   }
 }

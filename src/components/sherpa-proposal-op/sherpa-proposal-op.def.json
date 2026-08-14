@@ -32,10 +32,8 @@
     "glyph:core-fonts-weight-700": "core-fonts-weight-700"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-proposal-op",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "backlog — Proposal Op page not built"
   }
 }

@@ -76,10 +76,24 @@
     }
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-select-group",
+    "_status": "matched",
+    "figmaName": "Select Group",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasDescription",
+      "hasValidation"
+    ],
+    "textProps": [
+      "legend",
+      "description",
+      "validation"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "change"
+    ]
   }
 }

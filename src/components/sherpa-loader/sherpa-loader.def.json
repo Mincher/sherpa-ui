@@ -23,10 +23,28 @@
     "spinner:border-primary": "border-primary"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-loader",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Loader",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Size",
+        "values": [
+          "lg",
+          "md",
+          "sm"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "hasLabel"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

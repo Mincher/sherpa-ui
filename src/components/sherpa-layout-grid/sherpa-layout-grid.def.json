@@ -44,10 +44,8 @@
     "grid:layout-grid-columns": "layout-grid-columns"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-layout-grid",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "layout utility, no Figma component"
   }
 }

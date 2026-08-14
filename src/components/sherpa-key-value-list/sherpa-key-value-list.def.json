@@ -26,10 +26,19 @@
     "key:core-space-3xs": "core-space-3xs"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-key-value-list",
+    "_status": "matched",
+    "figmaName": "Key Value Pair",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [
+      "key",
+      "value"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "Figma models the row (Pair); list is composition"
   }
 }

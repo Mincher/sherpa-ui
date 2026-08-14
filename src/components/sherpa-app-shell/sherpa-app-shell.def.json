@@ -42,10 +42,8 @@
     "content:core-space-lg": "core-space-lg"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-app-shell",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "backlog — App Shell page not built"
   }
 }

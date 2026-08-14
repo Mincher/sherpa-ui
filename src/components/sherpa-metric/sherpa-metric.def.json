@@ -63,10 +63,23 @@
     "label:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-metric",
+    "_status": "matched",
+    "figmaName": "Metric",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [
+      "label",
+      "value",
+      "delta"
+    ],
+    "instanceProps": [],
+    "modePins": {
+      "Status": {
+        "mode": "passthrough"
+      }
+    },
+    "figmaEvents": []
   }
 }

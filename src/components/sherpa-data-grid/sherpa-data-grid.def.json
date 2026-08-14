@@ -78,10 +78,8 @@
     "empty:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-data-grid",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "backlog — Data Grid page not built"
   }
 }

@@ -88,10 +88,17 @@
     "pane:surface-primary-inactive": "surface-primary-inactive"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-transfer-list",
+    "_status": "matched",
+    "figmaName": "Transfer List",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "transfer-change"
+    ]
   }
 }

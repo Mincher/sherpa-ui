@@ -38,10 +38,17 @@
     "link:core-space-3xs": "core-space-3xs"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-breadcrumbs",
+    "_status": "matched",
+    "figmaName": "Breadcrumbs",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "breadcrumb-click"
+    ]
   }
 }

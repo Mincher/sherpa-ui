@@ -75,10 +75,21 @@
     "send:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-prompt-composer",
+    "_status": "matched",
+    "figmaName": "Prompt Composer",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasLeadingActions"
+    ],
+    "textProps": [
+      "placeholder"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "prompt-submit"
+    ]
   }
 }

@@ -75,10 +75,29 @@
     "bubble:core-fonts-scale-sm": "core-fonts-scale-sm"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-chat-message",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Chat Message",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "received",
+          "sent"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "hasAvatar"
+    ],
+    "textProps": [
+      "name",
+      "timestamp",
+      "message"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

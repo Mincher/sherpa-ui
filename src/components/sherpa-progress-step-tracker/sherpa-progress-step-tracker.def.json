@@ -57,10 +57,18 @@
     "label:core-fonts-weight-600": "core-fonts-weight-600"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-progress-step-tracker",
+    "_status": "matched",
+    "figmaName": "Progress Steps",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "step-change",
+      "step-click"
+    ]
   }
 }

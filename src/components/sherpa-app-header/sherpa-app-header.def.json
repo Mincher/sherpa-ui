@@ -53,10 +53,23 @@
     "actions:core-space-xs": "core-space-xs"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-app-header",
+    "_status": "matched",
+    "figmaName": "App Header",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasNotifications",
+      "hasLoadingBar"
+    ],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "view-header-back",
+      "favorite-toggle",
+      "breadcrumb-click",
+      "view-export"
+    ]
   }
 }

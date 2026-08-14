@@ -81,10 +81,39 @@
     "label:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-input-text",
+    "_status": "matched",
+    "figmaName": "Input",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasDescription",
+      "hasHelper",
+      "hasLeadingIcon",
+      "hasTrailingIcon",
+      "hasValidation",
+      "hasLabel"
+    ],
+    "textProps": [
+      "label",
+      "description",
+      "value",
+      "helper"
+    ],
+    "instanceProps": [],
+    "modePins": {
+      "Status": {
+        "mode": "passthrough"
+      },
+      "Input": {
+        "mode": "default"
+      }
+    },
+    "figmaEvents": [
+      "input",
+      "change",
+      "search"
+    ],
+    "note": "one Figma Input covers all input types via props"
   }
 }

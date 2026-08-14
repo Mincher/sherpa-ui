@@ -53,10 +53,24 @@
     "x-axis:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-line-chart",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Data Field",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Orientation",
+        "values": [
+          "vertical",
+          "horizontal"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "same 2D Chart primitive as barchart, line orientation"
   }
 }

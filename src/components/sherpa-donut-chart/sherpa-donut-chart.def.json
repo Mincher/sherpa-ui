@@ -50,10 +50,15 @@
     "sub:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-donut-chart",
+    "_status": "matched",
+    "figmaName": "Donut Chart",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

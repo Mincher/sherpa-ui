@@ -25,10 +25,25 @@
     "row:container-space-padding-md": "container-space-padding-md"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-container-footer",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Container Footer",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "action-bar"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "footer-cancel",
+      "footer-apply"
+    ]
   }
 }

@@ -102,10 +102,8 @@
     "accept:border-interactive-primary": "border-interactive-primary"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-proposal-preview",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "backlog — Proposal Preview page not built"
   }
 }

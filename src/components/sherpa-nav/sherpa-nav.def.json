@@ -67,10 +67,8 @@
     "link:core-fonts-weight-600": "core-fonts-weight-600"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-nav",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "no-figma",
+    "figmaName": null,
+    "note": "nav shell — Figma models Navigation Section, not the whole nav"
   }
 }

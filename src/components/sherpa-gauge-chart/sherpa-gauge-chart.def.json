@@ -64,10 +64,15 @@
     "scale:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-gauge-chart",
+    "_status": "matched",
+    "figmaName": "Gauge Chart",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": []
   }
 }

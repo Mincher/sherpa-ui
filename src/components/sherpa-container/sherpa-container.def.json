@@ -67,10 +67,36 @@
     "spinner:content-active-base": "content-active-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-container",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Container",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "default",
+          "dialog",
+          "panel",
+          "overlay-panel",
+          "accordion"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "expanded"
+    ],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "card-click",
+      "card-select",
+      "container-open",
+      "container-close",
+      "container-select",
+      "container-page-change",
+      "container-finish"
+    ]
   }
 }

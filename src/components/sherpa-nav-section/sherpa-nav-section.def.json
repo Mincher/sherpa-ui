@@ -67,10 +67,27 @@
     "item:core-fonts-weight-600": "core-fonts-weight-600"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-nav-section",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Navigation Section",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "default"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "isMaximised"
+    ],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "nav-section-back",
+      "nav-section-select"
+    ]
   }
 }

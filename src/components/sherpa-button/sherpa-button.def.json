@@ -75,10 +75,46 @@
     "icon:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-button",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Button",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "icon",
+          "label"
+        ]
+      },
+      {
+        "name": "State",
+        "values": [
+          "default",
+          "active",
+          "inactive"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "hasIconStart",
+      "hasIconEnd",
+      "hasBadge"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [
+      "iconStart",
+      "iconEnd"
+    ],
+    "modePins": {},
+    "figmaEvents": [
+      "button-click",
+      "menu-open",
+      "menu-close",
+      "menu-select",
+      "menu-populate"
+    ]
   }
 }

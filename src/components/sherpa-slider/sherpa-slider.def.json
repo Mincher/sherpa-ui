@@ -90,10 +90,20 @@
     "value-out:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-slider",
+    "_status": "matched",
+    "figmaName": "Slider",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "input",
+      "change"
+    ]
   }
 }

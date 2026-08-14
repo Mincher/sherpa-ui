@@ -79,10 +79,31 @@
     }
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-select-checkbox",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Select Checkbox",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "active",
+          "inactive"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "isFilled",
+      "isChecked",
+      "hasDescription"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "change"
+    ]
   }
 }

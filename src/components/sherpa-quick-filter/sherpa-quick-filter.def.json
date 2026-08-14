@@ -74,10 +74,36 @@
     "chip:surface-interactive-inactive": "surface-interactive-inactive"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-quick-filter",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Quick Filter Chip",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "active",
+          "default",
+          "inactive"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "hasMenu",
+      "hasIcon",
+      "hasContent",
+      "hasBadge"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "quick-filter-click",
+      "quick-filter-menu-open",
+      "quick-filter-dismiss",
+      "quick-filter-ai-accept"
+    ]
   }
 }

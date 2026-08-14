@@ -102,10 +102,20 @@
     "label:content-inactive-base": "content-inactive-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-file-upload",
+    "_status": "matched",
+    "figmaName": "File Uploader",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "file-add",
+      "file-remove",
+      "file-clear",
+      "file-upload-start"
+    ]
   }
 }

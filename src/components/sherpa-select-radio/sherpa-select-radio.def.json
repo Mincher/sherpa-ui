@@ -73,10 +73,30 @@
     }
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-select-radio",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Select Radio",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "active",
+          "inactive"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "isChecked",
+      "hasDescription"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "change"
+    ]
   }
 }

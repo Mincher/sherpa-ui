@@ -26,10 +26,24 @@
     "point:core-border-rounding-full": "core-border-rounding-full"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-sparkline",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Data Field",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Orientation",
+        "values": [
+          "vertical",
+          "horizontal"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "mini 2D chart; shares Data Field marks"
   }
 }

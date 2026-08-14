@@ -66,10 +66,24 @@
     "close:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-callout",
+    "_status": "matched",
+    "figmaName": "Callout",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [],
+    "textProps": [
+      "heading"
+    ],
+    "instanceProps": [],
+    "modePins": {
+      "Status": {
+        "mode": "info"
+      }
+    },
+    "figmaEvents": [
+      "callout-toggle",
+      "callout-dismiss"
+    ]
   }
 }

@@ -124,10 +124,40 @@
     "promo-chevron:content-secondary-base": "content-secondary-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-nav-item",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Menu List Item",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "default",
+          "active",
+          "inactive",
+          "hover"
+        ]
+      }
+    ],
+    "booleanProps": [
+      "hasDescription",
+      "hasLeadingIcon",
+      "hasDragHandle",
+      "hasLeadingControl",
+      "hasLeading",
+      "hasExpand"
+    ],
+    "textProps": [
+      "label",
+      "description"
+    ],
+    "instanceProps": [
+      "leadingControl"
+    ],
+    "modePins": {},
+    "figmaEvents": [
+      "list-item-click"
+    ],
+    "note": "nav rows reuse Menu List Item"
   }
 }

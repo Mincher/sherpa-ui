@@ -44,10 +44,23 @@
     "value:core-fonts-weight-600": "core-fonts-weight-600"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-chart-legend",
+    "_status": "matched",
+    "figmaName": "Legend Item",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasValue"
+    ],
+    "textProps": [
+      "label",
+      "value"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "legend-item-click"
+    ],
+    "note": "Figma models the Legend Item; legend is composition"
   }
 }

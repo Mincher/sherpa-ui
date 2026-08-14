@@ -60,10 +60,26 @@
     "close:content-title-base": "content-title-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-message",
+    "_status": "matched",
+    "figmaName": "Message",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasClose"
+    ],
+    "textProps": [
+      "label"
+    ],
+    "instanceProps": [],
+    "modePins": {
+      "Status": {
+        "mode": "info"
+      }
+    },
+    "figmaEvents": [
+      "close",
+      "action"
+    ]
   }
 }

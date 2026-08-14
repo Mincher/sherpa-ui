@@ -81,10 +81,24 @@
     "code:core-fonts-scale-sm": "core-fonts-scale-sm"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-code-block",
+    "_status": "matched",
+    "figmaName": "Code Block",
+    "nodeType": "COMPONENT",
+    "built": true,
     "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "booleanProps": [
+      "hasHeader",
+      "hasLineNumbers"
+    ],
+    "textProps": [
+      "language"
+    ],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [
+      "code-copied",
+      "code-highlight-error",
+      "code-language-detected"
+    ]
   }
 }

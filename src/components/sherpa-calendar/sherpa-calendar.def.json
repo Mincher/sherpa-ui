@@ -79,10 +79,25 @@
     "cal-day:core-fonts-scale-base": "core-fonts-scale-base"
   },
   "figma": {
-    "_todo": "READ FROM FIGMA: variant axes, extended-collection maps, mode pins",
-    "page": "sherpa-calendar",
-    "variantAxes": [],
-    "extendedCollections": {},
-    "modePins": {}
+    "_status": "matched",
+    "figmaName": "Grid",
+    "nodeType": "COMPONENT_SET",
+    "built": true,
+    "variantAxes": [
+      {
+        "name": "Layout",
+        "values": [
+          "month",
+          "year",
+          "day"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [],
+    "modePins": {},
+    "figmaEvents": [],
+    "note": "Calendar's date Grid + Time Picker"
   }
 }
