@@ -36,11 +36,18 @@ function tierOf(coll) {
   return 'other';
 }
 
-// role: prefer scope-derived; fall back to name for opaque cases
+// role: TYPOGRAPHY first (its scope is ALL_SCOPES/WIDTH_HEIGHT which misleads the
+// scope-derived role → 'palette'/'space'); then scope-derived; then name fallback.
 function roleOf(id, entry) {
+  const [coll, rawName] = id.split('::');
+  const n = rawName.toLowerCase();
+  // Typography collection + any *-font/* var + text-numeric names = the 'type' role.
+  if (coll === 'Typography' || /-font\//.test(n) ||
+      /(^|\/)(font-size|line-height|letter-spacing|paragraph|family|weight|leading)(\/|$)/.test(n)) {
+    return 'type';
+  }
   const scopeRole = roleFromScopes((entry.s || '').split(',').filter(Boolean));
   if (scopeRole !== 'open' && scopeRole !== 'other') return scopeRole;
-  const n = id.split('::')[1].toLowerCase();
   if (/surface|fill|background|track|knob|thumb/.test(n)) return 'surface';
   if (/border|stroke|divider/.test(n)) return 'border';
   if (/content|text|label|heading|title|ink|link/.test(n)) return 'content';
@@ -53,12 +60,13 @@ function roleOf(id, entry) {
 
 const ROLE_PROSE = {
   surface:  { p: 'A background fill', use: 'As the surface behind an element.', not: 'Never as a border (use a border token) or text.' },
-  border:   { p: 'A border / stroke colour', use: 'As the stroke of an element.', not: 'Never as a fill (use a surface token) or text.' },
+  border:   { p: 'A border / stroke colour', use: 'As the stroke of an element — or the FILL of a hairline divider / track / chart segment.', not: 'Not for a filled surface behind content, and not for text.' },
   content:  { p: 'Ink for text or an icon', use: 'As text colour, or to ink an icon glyph.', not: 'Never as a surface fill behind content.' },
   radius:   { p: 'A corner radius', use: 'As border-radius.', not: 'Not a spacing value.' },
   space:    { p: 'A spacing step', use: 'As a gap, padding, or size.', not: 'Not a colour or radius.' },
   size:     { p: 'A dimension', use: 'As width / height.', not: 'Not a gap between items.' },
   effect:   { p: 'A shadow / effect value', use: 'In a drop-shadow or blur.', not: 'Not a fill or stroke colour.' },
+  type:     { p: 'A typography value (size / weight / family / spacing)', use: 'On a text node — via a text style.', not: 'Not a colour, gap, or radius.' },
   palette:  { p: 'A palette step (open scope)', use: 'A semantic colour a scoped token aliases; usable across fill/stroke/text.', not: 'Prefer the scoped token (e.g. status-surface) over binding a raw palette step directly.' },
 };
 
