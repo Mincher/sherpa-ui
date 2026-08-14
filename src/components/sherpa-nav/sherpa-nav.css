@@ -74,10 +74,10 @@
 
 .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ── Active item ───────────────────────────────────────────────────── */
+/* ── Active item — brand tint surface + brand ink (Figma: surface/interactive/active) ── */
 .item[data-active] .link {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-link-base, #3c5edd);
+  background: var(--sherpa-surface-interactive-active-base, #f8ebff);
+  color: var(--sherpa-content-active-base, #8500cc);
   font-weight: var(--sherpa-core-fonts-weight-600, 600);
 }
 

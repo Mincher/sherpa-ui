@@ -86,7 +86,7 @@
 /* ── State: active ───────────────────────────────────────────────────── */
 .step[data-state='active'] .marker {
   border-color: var(--_accent);
-  color: var(--sherpa-content-link-base, #3c5edd);
+  color: var(--_accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
 }
 .step[data-state='active'] .label {

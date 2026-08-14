@@ -103,7 +103,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid var(--sherpa-border-primary, #c0c0cc);
-  border-top-color: var(--sherpa-content-link-base, #3c5edd);
+  border-top-color: var(--sherpa-content-active-base, #8500cc);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }
