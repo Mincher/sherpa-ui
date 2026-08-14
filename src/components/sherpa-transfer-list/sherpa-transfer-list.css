@@ -79,39 +79,8 @@
     var(--sherpa-control-border-radius-bottom-right, 4px)
     var(--sherpa-control-border-radius-bottom-left, 4px);
 }
-.row-field {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-control-space-gap-base, 8px);
-  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-xs, 8px);
-  cursor: pointer;
-  user-select: none;
-  border-radius:
-    var(--sherpa-control-border-radius-top-left, 4px)
-    var(--sherpa-control-border-radius-top-right, 4px)
-    var(--sherpa-control-border-radius-bottom-right, 4px)
-    var(--sherpa-control-border-radius-bottom-left, 4px);
-}
-.row-field:hover {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f2f2f2);
-}
-.row-check {
-  flex-shrink: 0;
-  inline-size: var(--sherpa-core-size-sm, 16px);
-  block-size: var(--sherpa-core-size-sm, 16px);
-  margin: 0;
-  accent-color: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-}
-.row-check:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
-}
-.row-label {
-  min-inline-size: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* Rows are sherpa-list-item instances — they own their own look/selection. */
+.row sherpa-list-item { display: block; }
 
 /* ── Move buttons ─────────────────────────────────────────────────── */
 .moves {
@@ -120,41 +89,12 @@
   justify-content: center;
   gap: var(--sherpa-core-space-xs, 8px);
 }
-.move {
-  inline-size: var(--sherpa-button-size-height, 24px);
-  block-size: var(--sherpa-button-size-height, 24px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
-  line-height: 1;
-  cursor: pointer;
-  color: var(--sherpa-content-primary-base, #2e2e33);
-  background: var(--sherpa-surface-interactive-secondary-base, #ffffff);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #c0c0cc);
-  border-radius: var(--sherpa-core-border-rounding-sm, 3px);
-  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-}
-.move:hover {
-  background: var(--sherpa-surface-interactive-secondary-hover, #f2f2f2);
-}
-.move:active {
-  background: var(--sherpa-surface-interactive-secondary-down, #e3e3e3);
-}
-.move:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
-}
+/* The move controls are sherpa-button instances — they own their own look. */
+.move { flex-shrink: 0; }
 
 /* ── Disabled — inactive tokens, never opacity ────────────────────── */
 :host([disabled]) {
   pointer-events: none;
-}
-:host([disabled]) .move {
-  color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
-  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .pane {
   border-color: var(--sherpa-border-interactive-inactive, #8d8d99);

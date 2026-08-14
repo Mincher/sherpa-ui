@@ -1,10 +1,10 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-transfer-list",
   "figmaName": "Transfer List",
   "category": "container",
-  "description": "a two-pane shuttle (available ↔ selected).",
+  "description": "A two-pane shuttle (available ↔ selected): each row is a composed sherpa-list-item with a leading selection control; the shuttle controls are composed sherpa-button instances.",
   "props": [
     {
       "name": "data-source-heading",
@@ -29,7 +29,18 @@
     "empty",
     "moves"
   ],
-  "nested": [],
+  "nested": [
+    {
+      "component": "sherpa-list-item",
+      "relationship": "owned",
+      "role": "each pane row (data-selectable) — composed, not raw DOM (Rule 1)"
+    },
+    {
+      "component": "sherpa-button",
+      "relationship": "owned",
+      "role": "the four shuttle controls (add/add-all/remove/remove-all)"
+    }
+  ],
   "props_public": [],
   "events": [
     {
@@ -95,10 +106,14 @@
     "variantAxes": [],
     "booleanProps": [],
     "textProps": [],
-    "instanceProps": [],
+    "instanceProps": [
+      "Menu List Item",
+      "Button"
+    ],
     "modePins": {},
     "figmaEvents": [
       "transfer-change"
-    ]
+    ],
+    "note": "Rebuilt 2026-08-15 to match Figma Transfer List: rows are now sherpa-list-item (data-selectable) and moves are sherpa-button — composition, not ad-hoc <li>+checkbox / raw <button>. Shuttle logic unchanged."
   }
 }

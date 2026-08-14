@@ -3,14 +3,15 @@
  *
  * The full pool is supplied via populate([{ value, label, selected? }]); each
  * item lives in the left (available) or right (selected) pane per its `selected`
- * flag. A row carries a native checkbox for staging; the move buttons shuttle
- * staged (or all) items across and emit transfer-change with the selected values.
+ * flag. Rebuilt to match the Figma "Transfer List": each row is a
+ * sherpa-list-item (with a leading selection control) and the shuttle controls
+ * are sherpa-button instances — composition, not ad-hoc DOM. Selecting rows
+ * stages them; the move buttons shuttle staged (or all) items across and emit
+ * transfer-change with the selected values.
  *
- * Rows are stamped from a <template class="row-tpl"> cloning prototype — the one
- * bit of structural DOM this component creates (data-driven rows, which the
- * golden rules allow). The move controls are native <button>s in the shadow;
- * their clicks are read off event.target within the shadow (same tree, no
- * retargeting). The row checkbox `change` is likewise same-tree.
+ * Rows are stamped from a <template class="row-tpl"> cloning prototype (the
+ * data-driven rows the golden rules allow). A row's list-item-select event
+ * stages/unstages it; a move button's click shuttles.
  *
  * @fires transfer-change — detail: { selected: string[], moved: string[], direction: 'add' | 'remove' }
  */
@@ -41,7 +42,8 @@ export class SherpaTransferList extends SherpaElement {
   override onRender(): void {
     this.#syncHeadings();
     this.$('.moves')?.addEventListener('click', this.#onMoveClick);
-    this.$('.panes')?.addEventListener('change', this.#onRowToggle);
+    // A row's leading control fires list-item-select; stage/unstage on it.
+    this.$('.panes')?.addEventListener('list-item-select', this.#onRowSelect as EventListener);
     this.#render();
   }
 
@@ -95,9 +97,9 @@ export class SherpaTransferList extends SherpaElement {
     for (const item of this.#items) {
       const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       row.dataset['value'] = item.value;
-      const box = row.querySelector<HTMLInputElement>('.row-check')!;
-      box.checked = this.#staged.has(item.value);
-      row.querySelector('.row-label')!.textContent = item.label;
+      const listItem = row.querySelector('sherpa-list-item') as HTMLElement;
+      listItem.dataset['title'] = item.label;
+      listItem.toggleAttribute('data-selected', this.#staged.has(item.value));
       (item.selected ? targetList : sourceList).appendChild(row);
     }
     // Empty-state visibility is CSS, keyed on whether a pane has rows.
@@ -107,17 +109,17 @@ export class SherpaTransferList extends SherpaElement {
 
   /* ── Interaction (all same shadow tree — event.target is reliable) ──── */
 
-  #onRowToggle = (event: Event): void => {
-    const box = event.target as HTMLInputElement;
-    if (!box.classList.contains('row-check')) return;
-    const value = box.closest<HTMLElement>('.row')?.dataset['value'];
+  #onRowSelect = (event: Event): void => {
+    const row = (event.target as HTMLElement).closest<HTMLElement>('.row');
+    const value = row?.dataset['value'];
     if (!value) return;
-    if (box.checked) this.#staged.add(value);
+    const selected = (event as CustomEvent).detail?.selected;
+    if (selected) this.#staged.add(value);
     else this.#staged.delete(value);
   };
 
   #onMoveClick = (event: Event): void => {
-    const btn = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-move]');
+    const btn = (event.target as HTMLElement).closest<HTMLElement>('[data-move]');
     const move = btn?.dataset['move'];
     if (!move) return;
     switch (move) {

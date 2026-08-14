@@ -167,8 +167,8 @@
     },
     "sherpa-transfer-list": {
       "figma": "Transfer List",
-      "status": "needs-rebuild",
-      "rebuildNote": "raw DOM vs Figma composing Menu List Item + Button (composes zero DS children)"
+      "status": "matched",
+      "note": "rebuilt 2026-08-15: composes sherpa-list-item + sherpa-button (was raw DOM)"
     },
     "sherpa-chat-message": {
       "figma": "Chat Message",

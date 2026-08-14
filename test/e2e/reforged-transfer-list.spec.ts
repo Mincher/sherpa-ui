@@ -60,12 +60,14 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
     let detail: unknown = null;
     el.addEventListener('transfer-change', (e) => (detail = (e as CustomEvent).detail));
 
-    // Stage "Read" in the available pane, then click Add.
+    // Stage "Read" in the available pane (its list-item fires list-item-select), then click Add.
     const readRow = Array.from(s.querySelectorAll<HTMLElement>('.source .row')).find(
       (row) => row.dataset['value'] === 'r',
     )!;
-    readRow.querySelector<HTMLInputElement>('.row-check')!.click();
-    s.querySelector<HTMLButtonElement>('button[data-move="add"]')!.click();
+    readRow.querySelector('sherpa-list-item')!.dispatchEvent(
+      new CustomEvent('list-item-select', { bubbles: true, composed: true, detail: { selected: true } }),
+    );
+    (s.querySelector('sherpa-button[data-move="add"]') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 10));
 
     return {
@@ -88,7 +90,7 @@ test('add-all moves every available item across', async ({ page }) => {
     el.populate!(pool);
     await new Promise((res) => setTimeout(res, 10));
     const s = el.shadowRoot!;
-    s.querySelector<HTMLButtonElement>('button[data-move="add-all"]')!.click();
+    (s.querySelector('sherpa-button[data-move="add-all"]') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 10));
     return { selected: el.selected!.sort(), available: s.querySelectorAll('.source .row').length };
   }, POOL);
@@ -104,10 +106,33 @@ test('remove-all empties the selected pane', async ({ page }) => {
     el.populate!(pool);
     await new Promise((res) => setTimeout(res, 10));
     const s = el.shadowRoot!;
-    s.querySelector<HTMLButtonElement>('button[data-move="remove-all"]')!.click();
+    (s.querySelector('sherpa-button[data-move="remove-all"]') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 10));
     return { selected: el.selected, empty: s.querySelector('.target')!.hasAttribute('data-empty') };
   }, POOL);
   expect(r.selected).toEqual([]);
   expect(r.empty).toBe(true);
+});
+
+test('rows are composed sherpa-list-item + moves are composed sherpa-button', async ({ page }) => {
+  const r = await page.evaluate(async (pool) => {
+    const el = document.createElement('sherpa-transfer-list') as unknown as TransferEl;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(pool);
+    await new Promise((res) => setTimeout(res, 10));
+    const s = el.shadowRoot!;
+    return {
+      listItems: s.querySelectorAll('.row sherpa-list-item').length,
+      selectableItems: s.querySelectorAll('.row sherpa-list-item[data-selectable]').length,
+      moveButtons: s.querySelectorAll('.moves sherpa-button[data-move]').length,
+      rawCheckboxes: s.querySelectorAll('input[type="checkbox"]').length,
+      rawMoveButtons: s.querySelectorAll('.moves button').length,
+    };
+  }, POOL);
+  expect(r.listItems).toBe(3);        // every row composes a sherpa-list-item
+  expect(r.selectableItems).toBe(3);  // each with a leading selection control
+  expect(r.moveButtons).toBe(4);      // add / add-all / remove / remove-all
+  expect(r.rawCheckboxes).toBe(0);    // no ad-hoc DOM
+  expect(r.rawMoveButtons).toBe(0);
 });

@@ -1,12 +1,13 @@
 <!--
   sherpa-transfer-list — a two-pane shuttle (available ↔ selected).
 
-  The full pool is supplied via populate([{ value, label, selected? }]); items
-  sit in the left or right pane per their `selected` flag. Staging checkboxes +
-  move buttons shuttle items across.
+  Matches the Figma "Transfer List": each pane's rows are sherpa-list-item
+  instances (with a leading selection control) and the shuttle controls are
+  sherpa-button instances — composition, not ad-hoc DOM.
 
-  Data-driven rows use a cloning prototype (<template class="row-tpl">, no id — so
-  the base template parser ignores it).
+  The full pool is supplied via populate([{ value, label, selected? }]); items
+  sit in the left or right pane per their `selected` flag. Selecting rows stages
+  them; the move buttons shuttle staged (or all) items across.
 
   Public API:
     data-source-heading  heading for the available pane (default "Available")
@@ -23,10 +24,10 @@
     </div>
 
     <div class="moves" part="moves" role="group" aria-label="Transfer controls">
-      <button class="move" data-move="add" type="button" aria-label="Add selected">&rsaquo;</button>
-      <button class="move" data-move="add-all" type="button" aria-label="Add all">&raquo;</button>
-      <button class="move" data-move="remove" type="button" aria-label="Remove selected">&lsaquo;</button>
-      <button class="move" data-move="remove-all" type="button" aria-label="Remove all">&laquo;</button>
+      <sherpa-button class="move" data-move="add"        data-variant="secondary" data-size="sm" data-label="›"  aria-label="Add selected"></sherpa-button>
+      <sherpa-button class="move" data-move="add-all"    data-variant="secondary" data-size="sm" data-label="»"  aria-label="Add all"></sherpa-button>
+      <sherpa-button class="move" data-move="remove"     data-variant="secondary" data-size="sm" data-label="‹"  aria-label="Remove selected"></sherpa-button>
+      <sherpa-button class="move" data-move="remove-all" data-variant="secondary" data-size="sm" data-label="«"  aria-label="Remove all"></sherpa-button>
     </div>
 
     <div class="pane target" part="pane">
@@ -38,10 +39,7 @@
 
   <template class="row-tpl">
     <li class="row" role="option">
-      <label class="row-field">
-        <input class="row-check" type="checkbox" />
-        <span class="row-label"></span>
-      </label>
+      <sherpa-list-item data-selectable data-interactive></sherpa-list-item>
     </li>
   </template>
 </template>
