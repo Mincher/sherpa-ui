@@ -1,5 +1,5 @@
 {
-  "_note": "code component (sherpa-*) ↔ Figma page/node name. The names DIFFER — this is the authoritative bridge. status: matched = both exist; no-figma = code has no Figma component (backlog/deprecated); split = one code comp maps to several Figma parts or vice-versa.",
+  "_note": "code component (sherpa-*) ↔ Figma page/node name. The names DIFFER — this is the authoritative bridge. status: matched = both exist and agree; no-figma = code has no Figma component; figma-only (see figmaOnly[]) = Figma has no code; needs-rebuild = both exist but the code is legacy and predates/diverges from the current Figma (rebuild to match). tier: top-level (default) | sub-component = an atomic building block of a parent, not a standalone product (Figma name may be dot-prefixed).",
   "map": {
     "sherpa-button": {
       "figma": "Button",
@@ -49,7 +49,8 @@
     "sherpa-list-item": {
       "figma": "Menu List Item",
       "status": "matched",
-      "note": "Figma name differs"
+      "note": "Figma name differs",
+      "tier": "sub-component"
     },
     "sherpa-list": {
       "figma": "List",
@@ -135,7 +136,8 @@
     "sherpa-chart-legend": {
       "figma": "Legend Item",
       "status": "matched",
-      "note": "Figma models the Legend Item; legend is composition"
+      "note": "Figma models the Legend Item; legend is composition",
+      "tier": "sub-component"
     },
     "sherpa-barchart": {
       "figma": "Data Field",
@@ -179,21 +181,23 @@
     },
     "sherpa-nav-section": {
       "figma": "Navigation Section",
-      "status": "matched"
+      "status": "matched",
+      "tier": "sub-component"
     },
     "sherpa-app-header": {
       "figma": "App Header",
       "status": "matched"
     },
     "sherpa-nav": {
-      "figma": null,
-      "status": "no-figma",
-      "note": "nav shell — Figma models Navigation Section, not the whole nav"
+      "figma": "Primary Navigation",
+      "status": "needs-rebuild",
+      "note": "legacy nav shell — predates the current Figma 'Primary Navigation'; rebuild anew to match"
     },
     "sherpa-nav-item": {
       "figma": "Menu List Item",
       "status": "matched",
-      "note": "nav rows reuse Menu List Item"
+      "note": "nav rows reuse Menu List Item",
+      "tier": "sub-component"
     },
     "sherpa-data-grid": {
       "figma": "Data Grid",
@@ -262,6 +266,31 @@
     {
       "figma": "Chart Legend",
       "note": "composition-covered — sherpa-chart-legend binds the atomic Legend Item; the composed Chart Legend is assembled from Legend Items"
+    },
+    {
+      "figma": "Checkbox Indicator",
+      "tier": "sub-component",
+      "note": "atomic checkbox box — used inside Select Checkbox + grid selection cells; no standalone code element"
+    },
+    {
+      "figma": "Radio Indicator",
+      "tier": "sub-component",
+      "note": "atomic radio dot — used inside Select Radio; no standalone code element"
+    },
+    {
+      "figma": "Calendar Button",
+      "tier": "sub-component",
+      "note": "atomic day cell/button of Calendar (Grid); no standalone code element"
+    },
+    {
+      "figma": "Chart Axis",
+      "tier": "sub-component",
+      "note": "atomic axis of a chart (Data Field); no standalone code element"
+    },
+    {
+      "figma": "File Item",
+      "tier": "sub-component",
+      "note": "atomic file row of File Uploader; no standalone code element"
     }
   ]
 }
