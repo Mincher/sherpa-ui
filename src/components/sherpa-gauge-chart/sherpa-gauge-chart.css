@@ -20,10 +20,10 @@
   --_angle: -90deg;
 }
 
-:host([data-status="critical"]) { --_fill: var(--sherpa-content-critical-default, #c8324f); }
-:host([data-status="warning"])  { --_fill: var(--sherpa-content-warning-default, #b5730a); }
-:host([data-status="success"])  { --_fill: var(--sherpa-content-success-default, #16915a); }
-:host([data-status="info"])     { --_fill: var(--sherpa-content-info-default, #1f75e4); }
+:host([data-status="critical"]) { --_fill: var(--sherpa-status-critical-color-5, #bf2c09); }
+:host([data-status="warning"])  { --_fill: var(--sherpa-status-warning-color-7, #a77206); }
+:host([data-status="success"])  { --_fill: var(--sherpa-status-success-color-4, #058142); }
+:host([data-status="info"])     { --_fill: var(--sherpa-status-info-color-5, #07526f); }
 
 .title {
   font-size: var(--sherpa-core-fonts-scale-base, 14px);

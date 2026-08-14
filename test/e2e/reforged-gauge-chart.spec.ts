@@ -52,6 +52,6 @@ test('data-status re-points the fill colour and a custom min/max scales', async 
     };
   });
   expect(r.pct).toBe('25%'); // 50% of the half
-  expect(r.fill).toBe('#c8324f'); // critical
+  expect(r.fill.toLowerCase()).toBe('#bf2c09'); // status-critical-color-5
   expect(r.max).toBe('20');
 });

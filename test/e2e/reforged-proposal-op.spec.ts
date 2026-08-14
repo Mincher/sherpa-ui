@@ -51,9 +51,9 @@ test('op type drives the glyph colour from the status tokens', async ({ page }) 
       del: await glyphColor('delete'),
     };
   });
-  expect(r.create).toBe('rgb(22, 145, 90)'); // content-success-default #16915a
-  expect(r.update).toBe('rgb(181, 115, 10)'); // content-warning-default #b5730a
-  expect(r.del).toBe('rgb(200, 50, 79)'); // content-critical-default #c8324f
+  expect(r.create).toBe('rgb(5, 129, 66)'); // status-success-color-4 #058142
+  expect(r.update).toBe('rgb(167, 114, 6)'); // status-warning-color-7 #A77206
+  expect(r.del).toBe('rgb(191, 44, 9)'); // status-critical-color-5 #BF2C09
 });
 
 test('a slotted body replaces the data-label text node', async ({ page }) => {

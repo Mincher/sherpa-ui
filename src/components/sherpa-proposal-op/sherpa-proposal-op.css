@@ -36,13 +36,13 @@
 /* ── Op type → glyph + hue ───────────────────────────────────────────── */
 :host([data-op="create"]) {
   --_glyph: "+";
-  --_hue: var(--sherpa-content-success-default, #16915a);
+  --_hue: var(--sherpa-status-success-color-4, #058142);
 }
 :host([data-op="update"]) {
   --_glyph: "~";
-  --_hue: var(--sherpa-content-warning-default, #b5730a);
+  --_hue: var(--sherpa-status-warning-color-7, #a77206);
 }
 :host([data-op="delete"]) {
   --_glyph: "\2212"; /* − */
-  --_hue: var(--sherpa-content-critical-default, #c8324f);
+  --_hue: var(--sherpa-status-critical-color-5, #bf2c09);
 }

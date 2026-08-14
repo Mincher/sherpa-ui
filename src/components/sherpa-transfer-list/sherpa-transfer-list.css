@@ -133,7 +133,7 @@
   color: var(--sherpa-content-primary-base, #2e2e33);
   background: var(--sherpa-surface-interactive-secondary-base, #ffffff);
   border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-secondary, #c0c0cc);
-  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
+  border-radius: var(--sherpa-core-border-rounding-sm, 3px);
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 .move:hover {

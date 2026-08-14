@@ -62,7 +62,7 @@
   min-inline-size: var(--sherpa-core-size-md, 20px);
   block-size: var(--sherpa-core-size-md, 20px);
   justify-content: center;
-  border-radius: var(--sherpa-primitives-border-radius-1000, 999px);
+  border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: var(--_status-surface-strong, var(--sherpa-surface-interactive-active-base, #f4ebfd));
   color: var(--sherpa-content-title-on-color, #ffffff);
   font-size: var(--sherpa-core-fonts-scale-sm, 12px);
@@ -76,7 +76,7 @@
   min-inline-size: var(--sherpa-core-size-2xs, 8px);
   inline-size: var(--sherpa-core-size-2xs, 8px);
   block-size: var(--sherpa-core-size-2xs, 8px);
-  padding-inline: var(--sherpa-primitives-scale-0, 0px);
+  padding-inline: var(--sherpa-core-space-none, 0px);
   background: var(--sherpa-status-success-color-4, #058142);
 }
 
@@ -146,7 +146,7 @@
 .promo-body {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-primitives-scale-0, 0px);
+  gap: var(--sherpa-core-space-none, 0px);
   flex: 1 1 auto;
   min-inline-size: 0;
 }

@@ -20,7 +20,7 @@
   display: block;
   inline-size: 100%;
   background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
-  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
+  border-radius: var(--sherpa-core-border-rounding-sm, 3px);
   color: var(--sherpa-content-secondary-base, #404047);
 }
 

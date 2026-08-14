@@ -95,7 +95,7 @@
   gap: var(--sherpa-core-space-sm, 12px);
   padding: var(--sherpa-core-space-xs, 8px) var(--sherpa-core-space-sm, 12px);
   border: var(--sherpa-control-border-width, 1px) solid var(--_file-border);
-  border-radius: var(--sherpa-primitives-border-radius-150, 3px);
+  border-radius: var(--sherpa-core-border-rounding-sm, 3px);
   background: var(--_file-surface);
   color: var(--_file-text);
   font-size: var(--sherpa-core-fonts-scale-base, 14px);
