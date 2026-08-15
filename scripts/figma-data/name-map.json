@@ -207,8 +207,7 @@
     "sherpa-data-grid": {
       "figma": "Data Grid",
       "status": "needs-rebuild",
-      "tier": "top-level",
-      "rebuildNote": "plain <table> vs flat pinned-column Figma grid (Figma rebuilt this session; code still legacy table)"
+      "note": "Figma corrected + aligned 2026-08-15 (real sub-components, box-only selection, 40px headers). CODE still the legacy <table> — rebuild deferred to a dedicated session."
     },
     "sherpa-grid-cell": {
       "figma": ".Grid Cell",
