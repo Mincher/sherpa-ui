@@ -297,6 +297,26 @@
       "figma": "File Item",
       "tier": "sub-component",
       "note": "atomic file row of File Uploader; no standalone code element"
+    },
+    {
+      "figma": ".Grid Column Filter",
+      "tier": "sub-component",
+      "note": "per-column filter row (magnifier + value + sort/menu); rendered inline by sherpa-data-grid, no separate code element"
+    },
+    {
+      "figma": ".Grid Selection Cell",
+      "tier": "sub-component",
+      "note": "selection cell (checkbox/radio) for the pinned selection column; rendered inline by sherpa-data-grid"
+    },
+    {
+      "figma": ".Grid Action Cell",
+      "tier": "sub-component",
+      "note": "row-actions cell for the pinned actions column; rendered inline by sherpa-data-grid"
+    },
+    {
+      "figma": ".Grid Group Band",
+      "tier": "sub-component",
+      "note": "row-grouping band (toggle + group name); rendered inline by sherpa-data-grid"
     }
   ]
 }
