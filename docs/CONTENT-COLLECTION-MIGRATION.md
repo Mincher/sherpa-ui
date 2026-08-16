@@ -127,6 +127,23 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   Content::content/base + role mode + status ext · link → Content link · plain text →
   Content::content/base + role mode (no ext).** Then batch the remaining 56 by binding type.
 
+- **🔄 FLIP (2026-08-16) — Content model corrected to status-as-modes.** The role-as-mode +
+  status-as-extension build (Phases 1-3) had a composition conflict: a base-collection mode pin
+  OVERRIDES an extension pin, so status (as an extension) wouldn't tint when the base mode was
+  also resolved, and status didn't trickle from a parent. **New model (proven):**
+  - **Content modes = STATUS** (`passthrough|info|critical|warning|urgent|success|active|inactive`).
+    A status mode pinned on a PARENT trickles down to all child content — one pin.
+  - **Role = variables**: `content/{title,primary,secondary,tertiary}` + `content/link/{base,visited}`.
+    Bind the role var; status inherits from the parent (zero per-node pins).
+  - **on-color + on-color-subtle = extensions** (surface-context variant). Coordinated pin at the
+    parent's status where text sits on a fill.
+  - Mechanic (why): only a base-collection MODE trickles to children; an extension pin LOCKS its
+    mode and overrides the parent. So only ONE axis (status) can be the trickle mode; role/variant
+    must be variables (or coordinated-pinned extensions). Memory:
+    `sherpa-figma-mode-vs-extension-trickle`.
+  - **Container** rebuild to mirror this (status modes; look-tier + variant as
+    extensions/variables) is the next step, then re-point components, then delete Status.
+
 ### Deferred phases (dedicated effort)
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.
