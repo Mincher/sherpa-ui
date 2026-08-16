@@ -93,22 +93,20 @@ textarea.control {
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }
 
 /* ── Minimal style — a bare inline field (label beside the control) ──── */
+/* Layout only: label + control on one row. The label and control keep the
+   SAME text styles as the default variant — minimal changes the arrangement,
+   not the typography. (The label stays content-title/600; the control stays
+   size-lg/content-primary; the placeholder stays content-tertiary.) */
 .field-minimal {
   flex-direction: row;
   align-items: center;
   gap: var(--sherpa-core-space-xs, 8px);
 }
-/* The inline label is optional and a touch quieter than the block label. */
-.field-minimal .label {
-  flex-shrink: 0;
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
-  color: var(--sherpa-content-secondary-base, #404047);
-}
+.field-minimal .label { flex-shrink: 0; }
 .field-minimal .control {
   flex: 1 1 auto;
   width: auto;
   min-width: 0;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
 }
 /* Borderless — the control is a bare field (e.g. a grid column filter). */
 :host([data-borderless]) .field-minimal .control {

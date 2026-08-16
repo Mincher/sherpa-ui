@@ -43,6 +43,40 @@ light × sizes) — pin the Typography mode on the text node/frame for the inten
 Never literal font numerics. Gate: read back `boundVariables` (fontSize/fontFamily/…)
 and `fills[0].boundVariables` on every TEXT node.
 
+### Rule 2a — A ROLE's text style is canonical; reuse it, never re-invent it per variant
+
+A **role** (a field's label, its placeholder/value, a description, a helper) has ONE
+canonical text style — a specific Typography mode + a specific content fill. When you add
+a **new variant** of a component (e.g. a "minimal" Input), its label/value/etc. must reuse
+the **same** mode + fill the existing/default variant already uses for that role. A variant
+changes *arrangement* (layout, which parts show, borders), **not** the typography of a role.
+
+Concrete failure (Input minimal variant, 2026-08-16): the minimal field's label was given
+`content/secondary` + no mode pin and its placeholder `content/secondary`, when the field's
+canonical roles are **label → Typography `emphasised/sm` + `content/label/base`** and
+**placeholder/value → Typography `default/base` + `content/tertiary/base`**. Result: the
+same role looked different across two variants of one component.
+
+How to get it right:
+- **Read the default/existing variant's text node first** and copy its Typography mode +
+  fill for each role. In Figma the fastest correct move is `minimalLabel.fills =
+  defaultLabel.fills` (carries the bound variable byref) + pin the same Typography mode.
+- In **code**, style by role in ONE place (`.label {…}`, `.control {…}`) and let every
+  template/variant inherit it. Do **not** add per-variant `font-size`/`font-weight`/`color`
+  overrides — a variant rule should only touch layout (`flex-direction`, `gap`, `flex`,
+  borders). If you're writing `font-*` or a content `color` inside a `.variant-x .role`
+  selector, stop — you're diverging a role's style.
+- Gate: read back the new variant's per-role fill + Typography mode and assert they EQUAL
+  the default variant's for the same role.
+
+Canonical field-role text styles (Input, reuse everywhere a field appears):
+| role | Typography mode | fill |
+|---|---|---|
+| label | `emphasised/sm` | `content/label/base` |
+| description | `default/sm` | `content/secondary/base` |
+| value / placeholder | `default/base` | `content/tertiary/base` |
+| validation message | `default/sm` | status/critical text |
+
 ---
 
 ## Rule 3 — Status containers bind container-* tokens that alias THROUGH status
