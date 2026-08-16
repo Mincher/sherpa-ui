@@ -53,16 +53,22 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   only tint the 4 role modes) — verified via bound node. **Apply the same active/inactive-as-modes
   pattern to Container in Phase 3.**
 
-- **✅ Phase 2 (DONE 2026-08-16):** added the 10 Status Extended Collections to Content —
-  `{info,critical,warning,urgent,success} (default)` + `… (inverse)`. Each inherits Content's
-  role modes (title/primary/secondary/tertiary) and overrides `content/base` per role:
-  **default (saturated) → content/<role>/on-color** (light ink on the saturated fill);
-  **inverse (border-only) → content/<role>/base** (dark ink on the light outline surface).
-  Verified via bound-node resolution (critical default title = white; critical inverse title =
-  dark; success default primary = light; info inverse secondary = dark). Additive — nothing broke.
-  (Note: inverse currently equals the passthrough base ink for content; the inverse extension
-  exists so a component can declare its status+outline form, with border/surface tinting handled
-  by the Container status extensions in Phase 3.)
+- **✅ Phase 2 (DONE 2026-08-16):** Status Extended Collections on Content —
+  **`info | critical | warning | urgent | success`** (5, one per status). Each inherits Content's
+  modes and overrides `content/base` per role-mode → `content/<role>/on-color` (so a component
+  that binds `content/base` and pins its status extension gets the on-a-fill ink automatically).
+  State modes (active/inactive) are left untouched — a disabled/active control keeps its state ink
+  under status. Verified via bound-node (critical base@title = white; critical base@active =
+  brand purple unchanged; success base@primary = light).
+
+  **Collapsed 10 → 5:** originally built as `(default)` + `(inverse)` per status, but the
+  default/inverse split was redundant — the only difference was `content/base` (default→on-color,
+  inverse→base), and `content/on-color` is ALREADY the on-a-fill ink while `content/base` is the
+  on-a-light-surface ink. So a component just binds the right VARIABLE for its surface
+  (`content/on-color` on a saturated fill, `content/base` on a light outline) — no need for two
+  extension forms. Deleted the 5 `(inverse)`, renamed the 5 `(default)` to the bare status name.
+  (Also note: content ink is NOT status-specific — white text is the same on info-fill or
+  critical-fill; the status HUE lives in surface/border, which is Container/Control's job.)
 
 ### Deferred phases (dedicated effort)
 - **Phase 3:** Add the same Status extensions to Container (override container-surface/-border).
