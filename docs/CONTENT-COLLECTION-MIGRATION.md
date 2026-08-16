@@ -5,12 +5,18 @@ axis) that every component aliases into, with **Status as scoped Extended Collec
 Content + Container, replacing the monolithic `Status` collection.
 
 ## Ratified design decisions
-1. **Content modes = the ROLE** (`title | primary | secondary | tertiary`). Theme (light/dark)
-   stays one tier below — each Content var aliases a `Style (Sherpa)::content/<role>/<variant>`
-   token which carries light/dark. Content is a thin **role-selector**, does not own theme.
-2. **Content vars** = 3 mode-driven (`content/base`, `content/on-color`, `content/on-color-subtle`)
-   + state tokens kept **named** (`content/active`, `content/inactive/*`, `content/link/*` — same
-   in every role mode; they're states, not hierarchy roles).
+1. **Content modes = ROLE + STATE** (`title | primary | secondary | tertiary | active | inactive`).
+   Theme (light/dark) stays one tier below — each Content var aliases a
+   `Style (Sherpa)::content/<role>/<variant>` token which carries light/dark. Content is a thin
+   **role/state selector**, does not own theme. active/inactive are MODES (not repeated vars) —
+   a state is a natural mode axis; `content/base @ active` → content/active/base, `@ inactive` →
+   content/inactive/base, etc.
+2. **Content vars** (5) = 3 mode-driven (`content/base`, `content/on-color`,
+   `content/on-color-subtle`, resolving per role AND state mode) + 2 named
+   (`content/link/base`, `content/link/visited` — link has its own base/visited variants and
+   isn't a hierarchy role, so it stays named). The old `content/active` + `content/inactive/*`
+   named vars were DELETED (collapsed into the active/inactive modes — they repeated one value
+   across all role modes, wasting the axis).
 3. **Status → Extended Collections** on Content (text ink) and Container (fills+borders), each in
    **default (saturated)** + **inverse (border-only)** form per status. Then **delete the
    standalone `Status` collection**.
@@ -39,6 +45,13 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   tertiary; `content/base` + `content/on-color` + `content/on-color-subtle` alias
   `Style::content/<role>/<variant>` per role-mode; state tokens named. Purely ADDITIVE — the old
   `Style::content/*` vars still exist and all 87 consumers still work. Nothing broke.
+- **✅ Phase 1b (DONE 2026-08-16):** collapsed active/inactive into MODES. Added `active` +
+  `inactive` modes (Content now 6 modes); the 3 mode-driven vars resolve to content/active/base
+  and content/inactive/{base,on-color,on-color-subtle} in those modes. DELETED the redundant
+  `content/active` + `content/inactive/*` named vars (kept `content/link/*`). The 10 status
+  extensions inherited the 2 new modes and correctly leave active/inactive as state ink (they
+  only tint the 4 role modes) — verified via bound node. **Apply the same active/inactive-as-modes
+  pattern to Container in Phase 3.**
 
 - **✅ Phase 2 (DONE 2026-08-16):** added the 10 Status Extended Collections to Content —
   `{info,critical,warning,urgent,success} (default)` + `… (inverse)`. Each inherits Content's
