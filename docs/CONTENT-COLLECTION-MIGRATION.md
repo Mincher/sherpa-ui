@@ -94,6 +94,17 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
     (color 1); critical surface-saturated = #dd2c01 (color 4), unsaturated = #ffd7ca (color 2),
     border = #bf2c09 (color 5). Additive — nothing broke.
 
+- **✅ Phase 3b (DONE 2026-08-16):** active/inactive as MODES on Container (mirrors Content 1b).
+  Container now has 5 modes: default | secondary | tertiary | **active | inactive**. In the
+  inactive mode the surfaces (default/saturated/unsaturated/hover/down) → surface/primary/inactive
+  and border → border/primary/inactive; active mode → the pressed/down look. DELETED the redundant
+  `container-surface/inactive` + `container-border/inactive` named vars (collapsed into the mode).
+  Kept `container-surface/hover` + `/down` named (interaction states, separate from active/inactive).
+  The 5 Container status extensions inherited the 2 new modes and compose correctly: a status
+  container's saturated surface tints at default (#dd2c01 for critical), but **inactive wins over
+  status** (critical saturated @ inactive = #f2f2f2 grey — a disabled container looks disabled
+  regardless of status). Verified via bound node.
+
 ### Deferred phases (dedicated effort)
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.
