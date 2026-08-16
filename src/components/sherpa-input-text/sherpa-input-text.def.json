@@ -1,10 +1,10 @@
 {
   "$schema": "https://sherpa-ui.dev/schema/component-definition/v2.json",
-  "generated": true,
+  "generated": false,
   "name": "sherpa-input-text",
   "figmaName": "Input",
   "category": "control",
-  "description": "a labelled text field.",
+  "description": "A text field. The default style is the full form-field molecule (label + description + control + validation + helper); the minimal style is a bare inline field (optional label beside the control) for dense placements like a grid column filter (data-borderless drops the border).",
   "props": [
     {
       "name": "data-label",
@@ -83,9 +83,11 @@
   "figma": {
     "_status": "matched",
     "figmaName": "Input",
-    "nodeType": "COMPONENT",
+    "nodeType": "COMPONENT_SET",
     "built": true,
-    "variantAxes": [],
+    "variantAxes": [
+      "Style"
+    ],
     "booleanProps": [
       "hasDescription",
       "hasHelper",
@@ -114,6 +116,6 @@
       "change",
       "search"
     ],
-    "note": "one Figma Input covers all input types via props"
+    "note": "2026-08-16: converted Input to a COMPONENT_SET with Style = default | minimal. default = the vertical molecule (unchanged); minimal = a horizontal bare field (label beside control) for dense placements. Code: <template id=minimal> via data-style; data-borderless for the borderless grid-filter case. hasLabel shared across both variants."
   }
 }

@@ -91,3 +91,32 @@ textarea.control {
   border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
 }
 :host([disabled]) .label { color: var(--sherpa-content-inactive-base, #5c5c66); }
+
+/* ── Minimal style — a bare inline field (label beside the control) ──── */
+.field-minimal {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sherpa-core-space-xs, 8px);
+}
+/* The inline label is optional and a touch quieter than the block label. */
+.field-minimal .label {
+  flex-shrink: 0;
+  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  color: var(--sherpa-content-secondary-base, #404047);
+}
+.field-minimal .control {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+}
+/* Borderless — the control is a bare field (e.g. a grid column filter). */
+:host([data-borderless]) .field-minimal .control {
+  border-color: transparent;
+  background: transparent;
+  padding-inline: 0;
+}
+:host([data-borderless]) .field-minimal .control:focus-visible {
+  border-color: transparent;
+  box-shadow: none;
+}

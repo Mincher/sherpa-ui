@@ -121,3 +121,63 @@ test('disabled mirrors to the control and uses inactive tokens', async ({ page }
   expect(r.controlDisabled).toBe(true);
   expect(r.cursor).toBe('not-allowed');
 });
+
+test('data-style=minimal renders the bare inline field (no description/message rows)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void>; value?: string };
+    el.setAttribute('data-style', 'minimal');
+    el.setAttribute('data-label', 'Filter');
+    el.setAttribute('placeholder', 'Search…');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const s = el.shadowRoot!;
+    const field = s.querySelector('.field')!;
+    return {
+      isMinimal: field.classList.contains('field-minimal'),
+      row: getComputedStyle(field).flexDirection,
+      label: s.querySelector('.label')!.textContent,
+      hasControl: !!s.querySelector('.control'),
+      hasDescription: !!s.querySelector('.description'),
+      hasMessage: !!s.querySelector('.message'),
+    };
+  });
+  expect(r.isMinimal).toBe(true);
+  expect(r.row).toBe('row');           // inline: label beside control
+  expect(r.label).toBe('Filter');
+  expect(r.hasControl).toBe(true);
+  expect(r.hasDescription).toBe(false); // minimal drops the description/message rows
+  expect(r.hasMessage).toBe(false);
+});
+
+test('minimal style keeps the value property + input/change events', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void>; value?: string };
+    el.setAttribute('data-style', 'minimal');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const control = el.shadowRoot!.querySelector('.control') as HTMLInputElement;
+    let last: string | null = null;
+    el.addEventListener('input', (e) => (last = (e as CustomEvent).detail.value));
+    control.value = 'abc';
+    control.dispatchEvent(new Event('input', { bubbles: true }));
+    return { fired: last, prop: el.value };
+  });
+  expect(r.fired).toBe('abc');
+  expect(r.prop).toBe('abc');
+});
+
+test('data-borderless drops the control border on the minimal field', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-style', 'minimal');
+    el.setAttribute('data-borderless', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const control = el.shadowRoot!.querySelector('.control') as HTMLElement;
+    const cs = getComputedStyle(control);
+    return { borderColor: cs.borderTopColor, background: cs.backgroundColor };
+  });
+  // transparent border + transparent background = a bare field
+  expect(r.borderColor).toBe('rgba(0, 0, 0, 0)');
+  expect(r.background).toBe('rgba(0, 0, 0, 0)');
+});

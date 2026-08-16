@@ -40,7 +40,7 @@
     "sherpa-input-text": {
       "figma": "Input",
       "status": "matched",
-      "note": "one Figma Input covers all input types via props"
+      "note": "2026-08-16: Input now a set with Style=default|minimal; minimal = bare inline field (code: data-style=minimal template + data-borderless)"
     },
     "sherpa-pagination": {
       "figma": "Pagination",

@@ -33,8 +33,13 @@ export class SherpaInputText extends SherpaElement {
 
   #control: Control | null = null;
 
-  /** Single-line by default; the multiline template swaps in a <textarea>. */
+  /**
+   * Template selection: the bare inline field (`minimal`), the auto-growing
+   * textarea (`multiline`), or the full molecule (`default`). `minimal` wins —
+   * it has no description/message rows, so multiline is moot there.
+   */
   protected override get templateId(): string | null {
+    if (this.dataset['style'] === 'minimal') return 'minimal';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 

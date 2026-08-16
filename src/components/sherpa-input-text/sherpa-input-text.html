@@ -1,14 +1,20 @@
 <!--
   sherpa-input-text — a labelled text field.
 
-  Templates (via data-multiline):
-    default   — single-line <input>
-    multiline — auto-growing <textarea>
+  Templates (via data-style / data-multiline):
+    default   — the full form-field molecule: label + description + control + message (vertical)
+    multiline — the default molecule with an auto-growing <textarea>
+    minimal   — a bare inline field: an optional label beside the control, no
+                description / message rows (for dense placements like a grid
+                column filter). data-borderless drops the control's border.
 
   Public API:
+    data-style        "minimal" for the bare inline field (default is the full molecule)
+    data-borderless   drop the control border (minimal style)
+    data-multiline    auto-growing <textarea> (default style only)
     data-label        field label (hidden when empty)
-    data-description   helper text under the label
-    data-error        error message (shown when set / on :user-invalid)
+    data-description   helper text under the label (default style)
+    data-error        error message (shown when set / on :user-invalid; default style)
     placeholder       native placeholder
     value             native value (also a JS property)
     name / required / disabled / readonly / minlength / maxlength / pattern
@@ -31,5 +37,12 @@
     <span class="description" part="description"></span>
     <textarea class="control" part="control" rows="3"></textarea>
     <span class="message" part="message" aria-live="polite"></span>
+  </label>
+</template>
+
+<template id="minimal">
+  <label class="field field-minimal" part="field">
+    <span class="label" part="label"></span>
+    <input class="control" part="control" type="text" />
   </label>
 </template>
