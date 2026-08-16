@@ -70,8 +70,31 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   (Also note: content ink is NOT status-specific — white text is the same on info-fill or
   critical-fill; the status HUE lives in surface/border, which is Container/Control's job.)
 
+- **✅ Phase 3 (DONE 2026-08-16):** Status extensions on Container + re-tinted Content extensions
+  to the status ramps. Ramp step mapping (each `status/<name>/color 1..6`, 1=lightest … 6=darkest):
+
+  | override | ramp step |
+  |---|---|
+  | Content `base` & `on-color-subtle` | **color 6** (dark status ink) |
+  | Content `on-color` | **color 1** (light status ink) |
+  | Container `border/default` | **color 5** |
+  | Container `surface/saturated` | **color 4** (the saturated fill) |
+  | Container `surface/unsaturated` | **color 2** (light tint) |
+
+  - Content extensions (info/critical/warning/urgent/success) now re-tint content to the STATUS
+    hue: base+on-color-subtle → color 6 (e.g. dark red text), on-color → color 1 (light text on
+    the saturated fill). Was neutral on-color before Phase 3.
+  - Added two Container surface variables — `container-surface/saturated` + `/unsaturated` — that
+    mirror `container-surface/default` in the base modes and are overridden by the status
+    extensions (a component picks saturated vs unsaturated for its fill treatment).
+  - Added the 5 status extensions to Container; each (across all 3 Container modes default/
+    secondary/tertiary) overrides surface/saturated→color 4, surface/unsaturated→color 2,
+    border/default→color 5.
+  - Verified via bound node: critical content base@title = #9b2509 (color 6), on-color = #fff7f5
+    (color 1); critical surface-saturated = #dd2c01 (color 4), unsaturated = #ffd7ca (color 2),
+    border = #bf2c09 (color 5). Additive — nothing broke.
+
 ### Deferred phases (dedicated effort)
-- **Phase 3:** Add the same Status extensions to Container (override container-surface/-border).
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.
   Verify every multi-role component pins the Content mode per text node.
