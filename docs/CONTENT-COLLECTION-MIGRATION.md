@@ -105,6 +105,28 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   status** (critical saturated @ inactive = #f2f2f2 grey — a disabled container looks disabled
   regardless of status). Verified via bound node.
 
+- **⏳ Phase 4 IN PROGRESS (2026-08-16):** re-point component NODES onto Content/Container.
+  Audit: **57 components**, ~200+ node bindings, four types:
+  - **style-content** — node binds `Style::content/<role>/<variant>` → re-point to
+    `Content::content/base` (or on-color/on-color-subtle) + pin the role mode. Scriptable from the
+    current token's role suffix (content/title→@title, content/primary→@primary, …).
+  - **status-*** — node binds old `Status::status-surface/border/content` → text to
+    `Content::content/base` + role mode + Content status ext; surface to
+    `Container::container-surface/saturated|unsaturated` + Container status ext; border to
+    `container-border/default` + Container status ext.
+  - **control-content** — → `Content::content/base` + appropriate role mode.
+  - **container-surface-border** — mostly stays; use saturated/unsaturated where status applies.
+
+  **Reference done — Callout** (info/outline callout): surface→container-surface/unsaturated
+  (+Container info ext) #d9f2fa; heading→content/base (+Content info ext, title mode) #07344e;
+  body→content/base (+info, primary mode); action→content/link/base #3c5edd. Verified via
+  readback + screenshot — same look, now via Content/Container. A stale `Status=info` pin remains
+  on re-pointed roots (harmless; clears when Status is deleted).
+
+  Fleet pattern: **surface → Container saturated/unsaturated + status ext · text →
+  Content::content/base + role mode + status ext · link → Content link · plain text →
+  Content::content/base + role mode (no ext).** Then batch the remaining 56 by binding type.
+
 ### Deferred phases (dedicated effort)
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.
