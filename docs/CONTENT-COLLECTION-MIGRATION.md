@@ -25,15 +25,33 @@ Content + Container, replacing the monolithic `Status` collection.
   via `setExplicitVariableModeForCollection(Content, roleMode)` — exactly like Typography mode
   pinning. Design is viable.
 
+## Extension overrides — how (and how to VERIFY)
+Extensions ARE scriptable. `parentColl.extend(name)` creates one inheriting the parent's modes;
+override a variable per extension-mode with `variable.setValueForMode(extModeId, alias)`. **The
+write persists, but `variable.valuesByMode` reads it back EMPTY** (only parent-mode ids show).
+Do NOT conclude the write failed — that's a read false-negative. **Verify by resolving through a
+bound node:** bind a text node's fill to the variable, `setExplicitVariableModeForCollection(ext,
+extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — see the memory note
+`sherpa-figma-extension-override-readback`.)
+
 ## Phase status
 - **✅ Phase 1 (DONE 2026-08-16):** built the `Content` collection. Modes title/primary/secondary/
   tertiary; `content/base` + `content/on-color` + `content/on-color-subtle` alias
   `Style::content/<role>/<variant>` per role-mode; state tokens named. Purely ADDITIVE — the old
   `Style::content/*` vars still exist and all 87 consumers still work. Nothing broke.
 
+- **✅ Phase 2 (DONE 2026-08-16):** added the 10 Status Extended Collections to Content —
+  `{info,critical,warning,urgent,success} (default)` + `… (inverse)`. Each inherits Content's
+  role modes (title/primary/secondary/tertiary) and overrides `content/base` per role:
+  **default (saturated) → content/<role>/on-color** (light ink on the saturated fill);
+  **inverse (border-only) → content/<role>/base** (dark ink on the light outline surface).
+  Verified via bound-node resolution (critical default title = white; critical inverse title =
+  dark; success default primary = light; info inverse secondary = dark). Additive — nothing broke.
+  (Note: inverse currently equals the passthrough base ink for content; the inverse extension
+  exists so a component can declare its status+outline form, with border/surface tinting handled
+  by the Container status extensions in Phase 3.)
+
 ### Deferred phases (dedicated effort)
-- **Phase 2:** Add Status Extended Collections to Content (default+inverse × info/critical/warning/
-  urgent/success), re-valuing content/base etc. per status.
 - **Phase 3:** Add the same Status extensions to Container (override container-surface/-border).
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.
