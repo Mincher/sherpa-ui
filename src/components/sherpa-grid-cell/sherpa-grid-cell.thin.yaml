@@ -39,6 +39,8 @@ anatomy:
           part: content
           figma:
             node: SLOT
+            slotProp: Content
+            perVariant: true
             fillWidth: true
       - actions(div):
           part: actions
@@ -88,10 +90,12 @@ props:
   data-has-checkbox:
     kind: visibility
     figmaBoolean: hasCheckbox
+    default: false
     description: Show a leading checkbox — a selection cell (body) or select-all (header).
   data-has-actions:
     kind: visibility
     figmaBoolean: hasActions
+    default: false
     description: Show trailing sort + menu buttons. Available on any cell (most common on headers).
 templates:
   - default

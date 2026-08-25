@@ -100,7 +100,9 @@ function hydrateProps(props) {
     const prop = {
       name,
       type: kindRule.type ?? 'boolean',
-      default: 'default' in kindRule ? kindRule.default : false,
+      // an explicit `default:` on the prop wins (mirrors the Figma prop default);
+      // else fall back to the kind's default.
+      default: 'default' in body ? body.default : ('default' in kindRule ? kindRule.default : false),
       kind: body.kind,
       description: body.description ?? '',
     };
