@@ -60,9 +60,9 @@ figmaVerbatim:
   booleanProps:
     - hasAvatar
   textProps:
+    - message
     - name
     - timestamp
-    - message
   instanceProps: []
   modePins: {}
   figmaEvents: []

@@ -47,10 +47,9 @@ figmaVerbatim:
     - name: State
       values:
         - active
-        - inactive
   booleanProps:
-    - isChecked
     - hasDescription
+    - isChecked
   textProps:
     - label
   instanceProps: []

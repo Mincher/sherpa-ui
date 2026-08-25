@@ -38,7 +38,6 @@ figmaVerbatim:
   figmaName: Message
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
     - hasClose
   textProps:

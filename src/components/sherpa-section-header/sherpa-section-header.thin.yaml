@@ -40,14 +40,13 @@ figmaVerbatim:
   figmaName: Section Header
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
-    - hasDivider
     - hasActions
     - hasDescription
+    - hasDivider
   textProps:
-    - heading
     - description
+    - heading
   instanceProps: []
   modePins: {}
   figmaEvents: []

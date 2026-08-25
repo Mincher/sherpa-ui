@@ -208,17 +208,19 @@ figmaVerbatim:
   built: true
   tier: sub-component
   variantAxes:
-    - State
+    - name: State
+      values:
+        - default
   booleanProps:
     - hasDescription
-    - hasLeadingIcon
     - hasDragHandle
-    - hasLeadingControl
-    - hasLeading
     - hasExpand
+    - hasLeading
+    - hasLeadingControl
+    - hasLeadingIcon
   textProps:
-    - label
     - description
+    - label
   instanceProps:
     - drag-handle
     - leading-control
@@ -228,3 +230,4 @@ figmaVerbatim:
     Rebuilt 2026-08-15 to match Figma Menu List Item: added drag handle, expand toggle, leading
     selection control, icon glyph (all CSS-toggled) + their events + expanded/selected state. Was
     leading/content/trailing slots only (needs-rebuild).
+  figmaEvents: []

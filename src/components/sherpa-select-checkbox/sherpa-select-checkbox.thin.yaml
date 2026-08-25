@@ -46,13 +46,10 @@ figmaVerbatim:
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
-    - name: State
+    - name: Property 1
       values:
-        - active
-        - inactive
+        - Default
   booleanProps:
-    - isFilled
-    - isChecked
     - hasDescription
   textProps:
     - label

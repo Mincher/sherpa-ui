@@ -91,19 +91,16 @@ figmaVerbatim:
     - name: State
       values:
         - default
-        - active
-        - inactive
-        - hover
   booleanProps:
     - hasDescription
-    - hasLeadingIcon
     - hasDragHandle
-    - hasLeadingControl
-    - hasLeading
     - hasExpand
+    - hasLeading
+    - hasLeadingControl
+    - hasLeadingIcon
   textProps:
-    - label
     - description
+    - label
   instanceProps:
     - leadingControl
   modePins: {}

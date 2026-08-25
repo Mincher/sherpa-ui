@@ -53,14 +53,12 @@ figmaVerbatim:
   variantAxes:
     - name: State
       values:
-        - active
         - default
-        - inactive
   booleanProps:
-    - hasMenu
-    - hasIcon
-    - hasContent
     - hasBadge
+    - hasContent
+    - hasIcon
+    - hasMenu
   textProps:
     - label
   instanceProps: []

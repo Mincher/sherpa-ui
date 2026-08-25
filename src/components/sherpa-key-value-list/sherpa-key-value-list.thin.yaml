@@ -19,7 +19,6 @@ figmaVerbatim:
   figmaName: Key Value Pair
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps: []
   textProps:
     - key

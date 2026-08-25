@@ -53,19 +53,22 @@ figmaVerbatim:
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
-    - Style
+    - name: Style
+      values:
+        - default
+        - minimal
   booleanProps:
     - hasDescription
     - hasHelper
+    - hasLabel
     - hasLeadingIcon
     - hasTrailingIcon
     - hasValidation
-    - hasLabel
   textProps:
-    - label
     - description
-    - value
     - helper
+    - label
+    - value
   instanceProps: []
   modePins:
     Status:

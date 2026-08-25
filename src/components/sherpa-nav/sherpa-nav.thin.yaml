@@ -156,11 +156,8 @@ figmaVerbatim:
   figmaName: Primary Navigation
   nodeType: COMPONENT
   built: true
-  variantAxes: []
-  booleanProps:
-    - hasSearch
-  textProps:
-    - product name
+  booleanProps: []
+  textProps: []
   instanceProps:
     - Product Icon
     - Button
@@ -171,3 +168,4 @@ figmaVerbatim:
   note: >-
     Rebuilt 2026-08-15 to match Figma Primary Navigation: header (brand + search + quick items) over
     grouped sections, composing sherpa-nav-item rows. Was a flat link list (needs-rebuild).
+  figmaEvents: []

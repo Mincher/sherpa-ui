@@ -159,18 +159,20 @@ tokens:
 figmaVerbatim:
   _status: matched
   figmaName: Container Header
-  nodeType: COMPONENT
+  nodeType: COMPONENT_SET
   built: true
-  variantAxes: []
+  variantAxes:
+    - name: Variant
+      values:
+        - Default
+        - Panel
   booleanProps:
-    - hasDescription
+    - hasActions
     - hasDragHandle
-    - dismissible
     - hasIcon
-    - hasToggle
+    - hasMetadata
   textProps:
     - heading
-    - description
   instanceProps:
     - drag-handle
     - icon
@@ -181,3 +183,4 @@ figmaVerbatim:
     Rebuilt 2026-08-15 to match Figma Container Header: added drag-handle, icon, close (dismiss) and
     collapse toggle affordances (all CSS-toggled off data-*) with their events. Was labels + actions
     only (needs-rebuild).
+  figmaEvents: []

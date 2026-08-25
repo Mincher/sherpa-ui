@@ -40,12 +40,11 @@ figmaVerbatim:
   figmaName: Metric
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps: []
   textProps:
+    - delta
     - label
     - value
-    - delta
   instanceProps: []
   modePins:
     Status:

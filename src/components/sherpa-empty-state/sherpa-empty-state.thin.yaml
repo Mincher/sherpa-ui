@@ -46,13 +46,12 @@ figmaVerbatim:
   figmaName: Empty State
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
-    - hasSmallPrint
     - hasActions
+    - hasSmallPrint
   textProps:
-    - heading
     - description
+    - heading
   instanceProps: []
   modePins: {}
   figmaEvents: []

@@ -46,7 +46,6 @@ figmaVerbatim:
   figmaName: Slider
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps: []
   textProps:
     - label

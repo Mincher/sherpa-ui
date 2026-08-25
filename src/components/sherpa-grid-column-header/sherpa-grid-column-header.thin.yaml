@@ -97,12 +97,13 @@ figmaVerbatim:
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
-    - Type
-  booleanProps:
-    - hasLabel
-    - hasActions
-  textProps:
-    - label
+    - name: Type
+      values:
+        - left-aligned
+        - right-aligned
+        - centralised
+  booleanProps: []
+  textProps: []
   instanceProps:
     - Button (sort)
     - Button (menu)
@@ -114,3 +115,4 @@ figmaVerbatim:
     All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
     — not one page per sub-component.
   tier: sub-component
+  figmaEvents: []

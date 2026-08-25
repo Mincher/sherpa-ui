@@ -39,12 +39,11 @@ figmaVerbatim:
   figmaName: Pagination
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
     - hasResults
   textProps:
-    - pageSize
     - currentPage
+    - pageSize
     - totalPages
   instanceProps: []
   modePins: {}

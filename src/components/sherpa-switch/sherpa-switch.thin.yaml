@@ -52,10 +52,6 @@ figmaVerbatim:
       values:
         - 'off'
         - 'on'
-    - name: State
-      values:
-        - active
-        - inactive
   booleanProps:
     - hasLabel
   textProps: []

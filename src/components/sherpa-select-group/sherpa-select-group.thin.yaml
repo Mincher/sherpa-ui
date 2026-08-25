@@ -44,13 +44,12 @@ figmaVerbatim:
   figmaName: Select Group
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
     - hasDescription
     - hasValidation
   textProps:
-    - legend
     - description
+    - legend
     - validation
   instanceProps: []
   modePins: {}

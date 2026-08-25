@@ -57,7 +57,11 @@ figmaVerbatim:
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
-    - Layout
+    - name: Layout
+      values:
+        - month
+        - year
+        - day
   booleanProps: []
   textProps: []
   instanceProps: []

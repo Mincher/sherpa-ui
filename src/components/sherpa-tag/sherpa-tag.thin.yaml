@@ -70,7 +70,7 @@ events:
     cancelable: true
     $verbatim:
       trigger:
-        on: click
+        'on': click
         node: .close
       default:
         action: remove-self
@@ -110,8 +110,8 @@ figmaVerbatim:
         - dot
         - full
   booleanProps:
-    - hasIcon
     - hasDismiss
+    - hasIcon
   textProps:
     - label
   instanceProps: []

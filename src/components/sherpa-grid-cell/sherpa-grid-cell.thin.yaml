@@ -77,10 +77,14 @@ figmaVerbatim:
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
-    - Type
+    - name: Type
+      values:
+        - Default
+        - Primary
+        - Numerical
+        - Selection
   booleanProps: []
-  textProps:
-    - label
+  textProps: []
   instanceProps: []
   modePins:
     Typography: per-Type (body default; mono for Numerical)
@@ -91,3 +95,4 @@ figmaVerbatim:
     All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
     — not one page per sub-component.
   tier: sub-component
+  figmaEvents: []

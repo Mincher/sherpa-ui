@@ -155,7 +155,6 @@ figmaVerbatim:
   page: 'sherpa-data-grid (section: Data Grid (assembled))'
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps: []
   textProps: []
   instanceProps:
@@ -174,3 +173,4 @@ figmaVerbatim:
     All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
     — not one page per sub-component.
   tier: top-level
+  figmaEvents: []

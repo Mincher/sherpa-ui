@@ -56,7 +56,6 @@ figmaVerbatim:
   figmaName: Code Block
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
     - hasHeader
     - hasLineNumbers

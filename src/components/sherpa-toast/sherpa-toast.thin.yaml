@@ -40,10 +40,9 @@ figmaVerbatim:
   figmaName: Toast
   nodeType: COMPONENT
   built: true
-  variantAxes: []
   booleanProps:
-    - hasClose
     - hasAction
+    - hasClose
   textProps:
     - heading
     - value

@@ -50,13 +50,11 @@ figmaVerbatim:
         - label
     - name: State
       values:
-        - default
-        - active
-        - inactive
+        - Default
   booleanProps:
-    - hasIconStart
-    - hasIconEnd
     - hasBadge
+    - hasIconEnd
+    - hasIconStart
   textProps:
     - label
   instanceProps:
