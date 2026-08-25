@@ -14,9 +14,10 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ont = JSON.parse(readFileSync(join(ROOT, 'docs/ontology/tokens.json'), 'utf8'));
+const ont = loadContract(join(ROOT, 'docs/ontology/tokens'));   // YAML preferred
 
 const args = process.argv.slice(2);
 const fileArg = args[args.indexOf('--file') + 1];

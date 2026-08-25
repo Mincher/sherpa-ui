@@ -16,10 +16,11 @@
  *   node scripts/compile-def.mjs sherpa-tag --out DIR    # custom out dir
  *   node scripts/compile-def.mjs sherpa-tag --print      # stdout, no write
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileDef } from './lib/generation/compile-def.mjs';
+import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COMPONENTS = join(ROOT, 'src', 'components');
@@ -32,7 +33,7 @@ const OUT = outFlag !== -1 ? args[outFlag + 1] : join(ROOT, '.compile-out', name
 
 if (!name) { console.error('usage: compile-def.mjs <sherpa-name> [--print|--out DIR]'); process.exit(1); }
 
-const def = JSON.parse(readFileSync(join(COMPONENTS, name, `${name}.def.json`), 'utf8'));
+const def = loadContract(join(COMPONENTS, name, `${name}.def`));
 if (!def.anatomy) { console.error(`${name} has no anatomy block — cannot compile HTML.`); process.exit(1); }
 def.name ??= name;
 

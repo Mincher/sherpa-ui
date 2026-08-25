@@ -1,0 +1,91 @@
+name: sherpa-transfer-list
+figmaName: Transfer List
+category: container
+description: >-
+  A two-pane shuttle (available ↔ selected): each row is a composed sherpa-list-item with a leading
+  selection control; the shuttle controls are composed sherpa-button instances.
+generated: false
+props:
+  data-source-heading:
+    kind: content
+  data-target-heading:
+    kind: content
+events:
+  transfer-change:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .moves
+parts:
+  - panes
+  - pane
+  - heading
+  - list
+  - empty
+  - moves
+nested:
+  - component: sherpa-list-item
+    relationship: owned
+    role: each pane row (data-selectable) — composed, not raw DOM (Rule 1)
+  - component: sherpa-button
+    relationship: owned
+    role: the four shuttle controls (add/add-all/remove/remove-all)
+tokens:
+  pane:control-border-width: control-border-width
+  pane:grouping-radius-top-left: grouping-radius-top-left
+  pane:grouping-radius-top-right: grouping-radius-top-right
+  pane:grouping-radius-bottom-right: grouping-radius-bottom-right
+  pane:grouping-radius-bottom-left: grouping-radius-bottom-left
+  pane-heading:core-space-xs: core-space-xs
+  pane-heading:core-space-sm: core-space-sm
+  pane-heading:control-border-width: control-border-width
+  pane-heading:content-title-base: content-title-base
+  pane-heading:core-fonts-scale-sm: core-fonts-scale-sm
+  pane-heading:core-fonts-weight-600: core-fonts-weight-600
+  pane-list:control-space-padding-md: control-space-padding-md
+  pane-empty:core-space-base: core-space-base
+  pane-empty:content-secondary-base: content-secondary-base
+  row:control-border-radius-top-left: control-border-radius-top-left
+  row:control-border-radius-top-right: control-border-radius-top-right
+  row:control-border-radius-bottom-right: control-border-radius-bottom-right
+  row:control-border-radius-bottom-left: control-border-radius-bottom-left
+  row-field:control-space-gap-base: control-space-gap-base
+  row-field:core-space-2xs: core-space-2xs
+  row-field:core-space-xs: core-space-xs
+  row-field:control-border-radius-top-left: control-border-radius-top-left
+  row-field:control-border-radius-top-right: control-border-radius-top-right
+  row-field:control-border-radius-bottom-right: control-border-radius-bottom-right
+  row-field:control-border-radius-bottom-left: control-border-radius-bottom-left
+  row-check:core-size-sm: core-size-sm
+  row-check:surface-interactive-primary-base: surface-interactive-primary-base
+  moves:core-space-xs: core-space-xs
+  move:button-size-height: button-size-height
+  move:core-fonts-scale-lg: core-fonts-scale-lg
+  move:content-primary-base: content-primary-base
+  move:surface-interactive-secondary-base: surface-interactive-secondary-base
+  move:control-border-width: control-border-width
+  move:border-interactive-secondary: border-interactive-secondary
+  move:core-border-rounding-sm: core-border-rounding-sm
+  move:content-inactive-base: content-inactive-base
+  move:surface-interactive-inactive: surface-interactive-inactive
+  move:border-interactive-inactive: border-interactive-inactive
+  pane:border-interactive-inactive: border-interactive-inactive
+  pane:surface-primary-inactive: surface-primary-inactive
+figmaVerbatim:
+  _status: matched
+  figmaName: Transfer List
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps:
+    - Menu List Item
+    - Button
+  modePins: {}
+  figmaEvents:
+    - transfer-change
+  note: >-
+    Rebuilt 2026-08-15 to match Figma Transfer List: rows are now sherpa-list-item (data-selectable)
+    and moves are sherpa-button — composition, not ad-hoc <li>+checkbox / raw <button>. Shuttle
+    logic unchanged.

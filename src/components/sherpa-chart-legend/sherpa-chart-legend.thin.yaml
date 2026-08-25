@@ -1,0 +1,43 @@
+name: sherpa-chart-legend
+figmaName: Legend Item
+category: chart
+description: a legend for charts.
+events:
+  legend-item-click:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .legend
+parts:
+  - legend
+  - swatch
+  - label
+  - value
+tokens:
+  legend:core-space-sm: core-space-sm
+  legend:core-space-2xs: core-space-2xs
+  row:control-space-gap-base: control-space-gap-base
+  row:core-space-3xs: core-space-3xs
+  row:core-space-2xs: core-space-2xs
+  row:core-border-rounding-base: core-border-rounding-base
+  row:content-primary-base: content-primary-base
+  swatch:core-border-rounding-sm: core-border-rounding-sm
+  swatch:categorical-1: categorical-1
+  value:content-secondary-base: content-secondary-base
+  value:core-fonts-weight-600: core-fonts-weight-600
+figmaVerbatim:
+  _status: matched
+  figmaName: Legend Item
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps:
+    - hasValue
+  textProps:
+    - label
+    - value
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - legend-item-click
+  note: Figma models the Legend Item; legend is composition

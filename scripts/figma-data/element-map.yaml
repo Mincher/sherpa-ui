@@ -1,0 +1,141 @@
+# element-map.yaml — the shared HTML/CSS → Figma rules.
+#
+# Every component def USED to restate these. They don't repeat anymore: a thin
+# def names only its exceptions, and the loader's hydrate() fills the rest from
+# here. One place to change a rule for the whole system.
+
+# ── the element table — Figma node + what the element gives you FREE ──────────
+# Progressive enhancement is the law here: `provides` lists native behaviour an
+# element already supplies. The compiler emits NO JS for anything in `provides`,
+# and WARNS if a def hand-rolls JS for it. `stateCss` names the CSS-native state
+# hook so state can be styled without JS. Reach for a semantic element before a
+# div; reach for CSS before JS.
+elements:
+  # structural containers — no behaviour, safe default
+  div:     { node: FRAME }
+  span:    { node: TEXT }
+  section: { node: FRAME }
+  article: { node: FRAME, role: article }
+  ul:      { node: FRAME, role: list }
+  ol:      { node: FRAME, role: list }
+  li:      { node: FRAME, role: listitem }
+  # landmarks — semantics for free
+  header:  { node: COMPONENT, role: banner }
+  footer:  { node: FRAME,     role: contentinfo }
+  nav:     { node: COMPONENT, role: navigation }
+  # headings — Sherpa covers h1–h5 (level carried by the tag itself)
+  h1: { node: TEXT, role: heading, level: 1 }
+  h2: { node: TEXT, role: heading, level: 2 }
+  h3: { node: TEXT, role: heading, level: 3 }
+  h4: { node: TEXT, role: heading, level: 4 }
+  h5: { node: TEXT, role: heading, level: 5 }
+  # text + inline
+  p:    { node: TEXT }
+  pre:  { node: TEXT }
+  code: { node: TEXT }
+  i:    { node: TEXT }                                  # icon glyph carrier
+  hr:   { node: LINE }
+  # description lists
+  dl: { node: FRAME, role: list }
+  dt: { node: TEXT }
+  dd: { node: TEXT }
+  # tables — semantics + row/col a11y for free
+  table: { node: FRAME, role: table }
+  thead: { node: FRAME, role: rowgroup }
+  tbody: { node: FRAME, role: rowgroup }
+  tr:    { node: FRAME, role: row }
+  th:    { node: TEXT,  role: columnheader }
+  td:    { node: TEXT,  role: cell }
+  # ── behaviour-bearing elements — LEAN ON THESE, don't rebuild in JS ──────────
+  button:
+    node: INSTANCE
+    role: button
+    provides: [click, keyboard, focus, disabled]     # native activation + a11y
+  a:
+    node: TEXT
+    role: link
+    provides: [navigation, keyboard, focus]
+  label:
+    node: TEXT
+    provides: [click-forwarding]                      # clicking label activates its control
+  input:
+    node: INSTANCE
+    provides: [value, keyboard, focus, validation, disabled]
+    stateCss: { checked: ":checked", invalid: ":invalid", disabled: ":disabled" }
+  textarea:
+    node: INSTANCE
+    provides: [value, keyboard, focus, validation, disabled]
+    stateCss: { invalid: ":invalid", disabled: ":disabled" }
+  select:
+    node: INSTANCE
+    provides: [value, keyboard, focus, disabled]
+  form:
+    node: FRAME
+    provides: [submit, validation, reset]              # native submit + constraint validation
+  legend:
+    node: TEXT                                          # the fieldset's caption
+  details:
+    node: FRAME
+    provides: [toggle, open-state, keyboard]           # open/close with ZERO js
+    stateCss: { open: "[open]" }
+  summary:
+    node: TEXT
+    provides: [click, keyboard, focus]                 # the details trigger
+  dialog:
+    node: FRAME
+    provides: [modal, focus-trap, escape-close, backdrop]
+    stateCss: { open: "[open]" }
+  progress:
+    node: INSTANCE
+    provides: [value-display]
+  fieldset:
+    node: FRAME
+    provides: [group-disable]                          # disabling the set disables children
+
+# Back-compat alias: hydrate reads `elements[el].node` for the Figma node.
+# (kept as `elementNode` lookups continue to work through the elements table)
+
+# ── how a prop KIND maps to a Figma mechanism ────────────────────────────────
+# `kind` drives BOTH the code behaviour and the Figma binding. The def gives the
+# kind; hydrate() derives type + figma mechanism + the default boolean/axis name.
+propKind:
+  visibility:            # data-x → hasX boolean → CSS display toggle
+    type: boolean
+    default: false
+    figma: boolean       # figma.boolean = "has" + Capitalised(stem)
+  template:              # data-x → selects an HTML template; also a Figma boolean
+    type: boolean
+    default: false
+    figma: boolean
+  style:                 # data-x → a Figma variant axis (name/value given inline)
+    type: boolean
+    default: false
+    figma: axis
+  content:               # writes text / swaps an instance — no single default
+    type: string
+    default: null
+
+# ── the status contract — identical across every component that takes it ──────
+# `data-status: $status` in a thin def expands to this full prop.
+status:
+  values: [info, success, warning, critical, urgent]
+  extends: Status
+  mode: Filled
+  description: Status colour, applied via the ancestor [data-status] cascade.
+
+# ── event defaults — assumed unless a def overrides ───────────────────────────
+eventDefaults:
+  bubbles: true
+  composed: true
+  cancelable: false
+  detail: {}
+
+# ── the boilerplate `overrides` block — identical in every def ────────────────
+# Emitted verbatim by hydrate() so no def carries it.
+overrides:
+  note: Consumers do not edit library source. They override from outside.
+  listen: Add an event listener; act in app code (most common).
+  cancel: For cancelable events, call preventDefault() in the listener to veto the default action.
+  subclass: Extend the class and override a lifecycle/handler method, then define a new tag name.
+  attributes: Set data-* / native attributes directly — this is the public API, no override needed.
+  styling: Restyle exposed part names (see anatomy .part) via ::part(), or set public --sherpa-* tokens.

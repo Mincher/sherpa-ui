@@ -1,0 +1,127 @@
+name: sherpa-file-upload
+figmaName: File Uploader
+category: control
+description: >-
+  A drag-and-drop file selection zone: a drop area, a details block (max size + allowed types), a
+  file list (name + size + status + remove), and an actions row (clear-all + upload).
+generated: false
+props:
+  data-label:
+    kind: content
+  data-helper:
+    kind: content
+  data-accept:
+    kind: content
+  data-multiple:
+    kind: style
+  disabled:
+    kind: style
+slots:
+  actions:
+    accepts:
+      - control
+    description: Extra controls in the actions row (before clear/upload).
+events:
+  file-add:
+    description: Files were added (dropped or picked).
+    $verbatim:
+      detail:
+        added: File[]
+        files: File[]
+      trigger:
+        'on': drop
+        node: .drop-zone
+  file-remove:
+    description: A file was removed from the list.
+    $verbatim:
+      detail:
+        removed: File
+        files: File[]
+      trigger:
+        'on': click
+        node: .file-remove
+  file-clear:
+    description: The clear-all button emptied the list.
+    $verbatim:
+      trigger:
+        'on': click
+        node: .clear-all
+  file-upload-start:
+    description: The upload button started an upload of the current files.
+    $verbatim:
+      detail:
+        files: File[]
+      trigger:
+        'on': click
+        node: .upload
+  files-change:
+    description: The file list changed (kept for back-compat).
+    $verbatim:
+      detail:
+        files: File[]
+      trigger:
+        'on': change
+        node: .file-input
+parts:
+  - field
+  - label
+  - drop-zone
+  - file-list
+  - helper
+tokens:
+  field:core-space-2xs: core-space-2xs
+  label:core-fonts-scale-base: core-fonts-scale-base
+  label:core-fonts-weight-600: core-fonts-weight-600
+  label:content-title-base: content-title-base
+  helper:core-fonts-scale-sm: core-fonts-scale-sm
+  helper:content-secondary-base: content-secondary-base
+  drop-zone:core-space-xs: core-space-xs
+  drop-zone:core-space-xl: core-space-xl
+  drop-zone:core-space-lg: core-space-lg
+  drop-zone:control-border-width: control-border-width
+  drop-zone:border-interactive-secondary: border-interactive-secondary
+  drop-zone:core-border-rounding-base: core-border-rounding-base
+  drop-zone:surface-tertiary-base: surface-tertiary-base
+  drop-zone:content-primary-base: content-primary-base
+  drop-zone:core-fonts-scale-base: core-fonts-scale-base
+  drop-icon:core-fonts-scale-2xl: core-fonts-scale-2xl
+  drop-icon:content-secondary-base: content-secondary-base
+  browse:content-primary-base: content-primary-base
+  browse:core-fonts-weight-500: core-fonts-weight-500
+  drop-zone:surface-interactive-tertiary-hover: surface-interactive-tertiary-hover
+  file-list:core-space-2xs: core-space-2xs
+  file-item:core-space-sm: core-space-sm
+  file-item:core-space-xs: core-space-xs
+  file-item:control-border-width: control-border-width
+  file-item:core-border-rounding-sm: core-border-rounding-sm
+  file-item:core-fonts-scale-base: core-fonts-scale-base
+  file-icon:content-secondary-base: content-secondary-base
+  file-size:content-secondary-base: content-secondary-base
+  file-size:core-fonts-scale-sm: core-fonts-scale-sm
+  file-remove:button-size-height: button-size-height
+  file-remove:core-border-rounding-sm: core-border-rounding-sm
+  file-remove:content-secondary-base: content-secondary-base
+  file-remove:core-fonts-scale-lg: core-fonts-scale-lg
+  drop-zone:content-inactive-base: content-inactive-base
+  drop-zone:surface-primary-inactive: surface-primary-inactive
+  drop-zone:border-interactive-inactive: border-interactive-inactive
+  label:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: File Uploader
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - file-add
+    - file-remove
+    - file-clear
+    - file-upload-start
+  note: >-
+    Rebuilt 2026-08-15 to match Figma File Uploader: added the actions row (clear-all + upload
+    buttons), the details block (max-size + allowed-types), a per-file status line, and the 4
+    lifecycle events. Was a bare drop-zone + list (needs-rebuild).

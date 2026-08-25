@@ -1,0 +1,53 @@
+name: sherpa-section-header
+figmaName: Section Header
+category: container
+description: a semantic heading row for a content section.
+props:
+  data-title:
+    kind: content
+slots:
+  heading:
+    accepts: []
+    description: ''
+  description:
+    accepts: []
+    description: ''
+  actions:
+    accepts: []
+    description: ''
+parts:
+  - row
+  - lead
+  - title
+  - description
+  - actions
+  - divider
+tokens:
+  row:core-space-xs: core-space-xs
+  lead:core-space-xs: core-space-xs
+  title:content-title-base: content-title-base
+  title:font-family-body: font-family-body
+  title:core-fonts-weight-600: core-fonts-weight-600
+  description:content-secondary-base: content-secondary-base
+  description:font-family-body: font-family-body
+  description:core-fonts-scale-base: core-fonts-scale-base
+  actions:core-space-xs: core-space-xs
+  divider:core-space-xs: core-space-xs
+  divider:core-border-width-base: core-border-width-base
+  divider:border-primary: border-primary
+figmaVerbatim:
+  _status: matched
+  figmaName: Section Header
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps:
+    - hasDivider
+    - hasActions
+    - hasDescription
+  textProps:
+    - heading
+    - description
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []

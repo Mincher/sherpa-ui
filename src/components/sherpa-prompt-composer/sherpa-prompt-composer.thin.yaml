@@ -1,0 +1,62 @@
+name: sherpa-prompt-composer
+figmaName: Prompt Composer
+category: content
+description: an AI prompt input.
+props:
+  data-placeholder:
+    kind: content
+  disabled:
+    kind: style
+slots:
+  actions:
+    accepts: []
+    description: ''
+events:
+  prompt-submit:
+    $verbatim:
+      trigger:
+        'on': submit
+        node: .form
+parts:
+  - form
+  - input
+  - tools
+  - actions
+  - send
+tokens:
+  form:core-space-xs: core-space-xs
+  form:core-space-sm: core-space-sm
+  form:control-border-width: control-border-width
+  form:grouping-radius-top-left: grouping-radius-top-left
+  form:grouping-radius-top-right: grouping-radius-top-right
+  form:grouping-radius-bottom-right: grouping-radius-bottom-right
+  form:grouping-radius-bottom-left: grouping-radius-bottom-left
+  input:core-size-lg: core-size-lg
+  input:core-fonts-scale-lg: core-fonts-scale-lg
+  input:content-primary-base: content-primary-base
+  tools:core-space-2xs: core-space-2xs
+  actions:core-space-2xs: core-space-2xs
+  send:button-size-height: button-size-height
+  send:core-border-rounding-full: core-border-rounding-full
+  send:surface-interactive-primary-base: surface-interactive-primary-base
+  send:content-title-on-color: content-title-on-color
+  send-glyph:core-fonts-scale-lg: core-fonts-scale-lg
+  form:surface-primary-inactive: surface-primary-inactive
+  form:border-interactive-inactive: border-interactive-inactive
+  input:content-inactive-base: content-inactive-base
+  send:surface-interactive-inactive: surface-interactive-inactive
+  send:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Prompt Composer
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps:
+    - hasLeadingActions
+  textProps:
+    - placeholder
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - prompt-submit

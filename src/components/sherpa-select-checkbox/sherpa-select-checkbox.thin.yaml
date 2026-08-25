@@ -1,0 +1,62 @@
+name: sherpa-select-checkbox
+figmaName: Select Checkbox
+category: control
+description: a labelled checkbox.
+props:
+  data-label:
+    kind: content
+  data-description:
+    kind: content
+  checked:
+    kind: style
+  indeterminate:
+    kind: style
+slots:
+  '':
+    accepts: []
+    description: ''
+events:
+  change: {}
+parts:
+  - field
+  - control
+  - text
+  - label
+  - description
+tokens:
+  field:core-space-xs: core-space-xs
+  field:content-primary-base: content-primary-base
+  control:core-border-width-base: core-border-width-base
+  control:core-border-rounding-sm: core-border-rounding-sm
+  text:core-space-3xs: core-space-3xs
+  label:status-text:
+    override: status-text
+  label:content-primary-base: content-primary-base
+  label:core-fonts-scale-base: core-fonts-scale-base
+  description:content-secondary-base: content-secondary-base
+  description:core-fonts-scale-sm: core-fonts-scale-sm
+  control:border-interactive-inactive: border-interactive-inactive
+  control:control-surface-inactive: control-surface-inactive
+  description:content-inactive-base: content-inactive-base
+  description:status-text:
+    override: status-text
+figmaVerbatim:
+  _status: matched
+  figmaName: Select Checkbox
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: State
+      values:
+        - active
+        - inactive
+  booleanProps:
+    - isFilled
+    - isChecked
+    - hasDescription
+  textProps:
+    - label
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - change

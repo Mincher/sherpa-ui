@@ -1,0 +1,83 @@
+name: sherpa-input-text
+figmaName: Input
+category: control
+description: >-
+  A text field. The default style is the full form-field molecule (label + description + control +
+  validation + helper); the minimal style is a bare inline field (optional label beside the control)
+  for dense placements like a grid column filter (data-borderless drops the border).
+generated: false
+props:
+  data-label:
+    kind: content
+  data-description:
+    kind: content
+  data-error:
+    kind: style
+templates:
+  - data-multiline
+  - multiline
+  - default
+events:
+  input: {}
+  change: {}
+parts:
+  - field
+  - label
+  - description
+  - control
+  - message
+tokens:
+  field:control-space-gap-base: control-space-gap-base
+  label:core-fonts-scale-base: core-fonts-scale-base
+  label:core-fonts-weight-600: core-fonts-weight-600
+  label:content-title-base: content-title-base
+  description:core-fonts-scale-sm: core-fonts-scale-sm
+  description:content-secondary-base: content-secondary-base
+  description:control-space-padding-xs: control-space-padding-xs
+  control:core-size-2xl: core-size-2xl
+  control:control-space-padding-sm: control-space-padding-sm
+  control:control-space-padding-md: control-space-padding-md
+  control:control-border-width: control-border-width
+  control:input-border-radius-top-left: input-border-radius-top-left
+  control:surface-primary-base: surface-primary-base
+  control:content-primary-base: content-primary-base
+  control:core-fonts-scale-lg: core-fonts-scale-lg
+  message:core-fonts-scale-sm: core-fonts-scale-sm
+  control:content-inactive-base: content-inactive-base
+  control:surface-primary-inactive: surface-primary-inactive
+  control:border-interactive-inactive: border-interactive-inactive
+  label:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Input
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - Style
+  booleanProps:
+    - hasDescription
+    - hasHelper
+    - hasLeadingIcon
+    - hasTrailingIcon
+    - hasValidation
+    - hasLabel
+  textProps:
+    - label
+    - description
+    - value
+    - helper
+  instanceProps: []
+  modePins:
+    Status:
+      mode: passthrough
+    Input:
+      mode: default
+  figmaEvents:
+    - input
+    - change
+    - search
+  note: >-
+    2026-08-16: converted Input to a COMPONENT_SET with Style = default | minimal. default = the
+    vertical molecule (unchanged); minimal = a horizontal bare field (label beside control) for
+    dense placements. Code: <template id=minimal> via data-style; data-borderless for the borderless
+    grid-filter case. hasLabel shared across both variants.

@@ -1,0 +1,43 @@
+name: sherpa-list
+figmaName: List
+category: container
+description: a vertical container for a homogeneous row list.
+props:
+  data-empty:
+    kind: visibility
+slots:
+  '':
+    accepts: []
+    description: ''
+parts:
+  - body
+  - rows
+  - empty
+nested:
+  - component: sherpa-list-item
+    relationship: owned
+tokens:
+  body:status-surface:
+    override: status-surface
+  body:container-surface-default: container-surface-default
+  body:container-border-width: container-border-width
+  body:status-border:
+    override: status-border
+  body:container-border-default: container-border-default
+  body:container-border-radius-top-left: container-border-radius-top-left
+  empty:container-space-padding-md: container-space-padding-md
+  empty:status-text:
+    override: status-text
+  empty:content-secondary-base: content-secondary-base
+  empty:core-fonts-scale-base: core-fonts-scale-base
+figmaVerbatim:
+  _status: matched
+  figmaName: List
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []

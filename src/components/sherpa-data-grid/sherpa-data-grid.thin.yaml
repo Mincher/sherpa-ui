@@ -1,0 +1,176 @@
+name: sherpa-data-grid
+figmaName: Data Grid
+category: data
+description: >-
+  A sortable, selectable data grid assembled from flat columns. A leading Selection column (pinned
+  left) and a trailing Actions column (pinned right) bracket the data columns; a toolbar and a
+  data-variant quick-filter toolbar sit above, pagination below. Rows are visual — each column is a
+  vertical stack of cells, so the grid stays flat.
+generated: false
+tier: top-level
+anatomy:
+  grid(div):
+    figma:
+      node: COMPONENT
+      layout: VERTICAL
+      hugHeight: true
+      fixedWidth: 1200
+    children:
+      - toolbar(sherpa-toolbar):
+          owns: sherpa-toolbar
+          figma:
+            node: INSTANCE
+            of: Toolbar
+      - quick-filter(sherpa-quick-filter-toolbar):
+          owns: sherpa-quick-filter-toolbar
+          attrs:
+            data-variant: data
+          figma:
+            node: INSTANCE
+            of: Quick Filter Toolbar
+            note: replaces the old Filter Bar (user request)
+      - columns(div):
+          part: columns
+          figma:
+            node: FRAME
+            layout: GRID
+            fillWidth: true
+            hugHeight: true
+          children:
+            - selection-column(sherpa-grid-column):
+                owns: sherpa-grid-column
+                attrs:
+                  data-pinned: left
+                  data-type: selection
+                figma:
+                  node: INSTANCE
+                  of: Grid Selection Column
+            - data-columns(div):
+                slot: ''
+                figma:
+                  node: SLOT
+                  note: app supplies N Grid Column instances
+            - actions-column(sherpa-grid-column):
+                owns: sherpa-grid-column
+                attrs:
+                  data-pinned: right
+                  data-type: actions
+                figma:
+                  node: INSTANCE
+                  of: Grid Actions Column
+      - pagination(sherpa-pagination):
+          owns: sherpa-pagination
+          figma:
+            node: INSTANCE
+            of: Pagination
+      - empty(div):
+          part: empty
+          slot: empty
+          figma:
+            node: TEXT
+            role: secondary
+props:
+  data-sort-field:
+    $verbatim:
+      type: string
+      default: null
+      kind: content
+      description: The field the grid is currently sorted by.
+      figma:
+        note: sort state — reflected on the host; the sorted column header shows the direction glyph
+  data-sort-direction:
+    $verbatim:
+      type: enum
+      values:
+        - asc
+        - desc
+      default: null
+      kind: content
+      description: Current sort direction.
+      figma:
+        note: asc | desc
+templates:
+  - default
+slots:
+  '':
+    accepts:
+      - data
+    description: The data columns (Grid Column instances) between the pinned Selection and Actions columns.
+  empty:
+    accepts:
+      - content
+    description: Shown when there are no rows.
+events:
+  grid-sort-change:
+    description: Fires when the user changes the sort by clicking a sortable column header.
+    $verbatim:
+      detail:
+        field: string
+        direction: asc|desc
+      trigger:
+        'on': click
+        node: .head-row
+  row-click:
+    description: Fires when a row (a horizontal slice of cells) is clicked.
+    $verbatim:
+      detail:
+        index: number
+        row: object
+      trigger:
+        'on': click
+        node: .body
+parts:
+  - grid
+  - columns
+  - empty
+nested:
+  - component: sherpa-toolbar
+    relationship: owned
+    role: top bar (add / search / export / columns / settings)
+  - component: sherpa-quick-filter-toolbar
+    relationship: owned
+    role: data-variant quick filter (replaces the old filter bar)
+  - component: sherpa-grid-column
+    relationship: owned
+    role: pinned Selection (left) + Actions (right) columns
+  - component: sherpa-grid-column
+    relationship: slotted
+    role: the data columns (app supplies)
+  - component: sherpa-pagination
+    relationship: owned
+    role: bottom pager
+_divergence:
+  note: >-
+    The shipped code (sherpa-data-grid.ts) is a plain <table> — head row + body rows, sortable, no
+    pinning/selection/per-column filters. This def + the Figma build capture the RICHER designed
+    architecture (flat pinned columns). Reconcile later: either enrich the code to the column model,
+    or scope the Figma component to match. Public API (data-sort-field/direction, grid-sort-change,
+    row-click) is preserved on both sides.
+tokens:
+  columns.gap: space-none
+  empty.color: content-secondary-base
+figmaVerbatim:
+  _status: built
+  figmaName: Data Grid
+  page: 'sherpa-data-grid (section: Data Grid (assembled))'
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps:
+    - Toolbar
+    - Quick Filter Toolbar
+    - Grid Selection Column
+    - Grid Column
+    - Grid Actions Column
+    - Pagination
+  modePins: {}
+  note: >-
+    Assembled from a GRID layout of columns. Selection column pinned left, Actions column pinned
+    right, data columns as slotted Grid Column instances. Filter bar swapped for the data-variant
+    Quick Filter Toolbar.
+  consolidated: >-
+    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
+    — not one page per sub-component.
+  tier: top-level

@@ -1,0 +1,71 @@
+name: sherpa-button
+figmaName: Button
+category: control
+description: the primary interactive trigger.
+props:
+  data-label:
+    kind: content
+  data-icon-start:
+    kind: visibility
+  data-icon-end:
+    kind: visibility
+  disabled:
+    kind: style
+templates:
+  - type
+  - icon
+  - default
+slots:
+  '':
+    accepts: []
+    description: ''
+events:
+  button-click:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .trigger
+parts:
+  - trigger
+tokens:
+  trigger:button-space-gap: button-space-gap
+  trigger:button-size-height: button-size-height
+  trigger:button-space-padding: button-space-padding
+  trigger:button-font-size: button-font-size
+  trigger:core-fonts-weight-600: core-fonts-weight-600
+  icon:button-size-icon: button-size-icon
+  trigger:content-inactive-base: content-inactive-base
+  trigger:control-surface-inactive: control-surface-inactive
+  trigger:border-interactive-inactive: border-interactive-inactive
+  icon:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Button
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Type
+      values:
+        - icon
+        - label
+    - name: State
+      values:
+        - default
+        - active
+        - inactive
+  booleanProps:
+    - hasIconStart
+    - hasIconEnd
+    - hasBadge
+  textProps:
+    - label
+  instanceProps:
+    - iconStart
+    - iconEnd
+  modePins: {}
+  figmaEvents:
+    - button-click
+    - menu-open
+    - menu-close
+    - menu-select
+    - menu-populate

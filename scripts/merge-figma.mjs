@@ -20,6 +20,9 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
+import { thin } from './thin-def.mjs';
+import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COMPONENTS = join(ROOT, 'src', 'components');
@@ -30,15 +33,15 @@ const DRY = args.includes('--dry');
 const FORCE = args.includes('--force');
 
 const read = (p) => JSON.parse(readFileSync(p, 'utf8'));
-const figmaRead = read(join(DATA, 'figma-read.json')).pages;
-const nameMap = read(join(DATA, 'name-map.json')).map;
+const figmaRead = read(join(DATA, 'figma-read.json')).pages;  // machine dump — JSON
+const nameMap = loadContract(join(DATA, 'name-map')).map;      // authored — YAML preferred
 
 let matched = 0, noFigma = 0, skipped = 0, missing = 0;
 
 for (const name of readdirSync(COMPONENTS)) {
-  const defPath = join(COMPONENTS, name, `${name}.def.json`);
-  if (!existsSync(defPath)) continue;
-  const def = read(defPath);
+  const thinPath = join(COMPONENTS, name, `${name}.thin.yaml`);
+  if (!existsSync(thinPath) && !existsSync(join(COMPONENTS, name, `${name}.def.json`))) continue;
+  const def = loadContract(join(COMPONENTS, name, `${name}.def`));   // thin (hydrated) or JSON
 
   const entry = nameMap[name];
   if (!entry) { console.warn(`no map entry: ${name}`); missing++; continue; }
@@ -75,7 +78,8 @@ for (const name of readdirSync(COMPONENTS)) {
   }
 
   def.figma = figma;
-  if (!DRY) writeFileSync(defPath, JSON.stringify(def, null, 2) + '\n');
+  // write back as thin YAML — re-thin so the injected figma stays verbatim
+  if (!DRY) writeFileSync(thinPath, yaml.dump(thin(def), { lineWidth: 100, noRefs: true }));
 }
 
 console.log(`\nmatched:${matched}  no-figma:${noFigma}  skipped:${skipped}  missing:${missing}${DRY ? '  (dry-run)' : ''}`);

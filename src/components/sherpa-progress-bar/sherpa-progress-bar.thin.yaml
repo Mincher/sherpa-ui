@@ -1,0 +1,38 @@
+name: sherpa-progress-bar
+figmaName: Progress Bar
+category: control
+description: a horizontal progress indicator for a single ongoing task.
+props:
+  data-value:
+    kind: content
+  data-indeterminate:
+    kind: style
+  data-label:
+    kind: visibility
+parts:
+  - label
+  - track
+  - fill
+props_public:
+  - name: value
+    type: number
+    description: the current percentage (read/write, clamped 0–100)
+tokens:
+  label:core-fonts-scale-base: core-fonts-scale-base
+  label:content-primary-base: content-primary-base
+  track:core-space-2xs: core-space-2xs
+  track:surface-secondary-base: surface-secondary-base
+  track:core-border-rounding-full: core-border-rounding-full
+  track:surface-primary-inactive: surface-primary-inactive
+  label:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Progress Bar
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []

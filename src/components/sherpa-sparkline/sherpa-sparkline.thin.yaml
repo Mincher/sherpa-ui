@@ -1,0 +1,28 @@
+name: sherpa-sparkline
+figmaName: Data Field
+category: chart
+description: a compact inline trend chart.
+props:
+  data-values:
+    kind: content
+parts:
+  - chart
+tokens:
+  chart:core-space-3xs: core-space-3xs
+  point:core-border-rounding-full: core-border-rounding-full
+figmaVerbatim:
+  _status: matched
+  figmaName: Data Field
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Orientation
+      values:
+        - vertical
+        - horizontal
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []
+  note: mini 2D chart; shares Data Field marks

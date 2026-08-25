@@ -1,0 +1,173 @@
+name: sherpa-nav
+figmaName: Primary Navigation
+category: nav
+description: >-
+  The primary application navigation rail: a fixed header (brand row + search + quick items) over a
+  scrolling area of grouped sections, plus a footer. Rows are composed sherpa-nav-item elements.
+generated: false
+anatomy:
+  rail(nav):
+    figma:
+      node: COMPONENT
+      layout: VERTICAL
+      fixedWidth: 320
+    children:
+      - header(div):
+          part: header
+          figma:
+            node: FRAME
+            layout: VERTICAL
+            fillWidth: true
+          children:
+            - brand(div):
+                part: brand
+                figma:
+                  node: FRAME
+                  layout: HORIZONTAL
+                children:
+                  - brand-icon(span):
+                      slot: brand-icon
+                      figma:
+                        node: INSTANCE
+                        of: Product Icon
+                  - product(span):
+                      figma:
+                        node: TEXT
+                        role: title
+                  - brand-actions(span):
+                      slot: brand-actions
+                      figma:
+                        node: INSTANCE
+                        of: Button
+            - search(div):
+                part: search
+                figma:
+                  node: INSTANCE
+                  of: search-input
+            - quick(ul):
+                part: quick
+                figma:
+                  node: FRAME
+                  of: Slot - Quick Nav Items
+      - content(div):
+          part: content
+          slot: ''
+          figma:
+            node: SLOT
+            note: grouped Navigation Section + Navigation Item instances
+      - footer(div):
+          part: footer
+          slot: footer
+props:
+  data-active-id:
+    $verbatim:
+      type: string
+      default: null
+      kind: content
+      description: Id of the currently active item (reflected onto the matching sherpa-nav-item).
+      figma:
+        note: Navigation Item State=active
+  data-collapsed:
+    $verbatim:
+      type: boolean
+      default: false
+      kind: visibility
+      description: Icon-only rail — hides product name, search, section labels and footer.
+      figma:
+        note: collapsed rail
+  data-searchable:
+    kind: visibility
+    figmaBoolean: hasSearch
+    description: Show the search field (auto-set when a product config is given).
+templates:
+  - default
+slots:
+  brand-icon:
+    accepts:
+      - content
+    description: Product/brand icon in the header.
+  brand-actions:
+    accepts:
+      - control
+    description: Action buttons in the brand row (collapse, settings…).
+  '':
+    accepts:
+      - nav
+    description: Hand-authored sections/items (in addition to populated ones).
+  footer:
+    accepts:
+      - content
+      - control
+    description: Pinned footer (account / user).
+events:
+  nav-select:
+    description: Fires when a nav item is chosen; the host reflects data-active-id.
+    $verbatim:
+      detail:
+        id: string
+      trigger:
+        'on': nav-item-click
+        node: .rail
+  nav-search:
+    description: Fires as the search input changes.
+    $verbatim:
+      detail:
+        query: string
+      trigger:
+        'on': input
+        node: .search-input
+parts:
+  - rail
+  - header
+  - brand
+  - brand-icon
+  - product
+  - brand-actions
+  - search
+  - search-input
+  - quick
+  - content
+  - section-label
+  - footer
+nested:
+  - component: sherpa-nav-item
+    relationship: owned
+    role: each navigation row (quick items + section items) — composed, not reinvented (Rule 1)
+overrides:
+  note: Consumers do not edit library source. They override from outside.
+  populate: populate({ product, quickItems, sections }) — or a legacy NavEntry[] (one unlabelled section).
+  listen: Add nav-select / nav-search listeners; act in app code.
+  attributes: Set data-active-id / data-collapsed / data-searchable directly.
+  styling: Restyle exposed part names via ::part().
+tokens:
+  rail.background: nav-container-surface-default
+  rail.borderColor: border-primary
+  rail.color: content-primary-base
+  header.gap: space-xs
+  header.padding: space-sm
+  brand.gap: space-sm
+  product.color: content-title-base
+  search.borderColor: border-primary
+  search.background: surface-primary-base
+  section-label.color: content-secondary-base
+  content.gap: space-sm
+figmaVerbatim:
+  _status: matched
+  figmaName: Primary Navigation
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps:
+    - hasSearch
+  textProps:
+    - product name
+  instanceProps:
+    - Product Icon
+    - Button
+    - search-input
+    - Navigation Item
+    - Navigation Section
+  modePins: {}
+  note: >-
+    Rebuilt 2026-08-15 to match Figma Primary Navigation: header (brand + search + quick items) over
+    grouped sections, composing sherpa-nav-item rows. Was a flat link list (needs-rebuild).

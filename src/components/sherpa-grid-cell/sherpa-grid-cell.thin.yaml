@@ -1,0 +1,93 @@
+name: sherpa-grid-cell
+figmaName: .Grid Cell
+category: data
+description: >-
+  One cell of a data grid column. Content is slotted; the Type variant picks alignment and
+  typography (Default text, Primary emphasis, Numerical mono/right-aligned, Selection checkbox).
+generated: false
+tier: sub-component
+parentComponent: sherpa-data-grid
+anatomy:
+  cell(div):
+    figma:
+      node: COMPONENT_SET
+      layout: VERTICAL
+      hugHeight: true
+      fillWidth: true
+    children:
+      - content(div):
+          slot: ''
+          figma:
+            node: SLOT
+            layout: HORIZONTAL
+            fillWidth: true
+            hugHeight: true
+          children:
+            - value(span):
+                figma:
+                  node: TEXT
+                  prop: label
+                  role: body
+props:
+  data-type:
+    $verbatim:
+      type: enum
+      values:
+        - default
+        - primary
+        - numerical
+        - selection
+      default: default
+      kind: style
+      description: >-
+        Cell kind. numerical → mono font + right-aligned; primary → title emphasis; selection →
+        checkbox affordance.
+      figma:
+        variantAxis: Type
+templates:
+  - default
+slots:
+  '':
+    accepts:
+      - content
+      - control
+    description: The cell content (text, badge, chip, checkbox, link — anything).
+parts:
+  - cell
+  - content
+  - value
+_notes:
+  - >-
+    Slotted content keeps the cell type-agnostic — the grid does not need a component per cell
+    shape.
+  - Reuse Select Checkbox for the selection affordance (Rule 1) — never a bespoke box.
+tokens:
+  cell.background: container-surface-default
+  cell.borderColor: container-border-default
+  cell.borderWidth: border-width-base
+  cell.paddingBlock: space-3xs
+  content.gap: space-2xs
+  content.paddingInline: space-xs
+  content.paddingBlock: space-3xs
+  value.color: content-primary-base
+figmaVerbatim:
+  _status: built
+  figmaName: .Grid Cell
+  page: 'sherpa-data-grid (section: Grid Cell)'
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - Type
+  booleanProps: []
+  textProps:
+    - label
+  instanceProps: []
+  modePins:
+    Typography: per-Type (body default; mono for Numerical)
+  note: >-
+    Numerical variant pins a mono Typography mode and sets textAlign RIGHT. Selection variant slots
+    a Select Checkbox instance. Value text binds all 6 Typography vars + content fill.
+  consolidated: >-
+    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
+    — not one page per sub-component.
+  tier: sub-component

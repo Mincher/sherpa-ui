@@ -1,0 +1,62 @@
+name: sherpa-slider
+figmaName: Slider
+category: control
+description: >-
+  A single-value range control: a label over a row of [track][editable value input]. Type a value in
+  the field or drag the track; the two stay in sync.
+generated: false
+props:
+  data-label:
+    kind: visibility
+  data-min:
+    kind: content
+  data-max:
+    kind: content
+  data-step:
+    kind: content
+  data-value:
+    kind: content
+  disabled:
+    kind: style
+events:
+  input: {}
+  change: {}
+parts:
+  - label
+  - value
+  - track
+  - fill
+  - range
+props_public:
+  - name: value
+    type: number
+    description: the current value (read/write, clamped to min/max)
+tokens:
+  head:core-space-sm: core-space-sm
+  head:core-fonts-scale-base: core-fonts-scale-base
+  label:content-secondary-base: content-secondary-base
+  label:core-fonts-weight-500: core-fonts-weight-500
+  value-out:font-family-mono: font-family-mono
+  value-out:content-secondary-base: content-secondary-base
+  track:surface-interactive-inactive: surface-interactive-inactive
+  track:core-border-rounding-full: core-border-rounding-full
+  value-out:content-inactive-base: content-inactive-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Slider
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps:
+    - label
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - input
+    - change
+  note: >-
+    Rebuilt 2026-08-15 to match Figma Slider: the read-only value read-out became an editable
+    numeric value-input beside the track (mono, right-aligned; typing commits the value, clamped to
+    min/max). data-show-value now shows the editable field; data-value-readonly makes it
+    display-only.

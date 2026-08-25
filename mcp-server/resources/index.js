@@ -10,23 +10,24 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { loadDef, loadOntology } from "../../scripts/lib/generation/data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
-const ONTOLOGY_PATH = path.join(ROOT, "docs", "ontology", "tokens.json");
 const RULES_PATH = path.join(ROOT, "docs", "DEF-TO-FIGMA-BUILD-RULES.md");
 const STANDARD_PATH = path.join(ROOT, "docs", "COMPONENT-DEFINITION-STANDARD.md");
 
-const readJson = (p) => (fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null);
 const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
     ? fs.readdirSync(COMPONENTS_DIR).filter((n) => n.startsWith("sherpa-")).sort()
     : [];
-const loadOntology = () => readJson(ONTOLOGY_PATH) ?? {};
+// loadOntology imported from the generation lib (YAML preferred, JSON fallback).
+// Serve the def as JSON text — thin YAML is hydrated to the full def first, so
+// the resource contract (application/json) is unchanged for consumers.
 const readDef = (name) => {
-  const p = path.join(COMPONENTS_DIR, name, `${name}.def.json`);
-  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : null;
+  const def = loadDef(name);
+  return def ? JSON.stringify(def, null, 2) : null;
 };
 
 export function register(server) {
@@ -40,7 +41,7 @@ export function register(server) {
           .map((n) => ({
             uri: `sherpa://def/${n}`,
             name: `${n} def`,
-            description: (readJson(path.join(COMPONENTS_DIR, n, `${n}.def.json`))?.description) ?? "",
+            description: loadDef(n)?.description ?? "",
             mimeType: "application/json",
           })),
       }),

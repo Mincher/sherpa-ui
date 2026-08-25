@@ -1,0 +1,65 @@
+name: sherpa-switch
+figmaName: Switch
+category: control
+description: an immediate binary toggle for settings and preferences.
+props:
+  data-state:
+    $verbatim:
+      type: enum
+      kind: style
+      description: ''
+      default: null
+events:
+  change:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .track
+props_public:
+  - name: checked
+    type: boolean
+    description: whether the switch is on (read/write)
+  - name: state
+    type: string
+    description: '"on" | "off" (read/write)'
+  - name: disabled
+    type: boolean
+    description: disabled state (read/write)
+tokens:
+  track:control-space-gap-sm: control-space-gap-sm
+  track:core-space-3xs: core-space-3xs
+  track:switch-size-padding-horizontal: switch-size-padding-horizontal
+  track:core-border-width-sm: core-border-width-sm
+  track:control-border-default: control-border-default
+  track:switch-radius-track: switch-radius-track
+  track:font-family-body: font-family-body
+  track:core-fonts-scale-sm: core-fonts-scale-sm
+  track:core-fonts-weight-600: core-fonts-weight-600
+  knob:switch-size-thumb: switch-size-thumb
+  knob:switch-radius-thumb: switch-radius-thumb
+  knob:control-surface-default: control-surface-default
+  label:switch-content-track-on: switch-content-track-on
+  track:surface-interactive-inactive: surface-interactive-inactive
+  track:border-interactive-inactive: border-interactive-inactive
+  label:switch-content-inactive: switch-content-inactive
+figmaVerbatim:
+  _status: matched
+  figmaName: Switch
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Value
+      values:
+        - 'off'
+        - 'on'
+    - name: State
+      values:
+        - active
+        - inactive
+  booleanProps:
+    - hasLabel
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - change

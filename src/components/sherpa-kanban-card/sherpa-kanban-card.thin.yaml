@@ -1,0 +1,218 @@
+name: sherpa-kanban-card
+figmaName: Kanban Card
+category: container
+description: >-
+  A draggable board card: a priority tag, title, description, an owned footer with count meta
+  (comments / attachments) and an assignee avatar. The whole card is one click target that opens the
+  item.
+generated: false
+anatomy:
+  card(article):
+    attrs:
+      role: button
+      tabindex: '0'
+    figma:
+      node: FRAME
+      layout: VERTICAL
+      hugHeight: true
+    children:
+      - priority:
+          owns: sherpa-tag
+          part: priority
+          showWhen: priority
+          attrs:
+            data-status: info
+          figma:
+            node: INSTANCE
+            source: sherpa-tag
+      - title(h3):
+          slot: ''
+          figma:
+            node: TEXT
+            prop: title
+      - description(p):
+          slot: description
+          figma:
+            node: TEXT
+            prop: description
+      - footer(footer):
+          part: footer
+          figma:
+            node: FRAME
+            layout: HORIZONTAL
+          children:
+            - meta meta-comments:
+                el: span
+                part: comments
+                figma:
+                  node: FRAME
+                  layout: HORIZONTAL
+                class: meta meta-comments
+                children:
+                  - meta-icon(span):
+                      attrs:
+                        aria-hidden: 'true'
+                      figma:
+                        node: INSTANCE
+                        source: icon-glyph
+                  - meta-count(span):
+                      figma:
+                        node: TEXT
+                        prop: comments
+            - meta meta-attachments:
+                el: span
+                part: attachments
+                figma:
+                  node: FRAME
+                  layout: HORIZONTAL
+                class: meta meta-attachments
+                children:
+                  - meta-icon(span):
+                      attrs:
+                        aria-hidden: 'true'
+                      figma:
+                        node: INSTANCE
+                        source: icon-glyph
+                  - meta-count(span):
+                      figma:
+                        node: TEXT
+                        prop: attachments
+            - assignee(span):
+                part: assignee
+                slot: assignee
+                figma:
+                  node: FRAME
+                  layout: HORIZONTAL
+                  hugHeight: true
+props:
+  data-priority:
+    $verbatim:
+      type: enum
+      values:
+        - low
+        - medium
+        - high
+        - urgent
+      default: null
+      kind: content
+      description: Priority level. Shows the priority tag and maps to its status colour.
+      figma:
+        map:
+          low:
+            collection: Status › info
+            mode: Filled
+          medium:
+            collection: Status › warning
+            mode: Filled
+          high:
+            collection: Status › critical
+            mode: Filled
+          urgent:
+            collection: Status › urgent
+            mode: Filled
+  data-title:
+    $verbatim:
+      type: string
+      default: null
+      kind: content
+      description: The card title (also settable via the default slot).
+      figma:
+        text: title
+  data-description:
+    $verbatim:
+      type: string
+      default: null
+      kind: content
+      description: A short summary line (also settable via the description slot).
+      figma:
+        text: description
+  data-comments:
+    $verbatim:
+      type: string
+      default: null
+      kind: visibility
+      description: Comment count. The comments meta shows only when set.
+      figma:
+        boolean: hasComments
+        text: comments
+  data-attachments:
+    $verbatim:
+      type: string
+      default: null
+      kind: visibility
+      description: Attachment count. The attachments meta shows only when set.
+      figma:
+        boolean: hasAttachments
+        text: attachments
+  data-dragging:
+    kind: style
+    axis:
+      name: State
+      value: dragging
+    description: Applied while the card is being dragged (elevated, semi-lifted look).
+  disabled:
+    kind: style
+    axis:
+      name: State
+      value: inactive
+    description: Non-interactive. No click, no keyboard, inactive tokens.
+templates:
+  - default
+slots:
+  '':
+    accepts:
+      - content
+    description: The title (overrides data-title).
+  description:
+    accepts:
+      - content
+    description: The summary line (overrides data-description).
+  assignee:
+    accepts:
+      - avatar
+      - icon
+    description: An assignee avatar / initials chip.
+events:
+  card-open:
+    description: Fired when the card is activated (click, Enter, or Space).
+    $verbatim:
+      detail:
+        title: string
+      trigger:
+        'on': click
+        node: .card
+parts:
+  - card
+  - priority
+  - footer
+  - comments
+  - attachments
+  - assignee
+nested:
+  - component: sherpa-tag
+    relationship: owned
+tokens:
+  card.background:
+    override: status-surface
+    fallback: container-surface-default
+  card.border:
+    override: status-border
+    fallback: container-border-default
+  card.border-radius: grouping-radius-top-left
+  card.color: container-content-default
+  card.gap: core-space-sm
+  card.padding: core-space-base
+  title.font-size: core-fonts-scale-base
+  title.font-weight: core-fonts-weight-600
+  title.color: content-primary-base
+  description.font-size: core-fonts-scale-sm
+  description.color: content-secondary-base
+  footer.gap: core-space-sm
+  meta.font-size: core-fonts-scale-xs
+  meta.color: content-tertiary-base
+  meta.gap: core-space-3xs
+figmaVerbatim:
+  _status: no-figma
+  figmaName: Kanban Card
+  nodeType: COMPONENT_SET
+  built: false

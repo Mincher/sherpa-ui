@@ -1,0 +1,33 @@
+name: sherpa-breadcrumbs
+figmaName: Breadcrumbs
+category: content
+description: a navigation trail.
+events:
+  breadcrumb-select:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .crumbs
+parts:
+  - trail
+  - crumbs
+  - link
+tokens:
+  crumbs:core-space-xs: core-space-xs
+  crumb:core-space-xs: core-space-xs
+  link:content-link-base: content-link-base
+  link:core-fonts-weight-600: core-fonts-weight-600
+  link:core-border-rounding-sm: core-border-rounding-sm
+  link:core-space-3xs: core-space-3xs
+figmaVerbatim:
+  _status: matched
+  figmaName: Breadcrumbs
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - breadcrumb-click

@@ -20,6 +20,9 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
+import { thin } from './thin-def.mjs';
+import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COMPONENTS = join(ROOT, 'src', 'components');
@@ -180,21 +183,21 @@ for (const name of targets) {
     console.warn(`skip: ${name} (not a component)`);
     continue;
   }
-  const outPath = join(COMPONENTS, name, `${name}.def.json`);
+  const outPath = join(COMPONENTS, name, `${name}.thin.yaml`);
   // Never clobber an enriched def (hand-edited → "generated": false).
   if (!DRY && existsSync(outPath)) {
     try {
-      if (JSON.parse(readFileSync(outPath, 'utf8')).generated === false) {
+      if (loadContract(join(COMPONENTS, name, `${name}.def`)).generated === false) {
         console.log(`keep: ${name} (enriched — generated:false)`);
         continue;
       }
     } catch { /* unreadable → regenerate */ }
   }
-  const def = buildDef(name);
+  const def = thin(buildDef(name));   // emit the lightweight thin YAML, not JSON
   if (DRY) {
-    console.log(`\n=== ${name} ===\n${JSON.stringify(def, null, 2)}`);
+    console.log(`\n=== ${name} ===\n${yaml.dump(def, { lineWidth: 100, noRefs: true })}`);
   } else {
-    writeFileSync(outPath, JSON.stringify(def, null, 2) + '\n');
+    writeFileSync(outPath, yaml.dump(def, { lineWidth: 100, noRefs: true }));
     n++;
   }
 }

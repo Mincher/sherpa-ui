@@ -1,0 +1,29 @@
+name: sherpa-loader
+figmaName: Loader
+category: control
+description: an animated loading indicator.
+slots:
+  label:
+    accepts: []
+    description: ''
+tokens:
+  spinner:core-border-rounding-full: core-border-rounding-full
+  spinner:border-primary: border-primary
+figmaVerbatim:
+  _status: matched
+  figmaName: Loader
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Size
+      values:
+        - lg
+        - md
+        - sm
+  booleanProps:
+    - hasLabel
+  textProps:
+    - label
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []

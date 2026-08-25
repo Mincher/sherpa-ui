@@ -12,13 +12,13 @@ import { z } from "zod/v3";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { loadDef } from "../../scripts/lib/generation/data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
 const DOCS_DIR = path.join(ROOT, "docs");
 
-const readJson = (p) => (fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf8")) : null);
 const readDoc = (name) => {
   const p = path.join(DOCS_DIR, name);
   return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : null;
@@ -27,7 +27,7 @@ const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
     ? fs.readdirSync(COMPONENTS_DIR).filter((n) => n.startsWith("sherpa-")).sort()
     : [];
-const loadDef = (name) => readJson(path.join(COMPONENTS_DIR, name, `${name}.def.json`));
+// loadDef imported from the generation lib — reads thin YAML (hydrated), JSON fallback.
 
 function componentSummary() {
   return listComponents()

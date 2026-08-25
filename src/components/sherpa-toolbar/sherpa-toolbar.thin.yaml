@@ -1,0 +1,36 @@
+name: sherpa-toolbar
+figmaName: Toolbar
+category: control
+description: a horizontal control strip.
+slots:
+  start:
+    accepts: []
+    description: ''
+  center:
+    accepts: []
+    description: ''
+  end:
+    accepts: []
+    description: ''
+parts:
+  - bar
+  - start
+  - center
+  - end
+tokens:
+  bar:container-space-padding-md: container-space-padding-md
+  bar:control-border-width: control-border-width
+  bar:status-border:
+    override: status-border
+  bar:border-primary: border-primary
+figmaVerbatim:
+  _status: matched
+  figmaName: Toolbar
+  nodeType: COMPONENT
+  built: true
+  variantAxes: []
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents: []

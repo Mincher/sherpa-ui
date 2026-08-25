@@ -5,27 +5,31 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadContract } from '../contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const P = {
-  ontology: join(ROOT, 'docs', 'ontology', 'tokens.json'),
-  structure: join(ROOT, 'docs', 'ontology', 'structure.json'),
-  nameMap: join(ROOT, 'scripts', 'figma-data', 'name-map.json'),
+  // authored files — YAML preferred, resolved via loadContract (JSON fallback)
+  ontology: join(ROOT, 'docs', 'ontology', 'tokens'),
+  structure: join(ROOT, 'docs', 'ontology', 'structure'),
+  nameMap: join(ROOT, 'scripts', 'figma-data', 'name-map'),
+  // machine dump — stays JSON
   graph: join(ROOT, 'scripts', 'figma-data', 'variable-graph.json'),
   components: join(ROOT, 'src', 'components'),
 };
 
 const _cache = {};
 const readJson = (p) => (existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null);
+const readAuthored = (base) => { try { return loadContract(base); } catch { return null; } };
 
 export function loadOntology() {
-  return (_cache.ontology ??= readJson(P.ontology) ?? {});
+  return (_cache.ontology ??= readAuthored(P.ontology) ?? {});
 }
 export function loadStructure() {
-  return (_cache.structure ??= readJson(P.structure) ?? {});
+  return (_cache.structure ??= readAuthored(P.structure) ?? {});
 }
 export function loadNameMap() {
-  return (_cache.nameMap ??= readJson(P.nameMap)?.map ?? {});
+  return (_cache.nameMap ??= readAuthored(P.nameMap)?.map ?? {});
 }
 export function loadGraph() {
   return (_cache.graph ??= readJson(P.graph) ?? {});
@@ -34,10 +38,10 @@ export function loadGraph() {
 export function loadComponentNames() {
   return (_cache.components ??= existsSync(P.components) ? readdirSync(P.components) : []);
 }
-/** Read a component's def, or null. */
+/** Read a component's def (thin YAML preferred, hydrated; JSON fallback), or null. */
 export function loadDef(name) {
-  const p = join(P.components, name, `${name}.def.json`);
-  return readJson(p);
+  const base = join(P.components, name, `${name}.def`);
+  try { return loadContract(base); } catch { return null; }
 }
 export const PATHS = P;
 export const ROOT_DIR = ROOT;

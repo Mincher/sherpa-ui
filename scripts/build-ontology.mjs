@@ -24,6 +24,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import yaml from 'js-yaml';
 import { roleFromScopes } from './lib/scope-rules.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -145,7 +146,7 @@ for (const [id, entry] of Object.entries(graph)) {
 }
 
 const dir = join(ROOT, 'docs/ontology');
-if (!DRY) { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, 'tokens.json'), JSON.stringify(out, null, 2) + '\n'); }
+if (!DRY) { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }); writeFileSync(join(dir, 'tokens.yaml'), yaml.dump(out, { lineWidth: 100, noRefs: true })); }
 // role distribution
 const dist = {};
 for (const e of Object.values(out)) dist[e.role] = (dist[e.role] || 0) + 1;

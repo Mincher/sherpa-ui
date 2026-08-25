@@ -1,0 +1,59 @@
+name: sherpa-nav-section
+figmaName: Navigation Section
+category: nav
+description: a labelled group of nav items in a settings-style panel.
+props:
+  data-heading:
+    kind: content
+  data-active-id:
+    kind: content
+events:
+  nav-section-select:
+    $verbatim:
+      trigger:
+        'on': click
+        node: .groups
+parts:
+  - panel
+  - heading
+  - groups
+  - group-label
+  - item
+tokens:
+  heading:core-space-xs: core-space-xs
+  heading:content-tertiary-base: content-tertiary-base
+  heading:core-fonts-scale-xl: core-fonts-scale-xl
+  heading:core-fonts-weight-600: core-fonts-weight-600
+  groups:core-space-xs: core-space-xs
+  group-label:core-space-2xs: core-space-2xs
+  group-label:core-space-xs: core-space-xs
+  group-label:content-tertiary-base: content-tertiary-base
+  group-label:core-fonts-scale-sm: core-fonts-scale-sm
+  group-label:core-fonts-weight-600: core-fonts-weight-600
+  group-list:core-space-2xs: core-space-2xs
+  item-row:core-border-width-sm: core-border-width-sm
+  item-row:border-primary: border-primary
+  item:core-space-xs: core-space-xs
+  item:content-tertiary-base: content-tertiary-base
+  item:core-fonts-scale-base: core-fonts-scale-base
+  item:core-fonts-weight-500: core-fonts-weight-500
+  item-icon:core-size-md: core-size-md
+  item:content-primary-base: content-primary-base
+  item:core-fonts-weight-600: core-fonts-weight-600
+figmaVerbatim:
+  _status: matched
+  figmaName: Navigation Section
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: State
+      values:
+        - default
+  booleanProps:
+    - isMaximised
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - nav-section-back
+    - nav-section-select

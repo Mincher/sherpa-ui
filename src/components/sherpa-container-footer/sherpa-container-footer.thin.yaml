@@ -1,0 +1,29 @@
+name: sherpa-container-footer
+figmaName: Container Footer
+category: container
+description: the footer bar for a container's `footer` slot.
+slots:
+  '':
+    accepts: []
+    description: ''
+parts:
+  - row
+tokens:
+  row:container-space-gap-sm: container-space-gap-sm
+  row:container-space-padding-md: container-space-padding-md
+figmaVerbatim:
+  _status: matched
+  figmaName: Container Footer
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Type
+      values:
+        - action-bar
+  booleanProps: []
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - footer-cancel
+    - footer-apply

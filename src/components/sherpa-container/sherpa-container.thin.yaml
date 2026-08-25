@@ -1,0 +1,69 @@
+name: sherpa-container
+figmaName: Container
+category: container
+description: the base card surface.
+slots:
+  header:
+    accepts: []
+    description: ''
+  '':
+    accepts: []
+    description: ''
+  footer:
+    accepts: []
+    description: ''
+  loading:
+    accepts: []
+    description: ''
+  empty:
+    accepts: []
+    description: ''
+  error:
+    accepts: []
+    description: ''
+parts:
+  - header
+  - body
+  - footer
+  - state
+tokens:
+  header:container-border-width: container-border-width
+  header:status-border:
+    override: status-border
+  header:container-border-default: container-border-default
+  footer:container-border-width: container-border-width
+  footer:status-border:
+    override: status-border
+  footer:container-border-default: container-border-default
+  state:surface-primary-base: surface-primary-base
+  state-text:content-secondary-base: content-secondary-base
+  state-text:core-fonts-scale-base: core-fonts-scale-base
+  state-text:status-critical-color-5: status-critical-color-5
+  spinner:border-primary: border-primary
+  spinner:content-active-base: content-active-base
+figmaVerbatim:
+  _status: matched
+  figmaName: Container
+  nodeType: COMPONENT_SET
+  built: true
+  variantAxes:
+    - name: Type
+      values:
+        - default
+        - dialog
+        - panel
+        - overlay-panel
+        - accordion
+  booleanProps:
+    - expanded
+  textProps: []
+  instanceProps: []
+  modePins: {}
+  figmaEvents:
+    - card-click
+    - card-select
+    - container-open
+    - container-close
+    - container-select
+    - container-page-change
+    - container-finish
