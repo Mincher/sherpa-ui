@@ -241,6 +241,7 @@ function hydrateFlat(thin) {
     props_public: thin.props_public ?? [],
     events: thin.events ? hydrateEvents(thin.events) : [],
     tokens: thin.tokens ?? {},
+    ...(thin.behaviours ? { behaviours: thin.behaviours } : {}),
     figma: thin.figmaVerbatim ?? thin.figma,   // exact node structure, any type
   };
   return full;
@@ -277,6 +278,7 @@ export function hydrate(thin) {
   if (thin.overrides === '$standard') full.overrides = { ...MAP.overrides };
   else if (thin.overrides) full.overrides = thin.overrides;
   full.tokens = thin.tokens;
+  if (thin.behaviours) full.behaviours = thin.behaviours;
   if ('_divergence' in thin) full._divergence = thin._divergence;
   if ('_notes' in thin) full._notes = thin._notes;
   // figma: verbatim if kept (robust — any node type), else derived

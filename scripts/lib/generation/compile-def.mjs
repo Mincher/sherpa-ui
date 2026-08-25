@@ -98,10 +98,14 @@ function compileTs(def, name, cls) {
 
   const L = [];
   const fires = (def.events ?? []).map((e) => e.name).join(', ') || 'none';
+  // @behaviour tags — runtime behaviours documented in Figma's description that
+  // have no node/prop (column pinning, sticky headers, scroll). MCP parses these.
+  const behaviourLines = (def.behaviours ?? []).map((b) =>
+    ` * @behaviour ${b.id}${b.api ? ` — ${b.api}` : ''}${b.figmaCant ? ' [no Figma equivalent]' : ''}\n *   ${b.summary ?? ''}`.trimEnd());
   if (def.docs?.ts) {
-    L.push(`/**`, ...def.docs.ts.split('\n').map((l) => ` * ${l}`.trimEnd()), ` *`, ` * @fires ${fires}`, ` */`);
+    L.push(`/**`, ...def.docs.ts.split('\n').map((l) => ` * ${l}`.trimEnd()), ` *`, ...behaviourLines, ` * @fires ${fires}`, ` */`);
   } else {
-    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ` * Generated from ${name}.thin.yaml. @fires ${fires}`, ` */`);
+    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ...behaviourLines, ` * Generated from ${name}.thin.yaml. @fires ${fires}`, ` */`);
   }
   L.push(`import { SherpaElement } from '../../core/sherpa-element.js';`, '');
   L.push(`export class ${cls} extends SherpaElement {`);
@@ -127,6 +131,12 @@ function compileTs(def, name, cls) {
       L.push(`  };`, '');
     }
   }
+  // Behaviour TODO stubs — one per documented behaviour, so the author must
+  // acknowledge each (Figma can't draw these; the def is their only spec).
+  for (const b of def.behaviours ?? []) {
+    L.push(`  // TODO(behaviour: ${b.id}) — ${b.summary ?? b.api ?? ''}`.trimEnd());
+  }
+  if ((def.behaviours ?? []).length) L.push('');
   L.push(`}`, '');
   L.push(`customElements.define('${name}', ${cls});`, '');
   return L.join('\n');

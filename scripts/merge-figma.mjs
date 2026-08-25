@@ -22,6 +22,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { loadContract } from './lib/contract-io.mjs';
+import { parseBehaviours } from './lib/parse-behaviour.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COMPONENTS = join(ROOT, 'src', 'components');
@@ -76,6 +77,15 @@ for (const name of readdirSync(COMPONENTS)) {
     console.log(`skip (enriched): ${name} — use --force to merge figma block`);
     skipped++;
     continue;
+  }
+
+  // Behaviour channel: parse a ```behaviour block from the component description
+  // into a first-class `behaviours` field (runtime behaviour Figma can't model —
+  // column pinning, sticky headers, scroll). Only when the read carries a description.
+  const fig = figmaRead[entry?.figma];
+  if (fig?.description) {
+    const behaviours = parseBehaviours(fig.description);
+    if (behaviours.length) def.behaviours = behaviours;
   }
 
   // Preserve figmaEvents from the existing block if the read didn't carry them.

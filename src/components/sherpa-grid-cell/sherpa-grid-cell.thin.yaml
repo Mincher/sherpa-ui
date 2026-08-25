@@ -143,6 +143,20 @@ tokens:
   cell.borderColor: control-border/default
   cell.color: content/base
   cell.padding: space/2xs
+behaviours:
+  - id: column-pinning
+    summary: Columns pin to the left or right edge; pinned columns stay visible while the body scrolls horizontally.
+    api: data-pin="left|right|none" on a column
+    scope: data-grid
+  - id: sticky-header
+    summary: Header and filter rows stay fixed while the body scrolls vertically.
+    api: position sticky on the header + filter rows
+    scope: data-grid
+  - id: scroll
+    summary: The grid body scrolls on both axes at once; the header sticks to the top and pinned columns stick to the sides.
+    api: a scroll container with sticky offsets
+    scope: data-grid
+    figmaCant: true
 figmaVerbatim:
   note: >-
     One cell component for the whole grid — Type=cell|header|filter|group. Content is a SLOT
