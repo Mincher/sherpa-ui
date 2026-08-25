@@ -101,7 +101,7 @@ function compileTs(def, name, cls) {
   if (def.docs?.ts) {
     L.push(`/**`, ...def.docs.ts.split('\n').map((l) => ` * ${l}`.trimEnd()), ` *`, ` * @fires ${fires}`, ` */`);
   } else {
-    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ` * Generated from ${name}.def.json. @fires ${fires}`, ` */`);
+    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ` * Generated from ${name}.thin.yaml. @fires ${fires}`, ` */`);
   }
   L.push(`import { SherpaElement } from '../../core/sherpa-element.js';`, '');
   L.push(`export class ${cls} extends SherpaElement {`);

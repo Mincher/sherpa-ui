@@ -201,7 +201,11 @@ export function checkProgressiveEnhancement(thin) {
     const provides = (el && MAP.elements[el]?.provides) || [];
     for (const l of body.listen || []) {
       const need = JS_FOR[l.on] || JS_FOR[l.event];
-      if (need && provides.includes(need)) {
+      // Re-emitting a semantic event (emit/reemit) is COMPOSITION, not a rebuild
+      // of native behaviour — a native <button> handling its own click, then the
+      // component re-dispatching it as a domain event, is the correct pattern.
+      const isComposition = l.action === 'emit' || l.action === 'reemit';
+      if (need && provides.includes(need) && !isComposition) {
         warns.push(`${thin.name}: <${el}> "${key}" already provides "${need}" natively — drop the JS listener for "${l.event || l.on}".`);
       }
     }

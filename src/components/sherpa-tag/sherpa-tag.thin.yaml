@@ -23,22 +23,18 @@ anatomy:
           figma:
             node: TEXT
             prop: label
-      - dismiss:
-          owns: sherpa-button
-          part: dismiss
+      - close(button):
+          part: close
           showWhen: removable
           attrs:
-            data-type: icon
-            data-variant: tertiary
-            data-size: 2xs
-            data-icon-start: ✕
+            type: button
             aria-label: Remove
           figma:
             node: INSTANCE
-            source: sherpa-button
+            source: icon-glyph
           listen:
-            - event: button-click
-              action: reemit
+            - event: click
+              action: emit
               as: tag-remove
 props:
   data-status: $status
@@ -70,13 +66,12 @@ slots:
     description: The label.
 events:
   tag-remove:
-    description: Fired when the dismiss button is clicked.
+    description: Fired when the close button is clicked.
     cancelable: true
     $verbatim:
       trigger:
-        from: child
-        component: sherpa-button
-        event: button-click
+        on: click
+        node: .close
       default:
         action: remove-self
         description: The tag removes itself from the DOM. Call preventDefault() to keep it.
@@ -84,10 +79,7 @@ events:
 parts:
   - pill
   - icon
-  - dismiss
-nested:
-  - component: sherpa-button
-    relationship: owned
+  - close
 overrides: $standard
 tokens:
   pill.gap: control-space-gap-sm
