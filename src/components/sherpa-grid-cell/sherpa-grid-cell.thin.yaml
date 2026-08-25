@@ -143,26 +143,7 @@ tokens:
   cell.borderColor: control-border/default
   cell.color: content/base
   cell.padding: space/2xs
-behaviours:
-  - id: column-pinning
-    summary: Columns pin to the left or right edge; pinned columns stay visible while the body scrolls horizontally.
-    api: data-pin="left|right|none" on a column
-    scope: data-grid
-  - id: sticky-header
-    summary: Header and filter rows stay fixed while the body scrolls vertically.
-    api: position sticky on the header + filter rows
-    scope: data-grid
-  - id: scroll
-    summary: The grid body scrolls on both axes at once; the header sticks to the top and pinned columns stick to the sides.
-    api: a scroll container with sticky offsets
-    scope: data-grid
-    figmaCant: true
 figmaVerbatim:
-  note: >-
-    One cell component for the whole grid — Type=cell|header|filter|group. Content is a SLOT
-    (per-variant). filter = the optional secondary-header cell (a transparent minimal Input, light
-    placeholder). Selection = hasCheckbox; header/filter actions = hasActions. Control tier. Atomic
-    sub-component of Data Grid (code = a <td>/<th> in a <table>, not a custom element).
   _status: matched
   figmaName: Grid Cell
   nodeType: COMPONENT_SET
@@ -172,8 +153,8 @@ figmaVerbatim:
       values:
         - cell
         - header
-        - filter
         - group
+        - filter
   booleanProps:
     - hasCheckbox
     - hasActions
@@ -181,3 +162,21 @@ figmaVerbatim:
   instanceProps: []
   modePins: {}
   figmaEvents: []
+behaviours:
+  - id: column-pinning
+    summary: >-
+      Columns pin to the left or right edge; pinned columns stay visible while the body scrolls
+      horizontally.
+    api: data-pin="left|right|none" on a column
+    scope: data-grid
+  - id: sticky-header
+    summary: Header and filter rows stay fixed while the body scrolls vertically.
+    api: position sticky on the header + filter rows
+    scope: data-grid
+  - id: scroll
+    summary: >-
+      The grid body scrolls on both axes at once; the header sticks to the top and pinned columns
+      stick to the sides.
+    api: a scroll container with sticky offsets
+    scope: data-grid
+    figmaCant: true

@@ -1167,6 +1167,31 @@
       "instanceProps": [],
       "modePins": {},
       "events": []
+    },
+    "Grid Cell": {
+      "figmaName": "Grid Cell",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "cell",
+            "header",
+            "group",
+            "filter"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasCheckbox",
+        "hasActions"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [],
+      "description": "Grid Cell — the atomic Data Grid cell. Type=cell|header. Content is a SLOT (designers/consumers set it). hasCheckbox=selection/select-all, hasActions=header sort+menu. Control tier.\n\n```behaviour\ncolumn-pinning:\n  summary: Columns pin to the left or right edge; pinned columns stay visible while the body scrolls horizontally.\n  api: data-pin=\"left|right|none\" on a column\n  scope: data-grid\nsticky-header:\n  summary: Header and filter rows stay fixed while the body scrolls vertically.\n  api: position sticky on the header + filter rows\n  scope: data-grid\nscroll:\n  summary: The grid body scrolls on both axes at once; the header sticks to the top and pinned columns stick to the sides.\n  api: a scroll container with sticky offsets\n  scope: data-grid\n  figmaCant: true\n```"
     }
   }
 }

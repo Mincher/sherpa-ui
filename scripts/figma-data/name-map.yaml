@@ -183,7 +183,7 @@ map:
       Figma corrected + aligned 2026-08-15 (real sub-components, box-only selection, 40px headers).
       CODE still the legacy <table> — rebuild deferred to a dedicated session.
   sherpa-grid-cell:
-    figma: .Grid Cell
+    figma: Grid Cell
     status: matched
     tier: sub-component
   sherpa-grid-column:
