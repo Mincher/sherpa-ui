@@ -1,88 +1,144 @@
 name: sherpa-grid-cell
-figmaName: .Grid Cell
-category: data
+figmaName: Grid Cell
+category: control
 description: >-
-  One cell of a data grid column. Content is slotted; the Type variant picks alignment and
-  typography (Default text, Primary emphasis, Numerical mono/right-aligned, Selection checkbox).
+  The single atomic cell of the Data Grid. Type is either a body cell or a column header. Content is
+  a slot the designer/consumer fills — alignment, emphasis, and numeric formatting are content
+  choices, not variants. A leading checkbox and header actions are boolean toggles.
 generated: false
-tier: sub-component
-parentComponent: sherpa-data-grid
 anatomy:
   cell(div):
     figma:
       node: COMPONENT_SET
-      layout: VERTICAL
-      hugHeight: true
+      layout: HORIZONTAL
       fillWidth: true
+      hugHeight: true
     children:
+      - toggle(button):
+          part: toggle
+          showWhen: group
+          attrs:
+            type: button
+            aria-label: Toggle group
+            aria-expanded: 'false'
+          figma:
+            node: INSTANCE
+            source: sherpa-button
+          listen:
+            - event: click
+              action: emit
+              as: group-toggle
+      - checkbox(span):
+          part: checkbox
+          showWhen: has-checkbox
+          figma:
+            node: INSTANCE
+            source: Basic Checkbox
       - content(div):
           slot: ''
+          part: content
           figma:
             node: SLOT
-            layout: HORIZONTAL
             fillWidth: true
-            hugHeight: true
+      - actions(div):
+          part: actions
+          showWhen: has-actions
+          figma:
+            node: FRAME
+            layout: HORIZONTAL
           children:
-            - value(span):
+            - sort(button):
+                part: sort
+                attrs:
+                  type: button
+                  aria-label: Sort
                 figma:
-                  node: TEXT
-                  prop: label
-                  role: body
+                  node: INSTANCE
+                  source: sherpa-button
+                listen:
+                  - event: click
+                    action: emit
+                    as: sort-change
+            - menu(button):
+                part: menu
+                attrs:
+                  type: button
+                  aria-label: Column menu
+                figma:
+                  node: INSTANCE
+                  source: sherpa-button
+                listen:
+                  - event: click
+                    action: emit
+                    as: menu-open
 props:
   data-type:
-    $verbatim:
-      type: enum
-      values:
-        - default
-        - primary
-        - numerical
-        - selection
-      default: default
-      kind: style
-      description: >-
-        Cell kind. numerical → mono font + right-aligned; primary → title emphasis; selection →
-        checkbox affordance.
-      figma:
-        variantAxis: Type
+    kind: style
+    axis:
+      name: Type
+      value: cell
+    values:
+      - cell
+      - header
+      - group
+    description: >-
+      Cell role. cell = a body cell; header = a column header; group = a row-spanning group header
+      that toggles its rows open/closed (accordion). Alignment/emphasis/numeric format are content
+      in the slot, not variants.
+  data-has-checkbox:
+    kind: visibility
+    figmaBoolean: hasCheckbox
+    description: Show a leading checkbox — a selection cell (body) or select-all (header).
+  data-has-actions:
+    kind: visibility
+    figmaBoolean: hasActions
+    description: Show trailing sort + menu buttons. Available on any cell (most common on headers).
 templates:
   - default
 slots:
   '':
     accepts:
       - content
-      - control
-    description: The cell content (text, badge, chip, checkbox, link — anything).
+    description: >-
+      The cell content — text, a control, or any composed layout. Alignment and emphasis are set
+      here by the consumer, not as component variants.
+events:
+  sort-change:
+    description: Fired when the header sort control is clicked.
+  menu-open:
+    description: Fired when the header column-menu button is clicked.
+  group-toggle:
+    description: Fired when a group cell's chevron is clicked; expands or collapses the group's rows.
 parts:
   - cell
+  - toggle
+  - checkbox
   - content
-  - value
-_notes:
-  - >-
-    Slotted content keeps the cell type-agnostic — the grid does not need a component per cell
-    shape.
-  - Reuse Select Checkbox for the selection affordance (Rule 1) — never a bespoke box.
+  - actions
+  - sort
+  - menu
 tokens:
-  cell.background: container-surface-default
-  cell.borderColor: container-border-default
-  cell.borderWidth: border-width-base
-  cell.paddingBlock: space-3xs
-  content.gap: space-2xs
-  content.paddingInline: space-xs
-  content.paddingBlock: space-3xs
-  value.color: content-primary-base
+  cell.background: control-surface/base
+  cell.borderColor: control-border/default
+  cell.color: content/base
 figmaVerbatim:
+  note: >-
+    One cell component for the whole grid — Type=cell|header. Content is a SLOT (per-variant); a
+    header is a cell with hasActions. Selection = hasCheckbox. Control tier. Atomic sub-component of
+    Data Grid (code = a <td>/<th> in a <table>, not a custom element).
   _status: matched
-  figmaName: .Grid Cell
+  figmaName: Grid Cell
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
     - name: Type
       values:
-        - Default
-        - Primary
-        - Numerical
-        - Selection
-  booleanProps: []
+        - cell
+        - header
+        - group
+  booleanProps:
+    - hasCheckbox
+    - hasActions
   textProps: []
   instanceProps: []
   modePins: {}

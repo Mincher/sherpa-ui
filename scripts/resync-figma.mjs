@@ -23,12 +23,19 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
+// --check: report drift (def vs live) and EXIT NON-ZERO if any def is stale. No writes.
+const CHECK = args.includes('--check');
 const snapPath = args.find((a) => !a.startsWith('--'));
-if (!snapPath) { console.error('usage: resync-figma.mjs <live-figma.json> [--dry]'); process.exit(1); }
+if (!snapPath) { console.error('usage: resync-figma.mjs <live-figma.json> [--dry|--check]'); process.exit(1); }
 const live = JSON.parse(readFileSync(snapPath, 'utf8'));
+
+// Normalise a set of names/axes for order-independent comparison.
+const norm = (a) => [...(a || [])].sort();
+const axesKey = (ax) => (ax || []).map((a) => `${a.name}[${[...(a.values || [])].sort().join(',')}]`).sort().join(' ');
 
 let synced = 0, unchanged = 0, noMatch = 0;
 const changes = [];
+const drift = [];
 
 for (const n of readdirSync(C)) {
   const p = join(C, n, `${n}.thin.yaml`);
@@ -38,6 +45,17 @@ for (const n of readdirSync(C)) {
   if (!L) { noMatch++; continue; }
 
   const fv = def.figmaVerbatim || def.figma || {};
+
+  // --check: report where the def disagrees with live Figma, then move on (no write).
+  if (CHECK) {
+    const issues = [];
+    if (axesKey(fv.variantAxes) !== axesKey(L.variantAxes)) issues.push(`axes: def[${axesKey(fv.variantAxes) || '—'}] vs live[${axesKey(L.variantAxes) || '—'}]`);
+    if (norm(fv.booleanProps).join() !== norm(L.booleanProps).join()) issues.push(`bool: def[${norm(fv.booleanProps).join()}] vs live[${norm(L.booleanProps).join()}]`);
+    if (norm(fv.textProps).join() !== norm(L.textProps).join()) issues.push(`text: def[${norm(fv.textProps).join()}] vs live[${norm(L.textProps).join()}]`);
+    if (issues.length) { drift.push({ name: n, figmaName: def.figmaName, issues }); }
+    continue;
+  }
+
   const before = JSON.stringify({ variantAxes: fv.variantAxes, booleanProps: fv.booleanProps, textProps: fv.textProps });
 
   // Rewrite ONLY the live-derived fields; keep _status/figmaName/nodeType/note.
@@ -65,5 +83,16 @@ for (const n of readdirSync(C)) {
   changes.push(`${n} (${def.figmaName})`);
 }
 
+if (CHECK) {
+  const aligned = Object.keys(live).length; // rough; only matters relatively
+  if (drift.length === 0) {
+    console.log('✅ all defs agree with live Figma (axes / booleanProps / textProps).');
+    process.exit(0);
+  }
+  console.log(`⚠️  ${drift.length} def(s) DRIFT from live Figma:\n`);
+  for (const d of drift) { console.log(`  ${d.name} (${d.figmaName})`); d.issues.forEach((i) => console.log(`      ${i}`)); }
+  console.log(`\nRun without --check to re-sync, or update the defs by hand.`);
+  process.exit(1); // fail loudly — stale defs must not ship silently
+}
 console.log(`${DRY ? '[dry] ' : ''}synced ${synced}, unchanged ${unchanged}, no live match ${noMatch}`);
 if (changes.length) { console.log('\nRe-synced:'); changes.forEach((c) => console.log('  ✎ ' + c)); }
