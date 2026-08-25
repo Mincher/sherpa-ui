@@ -1,55 +1,1172 @@
 {
   "_note": "Raw read of the Sherpa-UI Figma file (built components) via figma-console bridge. Source data for merge-figma.mjs. Regenerate by re-running the read in figma_execute. fileKey=UnBEepLWb6d7b9ykm33j2s.",
-  "readAt": "2026-08-14",
+  "readAt": "2026-08-25",
   "pages": {
-    "Button": { "figmaName": "Button", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["icon", "label"] }, { "name": "State", "values": ["default", "active", "inactive"] }], "boolProps": ["hasIconStart", "hasIconEnd", "hasBadge"], "textProps": ["label"], "instanceProps": ["iconStart", "iconEnd"], "modePins": {}, "events": ["button-click", "menu-open", "menu-close", "menu-select", "menu-populate"] },
-    "Tag": { "figmaName": "Tag", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["dot", "full"] }], "boolProps": ["hasIcon", "hasDismiss"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Switch": { "figmaName": "Switch", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Value", "values": ["off", "on"] }, { "name": "State", "values": ["active", "inactive"] }], "boolProps": ["hasLabel"], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["change"] },
-    "Select Checkbox": { "figmaName": "Select Checkbox", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "State", "values": ["active", "inactive"] }], "boolProps": ["isFilled", "isChecked", "hasDescription"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": ["change"] },
-    "Select Radio": { "figmaName": "Select Radio", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "State", "values": ["active", "inactive"] }], "boolProps": ["isChecked", "hasDescription"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": ["change"] },
-    "Loader": { "figmaName": "Loader", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Size", "values": ["lg", "md", "sm"] }], "boolProps": ["hasLabel"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Progress Bar": { "figmaName": "Progress Bar", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Input": { "figmaName": "Input", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasDescription", "hasHelper", "hasLeadingIcon", "hasTrailingIcon", "hasValidation", "hasLabel"], "textProps": ["label", "description", "value", "helper"], "instanceProps": [], "modePins": { "Status": { "mode": "passthrough" }, "Input": { "mode": "default" } }, "events": ["input", "change", "search"] },
-    "Pagination": { "figmaName": "Pagination", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasResults"], "textProps": ["pageSize", "currentPage", "totalPages"], "instanceProps": [], "modePins": {}, "events": ["page-change"] },
-    "Menu List Item": { "figmaName": "Menu List Item", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "State", "values": ["default", "active", "inactive", "hover"] }], "boolProps": ["hasDescription", "hasLeadingIcon", "hasDragHandle", "hasLeadingControl", "hasLeading", "hasExpand"], "textProps": ["label", "description"], "instanceProps": ["leadingControl"], "modePins": {}, "events": ["list-item-click"] },
-    "Select Card": { "figmaName": "Select Card", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["card-click", "card-select"] },
-    "Banner": { "figmaName": "Banner", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasLink"], "textProps": ["message"], "instanceProps": [], "modePins": { "Status": { "mode": "info" } }, "events": [] },
-    "Chip": { "figmaName": "Chip", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasDismiss"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Key Value Pair": { "figmaName": "Key Value Pair", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": ["key", "value"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Slider": { "figmaName": "Slider", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": ["input", "change"] },
-    "File Uploader": { "figmaName": "File Uploader", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["file-add", "file-remove", "file-clear", "file-upload-start"] },
-    "Progress Steps": { "figmaName": "Progress Steps", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["step-change", "step-click"] },
-    "Badge": { "figmaName": "Badge", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["count", "dot"] }], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Quick Filter Chip": { "figmaName": "Quick Filter Chip", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "State", "values": ["active", "default", "inactive"] }], "boolProps": ["hasMenu", "hasIcon", "hasContent", "hasBadge"], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": ["quick-filter-click", "quick-filter-menu-open", "quick-filter-dismiss", "quick-filter-ai-accept"] },
-    "Quick Filter Toolbar": { "figmaName": "Quick Filter Toolbar", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["data", "view"] }], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["quick-filter-toolbar-filter-change", "quick-filter-toolbar-filter-clear", "container-filter-change", "global-filter-change", "view-menu-open", "view-change", "view-save", "view-favorite", "data-refresh", "ai-filter-request"] },
-    "Select Group": { "figmaName": "Select Group", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasDescription", "hasValidation"], "textProps": ["legend", "description", "validation"], "instanceProps": [], "modePins": {}, "events": ["change"] },
-    "Container": { "figmaName": "Container", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["default", "dialog", "panel", "overlay-panel", "accordion"] }], "boolProps": ["expanded"], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["card-click", "card-select", "container-open", "container-close", "container-select", "container-page-change", "container-finish"] },
-    "Callout": { "figmaName": "Callout", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": ["heading"], "instanceProps": [], "modePins": { "Status": { "mode": "info" } }, "events": ["callout-toggle", "callout-dismiss"] },
-    "Toast": { "figmaName": "Toast", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasClose", "hasAction"], "textProps": ["heading", "value"], "instanceProps": [], "modePins": { "Status": { "mode": "info" }, "Elevation": { "mode": "md" } }, "events": ["close", "action"] },
-    "Message": { "figmaName": "Message", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasClose"], "textProps": ["label"], "instanceProps": [], "modePins": { "Status": { "mode": "info" } }, "events": ["close", "action"] },
-    "Tabs": { "figmaName": "Tabs", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["tab-change", "tab-load"] },
-    "Tooltip": { "figmaName": "Tooltip", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": ["label"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Section Header": { "figmaName": "Section Header", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasDivider", "hasActions", "hasDescription"], "textProps": ["heading", "description"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Empty State": { "figmaName": "Empty State", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasSmallPrint", "hasActions"], "textProps": ["heading", "description"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Breadcrumbs": { "figmaName": "Breadcrumbs", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["breadcrumb-click"] },
-    "Toolbar": { "figmaName": "Toolbar", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "List": { "figmaName": "List", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Menu": { "figmaName": "Menu", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": { "Container": { "mode": "default" }, "Elevation": { "mode": "md" } }, "events": [] },
-    "Container Header": { "figmaName": "Container Header", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasDescription", "hasDragHandle", "dismissible", "hasIcon", "hasToggle"], "textProps": ["heading", "description"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Container Footer": { "figmaName": "Container Footer", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["action-bar"] }], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["footer-cancel", "footer-apply"] },
-    "Metric": { "figmaName": "Metric", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": ["label", "value", "delta"], "instanceProps": [], "modePins": { "Status": { "mode": "passthrough" } }, "events": [] },
-    "View Header": { "figmaName": "View Header", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["view-header-back", "edit-mode-change", "favorite-toggle", "view-export"] },
-    "Code Block": { "figmaName": "Code Block", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasHeader", "hasLineNumbers"], "textProps": ["language"], "instanceProps": [], "modePins": {}, "events": ["code-copied", "code-highlight-error", "code-language-detected"] },
-    "Legend Item": { "figmaName": "Legend Item", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasValue"], "textProps": ["label", "value"], "instanceProps": [], "modePins": {}, "events": ["legend-item-click"] },
-    "Data Field": { "figmaName": "Data Field", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Orientation", "values": ["vertical", "horizontal"] }], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Donut Chart": { "figmaName": "Donut Chart", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Gauge Chart": { "figmaName": "Gauge Chart", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Transfer List": { "figmaName": "Transfer List", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["transfer-change"] },
-    "Chat Message": { "figmaName": "Chat Message", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Type", "values": ["received", "sent"] }], "boolProps": ["hasAvatar"], "textProps": ["name", "timestamp", "message"], "instanceProps": [], "modePins": {}, "events": [] },
-    "Prompt Composer": { "figmaName": "Prompt Composer", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasLeadingActions"], "textProps": ["placeholder"], "instanceProps": [], "modePins": {}, "events": ["prompt-submit"] },
-    "Grid": { "figmaName": "Grid", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "Layout", "values": ["month", "year", "day"] }], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Time Picker": { "figmaName": "Time Picker", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": [], "textProps": [], "instanceProps": [], "modePins": {}, "events": [] },
-    "Navigation Section": { "figmaName": "Navigation Section", "nodeType": "COMPONENT_SET", "built": true, "variantAxes": [{ "name": "State", "values": ["default"] }], "boolProps": ["isMaximised"], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["nav-section-back", "nav-section-select"] },
-    "App Header": { "figmaName": "App Header", "nodeType": "COMPONENT", "built": true, "variantAxes": [], "boolProps": ["hasNotifications", "hasLoadingBar"], "textProps": [], "instanceProps": [], "modePins": {}, "events": ["view-header-back", "favorite-toggle", "breadcrumb-click", "view-export"] }
+    "Icon": {
+      "figmaName": "Icon",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [
+        "glyph"
+      ],
+      "modePins": {},
+      "events": []
+    },
+    "Button": {
+      "figmaName": "Button",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "icon",
+            "label"
+          ]
+        },
+        {
+          "name": "State",
+          "values": [
+            "Default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasIconStart",
+        "hasIconEnd",
+        "hasBadge"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [
+        "iconStart",
+        "iconEnd"
+      ],
+      "modePins": {},
+      "events": [
+        "button-click",
+        "menu-open",
+        "menu-close",
+        "menu-select",
+        "menu-populate"
+      ]
+    },
+    "Tag": {
+      "figmaName": "Tag",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "dot",
+            "full"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasIcon",
+        "hasDismiss"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Switch": {
+      "figmaName": "Switch",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Value",
+          "values": [
+            "off",
+            "on"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasLabel"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "change"
+      ]
+    },
+    "Select Checkbox": {
+      "figmaName": "Select Checkbox",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Property 1",
+          "values": [
+            "Default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasDescription"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "change"
+      ]
+    },
+    "Basic Checkbox": {
+      "figmaName": "Basic Checkbox",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "isChecked"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Select Radio": {
+      "figmaName": "Select Radio",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "active"
+          ]
+        }
+      ],
+      "boolProps": [
+        "isChecked",
+        "hasDescription"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "change"
+      ]
+    },
+    "Radio Indicator": {
+      "figmaName": "Radio Indicator",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "Default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "isChecked"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Loader": {
+      "figmaName": "Loader",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Size",
+          "values": [
+            "lg",
+            "md",
+            "sm"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasLabel"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Progress Bar": {
+      "figmaName": "Progress Bar",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Input": {
+      "figmaName": "Input",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Style",
+          "values": [
+            "default",
+            "minimal"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasDescription",
+        "hasHelper",
+        "hasLeadingIcon",
+        "hasTrailingIcon",
+        "hasValidation",
+        "hasLabel"
+      ],
+      "textProps": [
+        "label",
+        "description",
+        "value",
+        "helper"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "input",
+        "change",
+        "search"
+      ]
+    },
+    "Pagination": {
+      "figmaName": "Pagination",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasResults"
+      ],
+      "textProps": [
+        "pageSize",
+        "currentPage",
+        "totalPages"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "page-change"
+      ]
+    },
+    "Menu List Item": {
+      "figmaName": "Menu List Item",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasDescription",
+        "hasLeadingIcon",
+        "hasDragHandle",
+        "hasLeadingControl",
+        "hasLeading",
+        "hasExpand"
+      ],
+      "textProps": [
+        "label",
+        "description"
+      ],
+      "instanceProps": [
+        "leadingControl"
+      ],
+      "modePins": {},
+      "events": [
+        "list-item-click"
+      ]
+    },
+    "Select Card": {
+      "figmaName": "Select Card",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "card-click",
+        "card-select"
+      ]
+    },
+    "Banner": {
+      "figmaName": "Banner",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasLink"
+      ],
+      "textProps": [
+        "message"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Chip": {
+      "figmaName": "Chip",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasDismiss"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Key Value Pair": {
+      "figmaName": "Key Value Pair",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [
+        "key",
+        "value"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Slider": {
+      "figmaName": "Slider",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "input",
+        "change"
+      ]
+    },
+    "File Uploader": {
+      "figmaName": "File Uploader",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "file-add",
+        "file-remove",
+        "file-clear",
+        "file-upload-start"
+      ]
+    },
+    "File Item": {
+      "figmaName": "File Item",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Progress Steps": {
+      "figmaName": "Progress Steps",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "step-change",
+        "step-click"
+      ]
+    },
+    "Badge": {
+      "figmaName": "Badge",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "count",
+            "dot"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Quick Filter Chip": {
+      "figmaName": "Quick Filter Chip",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasMenu",
+        "hasIcon",
+        "hasContent",
+        "hasBadge"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "quick-filter-click",
+        "quick-filter-menu-open",
+        "quick-filter-dismiss",
+        "quick-filter-ai-accept"
+      ]
+    },
+    "Quick Filter Toolbar": {
+      "figmaName": "Quick Filter Toolbar",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "data",
+            "view"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "quick-filter-toolbar-filter-change",
+        "quick-filter-toolbar-filter-clear",
+        "container-filter-change",
+        "global-filter-change",
+        "view-menu-open",
+        "view-change",
+        "view-save",
+        "view-favorite",
+        "data-refresh",
+        "ai-filter-request"
+      ]
+    },
+    "Select Group": {
+      "figmaName": "Select Group",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasDescription",
+        "hasValidation"
+      ],
+      "textProps": [
+        "legend",
+        "description",
+        "validation"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "change"
+      ]
+    },
+    "Container": {
+      "figmaName": "Container",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "default",
+            "dialog",
+            "panel",
+            "overlay-panel",
+            "accordion"
+          ]
+        }
+      ],
+      "boolProps": [
+        "expanded"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "card-click",
+        "card-select",
+        "container-open",
+        "container-close",
+        "container-select",
+        "container-page-change",
+        "container-finish"
+      ]
+    },
+    "Container Header": {
+      "figmaName": "Container Header",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Variant",
+          "values": [
+            "Default",
+            "Panel"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasDragHandle",
+        "hasActions",
+        "hasIcon",
+        "hasMetadata"
+      ],
+      "textProps": [
+        "heading"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Container Footer": {
+      "figmaName": "Container Footer",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "action-bar"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "footer-cancel",
+        "footer-apply"
+      ]
+    },
+    "Callout": {
+      "figmaName": "Callout",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [
+        "heading"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "callout-toggle",
+        "callout-dismiss"
+      ]
+    },
+    "Toast": {
+      "figmaName": "Toast",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasClose",
+        "hasAction"
+      ],
+      "textProps": [
+        "heading",
+        "value"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "close",
+        "action"
+      ]
+    },
+    "Message": {
+      "figmaName": "Message",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasClose"
+      ],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "close",
+        "action"
+      ]
+    },
+    "Tabs": {
+      "figmaName": "Tabs",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "tab-change",
+        "tab-load"
+      ]
+    },
+    "Tooltip": {
+      "figmaName": "Tooltip",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Section Header": {
+      "figmaName": "Section Header",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasDivider",
+        "hasActions",
+        "hasDescription"
+      ],
+      "textProps": [
+        "heading",
+        "description"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Empty State": {
+      "figmaName": "Empty State",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasSmallPrint",
+        "hasActions"
+      ],
+      "textProps": [
+        "heading",
+        "description"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Breadcrumbs": {
+      "figmaName": "Breadcrumbs",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "breadcrumb-click"
+      ]
+    },
+    "Toolbar": {
+      "figmaName": "Toolbar",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "List": {
+      "figmaName": "List",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Menu": {
+      "figmaName": "Menu",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Metric": {
+      "figmaName": "Metric",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [
+        "label",
+        "value",
+        "delta"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "View Header": {
+      "figmaName": "View Header",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "view-header-back",
+        "edit-mode-change",
+        "favorite-toggle",
+        "view-export"
+      ]
+    },
+    "Code Block": {
+      "figmaName": "Code Block",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasHeader",
+        "hasLineNumbers"
+      ],
+      "textProps": [
+        "language"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "code-copied",
+        "code-highlight-error",
+        "code-language-detected"
+      ]
+    },
+    "Legend Item": {
+      "figmaName": "Legend Item",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasValue"
+      ],
+      "textProps": [
+        "label",
+        "value"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "legend-item-click"
+      ]
+    },
+    "Chart Legend": {
+      "figmaName": "Chart Legend",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Data Field": {
+      "figmaName": "Data Field",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Orientation",
+          "values": [
+            "vertical",
+            "horizontal"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Chart Axis": {
+      "figmaName": "Chart Axis",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Orientation",
+          "values": [
+            "vertical",
+            "horizontal"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Donut Chart": {
+      "figmaName": "Donut Chart",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Gauge Chart": {
+      "figmaName": "Gauge Chart",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Transfer List": {
+      "figmaName": "Transfer List",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "transfer-change"
+      ]
+    },
+    "Chat Message": {
+      "figmaName": "Chat Message",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "received",
+            "sent"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasAvatar"
+      ],
+      "textProps": [
+        "name",
+        "timestamp",
+        "message"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Prompt Composer": {
+      "figmaName": "Prompt Composer",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasLeadingActions"
+      ],
+      "textProps": [
+        "placeholder"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "prompt-submit"
+      ]
+    },
+    "Grid": {
+      "figmaName": "Grid",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Layout",
+          "values": [
+            "month",
+            "year",
+            "day"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Calendar": {
+      "figmaName": "Calendar",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "single",
+            "range"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasTime"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Calendar Button": {
+      "figmaName": "Calendar Button",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "default",
+            "today"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [
+        "label"
+      ],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Time Picker": {
+      "figmaName": "Time Picker",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Navigation Section": {
+      "figmaName": "Navigation Section",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "default"
+          ]
+        }
+      ],
+      "boolProps": [
+        "isMaximised"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "nav-section-back",
+        "nav-section-select"
+      ]
+    },
+    "Navigation Item": {
+      "figmaName": "Navigation Item",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "State",
+          "values": [
+            "default",
+            "hover",
+            "active"
+          ]
+        }
+      ],
+      "boolProps": [
+        "hasIcon",
+        "hasIndicator",
+        "isMaximised"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Primary Navigation": {
+      "figmaName": "Primary Navigation",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "App Header": {
+      "figmaName": "App Header",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [
+        "hasNotifications",
+        "hasLoadingBar"
+      ],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": [
+        "view-header-back",
+        "favorite-toggle",
+        "breadcrumb-click",
+        "view-export"
+      ]
+    },
+    ".Grid Cell": {
+      "figmaName": ".Grid Cell",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "Default",
+            "Primary",
+            "Numerical",
+            "Selection"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    ".Grid Column Header": {
+      "figmaName": ".Grid Column Header",
+      "nodeType": "COMPONENT_SET",
+      "built": true,
+      "variantAxes": [
+        {
+          "name": "Type",
+          "values": [
+            "left-aligned",
+            "right-aligned",
+            "centralised"
+          ]
+        }
+      ],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    ".Grid Column": {
+      "figmaName": ".Grid Column",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    },
+    "Data Grid": {
+      "figmaName": "Data Grid",
+      "nodeType": "COMPONENT",
+      "built": true,
+      "variantAxes": [],
+      "boolProps": [],
+      "textProps": [],
+      "instanceProps": [],
+      "modePins": {},
+      "events": []
+    }
   }
 }

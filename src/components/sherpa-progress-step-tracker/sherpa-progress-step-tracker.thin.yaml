@@ -39,6 +39,7 @@ figmaVerbatim:
   figmaName: Progress Steps
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
   instanceProps: []

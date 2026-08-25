@@ -84,21 +84,13 @@ nested:
 tokens:
   column.gap: space-none
 figmaVerbatim:
-  _status: built
+  _status: matched
   figmaName: .Grid Column
-  page: 'sherpa-data-grid (section: Grid Column)'
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
-  instanceProps:
-    - Grid Column Header
+  instanceProps: []
   modePins: {}
-  note: >-
-    Header is an owned instance; the filter and cells are slots. Width is FIXED on the column; the
-    parent grid re-tracks it.
-  consolidated: >-
-    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
-    — not one page per sub-component.
-  tier: sub-component
   figmaEvents: []

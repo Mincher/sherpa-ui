@@ -48,8 +48,8 @@ figmaVerbatim:
       values:
         - active
   booleanProps:
-    - hasDescription
     - isChecked
+    - hasDescription
   textProps:
     - label
   instanceProps: []

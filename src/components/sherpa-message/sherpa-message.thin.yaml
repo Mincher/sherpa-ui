@@ -38,14 +38,13 @@ figmaVerbatim:
   figmaName: Message
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps:
     - hasClose
   textProps:
     - label
   instanceProps: []
-  modePins:
-    Status:
-      mode: info
+  modePins: {}
   figmaEvents:
     - close
     - action

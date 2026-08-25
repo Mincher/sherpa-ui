@@ -71,9 +71,8 @@ tokens:
   content.paddingBlock: space-3xs
   value.color: content-primary-base
 figmaVerbatim:
-  _status: built
+  _status: matched
   figmaName: .Grid Cell
-  page: 'sherpa-data-grid (section: Grid Cell)'
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
@@ -86,13 +85,5 @@ figmaVerbatim:
   booleanProps: []
   textProps: []
   instanceProps: []
-  modePins:
-    Typography: per-Type (body default; mono for Numerical)
-  note: >-
-    Numerical variant pins a mono Typography mode and sets textAlign RIGHT. Selection variant slots
-    a Select Checkbox instance. Value text binds all 6 Typography vars + content fill.
-  consolidated: >-
-    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
-    — not one page per sub-component.
-  tier: sub-component
+  modePins: {}
   figmaEvents: []

@@ -46,6 +46,7 @@ figmaVerbatim:
   figmaName: Slider
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps:
     - label
@@ -54,8 +55,4 @@ figmaVerbatim:
   figmaEvents:
     - input
     - change
-  note: >-
-    Rebuilt 2026-08-15 to match Figma Slider: the read-only value read-out became an editable
-    numeric value-input beside the track (mono, right-aligned; typing commits the value, clamped to
-    min/max). data-show-value now shows the editable field; data-value-readonly makes it
-    display-only.
+  note: 'rebuilt 2026-08-15: editable value-input beside the track (was a read-only readout)'

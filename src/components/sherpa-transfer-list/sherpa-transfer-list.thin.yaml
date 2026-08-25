@@ -76,15 +76,11 @@ figmaVerbatim:
   figmaName: Transfer List
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
-  instanceProps:
-    - Menu List Item
-    - Button
+  instanceProps: []
   modePins: {}
   figmaEvents:
     - transfer-change
-  note: >-
-    Rebuilt 2026-08-15 to match Figma Transfer List: rows are now sherpa-list-item (data-selectable)
-    and moves are sherpa-button — composition, not ad-hoc <li>+checkbox / raw <button>. Shuttle
-    logic unchanged.
+  note: 'rebuilt 2026-08-15: composes sherpa-list-item + sherpa-button (was raw DOM)'

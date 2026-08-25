@@ -213,6 +213,5 @@ tokens:
   meta.gap: core-space-3xs
 figmaVerbatim:
   _status: no-figma
-  figmaName: Kanban Card
-  nodeType: COMPONENT_SET
-  built: false
+  figmaName: null
+  note: no Figma component

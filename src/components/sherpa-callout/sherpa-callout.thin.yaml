@@ -46,13 +46,12 @@ figmaVerbatim:
   figmaName: Callout
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps:
     - heading
   instanceProps: []
-  modePins:
-    Status:
-      mode: info
+  modePins: {}
   figmaEvents:
     - callout-toggle
     - callout-dismiss

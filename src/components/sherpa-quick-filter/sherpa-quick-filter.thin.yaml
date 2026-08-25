@@ -55,10 +55,10 @@ figmaVerbatim:
       values:
         - default
   booleanProps:
-    - hasBadge
-    - hasContent
-    - hasIcon
     - hasMenu
+    - hasIcon
+    - hasContent
+    - hasBadge
   textProps:
     - label
   instanceProps: []

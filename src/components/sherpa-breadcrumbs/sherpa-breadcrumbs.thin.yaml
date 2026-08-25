@@ -24,6 +24,7 @@ figmaVerbatim:
   figmaName: Breadcrumbs
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
   instanceProps: []

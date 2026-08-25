@@ -51,6 +51,7 @@ figmaVerbatim:
   figmaName: Prompt Composer
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps:
     - hasLeadingActions
   textProps:

@@ -43,6 +43,7 @@ figmaVerbatim:
   figmaName: Tabs
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
   instanceProps: []

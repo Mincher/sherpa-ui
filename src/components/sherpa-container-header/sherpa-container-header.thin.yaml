@@ -167,20 +167,13 @@ figmaVerbatim:
         - Default
         - Panel
   booleanProps:
-    - hasActions
     - hasDragHandle
+    - hasActions
     - hasIcon
     - hasMetadata
   textProps:
     - heading
-  instanceProps:
-    - drag-handle
-    - icon
-    - close
-    - toggle
+  instanceProps: []
   modePins: {}
-  note: >-
-    Rebuilt 2026-08-15 to match Figma Container Header: added drag-handle, icon, close (dismiss) and
-    collapse toggle affordances (all CSS-toggled off data-*) with their events. Was labels + actions
-    only (needs-rebuild).
   figmaEvents: []
+  note: 'rebuilt 2026-08-15: added drag-handle, icon, dismiss, collapse toggle + events'

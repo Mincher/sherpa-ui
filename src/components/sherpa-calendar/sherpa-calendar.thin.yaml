@@ -67,7 +67,4 @@ figmaVerbatim:
   instanceProps: []
   modePins: {}
   figmaEvents: []
-  note: >-
-    Rebuilt 2026-08-15 to match Figma Grid Layout axis (day|month|year): added a month picker + year
-    picker; the label button zooms out, month/year cells zoom in. Was the month day-grid only
-    (needs-rebuild).
+  note: 'rebuilt 2026-08-15: day|month|year layouts (was month day-grid only)'

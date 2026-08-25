@@ -30,6 +30,7 @@ figmaVerbatim:
   figmaName: Legend Item
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps:
     - hasValue
   textProps:

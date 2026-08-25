@@ -111,6 +111,7 @@ figmaVerbatim:
   figmaName: File Uploader
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
   instanceProps: []
@@ -121,6 +122,5 @@ figmaVerbatim:
     - file-clear
     - file-upload-start
   note: >-
-    Rebuilt 2026-08-15 to match Figma File Uploader: added the actions row (clear-all + upload
-    buttons), the details block (max-size + allowed-types), a per-file status line, and the 4
-    lifecycle events. Was a bare drop-zone + list (needs-rebuild).
+    rebuilt 2026-08-15: actions row (clear-all + upload), details block, per-file status, 4
+    lifecycle events

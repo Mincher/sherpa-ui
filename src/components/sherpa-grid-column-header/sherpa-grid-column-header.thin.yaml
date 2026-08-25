@@ -91,9 +91,8 @@ tokens:
   label.color: content-title-base
   actions.gap: space-xs
 figmaVerbatim:
-  _status: built
+  _status: matched
   figmaName: .Grid Column Header
-  page: 'sherpa-data-grid (section: Grid Column Header)'
   nodeType: COMPONENT_SET
   built: true
   variantAxes:
@@ -104,15 +103,6 @@ figmaVerbatim:
         - centralised
   booleanProps: []
   textProps: []
-  instanceProps:
-    - Button (sort)
-    - Button (menu)
+  instanceProps: []
   modePins: {}
-  note: >-
-    right-aligned reverses the label/actions order; centralised hugs a single centred control. Label
-    binds all 6 Typography vars + content/title fill.
-  consolidated: >-
-    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
-    — not one page per sub-component.
-  tier: sub-component
   figmaEvents: []

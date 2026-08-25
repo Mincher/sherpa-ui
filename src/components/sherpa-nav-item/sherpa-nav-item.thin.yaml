@@ -93,14 +93,14 @@ figmaVerbatim:
         - default
   booleanProps:
     - hasDescription
-    - hasDragHandle
-    - hasExpand
-    - hasLeading
-    - hasLeadingControl
     - hasLeadingIcon
+    - hasDragHandle
+    - hasLeadingControl
+    - hasLeading
+    - hasExpand
   textProps:
-    - description
     - label
+    - description
   instanceProps:
     - leadingControl
   modePins: {}

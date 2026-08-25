@@ -110,13 +110,10 @@ figmaVerbatim:
         - dot
         - full
   booleanProps:
-    - hasDismiss
     - hasIcon
+    - hasDismiss
   textProps:
     - label
   instanceProps: []
   modePins: {}
   figmaEvents: []
-  note: >-
-    Type=dot is the collapsed indicator; status is the [data-status] cascade (no mode pin).
-    hasDismiss = the owned dismiss Button.

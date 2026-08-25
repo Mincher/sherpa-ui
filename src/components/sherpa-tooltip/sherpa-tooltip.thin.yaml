@@ -33,6 +33,7 @@ figmaVerbatim:
   figmaName: Tooltip
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps:
     - label

@@ -150,27 +150,16 @@ tokens:
   columns.gap: space-none
   empty.color: content-secondary-base
 figmaVerbatim:
-  _status: built
+  _status: matched
   figmaName: Data Grid
-  page: 'sherpa-data-grid (section: Data Grid (assembled))'
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps: []
   textProps: []
-  instanceProps:
-    - Toolbar
-    - Quick Filter Toolbar
-    - Grid Selection Column
-    - Grid Column
-    - Grid Actions Column
-    - Pagination
+  instanceProps: []
   modePins: {}
-  note: >-
-    Assembled from a GRID layout of columns. Selection column pinned left, Actions column pinned
-    right, data columns as slotted Grid Column instances. Filter bar swapped for the data-variant
-    Quick Filter Toolbar.
-  consolidated: >-
-    All data-grid components share ONE Figma page (sherpa-data-grid), organised into named Sections
-    — not one page per sub-component.
-  tier: top-level
   figmaEvents: []
+  note: >-
+    Figma corrected + aligned 2026-08-15 (real sub-components, box-only selection, 40px headers).
+    CODE still the legacy <table> — rebuild deferred to a dedicated session.

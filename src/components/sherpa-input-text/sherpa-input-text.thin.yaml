@@ -60,27 +60,21 @@ figmaVerbatim:
   booleanProps:
     - hasDescription
     - hasHelper
-    - hasLabel
     - hasLeadingIcon
     - hasTrailingIcon
     - hasValidation
+    - hasLabel
   textProps:
-    - description
-    - helper
     - label
+    - description
     - value
+    - helper
   instanceProps: []
-  modePins:
-    Status:
-      mode: passthrough
-    Input:
-      mode: default
+  modePins: {}
   figmaEvents:
     - input
     - change
     - search
   note: >-
-    2026-08-16: converted Input to a COMPONENT_SET with Style = default | minimal. default = the
-    vertical molecule (unchanged); minimal = a horizontal bare field (label beside control) for
-    dense placements. Code: <template id=minimal> via data-style; data-borderless for the borderless
-    grid-filter case. hasLabel shared across both variants.
+    2026-08-16: Input now a set with Style=default|minimal; minimal = bare inline field (code:
+    data-style=minimal template + data-borderless)

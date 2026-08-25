@@ -194,19 +194,18 @@ figmaVerbatim:
   figmaName: App Header
   nodeType: COMPONENT
   built: true
+  variantAxes: []
   booleanProps:
-    - hasLoadingBar
     - hasNotifications
+    - hasLoadingBar
   textProps: []
-  instanceProps:
-    - Button
-    - Breadcrumbs
-    - Notif Badge
-    - view-icon
-    - Quick Filter Toolbar
+  instanceProps: []
   modePins: {}
+  figmaEvents:
+    - view-header-back
+    - favorite-toggle
+    - breadcrumb-click
+    - view-export
   note: >-
-    Rebuilt 2026-08-15 to match Figma App Header: two rows (history+actions, view details w/
-    embedded Quick Filter Toolbar) + loading bar + notification badge +
-    back/favorite/export/breadcrumb events. Was a 3-region flex bar (needs-rebuild).
-  figmaEvents: []
+    rebuilt 2026-08-15: 2 rows (history+actions, view details w/ embedded quick-filter toolbar) +
+    loading bar + notif badge + 4 events

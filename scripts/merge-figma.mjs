@@ -21,7 +21,6 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
-import { thin } from './thin-def.mjs';
 import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -40,8 +39,10 @@ let matched = 0, noFigma = 0, skipped = 0, missing = 0;
 
 for (const name of readdirSync(COMPONENTS)) {
   const thinPath = join(COMPONENTS, name, `${name}.thin.yaml`);
-  if (!existsSync(thinPath) && !existsSync(join(COMPONENTS, name, `${name}.def.json`))) continue;
-  const def = loadContract(join(COMPONENTS, name, `${name}.def`));   // thin (hydrated) or JSON
+  if (!existsSync(thinPath)) continue;
+  // Load the thin YAML RAW (not hydrated) so we edit only the figma block in
+  // place and leave anatomy/props/events/tokens byte-for-byte untouched.
+  const def = yaml.load(readFileSync(thinPath, 'utf8'));
 
   const entry = nameMap[name];
   if (!entry) { console.warn(`no map entry: ${name}`); missing++; continue; }
@@ -77,9 +78,13 @@ for (const name of readdirSync(COMPONENTS)) {
     continue;
   }
 
-  def.figma = figma;
-  // write back as thin YAML — re-thin so the injected figma stays verbatim
-  if (!DRY) writeFileSync(thinPath, yaml.dump(thin(def), { lineWidth: 100, noRefs: true }));
+  // Preserve figmaEvents from the existing block if the read didn't carry them.
+  const prev = def.figmaVerbatim || def.figma;
+  if (figma.figmaEvents == null && prev?.figmaEvents) figma.figmaEvents = prev.figmaEvents;
+  // Write ONLY the figma binding; every other field stays exactly as authored.
+  def.figmaVerbatim = figma;
+  delete def.figma;
+  if (!DRY) writeFileSync(thinPath, yaml.dump(def, { lineWidth: 100, noRefs: true }));
 }
 
 console.log(`\nmatched:${matched}  no-figma:${noFigma}  skipped:${skipped}  missing:${missing}${DRY ? '  (dry-run)' : ''}`);
