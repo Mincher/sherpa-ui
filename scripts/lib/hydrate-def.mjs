@@ -235,7 +235,7 @@ function hydrateFlat(thin) {
     description: thin.description,
     props: (thin.props ? hydrateProps(thin.props) : []),
     templates: thin.templates ?? [],
-    slots: thin.slots ? Object.entries(thin.slots).map(([name, b]) => ({ name, accepts: b.accepts ?? [], description: b.description ?? '' })) : [],
+    slots: thin.slots ? Object.entries(thin.slots).map(([name, b]) => ({ name, accepts: b.accepts ?? [], description: b.description ?? '', ...(b.examples ? { examples: b.examples } : {}) })) : [],
     parts: thin.parts ?? [],
     nested: thin.nested ?? [],
     props_public: thin.props_public ?? [],
@@ -268,7 +268,7 @@ export function hydrate(thin) {
   full.anatomy = { root: rootNode };
   full.props = hydrateProps(thin.props);
   full.templates = thin.templates ?? [];
-  full.slots = thin.slots ? Object.entries(thin.slots).map(([name, b]) => ({ name, accepts: b.accepts, description: b.description })) : [];
+  full.slots = thin.slots ? Object.entries(thin.slots).map(([name, b]) => ({ name, accepts: b.accepts, description: b.description, ...(b.examples ? { examples: b.examples } : {}) })) : [];
   // parts: explicit if the thin def carries them (robust), else derived
   full.parts = thin.parts ?? derriveParts(rootNode);
   full.nested = thin.nested ?? deriveNested(rootNode);
