@@ -8,10 +8,10 @@
  *
  * @element sherpa-slider
  * @attr {string} data-label      — label text above the slider
- * @attr {number} data-min        — minimum value (default 0)
- * @attr {number} data-max        — maximum value (default 100)
- * @attr {number} data-step       — step increment (default 1)
- * @attr {string} data-value      — current value
+ * @attr {number} min        — minimum value (default 0)
+ * @attr {number} max        — maximum value (default 100)
+ * @attr {number} step       — step increment (default 1)
+ * @attr {number} value      — current value
  * @attr {boolean} data-show-value — show the editable value input beside the track
  * @attr {boolean} data-value-readonly — make the value display read-only (no typing)
  * @attr {boolean} disabled       — disabled state
@@ -33,10 +33,10 @@ export class SherpaSlider extends SherpaElement {
   static override html = new URL('./sherpa-slider.html', import.meta.url);
   static override observed = [
     'data-label',
-    'data-min',
-    'data-max',
-    'data-step',
-    'data-value',
+    'min',
+    'max',
+    'step',
+    'value',
     'disabled',
   ];
 
@@ -63,7 +63,7 @@ export class SherpaSlider extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-min' || name === 'data-max' || name === 'data-step' || name === 'disabled') {
+    if (name === 'min' || name === 'max' || name === 'step' || name === 'disabled') {
       this.#syncInputAttrs();
     }
     this.#sync();
@@ -78,28 +78,28 @@ export class SherpaSlider extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────────── */
 
   get value(): number {
-    return this.#clamp(this.dataset['value']);
+    return this.#clamp(this.getAttribute('value'));
   }
   set value(v: number) {
-    this.dataset['value'] = String(this.#clamp(v));
+    this.setAttribute('value', String(this.#clamp(v)));
   }
 
   /* ── Bounds ──────────────────────────────────────────────────────────── */
 
   get #min(): number {
-    const n = parseFloat(this.dataset['min'] ?? '');
+    const n = parseFloat(this.getAttribute('min') ?? '');
     return Number.isFinite(n) ? n : 0;
   }
   get #max(): number {
-    const n = parseFloat(this.dataset['max'] ?? '');
+    const n = parseFloat(this.getAttribute('max') ?? '');
     return Number.isFinite(n) ? n : 100;
   }
   get #step(): number {
-    const n = parseFloat(this.dataset['step'] ?? '');
+    const n = parseFloat(this.getAttribute('step') ?? '');
     return n > 0 ? n : 1;
   }
 
-  #clamp(raw: number | string | undefined): number {
+  #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : parseFloat(raw ?? '');
     const value = Number.isFinite(n) ? n : this.#min;
     return Math.min(this.#max, Math.max(this.#min, value));
@@ -123,7 +123,7 @@ export class SherpaSlider extends SherpaElement {
 
   /** Mirror the value onto the range input, the value field, and the --_pct fill bridge. */
   #sync(): void {
-    const value = this.#clamp(this.dataset['value']);
+    const value = this.#clamp(this.getAttribute('value'));
     if (this.#input && this.#input.value !== String(value)) {
       this.#input.value = String(value);
     }
@@ -151,13 +151,13 @@ export class SherpaSlider extends SherpaElement {
 
   #onInput = (): void => {
     const value = this.#readInput();
-    this.dataset['value'] = String(value); // triggers #sync via onChange
+    this.setAttribute('value', String(value)); // triggers #sync via onChange
     this.emit('input', { value });
   };
 
   #onChange = (): void => {
     const value = this.#readInput();
-    this.dataset['value'] = String(value);
+    this.setAttribute('value', String(value));
     this.emit('change', { value });
   };
 
@@ -168,13 +168,13 @@ export class SherpaSlider extends SherpaElement {
     // While typing an intermediate value (empty, "-", "1."), don't fight the user.
     if (raw === '' || raw === '-' || raw.endsWith('.')) return;
     const value = this.#clamp(raw);
-    this.dataset['value'] = String(value); // #sync leaves the focused field alone
+    this.setAttribute('value', String(value)); // #sync leaves the focused field alone
     this.emit('input', { value });
   };
 
   #onFieldChange = (): void => {
     const value = this.#clamp(this.#valueField?.value ?? '');
-    this.dataset['value'] = String(value);
+    this.setAttribute('value', String(value));
     if (this.#valueField) this.#valueField.value = String(value); // snap the field to the clamped value on commit
     this.emit('change', { value });
   };

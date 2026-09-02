@@ -3,7 +3,7 @@
  *
  * A native <input type=range> laid transparently over a styled track. The filled
  * portion is a separate .fill element whose width is the ONE value JS supplies,
- * via the --_pct custom property (data-value → --_pct in TS); everything else —
+ * via the --_pct custom property (value → --_pct in TS); everything else —
  * the track, the thumb, the label/value visibility, the disabled look — is pure
  * CSS off data-*. JS never sets width/display/colour here.
  *

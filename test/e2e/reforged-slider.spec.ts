@@ -26,10 +26,10 @@ test.beforeEach(async ({ page }) => {
 test('mirrors min/max/step/value onto the native input and the --_pct fill', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-min', '0');
-    el.setAttribute('data-max', '200');
-    el.setAttribute('data-step', '5');
-    el.setAttribute('data-value', '50');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '200');
+    el.setAttribute('step', '5');
+    el.setAttribute('value', '50');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -54,8 +54,8 @@ test('mirrors min/max/step/value onto the native input and the --_pct fill', asy
 test('the value property clamps to min/max and reflects to --_pct', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-min', '10');
-    el.setAttribute('data-max', '90');
+    el.setAttribute('min', '10');
+    el.setAttribute('max', '90');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -72,8 +72,8 @@ test('the value property clamps to min/max and reflects to --_pct', async ({ pag
 test('a native input event re-dispatches as input with { value }', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-min', '0');
-    el.setAttribute('data-max', '100');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -121,7 +121,7 @@ test('populate({ value }) sets the value', async ({ page }) => {
 test('disabled reflects onto the input and is non-interactive', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-value', '20');
+    el.setAttribute('value', '20');
     el.setAttribute('disabled', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -138,9 +138,9 @@ test('disabled reflects onto the input and is non-interactive', async ({ page })
 test('data-show-value reveals an editable value input; typing updates the slider', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-min', '0');
-    el.setAttribute('data-max', '100');
-    el.setAttribute('data-value', '20');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
+    el.setAttribute('value', '20');
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -154,7 +154,7 @@ test('data-show-value reveals an editable value input; typing updates the slider
     field.dispatchEvent(new Event('change', { bubbles: true }));
     await new Promise((res) => setTimeout(res, 10));
 
-    return { visible, initial, changed, hostValue: el.getAttribute('data-value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
+    return { visible, initial, changed, hostValue: el.getAttribute('value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
   });
   expect(r.visible).toBe(true);
   expect(r.initial).toBe('20'); // field mirrors the initial value
@@ -166,9 +166,9 @@ test('data-show-value reveals an editable value input; typing updates the slider
 test('the value input clamps out-of-range entries to min/max on commit', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-slider') as SliderEl;
-    el.setAttribute('data-min', '10');
-    el.setAttribute('data-max', '50');
-    el.setAttribute('data-value', '30');
+    el.setAttribute('min', '10');
+    el.setAttribute('max', '50');
+    el.setAttribute('value', '30');
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -176,7 +176,7 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
     field.value = '999';
     field.dispatchEvent(new Event('change', { bubbles: true }));
     await new Promise((res) => setTimeout(res, 10));
-    return { fieldValue: field.value, hostValue: el.getAttribute('data-value') };
+    return { fieldValue: field.value, hostValue: el.getAttribute('value') };
   });
   expect(r.fieldValue).toBe('50'); // snapped to max
   expect(r.hostValue).toBe('50');
