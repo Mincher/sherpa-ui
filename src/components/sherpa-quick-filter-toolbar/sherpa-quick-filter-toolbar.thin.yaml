@@ -1,5 +1,5 @@
 name: sherpa-quick-filter-toolbar
-figmaName: Quick Filter Toolbar
+figmaName: Filter Toolbar
 category: control
 description: a strip of quick-filter chips above a grid/list.
 slots:
@@ -29,7 +29,7 @@ tokens:
   actions-zone:core-space-xs: core-space-xs
 figmaVerbatim:
   _status: matched
-  figmaName: Quick Filter Toolbar
+  figmaName: Filter Toolbar
   nodeType: COMPONENT_SET
   built: true
   variantAxes:

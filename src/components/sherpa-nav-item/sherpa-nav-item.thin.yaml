@@ -85,12 +85,9 @@ tokens:
 figmaVerbatim:
   _status: matched
   figmaName: Menu List Item
-  nodeType: COMPONENT_SET
+  nodeType: COMPONENT
   built: true
-  variantAxes:
-    - name: State
-      values:
-        - default
+  variantAxes: []
   booleanProps:
     - hasDescription
     - hasLeadingIcon

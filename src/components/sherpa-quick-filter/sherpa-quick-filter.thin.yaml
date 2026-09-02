@@ -1,5 +1,5 @@
 name: sherpa-quick-filter
-figmaName: Quick Filter Chip
+figmaName: "Filter Chip (atom)"
 category: control
 description: a toggleable filter chip for toolbars.
 props:
@@ -47,7 +47,7 @@ tokens:
   chip:surface-interactive-inactive: surface-interactive-inactive
 figmaVerbatim:
   _status: matched
-  figmaName: Quick Filter Chip
+  figmaName: "Filter Chip (atom)"
   built: true
   variantAxes:
     - name: State

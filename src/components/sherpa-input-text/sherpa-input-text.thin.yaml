@@ -1,5 +1,5 @@
 name: sherpa-input-text
-figmaName: Input Field
+figmaName: Input Field (atom)
 category: control
 description: >-
   A text field. The default style is the full form-field molecule (label + description + control +
@@ -114,7 +114,7 @@ _divergence:
           top-aligned/wrapping
 figmaVerbatim:
   _status: matched
-  figmaName: Input Field
+  figmaName: Input Field (atom)
   built: true
   variantAxes:
     - name: State
@@ -124,6 +124,7 @@ figmaVerbatim:
   booleanProps:
     - hasLeadingIcon
     - hasTrailingIcon
+    - hasActions
   textProps: []
   instanceProps: []
   modePins: {}
@@ -135,3 +136,4 @@ figmaVerbatim:
     2026-08-26: Reduced to the lightweight "Input Field" (box only) with State=default|error.
     Label/description/helper/validation moved OUT to external Typography templates on the page
     (vertical + horizontal). See _divergence above. Supersedes the 2026-08-16 default|minimal set.
+  nodeType: COMPONENT

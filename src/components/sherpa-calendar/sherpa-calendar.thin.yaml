@@ -1,10 +1,19 @@
 name: sherpa-calendar
-figmaName: Grid
+figmaName: Calendar
 category: container
 description: >-
-  A date picker with day / month / year layouts (the Figma Grid Layout axis). The header label zooms
+  A date picker with day / month / year layouts. The header label zooms
   out day→month→year; picking a month/year zooms back in.
 generated: false
+_divergence:
+  '2026-09-02': >-
+    Figma DIVERGED. The old "Grid" component (Layout: month/year/day) was renamed/
+    remodelled to "Calendar" (268:14601) with Type: single/range + hasTime — a
+    single vs range date selection model with an optional time picker. The CODE
+    keeps the day/month/year zoom navigation (its own value). These are different
+    axes: Figma models WHAT is selected (single/range), code models the ZOOM view
+    (day/month/year). Reconcile later — either add single/range to the code or
+    re-model the Figma component. figmaVerbatim._status = divergent until then.
 props:
   data-value:
     kind: content
@@ -52,8 +61,8 @@ tokens:
   cal-day:content-primary-base: content-primary-base
   cal-day:core-fonts-scale-base: core-fonts-scale-base
 figmaVerbatim:
-  _status: matched
-  figmaName: Grid
+  _status: divergent
+  figmaName: Calendar
   nodeType: COMPONENT_SET
   built: true
   variantAxes:

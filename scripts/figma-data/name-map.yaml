@@ -28,10 +28,10 @@ map:
     figma: Select Group
     status: matched
   sherpa-loader:
-    figma: Loader
+    figma: "Loading Spinner (atom)"
     status: matched
   sherpa-progress-bar:
-    figma: Progress Bar
+    figma: "Progress Bar (atom)"
     status: matched
   sherpa-progress-step-tracker:
     figma: Progress Steps
@@ -70,10 +70,10 @@ map:
     status: matched
     note: Figma models the row (Pair); list is composition
   sherpa-quick-filter:
-    figma: Quick Filter Chip
+    figma: "Filter Chip (atom)"
     status: matched
   sherpa-quick-filter-toolbar:
-    figma: Quick Filter Toolbar
+    figma: Filter Toolbar
     status: matched
   sherpa-container:
     figma: Container
@@ -98,7 +98,7 @@ map:
     figma: Tabs
     status: matched
   sherpa-tooltip:
-    figma: Tooltip
+    figma: "Tooltip (atom)"
     status: matched
   sherpa-section-header:
     figma: Section Header
@@ -152,7 +152,7 @@ map:
     figma: Prompt Composer
     status: matched
   sherpa-calendar:
-    figma: Grid
+    figma: Calendar
     status: matched
     note: 'rebuilt 2026-08-15: day|month|year layouts (was month day-grid only)'
   sherpa-nav-section:

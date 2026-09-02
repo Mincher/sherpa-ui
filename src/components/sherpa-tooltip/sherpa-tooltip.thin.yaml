@@ -1,5 +1,5 @@
 name: sherpa-tooltip
-figmaName: Tooltip
+figmaName: "Tooltip (atom)"
 category: container
 description: a hover/focus tooltip that wraps a trigger.
 props:
@@ -30,7 +30,7 @@ tokens:
   bubble:core-border-rounding-base: core-border-rounding-base
 figmaVerbatim:
   _status: matched
-  figmaName: Tooltip
+  figmaName: "Tooltip (atom)"
   nodeType: COMPONENT
   built: true
   variantAxes: []
