@@ -88,7 +88,7 @@ test('data-status colours the fill', async ({ page }) => {
     };
     return { base: await paint(), success: await paint('success') };
   });
-  expect(r.success).toBe('rgb(5, 129, 66)'); // status-success-color-4 #058142
+  expect(r.success).toBe('rgb(32, 193, 115)'); // strong success status surface #20c173 (--_status-surface-strong)
   expect(r.base).not.toBe(r.success);
 });
 

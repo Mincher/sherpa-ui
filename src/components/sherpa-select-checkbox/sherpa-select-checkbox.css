@@ -21,9 +21,11 @@
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   --_size: var(--sherpa-display-size-sm, 16px);
-  --_border: var(--sherpa-style-border-base, #b2b2bf);
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
   --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_fill: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  /* Checked indicator fill: the Saturated accent via the look-tier cascade. A
+     status context re-tints it; default resolves to the strong action colour. */
+  --_fill: var(--_status-surface, #3b4ccd);
   --_focus: var(--sherpa-style-border-base, #b2b2bf);
 }
 
@@ -36,8 +38,8 @@
   gap: var(--sherpa-display-space-xs, 8px);
   cursor: pointer;
   user-select: none;
-  width: 100%;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  inline-size: 100%;
+  color: var(--sherpa-theme-content-body-base, #18191a);
 }
 
 /* ── The control (native input, custom-drawn box) ─────────────────── */
@@ -53,7 +55,7 @@
   margin: 0;
   padding: 0;
   position: relative;
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_border);
+  border: var(--sherpa-display-border-width-sm, 1px) solid var(--_border);
   border-radius: var(--sherpa-display-border-rounding-sm, 2px);
   background: var(--_surface);
   cursor: pointer;
@@ -100,10 +102,12 @@
 .control:hover:not(:disabled) {
   border-color: var(--sherpa-theme-border-default-1, #8d8d99);
 }
-.control:checked:hover:not(:disabled),
-.control:indeterminate:hover:not(:disabled) {
-  background: var(--sherpa-theme-surface-accent-hover, #173382);
-  border-color: var(--sherpa-theme-surface-accent-hover, #173382);
+@supports (color: color-mix(in oklab, red, blue)) {
+  .control:checked:hover:not(:disabled),
+  .control:indeterminate:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--_fill) 88%, #000);
+    border-color: color-mix(in oklab, var(--_fill) 88%, #000);
+  }
 }
 .control:active:not(:disabled) {
   transform: scale(0.92);
@@ -123,7 +127,7 @@
   min-width: 0;
 }
 .label {
-  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.4;
 }
@@ -161,15 +165,12 @@
 
 /* ── Validation — native :user-invalid, unchecked required ────────── */
 .control:user-invalid:not(:checked):not(:indeterminate) {
-  border-color: var(--sherpa-theme-surface-critical-4, #9b2509);
+  border-color: var(--sherpa-theme-content-critical-base, #9b2509);
 }
 
-/* ── Status cascade — status context re-inks label + accent fill ──── */
-:host([data-status]) .control:checked,
-:host([data-status]) .control:indeterminate {
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-accent-base, #3c5edd));
-  border-color: var(--_status-surface-strong, var(--sherpa-theme-surface-accent-base, #3c5edd));
-}
+/* ── Status cascade — status context re-inks the description ───────
+   The checked fill already routes through --_status-surface (--_fill), so a
+   status context tints it automatically — no extra rule needed here. */
 :host([data-status]) .description {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
 }

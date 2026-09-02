@@ -81,7 +81,7 @@ test('the rotating arc uses the primary token colour', async ({ page }) => {
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.spinner')!, '::after').borderRightColor;
   });
-  expect(color).toBe('rgb(133, 0, 204)'); // content-active-base #8500cc (brand)
+  expect(color).toBe('rgb(36, 0, 54)'); // theme-content-active-base #240036 (brand)
 });
 
 test('vertical orientation stacks spinner over label', async ({ page }) => {

@@ -91,7 +91,7 @@ test(':checked drives the visual — filled box + checkmark, no JS styling', asy
   });
   // Unchecked box is the white container surface; checked box is the primary fill.
   expect(r.unchecked).toBe('rgb(255, 255, 255)');
-  expect(r.checked).toBe('rgb(60, 94, 221)'); // surface-control-primary #3c5edd
+  expect(r.checked).toBe('rgb(59, 76, 205)'); // Saturated accent #3b4ccd (look-tier --_status-surface)
   expect(r.checked).not.toBe(r.unchecked);
   expect(r.markContent).not.toBe('none'); // ::after checkmark rendered
 });
@@ -112,7 +112,7 @@ test('indeterminate property drives input.indeterminate + the dash visual', asyn
     return { indeterminate: input.indeterminate, bg, dash };
   });
   expect(r.indeterminate).toBe(true);
-  expect(r.bg).toBe('rgb(60, 94, 221)'); // filled like checked
+  expect(r.bg).toBe('rgb(59, 76, 205)'); // filled like checked — Saturated accent #3b4ccd
   expect(r.dash).not.toBe('none'); // ::after dash rendered
 });
 

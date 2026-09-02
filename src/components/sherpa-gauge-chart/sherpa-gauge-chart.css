@@ -4,7 +4,10 @@
  * The visible top-half arc is a full circle clipped to its top half. The track is
  * a neutral ring; the fill is a conic-gradient whose coloured sweep is bounded by
  * --_fill-pct (0–50% of the circle = 0–100% of the visible half), set by JS. The
- * needle rotates by --_angle. data-status re-points the fill colour token.
+ * needle rotates by --_angle. The fill colour routes through the look-tier
+ * cascade: a [data-status] on the host (or an ancestor) emits --_status-surface-
+ * strong, which --_fill consumes; with no status it falls back to the Saturated
+ * accent (#3b4ccd). No per-status blocks — one routing rule covers them all.
  */
 
 :host {
@@ -15,15 +18,11 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_size: 160px;
   --_ring: 16px;
-  --_fill: var(--sherpa-theme-content-link-base, #3c5edd);
+  /* Strong status colour when a status is set; else the Saturated accent. */
+  --_fill: var(--_status-surface-strong, #3b4ccd);
   --_fill-pct: 0%;
   --_angle: -90deg;
 }
-
-:host([data-status="critical"]) { --_fill: var(--sherpa-theme-surface-critical-4, #bf2c09); }
-:host([data-status="warning"])  { --_fill: var(--sherpa-theme-surface-warning-4, #a77206); }
-:host([data-status="success"])  { --_fill: var(--sherpa-theme-surface-success-3, #058142); }
-:host([data-status="info"])     { --_fill: var(--sherpa-theme-surface-info-4, #07526f); }
 
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);

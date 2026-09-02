@@ -77,7 +77,7 @@ test(':checked drives the visual — white face + coloured dot, no JS styling', 
   expect(r.dotBefore).toBe('none'); // no dot until :checked
   expect(r.face).toBe('rgb(255, 255, 255)'); // radio keeps a white face
   expect(r.dotAfter).not.toBe('none'); // ::after dot rendered on :checked
-  expect(r.dotColor).toBe('rgb(60, 94, 221)'); // surface-control-primary #3c5edd
+  expect(r.dotColor).toBe('rgb(59, 76, 205)'); // Saturated accent #3b4ccd (look-tier --_status-surface)
 });
 
 test('radios sharing a name group natively — selecting one deselects the other', async ({ page }) => {

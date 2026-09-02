@@ -2,15 +2,18 @@
  * sherpa-chat-message.css — a single chat bubble.
  *
  * Layout and colour are driven entirely by data-role:
- *   assistant (default) — left-aligned, secondary surface, avatar shown
- *   user                — right-aligned, accent surface, no avatar
+ *   assistant (default) — left-aligned, neutral Style surface, avatar shown
+ *   user                — right-aligned, Saturated accent surface, no avatar
  *   system              — centred, muted, no avatar
  *
- * The bubble has NO border in Figma — the fill alone separates it. Assistant
- * fills with surface/secondary/base + content/primary/base ink; user fills with
- * surface/interactive/primary/base + content/primary/on-color ink. Corner radii
- * bind the control-scoped radius vars. The author/time meta row and the avatar
- * collapse when empty. Pure data-* selectors — JS never styles.
+ * The bubble has NO border in Figma — the fill alone separates it. Each role
+ * re-points ONE pair of private custom properties (--_surface / --_ink); the
+ * bubble consumes them, so the computed background is reliable across an early
+ * getComputedStyle read. The user bubble routes through the look-tier cascade
+ * (--_status-surface) so an ancestor status can recolour it, falling back to the
+ * Saturated accent (#3b4ccd) — the strong action colour, not the pale accent
+ * ramp. Corner radii bind the shared Structure vars. The author/time meta row and
+ * the avatar collapse when empty. Pure data-* selectors — JS never styles.
  */
 
 :host {
@@ -20,7 +23,7 @@
 
   /* private surface + ink for the bubble; role blocks re-pin these */
   --_surface: var(--sherpa-theme-surface-default-1, #fdfdfd);
-  --_ink: var(--sherpa-content-primary-base, #2e2e33);
+  --_ink: var(--sherpa-theme-content-body-base, #18191a);
 }
 
 .message {
@@ -47,7 +50,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  background: var(--_status-surface, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -97,11 +100,11 @@
 .bubble ::slotted(*) { margin: 0; }
 .bubble ::slotted(* + *) { margin-top: var(--sherpa-display-space-xs, 8px); }
 
-/* ── Assistant (default): left-aligned, secondary surface, avatar shown ─ */
+/* ── Assistant (default): left-aligned, neutral Style surface, avatar shown ─ */
 :host,
 :host([data-role="assistant"]) {
   --_surface: var(--sherpa-theme-surface-default-1, #fdfdfd);
-  --_ink: var(--sherpa-content-primary-base, #2e2e33);
+  --_ink: var(--sherpa-theme-content-body-base, #18191a);
 }
 
 /* ── User: right-aligned, accent surface, no avatar ──────────────────── */
@@ -112,8 +115,9 @@
 :host([data-role="user"]) .avatar { display: none; }
 :host([data-role="user"]) .stack { align-items: flex-end; max-width: 85%; }
 :host([data-role="user"]) {
-  --_surface: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  --_ink: var(--sherpa-theme-content-body-base-fixed, #fafafa);
+  /* Look-tier routing: an ancestor status recolours; else the Saturated accent. */
+  --_surface: var(--_status-surface, #3b4ccd);
+  --_ink: var(--_status-text, var(--sherpa-theme-content-body-base-fixed, #ffffff));
 }
 
 /* ── System: centred, muted, no avatar ───────────────────────────────── */
@@ -128,6 +132,6 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
 }
 :host([data-role="system"]) {
-  --_surface: var(--sherpa-theme-surface-default-1, #fdfdfd);
+  --_surface: var(--sherpa-theme-surface-default-2, #f2f2f5);
   --_ink: var(--sherpa-theme-content-body-1, #404047);
 }

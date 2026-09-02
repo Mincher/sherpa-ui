@@ -130,7 +130,7 @@ test('role drives the bubble colour: user differs from assistant, system is mute
       system: await bg('system'),
     };
   });
-  expect(r.user).toBe('rgb(60, 94, 221)'); // surface-control-primary-default #3c5edd
+  expect(r.user).toBe('rgb(59, 76, 205)'); // Saturated accent #3b4ccd (look-tier --_status-surface)
   expect(r.user).not.toBe(r.assistant);
   expect(r.system).not.toBe(r.user);
 });
