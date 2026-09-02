@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schema/component/v1.json",
+  "title": "Sherpa-UI DTCG-dialect component spec",
+  "description": "Private convention (DTCG-inspired grammar: $-keys + {ref} like the token file) for describing a sherpa-* web component. NOT external-DTCG-tool interop. See docs/COMPONENT-SPEC-DTCG-PLAN.md §1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "$type", "$name"],
+  "properties": {
+    "$schema": {
+      "description": "Points at this schema (or its URL). Free-form string so the file can name where it was validated.",
+      "type": "string"
+    },
+    "$type": {
+      "description": "The DTCG-dialect node type. At the top level a spec is always a `component`.",
+      "$ref": "#/$defs/typeEnum",
+      "const": "component"
+    },
+    "$name": {
+      "description": "The code element name — always sherpa-*.",
+      "type": "string",
+      "pattern": "^sherpa-[a-z][a-z0-9-]*$"
+    },
+    "$description": {
+      "type": "string"
+    },
+    "element": { "$ref": "#/$defs/element" },
+    "props": {
+      "description": "The public API: data-* attributes + native (bare) attributes.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/prop" }
+    },
+    "variants": {
+      "description": "Named visual/state forks the design picks. Each may $ref an extension tier or a prop.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/variant" }
+    },
+    "slots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/slot" }
+    },
+    "states": {
+      "description": "Each state = a CSS selector + the token {ref}s that selector applies. CSS-owned, JS-free.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/state" }
+    },
+    "capabilities": {
+      "description": "Declared Web-API surface (form-association, ElementInternals, container-query, observers, JS-property mirror, …) so robustness is contract data, not implicit in the .ts.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/capability" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "tokens": {
+      "description": "element.property -> token {ref}. Values are {ref} strings into the token DTCG or this spec.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/ref" }
+    },
+    "$extensions": {
+      "description": "Namespaced extras (Figma names, behaviour channel, divergence). Open by design.",
+      "type": "object",
+      "properties": {
+        "sherpa": { "$ref": "#/$defs/sherpaExtension" }
+      }
+    }
+  },
+  "$defs": {
+    "typeEnum": {
+      "description": "The closed set of component-spec node types.",
+      "enum": [
+        "component",
+        "element",
+        "prop",
+        "variant",
+        "slot",
+        "state",
+        "capability",
+        "event"
+      ]
+    },
+    "ref": {
+      "description": "A DTCG-style reference: {path.to.thing}. Resolves against this spec or the token DTCG via the shared resolver.",
+      "type": "string",
+      "pattern": "^\\{[^}]+\\}$"
+    },
+    "refOrValue": {
+      "description": "Either a {ref} or a literal value the CSS uses (e.g. a hardcoded fallback hex or keyword).",
+      "type": "string"
+    },
+    "element": {
+      "description": "The native element the component IS.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tag"],
+      "properties": {
+        "$type": { "const": "element" },
+        "tag": {
+          "description": "The native tag the component's interactive root is (e.g. button).",
+          "type": "string"
+        },
+        "attributes": {
+          "description": "Native attributes set on that tag in the template (role, type, aria-*, …).",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "boolean", "number"] }
+        },
+        "provides": {
+          "description": "Browser-owned behaviour JS must not re-implement (from element-map.yaml provides:).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "stateCss": {
+          "description": "CSS-native state hooks: state name -> the selector that drives it (e.g. focus-visible -> :focus-visible).",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "prop": {
+      "description": "One public attribute of the component.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "$type": { "const": "prop" },
+        "name": {
+          "description": "The attribute name: data-* (kebab) or a bare native attr (disabled, name, value…).",
+          "type": "string"
+        },
+        "type": {
+          "enum": ["enum", "boolean", "string", "number"]
+        },
+        "kind": {
+          "description": "The variant mechanism: how the prop is realised. Native attrs may omit this.",
+          "enum": ["style", "content", "visibility", "template"]
+        },
+        "native": {
+          "description": "true = a bare native HTML attribute (disabled, name…), not a data-* one.",
+          "type": "boolean"
+        },
+        "values": {
+          "description": "Allowed values for an enum prop.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "default": {
+          "type": ["string", "boolean", "number", "null"]
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "enum" } } },
+          "then": { "required": ["values"] }
+        }
+      ]
+    },
+    "variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "$type": { "const": "variant" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "$ref": {
+          "description": "Binds this variant to a prop or an extension tier via {ref}.",
+          "$ref": "#/$defs/ref"
+        }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "$type": { "const": "slot" },
+        "name": { "type": "string" },
+        "accepts": {
+          "description": "The data-accepts category allowlist.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "selector"],
+      "properties": {
+        "$type": { "const": "state" },
+        "name": { "type": "string" },
+        "selector": {
+          "description": "The CSS selector that expresses the state (e.g. :host([data-state=\"on\"]), :focus-visible, :host([disabled])).",
+          "type": "string"
+        },
+        "description": { "type": "string" },
+        "tokens": {
+          "description": "The token {ref}s (or literal values) the selector applies.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/refOrValue" }
+        }
+      }
+    },
+    "capability": {
+      "description": "A declared Web-API surface the component relies on.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["api"],
+      "properties": {
+        "$type": { "const": "capability" },
+        "api": {
+          "description": "The capability name (e.g. js-property-mirror, container-query, ElementInternals).",
+          "type": "string"
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "$type": { "const": "event" },
+        "name": {
+          "description": "Unprefixed noun-verb (or a re-dispatched native name like change).",
+          "type": "string"
+        },
+        "description": { "type": "string" },
+        "bubbles": { "type": "boolean" },
+        "composed": { "type": "boolean" },
+        "cancelable": { "type": "boolean" },
+        "detail": {
+          "description": "Payload shape: field -> type name.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "trigger": {
+          "description": "What fires it — the native event + node it comes from.",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "sherpaExtension": {
+      "description": "Sherpa-namespaced extras. Open so new metadata can be added without a schema bump.",
+      "type": "object",
+      "properties": {
+        "figmaName": { "type": "string" },
+        "figmaNodeId": { "type": "string" },
+        "category": { "type": "string" },
+        "variantAxes": {
+          "description": "Figma variant axes, verbatim (name + values).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "values": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "booleanProps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "jsProps": {
+          "description": "The JS-property mirror surface (read/write reflected props).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "access": { "enum": ["read", "write", "read-write"] },
+              "reflects": {
+                "description": "The attribute this property mirrors.",
+                "type": "string"
+              },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "behaviour": {
+          "description": "The Figma behaviour channel — runtime behaviour Figma can't model structurally.",
+          "type": ["array", "string"]
+        },
+        "divergence": {
+          "description": "Figma-vs-code divergence, mirrored from the component's thin.yaml _divergence block.",
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

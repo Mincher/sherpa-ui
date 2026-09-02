@@ -1,0 +1,158 @@
+# sherpa-switch — DTCG-dialect component spec (PILOT).
+#
+# Private convention: DTCG-inspired grammar ($-keys + {ref} like figma.tokens.json),
+# NOT external-DTCG-tool interop. Validated by schemas/component.v1.json.
+# Dual-run: sherpa-switch.thin.yaml stays in place during the pilot.
+#
+# Everything here traces to the real sherpa-switch.{ts,html,css}.
+
+$schema: ../../../schemas/component.v1.json
+$type: component
+$name: sherpa-switch
+$description: an immediate binary toggle for settings and preferences.
+
+# ── the native element the component IS ───────────────────────────────────────
+# HTML: <button type="button" class="track" role="switch" aria-checked="false">.
+# A real button owns activation, keyboard and focus; PE law (element-map:
+# button.provides) — JS re-implements none of these. JS only flips data-state,
+# mirrors aria-checked, and re-dispatches `change` (composition, not a rebuild).
+element:
+  $type: element
+  tag: button
+  attributes:
+    type: button
+    role: switch
+    aria-checked: "false"      # JS mirrors this from data-state via #syncAria()
+  provides: [click, keyboard, focus, disabled]
+  stateCss:
+    # the CSS-native hooks that drive visuals without JS
+    focus-visible: ":focus-visible"     # .track:focus-visible → focus ring
+    disabled: ":host([disabled])"       # inactive tokens, pointer-events:none
+    on: ':host([data-state="on"])'      # aria-checked-driven visual = data-state
+    off: ':host(:not([data-state="on"]))'
+
+# ── public API ────────────────────────────────────────────────────────────────
+props:
+  - $type: prop
+    name: data-state
+    type: enum
+    kind: content
+    values: [on, off]
+    default: "off"                       # onRender() sets 'off' when unset
+    description: current value (read/write). JS keeps it and aria-checked in sync.
+  - $type: prop
+    name: data-style
+    type: enum
+    kind: style
+    values: [default, simple]
+    default: default
+    description: >-
+      visual form. default = rectangular track, ON/OFF label, square thumb;
+      simple = pill, no label, round thumb. CSS-only — radius/thumb/label come
+      from the projected switch tokens' [data-style="simple"] mode block.
+  - $type: prop
+    name: disabled
+    type: boolean
+    native: true                         # bare native attr, not data-*
+    default: false
+    description: native disabled state (read/write). Styled with inactive tokens, never opacity.
+
+# ── states — each a CSS selector + the token refs it applies ───────────────────
+states:
+  - $type: state
+    name: "off"
+    selector: ':host(:not([data-state="on"]))'
+    description: knob at the start; neutral inactive track; OFF label in body colour.
+    tokens:
+      track.background: "{sherpa.theme-surface-default-2}"   # the --_fill default (OFF)
+      label.color: "{sherpa.style-content-base}"
+  - $type: state
+    name: "on"
+    selector: ':host([data-state="on"])'
+    description: track re-points --_fill to the strong success surface; knob slides to the end (flex-direction row-reverse); ON label.
+    tokens:
+      track.background: "{sherpa.theme-surface-success-3}"
+      label.color: "{sherpa.theme-content-body-base-fixed}"
+  - $type: state
+    name: disabled
+    selector: ":host([disabled])"
+    description: inactive tokens, never opacity; pointer-events none.
+    tokens:
+      track.background: "{sherpa.theme-surface-default-2}"
+      track.border-color: "{sherpa.theme-border-default-2}"
+      label.color: "{sherpa.theme-content-body-2}"
+  - $type: state
+    name: focus-visible
+    selector: ".track:focus-visible"
+    description: explicit focus ring (box-shadow, not outline:--focus-ring) per the WCAG-safe pattern.
+    tokens:
+      track.box-shadow: "{sherpa.theme-border-accent-base}"
+
+# ── declared Web-API surface ──────────────────────────────────────────────────
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: >-
+      checked (boolean), state ("on"|"off") and disabled (boolean) are read-write
+      JS properties reflecting data-state / the disabled attribute. See
+      $extensions.sherpa.jsProps for the exact surface.
+
+# ── events ────────────────────────────────────────────────────────────────────
+events:
+  - $type: event
+    name: change
+    description: fires on every toggle.
+    bubbles: true
+    composed: true
+    cancelable: false
+    detail:
+      checked: boolean
+    trigger:
+      on: click
+      node: .track
+
+# ── token map (element.property -> {ref}) ─────────────────────────────────────
+# The scoped --sherpa-switch-* vars are PROJECTED from the token file's `switch`
+# group (switch-radius.*, switch-size.*), re-pointed per [data-style] mode.
+tokens:
+  track.gap: "{sherpa.theme-gap-sm}"
+  track.inline-size: "{switch.switch-size.width}"
+  track.min-block-size: "{switch.switch-size.height}"
+  track.padding: "{switch.switch-size.padding}"
+  track.border-width: "{sherpa.style-border-width}"
+  track.border-color: "{sherpa.style-border-base}"
+  track.border-radius: "{switch.switch-radius.track}"
+  track.font-family: "{sherpa.font-family-body}"
+  track.font-size: "{sherpa.font-size-body-small}"
+  track.font-weight: "{sherpa.font-weight-semibold}"
+  knob.inline-size: "{switch.switch-size.thumb}"
+  knob.block-size: "{switch.switch-size.thumb}"
+  knob.border-radius: "{switch.switch-radius.thumb}"
+  knob.background: "{sherpa.style-surface-base}"
+  label.color: "{sherpa.theme-content-body-base-fixed}"
+
+# ── Sherpa-namespaced extras ──────────────────────────────────────────────────
+$extensions:
+  sherpa:
+    figmaName: Switch
+    category: control
+    variantAxes:
+      - name: Value
+        values: [off, on]
+    booleanProps: [hasLabel]        # → --_has-label display toggle (label visibility)
+    jsProps:
+      - name: checked
+        type: boolean
+        access: read-write
+        reflects: data-state
+        description: whether the switch is on (state === "on").
+      - name: state
+        type: string
+        access: read-write
+        reflects: data-state
+        description: '"on" | "off".'
+      - name: disabled
+        type: boolean
+        access: read-write
+        reflects: disabled
+        description: native disabled state.
