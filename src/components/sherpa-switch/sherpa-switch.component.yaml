@@ -31,6 +31,28 @@ element:
     on: ':host([data-state="on"])'      # aria-checked-driven visual = data-state
     off: ':host(:not([data-state="on"]))'
 
+# ── anatomy — the Shadow-DOM node tree (drives HTML generation) ───────────────
+# One flat template. Root IS the <button role="switch"> (the element block above);
+# knob + label are decorative spans. This tree round-trips to sherpa-switch.html.
+templates: [default]
+anatomy:
+  root:
+    el: button
+    class: track
+    attrs:
+      type: button
+      role: switch
+      aria-checked: "false"
+    children:
+      - el: span
+        class: knob
+        attrs:
+          aria-hidden: "true"
+      - el: span
+        class: label
+        attrs:
+          aria-hidden: "true"
+
 # ── public API ────────────────────────────────────────────────────────────────
 props:
   - $type: prop

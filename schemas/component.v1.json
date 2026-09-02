@@ -25,6 +25,20 @@
       "type": "string"
     },
     "element": { "$ref": "#/$defs/element" },
+    "anatomy": {
+      "description": "The Shadow-DOM node tree the component renders — one `root` node with recursive `children`. Drives HTML generation (one <template> per templates[]). Round-trips to the real .html structure.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root"],
+      "properties": {
+        "root": { "$ref": "#/$defs/node" }
+      }
+    },
+    "templates": {
+      "description": "The <template id> list the component ships (default plus any variant/removable ids). Empty ⇒ ['default'].",
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "props": {
       "description": "The public API: data-* attributes + native (bare) attributes.",
       "type": "array",
@@ -88,6 +102,43 @@
     "refOrValue": {
       "description": "Either a {ref} or a literal value the CSS uses (e.g. a hardcoded fallback hex or keyword).",
       "type": "string"
+    },
+    "node": {
+      "description": "One node in the Shadow-DOM anatomy tree (matches the shape compile-def.mjs walks: el/class/part/attrs/slot/component/showWhen/children).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "el": {
+          "description": "The native tag (button, span, div…). Omitted only when `component` names an owned custom element.",
+          "type": "string"
+        },
+        "component": {
+          "description": "An owned nested custom element rendered instead of a plain tag.",
+          "type": "string"
+        },
+        "class": { "type": "string" },
+        "part": {
+          "description": "The ::part() name exposed to the light DOM.",
+          "type": "string"
+        },
+        "attrs": {
+          "description": "Static attributes rendered on the node in the template (role, type, aria-*…).",
+          "type": "object",
+          "additionalProperties": { "type": ["string", "boolean", "number"] }
+        },
+        "slot": {
+          "description": "A <slot> child: '' ⇒ default slot, a name ⇒ named slot. Absent ⇒ no slot.",
+          "type": "string"
+        },
+        "showWhen": {
+          "description": "Only render this node in the named template (e.g. 'removable').",
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/node" }
+        }
+      }
     },
     "element": {
       "description": "The native element the component IS.",
