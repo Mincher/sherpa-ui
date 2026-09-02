@@ -20,7 +20,6 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
-  static override tokens = new URL('./sherpa-switch.tokens.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
   static override observed = ['data-state'];
 

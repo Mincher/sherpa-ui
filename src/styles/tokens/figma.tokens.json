@@ -5735,6 +5735,42 @@
         "$type": "dimension",
         "$value": "{display.space.6xl}"
       }
+    },
+    "breakpoint": {
+      "$description": "Responsive breakpoint threshold (min-width) per device mode. From Apex 2.0 Layout.",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:63:1849",
+          "figmaResolvedType": "FLOAT",
+          "lastSyncedAt": "2026-09-02T10:42:00.000Z",
+          "lastSyncedValue": {
+            "mobile": {
+              "literal": 375
+            },
+            "tablet": {
+              "literal": 768
+            },
+            "desktop": {
+              "literal": 1280
+            },
+            "wide": {
+              "literal": 1920
+            }
+          },
+          "modes": {
+            "tablet": 768,
+            "desktop": 1280,
+            "wide": 1920
+          },
+          "primaryMode": "mobile",
+          "scopes": [
+            "WIDTH_HEIGHT"
+          ],
+          "variableId": "VariableID:977:26158"
+        }
+      },
+      "$type": "number",
+      "$value": 375
     }
   },
   "grid-calendar-d": {

@@ -129,10 +129,13 @@ test('data-snap joins buttons into a seamless group (per-corner radius)', async 
       const cs = getComputedStyle(b);
       return { tl: cs.borderStartStartRadius, tr: cs.borderStartEndRadius };
     };
-    return { left: await mk('left'), middle: await mk('middle') };
+    return { left: await mk('left'), all: await mk('all') };
   });
-  // left keeps its top-left rounded; middle squares all corners (seamless join)
-  expect(parseFloat(r.left.tl)).toBeGreaterThan(0);
-  expect(parseFloat(r.middle.tl)).toBe(0);
-  expect(parseFloat(r.middle.tr)).toBe(0);
+  // Figma snap semantics: data-snap="<edge>" = snapped AGAINST that edge, so THAT
+  // edge's corners go flat. "left" squares the left (top-left) corner but keeps the
+  // right (top-right) rounded; "all" squares every corner (fully seamless join).
+  expect(parseFloat(r.left.tl)).toBe(0);
+  expect(parseFloat(r.left.tr)).toBeGreaterThan(0);
+  expect(parseFloat(r.all.tl)).toBe(0);
+  expect(parseFloat(r.all.tr)).toBe(0);
 });

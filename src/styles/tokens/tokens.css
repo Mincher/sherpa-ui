@@ -966,6 +966,7 @@
   --sherpa-grid-layout-grid-max-width: 480px;
   --sherpa-grid-layout-grid-padding: var(--sherpa-display-space-base);
   --sherpa-grid-layout-grid-row-height: var(--sherpa-display-space-6xl);
+  --sherpa-grid-breakpoint: 375;
   --sherpa-style-border-base: var(--sherpa-theme-border-default-1);
   --sherpa-style-border-width: var(--sherpa-display-border-width-sm);
   --sherpa-style-content-base: var(--sherpa-theme-content-body-base);

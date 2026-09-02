@@ -12,6 +12,11 @@ const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
 const OUT = join(ROOT, 'dist');
 
+// Project Figma tokens first so each <comp>.css carries a fresh inlined token
+// region before the copy step (one .css per component — no separate .tokens.css).
+console.log('› project-tokens');
+execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
+
 console.log('› tsc -p tsconfig.reforged.json');
 execSync('npx tsc -p tsconfig.reforged.json', { stdio: 'inherit' });
 

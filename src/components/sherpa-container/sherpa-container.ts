@@ -14,7 +14,6 @@ interface ContainerState {
 
 export class SherpaContainer extends SherpaElement {
   static override css = new URL('./sherpa-container.css', import.meta.url);
-  static override tokens = new URL('./sherpa-container.tokens.css', import.meta.url);
   static override html = new URL('./sherpa-container.html', import.meta.url);
 
   /** populate({ state: 'loading' | 'empty' | 'error' | null }) toggles the overlay. */
