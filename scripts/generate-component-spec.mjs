@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * generate-component-spec.mjs — DERIVE a DTCG-dialect `*.component.yaml` spec for a
- * component from its existing sources (thin.yaml + HTML + CSS + TS + element-map).
+ * component from its CODE sources (HTML + CSS + TS + element-map).
  *
  *   node scripts/generate-component-spec.mjs sherpa-switch      # write next to component
  *   node scripts/generate-component-spec.mjs --all              # write every component
@@ -14,29 +14,41 @@
  * hand spec's richer prose (state descriptions, capability narratives) is NOT
  * reproduced — that's the residue a human finishes.
  *
+ * `*.component.yaml` is now THE single authored+regenerable component contract;
+ * `*.thin.yaml` has been RETIRED. Everything the generator emits derives from the
+ * component's own HTML/CSS/TS — EXCEPT the Figma binding (figmaName, category,
+ * variantAxes, booleanProps, divergence), which cannot be read from code. That
+ * block lived in thin.yaml's `figmaVerbatim`; it now lives in each spec's
+ * `$extensions.sherpa` and is PRESERVED verbatim from the existing spec on regen.
+ *
  * PURE-ish: reads the component sources + shared data files, emits YAML. NEVER
- * modifies any component source (.ts/.html/.css/.thin.yaml).
+ * modifies any component source (.ts/.html/.css).
  *
  * ── Derivation strategy, per spec block ───────────────────────────────────────
- *   $name/$description/$extensions.sherpa
- *       ← thin.yaml (name, description, figmaName, category, figmaVerbatim.*).
- *         Description falls back to the HTML comment's first line, then a stub.
+ *   $name
+ *       ← the component directory name.
+ *   $description
+ *       ← the HTML comment's `sherpa-x — …` first line, then a stub.
+ *   $extensions.sherpa (figmaName, category, variantAxes, booleanProps, divergence)
+ *       ← PRESERVED from the EXISTING <name>.component.yaml's `$extensions.sherpa`
+ *         (these came from thin.yaml's figmaVerbatim and cannot be re-derived from
+ *         code). resync-figma.mjs keeps them aligned with live Figma. jsProps are
+ *         re-derived fresh from the TS below and merged in.
  *   props
- *       ← thin.yaml props map (name→{kind,type}) MERGED with the HTML `Public API:`
- *         comment block, which is the AUTHORITATIVE source of enum `values` +
- *         `default` + `(boolean)`. Comment wins for completeness (a prop only in
- *         the comment is still emitted). Native attrs (disabled/name/value/…) →
- *         native:true. Enum props get `values:[…]`.
+ *       ← the HTML `Public API:` comment block — the AUTHORITATIVE source of enum
+ *         `values` + `default` + `(boolean)`. Native attrs (disabled/name/value/…)
+ *         → native:true. Enum props get `values:[…]`. The TS `observed` list is the
+ *         ground truth for which data-* props are reactive (kind).
  *   anatomy + templates
  *       ← parse the HTML `<template id="default">` node tree (el/class/part/attrs/
  *         slot/children). templates = every `<template id>` present.
  *   events
- *       ← thin.yaml events (with trigger node) UNION the HTML `Fires:` list.
+ *       ← the HTML `Fires:` list.
  *   tokens
  *       ← parse the AUTHORED CSS region (below `/* == end sherpa:tokens == *␣/`)
  *         for `.el { prop: var(--sherpa-X) }` bindings and emit `el.prop:{ref}`.
- *         THIS — not thin.yaml's stale Figma-var token map — is what round-trips,
- *         because roundtrip-component.mjs re-extracts the same authored bindings.
+ *         This is what round-trips, because roundtrip-component.mjs re-extracts the
+ *         same authored bindings.
  *   element
  *       ← the anatomy root's tag + provides/stateCss from element-map.yaml
  *         (best-effort; unknown root → tag + empty provides).
@@ -507,12 +519,15 @@ function parseStates(cssAuthored) {
 function generateSpec(name) {
   const dir = join(C, name);
   const notes = [];
-  const thinRaw = readIf(join(dir, `${name}.thin.yaml`));
   const html = readIf(join(dir, `${name}.html`));
   const css = readIf(join(dir, `${name}.css`));
   const ts = readIf(join(dir, `${name}.ts`));
-  const thin = thinRaw ? (yaml.load(thinRaw) ?? {}) : {};
-  if (!thinRaw) notes.push('no thin.yaml (props/tokens derived from HTML+CSS only)');
+  // The Figma binding (figmaName/category/variantAxes/booleanProps/divergence)
+  // cannot be read from code — it is PRESERVED from the existing spec on regen.
+  const existingRaw = readIf(join(dir, `${name}.component.yaml`));
+  const existing = existingRaw ? (yaml.load(existingRaw) ?? {}) : {};
+  const priorExt = (existing.$extensions && existing.$extensions.sherpa) || {};
+  if (!existingRaw) notes.push('no existing component.yaml — $extensions.sherpa (figmaName/category/…) minimal; re-run resync-figma to populate');
   if (!html) notes.push('no HTML (cannot derive anatomy/props/events — round-trip will fail)');
   if (!css) notes.push('no CSS (no token bindings)');
   if (!ts) notes.push('no TS (no jsProps)');
@@ -520,7 +535,7 @@ function generateSpec(name) {
   // TS `observed` list is the GROUND TRUTH for which data-* props are reactive.
   // compileDef derives observed from props with kind !== 'style', so a prop the TS
   // observes must NOT be kind:style in the spec (else the round-trip observed list
-  // mismatches). thin.yaml's kind is often stale ('style'); the TS wins.
+  // mismatches). A prior spec's stale kind loses to the TS `observed` list.
   const tsObserved = ts ? (() => { const m = /static override observed\s*=\s*\[([^\]]*)\]/.exec(ts); return m ? m[1].split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean) : []; })() : [];
 
   const comment = html ? htmlComment(html) : '';
@@ -533,7 +548,10 @@ function generateSpec(name) {
   const defaultTree = templatesObj['default'];
 
   // ── $description ──────────────────────────────────────────────────────────────
-  const description = thin.description || commentDescription(comment, name) || `the ${name.replace('sherpa-', '')} component.`;
+  // Carry the existing spec's $description forward (it's the curated value, seeded
+  // from thin.yaml before retirement); fall back to the HTML comment header, then a
+  // stub. Preserving it keeps specs stable across regen.
+  const description = existing.$description || commentDescription(comment, name) || `the ${name.replace('sherpa-', '')} component.`;
 
   // ── anatomy + templates ───────────────────────────────────────────────────────
   let anatomy = null;
@@ -574,26 +592,33 @@ function generateSpec(name) {
     notes.push('no <template id="default"> — cannot derive anatomy');
   }
 
-  // ── props: merge thin.yaml + Public API comment ───────────────────────────────
-  const thinProps = thin.props && typeof thin.props === 'object' ? thin.props : {};
-  const propNames = new Set([...Object.keys(thinProps), ...Object.keys(apiProps)]);
+  // ── props: from the Public API comment ────────────────────────────────────────
+  // Carry the prior spec's props (keyed by name) so a hand-added `kind`/`description`
+  // survives regen when the code can't re-derive it. The comment + TS still win for
+  // type/values/default/observed-kind.
+  const priorProps = {};
+  for (const p of (existing.props ?? [])) if (p && p.name) priorProps[p.name] = p;
+  // Union the Public-API comment's props with any props the prior spec carried —
+  // some props (e.g. grid-cell data-type, nav-item data-description) live in the
+  // spec but not in the HTML comment; carrying them keeps the spec stable.
+  const propNames = new Set([...Object.keys(apiProps), ...Object.keys(priorProps)]);
   const props = [];
   for (const nm of propNames) {
-    const fromThin = thinProps[nm] || {};
     const fromApi = apiProps[nm] || {};
+    const fromPrior = priorProps[nm] || {};
     const p = { $type: 'prop', name: nm };
-    // type: comment wins (it carries enum/boolean signal), else thin, else string
-    p.type = fromApi.type || fromThin.type || (fromThin.$verbatim && fromThin.$verbatim.type) || 'string';
-    // kind (variant mechanism): thin.yaml supplies it, but the TS `observed` list
-    // OVERRIDES — a prop the component observes cannot be kind:style, and a data-*
-    // prop the component does NOT observe must be kind:style (unobserved). This
-    // keeps the round-trip observed list exact when thin.yaml's kind is stale.
-    let kind = fromThin.kind || (fromThin.$verbatim && fromThin.$verbatim.kind);
+    // type: comment wins (it carries enum/boolean signal), else prior spec, else string
+    p.type = fromApi.type || fromPrior.type || 'string';
+    // kind (variant mechanism): the prior spec supplies it, but the TS `observed`
+    // list OVERRIDES — a prop the component observes cannot be kind:style, and a
+    // data-* prop the component does NOT observe must be kind:style (unobserved).
+    // This keeps the round-trip observed list exact.
+    let kind = fromPrior.kind;
     const native = fromApi.native === true || (!nm.startsWith('data-') && NATIVE_ATTRS.has(nm));
     // The TS `observed` list is authoritative for round-trip: compileDef derives
     // observed from props whose kind !== 'style'. So a data-* prop the component
-    // does NOT observe must be kind:style (even if thin.yaml tags it visibility/
-    // template — many components handle those via CSS/templateId, not observation).
+    // does NOT observe must be kind:style (even if the prior spec tags it
+    // visibility/template — many are handled via CSS/templateId, not observation).
     // A prop it DOES observe keeps a reactive kind (default content). Only applied
     // when a TS file exists (its observed list — even empty — is the ground truth).
     if (nm.startsWith('data-') && ts) {
@@ -610,13 +635,13 @@ function generateSpec(name) {
     else if (kind === 'style') p.kind = 'style';
     if (p.type === 'enum') {
       if (fromApi.values && fromApi.values.length) p.values = fromApi.values;
-      else if (fromThin.values) p.values = fromThin.values;
+      else if (fromPrior.values && fromPrior.values.length) p.values = fromPrior.values;
       else { p.values = []; notes.push(`prop ${nm}: enum with NO parseable values (Public API comment lacks them) — NEEDS HAND-FINISHING`); }
     }
-    const def = fromApi.default !== undefined ? fromApi.default : (fromThin.default ?? (fromThin.$verbatim && fromThin.$verbatim.default));
+    const def = fromApi.default !== undefined ? fromApi.default : fromPrior.default;
     if (def !== undefined && def !== null) p.default = def;
     else if (native && p.type === 'boolean') p.default = false;
-    const desc = fromApi.description || fromThin.description;
+    const desc = fromApi.description || fromPrior.description;
     if (desc) p.description = desc;
     props.push(p);
   }
@@ -626,14 +651,17 @@ function generateSpec(name) {
     return an - bn || a.name.localeCompare(b.name);
   });
 
-  // ── events ────────────────────────────────────────────────────────────────────
-  const thinEvents = thin.events && typeof thin.events === 'object' ? thin.events : {};
+  // ── events: HTML `Fires:` list, UNION the prior spec's events ─────────────────
+  // Fires names are the code ground truth; the prior spec supplies the `trigger`
+  // block (on/node) that can't be read from the comment.
+  const priorEvents = {};
+  for (const e of (existing.events ?? [])) if (e && e.name) priorEvents[e.name] = e;
   const firesNames = comment ? parseFires(comment) : [];
-  const eventNames = new Set([...Object.keys(thinEvents), ...firesNames]);
+  const eventNames = new Set([...Object.keys(priorEvents), ...firesNames]);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: true };
-    const trig = thinEvents[en]?.$verbatim?.trigger || thinEvents[en]?.trigger;
+    const trig = priorEvents[en]?.trigger;
     if (trig) {
       ev.trigger = {};
       if (trig.on) ev.trigger.on = trig.on;
@@ -680,16 +708,17 @@ function generateSpec(name) {
   }
 
   // ── $extensions.sherpa ────────────────────────────────────────────────────────
-  const fv = thin.figmaVerbatim || {};
+  // The Figma binding cannot be read from code — carry it VERBATIM from the prior
+  // spec (figmaName/category/variantAxes/booleanProps/divergence). resync-figma.mjs
+  // owns keeping it aligned with live Figma. Only jsProps are re-derived (from TS).
   const sherpaExt = {};
-  const figmaName = thin.figmaName || fv.figmaName;
-  if (figmaName) sherpaExt.figmaName = figmaName;
-  if (thin.category) sherpaExt.category = thin.category;
-  if (Array.isArray(fv.variantAxes) && fv.variantAxes.length) {
-    sherpaExt.variantAxes = fv.variantAxes.map((a) => ({ name: a.name, ...(a.values ? { values: a.values } : {}) }));
+  if (priorExt.figmaName) sherpaExt.figmaName = priorExt.figmaName;
+  if (priorExt.category) sherpaExt.category = priorExt.category;
+  if (Array.isArray(priorExt.variantAxes) && priorExt.variantAxes.length) {
+    sherpaExt.variantAxes = priorExt.variantAxes.map((a) => ({ name: a.name, ...(a.values ? { values: a.values } : {}) }));
   }
-  if (Array.isArray(fv.booleanProps) && fv.booleanProps.length) sherpaExt.booleanProps = fv.booleanProps;
-  if (thin._divergence) sherpaExt.divergence = thin._divergence;
+  if (Array.isArray(priorExt.booleanProps) && priorExt.booleanProps.length) sherpaExt.booleanProps = priorExt.booleanProps;
+  if (priorExt.divergence) sherpaExt.divergence = priorExt.divergence;
   if (jsProps.length) sherpaExt.jsProps = jsProps;
 
   // ── assemble ──────────────────────────────────────────────────────────────────
@@ -719,10 +748,12 @@ function toYaml(spec) {
   const body = yaml.dump(spec, { lineWidth: 100, noRefs: true, quotingType: '"', forceQuotes: false });
   const header = `# ${spec.$name} — DTCG-dialect component spec (GENERATED by scripts/generate-component-spec.mjs).
 #
-# Derived from ${spec.$name}.{thin.yaml,html,css,ts}. The MECHANICAL surface only —
-# props (with enum values), anatomy, events, token bindings, element, best-effort
+# Derived from ${spec.$name}.{html,css,ts}. The MECHANICAL surface only — props
+# (with enum values), anatomy, events, token bindings, element, best-effort
 # states/capabilities. Richer state/capability PROSE is left for hand-finishing.
-# Validated by schemas/component.v1.json; round-trips via roundtrip-component.mjs.
+# The Figma binding under $extensions.sherpa is preserved verbatim across regen
+# (owned by resync-figma.mjs). Validated by schemas/component.v1.json; round-trips
+# via roundtrip-component.mjs.
 #
 `;
   return header + body;
@@ -809,13 +840,13 @@ function tsDiff(genTs, realTs, diffs) {
 
 // ══ CLI ═════════════════════════════════════════════════════════════════════════
 function allComponentNames() {
-  return readdirSync(C).filter((n) => n.startsWith('sherpa-') && existsSync(join(C, n, `${n}.thin.yaml`)) || (n.startsWith('sherpa-') && existsSync(join(C, n, `${n}.html`))));
+  return readdirSync(C).filter((n) => n.startsWith('sherpa-') && existsSync(join(C, n, `${n}.html`)));
 }
 function run() {
   const args = process.argv.slice(2);
   const check = args.includes('--check');
   const all = args.includes('--all');
-  const names = all ? readdirSync(C).filter((n) => n.startsWith('sherpa-') && (existsSync(join(C, n, `${n}.html`)) || existsSync(join(C, n, `${n}.thin.yaml`))))
+  const names = all ? readdirSync(C).filter((n) => n.startsWith('sherpa-') && (existsSync(join(C, n, `${n}.html`)) || existsSync(join(C, n, `${n}.component.yaml`))))
     : args.filter((a) => !a.startsWith('--')).map((n) => (n.startsWith('sherpa-') ? n : `sherpa-${n}`));
   if (!names.length) { console.error('usage: generate-component-spec.mjs <name>... | --all  [--check]'); process.exit(2); }
 

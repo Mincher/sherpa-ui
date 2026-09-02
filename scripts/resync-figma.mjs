@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 /**
- * resync-figma.mjs — align each thin def's figmaVerbatim with a LIVE Figma read.
+ * resync-figma.mjs — align each component spec's Figma binding with a LIVE Figma read.
  *
  * Figma is the source of truth. This takes a live binding snapshot (variantAxes,
- * booleanProps, textProps per figmaName) and rewrites the figmaVerbatim block of
- * every matching thin def to agree with it — fixing drift the old figma-read.json
- * dump had accumulated (stale active/inactive State axes that became Control
- * modes, lost axes, renamed props).
+ * booleanProps per figmaName) and rewrites the `$extensions.sherpa` block of every
+ * matching `*.component.yaml` to agree with it — fixing drift (stale active/inactive
+ * State axes that became Control modes, lost axes, renamed props).
+ *
+ * The Figma binding used to live in `*.thin.yaml` under `figmaVerbatim`; since
+ * thin.yaml was RETIRED it lives in each spec's `$extensions.sherpa` (figmaName,
+ * variantAxes, booleanProps, divergence). Only that block is touched — anatomy,
+ * props, tokens, events are left exactly as authored.
  *
  * The live snapshot is passed as a JSON file: { "<figmaName>": { variantAxes,
- * booleanProps, textProps } }. Only the figma binding is touched — anatomy,
- * props, tokens are left exactly as they are.
+ * booleanProps, ... } }. NOTE: textProps is NOT compared — the spec's
+ * $extensions.sherpa deliberately carries only figmaName/category/variantAxes/
+ * booleanProps/divergence (the fields that shape variant identity), matching the
+ * retirement contract.
  *
- *   node scripts/resync-figma.mjs <live-figma.json> [--dry]
+ *   node scripts/resync-figma.mjs <live-figma.json> [--dry|--check]
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -38,49 +44,44 @@ const changes = [];
 const drift = [];
 
 for (const n of readdirSync(C)) {
-  const p = join(C, n, `${n}.thin.yaml`);
+  const p = join(C, n, `${n}.component.yaml`);
   if (!existsSync(p)) continue;
-  const def = yaml.load(readFileSync(p, 'utf8'));
-  const L = live[def.figmaName];
+  const spec = yaml.load(readFileSync(p, 'utf8'));
+  const ext = (spec.$extensions && spec.$extensions.sherpa) || {};
+  const figmaName = ext.figmaName;
+  if (!figmaName) { noMatch++; continue; }
+  const L = live[figmaName];
   if (!L) { noMatch++; continue; }
 
-  const fv = def.figmaVerbatim || def.figma || {};
-
-  // --check: report where the def disagrees with live Figma, then move on (no write).
+  // --check: report where the spec disagrees with live Figma, then move on (no write).
+  // Only variantAxes + booleanProps shape variant identity and are carried in the
+  // spec; textProps is intentionally not compared (see header).
   if (CHECK) {
     const issues = [];
-    if (axesKey(fv.variantAxes) !== axesKey(L.variantAxes)) issues.push(`axes: def[${axesKey(fv.variantAxes) || '—'}] vs live[${axesKey(L.variantAxes) || '—'}]`);
-    if (norm(fv.booleanProps).join() !== norm(L.booleanProps).join()) issues.push(`bool: def[${norm(fv.booleanProps).join()}] vs live[${norm(L.booleanProps).join()}]`);
-    if (norm(fv.textProps).join() !== norm(L.textProps).join()) issues.push(`text: def[${norm(fv.textProps).join()}] vs live[${norm(L.textProps).join()}]`);
-    if (issues.length) { drift.push({ name: n, figmaName: def.figmaName, issues }); }
+    if (axesKey(ext.variantAxes) !== axesKey(L.variantAxes)) issues.push(`axes: spec[${axesKey(ext.variantAxes) || '—'}] vs live[${axesKey(L.variantAxes) || '—'}]`);
+    if (norm(ext.booleanProps).join() !== norm(L.booleanProps).join()) issues.push(`bool: spec[${norm(ext.booleanProps).join()}] vs live[${norm(L.booleanProps).join()}]`);
+    if (issues.length) { drift.push({ name: n, figmaName, issues }); }
     continue;
   }
 
-  const before = JSON.stringify({ variantAxes: fv.variantAxes, booleanProps: fv.booleanProps, textProps: fv.textProps });
+  const before = JSON.stringify({ variantAxes: ext.variantAxes ?? null, booleanProps: ext.booleanProps ?? [] });
 
-  // Rewrite ONLY the live-derived fields; keep _status/figmaName/nodeType/note.
-  const next = { ...fv };
-  next._status = fv._status ?? 'matched';
-  next.figmaName = def.figmaName;
-  next.nodeType = L.type;
-  next.built = fv.built ?? true;
-  if (L.variantAxes) next.variantAxes = L.variantAxes.map((a) => ({ name: a.name, values: [...a.values] }));
+  // Rewrite ONLY the live-derived fields in $extensions.sherpa; keep figmaName,
+  // category, divergence, jsProps and any other authored keys.
+  const next = { ...ext };
+  next.figmaName = figmaName;
+  if (L.variantAxes && L.variantAxes.length) next.variantAxes = L.variantAxes.map((a) => ({ name: a.name, values: [...a.values] }));
   else delete next.variantAxes;
-  next.booleanProps = [...(L.booleanProps || [])];
-  next.textProps = [...(L.textProps || [])];
-  next.instanceProps = fv.instanceProps ?? [];
-  next.modePins = fv.modePins ?? {};
-  next.figmaEvents = fv.figmaEvents ?? [];
-  if (fv.note) next.note = fv.note;
+  if (L.booleanProps && L.booleanProps.length) next.booleanProps = [...L.booleanProps];
+  else delete next.booleanProps;
 
-  const after = JSON.stringify({ variantAxes: next.variantAxes, booleanProps: next.booleanProps, textProps: next.textProps });
+  const after = JSON.stringify({ variantAxes: next.variantAxes ?? null, booleanProps: next.booleanProps ?? [] });
   if (before === after) { unchanged++; continue; }
 
-  def.figmaVerbatim = next;
-  delete def.figma;
-  if (!DRY) writeFileSync(p, yaml.dump(def, { lineWidth: 100, noRefs: true }));
+  spec.$extensions = { ...(spec.$extensions || {}), sherpa: next };
+  if (!DRY) writeFileSync(p, yaml.dump(spec, { lineWidth: 100, noRefs: true }));
   synced++;
-  changes.push(`${n} (${def.figmaName})`);
+  changes.push(`${n} (${figmaName})`);
 }
 
 if (CHECK) {

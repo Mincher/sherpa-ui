@@ -193,8 +193,8 @@ map:
     note: >-
       relinked 2026-09-02: the standalone "Data Grid" Figma component was reduced to a single
       "Grid Cell" (926:34253, Type=cell|header|group|filter) in the 2026-08-27 resync — the grid is
-      composed from Grid Cells. sherpa-data-grid's thin def tracks Grid Cell. CODE still the legacy
-      <table> — rebuild deferred to a dedicated session.
+      composed from Grid Cells. sherpa-data-grid's component spec tracks Grid Cell. CODE still the
+      legacy <table> — rebuild deferred to a dedicated session.
   sherpa-grid-cell:
     figma: Grid Cell
     status: matched
@@ -205,15 +205,15 @@ map:
     tier: sub-component
     note: >-
       folded 2026-08-27: the ".Grid Column" Figma component was removed when Data Grid collapsed to a
-      single "Grid Cell". No dedicated live component and no thin.yaml; the column concept is carried
-      by Grid Cell (Type=cell) + composition.
+      single "Grid Cell". No dedicated live component and no component spec; the column concept is
+      carried by Grid Cell (Type=cell) + composition.
   sherpa-grid-column-header:
     figma: Grid Cell
     status: no-figma
     tier: sub-component
     note: >-
       folded 2026-08-27: ".Grid Column Header" removed; header now Grid Cell Type=header. No
-      dedicated live component and no thin.yaml.
+      dedicated live component and no component spec.
 figmaOnly:
   # --- new standalone Figma components with no code yet ---
   - figma: Banner
@@ -266,8 +266,8 @@ figmaOnly:
     nodeId: '268:14601'
     note: >-
       composition-covered — sherpa-calendar renders the date Grid + Time Picker. Type=single|range,
-      hasTime. sherpa-calendar's def tracks the day/month/year layouts (intentional divergence,
-      recorded in its thin.yaml).
+      hasTime. sherpa-calendar's spec tracks the day/month/year layouts (intentional divergence,
+      recorded in its component.yaml under $extensions.sherpa.divergence).
   - figma: Chart Legend
     nodeId: '430:43129'
     note: >-
