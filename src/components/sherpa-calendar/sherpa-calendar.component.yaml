@@ -18,61 +18,69 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: cal
-    part: cal
-    children:
-      - el: div
-        class: cal-header
-        part: header
-        children:
-          - el: button
-            class: cal-nav cal-prev
-            part: prev
-            attrs:
-              type: button
-              aria-label: Previous
-          - el: button
-            class: cal-label
-            part: label
-            attrs:
-              type: button
-              aria-live: polite
-          - el: button
-            class: cal-nav cal-next
-            part: next
-            attrs:
-              type: button
-              aria-label: Next
-      - el: div
-        class: cal-weekdays
-        part: weekdays
-        attrs:
-          aria-hidden: "true"
-        children:
-          - el: span
-          - el: span
-          - el: span
-          - el: span
-          - el: span
-          - el: span
-          - el: span
-      - el: div
-        class: cal-days cal-grid
-        part: days
-        attrs:
-          role: grid
-      - el: div
-        class: cal-months cal-grid
-        part: months
-        attrs:
-          role: grid
-      - el: div
-        class: cal-years cal-grid
-        part: years
-        attrs:
-          role: grid
+  roots:
+    - el: div
+      class: cal
+      part: cal
+      children:
+        - el: div
+          class: cal-header
+          part: header
+          children:
+            - el: button
+              class: cal-nav cal-prev
+              part: prev
+              attrs:
+                type: button
+                aria-label: Previous
+            - el: button
+              class: cal-label
+              part: label
+              attrs:
+                type: button
+                aria-live: polite
+            - el: button
+              class: cal-nav cal-next
+              part: next
+              attrs:
+                type: button
+                aria-label: Next
+        - el: div
+          class: cal-weekdays
+          part: weekdays
+          attrs:
+            aria-hidden: "true"
+          children:
+            - el: span
+            - el: span
+            - el: span
+            - el: span
+            - el: span
+            - el: span
+            - el: span
+        - el: div
+          class: cal-days cal-grid
+          part: days
+          attrs:
+            role: grid
+        - el: div
+          class: cal-months cal-grid
+          part: months
+          attrs:
+            role: grid
+        - el: div
+          class: cal-years cal-grid
+          part: years
+          attrs:
+            role: grid
+    - el: template
+      class: cal-cell-tpl
+      children:
+        - el: button
+          class: cal-cell
+          attrs:
+            type: button
+            role: gridcell
 props:
   - $type: prop
     name: data-layout

@@ -18,17 +18,27 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: body
-    part: body
-    slot: ""
-    attrs:
-      role: list
-    children:
-      - el: div
-        class: rows
-        part: rows
+  roots:
+    - el: div
+      class: body
+      part: body
+      slot: ""
+      attrs:
+        role: list
+      children:
+        - el: div
+          class: rows
+          part: rows
+    - el: div
+      class: empty
+      part: empty
+      attrs:
+        role: status
+        aria-live: polite
+    - el: template
+      class: row-tpl
+      children:
+        - el: sherpa-list-item
 props:
   - $type: prop
     name: data-empty

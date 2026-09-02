@@ -18,19 +18,37 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: strip
-    part: tablist
-    attrs:
-      role: tablist
-    children:
-      - el: span
-        class: tabs
-      - el: span
-        class: detail
-        part: detail
-        slot: detail
+  roots:
+    - el: div
+      class: strip
+      part: tablist
+      attrs:
+        role: tablist
+      children:
+        - el: span
+          class: tabs
+        - el: span
+          class: detail
+          part: detail
+          slot: detail
+    - el: div
+      class: panels
+      part: panels
+      slot: ""
+    - el: template
+      class: tab-tpl
+      children:
+        - el: button
+          class: tab
+          part: tab
+          attrs:
+            role: tab
+            type: button
+            tabindex: "-1"
+            aria-selected: "false"
+          children:
+            - el: span
+              class: label
 props:
   - $type: prop
     name: data-active-id

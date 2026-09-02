@@ -18,38 +18,46 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: nav
-    class: pager
-    part: pager
-    attrs:
-      aria-label: Pagination
-    children:
-      - el: button
-        class: btn prev
-        attrs:
-          data-action: prev
-          type: button
-          aria-label: Previous page
-        children:
-          - el: span
-            class: chev chev-left
-            attrs:
-              aria-hidden: "true"
-      - el: span
-        class: numbers
-        part: numbers
-      - el: button
-        class: btn next
-        attrs:
-          data-action: next
-          type: button
-          aria-label: Next page
-        children:
-          - el: span
-            class: chev chev-right
-            attrs:
-              aria-hidden: "true"
+  roots:
+    - el: nav
+      class: pager
+      part: pager
+      attrs:
+        aria-label: Pagination
+      children:
+        - el: button
+          class: btn prev
+          attrs:
+            data-action: prev
+            type: button
+            aria-label: Previous page
+          children:
+            - el: span
+              class: chev chev-left
+              attrs:
+                aria-hidden: "true"
+        - el: span
+          class: numbers
+          part: numbers
+        - el: button
+          class: btn next
+          attrs:
+            data-action: next
+            type: button
+            aria-label: Next page
+          children:
+            - el: span
+              class: chev chev-right
+              attrs:
+                aria-hidden: "true"
+    - el: template
+      class: num-tpl
+      children:
+        - el: button
+          class: btn num
+          attrs:
+            data-action: page
+            type: button
 props:
   - $type: prop
     name: data-current-page

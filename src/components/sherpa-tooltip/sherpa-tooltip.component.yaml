@@ -16,11 +16,20 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: span
-    class: anchor
-    part: anchor
-    slot: ""
+  roots:
+    - el: span
+      class: anchor
+      part: anchor
+      slot: ""
+    - el: span
+      class: bubble
+      part: bubble
+      slot: tip
+      attrs:
+        role: tooltip
+      children:
+        - el: span
+          class: tip-text
 props:
   - $type: prop
     name: data-placement

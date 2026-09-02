@@ -20,62 +20,75 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: nav
-    class: rail
-    part: rail
-    attrs:
-      aria-label: Main
-    children:
-      - el: div
-        class: header
-        part: header
-        children:
-          - el: div
-            class: brand
-            part: brand
-            children:
-              - el: span
-                class: brand-icon
-                part: brand-icon
-                slot: brand-icon
-                attrs:
-                  aria-hidden: "true"
-              - el: span
-                class: product
-                part: product
-              - el: span
-                class: brand-actions
-                part: brand-actions
-                slot: brand-actions
-          - el: div
-            class: search
-            part: search
-            children:
-              - el: span
-                class: search-icon
-                attrs:
-                  aria-hidden: "true"
-              - el: input
-                class: search-input
-                part: search-input
-                attrs:
-                  type: search
-                  placeholder: Search
-                  aria-label: Search navigation
-          - el: ul
-            class: quick
-            part: quick
-            attrs:
-              role: list
-      - el: div
-        class: content
-        part: content
-        slot: ""
-      - el: div
-        class: footer
-        part: footer
-        slot: footer
+  roots:
+    - el: nav
+      class: rail
+      part: rail
+      attrs:
+        aria-label: Main
+      children:
+        - el: div
+          class: header
+          part: header
+          children:
+            - el: div
+              class: brand
+              part: brand
+              children:
+                - el: span
+                  class: brand-icon
+                  part: brand-icon
+                  slot: brand-icon
+                  attrs:
+                    aria-hidden: "true"
+                - el: span
+                  class: product
+                  part: product
+                - el: span
+                  class: brand-actions
+                  part: brand-actions
+                  slot: brand-actions
+            - el: div
+              class: search
+              part: search
+              children:
+                - el: span
+                  class: search-icon
+                  attrs:
+                    aria-hidden: "true"
+                - el: input
+                  class: search-input
+                  part: search-input
+                  attrs:
+                    type: search
+                    placeholder: Search
+                    aria-label: Search navigation
+            - el: ul
+              class: quick
+              part: quick
+              attrs:
+                role: list
+        - el: div
+          class: content
+          part: content
+          slot: ""
+        - el: div
+          class: footer
+          part: footer
+          slot: footer
+    - el: template
+      class: section-tpl
+      children:
+        - el: section
+          class: section
+          children:
+            - el: h2
+              class: section-label
+              part: section-label
+            - el: ul
+              class: section-items
+              attrs:
+                role: list
 props:
   - $type: prop
     name: data-active-id

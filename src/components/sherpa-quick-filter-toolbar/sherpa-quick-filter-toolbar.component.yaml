@@ -16,22 +16,27 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: bar
-    part: bar
-    children:
-      - el: div
-        class: view-zone
-        part: view-zone
-        slot: view
-      - el: div
-        class: chips
-        part: chips
-      - el: div
-        class: actions-zone
-        part: actions
-        slot: actions
+  roots:
+    - el: div
+      class: bar
+      part: bar
+      children:
+        - el: div
+          class: view-zone
+          part: view-zone
+          slot: view
+        - el: div
+          class: chips
+          part: chips
+        - el: div
+          class: actions-zone
+          part: actions
+          slot: actions
+    - el: template
+      class: qf-tpl
+      children:
+        - el: sherpa-quick-filter
+          class: chip
 props:
   - $type: prop
     name: data-type

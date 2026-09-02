@@ -16,14 +16,44 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: chart-header
-    part: header
-    children:
-      - el: span
-        class: title
-        slot: title
+  roots:
+    - el: div
+      class: chart-header
+      part: header
+      children:
+        - el: span
+          class: title
+          slot: title
+    - el: div
+      class: gauge
+      part: gauge
+      children:
+        - el: div
+          class: track
+          part: track
+        - el: div
+          class: fill
+          part: fill
+        - el: div
+          class: hub
+          children:
+            - el: div
+              class: needle
+              part: needle
+        - el: div
+          class: centre
+          children:
+            - el: span
+              class: value
+              part: value
+    - el: div
+      class: scale
+      part: scale
+      children:
+        - el: span
+          class: min
+        - el: span
+          class: max
 props:
   - $type: prop
     name: data-label

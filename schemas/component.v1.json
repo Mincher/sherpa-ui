@@ -26,12 +26,21 @@
     },
     "element": { "$ref": "#/$defs/element" },
     "anatomy": {
-      "description": "The Shadow-DOM node tree the component renders — one `root` node with recursive `children`. Drives HTML generation (one <template> per templates[]). Round-trips to the real .html structure.",
+      "description": "The Shadow-DOM node tree the component renders. Either a single `root` node (with recursive `children`) OR — for components whose <template> has 2+ sibling root nodes — a `roots` array of node trees rendered in order. Exactly one of `root`/`roots` is present. Drives HTML generation (one <template> per templates[]). Round-trips to the real .html structure.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["root"],
+      "oneOf": [
+        { "required": ["root"] },
+        { "required": ["roots"] }
+      ],
       "properties": {
-        "root": { "$ref": "#/$defs/node" }
+        "root": { "$ref": "#/$defs/node" },
+        "roots": {
+          "description": "The ordered list of sibling root nodes for a multi-root <template>. Mutually exclusive with `root`.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/node" }
+        }
       }
     },
     "templates": {

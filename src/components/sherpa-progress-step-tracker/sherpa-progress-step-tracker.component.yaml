@@ -18,12 +18,37 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: ol
-    class: steps
-    part: steps
-    attrs:
-      role: list
+  roots:
+    - el: ol
+      class: steps
+      part: steps
+      attrs:
+        role: list
+    - el: template
+      class: step-tpl
+      children:
+        - el: li
+          class: step
+          attrs:
+            role: listitem
+          children:
+            - el: span
+              class: marker
+              part: marker
+              children:
+                - el: span
+                  class: number
+                - el: span
+                  class: check
+                  attrs:
+                    aria-hidden: "true"
+            - el: span
+              class: text
+              children:
+                - el: span
+                  class: label
+                - el: span
+                  class: description
 props:
   - $type: prop
     name: data-current-step

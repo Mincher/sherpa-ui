@@ -16,10 +16,39 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: p
-    class: label
-    part: label
+  roots:
+    - el: p
+      class: label
+      part: label
+    - el: div
+      class: row
+      children:
+        - el: div
+          class: figures
+          children:
+            - el: p
+              class: value
+              part: value
+            - el: div
+              class: trend
+              part: trend
+              children:
+                - el: span
+                  class: arrow arrow-up
+                  attrs:
+                    aria-hidden: "true"
+                - el: span
+                  class: arrow arrow-down
+                  attrs:
+                    aria-hidden: "true"
+                - el: span
+                  class: delta
+                  part: delta
+        - el: div
+          class: spark
+          part: spark
+          children:
+            - el: sherpa-sparkline
 props:
   - $type: prop
     name: data-delta

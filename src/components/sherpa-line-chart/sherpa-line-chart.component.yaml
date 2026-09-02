@@ -16,14 +16,38 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: chart-header
-    part: header
-    children:
-      - el: span
-        class: title
-        slot: title
+  roots:
+    - el: div
+      class: chart-header
+      part: header
+      children:
+        - el: span
+          class: title
+          slot: title
+    - el: div
+      class: plot
+      part: plot
+      children:
+        - el: svg
+          class: svg
+          part: svg
+          attrs:
+            viewBox: 0 0 100 100
+            preserveAspectRatio: none
+            aria-hidden: "true"
+          children:
+            - el: g
+              class: grid
+            - el: g
+              class: series-layer
+        - el: div
+          class: x-axis
+          part: x-axis
+    - el: template
+      class: xlabel-tpl
+      children:
+        - el: span
+          class: x-label
 props:
   - $type: prop
     name: data-label

@@ -16,11 +16,26 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: header
-    part: header
-    slot: header
+  roots:
+    - el: div
+      class: header
+      part: header
+      slot: header
+    - el: div
+      class: body
+      part: body
+      slot: ""
+    - el: div
+      class: footer
+      part: footer
+      slot: footer
+    - el: div
+      class: state
+      part: state
+      slot: error
+      attrs:
+        role: status
+        aria-live: polite
 props:
   - $type: prop
     name: data-elevation

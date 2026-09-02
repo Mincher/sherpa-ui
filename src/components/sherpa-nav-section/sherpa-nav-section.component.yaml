@@ -18,19 +18,32 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: nav
-    class: panel
-    part: panel
-    attrs:
-      aria-label: Section navigation
-    children:
-      - el: h2
-        class: heading
-        part: heading
-      - el: div
-        class: groups
-        part: groups
+  roots:
+    - el: nav
+      class: panel
+      part: panel
+      attrs:
+        aria-label: Section navigation
+      children:
+        - el: h2
+          class: heading
+          part: heading
+        - el: div
+          class: groups
+          part: groups
+    - el: template
+      class: group-tpl
+      children:
+        - el: section
+          class: group
+          children:
+            - el: h3
+              class: group-label
+              part: group-label
+            - el: ul
+              class: group-list
+              attrs:
+                role: list
 props:
   - $type: prop
     name: data-active-id

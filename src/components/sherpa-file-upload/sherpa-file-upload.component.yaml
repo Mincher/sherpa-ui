@@ -18,63 +18,99 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: field
-    part: field
-    children:
-      - el: span
-        class: label
-        part: label
-      - el: div
-        class: drop-zone
-        part: drop-zone
-        attrs:
-          role: button
-          tabindex: "0"
-        children:
-          - el: span
-            class: drop-icon
-            attrs:
-              aria-hidden: "true"
-          - el: span
-            class: drop-text
-            children:
-              - el: span
-                class: browse
-      - el: div
-        class: details
-        part: details
-        children:
-          - el: span
-            class: max-size
-            part: max-size
-          - el: span
-            class: allowed-types
-            part: allowed-types
-      - el: ul
-        class: file-list
-        part: file-list
-        attrs:
-          role: list
-      - el: div
-        class: actions
-        part: actions
-        slot: actions
-        children:
-          - el: button
-            class: clear-all
-            part: clear-all
-            attrs:
-              type: button
-          - el: button
-            class: upload
-            part: upload
-            attrs:
-              type: button
-      - el: span
-        class: helper
-        part: helper
+  roots:
+    - el: div
+      class: field
+      part: field
+      children:
+        - el: span
+          class: label
+          part: label
+        - el: div
+          class: drop-zone
+          part: drop-zone
+          attrs:
+            role: button
+            tabindex: "0"
+          children:
+            - el: span
+              class: drop-icon
+              attrs:
+                aria-hidden: "true"
+            - el: span
+              class: drop-text
+              children:
+                - el: span
+                  class: browse
+        - el: div
+          class: details
+          part: details
+          children:
+            - el: span
+              class: max-size
+              part: max-size
+            - el: span
+              class: allowed-types
+              part: allowed-types
+        - el: ul
+          class: file-list
+          part: file-list
+          attrs:
+            role: list
+        - el: div
+          class: actions
+          part: actions
+          slot: actions
+          children:
+            - el: button
+              class: clear-all
+              part: clear-all
+              attrs:
+                type: button
+            - el: button
+              class: upload
+              part: upload
+              attrs:
+                type: button
+        - el: span
+          class: helper
+          part: helper
+    - el: input
+      class: file-input
+      attrs:
+        type: file
+        tabindex: "-1"
+        aria-hidden: "true"
+    - el: template
+      class: file-item-tpl
+      children:
+        - el: li
+          class: file-item
+          attrs:
+            role: listitem
+          children:
+            - el: span
+              class: file-icon
+              attrs:
+                aria-hidden: "true"
+            - el: span
+              class: file-body
+              children:
+                - el: span
+                  class: file-line
+                  children:
+                    - el: span
+                      class: file-name
+                    - el: span
+                      class: file-size
+                - el: span
+                  class: file-status
+                  part: file-status
+            - el: button
+              class: file-remove
+              attrs:
+                type: button
+                aria-label: Remove file
 props:
   - $type: prop
     name: data-accept

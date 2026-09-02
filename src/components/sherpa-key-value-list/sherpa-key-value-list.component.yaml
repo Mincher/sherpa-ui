@@ -16,10 +16,19 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: dl
-    class: list
-    part: list
+  roots:
+    - el: dl
+      class: list
+      part: list
+    - el: template
+      class: pair-tpl
+      children:
+        - el: dt
+          class: key
+          part: key
+        - el: dd
+          class: value
+          part: value
 props:
   - $type: prop
     name: data-layout

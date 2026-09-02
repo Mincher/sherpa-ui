@@ -18,13 +18,38 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: head
-    children:
-      - el: span
-        class: label
-        part: label
+  roots:
+    - el: div
+      class: head
+      children:
+        - el: span
+          class: label
+          part: label
+    - el: div
+      class: slider-row
+      children:
+        - el: div
+          class: track-area
+          children:
+            - el: div
+              class: track
+              part: track
+              children:
+                - el: div
+                  class: fill
+                  part: fill
+            - el: input
+              class: range
+              part: range
+              attrs:
+                type: range
+        - el: input
+          class: value-input
+          part: value
+          attrs:
+            type: number
+            inputmode: decimal
+            aria-label: Value
 props:
   - $type: prop
     name: data-label

@@ -18,12 +18,36 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: ul
-    class: legend
-    part: legend
-    attrs:
-      role: list
+  roots:
+    - el: ul
+      class: legend
+      part: legend
+      attrs:
+        role: list
+    - el: template
+      class: item-tpl
+      children:
+        - el: li
+          class: item
+          attrs:
+            role: listitem
+          children:
+            - el: button
+              class: row
+              attrs:
+                type: button
+              children:
+                - el: span
+                  class: swatch
+                  part: swatch
+                  attrs:
+                    aria-hidden: "true"
+                - el: span
+                  class: label
+                  part: label
+                - el: span
+                  class: value
+                  part: value
 props:
   - $type: prop
     name: data-orientation

@@ -16,14 +16,35 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: chart-header
-    part: header
-    children:
-      - el: span
-        class: title
-        slot: title
+  roots:
+    - el: div
+      class: chart-header
+      part: header
+      children:
+        - el: span
+          class: title
+          slot: title
+    - el: div
+      class: plot
+      part: plot
+      children:
+        - el: div
+          class: bars
+          part: bars
+    - el: template
+      class: bar-tpl
+      children:
+        - el: button
+          class: bar-col
+          attrs:
+            type: button
+          children:
+            - el: span
+              class: bar
+              part: bar
+            - el: span
+              class: bar-label
+              part: bar-label
 props:
   - $type: prop
     name: data-label

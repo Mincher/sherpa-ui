@@ -16,24 +16,27 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: header
-    class: row
-    part: row
-    children:
-      - el: div
-        class: lead
-        part: lead
-        slot: heading
-        children:
-          - el: div
-            class: description
-            part: description
-            slot: description
-      - el: div
-        class: actions
-        part: actions
-        slot: actions
+  roots:
+    - el: header
+      class: row
+      part: row
+      children:
+        - el: div
+          class: lead
+          part: lead
+          slot: heading
+          children:
+            - el: div
+              class: description
+              part: description
+              slot: description
+        - el: div
+          class: actions
+          part: actions
+          slot: actions
+    - el: hr
+      class: divider
+      part: divider
 props:
   - $type: prop
     name: data-divider

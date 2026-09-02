@@ -20,20 +20,45 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: table
-    class: grid
-    part: grid
-    children:
-      - el: thead
-        class: head
-        part: head
-        children:
-          - el: tr
-            class: head-row
-      - el: tbody
-        class: body
-        part: body
+  roots:
+    - el: table
+      class: grid
+      part: grid
+      children:
+        - el: thead
+          class: head
+          part: head
+          children:
+            - el: tr
+              class: head-row
+        - el: tbody
+          class: body
+          part: body
+    - el: div
+      class: empty
+      part: empty
+      slot: empty
+      attrs:
+        role: status
+    - el: template
+      class: head-cell-tpl
+      children:
+        - el: th
+          class: head-cell
+          attrs:
+            scope: col
+          children:
+            - el: button
+              class: head-btn
+              attrs:
+                type: button
+              children:
+                - el: span
+                  class: head-label
+                - el: span
+                  class: sort-icon
+                  attrs:
+                    aria-hidden: "true"
 props:
   - $type: prop
     name: data-sort-direction

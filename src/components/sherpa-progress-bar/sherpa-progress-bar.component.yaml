@@ -16,10 +16,17 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: span
-    class: label
-    part: label
+  roots:
+    - el: span
+      class: label
+      part: label
+    - el: div
+      class: track
+      part: track
+      children:
+        - el: div
+          class: fill
+          part: fill
 props:
   - $type: prop
     name: data-indeterminate

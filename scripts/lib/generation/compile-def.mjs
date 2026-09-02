@@ -47,13 +47,23 @@ function renderNode(node, forTemplate, indent) {
   return `${open}${inner}</${node.el}>`;
 }
 
+/** The anatomy's root node(s) as an ordered array — `roots` (multi) or `[root]` (single). */
+function anatomyRoots(def) {
+  if (Array.isArray(def.anatomy?.roots)) return def.anatomy.roots;
+  return def.anatomy?.root ? [def.anatomy.root] : [];
+}
+
 function compileHtml(def) {
   const templates = def.templates?.length ? def.templates : ['default'];
   const header = def.docs?.html ? `<!--\n${def.docs.html.split('\n').map((l) => '  ' + l).join('\n')}\n-->\n` : '';
-  const blocks = templates.map((tid) =>
-    // body indents one level inside <template>
-    `<template id="${tid}">\n${renderNode(def.anatomy.root, tid === 'removable' ? 'removable' : tid, 1)}\n</template>`,
-  );
+  const roots = anatomyRoots(def);
+  const blocks = templates.map((tid) => {
+    const forTemplate = tid === 'removable' ? 'removable' : tid;
+    // Render each sibling root in order. Single-root path (one root) produces
+    // byte-identical output to the previous `renderNode(def.anatomy.root, …)`.
+    const body = roots.map((r) => renderNode(r, forTemplate, 1)).filter(Boolean).join('\n');
+    return `<template id="${tid}">\n${body}\n</template>`;
+  });
   return header + blocks.join('\n\n') + '\n';
 }
 
@@ -91,10 +101,11 @@ function compileTs(def, name, cls) {
   const tmplProp = (def.props ?? []).find((p) => p.kind === 'template');
   // find reemit wiring from anatomy children
   const reemits = [];
-  (function walk(node) {
+  const walk = (node) => {
     for (const l of node.listen ?? []) if (l.action === 'reemit') reemits.push({ node, l });
     (node.children ?? []).forEach(walk);
-  })(def.anatomy.root);
+  };
+  anatomyRoots(def).forEach(walk);
 
   const L = [];
   const fires = (def.events ?? []).map((e) => e.name).join(', ') || 'none';

@@ -18,82 +18,94 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: panes
-    part: panes
-    children:
-      - el: div
-        class: pane source
-        part: pane
-        children:
-          - el: div
-            class: pane-heading
-            part: heading
-          - el: ul
-            class: pane-list
-            part: list
-            attrs:
-              role: listbox
-              aria-multiselectable: "true"
-          - el: p
-            class: pane-empty
-            part: empty
-      - el: div
-        class: moves
-        part: moves
-        attrs:
-          role: group
-          aria-label: Transfer controls
-        children:
-          - el: sherpa-button
-            class: move
-            attrs:
-              data-move: add
-              data-variant: secondary
-              data-size: sm
-              data-label: ›
-              aria-label: Add selected
-          - el: sherpa-button
-            class: move
-            attrs:
-              data-move: add-all
-              data-variant: secondary
-              data-size: sm
-              data-label: »
-              aria-label: Add all
-          - el: sherpa-button
-            class: move
-            attrs:
-              data-move: remove
-              data-variant: secondary
-              data-size: sm
-              data-label: ‹
-              aria-label: Remove selected
-          - el: sherpa-button
-            class: move
-            attrs:
-              data-move: remove-all
-              data-variant: secondary
-              data-size: sm
-              data-label: «
-              aria-label: Remove all
-      - el: div
-        class: pane target
-        part: pane
-        children:
-          - el: div
-            class: pane-heading
-            part: heading
-          - el: ul
-            class: pane-list
-            part: list
-            attrs:
-              role: listbox
-              aria-multiselectable: "true"
-          - el: p
-            class: pane-empty
-            part: empty
+  roots:
+    - el: div
+      class: panes
+      part: panes
+      children:
+        - el: div
+          class: pane source
+          part: pane
+          children:
+            - el: div
+              class: pane-heading
+              part: heading
+            - el: ul
+              class: pane-list
+              part: list
+              attrs:
+                role: listbox
+                aria-multiselectable: "true"
+            - el: p
+              class: pane-empty
+              part: empty
+        - el: div
+          class: moves
+          part: moves
+          attrs:
+            role: group
+            aria-label: Transfer controls
+          children:
+            - el: sherpa-button
+              class: move
+              attrs:
+                data-move: add
+                data-variant: secondary
+                data-size: sm
+                data-label: ›
+                aria-label: Add selected
+            - el: sherpa-button
+              class: move
+              attrs:
+                data-move: add-all
+                data-variant: secondary
+                data-size: sm
+                data-label: »
+                aria-label: Add all
+            - el: sherpa-button
+              class: move
+              attrs:
+                data-move: remove
+                data-variant: secondary
+                data-size: sm
+                data-label: ‹
+                aria-label: Remove selected
+            - el: sherpa-button
+              class: move
+              attrs:
+                data-move: remove-all
+                data-variant: secondary
+                data-size: sm
+                data-label: «
+                aria-label: Remove all
+        - el: div
+          class: pane target
+          part: pane
+          children:
+            - el: div
+              class: pane-heading
+              part: heading
+            - el: ul
+              class: pane-list
+              part: list
+              attrs:
+                role: listbox
+                aria-multiselectable: "true"
+            - el: p
+              class: pane-empty
+              part: empty
+    - el: template
+      class: row-tpl
+      children:
+        - el: li
+          class: row
+          attrs:
+            role: option
+          children:
+            - el: sherpa-list-item
+              attrs:
+                data-selectable: ""
+                data-interactive: ""
 props:
   - $type: prop
     name: data-source-heading

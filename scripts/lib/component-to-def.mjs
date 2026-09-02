@@ -82,7 +82,11 @@ export function specToDef(spec) {
     description: spec.$description ?? '',
   };
 
-  if (spec.anatomy?.root) def.anatomy = { root: spec.anatomy.root };
+  // anatomy carries EITHER a single `root` node OR (multi-root <template>) a
+  // `roots` array of sibling node trees. Pass whichever through unchanged —
+  // compileDef renders each root in order.
+  if (Array.isArray(spec.anatomy?.roots)) def.anatomy = { roots: spec.anatomy.roots };
+  else if (spec.anatomy?.root) def.anatomy = { root: spec.anatomy.root };
   if (Array.isArray(spec.templates)) def.templates = spec.templates;
 
   // A native attr with no reactive `kind` (e.g. `disabled`) is styled entirely by

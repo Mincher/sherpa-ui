@@ -16,25 +16,33 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: header
-    part: header
-    children:
-      - el: span
-        class: language
-        part: language
-      - el: button
-        class: copy
-        part: copy
-        attrs:
-          type: button
-          aria-label: Copy code
-        children:
-          - el: span
-            class: copy-label
-          - el: span
-            class: copied-label
+  roots:
+    - el: div
+      class: header
+      part: header
+      children:
+        - el: span
+          class: language
+          part: language
+        - el: button
+          class: copy
+          part: copy
+          attrs:
+            type: button
+            aria-label: Copy code
+          children:
+            - el: span
+              class: copy-label
+            - el: span
+              class: copied-label
+    - el: pre
+      class: pre
+      part: pre
+      children:
+        - el: code
+          class: code
+          part: code
+          slot: ""
 props:
   - $type: prop
     name: data-code

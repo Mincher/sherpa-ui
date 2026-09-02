@@ -512,16 +512,21 @@ function generateSpec(name) {
   // ── anatomy + templates ───────────────────────────────────────────────────────
   let anatomy = null;
   if (defaultTree && defaultTree.length) {
-    // the single root element (ignore stray comment-only nodes)
+    // the root element(s) — ignore stray comment-only nodes and top-level <slot>s
     const roots = defaultTree.filter((n) => n.tag !== 'slot');
     if (roots.length === 1) anatomy = { root: htmlNodeToAnatomy(roots[0]) };
-    else if (roots.length > 1) { anatomy = { root: htmlNodeToAnatomy(roots[0]) }; notes.push(`default template has ${roots.length} root nodes — compileDef supports one anatomy.root; only the first is used (multi-root not round-trippable)`); }
+    else if (roots.length > 1) {
+      // Multi-root <template>: emit the ordered list of sibling root node trees.
+      // compileDef renders each in order (byte-identical to the real markup).
+      anatomy = { roots: roots.map((r) => htmlNodeToAnatomy(r)) };
+    }
 
     // Multi-template union: compileDef renders ONE anatomy filtered by showWhen per
     // template. For each additional template that's an ADDITIVE superset of default
     // (same nodes + extra trailing children), fold the extras in with `showWhen`.
     // Non-additive templates (subset / divergent trees) can't be expressed and are
-    // reported as gaps.
+    // reported as gaps. (Multi-root defaults do NOT run this merge — showWhen union
+    // is single-root only; extra templates on a multi-root component are reported.)
     if (anatomy && roots.length === 1) {
       for (const tid of templateIds) {
         if (tid === 'default') continue;
@@ -530,6 +535,13 @@ function generateSpec(name) {
         const merged = mergeShowWhen(anatomy.root, htmlNodeToAnatomy(otherRoots[0]), tid);
         if (merged.additive) anatomy.root = merged.node;
         else notes.push(`template "${tid}" is not an additive superset of default (subset/divergent tree) — not round-trippable via showWhen`);
+      }
+    } else if (anatomy && anatomy.roots) {
+      // Multi-root default: any additional template is NOT folded in (showWhen
+      // union is single-root only). Report each as an unmerged gap.
+      for (const tid of templateIds) {
+        if (tid === 'default') continue;
+        notes.push(`template "${tid}" not merged — default is multi-root (showWhen union is single-root only)`);
       }
     }
   } else if (html) {
@@ -614,11 +626,14 @@ function generateSpec(name) {
 
   // ── element ───────────────────────────────────────────────────────────────────
   let element = null;
-  const rootEl = anatomy?.root?.el;
+  // For a multi-root <template> the "element the component IS" is taken from the
+  // FIRST root node (best-effort — the component has no single interactive root).
+  const primaryRoot = anatomy?.root ?? anatomy?.roots?.[0];
+  const rootEl = primaryRoot?.el;
   if (rootEl) {
     const em = generateSpec._elementMap[rootEl] || {};
     element = { $type: 'element', tag: rootEl };
-    if (anatomy.root.attrs && Object.keys(anatomy.root.attrs).length) element.attributes = anatomy.root.attrs;
+    if (primaryRoot.attrs && Object.keys(primaryRoot.attrs).length) element.attributes = primaryRoot.attrs;
     element.provides = Array.isArray(em.provides) ? em.provides : [];
     if (em.stateCss) element.stateCss = em.stateCss;
     if (!Array.isArray(em.provides)) notes.push(`root element <${rootEl}> not a known semantic element in element-map — provides left empty`);

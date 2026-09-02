@@ -18,18 +18,29 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: nav
-    class: trail
-    part: trail
-    attrs:
-      aria-label: Breadcrumb
-    children:
-      - el: ol
-        class: crumbs
-        part: crumbs
-        attrs:
-          role: list
+  roots:
+    - el: nav
+      class: trail
+      part: trail
+      attrs:
+        aria-label: Breadcrumb
+      children:
+        - el: ol
+          class: crumbs
+          part: crumbs
+          attrs:
+            role: list
+    - el: template
+      class: crumb-tpl
+      children:
+        - el: li
+          class: crumb
+          attrs:
+            role: listitem
+          children:
+            - el: a
+              class: link
+              part: link
 states:
   - $type: state
     name: focus-visible
