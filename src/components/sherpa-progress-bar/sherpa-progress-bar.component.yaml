@@ -22,20 +22,21 @@ anatomy:
     - el: span
       class: label
       part: label
-    - el: div
-      class: track
-      part: track
-      children:
-        - el: div
-          class: fill
-          part: fill
+    - el: progress
+      class: bar
+      part: bar
+      attrs:
+        max: "100"
+        value: "0"
 props:
   - $type: prop
     name: data-indeterminate
-    type: boolean
+    type: string
     kind: content
     default: false
-    description: animated sweep for unknown-duration work
+    description: >-
+      animated sweep for unknown-duration work (boolean; renders a native indeterminate <progress> —
+      no value)
   - $type: prop
     name: data-label
     type: string
@@ -56,6 +57,11 @@ props:
     type: string
     kind: content
     description: 0–100 completion percentage (determinate)
+  - $type: prop
+    name: value
+    type: string
+    native: true
+    description: 0–100 completion (native <progress value>); read/write
 states:
   - $type: state
     name: label
@@ -78,9 +84,8 @@ events:
 tokens:
   label.font-size: "{sherpa.font-size-body-base}"
   label.color: "{sherpa.theme-content-body-base}"
-  track.block-size: "{sherpa.display-space-2xs}"
-  track.background: "{sherpa.theme-surface-default-1}"
-  track.border-radius: "{sherpa.display-border-rounding-full}"
+  bar.block-size: "{sherpa.display-space-2xs}"
+  bar.border-radius: "{sherpa.display-border-rounding-full}"
 $extensions:
   sherpa:
     figmaName: Progress Bar (atom)

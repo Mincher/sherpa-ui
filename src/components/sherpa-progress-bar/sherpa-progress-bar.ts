@@ -1,13 +1,13 @@
 /**
  * sherpa-progress-bar — a bar that fills up as a task runs.
  *
- * CSS handles the look — the track, the fill colour, the back-and-forth sweep for
- * unknown progress, and the disabled look. The one thing JS does is turn
- * data-value into a length: it hands the percentage to CSS, and CSS sets the fill
- * width from it.
+ * Native-first: a real <progress> owns the value, role=progressbar and
+ * aria-valuenow. JS only sets the inner progress's value/max (or clears value for
+ * the indeterminate sweep) and mirrors the label; CSS styles the vendor
+ * pseudo-elements. No manual role/aria, no JS-driven width.
  *
  * @element sherpa-progress-bar
- * @attr {number}  data-value          — 0–100 completion percentage (determinate)
+ * @attr {number}  value               — 0–100 completion (native <progress value>)
  * @attr {boolean} data-indeterminate  — animated sweep when the duration is unknown
  * @attr {string}  data-label          — accessible task label (also drives aria-label)
  * @attr {enum}    data-status         — critical | warning | success | info (colours the fill)
@@ -27,9 +27,6 @@ export class SherpaProgressBar extends SherpaElement {
   static override observed = ['data-value', 'data-indeterminate', 'data-label'];
 
   override onRender(): void {
-    this.setAttribute('role', 'progressbar');
-    this.setAttribute('aria-valuemin', '0');
-    this.setAttribute('aria-valuemax', '100');
     this.#sync();
   }
 
@@ -46,24 +43,29 @@ export class SherpaProgressBar extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────────── */
 
   get value(): number {
-    return this.#clamp(this.dataset['value']);
+    return this.#clamp(this.#bar()?.value ?? this.dataset['value']);
   }
   set value(v: number) {
     this.dataset['value'] = String(this.#clamp(v));
+    this.#sync();
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  /** Bridge data-value → the --_pct custom property CSS reads for the fill width. */
+  #bar(): HTMLProgressElement | null {
+    return this.$<HTMLProgressElement>('.bar');
+  }
+
+  /** Mirror data-value / data-indeterminate onto the native <progress>, + label. */
   #sync(): void {
-    const indeterminate = this.hasAttribute('data-indeterminate');
-    const pct = this.#clamp(this.dataset['value']);
+    const bar = this.#bar();
+    if (!bar) return;
 
-    // JS→CSS-var bridge: the fill width lives in CSS as width: var(--_pct).
-    this.style.setProperty('--_pct', `${pct}%`);
-
-    if (indeterminate) this.removeAttribute('aria-valuenow');
-    else this.setAttribute('aria-valuenow', String(pct));
+    if (this.hasAttribute('data-indeterminate')) {
+      bar.removeAttribute('value'); // native indeterminate progress
+    } else {
+      bar.value = this.#clamp(this.dataset['value']); // native determinate + aria-valuenow
+    }
 
     // Mirror the text into the label span (CSS shows/hides it off data-label).
     const label = this.dataset['label'];
@@ -72,7 +74,7 @@ export class SherpaProgressBar extends SherpaElement {
     if (label != null) this.setAttribute('aria-label', label);
   }
 
-  #clamp(raw: number | string | undefined): number {
+  #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : parseFloat(raw ?? '');
     if (!Number.isFinite(n)) return 0;
     return Math.min(100, Math.max(0, n));

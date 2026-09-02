@@ -1,14 +1,12 @@
 /**
- * sherpa-progress-bar.css — all progress-bar presentation.
+ * sherpa-progress-bar.css — native <progress>, styled.
  *
- * A thin rounded track with a coloured fill. The track binds the neutral Style
- * surface and a full (pill) rounding; the fill is the brand progress colour,
- * which the [data-status] cascade recolours via the STRONG status surface
- * (--_status-surface-strong) when an ancestor sets a status — the saturated bar
- * colour, not the faint status wash. The fill width is the ONE value JS supplies,
- * via the --_pct custom property (data-value → --_pct in TS); everything else —
- * colour, the indeterminate sweep, the label's visibility — is pure CSS off
- * data-*. JS never sets width/display/visibility here.
+ * Native-first: the fill/track are the <progress> vendor pseudo-elements
+ * (::-webkit-progress-bar = track, ::-webkit-progress-value / ::-moz-progress-bar
+ * = fill). `appearance: none` strips the OS chrome so our tokens apply. The fill
+ * colour is the strong status surface (via the [data-status] cascade) else the
+ * brand progress colour. Determinate width is the native value/max — no JS width.
+ * Indeterminate = a native valueless <progress> + our sweep animation on the fill.
  */
 
 :host {
@@ -20,8 +18,7 @@
 
   /* Fill colour — the strong status surface wins, else the brand progress colour. */
   --_fill: var(--_status-surface-strong, var(--sherpa-theme-content-active-base, #8500cc));
-  /* Percentage width, written by JS from data-value. */
-  --_pct: 0%;
+  --_track: var(--sherpa-theme-surface-default-1, #fdfdfd);
 }
 
 /* ── Label (above the bar; only when data-label is set) ───────────────── */
@@ -32,34 +29,42 @@
 }
 :host([data-label]) .label { display: block; }
 
-/* ── Track ────────────────────────────────────────────────────────────── */
-.track {
-  position: relative;
+/* ── The native <progress> ────────────────────────────────────────────── */
+.bar {
+  appearance: none;
+  -webkit-appearance: none;
   inline-size: 100%;
   block-size: var(--sherpa-display-space-2xs, 4px);
-  background: var(--sherpa-theme-surface-default-1, #fdfdfd);
+  border: none;
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   overflow: hidden;
+  background: var(--_track); /* Firefox track + fallback */
 }
-
-/* ── Fill (determinate) — width comes from the --_pct bridge ──────────── */
-.fill {
-  block-size: 100%;
-  inline-size: var(--_pct, 0%);
+/* Track (WebKit/Blink) */
+.bar::-webkit-progress-bar {
+  background: var(--_track);
+  border-radius: inherit;
+}
+/* Fill (WebKit/Blink) */
+.bar::-webkit-progress-value {
   background: var(--_fill);
   border-radius: inherit;
-  transition: width 240ms ease;
+  transition: inline-size 240ms ease;
+}
+/* Fill (Firefox) */
+.bar::-moz-progress-bar {
+  background: var(--_fill);
+  border-radius: inherit;
 }
 
-/* ── Indeterminate — a sweeping band; the width bridge is ignored ──────── */
-:host([data-indeterminate]) .fill {
-  inline-size: 40%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--_fill) 50%,
-    transparent 100%
-  );
+/* ── Indeterminate — a sweeping band (native valueless <progress>) ─────── */
+:host([data-indeterminate]) .bar::-webkit-progress-value {
+  inline-size: 40% !important;
+  background: linear-gradient(90deg, transparent 0%, var(--_fill) 50%, transparent 100%);
+  animation: sherpa-progress-sweep 1.3s ease-in-out infinite;
+}
+:host([data-indeterminate]) .bar::-moz-progress-bar {
+  background: linear-gradient(90deg, transparent 0%, var(--_fill) 50%, transparent 100%);
   animation: sherpa-progress-sweep 1.3s ease-in-out infinite;
 }
 
@@ -70,16 +75,14 @@
 
 /* Motion is opt-out — a static partial fill remains legible. */
 @media (prefers-reduced-motion: reduce) {
-  .fill { transition: none; }
-  :host([data-indeterminate]) .fill { animation: none; }
+  .bar::-webkit-progress-value { transition: none; animation: none; }
+  .bar::-moz-progress-bar { animation: none; }
 }
 
 /* ── Disabled — inactive tokens, never opacity ────────────────────────── */
 :host([disabled]) {
   --_fill: var(--sherpa-theme-content-body-2, #5c5c66);
-}
-:host([disabled]) .track {
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  --_track: var(--sherpa-theme-surface-default-2, #f2f2f2);
 }
 :host([disabled]) .label {
   color: var(--sherpa-theme-content-body-2, #5c5c66);

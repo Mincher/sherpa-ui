@@ -1,18 +1,21 @@
 <!--
   sherpa-progress-bar — a horizontal task-progress indicator.
 
+  Native-first: a real <progress> owns the value + role=progressbar + aria-valuenow
+  for free. JS only sets .value / .max (or removes value for the indeterminate
+  sweep) and mirrors the label. The fill/track are styled via the progress vendor
+  pseudo-elements (::-webkit-progress-bar / -value, ::-moz-progress-bar).
+
   Public API:
-    data-value          0–100 completion percentage (determinate)
-    data-indeterminate  animated sweep for unknown-duration work (boolean)
+    value               0–100 completion (native <progress value>); read/write
+    data-indeterminate  animated sweep for unknown-duration work (boolean;
+                        renders a native indeterminate <progress> — no value)
     data-label          accessible task label (shown above the bar; drives aria-label)
     data-status         critical | warning | success | info  (colours the fill)
 
-  Slots: none — this is a display-only element.
-  Fires: nothing.
+  Slots: none — display-only. Fires: nothing.
 -->
 <template id="default">
   <span class="label" part="label"></span>
-  <div class="track" part="track">
-    <div class="fill" part="fill"></div>
-  </div>
+  <progress class="bar" part="bar" max="100" value="0"></progress>
 </template>

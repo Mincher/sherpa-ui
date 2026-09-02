@@ -1,10 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-progress-bar on the reforged base — a determinate/indeterminate progress
- * indicator. Proves the data-value → fill-width bridge (via the --_pct custom
- * property, NOT JS styling), the value property API + clamping, indeterminate
- * mode dropping aria-valuenow, status colouring the fill, and populate({value}).
+ * sherpa-progress-bar on the reforged base — native-first: a real <progress>
+ * owns value + role=progressbar + aria-valuenow. Proves the value → native
+ * <progress>.value bridge + clamping, indeterminate mode (valueless progress
+ * drops aria-valuenow), status colouring the fill (via the --_fill custom
+ * property; the fill is a vendor pseudo-element, not a measurable node), and
+ * populate({value}).
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -23,72 +25,77 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => customElements.whenDefined('sherpa-progress-bar'));
 });
 
-test('data-value drives the fill width and role/aria', async ({ page }) => {
+test('data-value drives the native progress value + role/aria', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-progress-bar') as ProgressEl;
     el.setAttribute('data-value', '40');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
-    const track = el.shadowRoot!.querySelector('.track') as HTMLElement;
-    const fill = el.shadowRoot!.querySelector('.fill') as HTMLElement;
-    const ratio = fill.getBoundingClientRect().width / track.getBoundingClientRect().width;
-
+    const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
     return {
-      role: el.getAttribute('role'),
-      now: el.getAttribute('aria-valuenow'),
-      pctVar: el.style.getPropertyValue('--_pct').trim(),
-      ratio,
+      role: bar.getAttribute('role') ?? (bar.tagName === 'PROGRESS' ? 'progressbar' : null),
+      tag: bar.tagName,
+      value: bar.value,
+      max: bar.max,
     };
   });
+  // native <progress> has an implicit role=progressbar + aria-valuenow=value
+  expect(r.tag).toBe('PROGRESS');
   expect(r.role).toBe('progressbar');
-  expect(r.now).toBe('40');
-  expect(r.pctVar).toBe('40%'); // the JS→CSS-var bridge
-  expect(r.ratio).toBeGreaterThan(0.35);
-  expect(r.ratio).toBeLessThan(0.45);
+  expect(r.value).toBe(40);
+  expect(r.max).toBe(100);
 });
 
-test('the value property clamps to 0–100 and reflects to the width', async ({ page }) => {
+test('the value property clamps to 0–100 and reflects to the native progress', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-progress-bar') as ProgressEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
 
     el.value = 150; // over-max
-    const over = { value: el.value, pct: el.style.getPropertyValue('--_pct').trim() };
+    const over = { value: el.value, barValue: bar.value };
     el.value = -20; // under-min
-    const under = { value: el.value, pct: el.style.getPropertyValue('--_pct').trim() };
+    const under = { value: el.value, barValue: bar.value };
     return { over, under };
   });
-  expect(r.over).toEqual({ value: 100, pct: '100%' });
-  expect(r.under).toEqual({ value: 0, pct: '0%' });
+  expect(r.over).toEqual({ value: 100, barValue: 100 });
+  expect(r.under).toEqual({ value: 0, barValue: 0 });
 });
 
-test('indeterminate mode drops aria-valuenow', async ({ page }) => {
+test('indeterminate mode drops the value (native indeterminate progress)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-progress-bar') as ProgressEl;
     el.setAttribute('data-value', '30');
     el.setAttribute('data-indeterminate', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return { now: el.getAttribute('aria-valuenow') };
+    const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
+    // a native <progress> with no value attribute is indeterminate (position === -1)
+    return { hasValueAttr: bar.hasAttribute('value'), position: bar.position };
   });
-  expect(r.now).toBeNull();
+  expect(r.hasValueAttr).toBe(false);
+  expect(r.position).toBe(-1); // indeterminate
 });
 
-test('data-status colours the fill', async ({ page }) => {
+test('data-status colours the fill (via the --_fill custom property)', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const paint = async (status?: string) => {
+    const read = async (status?: string) => {
       const el = document.createElement('sherpa-progress-bar') as ProgressEl;
       el.setAttribute('data-value', '50');
       if (status) el.setAttribute('data-status', status);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      return getComputedStyle(el.shadowRoot!.querySelector('.fill')!).backgroundColor;
+      // The fill is ::-webkit-progress-value (not a queryable node); assert the
+      // token it consumes instead — --_fill routes through the status cascade.
+      const bar = el.shadowRoot!.querySelector('.bar') as HTMLElement;
+      return getComputedStyle(bar).getPropertyValue('--_fill').trim();
     };
-    return { base: await paint(), success: await paint('success') };
+    return { base: await read(), success: await read('success') };
   });
-  expect(r.success).toBe('rgb(32, 193, 115)'); // strong success status surface #20c173 (--_status-surface-strong)
+  // success → the strong success status surface #20c173
+  expect(r.success.toLowerCase()).toContain('20c173');
   expect(r.base).not.toBe(r.success);
 });
 
@@ -99,8 +106,9 @@ test('populate({ value }) sets the percentage', async ({ page }) => {
     await el.rendered;
     el.populate!({ value: 75 });
     await new Promise((res) => setTimeout(res, 10));
-    return { value: el.value, pct: el.style.getPropertyValue('--_pct').trim() };
+    const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
+    return { value: el.value, barValue: bar.value };
   });
   expect(r.value).toBe(75);
-  expect(r.pct).toBe('75%');
+  expect(r.barValue).toBe(75);
 });
