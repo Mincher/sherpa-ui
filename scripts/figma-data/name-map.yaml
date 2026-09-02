@@ -1,10 +1,11 @@
 _note: >-
   code component (sherpa-*) ↔ Figma page/node name. The names DIFFER — this is the authoritative
-  bridge. status: matched = both exist and agree; no-figma = code has no Figma component; figma-only
-  (see figmaOnly[]) = Figma has no code; needs-rebuild = both exist but the code is legacy and
-  predates/diverges from the current Figma (rebuild to match). tier: top-level (default) |
-  sub-component = an atomic building block of a parent, not a standalone product (Figma name may be
-  dot-prefixed).
+  bridge. status: matched = both exist and agree; no-figma = code has no Figma component (or the
+  Figma component was deleted); figma-only (see figmaOnly[]) = Figma has no code; needs-rebuild =
+  both exist but the code is legacy and predates/diverges from the current Figma (rebuild to match);
+  deprecated = Figma component is retired, superseded by another (points there in the note). tier:
+  top-level (default) | sub-component = an atomic building block of a parent, not a standalone
+  product (Figma name may be dot-prefixed). figmaOnly entries carry the live nodeId for traceability.
 map:
   sherpa-button:
     figma: Button
@@ -25,8 +26,9 @@ map:
     figma: Select Radio
     status: matched
   sherpa-select-group:
-    figma: Select Group
+    figma: Fieldset
     status: matched
+    note: 'renamed live 2026-08-27: Select Group → Fieldset (header = Section Header)'
   sherpa-loader:
     figma: "Loading Spinner (atom)"
     status: matched
@@ -37,11 +39,12 @@ map:
     figma: Progress Steps
     status: matched
   sherpa-input-text:
-    figma: Input
+    figma: Input Field (atom)
     status: matched
     note: >-
-      2026-08-16: Input now a set with Style=default|minimal; minimal = bare inline field (code:
-      data-style=minimal template + data-borderless)
+      renamed live: Input → "Input Field (atom)" (645:69690), the atomic field. The per-type set
+      wrappers (Input Text/Number/Select/Search/Date/Password, Text Area — 937:*) compose this atom;
+      code models them via one-to-many templates on sherpa-input-text (see figmaOnly).
   sherpa-pagination:
     figma: Pagination
     status: matched
@@ -50,8 +53,8 @@ map:
     status: matched
     tier: sub-component
     note: >-
-      rebuilt 2026-08-15: drag handle, expand toggle, leading selection control, icon + events +
-      state
+      canonical owner of "Menu List Item" (48:66015). rebuilt 2026-08-15: drag handle, expand
+      toggle, leading selection control, icon + events + state
   sherpa-list:
     figma: List
     status: matched
@@ -93,10 +96,14 @@ map:
     status: matched
   sherpa-message:
     figma: Message
-    status: matched
+    status: no-figma
+    note: >-
+      Figma "Message" was DELETED in the 2026-08-27 resync; no live component and no code dir remains
+      (sherpa-chat-message ↔ "Chat Message" is the surviving message component). Orphan record.
   sherpa-tabs:
-    figma: Tabs
+    figma: Tab Group
     status: matched
+    note: 'renamed live 2026-08-27: Tabs → "Tab Group" (28:813); "Tab" is the child glyph/atom'
   sherpa-tooltip:
     figma: "Tooltip (atom)"
     status: matched
@@ -156,9 +163,10 @@ map:
     status: matched
     note: 'rebuilt 2026-08-15: day|month|year layouts (was month day-grid only)'
   sherpa-nav-section:
-    figma: Navigation Section
+    figma: Navigation Section/default
     status: matched
     tier: sub-component
+    note: 'live name is the variant path "Navigation Section/default" (32:43134)'
   sherpa-app-header:
     figma: App Header
     status: matched
@@ -172,91 +180,152 @@ map:
       rebuilt 2026-08-15 to match Figma Primary Navigation (header + search + quick + grouped
       sections composing sherpa-nav-item)
   sherpa-nav-item:
-    figma: Menu List Item
+    figma: Navigation Item
     status: matched
-    note: nav rows reuse Menu List Item
     tier: sub-component
+    note: >-
+      relinked 2026-09-02: nav-item ↔ "Navigation Item" (32:43138), NOT "Menu List Item".
+      "Menu List Item" (48:66015) is the rich List/Menu row owned by sherpa-list-item; nav-item is
+      the leaner rail row (hasIcon/hasIndicator/isMaximised).
   sherpa-data-grid:
-    figma: Data Grid
+    figma: Grid Cell
     status: needs-rebuild
     note: >-
-      Figma corrected + aligned 2026-08-15 (real sub-components, box-only selection, 40px headers).
-      CODE still the legacy <table> — rebuild deferred to a dedicated session.
+      relinked 2026-09-02: the standalone "Data Grid" Figma component was reduced to a single
+      "Grid Cell" (926:34253, Type=cell|header|group|filter) in the 2026-08-27 resync — the grid is
+      composed from Grid Cells. sherpa-data-grid's thin def tracks Grid Cell. CODE still the legacy
+      <table> — rebuild deferred to a dedicated session.
   sherpa-grid-cell:
     figma: Grid Cell
     status: matched
     tier: sub-component
   sherpa-grid-column:
-    figma: .Grid Column
-    status: matched
+    figma: Grid Cell
+    status: no-figma
     tier: sub-component
+    note: >-
+      folded 2026-08-27: the ".Grid Column" Figma component was removed when Data Grid collapsed to a
+      single "Grid Cell". No dedicated live component and no thin.yaml; the column concept is carried
+      by Grid Cell (Type=cell) + composition.
   sherpa-grid-column-header:
-    figma: .Grid Column Header
-    status: matched
+    figma: Grid Cell
+    status: no-figma
     tier: sub-component
+    note: >-
+      folded 2026-08-27: ".Grid Column Header" removed; header now Grid Cell Type=header. No
+      dedicated live component and no thin.yaml.
 figmaOnly:
+  # --- new standalone Figma components with no code yet ---
   - figma: Banner
-    note: no code component yet — full-width status banner
+    nodeId: '62:274'
+    note: no code component yet — full-width status banner (hasLink, textProps message)
   - figma: Chip
-    note: no code component — status-tinted pill (sherpa-tag covers the neutral case)
+    nodeId: '62:1732'
+    note: >-
+      no code component — status-tinted pill (hasDismiss/hasIcon, label). sherpa-tag covers the
+      neutral case; Chip is the status-coloured variant awaiting code.
   - figma: Select Card
+    nodeId: '62:1754'
     note: no code component — selectable gallery card
-  - figma: Badge
-    note: no code component — overlay count/dot indicator
   - figma: Menu
-    note: no code component — elevated List (composition)
+    nodeId: '49:66174'
+    note: no code component — elevated List (composition of Menu List Item); sherpa-list is the base
   - figma: View Header
-    note: no code component — overlaps app-header
+    nodeId: '63:2025'
+    note: no code component — overlaps sherpa-app-header (view-details row); not yet its own element
+  # --- per-type Input set wrappers (compose the Input Field atom); code = one sherpa-input-text ---
+  - figma: Input Text
+    nodeId: '937:39374'
+    note: >-
+      type-set wrapper (Layout=vertical|horizontal) composing "Input Field (atom)". Code models all
+      Input * / Text Area wrappers via one-to-many templates on sherpa-input-text; no separate code
+      element per type.
+  - figma: Input Number
+    nodeId: '937:39395'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  - figma: Input Select
+    nodeId: '937:39352'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  - figma: Input Search
+    nodeId: '937:39416'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  - figma: Input Date
+    nodeId: '937:39437'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  - figma: Input Password
+    nodeId: '937:39480'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  - figma: Text Area
+    nodeId: '937:39513'
+    note: type-set wrapper composing "Input Field (atom)"; covered by sherpa-input-text (see Input Text)
+  # --- composition-covered standalone components (built code composes these) ---
   - figma: Time Picker
-    note: placeholder in Figma; folded into calendar in code
-  - figma: .Grid Selection Column
-    tier: sub-component
-    note: >-
-      sub-component of Data Grid; pinned selection column — folded into sherpa-grid-column
-      (data-pinned=left, data-type=selection) in code, no separate element
-  - figma: .Grid Actions Column
-    tier: sub-component
-    note: >-
-      sub-component of Data Grid; pinned actions column — folded into sherpa-grid-column
-      (data-pinned=right, data-type=actions) in code, no separate element
+    nodeId: '239:6823'
+    note: composition-covered — folded into sherpa-calendar (hasTime); no standalone code element
   - figma: Calendar
+    nodeId: '268:14601'
     note: >-
-      composition-covered — sherpa-calendar renders the date Grid + Time Picker; no standalone code
-      element binds Calendar directly
+      composition-covered — sherpa-calendar renders the date Grid + Time Picker. Type=single|range,
+      hasTime. sherpa-calendar's def tracks the day/month/year layouts (intentional divergence,
+      recorded in its thin.yaml).
   - figma: Chart Legend
+    nodeId: '430:43129'
     note: >-
       composition-covered — sherpa-chart-legend binds the atomic Legend Item; the composed Chart
       Legend is assembled from Legend Items
-  - figma: Checkbox Indicator
+  # --- atoms / sub-components used inside built components ---
+  - figma: Indicator (atom)
+    nodeId: '145:3385'
     tier: sub-component
     note: >-
-      atomic checkbox box — used inside Select Checkbox + grid selection cells; no standalone code
-      element
-  - figma: Radio Indicator
+      atomic count/dot badge (Type=count|dot); replaces the old "Badge" placeholder. Rendered inline
+      as the trailing badge of nav rows / count indicators; no standalone code element.
+  - figma: Checkbox (Atom)
+    nodeId: '49:66148'
     tier: sub-component
-    note: atomic radio dot — used inside Select Radio; no standalone code element
+    note: >-
+      atomic checkbox box (isChecked); composed by sherpa-select-checkbox and grid selection cells;
+      no standalone code element (was "Checkbox Indicator").
+  - figma: Radio (Atom)
+    nodeId: '49:66151'
+    tier: sub-component
+    note: >-
+      atomic radio dot (isChecked); composed by sherpa-select-radio; no standalone code element
+      (was "Radio Indicator").
+  - figma: Progress Step (atom)
+    nodeId: '939:39601'
+    tier: sub-component
+    note: >-
+      atomic step (hasInput/hasOutput) of Progress Steps; composed by sherpa-progress-step-tracker;
+      no standalone code element.
   - figma: Calendar Button
+    nodeId: '276:16589'
     tier: sub-component
-    note: atomic day cell/button of Calendar (Grid); no standalone code element
+    note: atomic day cell/button of Calendar (State=default|today|selected-range); no standalone code element
+  - figma: Data Field
+    nodeId: '451:46146'
+    tier: sub-component
+    note: >-
+      the 2D chart primitive (Orientation=vertical|horizontal) bound by sherpa-barchart /
+      sherpa-line-chart / sherpa-sparkline (see map). Listed here for coverage; owned via those defs.
   - figma: Chart Axis
+    nodeId: '451:46196'
     tier: sub-component
-    note: atomic axis of a chart (Data Field); no standalone code element
+    note: atomic axis of a chart (Data Field), Orientation=vertical|horizontal; no standalone code element
   - figma: File Item
+    nodeId: '67:2237'
     tier: sub-component
-    note: atomic file row of File Uploader; no standalone code element
-  - figma: .Grid Column Filter
-    tier: sub-component
+    note: atomic file row of File Uploader; rendered inline by sherpa-file-upload; no standalone code element
+  # --- deprecated Figma components superseded by Container variants ---
+  - figma: Accordion [Deprecated]
+    nodeId: '28:824'
+    status: deprecated
     note: >-
-      per-column filter row (magnifier + value + sort/menu); rendered inline by sherpa-data-grid, no
-      separate code element
-  - figma: .Grid Selection Cell
-    tier: sub-component
+      DEPRECATED in Figma — superseded by Container Type=accordion (58:66573). No def. sherpa-container
+      (data-type=accordion) is the code.
+  - figma: Dialog [Deprecated]
+    nodeId: '52:66459'
+    status: deprecated
     note: >-
-      selection cell (checkbox/radio) for the pinned selection column; rendered inline by
-      sherpa-data-grid
-  - figma: .Grid Action Cell
-    tier: sub-component
-    note: row-actions cell for the pinned actions column; rendered inline by sherpa-data-grid
-  - figma: .Grid Group Band
-    tier: sub-component
-    note: row-grouping band (toggle + group name); rendered inline by sherpa-data-grid
+      DEPRECATED in Figma — superseded by Container Type=dialog (58:66573). No def. sherpa-container
+      (data-type=dialog) is the code.
