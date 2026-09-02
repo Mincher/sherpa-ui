@@ -1,10 +1,9 @@
 /**
- * sherpa-loader — an animated loading indicator.
+ * sherpa-loader — a spinning "please wait" indicator.
  *
- * Attribute-only in appearance: the spinner, its size, orientation and the
- * optional panel surface are all CSS keyed off `data-*`. The only JS is a11y —
- * the host is a live region so assistive tech announces when the loader appears
- * or its label changes.
+ * CSS handles the whole look — the spinner, its size, its direction, and the
+ * optional background panel. The only JS is for screen readers: it makes the
+ * loader announce itself when it appears or its label changes.
  *
  * @element sherpa-loader
  * @attr {enum}    data-size         small | default | large

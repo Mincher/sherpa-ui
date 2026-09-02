@@ -1,23 +1,21 @@
 /**
- * sherpa-nav — the primary application navigation rail.
+ * sherpa-nav — the main navigation rail down the side of the app.
  *
- * Rebuilt to match the Figma "Primary Navigation": a fixed header (brand row +
- * search + quick items) over a scrolling area of grouped sections, plus a footer.
- * Rows are stamped as <sherpa-nav-item> children (composition — the same
- * component the Figma nests), so item look/behaviour lives in one place.
+ * A fixed top (brand row, search, quick items) above a scrolling list of grouped
+ * sections, with a footer at the bottom. Each row is a sherpa-nav-item, so the
+ * look and behaviour of a row live in one place.
  *
- * populate(config) accepts the rich shape:
+ * Fill it with populate(config):
  *   {
  *     product?:    { name?, icon? },
  *     quickItems?: NavEntry[],
  *     sections?:   [{ label?, items: NavEntry[] }],
  *   }
  * where NavEntry = { id, label, icon?, href?, badge? }.
- * A plain NavEntry[] is still accepted (legacy) and treated as one unlabelled
- * section — the old populate([{ id, label, icon?, href? }]) callers keep working.
+ * You can also pass a plain list of items, and it's treated as one group.
  *
- * Active state is data-active-id on the host (reflected onto the matching item).
- * Clicking an item fires nav-select; typing in search fires nav-search.
+ * data-active-id marks the current item. Clicking an item fires nav-select;
+ * typing in the search box fires nav-search.
  *
  * @fires nav-select — detail: { id }
  * @fires nav-search — detail: { query }

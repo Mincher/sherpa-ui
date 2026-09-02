@@ -11,7 +11,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true,
-    "outDir": "dist-reforged",
+    "outDir": "dist",
     "rootDir": "src",
     "verbatimModuleSyntax": true,
     "skipLibCheck": true

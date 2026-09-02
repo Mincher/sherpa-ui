@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
     () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
   );
   await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-nav-section/sherpa-nav-section.js');
+    await import('/dist/components/sherpa-nav-section/sherpa-nav-section.js');
     await customElements.whenDefined('sherpa-nav-section');
   });
 });

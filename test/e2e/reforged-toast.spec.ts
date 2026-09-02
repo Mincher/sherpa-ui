@@ -69,7 +69,7 @@ test('auto-dismisses after data-duration and fires toast-dismiss', async ({ page
 
 test('static helper creates, appends, and returns a toast', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const mod = await import('/dist-reforged/components/sherpa-toast/sherpa-toast.js');
+    const mod = await import('/dist/components/sherpa-toast/sherpa-toast.js');
     const SherpaToast = (mod as { SherpaToast: { critical(m: string, o?: { duration?: number }): HTMLElement } }).SherpaToast;
     const toast = SherpaToast.critical('Boom', { duration: 0 }) as HTMLElement & { rendered?: Promise<void> };
     await toast.rendered;

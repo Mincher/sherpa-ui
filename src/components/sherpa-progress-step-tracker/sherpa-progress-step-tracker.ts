@@ -1,12 +1,10 @@
 /**
- * sherpa-progress-step-tracker — a horizontal stepper.
+ * sherpa-progress-step-tracker — a row of steps showing where you are in a flow.
  *
- * Renders step nodes from populate([{ label, description? }]) (or the `steps`
- * property) by cloning a prototype — the only structural DOM it creates. Each
- * step's state (done | active | todo) is a data-state attribute the CSS keys
- * off, derived by comparing the step index to data-current-step (0-based).
- * Connector lines are stamped between adjacent steps. JS carries data + the
- * current index only; every visual is CSS.
+ * Give it steps with populate([{ label, description? }]). Each step is marked
+ * done, active, or to-do by comparing it to data-current-step, and CSS draws it
+ * to match, with connector lines between the steps. JS only holds the steps and
+ * the current position; the rest is CSS.
  *
  * @fires step-click  detail: { index: number, label: string }
  */

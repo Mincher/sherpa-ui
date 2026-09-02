@@ -1,9 +1,9 @@
 /**
- * sherpa-switch — an immediate binary toggle for settings and preferences.
+ * sherpa-switch — an on/off toggle for settings.
  *
- * Behaviour only. Appearance (on/off, the simple pill variant, disabled, focus)
- * is CSS keyed off `data-*`. This file toggles `data-state` on click, mirrors the
- * value onto the inner button's `aria-checked`, and emits `change`.
+ * CSS handles the look — on and off, the plain pill style, disabled, and focus.
+ * This file flips the state on click, keeps the button's aria-checked in sync,
+ * and fires change.
  *
  * @element sherpa-switch
  * @attr {enum}    data-state — on | off       (current value, read/write)

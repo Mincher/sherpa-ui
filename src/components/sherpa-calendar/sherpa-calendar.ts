@@ -1,15 +1,14 @@
 /**
- * sherpa-calendar — a date picker with day / month / year layouts.
+ * sherpa-calendar — a date picker.
  *
- * Rebuilt to match the Figma "Grid" Layout axis (day | month | year). The header
- * label zooms OUT (day → month → year); picking a month or year zooms back IN.
- * Prev/next step the day grid by a month, the month grid by a year, and the year
- * grid by a decade. Built with the JS Date API (no Temporal). data-value (ISO
- * YYYY-MM-DD) is the selected day; data-min/max bound the day range.
+ * It has three views: days, months, and years. Clicking the header label zooms
+ * out (day → month → year); picking a month or year zooms back in. The prev/next
+ * arrows move by a month in the day view, a year in the month view, and a decade
+ * in the year view. data-value holds the chosen day as YYYY-MM-DD; data-min and
+ * data-max set the range of days you can pick.
  *
- * The three grids (day / month / year) are stamped from ONE cloning prototype
- * (<template class="cal-cell-tpl">); CSS shows the grid matching data-layout.
- * Every cell state (selected / today / out-of-range / blank) is CSS off data-*.
+ * All three views share one cell template, and CSS shows whichever view is
+ * active. Each cell's look — selected, today, out of range, blank — is CSS.
  *
  * @fires datetime-change  detail: { value: string }  — a selectable day was clicked
  */

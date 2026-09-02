@@ -1,13 +1,12 @@
 /**
- * sherpa-toast — a transient notification.
+ * sherpa-toast — a pop-up message that goes away on its own.
  *
- * A status-tinted card with a message and a close button. It auto-dismisses after
- * data-duration ms (a timer started once on connect) and can be closed manually.
- * Either path fires toast-dismiss and removes the element. The status LOOK is pure
- * CSS off data-status; JS only carries the message, the timer, and the value API.
+ * A coloured card with a message and a close button. It disappears by itself
+ * after data-duration milliseconds, or you can close it early. Either way it
+ * fires toast-dismiss and removes itself. CSS handles the colour from data-status.
  *
- * Static convenience: SherpaToast.info/success/warning/critical(message, opts?)
- * create a toast, append it (to opts.container or document.body), and return it.
+ * Shortcut: SherpaToast.info/success/warning/critical(message, opts?) makes a
+ * toast, adds it to the page, and hands it back.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

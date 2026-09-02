@@ -48,5 +48,4 @@ playwright/.cache/
 # Failed-patch artifacts
 *.orig
 *.rej
-dist-reforged/
 .compile-out/

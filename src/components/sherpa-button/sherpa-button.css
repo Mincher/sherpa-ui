@@ -39,7 +39,7 @@
   margin: 0;
   font-family: inherit;
   font-size: var(--sherpa-button-font-size, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1;
   color: var(--_content);
   background: var(--_surface);

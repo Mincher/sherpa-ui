@@ -1,11 +1,10 @@
 /**
- * sherpa-code-block — a monospace code display with a copy button.
+ * sherpa-code-block — a block of code with a copy button.
  *
- * Display + copy, nothing more. The syntax-highlighting engine of the old
- * component is dropped: code renders verbatim inside <pre><code> (white-space
- * preserved via CSS). Content comes from data-code or the default slot; the copy
- * button writes it to the clipboard, emits `code-copy`, and flips data-copied so
- * CSS can show the "Copied" confirmation for a moment.
+ * It shows code and lets you copy it — that's all. There's no syntax
+ * highlighting; the code shows exactly as given, with spacing kept intact.
+ * The code comes from data-code or the default slot. The copy button copies it
+ * to the clipboard, fires code-copy, and briefly shows a "Copied" message.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

@@ -9,7 +9,7 @@
 
     // Emit
     "rootDir": "./src",
-    "outDir": "./dist-reforged",
+    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -56,7 +56,7 @@
   ],
   "exclude": [
     "node_modules",
-    "dist-reforged",
+    "dist",
     "**/*.d.ts"
   ]
 }

@@ -36,13 +36,13 @@
 }
 .label {
   color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
-  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1.4;
 }
 .description {
   color: var(--sherpa-content-secondary-base, #404047);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.4;
 }
 .label:empty,

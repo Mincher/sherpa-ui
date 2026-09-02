@@ -1,10 +1,10 @@
 /**
- * sherpa-section-header — a semantic heading row for a content section.
+ * sherpa-section-header — a heading row above a section of content.
  *
- * A title (from data-title, or a slotted heading), an optional description, and
- * a trailing actions slot. data-size scales the heading typography; data-divider
- * draws a separator beneath the row. Everything visible is CSS off data-* and the
- * base class's data-has-{slot} reflection — JS only writes the title text.
+ * A title (from data-title, or your own slotted heading), an optional description,
+ * and a slot for action buttons on the right. data-size sets how big the heading
+ * is; data-divider draws a line under the row. CSS handles the look; JS only
+ * writes the title text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

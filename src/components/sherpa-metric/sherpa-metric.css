@@ -35,8 +35,8 @@
 /* ── Label ─────────────────────────────────────────────────────────── */
 .label {
   margin: 0;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
   white-space: nowrap;
   overflow: hidden;
@@ -64,7 +64,7 @@
   margin: 0;
   font-family: inherit; /* body font, not mono — Figma's value is bold display text */
   font-size: var(--sherpa-core-fonts-scale-6xl, 36px);
-  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  font-weight: var(--sherpa-font-weight-bold, 700);
   line-height: 1.1;
   color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
 }
@@ -74,12 +74,12 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-core-space-3xs, 2px);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--_delta);
 }
 .delta:empty { display: none; }
 
-.arrow { display: none; font-size: var(--sherpa-core-fonts-scale-sm, 12px); line-height: 1; }
+.arrow { display: none; font-size: var(--sherpa-font-size-body-small, 12px); line-height: 1; }
 :host([data-trend="up"])   { --_delta: var(--sherpa-status-success-color-4, #058142); }
 :host([data-trend="down"]) { --_delta: var(--sherpa-status-critical-color-5, #bf2c09); }
 :host([data-trend="up"])   .arrow-up   { display: inline-flex; }

@@ -61,7 +61,7 @@
   padding: var(--sherpa-container-space-padding-md, 16px);
   text-align: center;
   color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }
 :host([data-empty-visible]) .body { display: none; }

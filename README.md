@@ -18,7 +18,7 @@ import 'sherpa-ui/css';             // the token layer (or installTokens())
 ## Develop
 
 ```bash
-npm run build        # compile src/ → dist-reforged/ (+ copy CSS/HTML assets)
+npm run build        # compile src/ → dist/ (+ copy CSS/HTML assets)
 npm run type-check   # strict TypeScript, no emit
 npm test             # Playwright e2e against the reforged harness
 npm run lint         # eslint src/

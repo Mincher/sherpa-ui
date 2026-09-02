@@ -73,7 +73,7 @@
     ]
   },
   "ignorePatterns": [
-    "dist-reforged",
+    "dist",
     "node_modules",
     "**/*.d.ts"
   ],

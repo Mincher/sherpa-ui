@@ -1,5 +1,5 @@
 name: sherpa-input-text
-figmaName: Input
+figmaName: Input Field
 category: control
 description: >-
   A text field. The default style is the full form-field molecule (label + description + control +
@@ -47,28 +47,84 @@ tokens:
   control:surface-primary-inactive: surface-primary-inactive
   control:border-interactive-inactive: border-interactive-inactive
   label:content-inactive-base: content-inactive-base
+_divergence:
+  note: >-
+    2026-08-26: In Figma the component is LIGHTWEIGHT — "Input Field" is just the control box
+    (leading/trailing icon + value), with State variants (default / error) carrying only style.
+    Label, description, helper, and validation text are NOT in the component: they are external
+    Typography text placed around the field in the "Example Template - Vertical/Horizontal" frames
+    on the Input page (same approach as Fieldset). Intentionally NOT 1:1 with this web component,
+    whose default style is the full form-field molecule (label + description + control + validation
+    + helper). Public API (data-label/description/error, input/change) is unchanged on the code
+    side.
+  oneToMany:
+    figmaComponent: Input Field
+    note: >-
+      1 Figma component → MANY HTML input types. The "Input Field" box (Figma COMPONENT_SET, id
+      645:69690) is a SUBCOMPONENT: every input type is its OWN Figma component set that contains an
+      Input Field INSTANCE (icons/value swapped per type). HTML has a SEPARATE element per type
+      (<input type=…>, <select>, <textarea>). Each type component set has a `Layout` axis = vertical
+      (label above) | horizontal (label beside). They live on the "✅ Input" page in the "Input
+      Types" SECTION. The "Template /" prefix was dropped 2026-08-26 — these are accepted as real
+      components, not detach-only templates. Each code component shares figmaName "Input Field"
+      (same pattern as the 3 "Data Field" chart components sharing one Figma primitive).
+    figmaSubcomponent: Input Field
+    horizontalLayout: >-
+      Layout=horizontal is a GRID, cols [0.5fr label][1fr content], rows [FIXED 32][FLEX]. col0 row0
+      = label (right-aligned, HUG width, vertical-center, sat against the field). col1 (spanning) =
+      a SINGLE VERTICAL wrapper frame ("Frame 3", gap 4) holding Input Field + description + helper.
+      STANDARD SET BY Input Number, applied to all 7 on 2026-08-26 (Will). WHY the wrapper: Figma
+      GRID auto-layout does NOT remove empty rows when set to HUG, so putting description/helper as
+      separate grid cells left dead rows. Wrapping them (with Input Field) in one vertical frame in
+      col1 sidesteps that — the grid is just label | content-stack. Text Area uses the same wrapper;
+      its Input Field keeps the resize recipe (value FILL-width/HUG-height/ TOP, field counterAxis
+      AUTO) so it still grows multi-line inside the wrapper. BUILD TIP: don't hand-restructure the
+      old separate-cell layout in place (grid row-count fights back, corrupts). Instead CLONE the
+      known-good Input Number horizontal, retext, swap icons, then replace the set's horizontal
+      variant.
+    types:
+      - figmaComponent: Input Text
+        html: <input type="text">
+        codeComponent: sherpa-input-text
+      - figmaComponent: Input Number
+        html: <input type="number">
+        codeComponent: sherpa-input-number
+        note: value right-aligned, trailing stepper glyph
+      - figmaComponent: Input Select
+        html: <select>
+        codeComponent: sherpa-select
+        note: trailing chevron-down; value = chosen option
+      - figmaComponent: Input Search
+        html: <input type="search">
+        codeComponent: sherpa-input-search
+        note: leading magnifier glyph
+      - figmaComponent: Input Date
+        html: <input type="date">
+        codeComponent: sherpa-input-date
+        note: trailing calendar glyph
+      - figmaComponent: Input Password
+        html: <input type="password">
+        codeComponent: sherpa-input-password
+        note: value = dots; reveal (eye) toggle TODO — no eye glyph in the icon set yet
+      - figmaComponent: Text Area
+        html: <textarea>
+        codeComponent: sherpa-textarea
+        note: >-
+          Input Field with the height restriction removed — field fills width & grows height, value
+          top-aligned/wrapping
 figmaVerbatim:
   _status: matched
-  figmaName: Input
-  nodeType: COMPONENT_SET
+  figmaName: Input Field
   built: true
   variantAxes:
-    - name: Style
+    - name: State
       values:
+        - error
         - default
-        - minimal
   booleanProps:
-    - hasDescription
-    - hasHelper
     - hasLeadingIcon
     - hasTrailingIcon
-    - hasValidation
-    - hasLabel
-  textProps:
-    - label
-    - description
-    - value
-    - helper
+  textProps: []
   instanceProps: []
   modePins: {}
   figmaEvents:
@@ -76,5 +132,6 @@ figmaVerbatim:
     - change
     - search
   note: >-
-    2026-08-16: Input now a set with Style=default|minimal; minimal = bare inline field (code:
-    data-style=minimal template + data-borderless)
+    2026-08-26: Reduced to the lightweight "Input Field" (box only) with State=default|error.
+    Label/description/helper/validation moved OUT to external Typography templates on the page
+    (vertical + horizontal). See _divergence above. Supersedes the 2026-08-16 default|minimal set.

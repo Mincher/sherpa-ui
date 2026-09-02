@@ -33,8 +33,8 @@
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   cursor: pointer;
   transition: background-color 120ms ease;
 }

@@ -1,11 +1,10 @@
 /**
- * sherpa-select-checkbox — a labelled checkbox.
+ * sherpa-select-checkbox — a checkbox with a label.
  *
- * Thin JS over a native <input type="checkbox">: it mirrors label / description
- * text and native attributes onto the inner control, exposes `checked` /
- * `indeterminate` / `value` as properties, and re-dispatches `change`. The entire
- * visual — box, checkmark, indeterminate dash, disabled, focus — is pure CSS
- * keyed off the input's native state. JS never toggles a class or a style.
+ * A thin wrapper around a real checkbox. JS copies the label, description, and
+ * native attributes onto it, exposes its checked, indeterminate, and value
+ * states, and re-fires the change event. CSS handles the whole look — the box,
+ * the tick, the dash, disabled, and focus.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

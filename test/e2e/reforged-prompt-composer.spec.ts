@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
     () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
   );
   await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-prompt-composer/sherpa-prompt-composer.js');
+    await import('/dist/components/sherpa-prompt-composer/sherpa-prompt-composer.js');
     await customElements.whenDefined('sherpa-prompt-composer');
   });
 });

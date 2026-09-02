@@ -1,10 +1,10 @@
 /**
- * sherpa-prompt-composer — an AI prompt input.
+ * sherpa-prompt-composer — the box you type an AI prompt into.
  *
- * An auto-growing textarea with a brand-accent send button. Submitting (the send
- * button, or Enter without Shift) emits `prompt-submit` with { text } when the
- * trimmed value is non-empty, then clears the field. Optional attachment / action
- * slots flank the send button. JS carries the value and the growth; the look is CSS.
+ * A text box that grows as you type, with a send button. Pressing send (or Enter
+ * without Shift) fires prompt-submit with the text, then clears the box — but
+ * only if you actually typed something. There are optional slots beside the send
+ * button for attachment and action buttons. CSS handles the look.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

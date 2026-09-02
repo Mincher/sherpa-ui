@@ -23,6 +23,7 @@
 .strip {
   display: flex;
   align-items: stretch;
+  justify-content: space-between;
 }
 
 .tabs {
@@ -34,7 +35,6 @@
 
 .detail {
   display: none;
-  margin-inline-start: auto;
   align-items: center;
   gap: var(--sherpa-core-space-sm, 12px);
   padding-inline: var(--sherpa-core-space-sm, 12px);
@@ -53,8 +53,8 @@
   border-bottom: var(--sherpa-core-border-width-sm, 0.5px) solid
     var(--sherpa-border-primary, #d5d5d5);
   font-family: inherit;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-core-fonts-scale-xl, 20px);
   white-space: nowrap;
   color: var(--sherpa-content-secondary-base, #404047);

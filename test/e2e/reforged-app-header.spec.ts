@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
     () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
   );
   await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-app-header/sherpa-app-header.js');
+    await import('/dist/components/sherpa-app-header/sherpa-app-header.js');
     await customElements.whenDefined('sherpa-app-header');
   });
 });
@@ -113,8 +113,8 @@ test('data-loading reveals the loading bar', async ({ page }) => {
 
 test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches breadcrumb-click', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-breadcrumbs/sherpa-breadcrumbs.js');
-    await import('/dist-reforged/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js');
+    await import('/dist/components/sherpa-breadcrumbs/sherpa-breadcrumbs.js');
+    await import('/dist/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js');
     const el = document.createElement('sherpa-app-header') as WithRender;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;

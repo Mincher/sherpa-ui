@@ -1,12 +1,10 @@
 /**
- * sherpa-progress-bar — a horizontal progress indicator for a single ongoing task.
+ * sherpa-progress-bar — a bar that fills up as a task runs.
  *
- * Behaviour only. All appearance (track, fill colour, the indeterminate sweep, the
- * disabled look) is CSS keyed off `data-*`. The one thing JS does that CSS cannot is
- * turn the numeric `data-value` into a length: it writes the clamped percentage into
- * the `--_pct` custom property on the host, and CSS uses that for the fill `width`.
- * That is a data→CSS-variable bridge, not a style/visibility toggle — JS never sets
- * `display`, `width` directly, or a class.
+ * CSS handles the look — the track, the fill colour, the back-and-forth sweep for
+ * unknown progress, and the disabled look. The one thing JS does is turn
+ * data-value into a length: it hands the percentage to CSS, and CSS sets the fill
+ * width from it.
  *
  * @element sherpa-progress-bar
  * @attr {number}  data-value          — 0–100 completion percentage (determinate)

@@ -1,10 +1,9 @@
 /**
- * sherpa-gauge-chart — a half-circle gauge for a single 0–100 value.
+ * sherpa-gauge-chart — a half-circle gauge for one value from 0 to 100.
  *
- * JS does exactly the geometry bridge: from data-value (clamped to min..max) it
- * computes the fill fraction and needle angle and writes them to --_fill-pct and
- * --_angle. CSS owns all drawing (a clipped conic-gradient ring + a rotated
- * needle). The centre value + scale labels are mirrored text.
+ * From data-value, JS works out how full the gauge is and which way the needle
+ * points, then hands those two numbers to CSS. CSS draws the coloured arc and
+ * turns the needle. The big number in the middle and the scale labels are text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

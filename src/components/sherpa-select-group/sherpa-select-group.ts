@@ -1,16 +1,10 @@
 /**
- * sherpa-select-group — a labelled group of checkbox or radio options.
+ * sherpa-select-group — a labelled group of checkboxes or radios.
  *
- * Composes the reforged sherpa-select-checkbox / sherpa-select-radio primitives.
- * data-multiple → checkboxes (multi-select); default → radios (single-select).
- * Options come from populate([{ value, label, description? }]); rows are stamped
- * from a cloning prototype (the only structural DOM this component creates — the
- * golden rules allow data-driven rows). The `value` property returns the current
- * selection (string[] for checkboxes, the single string for radios).
- *
- * Because the children are custom elements whose `change` event is composed, the
- * originating child is read off event.composedPath() — event.target is retargeted
- * to the host at the shadow boundary, so it is NOT reliable here.
+ * Set data-multiple for checkboxes (pick many) or leave it off for radios (pick
+ * one). Give it options with populate([{ value, label, description? }]) and it
+ * draws the rows. The `value` property gives you the current choice — a list of
+ * values for checkboxes, or the single value for radios.
  *
  * @fires change — detail: { value } (string[] when multiple, else string | null)
  */

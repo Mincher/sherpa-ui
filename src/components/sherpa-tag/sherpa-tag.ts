@@ -1,9 +1,9 @@
 /**
- * sherpa-tag — a compact labelled pill.
+ * sherpa-tag — a small pill with a label.
  *
- * Nearly attribute-only: colour, variant, and collapsed state are pure CSS off
- * `data-*`. The only behaviour is the removable close button, which emits
- * `tag-remove` for the host application to act on.
+ * CSS handles the look — the colour, the style, and the collapsed state. The only
+ * behaviour is the optional close button, which fires tag-remove so the app can
+ * remove it.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

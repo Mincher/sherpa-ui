@@ -1,10 +1,9 @@
 /**
- * sherpa-donut-chart — a donut / pie for part-to-whole data.
+ * sherpa-donut-chart — a donut (or pie) showing parts of a whole.
  *
- * From populate([{ label, value, colorIndex? }]) the JS composes ONE conic-gradient
- * string — each slice a categorical-coloured band spanning its share of the circle
- * — and writes it to the --_ring custom property. CSS draws the ring and masks the
- * hole. The only JS "geometry" is building that gradient value; CSS owns rendering.
+ * Give it data with populate([{ label, value, colorIndex? }]). JS works out how
+ * big each slice's share of the circle is and builds the ring of colours; CSS
+ * draws that ring and cuts out the hole in the middle.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

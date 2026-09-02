@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 
 test('renderElement builds an element with props, slots and children', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { renderElement } = await import('/dist-reforged/index.js');
+    const { renderElement } = await import('/dist/index.js');
     const el = renderElement({
       type: 'sherpa-container',
       props: { 'data-elevation': 'md' },
@@ -39,7 +39,7 @@ test('renderElement builds an element with props, slots and children', async ({ 
 
 test('renderView composes an id-addressed tree into the view frame', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { renderView } = await import('/dist-reforged/index.js');
+    const { renderView } = await import('/dist/index.js');
     const { el } = renderView({
       root: 'body',
       shell: { nav: 'nav', header: 'hdr' },
@@ -69,7 +69,7 @@ test('renderView composes an id-addressed tree into the view frame', async ({ pa
 
 test('$state data binding populates from state and re-populates on write', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { renderView } = await import('/dist-reforged/index.js');
+    const { renderView } = await import('/dist/index.js');
     const { el, state } = renderView({
       root: 'nav',
       state: { items: [{ id: 'a', label: 'Alpha' }] },
@@ -97,7 +97,7 @@ test('$state data binding populates from state and re-populates on write', async
 
 test('writes wiring: one element writes state, a bound consumer reacts', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { renderView } = await import('/dist-reforged/index.js');
+    const { renderView } = await import('/dist/index.js');
     const { el, state } = renderView({
       root: 'wrap',
       state: { picked: null },

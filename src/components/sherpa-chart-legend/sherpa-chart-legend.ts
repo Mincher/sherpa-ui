@@ -1,11 +1,9 @@
 /**
- * sherpa-chart-legend — a legend for charts.
+ * sherpa-chart-legend — the colour key beside a chart.
  *
- * Renders legend rows from populate([{ label, value?, colorIndex }]) by cloning
- * a prototype. Each row's swatch colour is set via a --_hue custom property
- * pointing at var(--sherpa-categorical-N) (a JS→CSS-var bridge, not styling — CSS
- * owns the swatch rule). Clicking a row toggles its active state and emits
- * legend-item-click.
+ * Give it a list with populate([{ label, value?, colorIndex }]) and it draws one
+ * row per item. JS tells each row which colour to use; CSS draws the swatch.
+ * Clicking a row toggles it on or off and fires legend-item-click.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

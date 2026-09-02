@@ -1,0 +1,151 @@
+/**
+ * sherpa-select-card.css — all select-card presentation.
+ *
+ * A bordered card that reads as one big option. Surface + border run through the
+ * status cascade like sherpa-container, so a status context re-tints them; with
+ * no status the neutral container surface/border show. The SELECTED look is an
+ * accent ring + tinted face, drawn off [data-selected] — JS only sets that
+ * attribute, never a style. The footer's default control (a radio) sits below
+ * the body; data-layout="horizontal" moves it beside the body instead.
+ *
+ * Colour model (Figma "Select Card"):
+ *   card face   container-surface/default (→ --_status-surface cascade)
+ *   card ring   container-border/default  (→ --_status-border cascade)
+ *   selected    ring  → control-surface/accent, face → accent tint overlay
+ *   header ttl  content/primary/base
+ *   header desc content/secondary/base
+ *   disabled    inactive tokens per property, never opacity
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+
+  --_surface: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
+  --_accent: var(--sherpa-control-surface-accent, #3c5edd);
+  --_pad: var(--sherpa-core-space-md, 16px);
+  --_radius: var(--sherpa-container-border-radius-top-left, 8px);
+}
+
+/* ── The card box ─────────────────────────────────────────────────── */
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--_surface);
+  border: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border-radius: var(--_radius);
+  color: var(--sherpa-content-primary-base, #2e2e33);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+/* ── Horizontal layout: body and footer sit side by side ──────────── */
+:host([data-layout="horizontal"]) .card {
+  flex-direction: row;
+  align-items: stretch;
+}
+:host([data-layout="horizontal"]) .body {
+  flex: 1 1 auto;
+}
+
+/* ── Regions ──────────────────────────────────────────────────────── */
+.header,
+.body,
+.footer {
+  padding: var(--_pad);
+  min-width: 0;
+}
+.body {
+  flex: 1 1 auto;
+}
+
+/* Header collapses when it has neither slotted content nor label/description. */
+.header {
+  display: none;
+  flex-direction: column;
+  gap: var(--sherpa-core-space-3xs, 2px);
+}
+:host([data-has-header]) .header,
+:host([data-label]) .header,
+:host([data-description]) .header {
+  display: flex;
+}
+
+/* Footer shows by default (it carries the select control); hide only when a
+   consumer opts out with data-footer="none". */
+.footer {
+  display: flex;
+  align-items: center;
+}
+:host([data-footer="none"]) .footer {
+  display: none;
+}
+
+/* When body has content and header shows, divide them. */
+:host([data-has-header]) .body,
+:host([data-label]) .body,
+:host([data-description]) .body {
+  border-top: var(--sherpa-container-border-width, 1px) solid var(--_border);
+}
+/* Footer divider (below the body); suppressed in horizontal layout. */
+:host(:not([data-layout="horizontal"])) .footer {
+  border-top: var(--sherpa-container-border-width, 1px) solid var(--_border);
+}
+:host([data-layout="horizontal"]) .footer {
+  border-left: var(--sherpa-container-border-width, 1px) solid var(--_border);
+}
+
+/* ── Header text ──────────────────────────────────────────────────── */
+.label {
+  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: 1.4;
+}
+.description {
+  color: var(--sherpa-content-secondary-base, #404047);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: 1.4;
+}
+.label:empty,
+.description:empty { display: none; }
+
+/* ── Hover ────────────────────────────────────────────────────────── */
+:host(:not([disabled]):hover) .card {
+  border-color: var(--sherpa-border-interactive-hover, #8d8d99);
+}
+
+/* ── Selected — accent ring + subtle accent face ──────────────────── */
+:host([data-selected]) .card {
+  border-color: var(--_accent);
+  box-shadow: inset 0 0 0 1px var(--_accent);
+}
+
+/* ── Focus-within — box-shadow ring, never a bare outline (WCAG 2.4.11) ── */
+:host(:focus-within) .card {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-control-border-default, #b2b2bf);
+}
+:host([data-selected]:focus-within) .card {
+  box-shadow: inset 0 0 0 1px var(--_accent), 0 0 0 2px var(--_accent);
+}
+
+/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+:host([disabled]) .card {
+  cursor: not-allowed;
+  pointer-events: none;
+  background: var(--sherpa-container-surface-inactive, #f2f2f2);
+  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+}
+:host([disabled]) .label,
+:host([disabled]) .description {
+  color: var(--sherpa-content-inactive-base, #5c5c66);
+}
+
+/* ── Status cascade re-inks the description (face/ring read --_status-*). ── */
+:host([data-status]) .description {
+  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
+}

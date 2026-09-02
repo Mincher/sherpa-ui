@@ -1,11 +1,10 @@
 /**
- * sherpa-data-grid — a sortable data table.
+ * sherpa-data-grid — a sortable table.
  *
- * populate({ columns, rows }) stamps a header per column and a row per record from
- * cloning prototypes. Clicking a sortable header cycles asc → desc and re-renders
- * the sorted rows, reflecting data-sort-field / data-sort-direction on the host.
- * A row click emits row-click. The heavy old pipeline (grouping / segmenting /
- * aggregation / export / selection) is intentionally dropped — this is the grid.
+ * Give it data with populate({ columns, rows }) and it draws the header and rows.
+ * Clicking a sortable column header sorts by it, toggling between ascending and
+ * descending. Clicking a row fires row-click. This is a plain grid — the heavier
+ * features (grouping, aggregation, export, selection) are left out on purpose.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

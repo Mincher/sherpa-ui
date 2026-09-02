@@ -1,0 +1,57 @@
+{
+  "note": "Backup before consolidating Control surface/border into Container + moving Saturated/Transparent to Container extensions. 2026-08-27.",
+  "collections": {
+    "Control": {
+      "id": "VariableCollectionId:13:2622",
+      "modes": {"default":"13:215","info":"757:510","critical":"757:514","warning":"757:518","urgent":"757:522","success":"757:526","active":"842:557","inactive":"842:563"},
+      "vars_surface_border_TO_MOVE": {
+        "control-surface/base": "13:2623 (default=neutral color1, status=status/<s>/subtle/*, active=surface/active/subtle/base, inactive=surface/inactive)",
+        "control-surface/dark": "898:32120",
+        "control-surface/darker": "898:32121",
+        "control-border/default": "13:2626 (default=border/base, status=status/<s>/strong/base, active=border/active, inactive=border/inactive)",
+        "control-border/width": "13:3611 (border/width/sm all modes)",
+        "control-border/radius/top-left": "266:8661",
+        "control-border/radius/top-right": "266:8662",
+        "control-border/radius/bottom-left": "266:8663",
+        "control-border/radius/bottom-right": "266:8664"
+      },
+      "vars_control_ONLY_keep": {
+        "control-content/base": "740:334714",
+        "control-content/light": "949:35754",
+        "control-content/lighter": "949:35755",
+        "control-content/on-accent": "842:342482",
+        "control-indicator/accent": "15:3716",
+        "control-font/weight": "935:38173"
+      }
+    },
+    "Container": {
+      "id": "VariableCollectionId:18:187",
+      "modes": {"default":"18:2","info":"951:27","critical":"951:36","warning":"951:45","urgent":"951:54","success":"951:63","active":"951:72","inactive":"951:81"},
+      "vars": {
+        "container-surface/base": "18:188 (SUBTLE status per mode)",
+        "container-surface/dark": "740:334616",
+        "container-surface/darker": "740:334617",
+        "container-border/base": "18:192 (border/base default, status/<s>/strong/base status, border/active|inactive)",
+        "container-border/width": "18:196",
+        "container-border/radius/{tl,tr,bl,br}": "18:195, 32:65130, 32:65131, 32:65132"
+      }
+    },
+    "Saturated_CONTROL_ext": {"id": "VariableCollectionId:842:339491", "extends": "Control", "note": "shares Control var ids; strong/solid tier"},
+    "Transparent_CONTROL_ext_RETIRE": {"id": "VariableCollectionId:842:339513", "extends": "Control", "note": "OLD transparent, duplicate name — RETIRE"},
+    "Transparent_CONTAINER_ext_KEEP": {"id": "VariableCollectionId:951:35766", "extends": "Container", "note": "NEW subtle tier, keep"}
+  },
+  "usage": {
+    "control-surface/base": 2649, "control-surface/dark": 2058, "control-surface/darker": 35,
+    "control-border/default": 4317, "control-border/width": ~3187, "control-border/radius/*": ~380,
+    "control-content/base": 4116, "control-content/on-accent": 756, "control-content/light": 211,
+    "control-indicator/accent": 387,
+    "container-surface/base": 1432, "container-border/base": 1836
+  },
+  "plan": {
+    "1": "Rebind nodes: control-surface/{base,dark,darker}->container-surface/*, control-border/{default->base, width, radius/*}->container-border/*",
+    "2": "Create Saturated as Container extension (strong tier); map old-Saturated pins to it",
+    "3": "Retire Transparent(Control 842:339513): migrate pins to Transparent(Container 951:35766), delete",
+    "4": "Delete surface/border/geometry vars from Control; keep content/indicator/font-weight",
+    "5": "Delete old Saturated(Control 842:339491) after mapping"
+  }
+}

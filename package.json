@@ -3,29 +3,29 @@
   "version": "2.1.0-beta.0",
   "description": "Sherpa UI — A standards-based Web Component library and design token system (TypeScript)",
   "type": "module",
-  "main": "./dist-reforged/index.js",
-  "types": "./dist-reforged/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist-reforged/index.d.ts",
-      "default": "./dist-reforged/index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
-    "./css": "./dist-reforged/styles/tokens/tokens.css",
+    "./css": "./dist/styles/tokens/tokens.css",
     "./components/*": {
-      "types": "./dist-reforged/components/*.d.ts",
-      "default": "./dist-reforged/components/*"
+      "types": "./dist/components/*.d.ts",
+      "default": "./dist/components/*"
     },
-    "./css/*": "./dist-reforged/styles/*"
+    "./css/*": "./dist/styles/*"
   },
   "files": [
-    "dist-reforged/",
+    "dist/",
     "src/**/*.ts",
     "src/**/*.html",
     "src/**/*.css",
     "mcp-server/"
   ],
   "scripts": {
-    "clean": "rm -rf dist-reforged",
+    "clean": "rm -rf dist",
     "build": "node scripts/build-reforged.mjs",
     "build:watch": "tsc -p tsconfig.reforged.json --watch",
     "type-check": "tsc -p tsconfig.reforged.json --noEmit",

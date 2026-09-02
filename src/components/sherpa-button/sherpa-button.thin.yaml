@@ -38,6 +38,13 @@ tokens:
   trigger:control-surface-inactive: control-surface-inactive
   trigger:border-interactive-inactive: border-interactive-inactive
   icon:content-inactive-base: content-inactive-base
+_divergence:
+  note: >-
+    2026-08-26: HTML-element note. Sherpa deliberately does NOT use <a role="button"> — a
+    navigating trigger stays a real link, not a button-styled anchor. For a form SUBMIT
+    (<input type="submit"> / <button type="submit">), use this Button styled Saturated-Default
+    in appearance (the Saturated look-tier, default state). i.e. the submit action of a form is a
+    Saturated-Default Button, not a separate component.
 figmaVerbatim:
   _status: matched
   figmaName: Button

@@ -1,10 +1,10 @@
 /**
- * sherpa-barchart — a vertical bar chart for categorical comparison.
+ * sherpa-barchart — a vertical bar chart for comparing categories.
  *
- * From populate([{ label, value, colorIndex? }]) the JS stamps a bar per category
- * and sets each bar's --_h (value as a % of the max) + --_hue (categorical) — the
- * geometry bridge; CSS turns --_h into the bar height and grows it from the
- * baseline. A click emits bar-click.
+ * Give it data with populate([{ label, value, colorIndex? }]). JS draws one bar
+ * per item and hands two numbers to CSS: the bar's height (as a percent of the
+ * tallest) and its colour. CSS grows each bar up from the baseline. Clicking a
+ * bar fires bar-click.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

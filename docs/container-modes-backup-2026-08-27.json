@@ -1,0 +1,57 @@
+{
+  "note": "Backup before adding Status/active/inactive MODES to Container collection (was 1 mode 'default' + flat status vars). Container id VariableCollectionId:18:187.",
+  "container": {
+    "id": "VariableCollectionId:18:187",
+    "mode": "default (18:2)",
+    "flatVars_surface": {
+      "container-surface/base": "Theme:surface/default/subtle/base",
+      "container-surface/dark": "Theme:surface/default/subtle/dark",
+      "container-surface/darker": "Theme:surface/default/subtle/darker",
+      "container-surface/inactive": "Theme:surface/inactive",
+      "container-surface/active": "Theme:surface/active/strong/base",
+      "container-surface/status-info": "Theme:status/info/strong/base",
+      "container-surface/status-info-subtle": "Theme:status/info/transparent/base",
+      "container-surface/status-critical": "Theme:status/critical/strong/base",
+      "container-surface/status-critical-subtle": "Theme:status/critical/transparent/base",
+      "container-surface/status-warning": "Theme:status/warning/strong/base",
+      "container-surface/status-warning-subtle": "Theme:status/warning/transparent/base",
+      "container-surface/status-urgent": "Theme:status/urgent/strong/base",
+      "container-surface/status-urgent-subtle": "Theme:status/urgent/transparent/base",
+      "container-surface/status-success": "Theme:status/success/strong/base",
+      "container-surface/status-success-subtle": "Theme:status/success/transparent/base"
+    },
+    "flatVars_border": {
+      "container-border/base": "Theme:border/base",
+      "container-border/inactive": "Theme:border/inactive",
+      "container-border/active": "Theme:border/active",
+      "container-border/status-info": "Theme:status/info/strong/base",
+      "container-border/status-critical": "Theme:status/critical/strong/base",
+      "container-border/status-warning": "Theme:status/warning/strong/base",
+      "container-border/status-urgent": "Theme:status/urgent/strong/base",
+      "container-border/status-success": "Theme:status/success/strong/base"
+    },
+    "geometry_modeAgnostic": {
+      "container-border/radius/top-left": "Snapping:snapping-radius/top-left",
+      "container-border/radius/top-right": "Snapping:snapping-radius/top-right",
+      "container-border/radius/bottom-left": "Snapping:snapping-radius/bottom-left",
+      "container-border/radius/bottom-right": "Snapping:snapping-radius/bottom-right",
+      "container-border/width": "comfortable:border/width/sm"
+    }
+  },
+  "targetModel": {
+    "modes": ["default","info","critical","warning","urgent","success","active","inactive"],
+    "surfaceVars": ["container-surface/base","container-surface/dark","container-surface/darker"],
+    "borderVar": ["container-border/base"],
+    "subtleTier": "Transparent extension of Container (container-surface/base per mode = transparent status surface)",
+    "perModeSurface": {
+      "default": "Theme:surface/default/subtle/{base,dark,darker}",
+      "info": "Theme:status/info/strong/{base,dark,darker}",
+      "critical": "Theme:status/critical/strong/{base,dark,darker}",
+      "warning": "Theme:status/warning/strong/{base,dark,darker}",
+      "urgent": "Theme:status/urgent/strong/{base,dark,darker}",
+      "success": "Theme:status/success/strong/{base,dark,darker}",
+      "active": "Theme:surface/active/strong/base",
+      "inactive": "Theme:surface/inactive"
+    }
+  }
+}

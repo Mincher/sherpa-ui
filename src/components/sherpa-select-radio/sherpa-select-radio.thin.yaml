@@ -38,20 +38,24 @@ tokens:
   description:content-inactive-base: content-inactive-base
   description:status-text:
     override: status-text
+_divergence:
+  note: >-
+    2026-08-27: FORMALISED as a real Figma COMPONENT again (was briefly a detach-only template).
+    "Select Radio" = a Radio Indicator INSTANCE (the shared subcomponent) + label + description,
+    with label/description TEXT props + a hasDescription toggle. Kept as a component for design↔code
+    parity with sherpa-select-radio. The checked state lives on the Radio Indicator subcomponent.
+    See [[sherpa-fieldset-checkbox-radio-templates]] for the earlier template history.
 figmaVerbatim:
   _status: matched
   figmaName: Select Radio
-  nodeType: COMPONENT_SET
+  nodeType: COMPONENT
   built: true
-  variantAxes:
-    - name: State
-      values:
-        - active
+  variantAxes: []
   booleanProps:
-    - isChecked
     - hasDescription
   textProps:
     - label
+    - description
   instanceProps: []
   modePins: {}
   figmaEvents:

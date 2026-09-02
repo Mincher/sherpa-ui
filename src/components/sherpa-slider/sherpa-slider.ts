@@ -1,13 +1,10 @@
 /**
- * sherpa-slider — a single-value range control.
+ * sherpa-slider — a slider for picking one value in a range.
  *
- * A native <input type=range> owns interaction, keyboard, and accessibility;
- * this class is a thin coordinator. It mirrors data-min/max/step/value onto the
- * input, and the ONE thing CSS cannot compute — the fill length — is written to
- * the --_pct custom property (data-value → --_pct), which CSS uses for the fill
- * width. That is a data→CSS-variable bridge, not styling. JS never sets
- * display/width/colour; it re-dispatches the native input/change as unprefixed
- * events with a { value } detail.
+ * A real range input does the dragging, keyboard, and accessibility; this class
+ * just wraps it. JS copies min/max/step/value onto the input, and hands CSS the
+ * one thing it can't work out — how far along the track the fill should reach.
+ * It also re-fires the native input and change events with a { value } detail.
  *
  * @element sherpa-slider
  * @attr {string} data-label      — label text above the slider

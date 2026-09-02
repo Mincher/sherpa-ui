@@ -1,11 +1,9 @@
 /**
- * sherpa-breadcrumbs — a navigation trail.
+ * sherpa-breadcrumbs — the "you are here" trail of links.
  *
- * Renders a crumb list from populate([{ label, href? }]) by cloning the
- * <template class="crumb-tpl"> prototype (the only structural DOM it creates —
- * data-driven rows, which the golden rules allow). Separators are pure CSS. The
- * last crumb is the current page (aria-current, no href). A click on any crumb
- * delegates to `breadcrumb-select`.
+ * Give it a list with populate([{ label, href? }]) and it draws one crumb per
+ * item. The separators between crumbs are drawn by CSS. The last crumb is the
+ * current page, so it has no link. Clicking any crumb fires breadcrumb-select.
  *
  * @fires breadcrumb-select — detail: { index, label, href }
  */

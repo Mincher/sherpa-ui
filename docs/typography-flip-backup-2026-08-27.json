@@ -1,0 +1,43 @@
+{
+  "note": "Backup before flipping Typography modes from Weight to Size (2026-08-27). Typography/Hero/Mono. Hero+Mono are true .extend() extensions sharing Typography var ids. family var 932:36265 overridden per-extension (Mono=JetBrains Mono via probe; Hero=Inter/no override). valuesByMode reads false-empty for ext overrides.",
+  "Typography": {
+    "id": "VariableCollectionId:769:339388",
+    "defaultModeId": "769:544",
+    "modes": [
+      { "id": "769:544", "name": "regular" },
+      { "id": "932:0", "name": "light" },
+      { "id": "932:1", "name": "medium" },
+      { "id": "932:2", "name": "semibold" },
+      { "id": "932:3", "name": "bold" },
+      { "id": "932:4", "name": "black" }
+    ],
+    "sizeVars": {
+      "size/h1": "6:490(24)", "size/h2": "6:489(20)", "size/h3": "6:488(16)",
+      "size/h4": "6:487(14)", "size/h5": "6:486(12)", "size/large": "6:488(16)",
+      "size/base": "6:487(14)", "size/small": "6:486(12)", "size/xs": "6:485(10)"
+    },
+    "lineHeightVars": {
+      "line-height/h1": "6:493(32)", "line-height/h2": "6:491(28)", "line-height/h3": "6:490(24)",
+      "line-height/h4": "6:489(20)", "line-height/h5": "6:488(16)", "line-height/large": "6:490(24)",
+      "line-height/base": "6:489(20)", "line-height/small": "6:488(16)", "line-height/xs": "6:488(16)"
+    },
+    "weightVar": {
+      "id": "769:339408",
+      "aliasByMode": { "regular": "81:2928(400)", "light": "81:2927(300)", "medium": "81:2929(500)", "semibold": "81:2930(600)", "bold": "81:2931(700)", "black": "81:2932(900)" }
+    },
+    "familyVar": "932:36265 = Inter (base)",
+    "letterSpacing": { "heading": -0.2, "body": 0 },
+    "paragraphSpacing": "6:484(8)"
+  },
+  "Hero": { "id": "VariableCollectionId:932:36266", "defaultModeId": "932:5", "modes": ["932:5 regular","932:6 light","932:7 medium","932:8 semibold","932:9 bold","932:10 black"], "familyOverride": "none (resolves Inter)" },
+  "Mono": { "id": "VariableCollectionId:932:36267", "defaultModeId": "932:11", "modes": ["932:11 regular","932:12 light","932:13 medium","932:14 semibold","932:15 bold","932:16 black"], "familyOverride": "JetBrains Mono (verified via probe)" },
+  "componentTextNodes": {
+    "total": 184, "bindTypoSize": 182, "buttonOwnVar": 1, "noBind": 1,
+    "weightModePinCounts": { "regular": 122, "medium": 24, "semibold": 11, "light": 1, "Mono/regular": 20 },
+    "sizeVarUsage": { "small": 93, "base": 76, "xs": 10, "large": 2, "h1": 1 }
+  },
+  "primitives": {
+    "scale": { "6:485": 10, "6:486": 12, "6:487": 14, "6:488": 16, "6:489": 20, "6:490": 24, "6:491": 28, "6:493": 32, "6:484": 8 },
+    "weight": { "81:2927": 300, "81:2928": 400, "81:2929": 500, "81:2930": 600, "81:2931": 700, "81:2932": 900 }
+  }
+}

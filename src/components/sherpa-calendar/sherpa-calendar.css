@@ -40,8 +40,8 @@
 .cal-label {
   flex: 1 1 auto;
   text-align: center;
-  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-title-base, #18191a);
 }
 
@@ -56,7 +56,7 @@
   border-radius: var(--sherpa-core-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-primary-base, #2e2e33);
-  font-size: var(--sherpa-core-fonts-scale-xl, 20px);
+  font-size: var(--sherpa-font-size-heading-h2, 20px);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
@@ -102,8 +102,8 @@
 
 .cal-weekdays span {
   text-align: center;
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
   color: var(--sherpa-content-secondary-base, #404047);
   padding-block: var(--sherpa-core-space-3xs, 2px);
 }
@@ -120,7 +120,7 @@
   background: transparent;
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: inherit;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 }
@@ -136,7 +136,7 @@
 /* Today — a ring, not a fill (fill is reserved for the selection). */
 .cal-cell[data-today] {
   border-color: var(--sherpa-border-interactive-primary, #3c5edd);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 /* Selected — accent fill, wins over hover / today. */
@@ -144,7 +144,7 @@
   background: var(--_accent);
   border-color: var(--_accent);
   color: var(--_accent-on);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 .cal-cell[data-selected]:hover {
   background: var(--_accent);

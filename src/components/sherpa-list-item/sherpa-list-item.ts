@@ -1,14 +1,14 @@
 /**
- * sherpa-list-item — a single row inside a sherpa-list.
+ * sherpa-list-item — one row inside a sherpa-list.
  *
- * Rebuilt to match the Figma "Menu List Item": a leading region (drag handle,
- * expand toggle, selection control, icon), a content column (title +
- * description), and a trailing slot. Each leading affordance is CSS-toggled off
- * a data-* flag; JS writes the text/icon, reflects expand/select state, handles
- * the interactive click/keyboard behaviour, and emits the affordance events.
+ * From left to right: a leading area (drag handle, expand toggle, checkbox or
+ * radio, icon), then a title and description, then a trailing slot. Each leading
+ * bit is turned on with a data-* flag and shown by CSS. JS writes the text and
+ * icon, keeps the expand and select states in sync, handles clicks and keyboard,
+ * and fires the matching events.
  *
- * When data-interactive is set the row is focusable; clicking (or Enter/Space)
- * marks it active and emits list-item-click.
+ * Set data-interactive to make the row clickable: clicking it (or pressing Enter
+ * or Space) marks it active and fires list-item-click.
  *
  * Public API:
  *   data-title / data-description   text

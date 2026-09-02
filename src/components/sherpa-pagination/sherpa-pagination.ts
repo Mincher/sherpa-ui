@@ -1,14 +1,11 @@
 /**
- * sherpa-pagination — page navigation.
+ * sherpa-pagination — the page-number strip for long lists.
  *
- * data-total-pages and data-current-page drive a prev button, a windowed run of
- * numbered page buttons (first, last, and a ±1 window around the current page,
- * with ellipsis gaps bridging the jumps), and a next button. Numbers and gaps are
- * stamped from cloning prototypes (the only structural DOM this creates —
- * data-driven rows, which the golden rules allow). The current page is marked
- * data-current (CSS styles it as the accent, non-interactive); prev/next carry the
- * native `disabled` attribute at the boundaries. Clicking a page sets
- * data-current-page and emits page-change.
+ * data-total-pages and data-current-page drive a prev arrow, the page numbers,
+ * and a next arrow. It shows the first page, the last page, and the pages around
+ * the current one, with "…" gaps in between. The current page is highlighted and
+ * can't be clicked; the arrows go grey at the first and last page. Clicking a
+ * page number moves to it and fires page-change.
  *
  * @element sherpa-pagination
  * @attr {number} data-total-pages  — total page count (default 1)

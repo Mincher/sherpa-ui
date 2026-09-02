@@ -1,11 +1,9 @@
 /**
- * sherpa-container-footer — the footer bar for a container's `footer` slot.
+ * sherpa-container-footer — the footer strip inside a container.
  *
- * A single actions row: whatever is slotted (buttons, links) laid out on one
- * line, with data-align controlling their horizontal distribution. It's a pure
- * surface — no JS behaviour beyond the base class; alignment and the appear-when-
- * filled behaviour are CSS off data-* and the base class's data-has-content
- * reflection.
+ * One row of actions: whatever you slot in — buttons, links — sits on a single
+ * line, and data-align sets how they spread across it. There's no JS behaviour;
+ * CSS handles the alignment and hides the footer when it's empty.
  *
  * @element sherpa-container-footer
  * @attr {enum} data-align — start | end (default) | between

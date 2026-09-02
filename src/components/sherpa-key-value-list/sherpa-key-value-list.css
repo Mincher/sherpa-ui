@@ -12,7 +12,7 @@
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   color: var(--sherpa-content-primary-base, #2e2e33);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
 .list {
@@ -23,7 +23,7 @@
 
 .key {
   color: var(--sherpa-content-secondary-base, #404047);
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  font-weight: var(--sherpa-font-weight-medium, 500);
 }
 
 .value {

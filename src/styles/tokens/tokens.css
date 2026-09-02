@@ -203,8 +203,8 @@
   --sherpa-app-tertiary: var(--sherpa-core-color-neutral-200);
   --sherpa-border-interactive: #B2B2BF;
   --sherpa-border-interactive-active: var(--sherpa-core-color-brand-base);
-  --sherpa-border-interactive-active-down: var(--sherpa-core-color-brand-900);
-  --sherpa-border-interactive-active-hover: var(--sherpa-core-color-brand-800);
+  --sherpa-border-interactive-active-down: color-mix(in srgb, var(--sherpa-border-interactive-active) 80%, var(--sherpa-shade-20));
+  --sherpa-border-interactive-active-hover: color-mix(in srgb, var(--sherpa-border-interactive-active) 90%, var(--sherpa-shade-10));
   --sherpa-border-interactive-down: #8D8D99;
   --sherpa-border-interactive-gradient-ai-stop-1: var(--sherpa-core-color-brand-base);
   --sherpa-border-interactive-gradient-ai-stop-2: #4C63E5;
@@ -219,11 +219,11 @@
   --sherpa-border-interactive-hover: #C0C0CC;
   --sherpa-border-interactive-inactive: var(--sherpa-core-color-neutral-600);
   --sherpa-border-interactive-primary: var(--sherpa-core-color-accent-base);
-  --sherpa-border-interactive-primary-down: var(--sherpa-core-color-accent-800);
-  --sherpa-border-interactive-primary-hover: var(--sherpa-core-color-accent-700);
+  --sherpa-border-interactive-primary-down: color-mix(in srgb, var(--sherpa-border-interactive-primary) 80%, var(--sherpa-shade-20));
+  --sherpa-border-interactive-primary-hover: color-mix(in srgb, var(--sherpa-border-interactive-primary) 90%, var(--sherpa-shade-10));
   --sherpa-border-interactive-secondary: var(--sherpa-core-color-neutral-400);
-  --sherpa-border-interactive-secondary-down: var(--sherpa-core-color-neutral-600);
-  --sherpa-border-interactive-secondary-hover: var(--sherpa-core-color-neutral-500);
+  --sherpa-border-interactive-secondary-down: color-mix(in srgb, var(--sherpa-border-interactive-secondary) 80%, var(--sherpa-shade-20));
+  --sherpa-border-interactive-secondary-hover: color-mix(in srgb, var(--sherpa-border-interactive-secondary) 90%, var(--sherpa-shade-10));
   --sherpa-border-interactive-tertiary: #FAFAFF00;
   --sherpa-border-interactive-tertiary-down: var(--sherpa-core-color-neutral-0);
   --sherpa-border-interactive-tertiary-hover: var(--sherpa-core-color-neutral-0);
@@ -411,8 +411,8 @@
   --sherpa-status-warning-color-6: var(--sherpa-core-color-warning-800);
   --sherpa-status-warning-color-7: var(--sherpa-core-color-warning-900);
   --sherpa-surface-interactive-active-base: var(--sherpa-core-color-brand-100);
-  --sherpa-surface-interactive-active-down: var(--sherpa-core-color-brand-300);
-  --sherpa-surface-interactive-active-hover: var(--sherpa-core-color-brand-200);
+  --sherpa-surface-interactive-active-down: color-mix(in srgb, var(--sherpa-surface-interactive-active-base) 80%, var(--sherpa-shade-20));
+  --sherpa-surface-interactive-active-hover: color-mix(in srgb, var(--sherpa-surface-interactive-active-base) 90%, var(--sherpa-shade-10));
   --sherpa-surface-interactive-base: var(--sherpa-core-color-neutral-0);
   --sherpa-surface-interactive-down: var(--sherpa-core-color-neutral-300);
   --sherpa-surface-interactive-gradient-ai-stop-1: #4C63E5;
@@ -422,11 +422,11 @@
   --sherpa-surface-interactive-hover: var(--sherpa-core-color-neutral-200);
   --sherpa-surface-interactive-inactive: var(--sherpa-core-color-neutral-400);
   --sherpa-surface-interactive-primary-base: var(--sherpa-core-color-accent-base);
-  --sherpa-surface-interactive-primary-down: var(--sherpa-core-color-accent-800);
-  --sherpa-surface-interactive-primary-hover: var(--sherpa-core-color-accent-700);
+  --sherpa-surface-interactive-primary-down: color-mix(in srgb, var(--sherpa-surface-interactive-primary-base) 80%, var(--sherpa-shade-20));
+  --sherpa-surface-interactive-primary-hover: color-mix(in srgb, var(--sherpa-surface-interactive-primary-base) 90%, var(--sherpa-shade-10));
   --sherpa-surface-interactive-secondary-base: var(--sherpa-core-color-neutral-0);
-  --sherpa-surface-interactive-secondary-down: var(--sherpa-core-color-neutral-300);
-  --sherpa-surface-interactive-secondary-hover: var(--sherpa-core-color-neutral-200);
+  --sherpa-surface-interactive-secondary-down: color-mix(in srgb, var(--sherpa-surface-interactive-secondary-base) 80%, var(--sherpa-shade-20));
+  --sherpa-surface-interactive-secondary-hover: color-mix(in srgb, var(--sherpa-surface-interactive-secondary-base) 90%, var(--sherpa-shade-10));
   --sherpa-surface-interactive-secondary-inactive: var(--sherpa-core-color-neutral-400);
   --sherpa-surface-interactive-tertiary-base: #FAFAFF00;
   --sherpa-surface-interactive-tertiary-down: #8D8D994D;
@@ -442,6 +442,67 @@
   --sherpa-surface-tertiary-base: var(--sherpa-core-color-neutral-200);
   --sherpa-surface-tertiary-down: #B7B7B7;
   --sherpa-surface-tertiary-hover: #D5D5D5;
+  --sherpa-shade-10: #333333;
+  --sherpa-tint-10: #fafafa;
+  --sherpa-shade-20: #333333;
+  --sherpa-tint-20: #fafafa;
+  --sherpa-shade-30: #333333;
+  --sherpa-tint-30: #fafafa;
+  --sherpa-shade-40: #222222;
+  --sherpa-tint-40: #fafafa;
+  --sherpa-shade-50: #222222;
+  --sherpa-tint-50: #fafafa;
+  --sherpa-shade-60: #222222;
+  --sherpa-tint-60: #fafafa;
+  --sherpa-shade-70: #111111;
+  --sherpa-tint-70: #fafafa;
+  --sherpa-shade-80: #111111;
+  --sherpa-tint-80: #fafafa;
+  --sherpa-shade-90: #111111;
+  --sherpa-tint-90: #fafafa;
+
+    /* semantic typography atoms — flat, from the Figma `Typography` collection */
+    --sherpa-font-family-brand: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    --sherpa-font-family-hero: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    --sherpa-font-family-mono: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+    --sherpa-font-size-heading-h1: var(--sherpa-core-fonts-scale-2xl, 24px);
+    --sherpa-font-size-heading-h2: var(--sherpa-core-fonts-scale-xl, 20px);
+    --sherpa-font-size-heading-h3: var(--sherpa-core-fonts-scale-lg, 16px);
+    --sherpa-font-size-heading-h4: var(--sherpa-core-fonts-scale-base, 14px);
+    --sherpa-font-size-heading-h5: var(--sherpa-core-fonts-scale-sm, 12px);
+    --sherpa-font-size-hero-h1: var(--sherpa-core-fonts-scale-13xl, 64px);
+    --sherpa-font-size-hero-h2: var(--sherpa-core-fonts-scale-11xl, 52px);
+    --sherpa-font-size-hero-h3: var(--sherpa-core-fonts-scale-9xl, 44px);
+    --sherpa-font-size-hero-h4: var(--sherpa-core-fonts-scale-7xl, 40px);
+    --sherpa-font-size-hero-h5: var(--sherpa-core-fonts-scale-5xl, 32px);
+    --sherpa-font-size-body-large: var(--sherpa-core-fonts-scale-lg, 16px);
+    --sherpa-font-size-body-base: var(--sherpa-core-fonts-scale-base, 14px);
+    --sherpa-font-size-body-small: var(--sherpa-core-fonts-scale-sm, 12px);
+    --sherpa-font-size-body-xs: var(--sherpa-core-fonts-scale-xs, 10px);
+    --sherpa-font-weight-light: var(--sherpa-core-fonts-weight-300, 300);
+    --sherpa-font-weight-regular: var(--sherpa-core-fonts-weight-400, 400);
+    --sherpa-font-weight-medium: var(--sherpa-core-fonts-weight-500, 500);
+    --sherpa-font-weight-semibold: var(--sherpa-core-fonts-weight-600, 600);
+    --sherpa-font-weight-bold: var(--sherpa-core-fonts-weight-700, 700);
+    --sherpa-font-weight-black: var(--sherpa-core-fonts-weight-900, 900);
+    --sherpa-line-height-heading-h1: var(--sherpa-core-fonts-scale-5xl, 32px);
+    --sherpa-line-height-heading-h2: var(--sherpa-core-fonts-scale-3xl, 28px);
+    --sherpa-line-height-heading-h3: var(--sherpa-core-fonts-scale-2xl, 24px);
+    --sherpa-line-height-heading-h4: var(--sherpa-core-fonts-scale-xl, 20px);
+    --sherpa-line-height-heading-h5: var(--sherpa-core-fonts-scale-lg, 16px);
+    --sherpa-line-height-hero-h1: var(--sherpa-core-fonts-scale-14xl, 72px);
+    --sherpa-line-height-hero-h2: var(--sherpa-core-fonts-scale-12xl, 56px);
+    --sherpa-line-height-hero-h3: var(--sherpa-core-fonts-scale-10xl, 48px);
+    --sherpa-line-height-hero-h4: var(--sherpa-core-fonts-scale-9xl, 44px);
+    --sherpa-line-height-hero-h5: var(--sherpa-core-fonts-scale-6xl, 36px);
+    --sherpa-line-height-body-large: var(--sherpa-core-fonts-scale-2xl, 24px);
+    --sherpa-line-height-body-base: var(--sherpa-core-fonts-scale-xl, 20px);
+    --sherpa-line-height-body-small: var(--sherpa-core-fonts-scale-lg, 16px);
+    --sherpa-line-height-body-xs: var(--sherpa-core-fonts-scale-lg, 16px);
+    --sherpa-letter-spacing-heading: -0.2px;
+    --sherpa-letter-spacing-hero: -0.5px;
+    --sherpa-letter-spacing-body: 0px;
+    --sherpa-paragraph-base: var(--sherpa-core-fonts-scale-2xs, 8px);
   }
 
   /* Dark mode: explicit choice wins. */
@@ -451,8 +512,6 @@
     --sherpa-app-tertiary: var(--sherpa-core-color-neutral-900);
     --sherpa-border-interactive: #505059;
     --sherpa-border-interactive-active: var(--sherpa-core-color-brand-base);
-    --sherpa-border-interactive-active-down: var(--sherpa-core-color-brand-400);
-    --sherpa-border-interactive-active-hover: var(--sherpa-core-color-brand-300);
     --sherpa-border-interactive-down: #2E2E33;
     --sherpa-border-interactive-gradient-ai-stop-1: var(--sherpa-core-color-brand-base);
     --sherpa-border-interactive-gradient-ai-stop-2: #4C63E5;
@@ -467,11 +526,7 @@
     --sherpa-border-interactive-hover: #404047;
     --sherpa-border-interactive-inactive: var(--sherpa-core-color-neutral-600);
     --sherpa-border-interactive-primary: var(--sherpa-core-color-accent-base);
-    --sherpa-border-interactive-primary-down: var(--sherpa-core-color-accent-800);
-    --sherpa-border-interactive-primary-hover: var(--sherpa-core-color-accent-500);
     --sherpa-border-interactive-secondary: var(--sherpa-core-color-neutral-700);
-    --sherpa-border-interactive-secondary-down: var(--sherpa-core-color-neutral-900);
-    --sherpa-border-interactive-secondary-hover: var(--sherpa-core-color-neutral-800);
     --sherpa-border-interactive-tertiary: #FAFAFF00;
     --sherpa-border-interactive-tertiary-down: var(--sherpa-core-color-tones-1000);
     --sherpa-border-interactive-tertiary-hover: var(--sherpa-core-color-tones-800);
@@ -659,8 +714,6 @@
     --sherpa-status-warning-color-6: var(--sherpa-core-color-warning-800);
     --sherpa-status-warning-color-7: var(--sherpa-core-color-warning-900);
     --sherpa-surface-interactive-active-base: var(--sherpa-core-color-brand-700);
-    --sherpa-surface-interactive-active-down: var(--sherpa-core-color-brand-1000);
-    --sherpa-surface-interactive-active-hover: var(--sherpa-core-color-brand-700);
     --sherpa-surface-interactive-base: var(--sherpa-core-color-tones-900);
     --sherpa-surface-interactive-down: var(--sherpa-core-color-tones-1000);
     --sherpa-surface-interactive-gradient-ai-stop-1: #4C63E5;
@@ -670,11 +723,7 @@
     --sherpa-surface-interactive-hover: var(--sherpa-core-color-neutral-900);
     --sherpa-surface-interactive-inactive: var(--sherpa-core-color-neutral-900);
     --sherpa-surface-interactive-primary-base: var(--sherpa-core-color-accent-base);
-    --sherpa-surface-interactive-primary-down: var(--sherpa-core-color-accent-800);
-    --sherpa-surface-interactive-primary-hover: var(--sherpa-core-color-accent-700);
     --sherpa-surface-interactive-secondary-base: #222222;
-    --sherpa-surface-interactive-secondary-down: var(--sherpa-core-color-neutral-1000);
-    --sherpa-surface-interactive-secondary-hover: var(--sherpa-core-color-neutral-900);
     --sherpa-surface-interactive-secondary-inactive: var(--sherpa-core-color-neutral-700);
     --sherpa-surface-interactive-tertiary-base: #FAFAFF00;
     --sherpa-surface-interactive-tertiary-down: #8D8D994D;
@@ -690,6 +739,24 @@
     --sherpa-surface-tertiary-base: #333333;
     --sherpa-surface-tertiary-down: var(--sherpa-core-color-neutral-1000);
     --sherpa-surface-tertiary-hover: var(--sherpa-core-color-tones-900);
+    --sherpa-shade-10: #fafafa;
+    --sherpa-tint-10: #333333;
+    --sherpa-shade-20: #fafafa;
+    --sherpa-tint-20: #333333;
+    --sherpa-shade-30: #fafafa;
+    --sherpa-tint-30: #333333;
+    --sherpa-shade-40: #fafafa;
+    --sherpa-tint-40: #222222;
+    --sherpa-shade-50: #fafafa;
+    --sherpa-tint-50: #222222;
+    --sherpa-shade-60: #fafafa;
+    --sherpa-tint-60: #222222;
+    --sherpa-shade-70: #fafafa;
+    --sherpa-tint-70: #111111;
+    --sherpa-shade-80: #fafafa;
+    --sherpa-tint-80: #111111;
+    --sherpa-shade-90: #fafafa;
+    --sherpa-tint-90: #111111;
   }
 
   /* Dark mode: follow the OS unless an explicit light choice overrides it. */
@@ -700,8 +767,6 @@
       --sherpa-app-tertiary: var(--sherpa-core-color-neutral-900);
       --sherpa-border-interactive: #505059;
       --sherpa-border-interactive-active: var(--sherpa-core-color-brand-base);
-      --sherpa-border-interactive-active-down: var(--sherpa-core-color-brand-400);
-      --sherpa-border-interactive-active-hover: var(--sherpa-core-color-brand-300);
       --sherpa-border-interactive-down: #2E2E33;
       --sherpa-border-interactive-gradient-ai-stop-1: var(--sherpa-core-color-brand-base);
       --sherpa-border-interactive-gradient-ai-stop-2: #4C63E5;
@@ -716,11 +781,7 @@
       --sherpa-border-interactive-hover: #404047;
       --sherpa-border-interactive-inactive: var(--sherpa-core-color-neutral-600);
       --sherpa-border-interactive-primary: var(--sherpa-core-color-accent-base);
-      --sherpa-border-interactive-primary-down: var(--sherpa-core-color-accent-800);
-      --sherpa-border-interactive-primary-hover: var(--sherpa-core-color-accent-500);
       --sherpa-border-interactive-secondary: var(--sherpa-core-color-neutral-700);
-      --sherpa-border-interactive-secondary-down: var(--sherpa-core-color-neutral-900);
-      --sherpa-border-interactive-secondary-hover: var(--sherpa-core-color-neutral-800);
       --sherpa-border-interactive-tertiary: #FAFAFF00;
       --sherpa-border-interactive-tertiary-down: var(--sherpa-core-color-tones-1000);
       --sherpa-border-interactive-tertiary-hover: var(--sherpa-core-color-tones-800);
@@ -908,8 +969,6 @@
       --sherpa-status-warning-color-6: var(--sherpa-core-color-warning-800);
       --sherpa-status-warning-color-7: var(--sherpa-core-color-warning-900);
       --sherpa-surface-interactive-active-base: var(--sherpa-core-color-brand-700);
-      --sherpa-surface-interactive-active-down: var(--sherpa-core-color-brand-1000);
-      --sherpa-surface-interactive-active-hover: var(--sherpa-core-color-brand-700);
       --sherpa-surface-interactive-base: var(--sherpa-core-color-tones-900);
       --sherpa-surface-interactive-down: var(--sherpa-core-color-tones-1000);
       --sherpa-surface-interactive-gradient-ai-stop-1: #4C63E5;
@@ -919,11 +978,7 @@
       --sherpa-surface-interactive-hover: var(--sherpa-core-color-neutral-900);
       --sherpa-surface-interactive-inactive: var(--sherpa-core-color-neutral-900);
       --sherpa-surface-interactive-primary-base: var(--sherpa-core-color-accent-base);
-      --sherpa-surface-interactive-primary-down: var(--sherpa-core-color-accent-800);
-      --sherpa-surface-interactive-primary-hover: var(--sherpa-core-color-accent-700);
       --sherpa-surface-interactive-secondary-base: #222222;
-      --sherpa-surface-interactive-secondary-down: var(--sherpa-core-color-neutral-1000);
-      --sherpa-surface-interactive-secondary-hover: var(--sherpa-core-color-neutral-900);
       --sherpa-surface-interactive-secondary-inactive: var(--sherpa-core-color-neutral-700);
       --sherpa-surface-interactive-tertiary-base: #FAFAFF00;
       --sherpa-surface-interactive-tertiary-down: #8D8D994D;
@@ -939,7 +994,170 @@
       --sherpa-surface-tertiary-base: #333333;
       --sherpa-surface-tertiary-down: var(--sherpa-core-color-neutral-1000);
       --sherpa-surface-tertiary-hover: var(--sherpa-core-color-tones-900);
+      --sherpa-shade-10: #fafafa;
+      --sherpa-tint-10: #333333;
+      --sherpa-shade-20: #fafafa;
+      --sherpa-tint-20: #333333;
+      --sherpa-shade-30: #fafafa;
+      --sherpa-tint-30: #333333;
+      --sherpa-shade-40: #fafafa;
+      --sherpa-tint-40: #222222;
+      --sherpa-shade-50: #fafafa;
+      --sherpa-tint-50: #222222;
+      --sherpa-shade-60: #fafafa;
+      --sherpa-tint-60: #222222;
+      --sherpa-shade-70: #fafafa;
+      --sherpa-tint-70: #111111;
+      --sherpa-shade-80: #fafafa;
+      --sherpa-tint-80: #111111;
+      --sherpa-shade-90: #fafafa;
+      --sherpa-tint-90: #111111;
     }
+  }
+
+  /* Text roles — one class per Figma text Style; composed from the atoms above. */
+  .sherpa-text-heading-h1 {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-heading-h1);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-heading-h1);
+    letter-spacing: var(--sherpa-letter-spacing-heading);
+  }
+
+  .sherpa-text-heading-h2 {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-heading-h2);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-heading-h2);
+    letter-spacing: var(--sherpa-letter-spacing-heading);
+  }
+
+  .sherpa-text-heading-h3 {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-heading-h3);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-heading-h3);
+    letter-spacing: var(--sherpa-letter-spacing-heading);
+  }
+
+  .sherpa-text-heading-h4 {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-heading-h4);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-heading-h4);
+    letter-spacing: var(--sherpa-letter-spacing-heading);
+  }
+
+  .sherpa-text-heading-h5 {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-heading-h5);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-heading-h5);
+    letter-spacing: var(--sherpa-letter-spacing-heading);
+  }
+
+  .sherpa-text-hero-h1 {
+    font-family: var(--sherpa-font-family-hero);
+    font-size: var(--sherpa-font-size-hero-h1);
+    font-weight: var(--sherpa-font-weight-bold);
+    line-height: var(--sherpa-line-height-hero-h1);
+    letter-spacing: var(--sherpa-letter-spacing-hero);
+  }
+
+  .sherpa-text-hero-h2 {
+    font-family: var(--sherpa-font-family-hero);
+    font-size: var(--sherpa-font-size-hero-h2);
+    font-weight: var(--sherpa-font-weight-bold);
+    line-height: var(--sherpa-line-height-hero-h2);
+    letter-spacing: var(--sherpa-letter-spacing-hero);
+  }
+
+  .sherpa-text-hero-h3 {
+    font-family: var(--sherpa-font-family-hero);
+    font-size: var(--sherpa-font-size-hero-h3);
+    font-weight: var(--sherpa-font-weight-bold);
+    line-height: var(--sherpa-line-height-hero-h3);
+    letter-spacing: var(--sherpa-letter-spacing-hero);
+  }
+
+  .sherpa-text-hero-h4 {
+    font-family: var(--sherpa-font-family-hero);
+    font-size: var(--sherpa-font-size-hero-h4);
+    font-weight: var(--sherpa-font-weight-bold);
+    line-height: var(--sherpa-line-height-hero-h4);
+    letter-spacing: var(--sherpa-letter-spacing-hero);
+  }
+
+  .sherpa-text-hero-h5 {
+    font-family: var(--sherpa-font-family-hero);
+    font-size: var(--sherpa-font-size-hero-h5);
+    font-weight: var(--sherpa-font-weight-bold);
+    line-height: var(--sherpa-line-height-hero-h5);
+    letter-spacing: var(--sherpa-letter-spacing-hero);
+  }
+
+  .sherpa-text-body-large {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-large);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-large);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-body-base {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-base);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-base);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-body-base-medium {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-base);
+    font-weight: var(--sherpa-font-weight-medium);
+    line-height: var(--sherpa-line-height-body-base);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-body-base-strong {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-base);
+    font-weight: var(--sherpa-font-weight-semibold);
+    line-height: var(--sherpa-line-height-body-base);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-body-small {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-small);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-small);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-body-xs {
+    font-family: var(--sherpa-font-family-brand);
+    font-size: var(--sherpa-font-size-body-xs);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-xs);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-mono-base {
+    font-family: var(--sherpa-font-family-mono);
+    font-size: var(--sherpa-font-size-body-base);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-base);
+    letter-spacing: var(--sherpa-letter-spacing-body);
+  }
+
+  .sherpa-text-mono-small {
+    font-family: var(--sherpa-font-family-mono);
+    font-size: var(--sherpa-font-size-body-small);
+    font-weight: var(--sherpa-font-weight-regular);
+    line-height: var(--sherpa-line-height-body-small);
+    letter-spacing: var(--sherpa-letter-spacing-body);
   }
 }
 

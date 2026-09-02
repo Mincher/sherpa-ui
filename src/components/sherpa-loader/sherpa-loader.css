@@ -18,7 +18,7 @@
   gap: var(--sherpa-core-space-sm, 12px);
   padding: var(--sherpa-core-space-base, 16px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 

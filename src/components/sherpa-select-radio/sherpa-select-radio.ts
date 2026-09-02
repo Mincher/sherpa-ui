@@ -1,11 +1,10 @@
 /**
- * sherpa-select-radio — a labelled radio button.
+ * sherpa-select-radio — a radio button with a label.
  *
- * Thin JS over a native <input type="radio">: it mirrors label / description text
- * and native attributes onto the inner control, exposes `checked` / `value` as
- * properties, and re-dispatches `change`. Radios sharing a `name` group together
- * natively. The entire visual — circle, dot, disabled, focus — is pure CSS keyed
- * off the input's native state. JS never toggles a class or a style.
+ * A thin wrapper around a real radio button. JS copies the label, description,
+ * and native attributes onto it, exposes its checked and value states, and
+ * re-fires the change event. Radios sharing the same `name` group up on their
+ * own. CSS handles the whole look — the circle, the dot, disabled, and focus.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

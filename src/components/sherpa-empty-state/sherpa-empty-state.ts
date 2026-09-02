@@ -1,10 +1,9 @@
 /**
- * sherpa-empty-state — a centred placeholder for a blank list, grid, or region.
+ * sherpa-empty-state — the "nothing here yet" placeholder for a blank area.
  *
- * A decorative icon area, a title (data-title), a message (data-description or
- * slotted body), and an optional action slot. The icon glyph, size, and every
- * region's visibility are pure CSS off data-* and the base class's data-has-{slot}
- * reflection — JS only writes the title and message text.
+ * A centred icon, a title (data-title), a message (data-description or your own
+ * slotted content), and an optional slot for an action button. CSS handles the
+ * icon and what shows; JS only writes the title and message text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

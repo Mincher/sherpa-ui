@@ -41,6 +41,32 @@ tokens:
   state-text:status-critical-color-5: status-critical-color-5
   spinner:border-primary: border-primary
   spinner:content-active-base: content-active-base
+_divergence:
+  note: >-
+    2026-08-26: 1 Figma component → many HTML elements. The single "Container" COMPONENT_SET
+    (Type=default|dialog|panel|overlay-panel|accordion) already carries all variants in Figma, but
+    those Type values are DISTINCT HTML elements with their own native behaviour/a11y — a code
+    component per Type maps in via figmaName "Container" (same 1:many pattern as Input Field; see
+    sherpa-input-text _divergence.oneToMany).
+  oneToMany:
+    figmaComponent: Container   # COMPONENT_SET, Type axis IS the HTML-element axis
+    note: Type variant = which HTML element. Already built as variants in Figma; code splits per element.
+    types:
+      - figmaType: default
+        html: <div> / <section>   # plain card surface
+        codeComponent: sherpa-container   # THIS def (exists)
+      - figmaType: dialog
+        html: <dialog>            # native modal + ::backdrop, showModal(), Esc-to-close
+        codeComponent: sherpa-dialog        # not built yet
+      - figmaType: panel
+        html: <section> / <aside> # docked side panel
+        codeComponent: sherpa-panel         # not built yet
+      - figmaType: overlay-panel
+        html: <aside> (overlay)   # floating/overlay panel
+        codeComponent: sherpa-overlay-panel # not built yet
+      - figmaType: accordion
+        html: <details> / <summary>  # native disclosure; `expanded` = open attribute
+        codeComponent: sherpa-accordion     # not built yet (a deprecated one existed)
 figmaVerbatim:
   _status: matched
   figmaName: Container

@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <title>Reforged harness</title>
   <!-- Light-DOM token layer: inherits into every shadow root. -->
-  <link rel="stylesheet" href="/dist-reforged/styles/tokens/tokens.css" />
+  <link rel="stylesheet" href="/dist/styles/tokens/tokens.css" />
 </head>
 <body>
   <div id="root"></div>
   <script type="module">
     // The index wires SherpaElement.sharedStyles (base reset) and registers components.
-    import '/dist-reforged/index.js';
+    import '/dist/index.js';
     await Promise.all([
       customElements.whenDefined('sherpa-button'),
       customElements.whenDefined('sherpa-tag'),

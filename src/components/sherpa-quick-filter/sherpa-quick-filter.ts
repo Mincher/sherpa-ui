@@ -1,9 +1,9 @@
 /**
- * sherpa-quick-filter — a toggleable filter chip for toolbars.
+ * sherpa-quick-filter — a filter chip you can toggle on and off.
  *
- * Behaviour only: it toggles data-active on click and emits quick-filter-click.
- * All appearance (type accent, active tint, count badge, menu caret, disabled) is
- * CSS off data-*. Label and count are mirrored into the chip; nothing else is JS.
+ * Clicking it flips it on or off and fires quick-filter-click. CSS handles the
+ * look — the accent colour, the on-state tint, the count badge, the caret, and
+ * the disabled look. JS only writes the label and count.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

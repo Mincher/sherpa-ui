@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
  *
  * Strategy: E2E-style. Specs navigate to the static harness (test/reforged/harness.html)
  * served from the project root, which loads the compiled reforged bundle
- * (dist-reforged/index.js) + the token CSS. Specs then inject/drive components and assert
+ * (dist/index.js) + the token CSS. Specs then inject/drive components and assert
  * via page.evaluate + Playwright expect. This exercises real Custom Elements + Shadow DOM in
  * real browsers — the right fit for a zero-dependency web-component library, and it scales
  * cross-browser (chromium/firefox/webkit).

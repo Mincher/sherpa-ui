@@ -1,5 +1,5 @@
 name: sherpa-tabs
-figmaName: Tabs
+figmaName: Tab Group
 category: container
 description: a tabbed content switcher.
 props:
@@ -40,7 +40,7 @@ tokens:
   panels:core-space-base: core-space-base
 figmaVerbatim:
   _status: matched
-  figmaName: Tabs
+  figmaName: Tab Group
   nodeType: COMPONENT
   built: true
   variantAxes: []

@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
     () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
   );
   await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-code-block/sherpa-code-block.js');
+    await import('/dist/components/sherpa-code-block/sherpa-code-block.js');
     await customElements.whenDefined('sherpa-code-block');
   });
 });

@@ -26,8 +26,8 @@
 :host([data-status="info"])     { --_fill: var(--sherpa-status-info-color-5, #07526f); }
 
 .title {
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-title-base, #18191a);
 }
 .title:empty { display: none; }
@@ -89,8 +89,8 @@
   text-align: center;
 }
 .value {
-  font-size: var(--sherpa-core-fonts-scale-2xl, 24px);
-  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
   color: var(--sherpa-content-title-base, #18191a);
   font-variant-numeric: tabular-nums;
 }
@@ -100,6 +100,6 @@
   display: flex;
   justify-content: space-between;
   inline-size: var(--_size);
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-content-secondary-base, #404047);
 }

@@ -1,5 +1,5 @@
 name: sherpa-data-grid
-figmaName: Data Grid
+figmaName: Grid Cell
 category: data
 description: >-
   A sortable, selectable data grid assembled from flat columns. A leading Selection column (pinned
@@ -151,11 +151,18 @@ tokens:
   empty.color: content-secondary-base
 figmaVerbatim:
   _status: matched
-  figmaName: Data Grid
-  nodeType: COMPONENT
+  figmaName: Grid Cell
   built: true
-  variantAxes: []
-  booleanProps: []
+  variantAxes:
+    - name: Type
+      values:
+        - cell
+        - header
+        - group
+        - filter
+  booleanProps:
+    - hasCheckbox
+    - hasActions
   textProps: []
   instanceProps: []
   modePins: {}

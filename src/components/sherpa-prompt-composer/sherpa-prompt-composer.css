@@ -48,7 +48,7 @@
   resize: none;
   overflow-y: auto;
   font-family: inherit;
-  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
+  font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1.45;
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
@@ -84,7 +84,7 @@
   flex-shrink: 0;
   transition: background-color 120ms ease;
 }
-.send-glyph { font-size: var(--sherpa-core-fonts-scale-lg, 16px); line-height: 1; }
+.send-glyph { font-size: var(--sherpa-font-size-body-large, 16px); line-height: 1; }
 .send:hover { background: var(--sherpa-surface-interactive-primary-hover, #4c63e5); }
 .send:active { background: var(--sherpa-surface-interactive-primary-down, #173382); }
 .send:focus-visible {

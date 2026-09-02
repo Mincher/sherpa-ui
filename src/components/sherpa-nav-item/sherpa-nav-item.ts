@@ -1,16 +1,14 @@
 /**
- * sherpa-nav-item — a single navigation row.
+ * sherpa-nav-item — one row in a navigation menu.
  *
- * A standalone item for consumers assembling a custom nav by hand (the reforged
- * sherpa-nav stamps its own rows internally). The host is the interactive row:
- * leading icon (data-icon), a label (data-label), and an optional trailing badge
- * (data-badge) or slotted trailing content. Set data-href to render a link.
+ * Use this when you're building a nav by hand (sherpa-nav makes its own rows).
+ * Each row has a leading icon (data-icon), a label (data-label), and an optional
+ * badge (data-badge) or your own trailing content. Set data-href to make it a link.
  *
- * A trivial "promo" variant renders a larger CTA-style row with an icon, a
- * heading (data-label) and a description (data-description).
+ * The "promo" style makes a bigger call-to-action row with an icon, a heading
+ * (data-label), and a description (data-description).
  *
- * All presentation is CSS off data-*; JS only writes the text fields, mirrors
- * the href onto the inner anchor, and emits the click event.
+ * CSS handles the look; JS writes the text, sets the link, and fires the click.
  *
  * Public API:
  *   data-icon        leading icon glyph

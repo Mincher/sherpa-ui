@@ -47,14 +47,14 @@
   inline-size: var(--sherpa-core-size-3xl, 40px);
   block-size: var(--sherpa-core-size-3xl, 40px);
   flex-shrink: 0;
-  font-size: var(--sherpa-core-fonts-scale-lg, 18px);
+  font-size: var(--sherpa-font-size-body-large, 18px);
 }
 .brand-icon:not(:has(*)):empty { display: none; }
 
 .product {
   flex: 1 1 auto;
-  font-size: var(--sherpa-core-fonts-scale-lg, 18px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-large, 18px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-title-base, #18191a);
   white-space: nowrap;
   overflow: hidden;
@@ -84,7 +84,7 @@
 }
 :host([data-searchable]) .search { display: flex; }
 
-.search-icon { flex-shrink: 0; opacity: 0.6; font-size: var(--sherpa-core-fonts-scale-sm, 12px); }
+.search-icon { flex-shrink: 0; opacity: 0.6; font-size: var(--sherpa-font-size-body-small, 12px); }
 
 .search-input {
   flex: 1 1 auto;
@@ -93,7 +93,7 @@
   background: transparent;
   outline: none;
   font: inherit;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 .search-input::placeholder { color: var(--sherpa-content-secondary-base, #5c5c66); }
@@ -130,8 +130,8 @@
 .section-label {
   margin: 0;
   padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-sm, 12px);
-  font-size: var(--sherpa-core-fonts-scale-xs, 11px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-xs, 11px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--sherpa-content-secondary-base, #5c5c66);

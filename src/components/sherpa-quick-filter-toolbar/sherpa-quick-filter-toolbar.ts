@@ -1,12 +1,10 @@
 /**
- * sherpa-quick-filter-toolbar — a strip of quick-filter chips above a grid/list.
+ * sherpa-quick-filter-toolbar — a row of filter chips above a grid or list.
  *
- * populate([{ id, label, type?, active?, count? }]) stamps sherpa-quick-filter
- * chips. A delegated listener catches each chip's composed quick-filter-click
- * (via composedPath — the event retargets to this host at the shadow boundary),
- * updates the active set, and emits quick-filter-change with all active ids. The
- * heavy add/edit/save-view machinery of the old toolbar is dropped; consumers wire
- * their own controls into the actions slot.
+ * Give it chips with populate([{ id, label, type?, active?, count? }]). When you
+ * click a chip it toggles on or off, and the toolbar fires quick-filter-change
+ * with the ids of every chip that's currently on. There's a slot for your own
+ * extra buttons — the old add/edit/save-view features are left out on purpose.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';

@@ -1,11 +1,9 @@
 /**
- * sherpa-nav-section — a labelled group of nav items in a settings-style panel.
+ * sherpa-nav-section — grouped nav items in a settings-style panel.
  *
- * Populate with populate([{ label, items: [{ id, label, icon? }] }]). Each group
- * and each item is stamped from a cloning prototype (the only structural DOM this
- * component creates — data-driven rows, which the golden rules allow). The active
- * item is marked by data-active-id on the host (pure CSS off data-active on the
- * matching row). A click delegates to nav-section-select.
+ * Give it data with populate([{ label, items: [{ id, label, icon? }] }]) and it
+ * draws the labelled groups and their items. data-active-id marks which item is
+ * currently active, and CSS highlights it. Clicking an item fires nav-section-select.
  *
  * Public API:
  *   data-heading    optional panel heading text

@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto(HARNESS);
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
   await page.evaluate(async () => {
-    await import('/dist-reforged/components/sherpa-calendar/sherpa-calendar.js');
+    await import('/dist/components/sherpa-calendar/sherpa-calendar.js');
     await customElements.whenDefined('sherpa-calendar');
   });
 });

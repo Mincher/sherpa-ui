@@ -1,10 +1,9 @@
 /**
- * sherpa-key-value-list — a semantic definition list.
+ * sherpa-key-value-list — a list of label-and-value pairs.
  *
- * Renders label/value pairs into a native <dl> from populate([{ key, value }])
- * by cloning the <template class="pair-tpl"> prototype (the only structural DOM
- * it creates — data-driven rows, which the golden rules allow). Layout
- * (side-by-side vs. stacked) is pure CSS off data-layout on the host.
+ * Give it pairs with populate([{ key, value }]) and it draws one row each.
+ * data-layout sets whether the label and value sit side by side or stacked, and
+ * CSS handles that.
  *
  * Public API:
  *   data-layout  horizontal | stacked (default: horizontal)

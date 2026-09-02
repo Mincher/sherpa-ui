@@ -1,10 +1,9 @@
 /**
- * sherpa-toolbar — a horizontal control strip.
+ * sherpa-toolbar — a horizontal strip of controls.
  *
- * Pure layout: a flex bar with start / center / end zones (each a named slot).
- * The center zone grows to fill; start and end hug their content. The base class
- * reflects data-has-{slot} so empty zones collapse — no JS touches visibility.
- * Adds no data logic.
+ * Just layout. It has three zones — start, center, and end — each a slot you drop
+ * controls into. The center zone stretches to fill; start and end stay the size
+ * of their content. Empty zones collapse on their own. No behaviour of its own.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

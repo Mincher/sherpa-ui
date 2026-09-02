@@ -1,15 +1,13 @@
 /**
- * sherpa-list — a vertical container for a homogeneous row list.
+ * sherpa-list — a vertical stack of rows.
  *
  * Two ways to fill it:
- *   1. Slot sherpa-list-item children into the default slot (authored markup).
- *   2. populate([{ title, description?, active?, interactive? }]) — data-driven
- *      rows stamped from the <template class="row-tpl"> prototype (the only
- *      structural DOM it creates, which the golden rules allow).
+ *   1. Slot in sherpa-list-item children yourself.
+ *   2. Give it data with populate([{ title, description?, active?, interactive? }])
+ *      and it draws the rows for you.
  *
- * The list keeps at most one row active: a delegated `list-item-click` handler
- * clears the active state on every sibling item. An empty-state message
- * (data-empty) shows when there are no rows; CSS owns its visibility.
+ * Only one row can be active at a time — clicking a row clears the others. If
+ * there are no rows, an empty-state message (data-empty) shows in their place.
  *
  * Public API:
  *   data-variant  default | bordered | divided

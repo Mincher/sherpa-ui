@@ -1,5 +1,5 @@
 name: sherpa-nav-section
-figmaName: Navigation Section
+figmaName: Navigation Section/default
 category: nav
 description: a labelled group of nav items in a settings-style panel.
 props:
@@ -42,13 +42,9 @@ tokens:
   item:core-fonts-weight-600: core-fonts-weight-600
 figmaVerbatim:
   _status: matched
-  figmaName: Navigation Section
-  nodeType: COMPONENT_SET
+  figmaName: Navigation Section/default
   built: true
-  variantAxes:
-    - name: State
-      values:
-        - default
+  variantAxes: []
   booleanProps:
     - isMaximised
   textProps: []

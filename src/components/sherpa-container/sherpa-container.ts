@@ -1,10 +1,9 @@
 /**
- * sherpa-container — the base card surface.
+ * sherpa-container — the base card that other things sit inside.
  *
- * Almost entirely declarative: variant, elevation, padding, state, and the
- * header/footer collapse are all CSS off data-* (the base class reflects
- * data-has-{slot} for slot presence). The one convenience is renderData(),
- * which lets a data-driven view set the loading/empty/error state via populate().
+ * CSS handles almost everything: the style, shadow, padding, state, and whether
+ * the header and footer show. The one helper is renderData(), which lets a
+ * data-driven view flip the card into a loading, empty, or error state.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

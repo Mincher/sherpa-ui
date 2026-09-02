@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  * class surface in a real browser: template fetch + stamp, adopted CSS, guarded
  * lifecycle, data-* defaults, multi-template selection, slot presence, events.
  *
- * Runs against /dist-reforged (compiled from src/), not the legacy /dist.
+ * Runs against /dist (compiled from src/), not the legacy /dist.
  */
 
 const HARNESS = '/test/reforged/harness.html';

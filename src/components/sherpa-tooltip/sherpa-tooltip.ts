@@ -1,11 +1,10 @@
 /**
- * sherpa-tooltip — a hover/focus tooltip that wraps a trigger.
+ * sherpa-tooltip — a little hint bubble that shows on hover or focus.
  *
- * Deliberately minimal. Show/hide is pure CSS off :hover / :focus-within — no JS
- * positioning, no anchor bookkeeping (that's what "JS is the last resort" buys us).
- * The tip lives in an absolutely-positioned bubble whose side is chosen by CSS off
- * data-placement. JS does exactly two things: mirror data-text into the bubble, and
- * set the trigger's aria-describedby so assistive tech reads the tip.
+ * Wrap it around whatever it describes. Showing and hiding is pure CSS off hover
+ * and focus — no JS. The bubble sits to whichever side data-placement picks, and
+ * CSS handles that. JS does just two things: write the tip text into the bubble,
+ * and link it to the trigger so screen readers read it out.
  *
  * @element sherpa-tooltip
  * @attr {string} data-text      — tip text (or use the `tip` slot for rich content)

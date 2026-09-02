@@ -1,9 +1,9 @@
 /**
- * sherpa-button — the primary interactive trigger.
+ * sherpa-button — the thing you click.
  *
- * Behaviour only. All appearance (variants, sizes, states, the disabled look) is
- * CSS keyed off `data-*`; this file just sets sensible defaults, mirrors label /
- * icon values into the template, and emits `button-click`.
+ * CSS handles how it looks — the styles, sizes, states, and the disabled look.
+ * This file only sets sensible defaults, copies the label and icon into place,
+ * and fires button-click when someone clicks it.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

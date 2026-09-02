@@ -35,8 +35,8 @@
   margin: 0;
   padding: var(--sherpa-core-space-xs, 8px);
   color: var(--sherpa-content-tertiary-base, #5c5c66);
-  font-size: var(--sherpa-core-fonts-scale-xl, 20px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-heading-h2, 20px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 :host(:not([data-heading])) .heading { display: none; }
 
@@ -57,8 +57,8 @@
   margin: 0;
   padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-xs, 8px);
   color: var(--sherpa-content-tertiary-base, #5c5c66);
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -92,8 +92,8 @@
   background: transparent;
   color: var(--sherpa-content-tertiary-base, #5c5c66);
   font-family: inherit;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
   text-align: start;
   cursor: pointer;
   transition: color 100ms ease;
@@ -125,5 +125,5 @@
 /* ── Active item — same ink, heavier weight ────────────────────────── */
 .item-row[data-active] .item {
   color: var(--sherpa-content-primary-base, #2e2e33);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
 }

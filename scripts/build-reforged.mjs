@@ -1,6 +1,6 @@
 /**
  * build-reforged.mjs — compile the reforged src/ tree and copy its CSS/HTML
- * assets into dist-reforged/ (components load them at runtime via import.meta.url).
+ * assets into dist/ (components load them at runtime via import.meta.url).
  *
  *   node scripts/build-reforged.mjs
  */
@@ -10,7 +10,7 @@ import { join, dirname, relative } from 'node:path';
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
-const OUT = join(ROOT, 'dist-reforged');
+const OUT = join(ROOT, 'dist');
 
 console.log('› tsc -p tsconfig.reforged.json');
 execSync('npx tsc -p tsconfig.reforged.json', { stdio: 'inherit' });
@@ -29,4 +29,4 @@ function copyAssets(dir) {
   }
 }
 copyAssets(SRC);
-console.log('✓ assets copied into dist-reforged/');
+console.log('✓ assets copied into dist/');

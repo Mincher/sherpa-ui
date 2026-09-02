@@ -1,12 +1,10 @@
 /**
- * sherpa-metric — a KPI tile.
+ * sherpa-metric — a KPI tile (a headline number with its trend).
  *
- * Behaviour only. Appearance (trend colouring, arrow direction, the sparkline's
- * appearance/disappearance) is pure CSS off data-*. JS writes text into the
- * label/value/delta spans and toggles data-trend / data-has-values — it never
- * sets display, colour, or width. The embedded <sherpa-sparkline> is fed through
- * its own populate(); it's imported here so the child element is defined before
- * the metric stamps its template.
+ * CSS handles the look — the trend colour, the up/down arrow, and whether the
+ * mini trend chart shows. JS writes the label, value, and change text, and sets
+ * the trend direction. The little trend chart is a sherpa-sparkline inside; it's
+ * imported here so it's ready before this tile draws.
  *
  * @element sherpa-metric
  * @attr {string} data-label — the metric name

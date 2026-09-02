@@ -1,0 +1,48 @@
+<!--
+  sherpa-select-card — a selectable card with header / content / footer regions.
+
+  A bordered card the user can pick. The whole card is the click target; the
+  selected look is drawn in CSS off [data-selected]. Three regions slot in
+  content; each collapses when empty (driven by data-has-{slot}). The FOOTER has
+  a default: a sherpa-select-radio that shows the card's selected state and is
+  kept in sync with the host. Provide footer content to replace it (e.g. with a
+  checkbox for multi-select), or set data-multiple to swap the default to a
+  checkbox.
+
+  Public API:
+    data-label        header title (used when no header slot is given)
+    data-description  helper line under the title
+    data-selected     present → the card is selected (also a JS property)
+    data-multiple     present → default footer control is a checkbox, not a radio
+    data-layout       default | horizontal (footer beside the body vs below)
+    disabled          native — dims + blocks interaction
+    value             submitted / reported value when selected
+    name              radio group name (default footer)
+
+  Slots:
+    header    — header region (falls back to data-label / data-description)
+    (default) — the card body / content
+    footer    — footer region (falls back to a select control)
+
+  Fires: change — detail { selected, value }
+-->
+<template id="default">
+  <div class="card" part="card">
+    <div class="header" part="header">
+      <slot name="header">
+        <span class="label" part="label"></span>
+        <span class="description" part="description"></span>
+      </slot>
+    </div>
+
+    <div class="body" part="body">
+      <slot></slot>
+    </div>
+
+    <div class="footer" part="footer">
+      <slot name="footer">
+        <sherpa-select-radio class="footer-control" part="footer-control"></sherpa-select-radio>
+      </slot>
+    </div>
+  </div>
+</template>

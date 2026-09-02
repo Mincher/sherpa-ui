@@ -16,7 +16,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
 
   /* private surface + ink for the bubble; role blocks re-pin these */
   --_surface: var(--sherpa-surface-secondary-base, #fdfdfd);
@@ -49,8 +49,8 @@
   border-radius: var(--sherpa-core-border-rounding-full, 999px);
   background: var(--sherpa-surface-interactive-primary-base, #3c5edd);
   color: var(--sherpa-content-title-on-color, #ffffff);
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   overflow: hidden;
 }
 /* Default glyph: a small filled dot; a slotted avatar hides it via the slot. */
@@ -66,10 +66,10 @@
   display: none;
   gap: var(--sherpa-core-space-2xs, 4px);
   align-items: baseline;
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-content-secondary-base, #404047);
 }
-.author { font-weight: var(--sherpa-core-fonts-weight-500, 500); }
+.author { font-weight: var(--sherpa-font-weight-medium, 500); }
 .time { color: var(--sherpa-content-secondary-base, #404047); }
 
 :host([data-author]) .meta,
@@ -125,7 +125,7 @@
 :host([data-role="system"]) .stack { align-items: center; }
 :host([data-role="system"]) .bubble {
   text-align: center;
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
 }
 :host([data-role="system"]) {
   --_surface: var(--sherpa-surface-secondary-base, #fdfdfd);

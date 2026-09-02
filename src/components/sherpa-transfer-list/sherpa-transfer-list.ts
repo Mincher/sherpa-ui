@@ -1,17 +1,10 @@
 /**
- * sherpa-transfer-list — a two-pane shuttle (available ↔ selected).
+ * sherpa-transfer-list — two lists you shuttle items between.
  *
- * The full pool is supplied via populate([{ value, label, selected? }]); each
- * item lives in the left (available) or right (selected) pane per its `selected`
- * flag. Rebuilt to match the Figma "Transfer List": each row is a
- * sherpa-list-item (with a leading selection control) and the shuttle controls
- * are sherpa-button instances — composition, not ad-hoc DOM. Selecting rows
- * stages them; the move buttons shuttle staged (or all) items across and emit
- * transfer-change with the selected values.
- *
- * Rows are stamped from a <template class="row-tpl"> cloning prototype (the
- * data-driven rows the golden rules allow). A row's list-item-select event
- * stages/unstages it; a move button's click shuttles.
+ * Give it all the items with populate([{ value, label, selected? }]); each one
+ * starts in the left (available) or right (selected) list based on its `selected`
+ * flag. Tick some rows, then use the arrow buttons in the middle to move them
+ * across. Each move fires transfer-change with the values now on the right.
  *
  * @fires transfer-change — detail: { selected: string[], moved: string[], direction: 'add' | 'remove' }
  */

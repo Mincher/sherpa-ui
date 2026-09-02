@@ -132,13 +132,88 @@ function* leavesWithModes(node, path = []) {
 const coreLines = [];
 for (const leaf of leaves(doc.core ?? {}, ['core'])) coreLines.push(`  ${leaf.name}: ${leaf.value};`);
 
+// ── @layer style: the "lighten-darken" range (from Figma's Display Mode collection) ──
+// A signed alpha-overlay ramp: negative = darken (near-black overlay), positive =
+// lighten (near-white overlay), 0 = transparent. MODE-INVERTING: in dark mode the
+// poles swap (darken overlays white, lighten overlays black) so the SAME index
+// self-inverts — a darken step lightens on a dark ground. We project each step as
+// TWO mode-aware pole tokens (`--sherpa-shade-N` solid + its alpha), then derive
+// tints/shades by `color-mix`-ing a base with the pole. Values mirror Figma exactly.
+//
+// step → { pole rgb (light), alpha }  (dark mode swaps the pole, same alpha)
+const LD_STEPS = {
+  10: { r: 0.2, alpha: 0.1 },
+  20: { r: 0.2, alpha: 0.2 },
+  30: { r: 0.2, alpha: 0.3 },
+  40: { r: 0.1333, alpha: 0.4 },
+  50: { r: 0.1333, alpha: 0.5 },
+  60: { r: 0.1333, alpha: 0.6 },
+  70: { r: 0.0667, alpha: 0.7 },
+  80: { r: 0.0667, alpha: 0.8 },
+  90: { r: 0.0667, alpha: 0.9 },
+};
+const hx = (v) => Math.round(v * 255).toString(16).padStart(2, '0');
+const grey = (v) => `#${hx(v)}${hx(v)}${hx(v)}`;
+const LIGHT_POLE = 0.9804; // near-white overlay used by the range
+// Emit shade (darken) + tint (lighten) solid pole tokens, light + dark, per step.
+const ldLines = [];
+const ldDarkLines = [];
+for (const [n, s] of Object.entries(LD_STEPS)) {
+  // light mode: shade overlays near-black, tint overlays near-white
+  ldLines.push(`  --sherpa-shade-${n}: ${grey(s.r)};`);
+  ldLines.push(`  --sherpa-tint-${n}: ${grey(LIGHT_POLE)};`);
+  // dark mode: poles invert — shade overlays near-white, tint overlays near-black
+  ldDarkLines.push(`  --sherpa-shade-${n}: ${grey(LIGHT_POLE)};`);
+  ldDarkLines.push(`  --sherpa-tint-${n}: ${grey(s.r)};`);
+}
+
 // ── @layer style: Style (Sherpa), light + dark ─────────────────────────
+// Interactive hover/down are DERIVED, not hand-picked ramp steps. Each state is the
+// family's own `-base` seed overlaid with a "lighten-darken" SHADE step, via
+// `color-mix(in srgb, <base>, var(--sherpa-shade-N) A%)`. Because the shade pole
+// self-inverts by mode, one derivation is correct in both light and dark. This
+// replicates the Figma lighten-darken range at runtime — one seed → its states, no
+// per-hue token bookkeeping. Degrades to the seed colour on unsupporting engines.
+// Tertiary is exempt — its base is transparent, so it keeps its alpha-overlay value.
+//
+// state → shade step + overlay strength (alpha of that step, as a %):
+const STATE_SHADE = {
+  hover: { step: 10, pct: 10 }, // hover = shade-10 @ 10%
+  down: { step: 20, pct: 20 }, //  down  = shade-20 @ 20%
+};
+function interactiveState(name) {
+  const m = name.match(
+    /^--sherpa-(surface|border)-interactive-(primary|active|secondary)-(hover|down)$/
+  );
+  return m ? { kind: m[1], family: m[2], state: m[3] } : null;
+}
+function deriveState(name) {
+  const s = interactiveState(name);
+  if (!s) return null;
+  // Surfaces name their seed `<family>-base`; borders name it bare `<family>`.
+  const baseRole =
+    s.kind === 'surface'
+      ? `--sherpa-surface-interactive-${s.family}-base`
+      : `--sherpa-border-interactive-${s.family}`;
+  const { step, pct } = STATE_SHADE[s.state];
+  return `color-mix(in srgb, var(${baseRole}) ${100 - pct}%, var(--sherpa-shade-${step}))`;
+}
+
 const styleLines = [];
 const darkLines = [];
 for (const leaf of leaves(doc['style-sherpa'] ?? {}, [])) {
+  const derived = deriveState(leaf.name);
+  if (derived) {
+    // One derivation covers both modes — base + shade pole both re-point per mode.
+    styleLines.push(`  ${leaf.name}: ${derived};`);
+    continue;
+  }
   styleLines.push(`  ${leaf.name}: ${leaf.value};`);
   if (leaf.dark) darkLines.push(`  ${leaf.name}: ${leaf.dark};`);
 }
+// The lighten-darken pole tokens live in the same style layer, light + dark.
+styleLines.push(...ldLines);
+darkLines.push(...ldDarkLines);
 
 // ── @layer overrides: status cascade ───────────────────────────────────
 // Figma Status roles (verified): surface/default = box tint (color 1),
@@ -218,6 +293,104 @@ const aliasLines = [
   '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x-large, 0) var(--sherpa-elevation-offset-y-large, 12px) var(--sherpa-elevation-blur-large, 32px) var(--sherpa-elevation-spread-large, 0) var(--sherpa-elevation-tint, #372f4f33);',
 ];
 for (let i = 1; i <= 11; i++) aliasLines.push(`  --sherpa-categorical-${i}: var(--sherpa-data-viz-categorical-color-${i});`);
+
+// ── @layer style: semantic typography (from the Figma `Typography` collection) ──
+// Figma model (reworked 2026-08-27): `Typography` modes are SIZE (base, h1–h5,
+// large, small, xs). A text node pins a size-mode (→ one shared `size` +
+// `line-height` + `letter-spacing` var resolves per mode) and binds one of six
+// `weight/*` vars. Hero/Mono are family extensions overriding the shared `family`.
+// The CSS below stays a flat set of semantic atoms — components consume a stable
+// name (`--sherpa-font-size-heading-h1`) instead of the raw `--sherpa-core-fonts-*`
+// ramp, so the mode flip does not change any component's CSS contract. Roles are
+// composed from these atoms by the `.sherpa-text-*` utility classes below.
+//
+// Atom → core-primitive map mirrors the Figma size-mode + weight values exactly:
+const TYPO = {
+  // families
+  'font-family-brand': 'var(--sherpa-font-family-body, "Inter", system-ui, sans-serif)',
+  'font-family-hero':  'var(--sherpa-font-family-body, "Inter", system-ui, sans-serif)',
+  'font-family-mono':  'var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace)',
+  // sizes — UI headings
+  'font-size-heading-h1': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
+  'font-size-heading-h2': 'var(--sherpa-core-fonts-scale-xl, 20px)',
+  'font-size-heading-h3': 'var(--sherpa-core-fonts-scale-lg, 16px)',
+  'font-size-heading-h4': 'var(--sherpa-core-fonts-scale-base, 14px)',
+  'font-size-heading-h5': 'var(--sherpa-core-fonts-scale-sm, 12px)',
+  // sizes — hero (promo)
+  'font-size-hero-h1': 'var(--sherpa-core-fonts-scale-13xl, 64px)',
+  'font-size-hero-h2': 'var(--sherpa-core-fonts-scale-11xl, 52px)',
+  'font-size-hero-h3': 'var(--sherpa-core-fonts-scale-9xl, 44px)',
+  'font-size-hero-h4': 'var(--sherpa-core-fonts-scale-7xl, 40px)',
+  'font-size-hero-h5': 'var(--sherpa-core-fonts-scale-5xl, 32px)',
+  // sizes — body
+  'font-size-body-large': 'var(--sherpa-core-fonts-scale-lg, 16px)',
+  'font-size-body-base':  'var(--sherpa-core-fonts-scale-base, 14px)',
+  'font-size-body-small': 'var(--sherpa-core-fonts-scale-sm, 12px)',
+  'font-size-body-xs':    'var(--sherpa-core-fonts-scale-xs, 10px)',
+  // weights
+  'font-weight-light':    'var(--sherpa-core-fonts-weight-300, 300)',
+  'font-weight-regular':  'var(--sherpa-core-fonts-weight-400, 400)',
+  'font-weight-medium':   'var(--sherpa-core-fonts-weight-500, 500)',
+  'font-weight-semibold': 'var(--sherpa-core-fonts-weight-600, 600)',
+  'font-weight-bold':     'var(--sherpa-core-fonts-weight-700, 700)',
+  'font-weight-black':    'var(--sherpa-core-fonts-weight-900, 900)',
+  // line-heights (a length from the scale, ~1.4× the size)
+  'line-height-heading-h1': 'var(--sherpa-core-fonts-scale-5xl, 32px)',
+  'line-height-heading-h2': 'var(--sherpa-core-fonts-scale-3xl, 28px)',
+  'line-height-heading-h3': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
+  'line-height-heading-h4': 'var(--sherpa-core-fonts-scale-xl, 20px)',
+  'line-height-heading-h5': 'var(--sherpa-core-fonts-scale-lg, 16px)',
+  'line-height-hero-h1': 'var(--sherpa-core-fonts-scale-14xl, 72px)',
+  'line-height-hero-h2': 'var(--sherpa-core-fonts-scale-12xl, 56px)',
+  'line-height-hero-h3': 'var(--sherpa-core-fonts-scale-10xl, 48px)',
+  'line-height-hero-h4': 'var(--sherpa-core-fonts-scale-9xl, 44px)',
+  'line-height-hero-h5': 'var(--sherpa-core-fonts-scale-6xl, 36px)',
+  'line-height-body-large': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
+  'line-height-body-base':  'var(--sherpa-core-fonts-scale-xl, 20px)',
+  'line-height-body-small': 'var(--sherpa-core-fonts-scale-lg, 16px)',
+  'line-height-body-xs':    'var(--sherpa-core-fonts-scale-lg, 16px)',
+  // letter-spacing (raw px)
+  'letter-spacing-heading': '-0.2px',
+  'letter-spacing-hero':    '-0.5px',
+  'letter-spacing-body':    '0px',
+  // paragraph spacing
+  'paragraph-base': 'var(--sherpa-core-fonts-scale-2xs, 8px)',
+};
+const typoLines = Object.entries(TYPO).map(([name, val]) => `  --sherpa-${name}: ${val};`);
+
+// Role utility classes — one per Figma text Style. Apply a role, get every atom;
+// override any single --sherpa-font-* on the element to "detach" one atom (mirrors
+// the Figma "apply Style → tweak an atom" flow). `.sherpa-text-*` sets the five
+// text properties from the atoms above.
+const TEXT_ROLES = {
+  'heading-h1': { size: 'heading-h1', lh: 'heading-h1', wt: 'semibold', fam: 'brand', ls: 'heading' },
+  'heading-h2': { size: 'heading-h2', lh: 'heading-h2', wt: 'semibold', fam: 'brand', ls: 'heading' },
+  'heading-h3': { size: 'heading-h3', lh: 'heading-h3', wt: 'semibold', fam: 'brand', ls: 'heading' },
+  'heading-h4': { size: 'heading-h4', lh: 'heading-h4', wt: 'semibold', fam: 'brand', ls: 'heading' },
+  'heading-h5': { size: 'heading-h5', lh: 'heading-h5', wt: 'semibold', fam: 'brand', ls: 'heading' },
+  'hero-h1': { size: 'hero-h1', lh: 'hero-h1', wt: 'bold', fam: 'hero', ls: 'hero' },
+  'hero-h2': { size: 'hero-h2', lh: 'hero-h2', wt: 'bold', fam: 'hero', ls: 'hero' },
+  'hero-h3': { size: 'hero-h3', lh: 'hero-h3', wt: 'bold', fam: 'hero', ls: 'hero' },
+  'hero-h4': { size: 'hero-h4', lh: 'hero-h4', wt: 'bold', fam: 'hero', ls: 'hero' },
+  'hero-h5': { size: 'hero-h5', lh: 'hero-h5', wt: 'bold', fam: 'hero', ls: 'hero' },
+  'body-large': { size: 'body-large', lh: 'body-large', wt: 'regular', fam: 'brand', ls: 'body' },
+  'body-base': { size: 'body-base', lh: 'body-base', wt: 'regular', fam: 'brand', ls: 'body' },
+  'body-base-medium': { size: 'body-base', lh: 'body-base', wt: 'medium', fam: 'brand', ls: 'body' },
+  'body-base-strong': { size: 'body-base', lh: 'body-base', wt: 'semibold', fam: 'brand', ls: 'body' },
+  'body-small': { size: 'body-small', lh: 'body-small', wt: 'regular', fam: 'brand', ls: 'body' },
+  'body-xs': { size: 'body-xs', lh: 'body-xs', wt: 'regular', fam: 'brand', ls: 'body' },
+  'mono-base': { size: 'body-base', lh: 'body-base', wt: 'regular', fam: 'mono', ls: 'body' },
+  'mono-small': { size: 'body-small', lh: 'body-small', wt: 'regular', fam: 'mono', ls: 'body' },
+};
+const textRoleBlocks = Object.entries(TEXT_ROLES).map(([role, r]) =>
+  `  .sherpa-text-${role} {
+    font-family: var(--sherpa-font-family-${r.fam});
+    font-size: var(--sherpa-font-size-${r.size});
+    font-weight: var(--sherpa-font-weight-${r.wt});
+    line-height: var(--sherpa-line-height-${r.lh});
+    letter-spacing: var(--sherpa-letter-spacing-${r.ls});
+  }`
+);
 
 // ── @layer overrides: Layout Grid utility (.sherpa-layout-grid) ────────
 // Figma layout-grid vars drive a real CSS Grid. Mobile is the primary (4 cols);
@@ -396,6 +569,9 @@ ${coreLines.join('\n')}
 @layer style {
   :root {
 ${styleLines.join('\n')}
+
+    /* semantic typography atoms — flat, from the Figma \`Typography\` collection */
+${typoLines.map((l) => '  ' + l).join('\n')}
   }
 
   /* Dark mode: explicit choice wins. */
@@ -409,6 +585,9 @@ ${darkLines.map((l) => '  ' + l).join('\n')}
 ${darkLines.map((l) => '    ' + l).join('\n')}
     }
   }
+
+  /* Text roles — one class per Figma text Style; composed from the atoms above. */
+${textRoleBlocks.join('\n\n')}
 }
 
 @layer overrides {
@@ -445,7 +624,8 @@ for (const { comp, css } of partials) {
 }
 
 console.log(
-  `✓ tokens.css: @layer core(${coreLines.length}) style(${styleLines.length},${darkLines.length} dark) ` +
+  `✓ tokens.css: @layer core(${coreLines.length}) style(${styleLines.length},${darkLines.length} dark,` +
+    `${typoLines.length} typo,${textRoleBlocks.length} roles) ` +
     `overrides(${overrideLines.length}+${aliasLines.length} aliases,${statusBlocks.length} status) → global\n` +
     `✓ ${wrote} component token partials written`,
 );

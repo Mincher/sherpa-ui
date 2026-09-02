@@ -1,14 +1,13 @@
 /**
- * sherpa-container-header — the header bar for a container's `header` slot.
+ * sherpa-container-header — the header strip inside a container.
  *
- * Rebuilt to match the Figma "Container Header": an optional drag handle + icon
- * lead a title + optional description, then a trailing actions region with an
- * optional collapse toggle and a dismiss button. Designed to slot as
- * slot="header" inside a sherpa-container, but works in any host.
+ * From left to right: an optional drag handle and icon, then a title and
+ * optional description, then a row of actions on the right with an optional
+ * collapse toggle and a close button. It's meant to slot into a sherpa-container
+ * as the header, but it works anywhere.
  *
- * Everything visible is CSS off data-* + slot presence; JS writes the
- * title/description/icon text, reflects the collapsed state onto the toggle, and
- * wires the header's own events.
+ * CSS handles the look. JS writes the title, description, and icon text, keeps
+ * the collapse toggle in sync, and fires the header's events.
  *
  * @element sherpa-container-header
  * @attr {string}  data-title        — heading text (or use the `heading` slot)

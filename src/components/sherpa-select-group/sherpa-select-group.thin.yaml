@@ -1,5 +1,5 @@
 name: sherpa-select-group
-figmaName: Select Group
+figmaName: Fieldset
 category: control
 description: a labelled group of checkbox or radio options.
 props:
@@ -39,9 +39,17 @@ tokens:
   description:content-inactive-base: content-inactive-base
   description:status-text:
     override: status-text
+_divergence:
+  note: >-
+    2026-08-26: RENAMED in Figma to "Fieldset" (page "✅ Fieldset"), to match the HTML
+    <fieldset>/<legend> model. The head (legend + description) was replaced with a Section Header
+    instance (divider on, actions off). The options slot holds detached "Checkbox Field" / "Radio
+    Field" frames (Basic control + label + description) — see sherpa-select-checkbox/radio
+    _divergence: those are no longer components, just templates. Code name still
+    sherpa-select-group; rename to sherpa-fieldset when the code side is reworked.
 figmaVerbatim:
-  _status: matched
-  figmaName: Select Group
+  _status: divergent
+  figmaName: Fieldset
   nodeType: COMPONENT
   built: true
   variantAxes: []

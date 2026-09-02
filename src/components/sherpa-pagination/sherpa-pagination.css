@@ -46,8 +46,8 @@
   border-radius: var(--sherpa-grouping-radius-top-left, 4px);
   background: transparent;
   font-family: inherit;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
-  font-weight: var(--sherpa-core-fonts-weight-500, 500);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
   color: var(--sherpa-content-primary-base, #2e2e33);
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
@@ -73,7 +73,7 @@
   background: var(--_status-surface, var(--sherpa-surface-secondary-base, #fdfdfd));
   border-color: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
   color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   cursor: default;
   pointer-events: none;
 }

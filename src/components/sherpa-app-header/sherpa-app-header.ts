@@ -1,18 +1,16 @@
 /**
- * sherpa-app-header — the top application header bar.
+ * sherpa-app-header — the bar across the top of the app.
  *
- * Rebuilt to match the Figma "App Header": two rows (history + actions, then
- * view details with an embedded quick-filter toolbar) over a loading bar.
+ * It has two rows — history and actions on top, then the view title with a
+ * quick-filter toolbar — sitting above a loading bar. CSS handles the layout,
+ * badge, and loading animation. JS keeps the title, icon, and notification
+ * count in sync, toggles the favourite star, and fires the header's events.
+ * The back, favourite, and export buttons each fire an event. If you slot in
+ * a sherpa-breadcrumbs, its clicks come back out as breadcrumb-click.
  *
- * Mostly declarative — CSS owns the layout, region collapse, badge, and loading
- * animation off data-* + slot presence. JS mirrors the title/icon/notification
- * count, toggles the favourite state, and wires the header's own events. A
- * back / favourite / export control each emits a header event; a slotted
- * sherpa-breadcrumbs re-dispatches its selection as breadcrumb-click.
- *
- * populate({ breadcrumb?, filters? }) is a convenience: it stamps a
- * sherpa-breadcrumbs into the breadcrumb slot and a sherpa-quick-filter-toolbar
- * into the filters slot, so the common case needs no hand-authored markup.
+ * populate({ breadcrumb?, filters? }) is a shortcut: give it breadcrumb and
+ * filter data and it fills in the breadcrumbs and quick-filter toolbar for you,
+ * so you don't have to write that markup by hand.
  *
  * @fires view-header-back — detail: {}
  * @fires favorite-toggle  — detail: { favorite }

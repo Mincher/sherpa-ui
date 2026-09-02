@@ -1,14 +1,9 @@
 /**
- * sherpa-sparkline — a compact inline trend chart.
+ * sherpa-sparkline — a tiny inline trend chart.
  *
- * Behaviour only. All appearance (the area, the stroke, bar columns, hover
- * points) is CSS keyed off normalised custom properties. The one thing JS does
- * that CSS cannot is turn a list of numbers into geometry: it writes the raw
- * values into --_v0..--_v7 and the range into --_min / --_range on the host,
- * and CSS normalises those to 0–100 with calc(). That is a data→CSS-variable
- * bridge, not a style/visibility toggle — JS never sets display, width, or a
- * colour. The only DOM writes are [hidden] presence toggles derived from how
- * many values were supplied.
+ * CSS handles the whole look — the line, the fill, the bars, the hover points.
+ * The one thing JS does is hand CSS the numbers: it passes the values and their
+ * range to CSS, and CSS scales them to fit and draws the shape.
  *
  * @element sherpa-sparkline
  * @attr {string} data-values  — comma-separated or JSON array (e.g. "10,25,15,30")

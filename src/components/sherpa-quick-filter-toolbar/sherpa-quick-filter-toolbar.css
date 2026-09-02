@@ -42,5 +42,4 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-core-space-xs, 8px);
-  margin-inline-start: auto;
 }

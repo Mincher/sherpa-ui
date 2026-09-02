@@ -1,12 +1,11 @@
 /**
- * sherpa-file-upload — a drag-and-drop file selection zone.
+ * sherpa-file-upload — a drag-and-drop area for picking files.
  *
- * Rebuilt to match the Figma "File Uploader": a drop zone, a details block (max
- * size + allowed types), a file list (each row: icon + name + size + status +
- * remove), and an actions row (clear-all + upload). The drop area opens a hidden
- * native file input on click / keyboard and accepts dropped files. Drag state,
- * file presence and disabled are data-* on the host (pure CSS); JS carries the
- * files, mirrors accept/multiple, and emits the lifecycle events.
+ * It has a drop zone, a note about the max size and allowed types, a list of
+ * picked files (each row shows an icon, name, size, status, and a remove button),
+ * and a row of actions to clear all or upload. Clicking or pressing a key on the
+ * drop zone opens the file picker; you can also drop files onto it. CSS handles
+ * the drag highlight and disabled look; JS holds the files and fires the events.
  *
  * @fires file-add          detail: { added: File[], files: File[] }
  * @fires file-remove       detail: { removed: File, files: File[] }

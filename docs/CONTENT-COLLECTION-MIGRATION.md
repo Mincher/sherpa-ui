@@ -144,6 +144,43 @@ extModeId)`, read the node's resolved `fills[0].color`. (Recurring gotcha — se
   - **Container** rebuild to mirror this (status modes; look-tier + variant as
     extensions/variables) is the next step, then re-point components, then delete Status.
 
+- **✅ NESTED-EXTENSION MODEL (2026-08-16, FINAL — supersedes the flip above).** Two hard facts
+  re-proven forced a cleaner shape:
+  1. **BOTH base-mode pins AND extension pins trickle** from a parent node to its children
+     (earlier "only modes trickle" was wrong).
+  2. **An extension is ONE override layer, not an axis**; a node holds **ONE pin per collection
+     lineage**, so sibling extensions are **mutually exclusive**. Orthogonal axes therefore
+     either become the single base-mode axis, or must **nest** (pre-built per combination).
+  3. **Precedence: most-specific wins** — a deeper nested ext beats a shallower one beats the base
+     mode. Nesting **composes** (one deep pin resolves the whole chain).
+
+  **Final CONTAINER shape** (verified via bound node):
+  - Base modes (7) = **status + inactive**:
+    `passthrough | info | critical | warning | urgent | success | inactive`. Inactive is a MODE
+    (never combines with status → no waste); it greys surface/border/content. Trickles to content.
+  - Extensions: **`Secondary`**, **`Tertiary`** (top-level look-tier, mutually exclusive), each
+    with a nested **`Saturated`**; plus a top-level **`Saturated`** (over the primary base).
+    So 5 exts: `Secondary`, `Tertiary`, `Saturated`(primary), `Secondary›Saturated`,
+    `Tertiary›Saturated`. Saturated flips surface→ramp color 4 fill AND content→color 1 light
+    together (one pin couples fill + its text). Look-tier = neutral panel surface, wins over
+    status hue.
+  - Flat vars unchanged (`container-surface/*`, `container-border/*`,
+    `container-content/{role}/{base,on-color,on-color-subtle}`, geometry). Values re-driven by
+    base mode + ext chain.
+
+  **Final CONTENT shape** (verified):
+  - Base modes (7) = **status + inactive** (same axis as Container). Inactive greys the role vars.
+  - Extensions: **`on-color`** (top) → **`on-color-subtle`** NESTED under it (subtle is a variant
+    of on-color, so it composes on top). on-color = light ink on a fill (status→color 1);
+    on-color-subtle = dark ink on a subtle surface (status→color 6).
+  - Role vars flat: `content/{title,primary,secondary,tertiary}` + `content/link/{base,visited}`.
+
+  **Component pin model:** bind the flat vars, set the base mode (status **or** inactive) on the
+  wrapper (trickles to content), add ONE deep ext pin for look-tier/saturation/on-color where
+  needed. Verified combos: container critical-unsat (#ffd7ca/#9b2509), critical-saturated
+  (#dd2c01/#fff7f5), secondary panel (neutral), secondary›saturated›info (#0079aa/#f7fdff),
+  inactive (#f2f2f2/#5c5c66); content critical base/on-color/on-color-subtle/inactive all correct.
+
 ### Deferred phases (dedicated effort)
 - **Phase 4 (the expensive one):** Re-point the 87 consumer aliases from `Style::content/*` →
   `Content::content/*`; re-point every `status-*` binding → the new per-collection extensions.

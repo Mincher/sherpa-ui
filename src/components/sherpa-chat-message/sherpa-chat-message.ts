@@ -1,10 +1,9 @@
 /**
- * sherpa-chat-message — a single chat bubble for AI / messaging threads.
+ * sherpa-chat-message — one chat bubble in a thread.
  *
- * Layout and colour are pure CSS off data-role (assistant | user | system); the
- * base class reflects data-has-avatar for the avatar slot. JS only syncs the
- * text fields (author, time, content) into their shadow nodes — a slotted body
- * overrides data-content via CSS.
+ * data-role (assistant, user, or system) sets the layout and colour, all in CSS.
+ * JS only writes the text — author, time, and message. If you slot in your own
+ * body content, it replaces the data-content text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

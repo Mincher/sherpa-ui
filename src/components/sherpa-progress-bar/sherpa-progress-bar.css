@@ -26,7 +26,7 @@
 /* ── Label (above the bar; only when data-label is set) ───────────────── */
 .label {
   display: none;
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-content-primary-base, #2e2e33);
 }
 :host([data-label]) .label { display: block; }

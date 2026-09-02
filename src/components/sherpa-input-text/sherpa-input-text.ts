@@ -1,10 +1,9 @@
 /**
- * sherpa-input-text — a labelled text field.
+ * sherpa-input-text — a text field with a label.
  *
- * The most behaviour-heavy primitive so far, but still thin: it mirrors label /
- * description / error / placeholder + native attributes onto the inner control,
- * exposes `value` as a property, and re-dispatches input/change. Validation LOOK
- * is pure CSS (:user-invalid); JS only carries the values and the value API.
+ * JS copies the label, description, error, placeholder, and native attributes
+ * onto the real input, exposes its `value`, and re-fires the input and change
+ * events. The invalid look is handled by CSS; JS just carries the value.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

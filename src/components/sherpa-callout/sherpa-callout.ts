@@ -1,10 +1,10 @@
 /**
- * sherpa-callout — a status message box.
+ * sherpa-callout — a boxed status message.
  *
- * A soft status surface with a leading accent bar, an icon, a title/message,
- * and an optional dismiss button. The status colour and surface tint are pure
- * CSS off data-status; the title is the only text JS writes (from data-title).
- * The single behaviour is the dismiss button, which emits `callout-dismiss`.
+ * A soft coloured box with an accent bar down the side, an icon, a title and
+ * message, and an optional close button. The colour comes from data-status, and
+ * CSS handles it. JS only writes the title text. The one bit of behaviour is the
+ * close button, which fires callout-dismiss.
  *
  * @fires callout-dismiss — detail: none
  */

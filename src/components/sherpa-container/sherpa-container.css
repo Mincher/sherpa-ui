@@ -90,7 +90,7 @@
   border-radius: inherit;
 }
 .state > slot { display: none; }
-.state-text { color: var(--sherpa-content-secondary-base, #404047); font-size: var(--sherpa-core-fonts-scale-base, 14px); }
+.state-text { color: var(--sherpa-content-secondary-base, #404047); font-size: var(--sherpa-font-size-body-base, 14px); }
 
 :host([data-state]) .state { display: flex; }
 :host([data-state="loading"]) .state-loading { display: inline-flex; }

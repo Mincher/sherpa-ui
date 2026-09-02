@@ -53,14 +53,14 @@
 :host([data-variant="pie"]) .centre { display: none; }
 
 .value {
-  font-size: var(--sherpa-core-fonts-scale-2xl, 24px);
-  font-weight: var(--sherpa-core-fonts-weight-700, 700);
+  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
   color: var(--sherpa-content-title-base, #18191a);
   font-variant-numeric: tabular-nums;
 }
 .value:empty { display: none; }
 .sub {
-  font-size: var(--sherpa-core-fonts-scale-sm, 12px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-content-secondary-base, #404047);
 }
 .sub:empty { display: none; }

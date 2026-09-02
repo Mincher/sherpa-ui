@@ -10,7 +10,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-content-primary-base, #2e2e33);
   border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
   border-radius: var(--sherpa-core-border-rounding-lg, 8px);
@@ -39,7 +39,7 @@
   border: none;
   background: none;
   font: inherit;
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-content-title-base, #18191a);
   text-align: start;
   cursor: pointer;

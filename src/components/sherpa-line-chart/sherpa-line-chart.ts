@@ -1,11 +1,9 @@
 /**
- * sherpa-line-chart — a line/area chart over one or more numeric series.
+ * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  *
- * populate({ labels, series }) where series is number[] | { name?, values }[].
- * The JS maps each series to SVG coordinates in a 0–100 viewBox (x evenly across
- * the labels, y inverted so larger = higher) and writes the polyline points + a
- * closed area path into <svg> elements built with createElementNS (SVG can't be
- * cloned from an HTML template). CSS owns stroke/fill/weight; JS owns the geometry.
+ * Give it data with populate({ labels, series }). JS turns each set of numbers
+ * into a line and a filled area on an SVG canvas, spacing the points evenly and
+ * putting bigger values higher up. CSS handles the line colour, fill, and width.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

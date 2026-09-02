@@ -42,7 +42,7 @@
 .glyph {
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--_icon-size); /* fill the icon box — a single outline glyph */
-  font-weight: var(--sherpa-core-fonts-weight-400, 400);
+  font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: 1;
 }
 .glyph::before { content: var(--_glyph); }
@@ -71,8 +71,8 @@
   margin: 0;
   color: var(--sherpa-content-title-base, #18191a);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-xl, 20px);
-  font-weight: var(--sherpa-core-fonts-weight-600, 600);
+  font-size: var(--sherpa-font-size-heading-h2, 20px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1.3;
 }
 /* Title only when data-title is set (JS fills it). */
@@ -81,7 +81,7 @@
 .message {
   color: var(--sherpa-content-secondary-base, #404047);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-base, 14px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
 }
 .message-text { margin: 0; }
@@ -106,7 +106,7 @@
   padding: var(--sherpa-core-space-lg, 20px);
   --_icon-size: var(--sherpa-core-size-2xl, 32px);
 }
-:host([data-size="sm"]) .title { font-size: var(--sherpa-core-fonts-scale-lg, 16px); }
+:host([data-size="sm"]) .title { font-size: var(--sherpa-font-size-body-large, 16px); }
 
 :host([data-size="lg"]) {
   --_icon-size: var(--sherpa-core-size-3xl, 40px);
@@ -115,7 +115,7 @@
   width: calc(var(--_icon-size) * 1.4);
   height: calc(var(--_icon-size) * 1.4);
 }
-:host([data-size="lg"]) .title { font-size: var(--sherpa-core-fonts-scale-2xl, 24px); }
+:host([data-size="lg"]) .title { font-size: var(--sherpa-font-size-heading-h1, 24px); }
 
 /* Slotted illustrations centre themselves. */
 ::slotted([slot="icon"]) {

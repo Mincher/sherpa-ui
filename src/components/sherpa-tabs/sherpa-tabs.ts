@@ -1,14 +1,10 @@
 /**
- * sherpa-tabs — a tabbed content switcher.
+ * sherpa-tabs — a set of tabs that switch between panels.
  *
- * Renders a tab strip from populate([{ id, label }]) by cloning a
- * <template class="tab-tpl"> prototype (the only structural DOM it creates —
- * data-driven rows, which the golden rules allow). The active tab is
- * data-active-id on the host: CSS gives it the accent underline, and the JS
- * reflects data-tab-active onto the matching slotted panel so CSS can reveal it
- * (::slotted([data-tab-active])). Clicking a tab sets data-active-id and emits
- * tab-change. Roving arrow-key focus rides on the native <button> tabs (Enter /
- * Space activate for free); Arrow / Home / End move the roving tabindex.
+ * Give it tabs with populate([{ id, label }]). data-active-id says which tab is
+ * open: CSS gives that tab the underline and shows its matching panel. Clicking a
+ * tab switches to it and fires tab-change. The arrow keys move between tabs, and
+ * Home/End jump to the first and last; Enter or Space opens a tab.
  *
  * @element sherpa-tabs
  * @attr {string} data-active-id — id of the currently active tab / panel
