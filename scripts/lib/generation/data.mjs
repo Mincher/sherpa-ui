@@ -56,6 +56,12 @@ export function loadDef(name) {
   try { spec = yaml.load(readFileSync(specPath, 'utf8')); } catch { return null; }
   if (!spec || typeof spec !== 'object') return null;
   const def = specToDef(spec);
+  // specToDef drops native-no-kind props (e.g. `disabled`) because compileDef must
+  // not observe them — but the MCP wants the FULL public API. Use the raw spec props
+  // (strip the $type marker), keeping name/type/kind/values/default/native/description.
+  if (Array.isArray(spec.props)) {
+    def.props = spec.props.map(({ $type, ...p }) => p);
+  }
   const ext = (spec.$extensions && spec.$extensions.sherpa) || {};
   if (ext.figmaName) def.figmaName = ext.figmaName;
   if (ext.category) def.category = ext.category;
