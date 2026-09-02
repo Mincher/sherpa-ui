@@ -30,7 +30,6 @@ anatomy:
       - el: span
         class: text
         part: text
-        slot: ""
         children:
           - el: span
             class: label
@@ -38,6 +37,7 @@ anatomy:
           - el: span
             class: description
             part: description
+          - slot: ""
 props:
   - $type: prop
     name: data-description

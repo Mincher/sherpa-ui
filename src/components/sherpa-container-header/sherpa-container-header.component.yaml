@@ -43,16 +43,18 @@ anatomy:
       - el: div
         class: labels
         part: labels
-        slot: heading
         children:
+          - slot: heading
           - el: span
             class: description
             part: description
       - el: div
         class: actions
         part: actions
-        slot: actions
         children:
+          - slot: actions
+            attrs:
+              data-accepts: control,input
           - el: button
             class: toggle
             part: toggle

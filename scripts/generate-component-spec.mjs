@@ -133,23 +133,49 @@ function parseNodes(src) {
   return nodes;
 }
 
+/** Build a bare <slot> child node { slot, attrs? } — dropping the `name` attr (it
+ *  becomes `slot`) and any FALLBACK content (compileDef emits an empty slot). Keeps
+ *  every other attr (notably data-accepts) so name + attr-set + position round-trip. */
+function slotChildNode(n) {
+  const a = { ...n.attrs };
+  const out = { slot: a.name ?? '' };
+  delete a.name;
+  if (Object.keys(a).length) out.attrs = a;
+  return out;
+}
+/** True when a <slot> can collapse onto its parent as `parent.slot` — the legacy
+ *  inline form (byte-stable for e.g. sherpa-tag): it must be the parent's SOLE
+ *  child, carry no attrs beyond `name`, and hold no fallback content. */
+function isCollapsibleSoleSlot(parent) {
+  const kids = parent.children ?? [];
+  if (kids.length !== 1) return false;
+  const c = kids[0];
+  if (c.tag !== 'slot') return false;
+  const extra = Object.keys(c.attrs ?? {}).filter((k) => k !== 'name');
+  if (extra.length) return false;               // has data-accepts etc. → first-class
+  if ((c.children ?? []).length) return false;  // has fallback content → first-class
+  return true;
+}
 /** Convert one parsed HTML node → the anatomy `node` shape (el/class/part/attrs/slot/children). */
 function htmlNodeToAnatomy(n) {
   const a = { ...n.attrs };
   const out = {};
-  if (n.tag === 'slot') { out.slot = a.name ?? ''; return out; }
+  // A bare <slot> becomes a first-class slot child node (name + attrs, no fallback).
+  if (n.tag === 'slot') return slotChildNode(n);
   out.el = n.tag;
   if (a.class) out.class = a.class;
   if (a.part) out.part = a.part;
   delete a.class; delete a.part;
-  // a <slot> child collapses onto the parent as `slot`; keep both other children + slot
-  const kids = [];
-  let slotVal;
-  for (const c of n.children ?? []) {
-    if (c.tag === 'slot') { slotVal = c.attrs?.name ?? ''; continue; }
-    kids.push(htmlNodeToAnatomy(c));
+  // Collapse a lone, attr-free, fallback-free <slot> onto the parent (byte-stable
+  // inline form). Otherwise slots are emitted as first-class children IN POSITION,
+  // preserving sibling order, multiple slots per parent, and slot attrs.
+  if (isCollapsibleSoleSlot(n)) {
+    out.slot = n.children[0].attrs?.name ?? '';
+    if (Object.keys(a).length) out.attrs = a;
+    return out;
   }
-  if (slotVal !== undefined) out.slot = slotVal;
+  const kids = [];
+  for (const c of n.children ?? []) kids.push(htmlNodeToAnatomy(c));
   if (Object.keys(a).length) out.attrs = a;
   if (kids.length) out.children = kids;
   return out;

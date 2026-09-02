@@ -24,9 +24,10 @@ anatomy:
       - el: span
         class: avatar
         part: avatar
-        slot: avatar
         attrs:
           aria-hidden: "true"
+        children:
+          - slot: avatar
       - el: div
         class: stack
         children:
@@ -43,10 +44,10 @@ anatomy:
           - el: div
             class: bubble
             part: bubble
-            slot: ""
             children:
               - el: span
                 class: content
+              - slot: ""
 props:
   - $type: prop
     name: data-author

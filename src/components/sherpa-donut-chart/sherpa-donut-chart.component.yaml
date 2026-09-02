@@ -20,7 +20,6 @@ anatomy:
     el: div
     class: layout
     part: layout
-    slot: legend
     children:
       - el: div
         class: ring-wrap
@@ -37,6 +36,7 @@ anatomy:
               - el: span
                 class: sub
                 part: sub
+      - slot: legend
 props:
   - $type: prop
     name: data-label

@@ -82,8 +82,18 @@ function parseNodes(src) {
     const attrs = parseAttrs(attrStr);
     i = close + 1;
 
-    if (tag === 'slot' || selfClosing || voidTag(tag)) {
+    if (selfClosing || voidTag(tag)) {
       nodes.push({ tag, attrs, children: [] });
+      continue;
+    }
+    // `<slot>` is a CONTAINER (may hold hand-authored fallback content). Consume its
+    // matching `</slot>` so the fallback isn't mis-parsed as phantom sibling nodes,
+    // then DROP the fallback — compileDef emits empty slots, so fallback CONTENT is
+    // accepted, documented residue. Name + attr-set + position still round-trip.
+    if (tag === 'slot') {
+      const endIdx = findMatchingClose(src, i, 'slot', '</slot>');
+      nodes.push({ tag, attrs, children: [] });
+      i = endIdx + '</slot>'.length;
       continue;
     }
     // find matching close tag (no nesting of same tag inside our simple markup)

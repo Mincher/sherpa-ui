@@ -24,12 +24,12 @@ anatomy:
     - el: span
       class: bubble
       part: bubble
-      slot: tip
       attrs:
         role: tooltip
       children:
         - el: span
           class: tip-text
+        - slot: tip
 props:
   - $type: prop
     name: data-placement

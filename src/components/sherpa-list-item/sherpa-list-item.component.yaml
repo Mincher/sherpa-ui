@@ -55,17 +55,18 @@ anatomy:
           - el: span
             class: control
             part: control
-            slot: control
+            children:
+              - slot: control
           - el: span
             class: leading
             part: leading
-            slot: leading
             attrs:
               aria-hidden: "true"
             children:
               - el: span
                 class: icon
                 part: icon
+              - slot: leading
       - el: span
         class: content
         part: content

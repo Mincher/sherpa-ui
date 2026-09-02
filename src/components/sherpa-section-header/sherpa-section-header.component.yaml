@@ -24,8 +24,8 @@ anatomy:
         - el: div
           class: lead
           part: lead
-          slot: heading
           children:
+            - slot: heading
             - el: div
               class: description
               part: description
@@ -33,7 +33,10 @@ anatomy:
         - el: div
           class: actions
           part: actions
-          slot: actions
+          children:
+            - slot: actions
+              attrs:
+                data-accepts: control
     - el: hr
       class: divider
       part: divider

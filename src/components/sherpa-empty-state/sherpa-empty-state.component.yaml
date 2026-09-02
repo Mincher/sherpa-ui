@@ -24,9 +24,10 @@ anatomy:
       - el: div
         class: icon
         part: icon
-        slot: icon
         attrs:
           aria-hidden: "true"
+        children:
+          - slot: icon
       - el: div
         class: heading
         part: heading
@@ -37,11 +38,15 @@ anatomy:
           - el: div
             class: message
             part: message
-            slot: ""
+            children:
+              - slot: ""
       - el: div
         class: actions
         part: actions
-        slot: action
+        children:
+          - slot: action
+            attrs:
+              data-accepts: control
 props:
   - $type: prop
     name: data-description

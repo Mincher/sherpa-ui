@@ -22,13 +22,13 @@ anatomy:
     - el: div
       class: body
       part: body
-      slot: ""
       attrs:
         role: list
       children:
         - el: div
           class: rows
           part: rows
+        - slot: ""
     - el: div
       class: empty
       part: empty

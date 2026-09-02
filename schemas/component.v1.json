@@ -113,12 +113,12 @@
       "type": "string"
     },
     "node": {
-      "description": "One node in the Shadow-DOM anatomy tree (matches the shape compile-def.mjs walks: el/class/part/attrs/slot/component/showWhen/children).",
+      "description": "One node in the Shadow-DOM anatomy tree (matches the shape compile-def.mjs walks: el/class/part/attrs/slot/component/showWhen/children). A node with only a `slot` key (no `el`/`component`) is a first-class <slot> child node: it carries the slot name plus optional `attrs` (e.g. data-accepts) and renders at its position among siblings. A `slot` key ALONGSIDE `el` is the legacy collapsed form (a lone inline <slot> child of that element, kept for byte-stable output).",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "el": {
-          "description": "The native tag (button, span, div…). Omitted only when `component` names an owned custom element.",
+          "description": "The native tag (button, span, div…). Omitted for an owned custom element (`component`) or a bare <slot> child node (`slot` only).",
           "type": "string"
         },
         "component": {

@@ -20,7 +20,10 @@ anatomy:
     el: footer
     class: row
     part: row
-    slot: ""
+    children:
+      - slot: ""
+        attrs:
+          data-accepts: control,input
 props:
   - $type: prop
     name: data-align

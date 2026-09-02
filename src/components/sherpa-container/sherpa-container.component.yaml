@@ -32,10 +32,19 @@ anatomy:
     - el: div
       class: state
       part: state
-      slot: error
       attrs:
         role: status
         aria-live: polite
+      children:
+        - slot: loading
+          attrs:
+            class: state-loading
+        - slot: empty
+          attrs:
+            class: state-empty
+        - slot: error
+          attrs:
+            class: state-error
 props:
   - $type: prop
     name: data-elevation

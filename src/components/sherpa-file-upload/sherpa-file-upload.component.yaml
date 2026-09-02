@@ -60,8 +60,8 @@ anatomy:
         - el: div
           class: actions
           part: actions
-          slot: actions
           children:
+            - slot: actions
             - el: button
               class: clear-all
               part: clear-all

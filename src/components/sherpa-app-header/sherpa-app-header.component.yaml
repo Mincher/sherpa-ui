@@ -53,8 +53,8 @@ anatomy:
               - el: div
                 class: actions
                 part: actions
-                slot: actions
                 children:
+                  - slot: actions
                   - el: span
                     class: divider
                     part: divider

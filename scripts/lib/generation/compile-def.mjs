@@ -23,10 +23,24 @@ const tokenVar = (t) =>
     : `var(--_${t.override}, var(--sherpa-${t.fallback}))`;
 
 // ── HTML: walk anatomy → one <template> per templates[] ────────────────
+const VOID_TAGS = new Set(['br', 'hr', 'img', 'input', 'meta', 'link']);
+/** Render a bare `<slot>` node (a slot child node: { slot, attrs? } with no `el`). */
+function slotTag(node) {
+  const a = { name: node.slot || undefined, ...node.attrs };
+  const s = attrStr(a);
+  return s ? `<slot ${s}></slot>` : `<slot></slot>`;
+}
 function renderNode(node, forTemplate, indent) {
   const pad = '  '.repeat(indent);
   // A node only in the removable template is skipped elsewhere.
   if (node.showWhen && node.showWhen !== forTemplate) return '';
+
+  // A bare slot child node — no `el`, just a `slot` name (+ optional attrs like
+  // data-accepts). Rendered as an empty <slot> at its position (fallback content
+  // is hand-authored and not reproduced here).
+  if (node.el === undefined && node.component === undefined && node.slot !== undefined) {
+    return `${pad}${slotTag(node)}`;
+  }
 
   if (node.component) {
     // owned nested component
@@ -34,8 +48,17 @@ function renderNode(node, forTemplate, indent) {
     return `${pad}<${node.component} ${attrStr(a)}></${node.component}>`;
   }
   const a = { class: node.class, part: node.part, ...node.attrs };
+  // Void element (input/br/hr/img/meta/link) — self-closing, no children, no
+  // close tag. Matches the real hand-written markup (`<input … />`).
+  if (VOID_TAGS.has(node.el)) {
+    return `${pad}<${node.el} ${attrStr(a)} />`;
+  }
   const open = `${pad}<${node.el} ${attrStr(a)}>`;
   const kids = [];
+  // The COLLAPSED slot form: `node.slot` set on an element node ⇒ a lone inline
+  // <slot> child (sole child, no attrs, no fallback). Kept for byte-stable output
+  // on components like sherpa-tag. Slots that carry attrs / siblings / fallback are
+  // emitted as first-class child nodes instead (see the bare-slot branch above).
   if (node.slot !== undefined) {
     kids.push(node.slot ? `<slot name="${node.slot}"></slot>` : `<slot></slot>`);
   }
