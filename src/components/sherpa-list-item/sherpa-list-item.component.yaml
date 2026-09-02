@@ -85,11 +85,11 @@ anatomy:
         slot: trailing
 props:
   - $type: prop
-    name: data-active
+    name: data-current
     type: string
     kind: style
     default: false
-    description: active/selected state
+    description: current-row state
   - $type: prop
     name: data-description
     type: string
@@ -134,7 +134,7 @@ props:
     default: false
     description: selection state (for the leading control)
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: primary text
@@ -173,11 +173,11 @@ states:
     name: interactive
     selector: ":host([data-interactive])"
   - $type: state
-    name: active
-    selector: ":host([data-active])"
+    name: current
+    selector: ":host([data-current])"
   - $type: state
-    name: not-title
-    selector: ":host(:not([data-title]))"
+    name: not-heading
+    selector: ":host(:not([data-heading]))"
   - $type: state
     name: not-description
     selector: ":host(:not([data-description]))"
@@ -190,31 +190,31 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (active, selected). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current, selected). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: list-item-click
+    name: item-click
     bubbles: true
     composed: true
     trigger:
       "on": click
       node: .row
   - $type: event
-    name: list-item-expand
+    name: item-expand
     bubbles: true
     composed: true
     trigger:
       "on": click
       node: .expand
   - $type: event
-    name: list-item-select
+    name: item-select
     bubbles: true
     composed: true
     trigger:
       "on": click
       node: .control
   - $type: event
-    name: list-item-drag
+    name: item-drag
     bubbles: true
     composed: true
     trigger:
@@ -250,7 +250,7 @@ $extensions:
       - hasLeading
       - hasExpand
     jsProps:
-      - name: active
+      - name: current
         type: string
         access: read-write
       - name: selected

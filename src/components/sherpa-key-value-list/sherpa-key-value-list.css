@@ -1,9 +1,9 @@
 /**
  * sherpa-key-value-list.css — a semantic definition list.
  *
- * Two layouts, both pure CSS off data-layout on the host:
+ * Two orientations, both pure CSS off data-orientation on the host:
  *   horizontal (default) — key / value side by side (a two-column grid)
- *   stacked              — key above value, each pair block-stacked
+ *   vertical             — key above value, each pair block-stacked
  *
  * JS only stamps the dt/dd pairs; every visual decision lives here.
  */
@@ -33,18 +33,18 @@
 }
 
 /* ── Horizontal (default): key column + flexible value column ───────── */
-:host([data-layout="horizontal"]) .list,
-:host(:not([data-layout])) .list {
+:host([data-orientation="horizontal"]) .list,
+:host(:not([data-orientation])) .list {
   grid-template-columns: minmax(auto, max-content) 1fr;
   column-gap: var(--sherpa-display-space-base, 16px);
   align-items: baseline;
 }
 
-/* ── Stacked: one column, key above its value ──────────────────────── */
-:host([data-layout="stacked"]) .list {
+/* ── Vertical: one column, key above its value ─────────────────────── */
+:host([data-orientation="vertical"]) .list {
   grid-template-columns: 1fr;
   row-gap: var(--sherpa-display-space-sm, 12px);
 }
-:host([data-layout="stacked"]) .key {
+:host([data-orientation="vertical"]) .key {
   margin-block-end: var(--sherpa-display-space-3xs, 2px);
 }

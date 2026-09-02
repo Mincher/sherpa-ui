@@ -5,14 +5,14 @@
  * ink), coloured only through the look-tier cascade. Colour routes through the
  * --_status-* custom properties (emitted by an ancestor/own [data-status] or
  * [data-look]); with no look active it falls back to the plain Style neutrals.
- * A leading icon and a trailing dismiss (removable template) sit inside. No
+ * A leading icon and a trailing dismiss (dismissible template) sit inside. No
  * categorical hues — those live in the data-viz layer, not on tags.
  *
  *   surface → var(--_status-surface, style-surface-base)   (white neutral)
  *   content → var(--_status-text,    style-content-base)   (dark ink)
  *   border  → var(--_status-border,  style-border-base)    (grey)
  *
- * Pure data-* selectors; JS only mirrors the label / icon / removable template.
+ * Pure data-* selectors; JS only mirrors the label / icon / dismissible template.
  */
 
 :host {
@@ -81,8 +81,8 @@
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
-/* ── Collapsed: a small square/round indicator (no text metrics) ───── */
-:host([data-collapsed]) .pill {
+/* ── Dot type: a small square/round indicator (no text metrics) ───── */
+:host([data-type="dot"]) .pill {
   inline-size: var(--sherpa-display-space-xs, 8px);
   block-size: var(--sherpa-display-space-xs, 8px);
   padding: 0;

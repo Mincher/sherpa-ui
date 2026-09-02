@@ -1,20 +1,20 @@
 /**
  * sherpa-tabs — a set of tabs that switch between panels.
  *
- * Give it tabs with populate([{ id, label }]). data-active-id says which tab is
+ * Give it tabs with populate([{ id, label }]). data-current-id says which tab is
  * open: CSS gives that tab the underline and shows its matching panel. Clicking a
  * tab switches to it and fires tab-change. The arrow keys move between tabs, and
  * Home/End jump to the first and last; Enter or Space opens a tab.
  *
  * @element sherpa-tabs
- * @attr {string} data-active-id — id of the currently active tab / panel
+ * @attr {string} data-current-id — id of the currently active tab / panel
  *
  * @slot (default) — the tab panels; each child should carry data-tab="<id>"
  * @slot detail    — trailing content beside the tab strip
  *
  * @fires tab-change — bubbles + composed. detail: { id }
  *
- * @prop {string} activeId — currently active tab id (read/write)
+ * @prop {string} currentId — currently active tab id (read/write)
  * @method select(id) — activate a tab by id
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -27,7 +27,7 @@ export interface TabDef {
 export class SherpaTabs extends SherpaElement {
   static override css = new URL('./sherpa-tabs.css', import.meta.url);
   static override html = new URL('./sherpa-tabs.html', import.meta.url);
-  static override observed = ['data-active-id'];
+  static override observed = ['data-current-id'];
 
   #tabs: TabDef[] = [];
 
@@ -36,28 +36,28 @@ export class SherpaTabs extends SherpaElement {
     this.$('.tabs')?.addEventListener('click', this.#onClick);
     this.$('.tabs')?.addEventListener('keydown', this.#onKeyDown);
     if (this.#tabs.length) this.#render();
-    else this.#applyActive();
+    else this.#applyCurrent();
   }
 
   override onChange(name: string): void {
-    if (name === 'data-active-id') this.#applyActive();
+    if (name === 'data-current-id') this.#applyCurrent();
   }
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
-  get activeId(): string {
-    return this.dataset['activeId'] ?? '';
+  get currentId(): string {
+    return this.dataset['currentId'] ?? '';
   }
-  set activeId(value: string) {
-    if (value) this.setAttribute('data-active-id', value);
-    else this.removeAttribute('data-active-id');
+  set currentId(value: string) {
+    if (value) this.setAttribute('data-current-id', value);
+    else this.removeAttribute('data-current-id');
   }
 
   /** Activate a tab by id (no-op if already active or unknown). */
   select(id: string): void {
-    if (!id || id === this.activeId) return;
+    if (!id || id === this.currentId) return;
     if (this.#tabs.length && !this.#tabs.some((t) => t.id === id)) return;
-    this.setAttribute('data-active-id', id);
+    this.setAttribute('data-current-id', id);
     this.emit('tab-change', { id });
   }
 
@@ -70,8 +70,8 @@ export class SherpaTabs extends SherpaElement {
       .map((t) => ({ id: String(t.id ?? ''), label: String(t.label ?? '') }))
       .filter((t) => t.id);
     // Default the active tab to the first one when none is set.
-    if (!this.dataset['activeId'] && this.#tabs[0]) {
-      this.setAttribute('data-active-id', this.#tabs[0].id);
+    if (!this.dataset['currentId'] && this.#tabs[0]) {
+      this.setAttribute('data-current-id', this.#tabs[0].id);
     }
     this.#render();
   }
@@ -94,16 +94,16 @@ export class SherpaTabs extends SherpaElement {
       btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
       strip.appendChild(btn);
     });
-    this.#applyActive();
+    this.#applyCurrent();
   }
 
-  /** Reflect data-active-id onto the matching tab button and slotted panel. */
-  #applyActive(): void {
-    const active = this.dataset['activeId'] ?? '';
+  /** Reflect data-current-id onto the matching tab button and slotted panel. */
+  #applyCurrent(): void {
+    const active = this.dataset['currentId'] ?? '';
 
     for (const btn of this.$$('.tab')) {
       const on = btn.dataset['id'] === active;
-      btn.toggleAttribute('data-active', on);
+      btn.toggleAttribute('data-current', on);
       btn.setAttribute('aria-selected', String(on));
       btn.setAttribute('tabindex', on ? '0' : '-1');
     }
@@ -144,7 +144,7 @@ export class SherpaTabs extends SherpaElement {
     const tabs = this.$$('.tab');
     if (!tabs.length) return;
 
-    const current = tabs.findIndex((t) => t.dataset['id'] === this.activeId);
+    const current = tabs.findIndex((t) => t.dataset['id'] === this.currentId);
     let next = current < 0 ? 0 : current;
     switch (event.key) {
       case 'ArrowRight':

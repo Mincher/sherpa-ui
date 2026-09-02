@@ -3,13 +3,14 @@
  *
  * Give it data with populate([{ label, items: [{ id, label, icon? }] }]) and it
  * draws the labelled groups and their items. data-active-id marks which item is
- * currently active, and CSS highlights it. Clicking an item fires nav-section-select.
+ * currently active, and CSS highlights it. Clicking an item fires item-select.
  *
  * Public API:
  *   data-heading    optional panel heading text
  *   data-active-id  id of the currently active item
  *
- * @fires nav-section-select — detail: { id }
+ * @tier sub-component
+ * @fires item-select — detail: { id }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -27,6 +28,7 @@ export interface NavSectionGroup {
 export class SherpaNavSection extends SherpaElement {
   static override css = new URL('./sherpa-nav-section.css', import.meta.url);
   static override html = new URL('./sherpa-nav-section.html', import.meta.url);
+  static override tier = 'sub-component' as const;
   static override observed = ['data-heading', 'data-active-id'];
 
   #groups: NavSectionGroup[] = [];
@@ -83,12 +85,12 @@ export class SherpaNavSection extends SherpaElement {
     this.#applyActive();
   }
 
-  /** Reflect data-active-id onto the matching row (CSS styles data-active). */
+  /** Reflect data-active-id onto the matching row (CSS styles data-current). */
   #applyActive(): void {
     const active = this.dataset['activeId'];
     for (const row of this.$$('.item-row')) {
       const on = row.dataset['id'] === active;
-      row.toggleAttribute('data-active', on);
+      row.toggleAttribute('data-current', on);
       const btn = row.querySelector('.item');
       if (btn) {
         if (on) btn.setAttribute('aria-current', 'page');
@@ -109,7 +111,7 @@ export class SherpaNavSection extends SherpaElement {
     const id = row?.dataset['id'];
     if (!id) return;
     this.setAttribute('data-active-id', id);
-    this.emit('nav-section-select', { id });
+    this.emit('item-select', { id });
   };
 }
 

@@ -122,8 +122,8 @@
   text-overflow: ellipsis;
 }
 
-/* ── Active item — same ink, heavier weight ────────────────────────── */
-.item-row[data-active] .item {
+/* ── Current item — same ink, heavier weight ───────────────────────── */
+.item-row[data-current] .item {
   color: var(--sherpa-theme-content-body-base, #2e2e33);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }

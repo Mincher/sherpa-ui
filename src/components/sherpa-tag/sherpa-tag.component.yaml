@@ -17,7 +17,7 @@ element:
   provides: []
 templates:
   - default
-  - removable
+  - dismissible
 anatomy:
   root:
     el: span
@@ -43,25 +43,27 @@ anatomy:
           - el: span
             attrs:
               aria-hidden: "true"
-        showWhen: removable
+        showWhen: dismissible
 props:
   - $type: prop
-    name: data-collapsed
+    name: data-dismissible
     type: boolean
     kind: style
     default: false
-    description: render as a small circular indicator
+    description: show the close button (selects the dismissible template)
   - $type: prop
     name: data-icon
-    type: boolean
-    kind: style
-    default: false
-    description: show the leading icon slot
-  - $type: prop
-    name: data-removable
     type: string
+    kind: visibility
+    description: leading icon glyph value (shown when present; or slot "icon")
+  - $type: prop
+    name: data-type
+    type: enum
     kind: style
-    description: show the close button (selects the removable template)
+    values:
+      - dot
+      - full
+    description: dot | full  (dot = a small circular indicator; default full)
   - $type: prop
     name: data-status
     type: enum
@@ -75,8 +77,8 @@ props:
     description: info | success | warning | critical | urgent (via the cascade)
 states:
   - $type: state
-    name: collapsed
-    selector: ":host([data-collapsed])"
+    name: dot
+    selector: ":host([data-type=\"dot\"])"
   - $type: state
     name: not-icon
     selector: ":host(:not([data-icon]))"

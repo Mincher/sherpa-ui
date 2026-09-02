@@ -7,10 +7,10 @@
   data-* flag; the leading slot still accepts a custom icon/avatar.
 
   Public API:
-    data-title        primary text
+    data-heading      primary text
     data-description  secondary text
     data-icon         a leading icon glyph
-    data-active       active/selected state
+    data-current      current-row state
     data-interactive  hover + click behaviour
     data-draggable    show the drag handle
     data-expandable   show the expand toggle
@@ -25,10 +25,10 @@
     trailing  — actions / badges
 
   Fires:
-    list-item-click   — detail: { title }
-    list-item-expand  — detail: { expanded }
-    list-item-select  — detail: { selected }
-    list-item-drag    — detail: {}
+    item-click   — detail: { heading }
+    item-expand  — detail: { expanded }
+    item-select  — detail: { selected }
+    item-drag    — detail: {}
 -->
 <template id="default">
   <div class="row" part="row">

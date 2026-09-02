@@ -47,10 +47,10 @@ test('data-size drives the spinner diameter', async ({ page }) => {
       await el.rendered;
       return getComputedStyle(el.shadowRoot!.querySelector('.spinner')!).width;
     };
-    return { small: await mk('small'), def: await mk(), large: await mk('large') };
+    return { small: await mk('sm'), def: await mk(), large: await mk('lg') };
   });
   expect(r.small).toBe('12px'); // size-xs
-  expect(r.def).toBe('20px'); // size-md (default)
+  expect(r.def).toBe('20px'); // size-md (default, unset)
   expect(r.large).toBe('40px'); // size-3xl (core-scale-500)
 });
 

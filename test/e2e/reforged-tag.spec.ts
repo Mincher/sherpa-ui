@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 /**
  * sherpa-tag on the reforged base — the Figma Tag: a NEUTRAL pill by default
  * (white surface, grey border, dark text), coloured via the [data-status] cascade.
- * Covers the neutral default, status colouring, the removable close button + event,
- * and the collapsed indicator.
+ * Covers the neutral default, status colouring, the dismissible close button + event,
+ * and the dot-type indicator.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -47,11 +47,11 @@ test('an ancestor [data-status] colours the pill via the cascade', async ({ page
   expect(r.critical).not.toBe(r.neutral); // status surface fills the pill
 });
 
-test('removable template adds a close button that fires tag-remove', async ({ page }) => {
+test('dismissible template adds a close button that fires tag-remove', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-removable', '');
-    el.textContent = 'removable';
+    el.setAttribute('data-dismissible', '');
+    el.textContent = 'dismissible';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
@@ -77,11 +77,11 @@ test('default template has no close button', async ({ page }) => {
   expect(hasClose).toBe(false);
 });
 
-test('collapsed renders a small square indicator (no text metrics)', async ({ page }) => {
+test('dot type renders a small square indicator (no text metrics)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-collapsed', '');
-    
+    el.setAttribute('data-type', 'dot');
+
     el.textContent = 'hidden';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;

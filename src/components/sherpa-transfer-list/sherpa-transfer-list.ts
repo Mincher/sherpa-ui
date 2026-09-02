@@ -35,8 +35,8 @@ export class SherpaTransferList extends SherpaElement {
   override onRender(): void {
     this.#syncHeadings();
     this.$('.moves')?.addEventListener('click', this.#onMoveClick);
-    // A row's leading control fires list-item-select; stage/unstage on it.
-    this.$('.panes')?.addEventListener('list-item-select', this.#onRowSelect as EventListener);
+    // A row's leading control fires item-select; stage/unstage on it.
+    this.$('.panes')?.addEventListener('item-select', this.#onRowSelect as EventListener);
     this.#render();
   }
 
@@ -91,7 +91,7 @@ export class SherpaTransferList extends SherpaElement {
       const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       row.dataset['value'] = item.value;
       const listItem = row.querySelector('sherpa-list-item') as HTMLElement;
-      listItem.dataset['title'] = item.label;
+      listItem.dataset['heading'] = item.label;
       listItem.toggleAttribute('data-selected', this.#staged.has(item.value));
       (item.selected ? targetList : sourceList).appendChild(row);
     }

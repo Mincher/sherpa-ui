@@ -13,7 +13,9 @@ export interface LegendItem {
   colorIndex?: number;
 }
 
+/** @tier sub-component — renders inside charts; excluded from the public catalog. */
 export class SherpaChartLegend extends SherpaElement {
+  static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 
@@ -55,8 +57,8 @@ export class SherpaChartLegend extends SherpaElement {
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
     if (raw == null) return;
-    // Toggle active state (default active → false → true).
-    item!.dataset['active'] = item!.dataset['active'] === 'false' ? 'true' : 'false';
+    // Toggle current state (default current → false → true).
+    item!.dataset['current'] = item!.dataset['current'] === 'false' ? 'true' : 'false';
     this.emit('legend-item-click', { index: Number(raw), label: this.#items[Number(raw)]?.label ?? '' });
   };
 }

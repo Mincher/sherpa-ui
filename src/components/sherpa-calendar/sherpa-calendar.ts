@@ -21,7 +21,7 @@ const MONTHS = [
 const MONTHS_SHORT = MONTHS.map((m) => m.slice(0, 3));
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
-type Layout = 'day' | 'month' | 'year';
+type View = 'day' | 'month' | 'year';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const toIso = (y: number, m: number, d: number): string => `${y}-${pad2(m + 1)}-${pad2(d)}`;
@@ -35,7 +35,7 @@ function parseIso(iso: string | null | undefined): [number, number, number] | nu
 export class SherpaCalendar extends SherpaElement {
   static override css = new URL('./sherpa-calendar.css', import.meta.url);
   static override html = new URL('./sherpa-calendar.html', import.meta.url);
-  static override observed = ['data-value', 'data-min', 'data-max', 'data-layout'];
+  static override observed = ['data-value', 'data-min', 'data-max', 'data-view'];
 
   /** Currently viewed year / 0-indexed month (drives the grids). */
   #viewYear = new Date().getFullYear();
@@ -44,7 +44,7 @@ export class SherpaCalendar extends SherpaElement {
   override onRender(): void {
     const sel = parseIso(this.dataset['value']);
     if (sel) { this.#viewYear = sel[0]; this.#viewMonth = sel[1]; }
-    if (!this.dataset['layout']) this.dataset['layout'] = 'day';
+    if (!this.dataset['view']) this.dataset['view'] = 'day';
     this.$('.cal-prev')?.addEventListener('click', this.#onPrev);
     this.$('.cal-next')?.addEventListener('click', this.#onNext);
     this.$('.cal-label')?.addEventListener('click', this.#onLabel);
@@ -67,9 +67,9 @@ export class SherpaCalendar extends SherpaElement {
   get value(): string { return this.dataset['value'] ?? ''; }
   set value(v: string) { if (v) this.dataset['value'] = v; else delete this.dataset['value']; }
 
-  get #layout(): Layout {
-    const l = this.dataset['layout'];
-    return l === 'month' || l === 'year' ? l : 'day';
+  get #view(): View {
+    const v = this.dataset['view'];
+    return v === 'month' || v === 'year' ? v : 'day';
   }
 
   /* ── Rendering ──────────────────────────────────────────────────────── */
@@ -78,12 +78,12 @@ export class SherpaCalendar extends SherpaElement {
     const label = this.$('.cal-label');
     if (label) {
       label.textContent =
-        this.#layout === 'day' ? `${MONTHS[this.#viewMonth]} ${this.#viewYear}`
-        : this.#layout === 'month' ? String(this.#viewYear)
+        this.#view === 'day' ? `${MONTHS[this.#viewMonth]} ${this.#viewYear}`
+        : this.#view === 'month' ? String(this.#viewYear)
         : `${this.#decadeStart()}–${this.#decadeStart() + 11}`;
     }
-    if (this.#layout === 'day') this.#renderDays();
-    else if (this.#layout === 'month') this.#renderMonths();
+    if (this.#view === 'day') this.#renderDays();
+    else if (this.#view === 'month') this.#renderMonths();
     else this.#renderYears();
   }
 
@@ -168,11 +168,11 @@ export class SherpaCalendar extends SherpaElement {
 
   /** Prev/next steps by month (day), year (month), or 12-year block (year). */
   #step(direction: number): void {
-    if (this.#layout === 'day') {
+    if (this.#view === 'day') {
       let m = this.#viewMonth + direction, y = this.#viewYear;
       if (m < 0) { m = 11; y -= 1; } else if (m > 11) { m = 0; y += 1; }
       this.#viewMonth = m; this.#viewYear = y;
-    } else if (this.#layout === 'month') {
+    } else if (this.#view === 'month') {
       this.#viewYear += direction;
     } else {
       this.#viewYear += direction * 12;
@@ -182,7 +182,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /** The label zooms out: day → month → year. */
   #onLabel = (): void => {
-    this.dataset['layout'] = this.#layout === 'day' ? 'month' : 'year';
+    this.dataset['view'] = this.#view === 'day' ? 'month' : 'year';
     this.#render();
   };
 
@@ -191,7 +191,7 @@ export class SherpaCalendar extends SherpaElement {
     const m = cell?.dataset['month'];
     if (m == null) return;
     this.#viewMonth = Number(m);
-    this.dataset['layout'] = 'day'; // zoom back in to the days of the chosen month
+    this.dataset['view'] = 'day'; // zoom back in to the days of the chosen month
     this.#render();
   };
 
@@ -200,7 +200,7 @@ export class SherpaCalendar extends SherpaElement {
     const y = cell?.dataset['year'];
     if (y == null) return;
     this.#viewYear = Number(y);
-    this.dataset['layout'] = 'month'; // zoom in to the months of the chosen year
+    this.dataset['view'] = 'month'; // zoom in to the months of the chosen year
     this.#render();
   };
 

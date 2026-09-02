@@ -6,7 +6,7 @@
  * them; with no status the neutral Style surface/border show. The SELECTED look
  * is an accent ring + tinted face, drawn off [data-selected] — JS only sets that
  * attribute, never a style. The footer's default control (a radio) sits below
- * the body; data-layout="horizontal" moves it beside the body. Disabled uses
+ * the body; data-orientation="horizontal" moves it beside the body. Disabled uses
  * inactive tokens (never opacity). Logical properties throughout.
  *
  *   surface → var(--_status-surface, style-surface-base)
@@ -40,12 +40,12 @@
   transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
 }
 
-/* ── Horizontal layout: body and footer sit side by side ──────────── */
-:host([data-layout="horizontal"]) .card {
+/* ── Horizontal orientation: body and footer sit side by side ─────── */
+:host([data-orientation="horizontal"]) .card {
   flex-direction: row;
   align-items: stretch;
 }
-:host([data-layout="horizontal"]) .body {
+:host([data-orientation="horizontal"]) .body {
   flex: 1 1 auto;
 }
 
@@ -88,11 +88,11 @@
 :host([data-description]) .body {
   border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
-/* Footer divider (below the body); suppressed in horizontal layout. */
-:host(:not([data-layout="horizontal"])) .footer {
+/* Footer divider (below the body); suppressed in horizontal orientation. */
+:host(:not([data-orientation="horizontal"])) .footer {
   border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
-:host([data-layout="horizontal"]) .footer {
+:host([data-orientation="horizontal"]) .footer {
   border-inline-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 

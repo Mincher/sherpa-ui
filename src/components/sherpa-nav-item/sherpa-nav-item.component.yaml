@@ -41,10 +41,10 @@ anatomy:
         slot: trailing
 props:
   - $type: prop
-    name: data-active
+    name: data-current
     type: string
     kind: style
-    description: active / current state
+    description: current item in the nav set
   - $type: prop
     name: data-badge
     type: string
@@ -104,8 +104,8 @@ states:
     name: status-dot
     selector: ":host([data-status-dot])"
   - $type: state
-    name: active
-    selector: ":host([data-active])"
+    name: current
+    selector: ":host([data-current])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"
@@ -115,10 +115,10 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (templateId, active). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (templateId, current). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: nav-item-click
+    name: item-click
     bubbles: true
     composed: true
   - $type: event
@@ -170,6 +170,6 @@ $extensions:
       - name: templateId
         type: string
         access: read
-      - name: active
+      - name: current
         type: string
         access: read-write

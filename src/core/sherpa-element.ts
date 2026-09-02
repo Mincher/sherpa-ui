@@ -92,6 +92,13 @@ export abstract class SherpaElement extends HTMLElement {
   static html?: URL;
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
+  /**
+   * Component tier (naming standard, ratified 2026-09-02): `standalone` = a shipped
+   * product component; `sub-component` = a design-only building block used only inside
+   * a parent (excluded from the public catalog / sandbox picker, still registered so it
+   * renders inside its parent). Sub-components also carry `@tier sub-component` in JSDoc.
+   */
+  static tier: 'standalone' | 'sub-component' = 'standalone';
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
   static sharedStyles: URL[] = [];
 

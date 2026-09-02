@@ -38,7 +38,7 @@ test('renders a row per item with label + value and categorical swatches', async
   expect(r.swatch5).toBe('rgb(65, 65, 239)'); // categorical-5 #4141ef
 });
 
-test('clicking a row fires legend-item-click and toggles active', async ({ page }) => {
+test('clicking a row fires legend-item-click and toggles current', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
       rendered?: Promise<void>;
@@ -56,7 +56,7 @@ test('clicking a row fires legend-item-click and toggles active', async ({ page 
     rowB.querySelector<HTMLElement>('.row')!.click();
     await new Promise((res) => setTimeout(res, 5));
 
-    return { fired, active: rowB.getAttribute('data-active') };
+    return { fired, active: rowB.getAttribute('data-current') };
   });
   expect(r.fired).toBe(1);
   expect(r.active).toBe('false'); // toggled off

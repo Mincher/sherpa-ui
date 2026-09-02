@@ -121,7 +121,7 @@ events:
     bubbles: true
     composed: true
     trigger:
-      "on": nav-item-click
+      "on": item-click
       node: .rail
   - $type: event
     name: nav-search

@@ -11,7 +11,7 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-calendar
 $description: >-
-  A date picker with day / month / year layouts. The header label zooms out day→month→year; picking
+  A date picker with day / month / year views. The header label zooms out day→month→year; picking
   a month/year zooms back in.
 element:
   $type: element
@@ -85,10 +85,15 @@ anatomy:
             role: gridcell
 props:
   - $type: prop
-    name: data-layout
-    type: string
+    name: data-view
+    type: enum
     kind: content
-    description: — day | month | year (the active picker; default day)
+    values:
+      - day
+      - month
+      - year
+    default: day
+    description: day | month | year (the active picker; default day)
   - $type: prop
     name: data-max
     type: string
@@ -107,16 +112,16 @@ props:
 states:
   - $type: state
     name: day
-    selector: ":host([data-layout=\"day\"])"
+    selector: ":host([data-view=\"day\"])"
   - $type: state
     name: month
-    selector: ":host([data-layout=\"month\"])"
+    selector: ":host([data-view=\"month\"])"
   - $type: state
     name: year
-    selector: ":host([data-layout=\"year\"])"
+    selector: ":host([data-view=\"year\"])"
   - $type: state
-    name: not-layout
-    selector: ":host(:not([data-layout]))"
+    name: not-view
+    selector: ":host(:not([data-view]))"
   - $type: state
     name: focus-visible
     selector: .cal-nav:focus-visible

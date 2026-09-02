@@ -75,7 +75,7 @@
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1.35;
 }
-:host(:not([data-title])) .title { display: none; }
+:host(:not([data-heading])) .title { display: none; }
 
 .message { color: var(--_content); }
 :host(:not([data-has-content])) .message { display: none; }

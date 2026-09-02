@@ -3,7 +3,7 @@
  *
  * A soft coloured box with an accent bar down the side, an icon, a title and
  * message, and an optional close button. The colour comes from data-status, and
- * CSS handles it. JS only writes the title text. The one bit of behaviour is the
+ * CSS handles it. JS only writes the heading text. The one bit of behaviour is the
  * close button, which fires callout-dismiss.
  *
  * @fires callout-dismiss — detail: none
@@ -13,7 +13,7 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaCallout extends SherpaElement {
   static override css = new URL('./sherpa-callout.css', import.meta.url);
   static override html = new URL('./sherpa-callout.html', import.meta.url);
-  static override observed = ['data-title'];
+  static override observed = ['data-heading'];
 
   override onRender(): void {
     if (!this.hasAttribute('role')) this.setAttribute('role', 'note');
@@ -22,7 +22,7 @@ export class SherpaCallout extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-title') this.#syncTitle();
+    if (name === 'data-heading') this.#syncTitle();
   }
 
   /** Dismiss the callout: emit the event and remove the element. */
@@ -33,7 +33,7 @@ export class SherpaCallout extends SherpaElement {
 
   #syncTitle(): void {
     const el = this.$('.title');
-    if (el) el.textContent = this.dataset['title'] ?? '';
+    if (el) el.textContent = this.dataset['heading'] ?? '';
   }
 
   #onDismiss = (event: Event): void => {

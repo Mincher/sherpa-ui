@@ -12,7 +12,7 @@
   Sits in the view frame's `header` region (the `.sherpa-view` grid).
 
   Public API:
-    data-title           — the view title (hidden when empty)
+    data-heading         — the view title (hidden when empty)
     data-icon            — a glyph before the title
     data-notifications   — notification count (shows the badge; hidden at 0/unset)
     data-loading         — show the loading bar
@@ -24,7 +24,7 @@
     filters    — the view-scope filter toolbar (else populate() stamps a quick-filter-toolbar)
 
   Fires:
-    view-header-back — detail: {}            (back button)
+    back             — detail: {}            (back button)
     favorite-toggle  — detail: { favorite }  (star toggle)
     view-export      — detail: {}            (export action)
     breadcrumb-click — detail: { index, label, href }  (re-dispatched from breadcrumbs)

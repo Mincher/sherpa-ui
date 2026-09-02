@@ -63,11 +63,11 @@ props:
     kind: style
     values:
       - sm
-      - base
+      - md
       - lg
-    description: sm | base  | lg
+    description: sm | md (default, unset) | lg
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: heading text (rendered into .title)
@@ -107,7 +107,7 @@ states:
     selector: ":host([data-size=\"lg\"])"
   - $type: state
     name: not-title
-    selector: ":host(:not([data-title]))"
+    selector: ":host(:not([data-heading]))"
 events:
   - $type: event
     name: nothing

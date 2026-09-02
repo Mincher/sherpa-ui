@@ -1,17 +1,17 @@
 <!--
-  sherpa-calendar — a date picker with day / month / year layouts.
+  sherpa-calendar — a date picker with day / month / year views.
 
   Matches the Figma "Grid" Layout axis (day | month | year). The header label is
   a button that zooms OUT (day → month → year); picking a month/year zooms back
-  IN. Prev/next step whatever the current layout shows. A day grid, a month grid,
+  IN. Prev/next step whatever the current view shows. A day grid, a month grid,
   and a year grid are stamped from cloning prototypes; CSS shows the one that
-  matches data-layout.
+  matches data-view.
 
   Public API:
-    data-value   — selected day (ISO YYYY-MM-DD); highlighted in the day grid
-    data-min     — earliest selectable day (ISO); earlier days are disabled
-    data-max     — latest selectable day (ISO); later days are disabled
-    data-layout  — day | month | year (the active picker; default day)
+    data-value  — selected day (ISO YYYY-MM-DD); highlighted in the day grid
+    data-min    — earliest selectable day (ISO); earlier days are disabled
+    data-max    — latest selectable day (ISO); later days are disabled
+    data-view   — day | month | year (the active picker; default day)
 
   Fires: datetime-change — detail: { value: string } (a selectable day clicked)
 -->

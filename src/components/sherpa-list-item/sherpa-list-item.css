@@ -4,7 +4,7 @@
  * The Figma "Menu List Item": a leading region (drag handle, expand toggle,
  * selection control, icon) → content (title + description) → trailing slot. Each
  * leading affordance is CSS-toggled off a data-* flag. Interactive rows get
- * hover/focus; the active row fills surface-active-base with active ink; a
+ * hover/focus; the current row fills surface-active-base with active ink; a
  * [data-status] ancestor fills the row via the look-tier cascade (--_status-*).
  * Disabled uses inactive tokens (never opacity). Geometry chains to the shared
  * Structure/Theme tokens; logical properties throughout.
@@ -100,7 +100,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-:host(:not([data-title])) .title { display: none; }
+:host(:not([data-heading])) .title { display: none; }
 
 .description {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
@@ -127,11 +127,11 @@
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
-/* ── Active / selected ─────────────────────────────────────────────── */
-:host([data-active]) .row {
+/* ── Current row ───────────────────────────────────────────────────── */
+:host([data-current]) .row {
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
-:host([data-active]) .title {
+:host([data-current]) .title {
   color: var(--sherpa-theme-content-active-base, #8500cc);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }

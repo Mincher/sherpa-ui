@@ -94,8 +94,8 @@
  * sherpa-nav-item — presentation.
  *
  * A horizontal row: leading icon → label → trailing badge/status dot. The host
- * is the interactive element; the inner anchor carries the layout. The active
- * row (data-active) takes the brand-active fill + active ink; disabled uses
+ * is the interactive element; the inner anchor carries the layout. The current
+ * row (data-current) takes the brand-active fill + active ink; disabled uses
  * inactive tokens (never opacity). A "promo" variant renders a larger CTA row.
  *
  * Colour: the active row fills surface-active-base with content-active-base ink;
@@ -181,8 +181,8 @@
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
-/* ── Active / current ──────────────────────────────────────────────── */
-:host([data-active]) .row {
+/* ── Current ───────────────────────────────────────────────────────── */
+:host([data-current]) .row {
   background: var(--sherpa-theme-surface-active-base, #f4ebfd);
   color: var(--sherpa-theme-content-active-base, #4d049f);
   font-weight: var(--sherpa-font-weight-semibold, 600);

@@ -6,7 +6,7 @@
  *   2. Give it data with populate([{ title, description?, active?, interactive? }])
  *      and it draws the rows for you.
  *
- * Only one row can be active at a time — clicking a row clears the others. If
+ * Only one row is current at a time — clicking a row clears the others. If
  * there are no rows, an empty-state message (data-empty) shows in their place.
  *
  * Public API:
@@ -22,7 +22,7 @@ interface ListRow {
   interactive?: boolean;
 }
 
-type ListItemEl = HTMLElement & { active?: boolean };
+type ListItemEl = HTMLElement & { current?: boolean };
 
 export class SherpaList extends SherpaElement {
   static override css = new URL('./sherpa-list.css', import.meta.url);
@@ -32,9 +32,9 @@ export class SherpaList extends SherpaElement {
   #rows: ListRow[] = [];
 
   override onRender(): void {
-    // One delegated listener enforces single-active across every row, whether
-    // the rows were slotted or stamped by populate().
-    this.addEventListener('list-item-click', this.#onItemClick);
+    // One delegated listener enforces a single current row across every row,
+    // whether the rows were slotted or stamped by populate().
+    this.addEventListener('item-click', this.#onItemClick);
     this.$('slot')?.addEventListener('slotchange', this.#syncEmpty);
     if (this.#rows.length) this.#render();
     this.#syncEmpty();
@@ -68,9 +68,9 @@ export class SherpaList extends SherpaElement {
     container.replaceChildren();
     for (const row of this.#rows) {
       const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      item.dataset['title'] = row.title;
+      item.dataset['heading'] = row.title;
       if (row.description) item.dataset['description'] = row.description;
-      if (row.active) item.setAttribute('data-active', '');
+      if (row.active) item.setAttribute('data-current', '');
       if (row.interactive) item.setAttribute('data-interactive', '');
       container.appendChild(item);
     }
@@ -91,9 +91,9 @@ export class SherpaList extends SherpaElement {
     this.toggleAttribute('data-empty-visible', empty);
   };
 
-  /** Enforce single-active: deactivate every row except the one just clicked. */
+  /** Enforce a single current row: clear every row except the one just clicked. */
   #onItemClick = (event: Event): void => {
-    // list-item-click is composed: crossing into this list's shadow tree retargets
+    // item-click is composed: crossing into this list's shadow tree retargets
     // event.target to the list host, so find the real item via composedPath().
     const clicked = event
       .composedPath()
@@ -106,7 +106,7 @@ export class SherpaList extends SherpaElement {
       ...this.$$<ListItemEl>('.rows > sherpa-list-item'),
     ];
     for (const row of rows) {
-      if (row !== clicked) row.removeAttribute('data-active');
+      if (row !== clicked) row.removeAttribute('data-current');
     }
   };
 }

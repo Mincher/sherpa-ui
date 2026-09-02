@@ -49,13 +49,14 @@ props:
     kind: content
     description: header title (used when no header slot is given)
   - $type: prop
-    name: data-layout
+    name: data-orientation
     type: enum
     kind: style
     values:
-      - default
+      - vertical
       - horizontal
-    description: default | horizontal (footer beside the body vs below)
+    default: vertical
+    description: vertical | horizontal (footer beside the body vs below; default vertical)
   - $type: prop
     name: data-multiple
     type: string
@@ -89,7 +90,7 @@ props:
 states:
   - $type: state
     name: horizontal
-    selector: ":host([data-layout=\"horizontal\"])"
+    selector: ":host([data-orientation=\"horizontal\"])"
   - $type: state
     name: has-header
     selector: ":host([data-has-header])"
@@ -107,7 +108,7 @@ states:
     selector: ":host([data-selected])"
   - $type: state
     name: not-horizontal
-    selector: ":host(:not([data-layout=\"horizontal\"]))"
+    selector: ":host(:not([data-orientation=\"horizontal\"]))"
   - $type: state
     name: disabled
     selector: ":host([disabled])"

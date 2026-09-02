@@ -57,7 +57,7 @@
 }
 
 /* Active/selected → brand-tint fill + brand border/ink. */
-:host([data-active]) .chip {
+:host([data-current]) .chip {
   background: var(--_active-surface);
   border-color: var(--_accent);
   color: var(--_accent);

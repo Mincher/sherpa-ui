@@ -17,7 +17,7 @@
   padding: var(--sherpa-display-space-xl, 24px);
   text-align: center;
 
-  /* default illustration glyph + icon box size (base) */
+  /* default illustration glyph + icon box size (md) */
   --_glyph: "\2205"; /* ∅ empty set */
   --_icon-size: var(--sherpa-display-size-3xl, 40px);
 }
@@ -75,8 +75,8 @@
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1.3;
 }
-/* Title only when data-title is set (JS fills it). */
-:host(:not([data-title])) .title { display: none; }
+/* Title only when data-heading is set (JS fills it). */
+:host(:not([data-heading])) .title { display: none; }
 
 .message {
   color: var(--sherpa-theme-content-body-1, #404047);

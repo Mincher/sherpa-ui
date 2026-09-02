@@ -5,10 +5,10 @@
   cloning the <template class="tab-tpl"> prototype (no id → the base parser
   ignores it). Content panels are the consumer's slotted children, each carrying
   a data-tab="<id>" attribute; CSS shows only the one whose id matches the host's
-  data-active-id (::slotted([data-tab]) selectors).
+  data-current-id (::slotted([data-tab]) selectors).
 
   Public API:
-    data-active-id — id of the currently active tab / panel
+    data-current-id — id of the currently active tab / panel
 
   Slots:
     (default) — the tab panels; each child should have data-tab="<id>"

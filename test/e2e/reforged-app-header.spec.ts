@@ -26,10 +26,10 @@ test.beforeEach(async ({ page }) => {
 
 type WithRender = HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
 
-test('data-title / data-icon mirror into the view row', async ({ page }) => {
+test('data-heading / data-icon mirror into the view row', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-header') as WithRender;
-    el.setAttribute('data-title', 'Dashboards');
+    el.setAttribute('data-heading', 'Dashboards');
     el.setAttribute('data-icon', '📊');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -78,7 +78,7 @@ test('back / export fire their events; favourite toggles and fires', async ({ pa
     const s = el.shadowRoot!;
 
     const seen: Record<string, unknown> = {};
-    el.addEventListener('view-header-back', () => (seen['back'] = true));
+    el.addEventListener('back', () => (seen['back'] = true));
     el.addEventListener('view-export', () => (seen['export'] = true));
     el.addEventListener('favorite-toggle', (e) => (seen['fav'] = (e as CustomEvent).detail.favorite));
 

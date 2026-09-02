@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-list-item on the reforged base — title / description text from data-*,
- * slot-presence reflection (data-has-leading / data-has-trailing), the active
- * state, and the list-item-click event gated on data-interactive.
+ * sherpa-list-item on the reforged base — heading / description text from data-*,
+ * slot-presence reflection (data-has-leading / data-has-trailing), the current
+ * state, and the item-click event gated on data-interactive.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -18,13 +18,13 @@ test.beforeEach(async ({ page }) => {
 
 interface ItemEl extends HTMLElement {
   rendered?: Promise<void>;
-  active?: boolean;
+  current?: boolean;
 }
 
 test('title and description render from data-* attributes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Project Alpha');
+    el.setAttribute('data-heading', 'Project Alpha');
     el.setAttribute('data-description', 'Owned by design');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -41,7 +41,7 @@ test('title and description render from data-* attributes', async ({ page }) => 
 test('description hides when data-description is absent', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Only a title');
+    el.setAttribute('data-heading', 'Only a title');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const desc = el.shadowRoot!.querySelector('.description')!;
@@ -53,7 +53,7 @@ test('description hides when data-description is absent', async ({ page }) => {
 test('slotted leading and trailing content reflect to data-has-* on the host', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'With slots');
+    el.setAttribute('data-heading', 'With slots');
     el.innerHTML = '<span slot="leading">L</span><button slot="trailing">Go</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -75,7 +75,7 @@ test('slotted leading and trailing content reflect to data-has-* on the host', a
 test('trailing region stays hidden with no slotted content', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Bare');
+    el.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return {
@@ -87,73 +87,73 @@ test('trailing region stays hidden with no slotted content', async ({ page }) =>
   expect(r.trailingDisplay).toBe('none');
 });
 
-test('interactive item is focusable and fires list-item-click on click', async ({ page }) => {
+test('interactive item is focusable and fires item-click on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Clickable');
+    el.setAttribute('data-heading', 'Clickable');
     el.setAttribute('data-interactive', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
     let detail: unknown = null;
-    el.addEventListener('list-item-click', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-click', (e) => (detail = (e as CustomEvent).detail));
     el.click();
     return {
       tabindex: el.getAttribute('tabindex'),
-      active: el.hasAttribute('data-active'),
+      current: el.hasAttribute('data-current'),
       detail,
     };
   });
   expect(r.tabindex).toBe('0'); // interactive → keyboard reachable
-  expect(r.active).toBe(true); // click marks it active
-  expect(r.detail).toEqual({ title: 'Clickable' });
+  expect(r.current).toBe(true); // click marks it the current row
+  expect(r.detail).toEqual({ heading: 'Clickable' });
 });
 
 test('non-interactive item does not fire or become active on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Static');
+    el.setAttribute('data-heading', 'Static');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('list-item-click', () => (fired = true));
+    el.addEventListener('item-click', () => (fired = true));
     el.click();
-    return { fired, active: el.hasAttribute('data-active'), tabindex: el.getAttribute('tabindex') };
+    return { fired, current: el.hasAttribute('data-current'), tabindex: el.getAttribute('tabindex') };
   });
   expect(r.fired).toBe(false);
-  expect(r.active).toBe(false);
+  expect(r.current).toBe(false);
   expect(r.tabindex).toBeNull();
 });
 
 test('disabled interactive item does not fire on click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Off');
+    el.setAttribute('data-heading', 'Off');
     el.setAttribute('data-interactive', '');
     el.setAttribute('disabled', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('list-item-click', () => (fired = true));
+    el.addEventListener('item-click', () => (fired = true));
     el.click();
-    return { fired, active: el.hasAttribute('data-active') };
+    return { fired, current: el.hasAttribute('data-current') };
   });
   expect(r.fired).toBe(false);
-  expect(r.active).toBe(false);
+  expect(r.current).toBe(false);
 });
 
-test('the active setter reflects to data-active', async ({ page }) => {
+test('the current setter reflects to data-current', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Prop');
+    el.setAttribute('data-heading', 'Prop');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.active = true;
-    const on = el.hasAttribute('data-active');
-    el.active = false;
-    const off = el.hasAttribute('data-active');
+    el.current = true;
+    const on = el.hasAttribute('data-current');
+    el.current = false;
+    const off = el.hasAttribute('data-current');
     return { on, off };
   });
   expect(r.on).toBe(true);
@@ -163,7 +163,7 @@ test('the active setter reflects to data-active', async ({ page }) => {
 test('data-icon renders the leading glyph and reveals the leading region', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Files');
+    el.setAttribute('data-heading', 'Files');
     el.setAttribute('data-icon', '📁');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -177,17 +177,17 @@ test('data-icon renders the leading glyph and reveals the leading region', async
   expect(r.leadingVisible).toBe(true);
 });
 
-test('data-draggable reveals the drag handle and fires list-item-drag', async ({ page }) => {
+test('data-draggable reveals the drag handle and fires item-drag', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Row');
+    el.setAttribute('data-heading', 'Row');
     el.setAttribute('data-draggable', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const drag = el.shadowRoot!.querySelector('.drag') as HTMLElement;
     const visible = getComputedStyle(drag).display !== 'none';
     let dragged = false;
-    el.addEventListener('list-item-drag', () => (dragged = true));
+    el.addEventListener('item-drag', () => (dragged = true));
     drag.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     await new Promise((res) => setTimeout(res, 0));
     return { visible, dragged };
@@ -196,10 +196,10 @@ test('data-draggable reveals the drag handle and fires list-item-drag', async ({
   expect(r.dragged).toBe(true);
 });
 
-test('data-expandable toggle flips data-expanded and fires list-item-expand', async ({ page }) => {
+test('data-expandable toggle flips data-expanded and fires item-expand', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Group');
+    el.setAttribute('data-heading', 'Group');
     el.setAttribute('data-expandable', '');
     el.setAttribute('data-interactive', '');
     document.getElementById('root')!.appendChild(el);
@@ -207,8 +207,8 @@ test('data-expandable toggle flips data-expanded and fires list-item-expand', as
     const expand = el.shadowRoot!.querySelector('.expand') as HTMLElement;
     let detail: unknown = null;
     let rowClicked = false;
-    el.addEventListener('list-item-expand', (e) => (detail = (e as CustomEvent).detail));
-    el.addEventListener('list-item-click', () => (rowClicked = true));
+    el.addEventListener('item-expand', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-click', () => (rowClicked = true));
     expand.click();
     await new Promise((res) => setTimeout(res, 0));
     return { expandedAfter: el.hasAttribute('data-expanded'), detail, rowClicked };
@@ -218,17 +218,17 @@ test('data-expandable toggle flips data-expanded and fires list-item-expand', as
   expect(r.rowClicked).toBe(false); // expand click doesn't also activate the row
 });
 
-test('data-selectable control toggles selection and fires list-item-select', async ({ page }) => {
+test('data-selectable control toggles selection and fires item-select', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list-item') as unknown as ItemEl;
-    el.setAttribute('data-title', 'Pick me');
+    el.setAttribute('data-heading', 'Pick me');
     el.setAttribute('data-selectable', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const control = el.shadowRoot!.querySelector('.control') as HTMLElement;
     const visible = getComputedStyle(control).display !== 'none';
     let detail: unknown = null;
-    el.addEventListener('list-item-select', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
     control.click();
     await new Promise((res) => setTimeout(res, 0));
     return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };

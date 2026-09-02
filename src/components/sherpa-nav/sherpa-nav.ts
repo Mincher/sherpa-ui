@@ -53,7 +53,7 @@ export class SherpaNav extends SherpaElement {
 
   override onRender(): void {
     // One delegated listener for every stamped item — rows come and go, this stays.
-    this.$('.rail')?.addEventListener('nav-item-click', this.#onItemClick as EventListener);
+    this.$('.rail')?.addEventListener('item-click', this.#onItemClick as EventListener);
     const search = this.$<HTMLInputElement>('.search-input');
     search?.addEventListener('input', this.#onSearch);
     if (this.#hasContent()) this.#render();
@@ -143,7 +143,7 @@ export class SherpaNav extends SherpaElement {
     const active = this.dataset['activeId'];
     for (const row of this.$$('.nav-row')) {
       const item = row.querySelector('sherpa-nav-item');
-      item?.toggleAttribute('data-active', row.dataset['id'] === active);
+      item?.toggleAttribute('data-current', row.dataset['id'] === active);
     }
   }
 

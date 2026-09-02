@@ -4,13 +4,13 @@
   Populate with populate([{ label, items: [{ id, label, icon? }] }]). Groups and
   items are stamped from cloning prototypes (<template class="…">, no id — the
   base parser ignores them). The active item is marked by data-active-id on the
-  host. Clicking an item fires nav-section-select with the item's id.
+  host. Clicking an item fires item-select with the item's id.
 
   Public API:
     data-heading    optional panel heading text
     data-active-id  id of the currently active item
 
-  Fires: nav-section-select — detail: { id }
+  Fires: item-select — detail: { id }
 -->
 <template id="default">
   <nav class="panel" part="panel" aria-label="Section navigation">

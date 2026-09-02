@@ -165,7 +165,7 @@ export class SherpaFileUpload extends SherpaElement {
   };
 
   #onUpload = (): void => {
-    if (this.hasAttribute('disabled') || this.hasAttribute('data-uploading') || !this.#files.length) return;
+    if (this.hasAttribute('disabled') || this.hasAttribute('data-loading') || !this.#files.length) return;
     this.emit('file-upload-start', { files: this.#files });
   };
 

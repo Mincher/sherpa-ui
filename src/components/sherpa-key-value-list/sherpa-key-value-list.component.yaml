@@ -33,23 +33,23 @@ anatomy:
           part: value
 props:
   - $type: prop
-    name: data-layout
+    name: data-orientation
     type: enum
     kind: style
     values:
       - horizontal
-      - stacked
-    description: horizontal | stacked  No events — display only.
+      - vertical
+    description: horizontal | vertical  No events — display only.
 states:
   - $type: state
     name: horizontal
-    selector: ":host([data-layout=\"horizontal\"])"
+    selector: ":host([data-orientation=\"horizontal\"])"
   - $type: state
-    name: stacked
-    selector: ":host([data-layout=\"stacked\"])"
+    name: vertical
+    selector: ":host([data-orientation=\"vertical\"])"
   - $type: state
-    name: not-layout
-    selector: ":host(:not([data-layout]))"
+    name: not-orientation
+    selector: ":host(:not([data-orientation]))"
 tokens:
   list.row-gap: "{sherpa.display-space-xs}"
   key.color: "{sherpa.theme-content-body-1}"

@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 /**
  * sherpa-nav-item on the reforged base — a standalone nav row. Label / icon /
- * badge text from data-*, the active state, an optional promo variant, and the
- * nav-item-click event (gated on disabled). The component isn't registered by
+ * badge text from data-*, the current state, an optional promo variant, and the
+ * item-click event (gated on disabled). The component isn't registered by
  * the harness index, so each test imports its compiled module first.
  */
 
@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 
 interface NavItemEl extends HTMLElement {
   rendered?: Promise<void>;
-  active?: boolean;
+  current?: boolean;
 }
 
 test('label, icon and badge render from data-* attributes', async ({ page }) => {
@@ -70,24 +70,24 @@ test('data-href renders the row as a link', async ({ page }) => {
   expect(r.href).toBe('/docs');
 });
 
-test('active setter reflects to data-active and styles the row', async ({ page }) => {
+test('current setter reflects to data-current and styles the row', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
     el.setAttribute('data-label', 'Reports');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.active = true;
-    const on = el.hasAttribute('data-active');
+    el.current = true;
+    const on = el.hasAttribute('data-current');
     const weight = getComputedStyle(el.shadowRoot!.querySelector('.row')!).fontWeight;
-    el.active = false;
-    return { on, off: el.hasAttribute('data-active'), weight };
+    el.current = false;
+    return { on, off: el.hasAttribute('data-current'), weight };
   });
   expect(r.on).toBe(true);
   expect(r.off).toBe(false);
-  expect(['600', '700']).toContain(r.weight); // active → heavier label
+  expect(['600', '700']).toContain(r.weight); // current → heavier label
 });
 
-test('click fires nav-item-click with the label and href', async ({ page }) => {
+test('click fires item-click with the label and href', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
     el.setAttribute('data-label', 'Reports');
@@ -96,7 +96,7 @@ test('click fires nav-item-click with the label and href', async ({ page }) => {
     await el.rendered;
 
     let detail: unknown = null;
-    el.addEventListener('nav-item-click', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-click', (e) => (detail = (e as CustomEvent).detail));
     el.click();
     return { detail };
   });
@@ -112,7 +112,7 @@ test('disabled item does not fire on click', async ({ page }) => {
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('nav-item-click', () => (fired = true));
+    el.addEventListener('item-click', () => (fired = true));
     el.click();
     return { fired };
   });

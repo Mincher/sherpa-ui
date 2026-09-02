@@ -12,7 +12,7 @@
  * filter data and it fills in the breadcrumbs and quick-filter toolbar for you,
  * so you don't have to write that markup by hand.
  *
- * @fires view-header-back — detail: {}
+ * @fires back             — detail: {}
  * @fires favorite-toggle  — detail: { favorite }
  * @fires view-export      — detail: {}
  * @fires breadcrumb-click — detail: { index, label, href }
@@ -32,7 +32,7 @@ interface Populatable extends HTMLElement { populate?: (d: unknown) => void; ren
 export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);
   static override html = new URL('./sherpa-app-header.html', import.meta.url);
-  static override observed = ['data-title', 'data-icon', 'data-notifications', 'data-favorite'];
+  static override observed = ['data-heading', 'data-icon', 'data-notifications', 'data-favorite'];
 
   override onRender(): void {
     this.#sync();
@@ -71,7 +71,7 @@ export class SherpaAppHeader extends SherpaElement {
 
   #sync(): void {
     const title = this.$('.title');
-    if (title) title.textContent = this.dataset['title'] ?? '';
+    if (title) title.textContent = this.dataset['heading'] ?? '';
     const icon = this.$('.view-icon');
     if (icon) icon.textContent = this.dataset['icon'] ?? '';
 
@@ -87,7 +87,7 @@ export class SherpaAppHeader extends SherpaElement {
 
   /* ── Events ─────────────────────────────────────────────────────── */
 
-  #onBack = (): void => { this.emit('view-header-back', {}); };
+  #onBack = (): void => { this.emit('back', {}); };
 
   #onFavorite = (): void => {
     const favorite = !this.hasAttribute('data-favorite');

@@ -1,11 +1,11 @@
 /**
  * sherpa-tabs.css — all tab presentation.
  *
- * A horizontal strip of button tabs above a panel area. The active tab (matched
- * by data-active-id on the host, reflected onto the button's data-active) gets
+ * A horizontal strip of button tabs above a panel area. The current tab (matched
+ * by data-current-id on the host, reflected onto the button's data-current) gets
  * an accent underline; the others carry the neutral base rule. Panel visibility
  * is pure CSS: every slotted [data-tab] is hidden, and only the one matching
- * data-active-id shows. JS only stamps the buttons and reflects the active id.
+ * data-current-id shows. JS only stamps the buttons and reflects the current id.
  *
  * Figma model: the resting rule binds border/primary at border/width/sm; the
  * active underline swaps its colour to border/interactive/active (brand). Tab
@@ -73,7 +73,7 @@
 }
 
 /* ── Active tab — accent underline + accent label ─────────────────────── */
-.tab[data-active] {
+.tab[data-current] {
   border-block-end-color: var(--sherpa-theme-border-active-base, #c046ff);
   color: var(--sherpa-theme-content-active-base, #8500cc);
 }

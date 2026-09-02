@@ -55,11 +55,11 @@ props:
     kind: style
     values:
       - sm
-      - base
+      - md
       - lg
-    description: sm | base  | lg
+    description: sm | md (default, unset) | lg
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: heading text (rendered into .title)

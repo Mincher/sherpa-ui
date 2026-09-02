@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * sherpa-callout on the reforged base — the status-enum surface (data-status
- * drives a soft color-mix tint + accent bar), the title from data-title, the
+ * drives a soft color-mix tint + accent bar), the title from data-heading, the
  * message slot, and the dismissible close button + callout-dismiss event.
  */
 
@@ -55,10 +55,10 @@ test('status fills the box with the status surface + border (Figma model)', asyn
   expect(r.border).toBe('rgb(221, 44, 1)'); // theme-border-critical-2 (critical-3 #DD2C01) border
 });
 
-test('data-title renders into the title node; absent title hides it', async ({ page }) => {
+test('data-heading renders into the title node; absent title hides it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const withTitle = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
-    withTitle.setAttribute('data-title', 'Heads up');
+    withTitle.setAttribute('data-heading', 'Heads up');
     withTitle.textContent = 'body';
     document.getElementById('root')!.appendChild(withTitle);
     await withTitle.rendered;
@@ -81,13 +81,13 @@ test('data-title renders into the title node; absent title hides it', async ({ p
   expect(r.hidden).toBe('none');
 });
 
-test('data-title updates reactively after render', async ({ page }) => {
+test('data-heading updates reactively after render', async ({ page }) => {
   const text = await page.evaluate(async () => {
     const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-title', 'first');
+    el.setAttribute('data-heading', 'first');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.setAttribute('data-title', 'second');
+    el.setAttribute('data-heading', 'second');
     return el.shadowRoot!.querySelector('.title')!.textContent;
   });
   expect(text).toBe('second');

@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 /**
  * sherpa-key-value-list on the reforged base — populate() renders dt/dd pairs
- * from the .pair-tpl cloning prototype; data-layout switches horizontal vs.
- * stacked (pure CSS).
+ * from the .pair-tpl cloning prototype; data-orientation switches horizontal vs.
+ * vertical (pure CSS).
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -71,10 +71,10 @@ test('re-populating replaces the previous pairs', async ({ page }) => {
   expect(keys).toEqual(['New']);
 });
 
-test('stacked layout stacks each pair into a single column', async ({ page }) => {
+test('vertical orientation stacks each pair into a single column', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-key-value-list') as unknown as KvEl;
-    el.setAttribute('data-layout', 'stacked');
+    el.setAttribute('data-orientation', 'vertical');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ key: 'Name', value: 'John' }]);
@@ -82,14 +82,14 @@ test('stacked layout stacks each pair into a single column', async ({ page }) =>
     const dl = el.shadowRoot!.querySelector('.list')!;
     return { cols: getComputedStyle(dl).gridTemplateColumns };
   });
-  // Stacked = one column; horizontal (default) would report two tracks.
+  // Vertical = one column; horizontal (default) would report two tracks.
   expect(r.cols.split(' ').length).toBe(1);
 });
 
-test('horizontal layout lays key and value in two columns', async ({ page }) => {
+test('horizontal orientation lays key and value in two columns', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-key-value-list') as unknown as KvEl;
-    el.setAttribute('data-layout', 'horizontal');
+    el.setAttribute('data-orientation', 'horizontal');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ key: 'Name', value: 'John' }]);

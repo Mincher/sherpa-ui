@@ -15,16 +15,18 @@
  *   data-label       label / heading text
  *   data-badge       trailing badge / count text
  *   data-description promo description (promo variant only)
- *   data-active      active / current state
+ *   data-current     current item in the nav set
  *   data-href        render the row as a link
  *   data-variant     "promo" for the CTA row
  *   disabled         disabled state
  *
- * @fires nav-item-click — detail: { label, href }
+ * @tier sub-component
+ * @fires item-click — detail: { label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaNavItem extends SherpaElement {
+  static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
   static override html = new URL('./sherpa-nav-item.html', import.meta.url);
   static override observed = [
@@ -52,11 +54,11 @@ export class SherpaNavItem extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get active(): boolean {
-    return this.hasAttribute('data-active');
+  get current(): boolean {
+    return this.hasAttribute('data-current');
   }
-  set active(v: boolean) {
-    this.toggleAttribute('data-active', v);
+  set current(v: boolean) {
+    this.toggleAttribute('data-current', v);
   }
 
   /* ── Sync attribute state into the template ───────────────────── */
@@ -90,7 +92,7 @@ export class SherpaNavItem extends SherpaElement {
 
   #activate(): void {
     if (this.hasAttribute('disabled')) return;
-    this.emit('nav-item-click', {
+    this.emit('item-click', {
       label: this.dataset['label'] ?? '',
       href: this.dataset['href'] ?? null,
     });

@@ -69,14 +69,19 @@ props:
       - lg
     description: none | sm | base  | lg
   - $type: prop
+    name: data-loading
+    type: boolean
+    kind: style
+    default: false
+    description: show the loading overlay (ratified boolean-verb state)
+  - $type: prop
     name: data-state
     type: enum
     kind: style
     values:
-      - loading
       - empty
       - error
-    description: loading | empty | error   (shows the matching overlay)
+    description: empty | error   (shows the matching overlay; TODO D6 slot-driven :has())
   - $type: prop
     name: data-variant
     type: enum
@@ -139,7 +144,7 @@ states:
     selector: ":host([data-state])"
   - $type: state
     name: loading
-    selector: ":host([data-state=\"loading\"])"
+    selector: ":host([data-loading])"
   - $type: state
     name: empty
     selector: ":host([data-state=\"empty\"])"

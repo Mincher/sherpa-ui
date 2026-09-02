@@ -45,10 +45,11 @@ props:
     type: enum
     kind: style
     values:
-      - small
-      - default
-      - large
-    description: small | default | large   (spinner diameter)
+      - sm
+      - md
+      - lg
+    default: md
+    description: sm | md | lg   (spinner diameter; default md)
 states:
   - $type: state
     name: panel
@@ -57,11 +58,11 @@ states:
     name: vertical
     selector: ":host([data-orientation=\"vertical\"])"
   - $type: state
-    name: small
-    selector: ":host([data-size=\"small\"])"
+    name: sm
+    selector: ":host([data-size=\"sm\"])"
   - $type: state
-    name: large
-    selector: ":host([data-size=\"large\"])"
+    name: lg
+    selector: ":host([data-size=\"lg\"])"
 events:
   - $type: event
     name: nothing

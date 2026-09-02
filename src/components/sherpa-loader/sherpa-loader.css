@@ -63,12 +63,12 @@
   animation: sherpa-loader-spin 0.8s linear infinite;
 }
 
-/* ── Sizes ─────────────────────────────────────────────────────────────── */
-:host([data-size="small"]) {
+/* ── Sizes (unset = md) ────────────────────────────────────────────────── */
+:host([data-size="sm"]) {
   --_spinner-size: var(--sherpa-display-size-xs, 12px);
   --_spinner-weight: 1px;
 }
-:host([data-size="large"]) {
+:host([data-size="lg"]) {
   --_spinner-size: var(--sherpa-display-size-3xl, 40px);
   --_spinner-weight: 4px;
 }

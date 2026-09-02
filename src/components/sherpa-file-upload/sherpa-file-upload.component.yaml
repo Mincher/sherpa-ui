@@ -145,7 +145,7 @@ props:
     kind: content
     description: allow selecting more than one file → native multiple
   - $type: prop
-    name: data-uploading
+    name: data-loading
     type: string
     kind: style
     description: in-flight state (disables the upload button)
@@ -165,7 +165,7 @@ states:
     selector: ":host([data-has-files])"
   - $type: state
     name: uploading
-    selector: ":host([data-uploading])"
+    selector: ":host([data-loading])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"

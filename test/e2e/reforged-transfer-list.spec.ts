@@ -60,12 +60,12 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
     let detail: unknown = null;
     el.addEventListener('transfer-change', (e) => (detail = (e as CustomEvent).detail));
 
-    // Stage "Read" in the available pane (its list-item fires list-item-select), then click Add.
+    // Stage "Read" in the available pane (its list-item fires item-select), then click Add.
     const readRow = Array.from(s.querySelectorAll<HTMLElement>('.source .row')).find(
       (row) => row.dataset['value'] === 'r',
     )!;
     readRow.querySelector('sherpa-list-item')!.dispatchEvent(
-      new CustomEvent('list-item-select', { bubbles: true, composed: true, detail: { selected: true } }),
+      new CustomEvent('item-select', { bubbles: true, composed: true, detail: { selected: true } }),
     );
     (s.querySelector('sherpa-button[data-move="add"]') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 10));

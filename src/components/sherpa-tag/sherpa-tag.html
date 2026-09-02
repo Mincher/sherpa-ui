@@ -5,32 +5,32 @@
   [data-status] cascade on an ancestor (or the tag itself): the pill fills with
   the status surface, borders with the status border, and re-inks its text.
 
-  Templates (via data-removable):
-    default   — leading icon + label
-    removable — leading icon + label + a close button (fires tag-remove)
+  Templates (via data-dismissible):
+    default     — leading icon + label
+    dismissible — leading icon + label + a close button (fires tag-remove)
 
   Public API:
-    data-status     info | success | warning | critical | urgent (via the cascade)
-    data-icon       show the leading icon slot (boolean)
-    data-collapsed  render as a small circular indicator (boolean)
-    data-removable  show the close button (selects the removable template)
+    data-status       info | success | warning | critical | urgent (via the cascade)
+    data-type         dot   (render as a small circular indicator; default full)
+    data-icon         leading icon glyph value (shown when present; or slot "icon")
+    data-dismissible  show the close button (selects the dismissible template)
 
   Slots:
-    icon      — a leading glyph (shown when data-icon is set)
+    icon      — a leading glyph (overrides data-icon; shown when data-icon is set)
     (default) — the label
 
   Fires: tag-remove
 -->
 <template id="default">
   <span class="pill" part="pill">
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
     <span class="label"><slot></slot></span>
   </span>
 </template>
 
-<template id="removable">
+<template id="dismissible">
   <span class="pill" part="pill">
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
     <span class="label"><slot></slot></span>
     <button class="close" part="close" type="button" aria-label="Remove">
       <span aria-hidden="true">&#215;</span>

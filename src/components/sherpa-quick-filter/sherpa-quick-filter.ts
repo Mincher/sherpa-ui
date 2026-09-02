@@ -21,11 +21,11 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncText();
   }
 
-  get active(): boolean {
-    return this.hasAttribute('data-active');
+  get current(): boolean {
+    return this.hasAttribute('data-current');
   }
-  set active(v: boolean) {
-    this.toggleAttribute('data-active', v);
+  set current(v: boolean) {
+    this.toggleAttribute('data-current', v);
   }
 
   #syncText(): void {
@@ -38,8 +38,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   #onClick = (): void => {
     if (this.hasAttribute('disabled')) return;
-    this.active = !this.active;
-    this.emit('quick-filter-click', { active: this.active });
+    this.current = !this.current;
+    this.emit('quick-filter-click', { active: this.current });
   };
 }
 

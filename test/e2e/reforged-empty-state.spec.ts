@@ -16,12 +16,12 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test('data-title and data-description write the text nodes', async ({ page }) => {
+test('data-heading and data-description write the text nodes', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'No results');
+    el.setAttribute('data-heading', 'No results');
     el.setAttribute('data-description', 'Try a different search.');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -34,7 +34,7 @@ test('data-title and data-description write the text nodes', async ({ page }) =>
   expect(r.message).toBe('Try a different search.');
 });
 
-test('title hidden until data-title is set', async ({ page }) => {
+test('title hidden until data-heading is set', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bare = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
@@ -45,7 +45,7 @@ test('title hidden until data-title is set', async ({ page }) => {
     const titled = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    titled.setAttribute('data-title', 'Empty');
+    titled.setAttribute('data-heading', 'Empty');
     document.getElementById('root')!.appendChild(titled);
     await titled.rendered;
 
@@ -88,7 +88,7 @@ test('data-size scales the icon disc (sm < base < lg)', async ({ page }) => {
       const el = document.createElement('sherpa-empty-state') as HTMLElement & {
         rendered?: Promise<void>;
       };
-      el.setAttribute('data-title', 'x');
+      el.setAttribute('data-heading', 'x');
       if (s) el.setAttribute('data-size', s);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
@@ -105,7 +105,7 @@ test('action slot presence reflects to data-has-action and shows the row', async
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     const btn = document.createElement('button');
     btn.setAttribute('slot', 'action');
     btn.textContent = 'Add item';
@@ -127,7 +127,7 @@ test('a slotted body replaces the default message text', async ({ page }) => {
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     el.setAttribute('data-description', 'ignored');
     const p = document.createElement('p');
     p.textContent = 'Custom body';
@@ -149,7 +149,7 @@ test('a slotted icon hides the default glyph', async ({ page }) => {
     const el = document.createElement('sherpa-empty-state') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('slot', 'icon');
     el.appendChild(svg);

@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-test('clicking toggles data-active and fires quick-filter-click', async ({ page }) => {
+test('clicking toggles data-current and fires quick-filter-click', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-label', 'Status');
@@ -21,9 +21,9 @@ test('clicking toggles data-active and fires quick-filter-click', async ({ page 
 
     const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip')!;
     chip.click(); // on
-    const afterOn = el.hasAttribute('data-active');
+    const afterOn = el.hasAttribute('data-current');
     chip.click(); // off
-    const afterOff = el.hasAttribute('data-active');
+    const afterOff = el.hasAttribute('data-current');
 
     return { fired, afterOn, afterOff, label: el.shadowRoot!.querySelector('.label')!.textContent };
   });

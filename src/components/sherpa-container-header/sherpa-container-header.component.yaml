@@ -113,7 +113,7 @@ props:
     kind: content
     description: a glyph before the title (shows the icon slot)
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: heading text (rendered into .title)
@@ -147,21 +147,21 @@ states:
     selector: .toggle:focus-visible
 events:
   - $type: event
-    name: container-header-dismiss
+    name: dismiss
     bubbles: true
     composed: true
     trigger:
       "on": click
       node: .close
   - $type: event
-    name: container-header-toggle
+    name: toggle
     bubbles: true
     composed: true
     trigger:
       "on": click
       node: .toggle
   - $type: event
-    name: container-header-drag
+    name: drag
     bubbles: true
     composed: true
     trigger:

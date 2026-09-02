@@ -16,11 +16,16 @@ export class SherpaContainer extends SherpaElement {
   static override css = new URL('./sherpa-container.css', import.meta.url);
   static override html = new URL('./sherpa-container.html', import.meta.url);
 
-  /** populate({ state: 'loading' | 'empty' | 'error' | null }) toggles the overlay. */
+  /** populate({ state: 'loading' | 'empty' | 'error' | null }) toggles the overlay.
+   *  loading is the ratified boolean-verb attr (data-loading); empty/error remain on
+   *  data-state pending the slot-driven (:has()) overlay refactor (D6 — deferred). */
   protected override renderData(data: unknown): void {
     const { state } = (data ?? {}) as ContainerState;
-    if (state) this.setAttribute('data-state', state);
-    else this.removeAttribute('data-state');
+    // Clear both channels first, then set the one that applies.
+    this.removeAttribute('data-loading');
+    this.removeAttribute('data-state');
+    if (state === 'loading') this.setAttribute('data-loading', '');
+    else if (state) this.setAttribute('data-state', state);
   }
 }
 

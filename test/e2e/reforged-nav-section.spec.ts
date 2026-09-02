@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * sherpa-nav-section on the reforged base — a settings-style panel of grouped
  * nav items. populate() stamps groups + item rows (cloning prototypes), the
  * heading comes from data-heading, data-active-id marks the active row, and a
- * click fires nav-section-select. Not registered by the harness index, so each
+ * click fires item-select. Not registered by the harness index, so each
  * test imports its compiled module first.
  */
 
@@ -64,9 +64,9 @@ test('data-active-id marks the matching row active', async ({ page }) => {
     el.populate!(sections);
     await new Promise((res) => setTimeout(res, 10));
     const s = el.shadowRoot!;
-    const active = s.querySelector('.item-row[data-active] .item-label')?.textContent;
+    const active = s.querySelector('.item-row[data-current] .item-label')?.textContent;
     const aria = s
-      .querySelector('.item-row[data-active] .item')
+      .querySelector('.item-row[data-current] .item')
       ?.getAttribute('aria-current');
     return { active, aria };
   }, SECTIONS);
@@ -74,7 +74,7 @@ test('data-active-id marks the matching row active', async ({ page }) => {
   expect(r.aria).toBe('page');
 });
 
-test('clicking an item fires nav-section-select and updates the active id', async ({ page }) => {
+test('clicking an item fires item-select and updates the active id', async ({ page }) => {
   const r = await page.evaluate(async (sections) => {
     const el = document.createElement('sherpa-nav-section') as unknown as SectionEl;
     document.getElementById('root')!.appendChild(el);
@@ -83,7 +83,7 @@ test('clicking an item fires nav-section-select and updates the active id', asyn
     await new Promise((res) => setTimeout(res, 10));
 
     let selected: string | null = null;
-    el.addEventListener('nav-section-select', (e) => (selected = (e as CustomEvent).detail.id));
+    el.addEventListener('item-select', (e) => (selected = (e as CustomEvent).detail.id));
 
     el.shadowRoot!
       .querySelector<HTMLElement>('.item-row[data-id="members"] .item')!

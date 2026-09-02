@@ -143,7 +143,6 @@
 @supports (color: color-mix(in oklab, red, blue)) {
   .trigger:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
   .trigger:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
-  :host([data-active]) .trigger { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
 }
 
 :host(:focus-visible) { outline: none; }

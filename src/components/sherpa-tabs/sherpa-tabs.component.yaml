@@ -53,7 +53,7 @@ anatomy:
               class: label
 props:
   - $type: prop
-    name: data-active-id
+    name: data-current-id
     type: string
     kind: content
     description: id of the currently active tab / panel
@@ -67,7 +67,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (activeId). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (currentId). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: tab-change
@@ -91,7 +91,7 @@ $extensions:
     figmaName: Tab Group
     category: container
     jsProps:
-      - name: activeId
+      - name: currentId
         type: string
         description: currently active tab id (read/write)
         access: read-write

@@ -45,12 +45,6 @@ anatomy:
           aria-hidden: "true"
 props:
   - $type: prop
-    name: data-active
-    type: boolean
-    kind: style
-    default: false
-    description: pressed/active state
-  - $type: prop
     name: data-icon-end
     type: string
     kind: visibility
@@ -125,9 +119,6 @@ states:
   - $type: state
     name: tertiary-on-color
     selector: ":host([data-variant=\"tertiary-on-color\"])"
-  - $type: state
-    name: active
-    selector: ":host([data-active])"
   - $type: state
     name: icon
     selector: ":host([data-type=\"icon\"])"

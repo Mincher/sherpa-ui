@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * sherpa-list on the reforged base — data-driven rows via populate() (stamped
  * sherpa-list-item from the .row-tpl prototype), slotted-child mode, single
- * active row enforcement, and the empty state.
+ * current row enforcement, and the empty state.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -43,7 +43,7 @@ test('populate stamps one sherpa-list-item per row from the prototype', async ({
     const items = Array.from(s.querySelectorAll('.rows > sherpa-list-item'));
     return {
       count: items.length,
-      titles: items.map((n) => n.getAttribute('data-title')),
+      titles: items.map((n) => n.getAttribute('data-heading')),
       prototypePresent: !!s.querySelector('template.row-tpl'),
       allInteractive: items.every((n) => n.hasAttribute('data-interactive')),
     };
@@ -64,13 +64,13 @@ test('re-populating replaces the previous rows', async ({ page }) => {
     el.populate([{ title: 'New' }]);
     await new Promise((res) => setTimeout(res, 20));
     return Array.from(el.shadowRoot!.querySelectorAll('.rows > sherpa-list-item')).map((n) =>
-      n.getAttribute('data-title'),
+      n.getAttribute('data-heading'),
     );
   });
   expect(r).toEqual(['New']);
 });
 
-test('clicking a stamped row keeps only that row active (single-active)', async ({ page }) => {
+test('clicking a stamped row keeps only that row current (single-current)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     document.getElementById('root')!.appendChild(el);
@@ -84,9 +84,9 @@ test('clicking a stamped row keeps only that row active (single-active)', async 
     await new Promise((res) => setTimeout(res, 5));
     items[2]!.click();
     await new Promise((res) => setTimeout(res, 5));
-    return items.map((n) => n.hasAttribute('data-active'));
+    return items.map((n) => n.hasAttribute('data-current'));
   });
-  // Only the last-clicked row (index 2) stays active.
+  // Only the last-clicked row (index 2) stays current.
   expect(r).toEqual([false, false, true]);
 });
 
@@ -94,8 +94,8 @@ test('slotted sherpa-list-item children are supported (data-has-content)', async
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     el.innerHTML =
-      '<sherpa-list-item data-title="Slotted A" data-interactive></sherpa-list-item>' +
-      '<sherpa-list-item data-title="Slotted B" data-interactive></sherpa-list-item>';
+      '<sherpa-list-item data-heading="Slotted A" data-interactive></sherpa-list-item>' +
+      '<sherpa-list-item data-heading="Slotted B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => setTimeout(res, 20));
@@ -108,19 +108,19 @@ test('slotted sherpa-list-item children are supported (data-has-content)', async
   expect(r.childCount).toBe(2);
 });
 
-test('single-active applies across slotted children too', async ({ page }) => {
+test('single-current applies across slotted children too', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     el.innerHTML =
-      '<sherpa-list-item data-title="A" data-interactive data-active></sherpa-list-item>' +
-      '<sherpa-list-item data-title="B" data-interactive></sherpa-list-item>';
+      '<sherpa-list-item data-heading="A" data-interactive data-current></sherpa-list-item>' +
+      '<sherpa-list-item data-heading="B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => setTimeout(res, 20));
     const kids = Array.from(el.querySelectorAll<HTMLElement>(':scope > sherpa-list-item'));
     kids[1]!.click(); // click B → A must deactivate
     await new Promise((res) => setTimeout(res, 5));
-    return kids.map((n) => n.hasAttribute('data-active'));
+    return kids.map((n) => n.hasAttribute('data-current'));
   });
   expect(r).toEqual([false, true]);
 });

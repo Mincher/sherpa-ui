@@ -142,7 +142,7 @@ props:
     kind: content
     description: — notification count (shows the badge; hidden at 0/unset)
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: — the view title (hidden when empty)
@@ -167,7 +167,7 @@ states:
     selector: .back:focus-visible
 events:
   - $type: event
-    name: view-header-back
+    name: back
     bubbles: true
     composed: true
     trigger:

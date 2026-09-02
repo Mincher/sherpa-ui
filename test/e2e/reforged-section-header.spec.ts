@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-section-header on the reforged base — the title-sync pattern (data-title
+ * sherpa-section-header on the reforged base — the title-sync pattern (data-heading
  * writes .title text), the data-size heading scale, the data-divider rule, and the
  * data-has-{slot} reflection for description / actions / a custom heading.
  */
@@ -15,12 +15,12 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test('data-title writes the heading text', async ({ page }) => {
+test('data-heading writes the heading text', async ({ page }) => {
   const text = await page.evaluate(async () => {
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'Team members');
+    el.setAttribute('data-heading', 'Team members');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return el.shadowRoot!.querySelector('.title')!.textContent;
@@ -28,15 +28,15 @@ test('data-title writes the heading text', async ({ page }) => {
   expect(text).toBe('Team members');
 });
 
-test('data-title updates reactively after render', async ({ page }) => {
+test('data-heading updates reactively after render', async ({ page }) => {
   const text = await page.evaluate(async () => {
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'First');
+    el.setAttribute('data-heading', 'First');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.setAttribute('data-title', 'Second');
+    el.setAttribute('data-heading', 'Second');
     return el.shadowRoot!.querySelector('.title')!.textContent;
   });
   expect(text).toBe('Second');
@@ -48,7 +48,7 @@ test('data-size scales the heading font size (sm < base < lg)', async ({ page })
       const el = document.createElement('sherpa-section-header') as HTMLElement & {
         rendered?: Promise<void>;
       };
-      el.setAttribute('data-title', 'x');
+      el.setAttribute('data-heading', 'x');
       if (size) el.setAttribute('data-size', size);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
@@ -67,7 +67,7 @@ test('actions slot presence reflects to data-has-actions and shows the region', 
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     const btn = document.createElement('button');
     btn.setAttribute('slot', 'actions');
     btn.textContent = 'New';
@@ -90,7 +90,7 @@ test('no actions slot leaves the actions region hidden', async ({ page }) => {
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display;
@@ -103,7 +103,7 @@ test('description slot presence shows the description region', async ({ page }) 
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'x');
+    el.setAttribute('data-heading', 'x');
     const p = document.createElement('span');
     p.setAttribute('slot', 'description');
     p.textContent = 'A short blurb.';
@@ -121,7 +121,7 @@ test('a slotted heading collapses the default .title', async ({ page }) => {
     const el = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-title', 'ignored');
+    el.setAttribute('data-heading', 'ignored');
     const h = document.createElement('h3');
     h.setAttribute('slot', 'heading');
     h.textContent = 'Custom heading';
@@ -143,14 +143,14 @@ test('data-divider shows the bottom rule', async ({ page }) => {
     const without = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    without.setAttribute('data-title', 'x');
+    without.setAttribute('data-heading', 'x');
     document.getElementById('root')!.appendChild(without);
     await without.rendered;
 
     const withDiv = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    withDiv.setAttribute('data-title', 'x');
+    withDiv.setAttribute('data-heading', 'x');
     withDiv.setAttribute('data-divider', '');
     document.getElementById('root')!.appendChild(withDiv);
     await withDiv.rendered;

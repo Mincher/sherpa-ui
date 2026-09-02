@@ -2,37 +2,39 @@
  * sherpa-list-item — one row inside a sherpa-list.
  *
  * From left to right: a leading area (drag handle, expand toggle, checkbox or
- * radio, icon), then a title and description, then a trailing slot. Each leading
+ * radio, icon), then a heading and description, then a trailing slot. Each leading
  * bit is turned on with a data-* flag and shown by CSS. JS writes the text and
  * icon, keeps the expand and select states in sync, handles clicks and keyboard,
  * and fires the matching events.
  *
  * Set data-interactive to make the row clickable: clicking it (or pressing Enter
- * or Space) marks it active and fires list-item-click.
+ * or Space) marks it the current row and fires item-click.
  *
  * Public API:
- *   data-title / data-description   text
+ *   data-heading / data-description text
  *   data-icon                       leading icon glyph
- *   data-active                     active/selected visual state
+ *   data-current                    current-row visual state
  *   data-interactive                enable hover + click behaviour
  *   data-draggable / data-expandable / data-expanded
  *   data-selectable / data-selected
  *   disabled                        disabled state
  *
- * @fires list-item-click  — detail: { title }
- * @fires list-item-expand — detail: { expanded }
- * @fires list-item-select — detail: { selected }
- * @fires list-item-drag   — detail: {}
+ * @tier sub-component
+ * @fires item-click  — detail: { heading }
+ * @fires item-expand — detail: { expanded }
+ * @fires item-select — detail: { selected }
+ * @fires item-drag   — detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
-  static override observed = ['data-title', 'data-description', 'data-icon', 'data-interactive', 'data-expanded'];
+  static override tier = 'sub-component' as const;
+  static override observed = ['data-heading', 'data-description', 'data-icon', 'data-interactive', 'data-expanded'];
 
   override onRender(): void {
-    this.#syncTitle();
+    this.#syncHeading();
     this.#syncDescription();
     this.#syncIcon();
     this.#syncInteractive();
@@ -45,7 +47,7 @@ export class SherpaListItem extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-title') this.#syncTitle();
+    if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-description') this.#syncDescription();
     else if (name === 'data-icon') this.#syncIcon();
     else if (name === 'data-interactive') this.#syncInteractive();
@@ -54,17 +56,17 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Public API ───────────────────────────────────────────────── */
 
-  get active(): boolean { return this.hasAttribute('data-active'); }
-  set active(v: boolean) { this.toggleAttribute('data-active', v); }
+  get current(): boolean { return this.hasAttribute('data-current'); }
+  set current(v: boolean) { this.toggleAttribute('data-current', v); }
 
   get selected(): boolean { return this.hasAttribute('data-selected'); }
   set selected(v: boolean) { this.toggleAttribute('data-selected', v); }
 
   /* ── Sync ─────────────────────────────────────────────────────── */
 
-  #syncTitle(): void {
+  #syncHeading(): void {
     const el = this.$('.title');
-    if (el) el.textContent = this.dataset['title'] ?? '';
+    if (el) el.textContent = this.dataset['heading'] ?? '';
   }
 
   #syncDescription(): void {
@@ -94,8 +96,8 @@ export class SherpaListItem extends SherpaElement {
 
   #activate(): void {
     if (this.dataset['interactive'] === undefined || this.hasAttribute('disabled')) return;
-    this.active = true;
-    this.emit('list-item-click', { title: this.dataset['title'] ?? '' });
+    this.current = true;
+    this.emit('item-click', { heading: this.dataset['heading'] ?? '' });
   }
 
   #onClick = (event: Event): void => {
@@ -119,7 +121,7 @@ export class SherpaListItem extends SherpaElement {
     event.stopPropagation();
     const expanded = !this.hasAttribute('data-expanded');
     this.toggleAttribute('data-expanded', expanded);
-    this.emit('list-item-expand', { expanded });
+    this.emit('item-expand', { expanded });
   };
 
   #onSelect = (event: Event): void => {
@@ -127,10 +129,10 @@ export class SherpaListItem extends SherpaElement {
     if (this.hasAttribute('disabled')) return;
     const selected = !this.selected;
     this.selected = selected;
-    this.emit('list-item-select', { selected });
+    this.emit('item-select', { selected });
   };
 
-  #onDrag = (): void => { this.emit('list-item-drag', {}); };
+  #onDrag = (): void => { this.emit('item-drag', {}); };
 }
 
 customElements.define('sherpa-list-item', SherpaListItem);

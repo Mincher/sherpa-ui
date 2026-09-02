@@ -31,7 +31,7 @@ test('legacy array populate() renders items and marks the active one', async ({ 
     ]);
     await new Promise((res) => setTimeout(res, 10));
     const rows = nav.shadowRoot!.querySelectorAll('.nav-row sherpa-nav-item');
-    const activeRow = nav.shadowRoot!.querySelector('.nav-row sherpa-nav-item[data-active]') as HTMLElement | null;
+    const activeRow = nav.shadowRoot!.querySelector('.nav-row sherpa-nav-item[data-current]') as HTMLElement | null;
     return { count: rows.length, activeLabel: activeRow?.dataset['label'] };
   });
   expect(r.count).toBe(3); // legacy array → one unlabelled section of 3
@@ -91,7 +91,7 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
     const reports = Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
       (r) => r.dataset['id'] === 'reports'
     )!;
-    // Click the composed nav-item's inner row (event bubbles as nav-item-click).
+    // Click the composed nav-item's inner row (event bubbles as item-click).
     const item = reports.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
     await item.rendered;
     (item.shadowRoot!.querySelector('.row') as HTMLElement).click();

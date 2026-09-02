@@ -187,7 +187,7 @@ test('picking a month zooms back into that month\'s days', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
     el.setAttribute('data-value', '2026-08-13');
-    el.setAttribute('data-layout', 'month');
+    el.setAttribute('data-view', 'month');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
@@ -196,7 +196,7 @@ test('picking a month zooms back into that month\'s days', async ({ page }) => {
     feb.click();
     await new Promise((res) => setTimeout(res, 0));
     return {
-      layout: el.getAttribute('data-layout'),
+      layout: el.getAttribute('data-view'),
       label: s.querySelector('.cal-label')!.textContent,
       daysVisible: getComputedStyle(s.querySelector('.cal-days')!).display !== 'none',
     };
@@ -210,14 +210,14 @@ test('picking a year zooms into that year\'s months', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-calendar') as CalEl;
     el.setAttribute('data-value', '2026-08-13');
-    el.setAttribute('data-layout', 'year');
+    el.setAttribute('data-view', 'year');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
     const y2024 = Array.from(s.querySelectorAll<HTMLElement>('.cal-years .cal-cell')).find((c) => c.dataset['year'] === '2024')!;
     y2024.click();
     await new Promise((res) => setTimeout(res, 0));
-    return { layout: el.getAttribute('data-layout'), label: s.querySelector('.cal-label')!.textContent };
+    return { layout: el.getAttribute('data-view'), label: s.querySelector('.cal-label')!.textContent };
   });
   expect(r.layout).toBe('month');
   expect(r.label).toBe('2024');

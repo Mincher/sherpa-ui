@@ -46,7 +46,7 @@ anatomy:
           aria-hidden: "true"
 props:
   - $type: prop
-    name: data-active
+    name: data-current
     type: boolean
     kind: style
     default: false
@@ -81,8 +81,8 @@ states:
     name: ai
     selector: ":host([data-type=\"ai\"])"
   - $type: state
-    name: active
-    selector: ":host([data-active])"
+    name: current
+    selector: ":host([data-current])"
   - $type: state
     name: count
     selector: ":host([data-count])"
@@ -98,7 +98,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (active). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: quick-filter-click
@@ -132,6 +132,6 @@ $extensions:
       - hasIndicator
       - hasLabel
     jsProps:
-      - name: active
+      - name: current
         type: string
         access: read-write

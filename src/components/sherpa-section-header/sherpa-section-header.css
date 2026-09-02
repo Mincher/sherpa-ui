@@ -14,7 +14,7 @@
 :host {
   display: block;
 
-  /* default size — base */
+  /* default size — md (unset) */
   --_title-size: var(--sherpa-font-size-heading-h2, 20px);
 }
 

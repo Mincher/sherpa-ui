@@ -15,9 +15,11 @@ Derived from the full audit (`/tmp/naming-audit.md`, 2026-09-02). 14 decisions r
 | look-tier / colour emphasis | `data-look` = **`saturated` \| `transparent`** (unset = neutral) | button data-variant primary/secondary/tertiary | no |
 | status colour cascade | `data-status` (KEEP) = critical\|warning\|success\|info\|urgent | — | no |
 | toggle on/off | **native `checked` + `:checked`** | switch data-state=on/off | **yes** |
-| selected / current / on | **`data-selected`** (single) | data-active, data-state=on | no (native `:active` for pressed) |
+| selection (checkbox-style, may be multiple) | **`data-selected`** (native `:checked` where a real input exists) | data-active(as selected), data-state=on | prefer native |
+| current/active item in a set (single) | **`data-current`** | data-active(as current) | no |
+| pressed transient | native **`:active`** (no attr) | data-active(as pressed) | **yes** |
 | dismissible | `data-dismissible` | data-removable, hasClose/hasDismiss | no |
-| expanded | `data-expanded` (present = expanded) | data-collapsed, isMaximised (inv) | prefer native `[open]` |
+| expand/collapse | boolean attr names the NON-DEFAULT opt-in state (native `[open]` rule): default expanded → keep `data-collapsed`; default collapsed → `data-expanded`. Prefer native `[open]` (`<details>`). | isMaximised (inv) | prefer native `[open]` |
 | draggable | `data-draggable` | hasDragHandle | native where applicable |
 | loading | `data-loading` | data-uploading, data-state=loading | no |
 | icon glyph | `data-icon` / `data-icon-start` / `data-icon-end` (STRING) | tag boolean data-icon | no |
@@ -43,7 +45,8 @@ Derived from the full audit (`/tmp/naming-audit.md`, 2026-09-02). 14 decisions r
 - **D8 `data-illustration` kept** separate from `data-icon`.
 - **D9 Bespoke text props kept where genuinely distinct** (chat name/timestamp/message; KV key/value; metric value/delta) — align to heading/description only where it truly is heading/helper.
 - **D10 Events de-prefixed to the concept** (`dismiss`, `item-click`, `back` — not container-header-dismiss).
-- **D13 Sub-component tier:** `static readonly tier = 'standalone'|'sub-component'` on the class (default standalone on SherpaElement), `@tier` JSDoc, EXCLUDED from public catalog/sandbox picker (still registered to render inside parents). Source: `name-map.yaml tier:`.
+- **D13 Sub-component tier:** base `SherpaElement` declares `static tier: 'standalone'|'sub-component' = 'standalone'`. A sub-component writes **`static override tier = 'sub-component' as const;`** (the `as const` is REQUIRED — a bare literal widens to `string` and fails to extend the base union) + `@tier sub-component` JSDoc. EXCLUDED from public catalog/sandbox picker (still registered to render inside parents). Source: `name-map.yaml tier:`.
+- **Event de-prefix convention** (from D10 application): drop the element-name prefix, name by the CONCEPT. A row/item that fires on activation → `item-click`/`item-select`/`item-expand`/`item-drag` (list-item, nav-item, nav-section). Header actions → `dismiss`/`toggle`/`drag`. `view-header-back` → `back`. Components keep their own domain events (`nav-select`, `callout-dismiss`, `tab-change`).
 - **D14 Native form attrs** (`value`/`min`/`max`/`step`) on form controls; drop data- prefix.
 
 ## Native-first (PE is law)

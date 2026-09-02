@@ -6,13 +6,13 @@
   optional collapse toggle and a dismiss (close) button.
 
   Public API:
-    data-title        heading text (rendered into .title)
+    data-heading      heading text (rendered into .title)
     data-description  secondary text (rendered into .description)
     data-icon         a glyph before the title (shows the icon slot)
     data-draggable    show the drag handle
     data-dismissible  show the close button
     data-collapsible  show the collapse toggle
-    data-collapsed    collapsed state (the toggle reflects it)
+    data-collapsed    collapsed state (opt-in; absent = expanded default; the toggle reflects it)
 
   Slots:
     heading  — custom heading element (replaces the default .title)
@@ -20,9 +20,9 @@
     actions  — extra trailing action controls (before toggle/close)
 
   Fires:
-    container-header-dismiss  — detail: {}              (close button)
-    container-header-toggle   — detail: { collapsed }   (collapse toggle)
-    container-header-drag     — detail: {}              (drag handle pointerdown)
+    dismiss  — detail: {}              (close button)
+    toggle   — detail: { collapsed }   (collapse toggle)
+    drag     — detail: {}              (drag handle pointerdown)
 -->
 <template id="default">
   <header class="row" part="row">

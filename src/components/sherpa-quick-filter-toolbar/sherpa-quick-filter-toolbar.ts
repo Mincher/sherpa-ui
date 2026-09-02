@@ -18,7 +18,7 @@ export interface QuickFilterDef {
 }
 
 interface ChipEl extends HTMLElement {
-  active: boolean;
+  current: boolean;
 }
 
 export class SherpaQuickFilterToolbar extends SherpaElement {
@@ -40,7 +40,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The ids of the currently-active chips, in order. */
   get active(): string[] {
-    return this.#chips().filter((c) => c.active).map((c) => c.dataset['id'] ?? '');
+    return this.#chips().filter((c) => c.current).map((c) => c.dataset['id'] ?? '');
   }
 
   #chips(): ChipEl[] {
@@ -58,7 +58,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
       if (f.type) chip.setAttribute('data-type', f.type);
-      if (f.active) chip.setAttribute('data-active', '');
+      if (f.active) chip.setAttribute('data-current', '');
       if (f.count != null) chip.setAttribute('data-count', String(f.count));
       list.appendChild(chip);
     }

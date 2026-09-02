@@ -67,7 +67,7 @@ props:
       - urgent
     description: info | success | warning | critical | urgent
   - $type: prop
-    name: data-title
+    name: data-heading
     type: string
     kind: content
     description: heading text (rendered into .title)
@@ -92,7 +92,7 @@ states:
     selector: ":host(:not([data-status]))"
   - $type: state
     name: not-title
-    selector: ":host(:not([data-title]))"
+    selector: ":host(:not([data-heading]))"
   - $type: state
     name: not-has-content
     selector: ":host(:not([data-has-content]))"

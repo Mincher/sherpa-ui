@@ -3,7 +3,7 @@
  *
  * The swatch colour comes from a --_hue custom property the JS sets per row from
  * the item's colorIndex (into var(--sherpa-categorical-N)). Orientation and the
- * active state are pure data-* / attribute selectors.
+ * current (toggled) state are pure data-* / attribute selectors.
  */
 
 :host {
@@ -61,4 +61,4 @@
 .value:empty { display: none; }
 
 /* De-emphasised (toggled off) row. */
-.item[data-active="false"] .row { opacity: 0.4; }
+.item[data-current="false"] .row { opacity: 0.4; }

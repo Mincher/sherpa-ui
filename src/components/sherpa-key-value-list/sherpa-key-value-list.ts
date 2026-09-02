@@ -2,11 +2,11 @@
  * sherpa-key-value-list — a list of label-and-value pairs.
  *
  * Give it pairs with populate([{ key, value }]) and it draws one row each.
- * data-layout sets whether the label and value sit side by side or stacked, and
- * CSS handles that.
+ * data-orientation sets whether the label and value sit side by side or stacked,
+ * and CSS handles that.
  *
  * Public API:
- *   data-layout  horizontal | stacked (default: horizontal)
+ *   data-orientation  horizontal | vertical (default: horizontal)
  *
  * No events — this is a display-only component.
  */

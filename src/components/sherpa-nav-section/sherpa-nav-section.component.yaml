@@ -66,7 +66,7 @@ states:
     selector: .item:focus-visible
 events:
   - $type: event
-    name: nav-section-select
+    name: item-select
     bubbles: true
     composed: true
     trigger:

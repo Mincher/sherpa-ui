@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * sherpa-container-header on the reforged base — the header bar for a container's
- * header slot. Exercises the title sync (data-title → .title), the description
+ * header slot. Exercises the title sync (data-heading → .title), the description
  * sync + its data-description visibility, the heading-slot override, and the
  * data-has-actions reflection for the trailing actions slot.
  *
@@ -22,10 +22,10 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('renders data-title into the title node', async ({ page }) => {
+test('renders data-heading into the title node', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'Overview');
+    el.setAttribute('data-heading', 'Overview');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return { title: el.shadowRoot!.querySelector('.title')!.textContent };
@@ -33,13 +33,13 @@ test('renders data-title into the title node', async ({ page }) => {
   expect(r.title).toBe('Overview');
 });
 
-test('data-title and data-description update reactively after render', async ({ page }) => {
+test('data-heading and data-description update reactively after render', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'First');
+    el.setAttribute('data-heading', 'First');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.setAttribute('data-title', 'Second');
+    el.setAttribute('data-heading', 'Second');
     el.setAttribute('data-description', 'A subtitle');
     return {
       title: el.shadowRoot!.querySelector('.title')!.textContent,
@@ -55,7 +55,7 @@ test('data-title and data-description update reactively after render', async ({ 
 test('description is hidden when data-description is absent', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'No sub');
+    el.setAttribute('data-heading', 'No sub');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return { descVisible: getComputedStyle(el.shadowRoot!.querySelector('.description')!).display !== 'none' };
@@ -63,10 +63,10 @@ test('description is hidden when data-description is absent', async ({ page }) =
   expect(r.descVisible).toBe(false);
 });
 
-test('the heading slot overrides data-title', async ({ page }) => {
+test('the heading slot overrides data-heading', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'fallback');
+    el.setAttribute('data-heading', 'fallback');
     el.innerHTML = '<h2 slot="heading">Slotted</h2>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
@@ -83,13 +83,13 @@ test('the heading slot overrides data-title', async ({ page }) => {
 test('the actions region hides when empty and appears when slotted', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bare = document.createElement('sherpa-container-header') as HeaderEl;
-    bare.setAttribute('data-title', 'Bare');
+    bare.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
     await new Promise((res) => setTimeout(res, 0));
 
     const full = document.createElement('sherpa-container-header') as HeaderEl;
-    full.setAttribute('data-title', 'Full');
+    full.setAttribute('data-heading', 'Full');
     full.innerHTML = '<button slot="actions">Act</button>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
@@ -112,7 +112,7 @@ test('the actions region hides when empty and appears when slotted', async ({ pa
 test('data-draggable and data-icon reveal the drag handle and icon', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'Panel');
+    el.setAttribute('data-heading', 'Panel');
     el.setAttribute('data-draggable', '');
     el.setAttribute('data-icon', '📁');
     document.getElementById('root')!.appendChild(el);
@@ -129,17 +129,17 @@ test('data-draggable and data-icon reveal the drag handle and icon', async ({ pa
   expect(r.iconText).toBe('📁');
 });
 
-test('data-dismissible close button fires container-header-dismiss', async ({ page }) => {
+test('data-dismissible close button fires dismiss', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'X');
+    el.setAttribute('data-heading', 'X');
     el.setAttribute('data-dismissible', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const close = el.shadowRoot!.querySelector('.close') as HTMLElement;
     const closeVisible = getComputedStyle(close).display !== 'none';
     let dismissed = false;
-    el.addEventListener('container-header-dismiss', () => (dismissed = true));
+    el.addEventListener('dismiss', () => (dismissed = true));
     close.click();
     await new Promise((res) => setTimeout(res, 0));
     return { closeVisible, dismissed };
@@ -148,16 +148,16 @@ test('data-dismissible close button fires container-header-dismiss', async ({ pa
   expect(r.dismissed).toBe(true);
 });
 
-test('data-collapsible toggle flips data-collapsed and fires container-header-toggle', async ({ page }) => {
+test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
-    el.setAttribute('data-title', 'Section');
+    el.setAttribute('data-heading', 'Section');
     el.setAttribute('data-collapsible', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const toggle = el.shadowRoot!.querySelector('.toggle') as HTMLElement;
     let detail: unknown = null;
-    el.addEventListener('container-header-toggle', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('toggle', (e) => (detail = (e as CustomEvent).detail));
     toggle.click();
     await new Promise((res) => setTimeout(res, 0));
     return { collapsedAfter: el.hasAttribute('data-collapsed'), detail };
