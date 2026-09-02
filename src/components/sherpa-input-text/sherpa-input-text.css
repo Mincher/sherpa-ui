@@ -57,20 +57,20 @@
 }
 
 .control {
-  width: 100%;
-  min-height: var(--sherpa-display-size-2xl, 32px);
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-size-2xl, 32px);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
   border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1.4;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 textarea.control {
-  min-height: auto;
+  min-block-size: auto;
   resize: vertical;
 }
 
@@ -79,7 +79,12 @@ textarea.control {
 .control:focus-visible {
   outline: none;
   border-color: var(--_border-focus);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+  box-shadow: 0 0 0 2px var(--_border-focus);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .control:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+  }
 }
 
 /* ── Validation — native :user-invalid, or an explicit data-error ─────
@@ -91,7 +96,13 @@ textarea.control {
 }
 .control:user-invalid:focus-visible,
 :host([data-error]) .control:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
+  box-shadow: 0 0 0 2px var(--_border-error);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .control:user-invalid:focus-visible,
+  :host([data-error]) .control:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
+  }
 }
 .message {
   font-size: var(--sherpa-font-size-body-small, 12px);
@@ -120,8 +131,8 @@ textarea.control {
 .field-minimal .label { flex-shrink: 0; }
 .field-minimal .control {
   flex: 1 1 auto;
-  width: auto;
-  min-width: 0;
+  inline-size: auto;
+  min-inline-size: 0;
 }
 /* Borderless — the control is a bare field (e.g. a grid column filter). */
 :host([data-borderless]) .field-minimal .control {

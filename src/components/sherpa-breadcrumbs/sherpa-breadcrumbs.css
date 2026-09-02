@@ -14,7 +14,7 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
-.trail { min-width: 0; }
+.trail { min-inline-size: 0; }
 
 .crumbs {
   display: flex;

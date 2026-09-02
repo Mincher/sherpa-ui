@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-space-2xs, 4px);
-  width: 100%;
+  inline-size: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
   /* Filled range + thumb take the primary accent (Figma: surface/interactive/primary). */
@@ -54,8 +54,8 @@
   border: var(--sherpa-style-border-width, 1px) solid
     var(--sherpa-theme-border-default-2, #8c8c99);
   border-radius: var(--sherpa-display-border-rounding-base, 4px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
@@ -86,20 +86,20 @@
   position: relative;
   display: flex;
   align-items: center;
-  height: var(--_thumb);
+  block-size: var(--_thumb);
 }
 
 .track {
   position: absolute;
   inset-inline: 0;
-  height: var(--_rail);
+  block-size: var(--_rail);
   background: var(--sherpa-theme-surface-default-2, #d5d5d5);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   overflow: hidden;
 }
 .fill {
-  height: 100%;
-  width: var(--_pct, 0%);
+  block-size: 100%;
+  inline-size: var(--_pct, 0%);
   background: var(--_accent);
   border-radius: inherit;
 }
@@ -107,8 +107,8 @@
 /* Native input sits transparently on top and owns interaction. */
 .range {
   position: relative;
-  width: 100%;
-  height: var(--_thumb);
+  inline-size: 100%;
+  block-size: var(--_thumb);
   margin: 0;
   background: transparent;
   -webkit-appearance: none;
@@ -119,26 +119,26 @@
 .range:focus { outline: none; }
 
 /* The native rail is invisible — the styled .track shows instead. */
-.range::-webkit-slider-runnable-track { background: transparent; height: var(--_thumb); }
-.range::-moz-range-track { background: transparent; height: var(--_thumb); }
+.range::-webkit-slider-runnable-track { background: transparent; block-size: var(--_thumb); }
+.range::-moz-range-track { background: transparent; block-size: var(--_thumb); }
 
 /* Thumb. */
 .range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: var(--_thumb);
-  height: var(--_thumb);
+  inline-size: var(--_thumb);
+  block-size: var(--_thumb);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_accent);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
   box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
 }
 .range::-moz-range-thumb {
-  width: var(--_thumb);
-  height: var(--_thumb);
+  inline-size: var(--_thumb);
+  block-size: var(--_thumb);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_accent);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
   box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
 }
 

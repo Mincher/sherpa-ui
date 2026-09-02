@@ -9,7 +9,7 @@
 :host {
   display: block;
   --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  --_line: var(--sherpa-border-primary, #d5d5d5);
+  --_line: var(--sherpa-style-border-base, #d5d5d5);
   --_idle: var(--sherpa-theme-content-body-1, #404047);
 }
 
@@ -41,8 +41,8 @@
   inline-size: var(--sherpa-display-size-xl, 28px);
   block-size: var(--sherpa-display-size-xl, 28px);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--_line);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  border: var(--sherpa-display-border-width-base, 1px) solid var(--_line);
+  background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--_idle);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -58,7 +58,7 @@
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
@@ -87,7 +87,12 @@
 .step[data-state='active'] .marker {
   border-color: var(--_accent);
   color: var(--_accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
+  box-shadow: 0 0 0 2px var(--_accent);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .step[data-state='active'] .marker {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
+  }
 }
 .step[data-state='active'] .label {
   color: var(--sherpa-theme-content-body-base, #18191a);

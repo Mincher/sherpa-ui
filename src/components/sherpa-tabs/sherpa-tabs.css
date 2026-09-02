@@ -15,7 +15,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-inline-size: 0;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
@@ -50,8 +50,8 @@
   margin: 0;
   background: transparent;
   border: none;
-  border-bottom: var(--sherpa-display-border-width-sm, 0.5px) solid
-    var(--sherpa-border-primary, #d5d5d5);
+  border-block-end: var(--sherpa-display-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #d5d5d5);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -74,14 +74,14 @@
 
 /* ── Active tab — accent underline + accent label ─────────────────────── */
 .tab[data-active] {
-  border-bottom-color: var(--sherpa-theme-border-active-base, #c046ff);
+  border-block-end-color: var(--sherpa-theme-border-active-base, #c046ff);
   color: var(--sherpa-theme-content-active-base, #8500cc);
 }
 
 /* ── Panels — only the active one shows ───────────────────────────────── */
 .panels {
   flex: 1 1 auto;
-  min-height: 0;
+  min-block-size: 0;
   padding-block-start: var(--sherpa-display-space-base, 16px);
 }
 /* All slotted panels are hidden; the active one is marked data-tab-active

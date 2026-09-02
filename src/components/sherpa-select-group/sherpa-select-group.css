@@ -16,7 +16,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
 }
 
 .group {

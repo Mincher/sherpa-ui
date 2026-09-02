@@ -48,7 +48,7 @@
   /* punch the centre out into a ring */
   mask: radial-gradient(circle, transparent calc(50% - var(--_ring)), #000 calc(50% - var(--_ring) + 0.5px));
 }
-.track { background: var(--sherpa-border-primary, #d5d5d5); }
+.track { background: var(--sherpa-style-border-base, #d5d5d5); }
 
 /* Fill: conic sweep from the left (start of the visible half), 0–50% of the circle. */
 .fill {

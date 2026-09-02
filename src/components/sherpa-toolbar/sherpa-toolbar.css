@@ -38,7 +38,7 @@
 /* Bordered variant adds the Figma toolbar's bottom rule — status-border cascade. */
 :host([data-variant="bordered"]) .bar {
   border-block-end: var(--sherpa-style-border-width, 1px) solid
-    var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+    var(--_status-border, var(--sherpa-style-border-base, #d5d5d5));
 }
 
 .zone {

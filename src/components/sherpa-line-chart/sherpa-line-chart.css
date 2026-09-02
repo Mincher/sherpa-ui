@@ -36,7 +36,7 @@
 }
 
 .grid line {
-  stroke: var(--sherpa-border-primary, #d5d5d5);
+  stroke: var(--sherpa-style-border-base, #d5d5d5);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }

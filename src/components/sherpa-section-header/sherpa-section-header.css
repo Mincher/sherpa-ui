@@ -28,7 +28,7 @@
 
 .lead {
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-space-xs, 8px);
@@ -79,9 +79,9 @@
 /* ── Divider ─────────────────────────────────────────────────────────── */
 .divider {
   display: none;
-  margin: var(--sherpa-display-space-xs, 8px) 0 0;
+  margin-block-start: var(--sherpa-display-space-xs, 8px);
   border: none;
-  border-top: var(--sherpa-core-border-width-base, 1px) solid
-    var(--sherpa-border-primary, #d5d5d5);
+  border-block-start: var(--sherpa-display-border-width-base, 1px) solid
+    var(--sherpa-style-border-base, #d5d5d5);
 }
 :host([data-divider]) .divider { display: block; }

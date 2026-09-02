@@ -35,7 +35,7 @@
   border: none;
   border-radius: var(--sherpa-display-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font: inherit;
   cursor: pointer;
   transition: background-color 100ms ease, opacity 100ms ease;
@@ -47,8 +47,8 @@
 }
 
 .swatch {
-  inline-size: 12px;
-  block-size: 12px;
+  inline-size: var(--sherpa-display-size-xs, 12px);
+  block-size: var(--sherpa-display-size-xs, 12px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-border-rounding-sm, 2px);
   background: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));

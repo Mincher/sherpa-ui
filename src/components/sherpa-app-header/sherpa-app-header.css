@@ -11,8 +11,8 @@
 :host {
   display: block;
   container: sherpa-app-header / inline-size;
-  background: var(--sherpa-surface-primary-base, #ffffff);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-base, #2e2e33);
 }
 
 .bar {
@@ -51,9 +51,9 @@
 }
 
 .divider {
-  inline-size: var(--sherpa-core-border-width-base, 1px);
+  inline-size: var(--sherpa-display-border-width-base, 1px);
   block-size: var(--sherpa-display-size-md, 16px);
-  background: var(--sherpa-border-primary, #d5d5d5);
+  background: var(--sherpa-style-border-base, #d5d5d5);
   flex-shrink: 0;
 }
 

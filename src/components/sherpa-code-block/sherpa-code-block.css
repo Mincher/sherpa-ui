@@ -13,8 +13,8 @@
 :host {
   display: block;
   container: sherpa-code-block / inline-size;
-  background: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
-  border: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  border: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
   border-radius:
     var(--sherpa-structure-rounding-top-left, 3px)
     var(--sherpa-structure-rounding-top-right, 3px)
@@ -29,9 +29,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sherpa-display-space-sm, 12px);
-  min-height: var(--sherpa-display-size-xl, 28px);
+  min-block-size: var(--sherpa-display-size-xl, 28px);
   padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-sm, 12px);
-  border-bottom: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
+  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
 }
 
 .language {
@@ -53,7 +53,7 @@
   border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-2, #c0c0cc);
   border-radius: var(--sherpa-display-border-rounding-sm, 3px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-small, 12px);
   cursor: pointer;
@@ -84,7 +84,7 @@
   line-height: 1.5;
   white-space: pre;
   tab-size: 2;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
 }
 
 @container sherpa-code-block (max-width: 400px) {

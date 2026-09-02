@@ -13,9 +13,9 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-  width: 100%;
-  min-width: 40px;
-  height: var(--sherpa-display-size-xl, 28px);
+  inline-size: 100%;
+  min-inline-size: 40px;
+  block-size: var(--sherpa-display-size-xl, 28px);
 
   /* Trend colour — status cascade wins, else the primary accent. */
   /* Neutral grey line by default (Figma: status-border/default passthrough);
@@ -35,8 +35,8 @@
   display: flex;
   gap: 0;
   align-items: stretch;
-  width: 100%;
-  height: 100%;
+  inline-size: 100%;
+  block-size: 100%;
   color: var(--_line);
 }
 
@@ -52,7 +52,7 @@
 
   position: relative;
   flex: 1 1 0%;
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 /* Map each shape to its adjacent raw-value pair. */
@@ -69,13 +69,17 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, currentColor 24%, transparent);
+  /* Translucent area fill; degrades to no fill (stroke still shows) where color-mix is absent. */
+  background: transparent;
   clip-path: polygon(
     0% calc(100% - var(--_n-start) * 1%),
     100% calc(100% - var(--_n-end) * 1%),
     100% 100%,
     0% 100%
   );
+}
+@supports (color: color-mix(in srgb, red, blue)) {
+  .shape::before { background: color-mix(in srgb, currentColor 24%, transparent); }
 }
 
 /* Stroke on the top edge. */
@@ -102,8 +106,8 @@
 /* ── Points: dots at each vertex, revealed on hover ────────────────── */
 .point {
   position: absolute;
-  width: var(--_point-size);
-  height: var(--_point-size);
+  inline-size: var(--_point-size);
+  block-size: var(--_point-size);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   background: currentColor;
   translate: calc(-1 * var(--_point-size) / 2) calc(-1 * var(--_point-size) / 2);
@@ -111,8 +115,8 @@
   pointer-events: none;
   transition: opacity 120ms ease;
 }
-.point[data-role="start"] { top: calc(100% - var(--_n-start) * 1%); left: 0%; }
-.point[data-role="end"]   { top: calc(100% - var(--_n-end) * 1%);   left: 100%; }
+.point[data-role="start"] { inset-block-start: calc(100% - var(--_n-start) * 1%); inset-inline-start: 0%; }
+.point[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 
 :host(:hover) .point:not([hidden]) { opacity: 1; }
 :host([data-variant="bar"]) .point { display: none; }

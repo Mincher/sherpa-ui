@@ -11,13 +11,13 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_size: 180px;
   --_hole: 62%; /* inner radius as a fraction of the circle */
-  --_ring: conic-gradient(var(--sherpa-border-primary, #d5d5d5) 0 100%);
+  --_ring: conic-gradient(var(--sherpa-style-border-base, #d5d5d5) 0 100%);
 }
 
 .layout {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-lg, 20px);
+  gap: var(--sherpa-display-space-lg, 20px);
 }
 
 .ring-wrap {

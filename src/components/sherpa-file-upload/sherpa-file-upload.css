@@ -15,9 +15,9 @@
   --_accent: var(--sherpa-theme-border-accent-base, #3c5edd);
 
   /* cascade fallbacks so a bare (status-less) file chip still resolves */
-  --_file-surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
-  --_file-border: var(--_status-border, var(--sherpa-border-primary, #c0c0cc));
-  --_file-text: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
+  --_file-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_file-border: var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
+  --_file-text: var(--_status-text, var(--sherpa-style-content-base, #2e2e33));
 }
 
 .field {
@@ -45,11 +45,11 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sherpa-display-space-xs, 8px);
-  padding: var(--sherpa-display-space-xl, 24px) var(--sherpa-core-space-lg, 20px);
+  padding: var(--sherpa-display-space-xl, 24px) var(--sherpa-display-space-lg, 20px);
   border: var(--sherpa-style-border-width, 1px) dashed var(--sherpa-theme-border-default-2, #c0c0cc);
   border-radius: var(--sherpa-display-border-rounding-base, 4px);
   background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: center;
   cursor: pointer;
@@ -67,7 +67,7 @@
   color: var(--sherpa-theme-content-body-1, #404047);
 }
 .browse {
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
   font-weight: var(--sherpa-font-weight-medium, 500);
   text-decoration: underline;
 }
@@ -205,7 +205,7 @@
   border: var(--sherpa-style-border-width, 1px) solid
     var(--sherpa-theme-border-default-2, #8c8c99);
   background: transparent;
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #2e2e33);
 }
 .clear-all:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
 /* Upload — primary (filled) button */

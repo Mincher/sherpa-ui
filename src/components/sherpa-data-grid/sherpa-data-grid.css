@@ -11,8 +11,8 @@
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-content-primary-base, #2e2e33);
-  border: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  color: var(--sherpa-theme-content-body-base, #2e2e33);
+  border: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
   border-radius: var(--sherpa-display-border-rounding-lg, 8px);
   overflow: hidden;
 }
@@ -28,7 +28,7 @@
   padding: 0;
   text-align: start;
   background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-block-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-block-end: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
 }
 .head-btn {
   display: flex;
@@ -68,7 +68,7 @@
 }
 .row:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
 .row:not(:last-child) .cell {
-  border-block-end: var(--sherpa-core-border-width-base, 1px) solid var(--sherpa-border-primary, #d5d5d5);
+  border-block-end: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
 }
 
 .cell {

@@ -18,7 +18,7 @@
   vertical-align: middle;
 
   --_gap: var(--sherpa-display-space-2xs, 4px);
-  --_bg: var(--sherpa-content-primary-base, #2e2e33);
+  --_bg: var(--sherpa-style-content-base, #2e2e33);
   --_fg: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 

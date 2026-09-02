@@ -48,7 +48,7 @@
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-base, #2e2e33);
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 }
@@ -71,8 +71,8 @@
    a neutral selected surface + primary border stand in. */
 .btn[data-current] {
   background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #fdfdfd));
-  border-color: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
-  color: var(--_status-text, var(--sherpa-content-primary-base, #2e2e33));
+  border-color: var(--_status-border, var(--sherpa-style-border-base, #d5d5d5));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #2e2e33));
   font-weight: var(--sherpa-font-weight-semibold, 600);
   cursor: default;
   pointer-events: none;
