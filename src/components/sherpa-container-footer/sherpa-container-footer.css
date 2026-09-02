@@ -21,8 +21,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
-  gap: var(--sherpa-container-space-gap-sm, 8px);
-  padding: var(--sherpa-container-space-padding-md, 16px);
+  gap: var(--sherpa-theme-gap-md, 8px);
+  padding: var(--sherpa-theme-padding-lg, 16px);
 }
 
 /* ── Alignment ────────────────────────────────────────────────────────── */

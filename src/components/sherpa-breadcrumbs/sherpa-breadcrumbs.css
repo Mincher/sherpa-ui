@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -30,24 +30,24 @@
 .crumb {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
 }
 
 /* Separator: every crumb except the first draws a leading chevron (matches Figma),
    sized to the icon token. */
 .crumb + .crumb::before {
   content: "\203A"; /* › */
-  color: var(--sherpa-content-secondary-base, #404047);
-  font-size: var(--sherpa-size-icon-2xs, 12px);
+  color: var(--sherpa-theme-content-body-1, #404047);
+  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
   user-select: none;
 }
 
 .link {
-  color: var(--sherpa-content-link-base, #3c5edd);
+  color: var(--sherpa-theme-content-link-base, #3c5edd);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   text-decoration: none;
-  border-radius: var(--sherpa-core-border-rounding-sm, 2px);
-  padding: var(--sherpa-core-space-3xs, 2px) 0;
+  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  padding: var(--sherpa-display-space-3xs, 2px) 0;
   cursor: pointer;
 }
 
@@ -56,12 +56,12 @@
 
 .link:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* Current page crumb: title colour, regular weight, non-interactive. */
 .link[aria-current="page"] {
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #18191a);
   font-weight: var(--sherpa-font-weight-regular, 400);
   cursor: default;
   text-decoration: none;

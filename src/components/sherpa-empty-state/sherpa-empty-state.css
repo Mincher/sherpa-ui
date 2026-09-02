@@ -12,21 +12,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-core-space-base, 16px);
+  gap: var(--sherpa-display-space-base, 16px);
   width: 100%;
-  padding: var(--sherpa-core-space-xl, 24px);
+  padding: var(--sherpa-display-space-xl, 24px);
   text-align: center;
 
   /* default illustration glyph + icon box size (base) */
   --_glyph: "\2205"; /* ∅ empty set */
-  --_icon-size: var(--sherpa-core-size-3xl, 40px);
+  --_icon-size: var(--sherpa-display-size-3xl, 40px);
 }
 
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sherpa-core-space-base, 16px);
+  gap: var(--sherpa-display-space-base, 16px);
   max-width: 360px;
 }
 
@@ -37,7 +37,7 @@
   justify-content: center;
   width: var(--_icon-size);
   height: var(--_icon-size);
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
 }
 .glyph {
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -63,13 +63,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-display-space-2xs, 4px);
   max-width: 100%;
 }
 
 .title {
   margin: 0;
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #18191a);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-heading-h2, 20px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -79,7 +79,7 @@
 :host(:not([data-title])) .title { display: none; }
 
 .message {
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
@@ -96,20 +96,20 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-display-space-sm, 12px);
 }
 :host([data-has-action]) .actions { display: flex; }
 
 /* ── Size scale ──────────────────────────────────────────────────────── */
 :host([data-size="sm"]) {
-  gap: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-display-space-sm, 12px);
   padding: var(--sherpa-core-space-lg, 20px);
-  --_icon-size: var(--sherpa-core-size-2xl, 32px);
+  --_icon-size: var(--sherpa-display-size-2xl, 32px);
 }
 :host([data-size="sm"]) .title { font-size: var(--sherpa-font-size-body-large, 16px); }
 
 :host([data-size="lg"]) {
-  --_icon-size: var(--sherpa-core-size-3xl, 40px);
+  --_icon-size: var(--sherpa-display-size-3xl, 40px);
 }
 :host([data-size="lg"]) .icon {
   width: calc(var(--_icon-size) * 1.4);

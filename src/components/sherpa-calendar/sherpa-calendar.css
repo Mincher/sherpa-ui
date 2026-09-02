@@ -9,22 +9,22 @@
 :host {
   display: inline-block;
   --_border: var(--sherpa-border-primary, #d5d5d5);
-  --_accent: var(--sherpa-surface-interactive-primary-base, #3c5edd);
-  --_accent-on: var(--sherpa-content-title-on-color, #ffffff);
+  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
 .cal {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-container-space-gap-sm, 8px);
+  gap: var(--sherpa-theme-gap-md, 8px);
   inline-size: fit-content;
-  padding: var(--sherpa-container-space-padding-md, 12px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--_border);
+  padding: var(--sherpa-theme-padding-lg, 12px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-grouping-radius-top-left, 8px)
-    var(--sherpa-grouping-radius-top-right, 8px)
-    var(--sherpa-grouping-radius-bottom-right, 8px)
-    var(--sherpa-grouping-radius-bottom-left, 8px);
+    var(--sherpa-structure-rounding-top-left, 8px)
+    var(--sherpa-structure-rounding-top-right, 8px)
+    var(--sherpa-structure-rounding-bottom-right, 8px)
+    var(--sherpa-structure-rounding-bottom-left, 8px);
   background: var(--sherpa-surface-primary-base, #ffffff);
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
 }
 
 .cal-label {
@@ -42,18 +42,18 @@
   text-align: center;
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #18191a);
 }
 
 .cal-nav {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-button-size-height, 28px);
-  block-size: var(--sherpa-button-size-height, 28px);
+  inline-size: var(--sherpa-structure-height, 28px);
+  block-size: var(--sherpa-structure-height, 28px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-size: var(--sherpa-font-size-heading-h2, 20px);
@@ -62,20 +62,20 @@
   transition: background-color 100ms ease, color 100ms ease;
 }
 .cal-nav:hover {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-title-base, #18191a);
+  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+  color: var(--sherpa-theme-content-body-base, #18191a);
 }
 .cal-nav:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Weekday row + day grid share the 7-column track ────────────────── */
 .cal-weekdays,
 .cal-days {
   display: grid;
-  grid-template-columns: repeat(7, var(--sherpa-core-size-2xl, 32px));
-  gap: var(--sherpa-core-space-3xs, 2px);
+  grid-template-columns: repeat(7, var(--sherpa-display-size-2xl, 32px));
+  gap: var(--sherpa-display-space-3xs, 2px);
 }
 
 /* Month / year grids are wider cells in fewer columns. */
@@ -83,7 +83,7 @@
 .cal-years {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-display-space-2xs, 4px);
 }
 
 /* ── Layout visibility (day | month | year) ─────────────────────────── */
@@ -98,14 +98,14 @@
 
 .cal-label { cursor: pointer; border: none; background: transparent; font-family: inherit; }
 .cal-label:hover { color: var(--_accent); }
-.cal-label:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd); border-radius: var(--sherpa-core-border-rounding-base, 4px); }
+.cal-label:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd); border-radius: var(--sherpa-display-border-rounding-base, 4px); }
 
 .cal-weekdays span {
   text-align: center;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-content-secondary-base, #404047);
-  padding-block: var(--sherpa-core-space-3xs, 2px);
+  color: var(--sherpa-theme-content-body-1, #404047);
+  padding-block: var(--sherpa-display-space-3xs, 2px);
 }
 
 /* ── Day cells ──────────────────────────────────────────────────────── */
@@ -113,10 +113,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  block-size: var(--sherpa-core-size-2xl, 32px);
+  block-size: var(--sherpa-display-size-2xl, 32px);
   padding: 0;
-  border: var(--sherpa-control-border-width, 1px) solid transparent;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border: var(--sherpa-style-border-width, 1px) solid transparent;
+  border-radius: var(--sherpa-display-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-content-primary-base, #2e2e33);
   font-family: inherit;
@@ -125,17 +125,17 @@
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 }
 .cal-cell:hover {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6);
-  color: var(--sherpa-content-title-base, #18191a);
+  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+  color: var(--sherpa-theme-content-body-base, #18191a);
 }
 .cal-cell:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* Today — a ring, not a fill (fill is reserved for the selection). */
 .cal-cell[data-today] {
-  border-color: var(--sherpa-border-interactive-primary, #3c5edd);
+  border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -161,7 +161,7 @@
 .cal-cell[disabled]:not([data-blank]) {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-content-inactive-base, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
   background: transparent;
 }
 
@@ -169,5 +169,5 @@
 .cal-months .cal-cell,
 .cal-years .cal-cell {
   inline-size: 100%;
-  block-size: var(--sherpa-core-size-3xl, 40px);
+  block-size: var(--sherpa-display-size-3xl, 40px);
 }

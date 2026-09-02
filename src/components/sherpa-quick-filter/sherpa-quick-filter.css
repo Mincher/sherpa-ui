@@ -12,20 +12,20 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
-  --_accent: var(--sherpa-border-interactive-active, #c046ff);
-  --_active-surface: var(--sherpa-surface-interactive-active-base, #f8ebff);
+  --_accent: var(--sherpa-theme-border-active-base, #c046ff);
+  --_active-surface: var(--sherpa-theme-surface-active-base, #f8ebff);
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-2xs, 4px);
-  padding: var(--sherpa-core-space-3xs, 2px) var(--sherpa-core-space-sm, 12px);
-  min-height: var(--sherpa-core-size-xl, 28px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-border-interactive-inactive, #8d8d99);
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  gap: var(--sherpa-display-space-2xs, 4px);
+  padding: var(--sherpa-display-space-3xs, 2px) var(--sherpa-display-space-sm, 12px);
+  min-height: var(--sherpa-display-size-xl, 28px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-2, #8d8d99);
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
   background: var(--sherpa-surface-primary-base, #ffffff);
-  color: var(--sherpa-content-tertiary-base, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -33,10 +33,10 @@
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 }
-.chip:hover { background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6); }
+.chip:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
 .chip:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* AI type carries the brand accent even when inactive. */
@@ -59,13 +59,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: var(--sherpa-core-size-sm, 16px);
-  block-size: var(--sherpa-core-size-sm, 16px);
-  padding-inline: var(--sherpa-core-space-3xs, 2px);
-  border: var(--sherpa-control-border-width, 1px) solid var(--sherpa-badge-border-default, #c0c0cc);
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--sherpa-badge-surface-default, #ffffff);
-  color: var(--sherpa-badge-content-default, #18191a);
+  min-inline-size: var(--sherpa-display-size-sm, 16px);
+  block-size: var(--sherpa-display-size-sm, 16px);
+  padding-inline: var(--sherpa-display-space-3xs, 2px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-base, #c0c0cc);
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-base, #18191a);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
@@ -84,7 +84,7 @@
 :host([disabled]) .chip {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-surface-interactive-inactive, #c0c0cc);
-  border-color: var(--sherpa-border-interactive-inactive, #8d8d99);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  background: var(--sherpa-theme-surface-default-2, #c0c0cc);
+  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }

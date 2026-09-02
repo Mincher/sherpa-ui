@@ -16,7 +16,7 @@
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   color: var(--sherpa-content-primary-base, #2e2e33);
-  --_row-gap: var(--sherpa-core-space-3xs, 2px);
+  --_row-gap: var(--sherpa-display-space-3xs, 2px);
 }
 
 .body {
@@ -38,10 +38,10 @@
   --_row-gap: 0;
 }
 :host([data-variant="bordered"]) .body {
-  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
-  border: var(--sherpa-container-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
-  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   overflow: hidden;
 }
 
@@ -51,16 +51,16 @@
 }
 :host([data-variant="divided"]) .rows > sherpa-list-item:not(:last-child),
 :host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-container-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
 }
 
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {
   display: none;
-  padding: var(--sherpa-container-space-padding-md, 16px);
+  padding: var(--sherpa-theme-padding-lg, 16px);
   text-align: center;
-  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }

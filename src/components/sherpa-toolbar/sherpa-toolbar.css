@@ -15,16 +15,16 @@
  */
 
 :host {
-  --_py: var(--sherpa-container-space-padding-md, 8px);
-  --_gap: var(--sherpa-core-space-3xs, 2px);
+  --_py: var(--sherpa-theme-padding-lg, 8px);
+  --_gap: var(--sherpa-display-space-3xs, 2px);
   display: block;
   inline-size: 100%;
-  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
-  border-radius: var(--sherpa-core-border-rounding-sm, 3px);
-  color: var(--sherpa-content-secondary-base, #404047);
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  border-radius: var(--sherpa-display-border-rounding-sm, 3px);
+  color: var(--sherpa-theme-content-body-1, #404047);
 }
 
-:host([data-density="compact"]) { --_py: var(--sherpa-core-space-3xs, 2px); }
+:host([data-density="compact"]) { --_py: var(--sherpa-display-space-3xs, 2px); }
 
 .bar {
   display: flex;
@@ -32,12 +32,12 @@
   inline-size: 100%;
   gap: var(--_gap);
   padding-block: var(--_py);
-  padding-inline: var(--sherpa-container-space-padding-md, 8px);
+  padding-inline: var(--sherpa-theme-padding-lg, 8px);
 }
 
 /* Bordered variant adds the Figma toolbar's bottom rule — status-border cascade. */
 :host([data-variant="bordered"]) .bar {
-  border-block-end: var(--sherpa-control-border-width, 1px) solid
+  border-block-end: var(--sherpa-style-border-width, 1px) solid
     var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
 }
 

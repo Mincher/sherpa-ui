@@ -1,37 +1,27 @@
 /**
  * sherpa-switch.tokens.css — component-scoped token aliases, PROJECTED from Figma
  * (the "switch" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
- * These alias up through overrides → style → core. The component's own [data-style]
- * re-points them per variant. Import/adopt this alongside the component's CSS.
+ * The component's own [data-style] re-points these per mode. Adopted alongside the
+ * component's own CSS (see SherpaElement.tokens).
  */
 @layer components {
   :host {
     --_has-label: revert-layer;
-    --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
-    --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
-    --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
     --sherpa-switch-radius-thumb: 3px;
-    --sherpa-switch-radius-track: var(--sherpa-core-border-rounding-base);
-    --sherpa-switch-size-height: var(--sherpa-core-size-md);
-    --sherpa-switch-size-padding-horizontal: var(--sherpa-core-space-3xs);
-    --sherpa-switch-size-thumb: var(--sherpa-core-size-sm);
-    --sherpa-switch-size-width: var(--sherpa-core-size-4xl);
-    --sherpa-switch-surface-track-off: var(--sherpa-surface-tertiary-down);
-    --sherpa-switch-surface-track-on: var(--sherpa-status-success-color-4);
+    --sherpa-switch-radius-track: var(--sherpa-display-border-rounding-base);
+    --sherpa-switch-size-height: var(--sherpa-display-size-md);
+    --sherpa-switch-size-padding: var(--sherpa-display-space-3xs);
+    --sherpa-switch-size-thumb: var(--sherpa-display-size-sm);
+    --sherpa-switch-size-width: var(--sherpa-display-size-4xl);
   }
 
   :host([data-style="simple"]) {
     --_has-label: none;
-    --sherpa-switch-content-inactive: var(--sherpa-content-inactive-base);
-    --sherpa-switch-content-track-off: var(--sherpa-control-content-default);
-    --sherpa-switch-content-track-on: var(--sherpa-control-content-inverse);
     --sherpa-switch-radius-thumb: 999px;
-    --sherpa-switch-radius-track: var(--sherpa-core-border-rounding-full);
-    --sherpa-switch-size-height: var(--sherpa-core-size-sm);
-    --sherpa-switch-size-padding-horizontal: var(--sherpa-core-space-3xs);
-    --sherpa-switch-size-thumb: var(--sherpa-core-size-xs);
-    --sherpa-switch-size-width: var(--sherpa-core-size-xl);
-    --sherpa-switch-surface-track-off: var(--sherpa-surface-tertiary-down);
-    --sherpa-switch-surface-track-on: var(--sherpa-status-success-color-4);
+    --sherpa-switch-radius-track: var(--sherpa-display-border-rounding-full);
+    --sherpa-switch-size-height: var(--sherpa-display-size-sm);
+    --sherpa-switch-size-padding: var(--sherpa-display-space-3xs);
+    --sherpa-switch-size-thumb: var(--sherpa-display-size-xs);
+    --sherpa-switch-size-width: var(--sherpa-display-size-xl);
   }
 }

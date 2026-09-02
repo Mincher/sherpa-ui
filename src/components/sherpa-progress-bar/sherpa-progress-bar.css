@@ -13,12 +13,12 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-2xs, 4px);
+  gap: var(--sherpa-display-space-2xs, 4px);
   width: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
   /* Fill colour — the status cascade ink wins, else the brand progress colour. */
-  --_fill: var(--_status-border, var(--sherpa-content-active-base, #8500cc));
+  --_fill: var(--_status-border, var(--sherpa-theme-content-active-base, #8500cc));
   /* Percentage width, written by JS from data-value. */
   --_pct: 0%;
 }
@@ -35,9 +35,9 @@
 .track {
   position: relative;
   width: 100%;
-  height: var(--sherpa-core-space-2xs, 4px);
-  background: var(--sherpa-surface-secondary-base, #fdfdfd);
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  height: var(--sherpa-display-space-2xs, 4px);
+  background: var(--sherpa-theme-surface-default-1, #fdfdfd);
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
   overflow: hidden;
 }
 
@@ -75,11 +75,11 @@
 
 /* ── Disabled — inactive tokens, never opacity ────────────────────────── */
 :host([disabled]) {
-  --_fill: var(--sherpa-content-inactive-base, #5c5c66);
+  --_fill: var(--sherpa-theme-content-body-2, #5c5c66);
 }
 :host([disabled]) .track {
-  background: var(--sherpa-surface-primary-inactive, #f2f2f2);
+  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
 }
 :host([disabled]) .label {
-  color: var(--sherpa-content-inactive-base, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
 }

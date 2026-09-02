@@ -17,9 +17,9 @@
   position: relative;
   vertical-align: middle;
 
-  --_gap: var(--sherpa-core-space-2xs, 4px);
+  --_gap: var(--sherpa-display-space-2xs, 4px);
   --_bg: var(--sherpa-content-primary-base, #2e2e33);
-  --_fg: var(--sherpa-content-title-on-color, #ffffff);
+  --_fg: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
 .anchor {
@@ -35,14 +35,14 @@
   transform: translateX(-50%);
   max-width: 16rem;
   width: max-content;
-  padding: var(--sherpa-core-space-2xs, 4px) var(--sherpa-core-space-xs, 8px);
+  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-xs, 8px);
   background: var(--_bg);
   color: var(--_fg);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1.4;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-border-rounding-base, 4px);
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */
   visibility: hidden;

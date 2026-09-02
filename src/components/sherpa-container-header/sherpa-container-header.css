@@ -22,8 +22,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-container-space-gap-sm, 8px);
-  padding: var(--sherpa-container-space-padding-sm, 8px) var(--sherpa-container-space-padding-md, 16px);
+  gap: var(--sherpa-theme-gap-md, 8px);
+  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
 }
 
 .labels {
@@ -31,7 +31,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-display-space-3xs, 2px);
   overflow: hidden;
 }
 
@@ -41,12 +41,12 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-sm, 16px);
-  block-size: var(--sherpa-core-size-sm, 16px);
+  inline-size: var(--sherpa-display-size-sm, 16px);
+  block-size: var(--sherpa-display-size-sm, 16px);
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-content-secondary-base, #5c5c66);
+  color: var(--sherpa-theme-content-body-1, #5c5c66);
   cursor: grab;
 }
 :host([data-draggable]) .drag { display: inline-flex; }
@@ -58,9 +58,9 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-sm, 16px);
-  block-size: var(--sherpa-core-size-sm, 16px);
-  color: var(--_status-icon, var(--sherpa-content-title-base, #18191a));
+  inline-size: var(--sherpa-display-size-sm, 16px);
+  block-size: var(--sherpa-display-size-sm, 16px);
+  color: var(--_status-icon, var(--sherpa-theme-content-body-base, #18191a));
 }
 :host([data-icon]) .icon,
 :host([data-has-icon]) .icon { display: inline-flex; }
@@ -68,7 +68,7 @@
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
-  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -83,7 +83,7 @@ slot[name="heading"] { display: contents; }
 /* ── Description ──────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
@@ -98,7 +98,7 @@ slot[name="heading"] { display: contents; }
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-container-space-gap-sm, 8px);
+  gap: var(--sherpa-theme-gap-md, 8px);
 }
 
 /* Icon-glyph action buttons (toggle, close) */
@@ -108,22 +108,22 @@ slot[name="heading"] { display: contents; }
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-core-size-2xl, 32px);
-  block-size: var(--sherpa-core-size-2xl, 32px);
+  inline-size: var(--sherpa-display-size-2xl, 32px);
+  block-size: var(--sherpa-display-size-2xl, 32px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-core-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-border-rounding-base, 4px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-content-secondary-base, #5c5c66));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #5c5c66));
   cursor: pointer;
   transition: background-color 100ms ease;
 }
 .toggle:hover,
-.close:hover { background: var(--sherpa-surface-interactive-tertiary-hover, #f4f4f6); }
+.close:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
 .toggle:focus-visible,
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 :host([data-collapsible]) .toggle { display: inline-flex; }
 :host([data-dismissible]) .close { display: inline-flex; }
@@ -138,5 +138,5 @@ slot[name="heading"] { display: contents; }
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {
   .description { display: none; }
-  .row { gap: var(--sherpa-core-space-2xs, 4px); }
+  .row { gap: var(--sherpa-display-space-2xs, 4px); }
 }

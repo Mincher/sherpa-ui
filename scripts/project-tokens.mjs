@@ -1,27 +1,31 @@
 /**
  * project-tokens.mjs — project the canonical Figma DTCG export into Sherpa's CSS.
  *
- * Source of truth: src/styles/tokens/figma.tokens.json (figma_export_tokens,
- * format:dtcg, scope:file — the full 28-collection dump).
+ * DATA-DRIVEN rewrite (2026-09-02). Structure is derived from the dump, not from
+ * hand-typed atom maps. The ONLY hand-config is the small ROUTING table below,
+ * which maps each Figma collection slug → where it lands (a global @layer, or a
+ * component-scoped partial) plus a couple of hints. Everything else — modes,
+ * primary mode, leaf paths, scopes — is read from each leaf's
+ * `$extensions["figma-console-mcp"]`.
  *
- * The output mirrors Figma's aliasing tiers as CASCADE LAYERS. The global token
- * layer (src/styles/tokens/tokens.css) carries three layers:
+ * Sources of truth:
+ *   src/styles/tokens/figma.tokens.json      — the DTCG dump (25 collections).
+ *   src/styles/tokens/figma.extensions.json  — resolved values for the 11 EXTENSION
+ *                                              collections that carry NO leaves in the
+ *                                              dump (hero/mono, style-transparent/
+ *                                              saturated, structure-snap-*, display-
+ *                                              compact/comfortable). Read live from
+ *                                              Figma and cached here.
  *
- *   @layer core      — Core, the first alias tier (--sherpa-core-*). Primitive
- *                      references are RESOLVED to their literal values, so the
- *                      Primitives collection is reference-only and never compiled.
- *   @layer style     — Style (Sherpa), the semantic tier (--sherpa-content-*,
- *                      --sherpa-surface-*, --sherpa-border-*, status/data-viz/…).
- *                      Light in :root; dark re-points in :root[data-mode="dark"]
- *                      and @media(prefers-color-scheme:dark):not([data-mode=light]).
- *   @layer overrides — the override tier: the [data-status] cascade (--_status-*),
- *                      the Color-Sets / Grouping / Elevation override collections,
- *                      and convenience aliases (font-family / shadow / categorical).
+ * Output layering mirrors Figma's aliasing tiers as cascade layers:
+ *   @layer core      — display[light/dark] ramp resolved to :root (+ dark re-point),
+ *                      plus the sizing/geometry collections (structure, grid, …).
+ *   @layer style     — the big semantic `theme` layer (surface/border/content/…).
+ *   @layer overrides — status cascade, elevation, snap, density, categorical, view.
+ *   @layer components — each scoped component's own <comp>.tokens.css partial.
  *
- * Component-scoped collections (container-*, control-*, button-*, switch-*, …) are
- * NOT in the global file — each is written to its OWN component partial
- * (src/components/<comp>/<comp>.tokens.css) so the component owns its scoping. The
- * component's variant/size modes become [data-*] blocks in that partial.
+ * Primitives are reference-only: any ref into `primitives.*` is inlined to its
+ * literal, so the Primitives collection is never emitted.
  *
  *   node scripts/project-tokens.mjs
  */
@@ -31,13 +35,110 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src/styles/tokens/figma.tokens.json');
+const EXT = join(ROOT, 'src/styles/tokens/figma.extensions.json');
 const OUT = join(ROOT, 'src/styles/tokens/tokens.css');
 const COMPONENTS = join(ROOT, 'src/components');
 const PREFIX = 'sherpa-';
 
 const doc = JSON.parse(readFileSync(SRC, 'utf8'));
+const extDoc = existsSync(EXT) ? JSON.parse(readFileSync(EXT, 'utf8')) : {};
 
-// ── helpers ───────────────────────────────────────────────────────────
+const warnings = [];
+const warn = (msg) => {
+  warnings.push(msg);
+  console.warn('  ⚠ ' + msg);
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// ROUTING — the ONLY hand-config. Each dump/extension collection slug maps to a
+// target. Any collection present in the dump or extension cache but MISSING here
+// is warned about, never silently dropped.
+//
+//   target 'core'     → resolved into @layer core :root (with dark re-point if the
+//                       collection carries a light/dark mode axis).
+//   target 'style'    → the semantic layer, @layer style :root.
+//   target 'override' → @layer overrides. `attr` (if given) turns the collection's
+//                       non-primary MODES into [attr="<mode>"] blocks; otherwise
+//                       only the primary values are emitted.
+//   target {scoped:'<comp-dir>', attr}
+//                     → a component partial (<comp>/<comp>.tokens.css, @layer
+//                       components). Non-primary modes become :host([attr="mode"]).
+//   target 'skip'     → intentionally not emitted (empty/dead/handled elsewhere).
+//
+//   modeAxis:'light-dark' → this collection re-points in dark mode (dump `dark`
+//                       override, or the display-{compact,comfortable} density exts).
+// ──────────────────────────────────────────────────────────────────────────
+const ROUTING = {
+  // Reference-only — never emitted (all refs into it are inlined to literals).
+  primitives: { target: 'skip' },
+
+  // The light/dark colour + scale ramp. Everything colour-ish resolves through it,
+  // so it must be a real emitted layer with a dark re-point.
+  display: { target: 'core', modeAxis: 'light-dark' },
+
+  // The big semantic layer (single mode `Sherpa`, 303 leaves, resolves 100%).
+  theme: { target: 'style' },
+
+  // Shared control geometry. The overhaul merged control/button/container sizing into
+  // `structure` (size modes default/2xs/xs/sm/lg/xl). It is Button's primary consumer
+  // via [data-size], so it is projected into the button partial with a name-remap onto
+  // Button's public var contract; its primary values also stay GLOBAL (@layer core) so
+  // other components (input/nav/container) can consume the shared geometry.
+  structure: {
+    target: { scoped: 'sherpa-button', alsoGlobal: 'core' },
+    attr: 'data-size',
+    // structure leaf path → the button public var name the component's CSS consumes.
+    renameMap: {
+      'structure/height': 'sherpa-button-size-height',
+      'structure/icon-size': 'sherpa-button-size-icon',
+      'structure/structure-font/size': 'sherpa-button-font-size',
+      'structure/structure-font/line-height': 'sherpa-button-font-line-height',
+      'structure/structure-space/gap': 'sherpa-button-space-gap',
+      'structure/structure-space/padding': 'sherpa-button-space-padding',
+    },
+  },
+  grid: { target: 'override', attr: null }, // primary feeds the .sherpa-view grid; breakpoints handled bespoke
+  elevation: { target: 'override', attr: 'data-elevation' },
+
+  // Status look (8 status modes). Primary values → global --sherpa-style-* vars; the
+  // per-status [data-status] cascade is emitted bespoke as the --_status-* contract
+  // components actually consume (see statusBlocks), so attr:null here avoids emitting
+  // a second, redundant --sherpa-style-* mode cascade.
+  style: { target: 'override', attr: null },
+
+  // Consumed bespoke: the typography collection drives the .sherpa-text-<mode> utility
+  // classes + the font atoms (Figma-derived), not a flat --sherpa-typography-* dump.
+  typography: { target: 'skip' },
+
+  // Categorical / sequential / divergent series. Primary (categorical) → the 11
+  // public --sherpa-categorical-* names via a bespoke emit below.
+  'data-viz': { target: 'override', attr: null },
+
+  // Component-scoped collections. Emit each component's Figma collection into its
+  // own partial; non-primary modes → :host([attr="mode"]).
+  input: { target: { scoped: 'sherpa-input-text' }, attr: 'data-state' },
+  navigation: { target: { scoped: 'sherpa-nav-item' }, attr: 'data-nav-state' },
+  switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-style' },
+
+  // Extension-only collections (no leaves in the dump) — consumed from the cache.
+  hero: { target: 'skip' }, // → typography classes
+  mono: { target: 'skip' }, // → typography classes
+  'style-transparent': { target: 'skip' }, // → [data-look="transparent"] status blocks
+  'style-saturated': { target: 'skip' }, // → [data-look="saturated"] status blocks
+  'structure-snap-all-edges': { target: 'skip' }, // → [data-snap] blocks
+  'structure-snap-right-edge': { target: 'skip' },
+  'structure-snap-left-edge': { target: 'skip' },
+  'structure-snap-top-edge': { target: 'skip' },
+  'structure-snap-bottom-edge': { target: 'skip' },
+  'display-compact': { target: 'skip' }, // → [data-density="compact"]
+  'display-comfortable': { target: 'skip' }, // → [data-density="comfortable"]
+
+  // Empty in this dump (0 leaves) — kept as explicit skips so they don't warn.
+  'grid-calendar-d': { target: 'skip' },
+  'grid-calendar-m-y': { target: 'skip' },
+};
+
+// ── helpers (ported from the previous projector; sound) ─────────────────────
 
 /** Normalise DTCG path segments into one CSS-identifier tail (names AND refs). */
 function toIdent(segs) {
@@ -59,6 +160,8 @@ function refName(ref) {
   return `--${PREFIX}${toIdent(segs)}`;
 }
 const isRef = (v) => typeof v === 'string' && v.startsWith('{') && v.endsWith('}');
+/** Cross-library refs the dump can't resolve (only appear in non-primary modes we skip). */
+const isDeadRef = (v) => isRef(v) && v.includes('__library:');
 
 /** literal → CSS value (px for dimensions, bare for unitless). */
 function literal(value, type) {
@@ -69,383 +172,561 @@ function literal(value, type) {
   return String(value);
 }
 
-// ── primitive resolution (so Primitives is reference-only) ──────────────
-// Build dot-path → literal for every Primitives leaf, then resolve any ref that
-// points into primitives down to its literal value.
+// ── primitive resolution (so Primitives is reference-only) ──────────────────
 const primLiteral = {};
-(function walkPrim(node, path) {
-  if (node && typeof node === 'object' && '$value' in node) {
+(function walkPrim(node, path, seen = new WeakSet()) {
+  if (!node || typeof node !== 'object' || seen.has(node)) return;
+  seen.add(node);
+  if ('$value' in node) {
     if (!isRef(node.$value)) primLiteral[path.join('.')] = literal(node.$value, node.$type);
     return;
   }
-  for (const k of Object.keys(node ?? {})) {
+  for (const k of Object.keys(node)) {
     if (k.startsWith('$')) continue;
-    walkPrim(node[k], [...path, k]);
+    walkPrim(node[k], [...path, k], seen);
   }
 })(doc.primitives ?? {}, ['primitives']);
 
-/** ref/literal → CSS value; primitive refs are inlined to their literal. */
+/** ref/literal → CSS value; refs into primitives are inlined to their literal. */
 function toCss(value, type) {
   if (isRef(value)) {
+    if (isDeadRef(value)) return null;
     const dotPath = value.slice(1, -1);
     if (dotPath.startsWith('primitives.') && primLiteral[dotPath] != null) return primLiteral[dotPath];
-    // The Status collection's shadow-color role isn't projected as a flat var
-    // (only its cascade roles are). Elevation refs it → resolve to the base tint.
-    if (dotPath.startsWith('status.status-shadow')) return 'var(--sherpa-elevation-tint)';
     return `var(${refName(value)})`;
   }
   return literal(value, type);
 }
 
-/** Walk a collection subtree → { name, value, dark } leaves (dark = the dark-mode override). */
-function* leaves(node, path = []) {
-  if (node && typeof node === 'object' && '$value' in node) {
+/** A leaf's public var name: drop a redundant repeated collection segment (e.g.
+ * style/style-surface/base → --sherpa-style-surface-base) so emitted global names
+ * match what refName() produces for refs pointing at the same leaf. */
+function leafName(path) {
+  let segs = path;
+  if (segs[1] && segs[1].startsWith(segs[0] + '-')) segs = segs.slice(1);
+  return `--${PREFIX}${toIdent(segs)}`;
+}
+
+/** Walk a collection subtree → structured leaves with modes + scopes (cycle-safe). */
+function* walkLeaves(node, path = [], seen = new WeakSet()) {
+  if (!node || typeof node !== 'object' || seen.has(node)) return;
+  seen.add(node);
+  if ('$value' in node) {
     const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-    const darkRef = ext.modes?.dark;
     yield {
-      name: `--${PREFIX}${toIdent(path)}`,
-      value: toCss(node.$value, node.$type),
-      dark: darkRef != null ? toCss(darkRef, node.$type) : null,
+      path,
+      name: leafName(path),
+      rawPath: path.join('/'),
+      value: node.$value,
+      type: node.$type,
+      modes: ext.modes ?? {},
+      primaryMode: ext.primaryMode,
+      scopes: ext.scopes ?? [],
     };
     return;
   }
-  for (const k of Object.keys(node ?? {})) {
+  for (const k of Object.keys(node)) {
     if (k.startsWith('$')) continue;
-    yield* leaves(node[k], [...path, k]);
+    yield* walkLeaves(node[k], [...path, k], seen);
   }
 }
 
-/** Like leaves() but exposes the raw per-mode override map (for scoped collections). */
-function* leavesWithModes(node, path = []) {
-  if (node && typeof node === 'object' && '$value' in node) {
-    const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-    yield { name: `--${PREFIX}${toIdent(path)}`, rawPath: path.join('/'), primary: node.$value, modes: ext.modes ?? {}, type: node.$type };
-    return;
-  }
-  for (const k of Object.keys(node ?? {})) {
-    if (k.startsWith('$')) continue;
-    yield* leavesWithModes(node[k], [...path, k]);
-  }
-}
-
-// ── @layer core: Core, primitive refs inlined ──────────────────────────
-const coreLines = [];
-for (const leaf of leaves(doc.core ?? {}, ['core'])) coreLines.push(`  ${leaf.name}: ${leaf.value};`);
-
-// ── @layer style: the "lighten-darken" range (from Figma's Display Mode collection) ──
-// A signed alpha-overlay ramp: negative = darken (near-black overlay), positive =
-// lighten (near-white overlay), 0 = transparent. MODE-INVERTING: in dark mode the
-// poles swap (darken overlays white, lighten overlays black) so the SAME index
-// self-inverts — a darken step lightens on a dark ground. We project each step as
-// TWO mode-aware pole tokens (`--sherpa-shade-N` solid + its alpha), then derive
-// tints/shades by `color-mix`-ing a base with the pole. Values mirror Figma exactly.
-//
-// step → { pole rgb (light), alpha }  (dark mode swaps the pole, same alpha)
-const LD_STEPS = {
-  10: { r: 0.2, alpha: 0.1 },
-  20: { r: 0.2, alpha: 0.2 },
-  30: { r: 0.2, alpha: 0.3 },
-  40: { r: 0.1333, alpha: 0.4 },
-  50: { r: 0.1333, alpha: 0.5 },
-  60: { r: 0.1333, alpha: 0.6 },
-  70: { r: 0.0667, alpha: 0.7 },
-  80: { r: 0.0667, alpha: 0.8 },
-  90: { r: 0.0667, alpha: 0.9 },
+// ── scope-aware validation ──────────────────────────────────────────────────
+// scope → the CSS property it is expected to paint (from sherpa-token-dump-drift).
+// We warn when a leaf's scope disagrees with the ref-family it resolves to (e.g. a
+// STROKE_COLOR leaf pointing at a *surface* family, or a fill scope at a *border*
+// family). Warnings only — no behaviour change.
+const SCOPE_PROP = {
+  SHAPE_FILL: 'background',
+  FRAME_FILL: 'background',
+  ALL_FILLS: 'background',
+  TEXT_FILL: 'color',
+  STROKE_COLOR: 'border-color',
+  GAP: 'gap',
+  CORNER_RADIUS: 'border-radius',
+  WIDTH_HEIGHT: 'size',
+  STROKE_FLOAT: 'border-width',
+  EFFECT_COLOR: 'shadow',
+  EFFECT_FLOAT: 'shadow',
 };
-const hx = (v) => Math.round(v * 255).toString(16).padStart(2, '0');
-const grey = (v) => `#${hx(v)}${hx(v)}${hx(v)}`;
-const LIGHT_POLE = 0.9804; // near-white overlay used by the range
-// Emit shade (darken) + tint (lighten) solid pole tokens, light + dark, per step.
-const ldLines = [];
-const ldDarkLines = [];
-for (const [n, s] of Object.entries(LD_STEPS)) {
-  // light mode: shade overlays near-black, tint overlays near-white
-  ldLines.push(`  --sherpa-shade-${n}: ${grey(s.r)};`);
-  ldLines.push(`  --sherpa-tint-${n}: ${grey(LIGHT_POLE)};`);
-  // dark mode: poles invert — shade overlays near-white, tint overlays near-black
-  ldDarkLines.push(`  --sherpa-shade-${n}: ${grey(LIGHT_POLE)};`);
-  ldDarkLines.push(`  --sherpa-tint-${n}: ${grey(s.r)};`);
+function scopeCheck(leaf) {
+  const s = leaf.scopes ?? [];
+  if (!s.length || typeof leaf.value !== 'string' || !isRef(leaf.value)) return;
+  const target = leaf.value.slice(1, -1).toLowerCase();
+  const isStroke = s.includes('STROKE_COLOR');
+  const isFill = s.includes('SHAPE_FILL') || s.includes('FRAME_FILL') || s.includes('ALL_FILLS');
+  // A STROKE_COLOR that resolves through a *surface* family (not border) is suspect.
+  if (isStroke && !isFill && /\.surface\./.test(target)) {
+    warn(`scope mismatch: ${leaf.name} is STROKE_COLOR but resolves to a surface family (${target})`);
+  }
+  // A fill scope that resolves through a *border* family is suspect.
+  if (isFill && !isStroke && /\.border\./.test(target)) {
+    warn(`scope mismatch: ${leaf.name} is a fill scope but resolves to a border family (${target})`);
+  }
+  // A TEXT_FILL that resolves through a surface/border family (not a content family)
+  // is suspect — the expected CSS property (SCOPE_PROP.TEXT_FILL = color) wants ink.
+  if (s.includes('TEXT_FILL') && /\.(surface|border)\./.test(target) && !/\.content\./.test(target)) {
+    warn(`scope mismatch: ${leaf.name} is TEXT_FILL (${SCOPE_PROP.TEXT_FILL}) but resolves to ${target}`);
+  }
 }
 
-// ── @layer style: Style (Sherpa), light + dark ─────────────────────────
-// Interactive hover/down are DERIVED, not hand-picked ramp steps. Each state is the
-// family's own `-base` seed overlaid with a "lighten-darken" SHADE step, via
-// `color-mix(in srgb, <base>, var(--sherpa-shade-N) A%)`. Because the shade pole
-// self-inverts by mode, one derivation is correct in both light and dark. This
-// replicates the Figma lighten-darken range at runtime — one seed → its states, no
-// per-hue token bookkeeping. Degrades to the seed colour on unsupporting engines.
-// Tertiary is exempt — its base is transparent, so it keeps its alpha-overlay value.
-//
-// state → shade step + overlay strength (alpha of that step, as a %):
-const STATE_SHADE = {
-  hover: { step: 10, pct: 10 }, // hover = shade-10 @ 10%
-  down: { step: 20, pct: 20 }, //  down  = shade-20 @ 20%
+// ── @property registrations (modern, animatable custom props) ───────────────
+// Register the interactive-surface seeds + snap radii as <color>/<length> so they
+// animate and validate. Kept small — only props that genuinely benefit.
+const propertyRegistrations = `  @property --sherpa-elevation-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+  }`;
+
+// ════════════════════════════════════════════════════════════════════════════
+// Collect leaves per collection and route them.
+// ════════════════════════════════════════════════════════════════════════════
+const buckets = {
+  core: [], // { name, value(light), dark }
+  coreDark: [],
+  style: [],
+  styleDark: [],
+  override: [], // primary :root lines
+  overrideModeBlocks: [], // [attr="mode"] { … } strings
 };
-function interactiveState(name) {
-  const m = name.match(
-    /^--sherpa-(surface|border)-interactive-(primary|active|secondary)-(hover|down)$/
-  );
-  return m ? { kind: m[1], family: m[2], state: m[3] } : null;
-}
-function deriveState(name) {
-  const s = interactiveState(name);
-  if (!s) return null;
-  // Surfaces name their seed `<family>-base`; borders name it bare `<family>`.
-  const baseRole =
-    s.kind === 'surface'
-      ? `--sherpa-surface-interactive-${s.family}-base`
-      : `--sherpa-border-interactive-${s.family}`;
-  const { step, pct } = STATE_SHADE[s.state];
-  return `color-mix(in srgb, var(${baseRole}) ${100 - pct}%, var(--sherpa-shade-${step}))`;
-}
+const scopedPartials = []; // { comp, css }
 
-const styleLines = [];
-const darkLines = [];
-for (const leaf of leaves(doc['style-sherpa'] ?? {}, [])) {
-  const derived = deriveState(leaf.name);
-  if (derived) {
-    // One derivation covers both modes — base + shade pole both re-point per mode.
-    styleLines.push(`  ${leaf.name}: ${derived};`);
+for (const slug of Object.keys(doc)) {
+  if (slug.startsWith('$')) continue;
+  const route = ROUTING[slug];
+  if (!route) {
+    warn(`unrouted dump collection "${slug}" — add it to ROUTING`);
     continue;
   }
-  styleLines.push(`  ${leaf.name}: ${leaf.value};`);
-  if (leaf.dark) darkLines.push(`  ${leaf.name}: ${leaf.dark};`);
-}
-// The lighten-darken pole tokens live in the same style layer, light + dark.
-styleLines.push(...ldLines);
-darkLines.push(...ldDarkLines);
+  if (route.target === 'skip') continue;
 
-// ── @layer overrides: status cascade ───────────────────────────────────
-// Figma Status roles (verified): surface/default = box tint (color 1),
-// border/default = border + strong accent ink (color 5/7/4), content/title =
-// heading ink on the tint. border also feeds --_status-surface-strong (the badge).
-const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success'];
-const ROLE_MAP = {
-  'status-surface-default': '_status-surface',
-  'status-border-default': '_status-border',
-  'status-content-title': '_status-text',
-};
-const ALSO = { 'status-border-default': '_status-surface-strong' };
-const statusRoles = [];
-(function collectStatus(node, path) {
-  if (node && typeof node === 'object' && '$value' in node) {
-    const ext = node.$extensions?.['figma-console-mcp'] ?? {};
-    statusRoles.push({ role: toIdent(path), modes: ext.modes ?? {} });
-    return;
+  const leaves = [...walkLeaves(doc[slug], [slug])];
+  for (const leaf of leaves) scopeCheck(leaf);
+
+  // ── global targets (core / style) ──
+  if (route.target === 'core' || route.target === 'style') {
+    const dst = route.target === 'core' ? buckets.core : buckets.style;
+    const darkDst = route.target === 'core' ? buckets.coreDark : buckets.styleDark;
+    for (const leaf of leaves) {
+      if (typeof leaf.value === 'boolean') continue; // booleans are scoped visibility flags only
+      const v = toCss(leaf.value, leaf.type);
+      if (v == null) continue;
+      dst.push(`  ${leaf.name}: ${v};`);
+      if (route.modeAxis === 'light-dark' && leaf.modes.dark != null) {
+        const dv = toCss(leaf.modes.dark, leaf.type);
+        if (dv != null && dv !== v) darkDst.push(`  ${leaf.name}: ${dv};`);
+      }
+    }
+    continue;
   }
-  for (const k of Object.keys(node ?? {})) {
-    if (k.startsWith('$')) continue;
-    collectStatus(node[k], [...path, k]);
+
+  // ── override target (primary → :root, modes → [attr="mode"]) ──
+  if (route.target === 'override') {
+    const byMode = {};
+    for (const leaf of leaves) {
+      if (typeof leaf.value === 'boolean') continue;
+      const v = toCss(leaf.value, leaf.type);
+      if (v != null) buckets.override.push(`  ${leaf.name}: ${v};`);
+      if (!route.attr) continue;
+      for (const [mode, mval] of Object.entries(leaf.modes)) {
+        const mv = toCss(mval, leaf.type);
+        if (mv == null) continue;
+        (byMode[mode] ??= []).push(`    ${leaf.name}: ${mv};`);
+      }
+    }
+    for (const [mode, lines] of Object.entries(byMode)) {
+      buckets.overrideModeBlocks.push(`  [${route.attr}="${mode}"] {\n${lines.join('\n')}\n  }`);
+    }
+    continue;
   }
-})(doc.status ?? {}, []);
-const statusBlocks = [];
-for (const mode of STATUS_MODES) {
-  const lines = [];
-  for (const r of statusRoles) {
-    if (r.modes[mode] == null) continue;
-    if (ROLE_MAP[r.role]) lines.push(`  --${ROLE_MAP[r.role]}: ${toCss(r.modes[mode])};`);
-    if (ALSO[r.role]) lines.push(`  --${ALSO[r.role]}: ${toCss(r.modes[mode])};`);
+
+  // ── scoped target → a component partial (optionally also global) ──
+  if (typeof route.target === 'object' && route.target.scoped) {
+    // A collection can be BOTH a component's scoped source AND a shared global base
+    // (structure): emit its primary values into @layer core so other components can
+    // consume the geometry, then also emit the per-mode component partial.
+    if (route.target.alsoGlobal === 'core') {
+      for (const leaf of leaves) {
+        if (typeof leaf.value === 'boolean') continue;
+        const v = toCss(leaf.value, leaf.type);
+        if (v == null) continue;
+        // leaf.name already strips a redundant repeated collection segment
+        // (structure/structure-rounding → --sherpa-structure-rounding-*) so the
+        // global names match what [data-snap] and components consume.
+        buckets.core.push(`  ${leaf.name}: ${v};`);
+      }
+    }
+    scopedPartials.push(
+      buildScopedPartial(slug, route.target.scoped, route.attr, leaves, route.renameMap),
+    );
+    continue;
   }
-  if (lines.length) statusBlocks.push(`  [data-status="${mode}"] {\n${lines.map((l) => '  ' + l).join('\n')}\n  }`);
+
+  warn(`collection "${slug}" has an unrecognised routing target`);
 }
 
-// ── @layer overrides: Override collections ─────────────────────────────
-// Shared alias bases that MULTIPLE components consume (control geometry/colour is
-// used by button/tag/switch/input; color-sets/grouping/elevation are override
-// ramps). These stay global in the overrides layer — a single-component partial
-// can't own a shared base. (Their variant modes, where used, are consumed by the
-// component via its own [data-*]; the primary values live here.)
-// Each override collection: its primary values go in :root; its MODE variants
-// become attribute blocks keyed to `attr` (so a consumer opts into a hue / snap
-// position / elevation by setting the attribute). `attr:null` = primary only
-// (control/badge modes are consumed by components via their own [data-variant]).
-const OVERRIDE_COLLECTIONS = {
-  'color-sets': 'data-color-set', // 11 hues — a component takes a colour set
-  grouping: 'data-snap', // seamless component groups (top/middle/bottom/… positions)
-  elevation: 'data-elevation', // sm/md/lg shadow levels
-  control: null,
-  badge: null,
-};
-const overrideLines = [];
-const overrideModeBlocks = [];
-for (const [collKey, attr] of Object.entries(OVERRIDE_COLLECTIONS)) {
+// ── interactive states via color-mix (replaces the removed shade/tint hack) ──
+// The new Figma model carries NO hover/down leaves — interactive states are DERIVED,
+// not hand-picked ramp steps. For every emitted `theme.surface.<family>.base` seed we
+// synthesise `-hover` and `-down` by mixing the seed toward `currentColor` (the text
+// ink), which darkens on light grounds and lightens on dark grounds automatically —
+// so one derivation is correct in both modes. Degrades to the seed on engines without
+// color-mix. hover = 8% ink, down = 16% ink (mirrors the old shade-10/20 strengths).
+const stateDerivations = [];
+{
+  const seenFam = new Set();
+  for (const line of buckets.style) {
+    const m = line.trim().match(/^(--sherpa-theme-surface-[a-z]+-base):/);
+    if (!m) continue;
+    const seed = m[1];
+    const fam = seed.match(/surface-([a-z]+)-base/)[1];
+    if (seenFam.has(fam)) continue;
+    seenFam.add(fam);
+    stateDerivations.push(
+      `  --sherpa-theme-surface-${fam}-hover: color-mix(in oklab, var(${seed}) 92%, currentColor);`,
+    );
+    stateDerivations.push(
+      `  --sherpa-theme-surface-${fam}-down: color-mix(in oklab, var(${seed}) 84%, currentColor);`,
+    );
+  }
+}
+
+// Extension collections that live ONLY in the cache — warn if the cache carries a
+// collection ROUTING never mentions.
+for (const slug of Object.keys(extDoc)) {
+  if (!(slug in ROUTING)) warn(`extension cache collection "${slug}" is not in ROUTING`);
+}
+
+/**
+ * A scoped component partial. Non-primary modes become :host([attr="mode"]). Boolean
+ * mode-driven props become private `--_<flag>` visibility vars (true→revert-layer,
+ * false→none) the component reads with `display: var(--_flag, …)` — visibility stays
+ * in CSS, driven by the mode.
+ */
+function buildScopedPartial(slug, comp, attr, leaves, renameMap) {
+  const primaryMode = leaves.find((l) => l.primaryMode)?.primaryMode ?? 'default';
+  const rootVars = [];
   const byMode = {};
-  for (const leaf of leavesWithModes(doc[collKey] ?? {}, [])) {
-    if (typeof leaf.primary === 'boolean') continue;
-    overrideLines.push(`  ${leaf.name}: ${toCss(leaf.primary, leaf.type)};`);
-    if (!attr) continue;
-    for (const [mode, val] of Object.entries(leaf.modes)) {
-      if (mode === 'passthrough') continue; // passthrough == the primary (neutral)
-      (byMode[mode] ??= []).push(`    ${leaf.name}: ${toCss(val, leaf.type)};`);
+  // Boolean mode-driven props → private `--_<flag>` visibility vars using the
+  // established `hasFoo → --_has-foo` / `isFoo → --_is-foo` convention (the leading
+  // collection segment is dropped — the component consumes the bare flag name).
+  const flagName = (path) =>
+    '--_' +
+    path[path.length - 1].replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+  const vis = (b) => (b ? 'revert-layer' : 'none');
+  for (const leaf of leaves) {
+    const isBool = typeof leaf.value === 'boolean';
+    // A renameMap (structure→button) maps a leaf's rawPath to the exact public var
+    // the component's CSS consumes; leaves absent from the map are dropped (the
+    // component only consumes the mapped subset).
+    let name;
+    if (renameMap) {
+      const mapped = renameMap[leaf.rawPath];
+      if (!mapped) continue;
+      name = `--${PREFIX}${mapped.replace(/^sherpa-/, '')}`;
+    } else {
+      name = isBool ? flagName(leaf.path) : leaf.name;
+    }
+    const encode = (val) => (isBool ? vis(val) : toCss(val, leaf.type));
+    const pv = encode(leaf.value);
+    if (pv == null) continue;
+    rootVars.push(`  ${name}: ${pv};`);
+    for (const [mode, mval] of Object.entries(leaf.modes)) {
+      if (mode === primaryMode) continue;
+      const mv = encode(mval);
+      if (mv == null) continue;
+      (byMode[mode] ??= []).push(`  ${name}: ${mv};`);
     }
   }
-  for (const [mode, lines] of Object.entries(byMode)) {
-    overrideModeBlocks.push(`  [${attr}="${mode}"] {\n${lines.join('\n')}\n  }`);
+  const modeBlocks = Object.entries(byMode).map(
+    ([mode, lines]) => `:host([${attr}="${mode}"]) {\n${lines.join('\n')}\n}`,
+  );
+  const css = `/**
+ * ${comp}.tokens.css — component-scoped token aliases, PROJECTED from Figma
+ * (the "${slug}" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
+ * The component's own [${attr}] re-points these per mode. Adopted alongside the
+ * component's own CSS (see SherpaElement.tokens).
+ */
+@layer components {
+  :host {
+${rootVars.map((l) => '  ' + l).join('\n')}
   }
+${modeBlocks.length ? '\n' + modeBlocks.map((b) => b.replace(/^/gm, '  ')).join('\n\n') + '\n' : ''}}
+`;
+  return { comp, css };
 }
 
-// ── @layer overrides: convenience aliases ──────────────────────────────
-const aliasLines = [
-  '  --sherpa-font-family-body: "Inter", system-ui, sans-serif;',
-  '  --sherpa-font-family-mono: ui-monospace, "JetBrains Mono", monospace;',
-  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x-small, 0) var(--sherpa-elevation-offset-y-small, 1px) var(--sherpa-elevation-blur-small, 2px) var(--sherpa-elevation-spread-small, 0) var(--sherpa-elevation-tint, #372f4f33);',
-  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x-base, 0) var(--sherpa-elevation-offset-y-base, 4px) var(--sherpa-elevation-blur-base, 12px) var(--sherpa-elevation-spread-base, 0) var(--sherpa-elevation-tint, #372f4f33);',
-  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x-large, 0) var(--sherpa-elevation-offset-y-large, 12px) var(--sherpa-elevation-blur-large, 32px) var(--sherpa-elevation-spread-large, 0) var(--sherpa-elevation-tint, #372f4f33);',
-];
-for (let i = 1; i <= 11; i++) aliasLines.push(`  --sherpa-categorical-${i}: var(--sherpa-data-viz-categorical-color-${i});`);
-
-// ── @layer style: semantic typography (from the Figma `Typography` collection) ──
-// Figma model (reworked 2026-08-27): `Typography` modes are SIZE (base, h1–h5,
-// large, small, xs). A text node pins a size-mode (→ one shared `size` +
-// `line-height` + `letter-spacing` var resolves per mode) and binds one of six
-// `weight/*` vars. Hero/Mono are family extensions overriding the shared `family`.
-// The CSS below stays a flat set of semantic atoms — components consume a stable
-// name (`--sherpa-font-size-heading-h1`) instead of the raw `--sherpa-core-fonts-*`
-// ramp, so the mode flip does not change any component's CSS contract. Roles are
-// composed from these atoms by the `.sherpa-text-*` utility classes below.
+// ════════════════════════════════════════════════════════════════════════════
+// Typography — REAL Figma modes (Figma wins). Emit one utility class per mode.
+// ════════════════════════════════════════════════════════════════════════════
+// The `typography` collection has ONE var per property (family, size, line-height,
+// letter-spacing, paragraph-spacing) plus a SIX-var weight ramp (weight/{light,
+// regular,medium,semibold,bold,black}). Each property var carries a per-MODE
+// override map; the modes ARE the text sizes: base (primary), h1–h5, large, small,
+// xs. Hero/Mono are family variants whose values live in the extension cache with
+// the same mode shape.
 //
-// Atom → core-primitive map mirrors the Figma size-mode + weight values exactly:
-const TYPO = {
-  // families
-  'font-family-brand': 'var(--sherpa-font-family-body, "Inter", system-ui, sans-serif)',
-  'font-family-hero':  'var(--sherpa-font-family-body, "Inter", system-ui, sans-serif)',
-  'font-family-mono':  'var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace)',
-  // sizes — UI headings
-  'font-size-heading-h1': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
-  'font-size-heading-h2': 'var(--sherpa-core-fonts-scale-xl, 20px)',
-  'font-size-heading-h3': 'var(--sherpa-core-fonts-scale-lg, 16px)',
-  'font-size-heading-h4': 'var(--sherpa-core-fonts-scale-base, 14px)',
-  'font-size-heading-h5': 'var(--sherpa-core-fonts-scale-sm, 12px)',
-  // sizes — hero (promo)
-  'font-size-hero-h1': 'var(--sherpa-core-fonts-scale-13xl, 64px)',
-  'font-size-hero-h2': 'var(--sherpa-core-fonts-scale-11xl, 52px)',
-  'font-size-hero-h3': 'var(--sherpa-core-fonts-scale-9xl, 44px)',
-  'font-size-hero-h4': 'var(--sherpa-core-fonts-scale-7xl, 40px)',
-  'font-size-hero-h5': 'var(--sherpa-core-fonts-scale-5xl, 32px)',
-  // sizes — body
-  'font-size-body-large': 'var(--sherpa-core-fonts-scale-lg, 16px)',
-  'font-size-body-base':  'var(--sherpa-core-fonts-scale-base, 14px)',
-  'font-size-body-small': 'var(--sherpa-core-fonts-scale-sm, 12px)',
-  'font-size-body-xs':    'var(--sherpa-core-fonts-scale-xs, 10px)',
-  // weights
-  'font-weight-light':    'var(--sherpa-core-fonts-weight-300, 300)',
-  'font-weight-regular':  'var(--sherpa-core-fonts-weight-400, 400)',
-  'font-weight-medium':   'var(--sherpa-core-fonts-weight-500, 500)',
-  'font-weight-semibold': 'var(--sherpa-core-fonts-weight-600, 600)',
-  'font-weight-bold':     'var(--sherpa-core-fonts-weight-700, 700)',
-  'font-weight-black':    'var(--sherpa-core-fonts-weight-900, 900)',
-  // line-heights (a length from the scale, ~1.4× the size)
-  'line-height-heading-h1': 'var(--sherpa-core-fonts-scale-5xl, 32px)',
-  'line-height-heading-h2': 'var(--sherpa-core-fonts-scale-3xl, 28px)',
-  'line-height-heading-h3': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
-  'line-height-heading-h4': 'var(--sherpa-core-fonts-scale-xl, 20px)',
-  'line-height-heading-h5': 'var(--sherpa-core-fonts-scale-lg, 16px)',
-  'line-height-hero-h1': 'var(--sherpa-core-fonts-scale-14xl, 72px)',
-  'line-height-hero-h2': 'var(--sherpa-core-fonts-scale-12xl, 56px)',
-  'line-height-hero-h3': 'var(--sherpa-core-fonts-scale-10xl, 48px)',
-  'line-height-hero-h4': 'var(--sherpa-core-fonts-scale-9xl, 44px)',
-  'line-height-hero-h5': 'var(--sherpa-core-fonts-scale-6xl, 36px)',
-  'line-height-body-large': 'var(--sherpa-core-fonts-scale-2xl, 24px)',
-  'line-height-body-base':  'var(--sherpa-core-fonts-scale-xl, 20px)',
-  'line-height-body-small': 'var(--sherpa-core-fonts-scale-lg, 16px)',
-  'line-height-body-xs':    'var(--sherpa-core-fonts-scale-lg, 16px)',
-  // letter-spacing (raw px)
-  'letter-spacing-heading': '-0.2px',
-  'letter-spacing-hero':    '-0.5px',
-  'letter-spacing-body':    '0px',
-  // paragraph spacing
-  'paragraph-base': 'var(--sherpa-core-fonts-scale-2xs, 8px)',
-};
-const typoLines = Object.entries(TYPO).map(([name, val]) => `  --sherpa-${name}: ${val};`);
+// WEIGHT AXIS DECISION (documented): weight is a SEPARATE axis — the six weight
+// sub-vars are identical across every mode (they're the shared weight ramp, not a
+// per-mode value). So a mode does not dictate a weight on its own. We pick a
+// sensible DEFAULT weight per mode class (headings h1–h5 → semibold; body base/
+// large/small/xs → regular) so `.sherpa-text-<mode>` is a complete text style; a
+// consumer overrides `font-weight` on the element to pick a different ramp step.
+const typoLeaves = [...walkLeaves(doc.typography ?? {}, ['typography'])];
+const typoBy = {}; // property-name → { primary, modes, type }
+for (const leaf of typoLeaves) {
+  const key = leaf.path.slice(1).join('/'); // e.g. 'size', 'weight/regular'
+  typoBy[key] = { primary: leaf.value, modes: leaf.modes, type: leaf.type };
+}
+const TYPO_MODES = ['base', 'h1', 'h2', 'h3', 'h4', 'h5', 'large', 'small', 'xs'];
+const HEADING_MODES = new Set(['h1', 'h2', 'h3', 'h4', 'h5']);
+const defaultWeightFor = (mode) => (HEADING_MODES.has(mode) ? 'semibold' : 'regular');
 
-// Role utility classes — one per Figma text Style. Apply a role, get every atom;
-// override any single --sherpa-font-* on the element to "detach" one atom (mirrors
-// the Figma "apply Style → tweak an atom" flow). `.sherpa-text-*` sets the five
-// text properties from the atoms above.
-const TEXT_ROLES = {
-  'heading-h1': { size: 'heading-h1', lh: 'heading-h1', wt: 'semibold', fam: 'brand', ls: 'heading' },
-  'heading-h2': { size: 'heading-h2', lh: 'heading-h2', wt: 'semibold', fam: 'brand', ls: 'heading' },
-  'heading-h3': { size: 'heading-h3', lh: 'heading-h3', wt: 'semibold', fam: 'brand', ls: 'heading' },
-  'heading-h4': { size: 'heading-h4', lh: 'heading-h4', wt: 'semibold', fam: 'brand', ls: 'heading' },
-  'heading-h5': { size: 'heading-h5', lh: 'heading-h5', wt: 'semibold', fam: 'brand', ls: 'heading' },
-  'hero-h1': { size: 'hero-h1', lh: 'hero-h1', wt: 'bold', fam: 'hero', ls: 'hero' },
-  'hero-h2': { size: 'hero-h2', lh: 'hero-h2', wt: 'bold', fam: 'hero', ls: 'hero' },
-  'hero-h3': { size: 'hero-h3', lh: 'hero-h3', wt: 'bold', fam: 'hero', ls: 'hero' },
-  'hero-h4': { size: 'hero-h4', lh: 'hero-h4', wt: 'bold', fam: 'hero', ls: 'hero' },
-  'hero-h5': { size: 'hero-h5', lh: 'hero-h5', wt: 'bold', fam: 'hero', ls: 'hero' },
-  'body-large': { size: 'body-large', lh: 'body-large', wt: 'regular', fam: 'brand', ls: 'body' },
-  'body-base': { size: 'body-base', lh: 'body-base', wt: 'regular', fam: 'brand', ls: 'body' },
-  'body-base-medium': { size: 'body-base', lh: 'body-base', wt: 'medium', fam: 'brand', ls: 'body' },
-  'body-base-strong': { size: 'body-base', lh: 'body-base', wt: 'semibold', fam: 'brand', ls: 'body' },
-  'body-small': { size: 'body-small', lh: 'body-small', wt: 'regular', fam: 'brand', ls: 'body' },
-  'body-xs': { size: 'body-xs', lh: 'body-xs', wt: 'regular', fam: 'brand', ls: 'body' },
-  'mono-base': { size: 'body-base', lh: 'body-base', wt: 'regular', fam: 'mono', ls: 'body' },
-  'mono-small': { size: 'body-small', lh: 'body-small', wt: 'regular', fam: 'mono', ls: 'body' },
-};
-const textRoleBlocks = Object.entries(TEXT_ROLES).map(([role, r]) =>
-  `  .sherpa-text-${role} {
-    font-family: var(--sherpa-font-family-${r.fam});
-    font-size: var(--sherpa-font-size-${r.size});
-    font-weight: var(--sherpa-font-weight-${r.wt});
-    line-height: var(--sherpa-line-height-${r.lh});
-    letter-spacing: var(--sherpa-letter-spacing-${r.ls});
-  }`
+/** Resolve a typography property at a given mode → CSS value (primary if unset). */
+function typoVal(prop, mode, type) {
+  const rec = typoBy[prop];
+  if (!rec) return null;
+  const val = mode in (rec.modes ?? {}) ? rec.modes[mode] : rec.primary;
+  return toCss(val, type ?? rec.type);
+}
+/** Same, but from the extension cache (hero/mono). Falls back to base typography. */
+function extTypoVal(slug, prop, mode) {
+  const v = extDoc[slug]?.vars?.[prop];
+  if (v && v[mode] != null) return literal(v[mode], prop.startsWith('weight') ? 'fontWeight' : 'dimension');
+  return null;
+}
+
+// Families: the base family is a var; hero uses the body font, mono uses the mono
+// font (the extension cache did NOT capture the `family` override, and the task
+// fixes these two by definition). Expose the two family atoms once.
+const FONT_BODY = '"Inter", system-ui, sans-serif';
+const FONT_MONO = 'ui-monospace, "JetBrains Mono", monospace';
+
+function textClass(className, family, valueOf) {
+  // valueOf(prop) → CSS value for size/line-height/letter-spacing.
+  return `  .${className} {
+    font-family: ${family};
+    font-size: ${valueOf('size')};
+    line-height: ${valueOf('line-height')};
+    letter-spacing: ${valueOf('letter-spacing')};
+    font-weight: ${valueOf('weight')};
+  }`;
+}
+
+const textClassBlocks = [];
+for (const mode of TYPO_MODES) {
+  const wt = defaultWeightFor(mode);
+  // body / brand
+  textClassBlocks.push(
+    textClass(`sherpa-text-${mode}`, `var(--sherpa-font-family-body, ${FONT_BODY})`, (p) =>
+      p === 'weight' ? typoVal(`weight/${wt}`, mode) : typoVal(p, mode),
+    ),
+  );
+  // hero (promo) — same sizes as body in this dump, body font family
+  textClassBlocks.push(
+    textClass(`sherpa-text-hero-${mode}`, `var(--sherpa-font-family-body, ${FONT_BODY})`, (p) =>
+      p === 'weight'
+        ? extTypoVal('hero', `weight/${wt}`, mode) ?? typoVal(`weight/${wt}`, mode)
+        : extTypoVal('hero', p, mode) ?? typoVal(p, mode),
+    ),
+  );
+  // mono — monospace family
+  textClassBlocks.push(
+    textClass(`sherpa-text-mono-${mode}`, `var(--sherpa-font-family-mono, ${FONT_MONO})`, (p) =>
+      p === 'weight'
+        ? extTypoVal('mono', `weight/${wt}`, mode) ?? typoVal(`weight/${wt}`, mode)
+        : extTypoVal('mono', p, mode) ?? typoVal(p, mode),
+    ),
+  );
+}
+
+// Font atoms — the STABLE public names 44 component CSS files already consume. These
+// are NOT invented: each is derived from a real typography mode / weight ramp step,
+// so the values track Figma. (font-family, font-weight ramp, and the size subset the
+// component layer references.) Kept as a compatibility bridge over the mode classes.
+const fontAtomLines = [
+  `  --sherpa-font-family-body: ${FONT_BODY};`,
+  `  --sherpa-font-family-mono: ${FONT_MONO};`,
+  `  --sherpa-font-weight-light: ${typoVal('weight/light', 'base')};`,
+  `  --sherpa-font-weight-regular: ${typoVal('weight/regular', 'base')};`,
+  `  --sherpa-font-weight-medium: ${typoVal('weight/medium', 'base')};`,
+  `  --sherpa-font-weight-semibold: ${typoVal('weight/semibold', 'base')};`,
+  `  --sherpa-font-weight-bold: ${typoVal('weight/bold', 'base')};`,
+  `  --sherpa-font-weight-black: ${typoVal('weight/black', 'base')};`,
+  `  --sherpa-font-size-body-large: ${typoVal('size', 'large')};`,
+  `  --sherpa-font-size-body-base: ${typoVal('size', 'base')};`,
+  `  --sherpa-font-size-body-small: ${typoVal('size', 'small')};`,
+  `  --sherpa-font-size-body-xs: ${typoVal('size', 'xs')};`,
+  `  --sherpa-font-size-heading-h1: ${typoVal('size', 'h1')};`,
+  `  --sherpa-font-size-heading-h2: ${typoVal('size', 'h2')};`,
+  `  --sherpa-font-size-heading-h3: ${typoVal('size', 'h3')};`,
+  `  --sherpa-font-size-heading-h4: ${typoVal('size', 'h4')};`,
+  `  --sherpa-font-size-heading-h5: ${typoVal('size', 'h5')};`,
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// Categorical series — the 11 public --sherpa-categorical-* names.
+// ════════════════════════════════════════════════════════════════════════════
+// data-viz `series/1..11` primary mode = `categorical`; each resolves to a theme
+// categorical colour. Emit the stable public names (consumed by charts).
+const categoricalLines = [];
+for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
+  const m = leaf.rawPath.match(/series\/(\d+)$/);
+  if (!m) continue;
+  const v = toCss(leaf.value, leaf.type);
+  if (v != null) categoricalLines.push(`  --sherpa-categorical-${m[1]}: ${v};`);
+}
+categoricalLines.sort(
+  (a, b) => Number(a.match(/-(\d+):/)[1]) - Number(b.match(/-(\d+):/)[1]),
 );
 
-// ── @layer overrides: Layout Grid utility (.sherpa-layout-grid) ────────
-// Figma layout-grid vars drive a real CSS Grid. Mobile is the primary (4 cols);
-// tablet/desktop/wide re-point columns + max-width. Keyed to @container width via
-// the mode max-widths, so a grid inside any container adapts. Vars are exposed so
-// a consumer can override; the class wires them into grid-template-columns etc.
-const grid = {};
-for (const leaf of leavesWithModes(doc['layout-grid'] ?? {}, [])) {
-  // `columns` is a COUNT (typed dimension in Figma but unitless in CSS grid).
-  const unitless = leaf.name.endsWith('-columns');
-  const val = unitless && typeof leaf.primary === 'number' ? String(leaf.primary) : toCss(leaf.primary, leaf.type);
-  grid[leaf.name] = { primary: val, modes: leaf.modes, type: leaf.type };
+// ════════════════════════════════════════════════════════════════════════════
+// Status cascade — an ancestor [data-status] emits --_status-* to shadow roots.
+// ════════════════════════════════════════════════════════════════════════════
+// The `style` collection carries the 8 status modes. Map its roles to the public
+// --_status-* cascade vars components consume via fallback chains.
+const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success', 'active', 'inactive'];
+const STATUS_ROLE_MAP = {
+  'style-surface/base': '_status-surface',
+  'style-surface/base +2': '_status-surface-strong',
+  'style-border/base': '_status-border',
+  'style-content/base': '_status-text',
+  'style-content/inverse': '_status-text-on-color',
+  'style-indicator/accent': '_status-icon',
+};
+const statusBlocks = [];
+// Build a path → leaf lookup keyed to STATUS_ROLE_MAP keys ('style-surface/base' …).
+const styleByKey = {};
+for (const l of walkLeaves(doc.style ?? {}, ['style'])) {
+  const key = l.path.slice(1).join('/'); // 'style-surface/base' etc
+  styleByKey[key] = l;
 }
-const gv = (k) => grid[`--sherpa-layout-grid-${k}`];
-const layoutGridBlock =
-  Object.keys(grid).length === 0
-    ? ''
-    : `  .sherpa-layout-grid {
-${Object.entries(grid)
-  .map(([n, g]) => `    ${n}: ${g.primary};`)
-  .join('\n')}
-
-    display: grid;
-    grid-template-columns: repeat(var(--sherpa-layout-grid-columns), minmax(0, 1fr));
-    column-gap: var(--sherpa-layout-grid-gap-horizontal);
-    row-gap: var(--sherpa-layout-grid-gap-vertical);
-    grid-auto-rows: var(--sherpa-layout-grid-row-height);
-    max-inline-size: var(--sherpa-layout-grid-max-width);
-    padding-inline: var(--sherpa-layout-grid-padding);
-    margin-inline: auto;
+for (const mode of STATUS_MODES) {
+  const lines = [];
+  for (const [key, publicVar] of Object.entries(STATUS_ROLE_MAP)) {
+    const leaf = styleByKey[key];
+    if (!leaf) continue;
+    const raw = mode in leaf.modes ? leaf.modes[mode] : leaf.value;
+    const v = toCss(raw, leaf.type);
+    if (v != null) lines.push(`    --${publicVar}: ${v};`);
   }
+  if (lines.length) statusBlocks.push(`  [data-status="${mode}"] {\n${lines.join('\n')}\n  }`);
+}
 
-  /* The grid adapts to its nearest inline-size container. Give the grid's parent
-     (or a .sherpa-view body region) container-type:inline-size so these breakpoints
-     fire; without a container ancestor the grid stays at the mobile base (4 columns). */
-${['tablet', 'desktop', 'wide']
-  .map((bp) => {
-    const w = gv('max-width')?.modes?.[bp];
-    const cols = gv('columns')?.modes?.[bp];
-    if (w == null || cols == null) return '';
-    return `  @container (min-width: ${literal(w, 'dimension')}) {
-    .sherpa-layout-grid {
-      --sherpa-layout-grid-columns: ${literal(cols, 'number')};
-      --sherpa-layout-grid-max-width: ${literal(w, 'dimension')};
+// ════════════════════════════════════════════════════════════════════════════
+// Look tiers — style-transparent / style-saturated (from the extension cache).
+// ════════════════════════════════════════════════════════════════════════════
+// SELECTOR CHOICE (documented): a component opts into a look tier with
+// `[data-look="transparent"|"saturated"]`; that tier re-points the same status
+// cascade vars, per status mode, so `[data-look][data-status]` composes. Values are
+// literal hex from the cache (extension overrides don't serialise as refs).
+const LOOK_ROLE_MAP = {
+  'style-surface/base': '_status-surface',
+  'style-surface/base +2': '_status-surface-strong',
+  'style-border/base': '_status-border',
+  'style-content/base': '_status-text',
+  'style-content/inverse': '_status-text-on-color',
+  'style-indicator/accent': '_status-icon',
+};
+const lookBlocks = [];
+for (const look of ['transparent', 'saturated']) {
+  const cache = extDoc[`style-${look}`]?.vars;
+  if (!cache) {
+    warn(`look tier "style-${look}" missing from extension cache`);
+    continue;
+  }
+  const defaultMode = extDoc[`style-${look}`].defaultMode ?? 'default';
+  const modes = new Set();
+  for (const v of Object.values(cache)) for (const m of Object.keys(v)) modes.add(m);
+  for (const mode of modes) {
+    const status = mode === defaultMode ? null : mode; // 'default' look tier has no status
+    const lines = [];
+    for (const [key, publicVar] of Object.entries(LOOK_ROLE_MAP)) {
+      const val = cache[key]?.[mode];
+      if (val == null) continue;
+      lines.push(`    --${publicVar}: ${val};`);
     }
-  }`;
-  })
-  .filter(Boolean)
-  .join('\n')}`;
+    if (!lines.length) continue;
+    const sel = status
+      ? `  [data-look="${look}"][data-status="${status}"]`
+      : `  [data-look="${look}"]`;
+    lookBlocks.push(`${sel} {\n${lines.join('\n')}\n  }`);
+  }
+}
 
-// ── @layer overrides: view frame (.sherpa-view) ────────────────────────
-// The light-DOM application shell that renderView() wraps a view in: a two-column
-// grid (nav rail + main column, header row over scrolling body). Regions are placed
-// by their data-region attribute. A fixed structural utility (not Figma-var driven);
-// replaced the former sherpa-app-shell custom element.
+// ════════════════════════════════════════════════════════════════════════════
+// Snap — per-edge corner rounding ([data-snap]) from the extension cache.
+// ════════════════════════════════════════════════════════════════════════════
+// Each structure-snap-<edge> extension overrides the 4 structure-rounding corners.
+// Emit one [data-snap="<edge>"] block re-pointing the 4 public corner radius vars
+// (primary/`default` size step — the component's own size mode still applies to
+// non-corner geometry). Edge slug 'all-edges' → 'all'.
+const CORNER_VARS = {
+  'structure-rounding/top-left': '--sherpa-structure-rounding-top-left',
+  'structure-rounding/top-right': '--sherpa-structure-rounding-top-right',
+  'structure-rounding/bottom-left': '--sherpa-structure-rounding-bottom-left',
+  'structure-rounding/bottom-right': '--sherpa-structure-rounding-bottom-right',
+};
+const snapBlocks = [];
+for (const slug of Object.keys(extDoc)) {
+  const m = slug.match(/^structure-snap-(.+)$/);
+  if (!m) continue;
+  const edge = m[1] === 'all-edges' ? 'all' : m[1].replace(/-edge$/, '');
+  const cache = extDoc[slug].vars;
+  const lines = [];
+  for (const [key, publicVar] of Object.entries(CORNER_VARS)) {
+    const val = cache[key]?.default;
+    if (val == null) continue;
+    lines.push(`    ${publicVar}: ${literal(val, 'dimension')};`);
+  }
+  if (lines.length) snapBlocks.push(`  [data-snap="${edge}"] {\n${lines.join('\n')}\n  }`);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Density — display-compact / display-comfortable ([data-density]).
+// ════════════════════════════════════════════════════════════════════════════
+// These are full 163-var light/dark ramps that OVERRIDE the display collection.
+// Emit each as a [data-density="<name>"] block re-pointing every display var (light),
+// plus a dark re-point nested under the mode + prefers-color-scheme. Names mirror
+// the display leaf names exactly (same toIdent), so they shadow the core ramp.
+function densityBlock(slug, name) {
+  const cache = extDoc[slug]?.vars;
+  if (!cache) {
+    warn(`density "${slug}" missing from extension cache`);
+    return { light: '', dark: '' };
+  }
+  const lightLines = [];
+  const darkLines = [];
+  for (const [rawPath, byMode] of Object.entries(cache)) {
+    const cssName = `--${PREFIX}${toIdent(['display', ...rawPath.split('/')])}`;
+    const lv = byMode.light;
+    if (lv != null) lightLines.push(`    ${cssName}: ${literal(lv, 'dimension')};`);
+    if (byMode.dark != null && byMode.dark !== byMode.light)
+      darkLines.push(`      ${cssName}: ${literal(byMode.dark, 'dimension')};`);
+  }
+  return {
+    light: `  [data-density="${name}"] {\n${lightLines.join('\n')}\n  }`,
+    dark: darkLines.length
+      ? `    [data-density="${name}"] {\n${darkLines.join('\n')}\n    }`
+      : '',
+  };
+}
+const densityCompact = densityBlock('display-compact', 'compact');
+const densityComfortable = densityBlock('display-comfortable', 'comfortable');
+
+// ════════════════════════════════════════════════════════════════════════════
+// Elevation shadow convenience aliases (traceable to the elevation collection).
+// ════════════════════════════════════════════════════════════════════════════
+const shadowAliasLines = [
+  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
+  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
+  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// .sherpa-view frame utility — copied verbatim (consumed by src/core/render-view.ts).
+// ════════════════════════════════════════════════════════════════════════════
 const viewFrameBlock = `  .sherpa-view {
     --sherpa-view-nav-width: 240px;
 
@@ -489,123 +770,114 @@ const viewFrameBlock = `  .sherpa-view {
       'nav body';
   }`;
 
-// ── component-scoped partials (each component owns its scoping) ─────────
-// collection → { comp: the component dir, attr: variant attribute, default: the
-// mode equal to the primary (emitted once at :host, not repeated) }.
-const SCOPED = {
-  container: { comp: 'sherpa-container', attr: 'data-variant', default: 'default' },
-  button: { comp: 'sherpa-button', attr: 'data-size', default: '2xs' },
-  input: { comp: 'sherpa-input-text', attr: 'data-state', default: 'default' },
-  navigation: { comp: 'sherpa-nav-item', attr: 'data-nav-state', default: 'default' },
-  switch: { comp: 'sherpa-switch', attr: 'data-style', default: 'standard' },
-};
-const partials = []; // { comp, css }
-for (const [collKey, cfg] of Object.entries(SCOPED)) {
-  if (!cfg.comp || !doc[collKey]) continue;
-  const rootVars = [];
-  const byMode = {};
-  for (const leaf of leavesWithModes(doc[collKey], [])) {
-    // Boolean flags (hasValidation, hasLabel, …) are mode-driven VISIBILITY toggles,
-    // not value tokens. Emit them as a --_<flag> display var (true→revert-layer =
-    // visible, false→none = hidden) that flips per mode; the component consumes it
-    // as `display: var(--_<flag>, …)`. Visibility stays in CSS, driven by the mode.
-    const isBool = typeof leaf.primary === 'boolean';
-    // Boolean flag → a private, camelCase-split visibility var: hasValidation →
-    // --_has-validation. Value is a display keyword the component reads.
-    const name = isBool
-      ? '--_' + leaf.rawPath.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()
-      : leaf.name;
-    const vis = (b) => (b ? 'revert-layer' : 'none');
-    const value = isBool ? vis(leaf.primary) : toCss(leaf.primary, leaf.type);
-    rootVars.push(`  ${name}: ${value};`);
-    for (const [mode, val] of Object.entries(leaf.modes)) {
-      if (mode === cfg.default) continue;
-      const mv = isBool ? vis(val) : toCss(val, leaf.type);
-      (byMode[mode] ??= []).push(`  ${name}: ${mv};`);
-    }
-  }
-  const modeBlocks = Object.entries(byMode).map(
-    ([mode, lines]) => `:host([${cfg.attr}="${mode}"]) {\n${lines.join('\n')}\n}`,
-  );
-  const css = `/**
- * ${cfg.comp}.tokens.css — component-scoped token aliases, PROJECTED from Figma
- * (the "${collKey}" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
- * These alias up through overrides → style → core. The component's own [${cfg.attr}]
- * re-points them per variant. Import/adopt this alongside the component's CSS.
- */
-@layer components {
-  :host {
-${rootVars.map((l) => '  ' + l).join('\n')}
-  }
-
-${modeBlocks.map((b) => b.replace(/^/gm, '  ')).join('\n\n')}
-}
-`;
-  partials.push({ comp: cfg.comp, css });
-}
-
-// ── emit global tokens.css ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// Emit global tokens.css.
+// ════════════════════════════════════════════════════════════════════════════
 const header = `/**
  * tokens.css — Sherpa's global token layer, PROJECTED from Figma.
  *
- * Generated by scripts/project-tokens.mjs from figma.tokens.json. DO NOT EDIT BY
- * HAND — edit in Figma, re-export, re-project. Load once in the document; the
- * resolved --sherpa-* values inherit into every component shadow root.
+ * Generated by scripts/project-tokens.mjs from figma.tokens.json (+ the extension
+ * cache figma.extensions.json). DO NOT EDIT BY HAND — edit in Figma, re-export,
+ * re-project. Load once in the document; the resolved --sherpa-* values inherit into
+ * every component shadow root.
  *
  * Layers mirror Figma's aliasing tiers (Primitives resolved away → reference-only):
- *   core → style → overrides.  Component-scoped collections live in each
+ *   core → style → overrides → components.  Component-scoped collections live in each
  *   component's own <comp>.tokens.css partial (@layer components).
  */
-@layer core, style, overrides, components;`;
+@layer core, style, overrides, components;
+
+${propertyRegistrations}`;
 
 const css = `${header}
 
 @layer core {
   :root {
-${coreLines.join('\n')}
-  }
-}
-
-@layer style {
-  :root {
-${styleLines.join('\n')}
-
-    /* semantic typography atoms — flat, from the Figma \`Typography\` collection */
-${typoLines.map((l) => '  ' + l).join('\n')}
+${buckets.core.join('\n')}
   }
 
   /* Dark mode: explicit choice wins. */
   :root[data-mode="dark"] {
-${darkLines.map((l) => '  ' + l).join('\n')}
+${buckets.coreDark.join('\n')}
   }
 
   /* Dark mode: follow the OS unless an explicit light choice overrides it. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-mode="light"]) {
-${darkLines.map((l) => '    ' + l).join('\n')}
+${buckets.coreDark.map((l) => '  ' + l).join('\n')}
     }
   }
+}
 
-  /* Text roles — one class per Figma text Style; composed from the atoms above. */
-${textRoleBlocks.join('\n\n')}
+@layer style {
+  :root {
+${buckets.style.join('\n')}
+
+    /* typography atoms — derived from real Figma typography modes (see projector) */
+${fontAtomLines.join('\n')}
+
+    /* interactive states — color-mix derivations (replace the removed shade/tint hack) */
+${stateDerivations.join('\n')}
+  }
+${
+  buckets.styleDark.length
+    ? `
+  :root[data-mode="dark"] {
+${buckets.styleDark.join('\n')}
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode="light"]) {
+${buckets.styleDark.map((l) => '  ' + l).join('\n')}
+    }
+  }
+`
+    : ''
+}
+  /* Text roles — one class per Figma typography MODE (base, h1–h5, large, small, xs),
+     for body, hero, and mono families. Weight defaults per mode; override on element. */
+${textClassBlocks.join('\n\n')}
 }
 
 @layer overrides {
   :root {
-${overrideLines.join('\n')}
+${buckets.override.join('\n')}
 
-    /* convenience aliases — stable public names (see project-tokens.mjs) */
-${aliasLines.map((l) => '  ' + l).join('\n')}
+    /* elevation shadow convenience aliases */
+${shadowAliasLines.join('\n')}
+
+    /* categorical data-viz series — stable public names */
+${categoricalLines.join('\n')}
   }
 
   /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
 ${statusBlocks.join('\n\n')}
 
-  /* Colour sets ([data-color-set]) · seamless groups ([data-snap]) · elevation ([data-elevation]) */
-${overrideModeBlocks.join('\n\n')}
+  /* Look tiers — [data-look] re-points the status cascade per status mode. */
+${lookBlocks.join('\n\n')}
 
-  /* Layout Grid utility — a real CSS Grid with responsive @container breakpoints. */
-${layoutGridBlock}
+  /* Elevation ([data-elevation]) · other override collection modes */
+${buckets.overrideModeBlocks.join('\n\n')}
+
+  /* Snap — per-edge corner rounding ([data-snap]). */
+${snapBlocks.join('\n\n')}
+
+  /* Density — [data-density] overrides the display ramp (light). */
+${densityCompact.light}
+
+${densityComfortable.light}
+
+  /* Density dark re-points. */
+  :root[data-mode="dark"] {
+${densityCompact.dark}
+${densityComfortable.dark}
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode="light"]) {
+${densityCompact.dark.replace(/^/gm, '  ')}
+${densityComfortable.dark.replace(/^/gm, '  ')}
+    }
+  }
 
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
 ${viewFrameBlock}
@@ -614,18 +886,24 @@ ${viewFrameBlock}
 
 writeFileSync(OUT, css);
 
-// ── write component partials ───────────────────────────────────────────
+// ── write component partials ────────────────────────────────────────────────
 let wrote = 0;
-for (const { comp, css } of partials) {
+for (const { comp, css: partialCss } of scopedPartials) {
   const dir = join(COMPONENTS, comp);
-  if (!existsSync(dir)) continue;
-  writeFileSync(join(dir, `${comp}.tokens.css`), css);
+  if (!existsSync(dir)) {
+    warn(`scoped component dir missing: ${comp}`);
+    continue;
+  }
+  writeFileSync(join(dir, `${comp}.tokens.css`), partialCss);
   wrote++;
 }
 
 console.log(
-  `✓ tokens.css: @layer core(${coreLines.length}) style(${styleLines.length},${darkLines.length} dark,` +
-    `${typoLines.length} typo,${textRoleBlocks.length} roles) ` +
-    `overrides(${overrideLines.length}+${aliasLines.length} aliases,${statusBlocks.length} status) → global\n` +
-    `✓ ${wrote} component token partials written`,
+  `\n✓ tokens.css written\n` +
+    `  core        ${buckets.core.length} vars (+${buckets.coreDark.length} dark)\n` +
+    `  style       ${buckets.style.length} vars (+${buckets.styleDark.length} dark), ${fontAtomLines.length} font atoms, ${textClassBlocks.length} text classes\n` +
+    `  overrides   ${buckets.override.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${snapBlocks.length} snap, ${categoricalLines.length} categorical\n` +
+    `  density     compact+comfortable (163 vars each)\n` +
+    `✓ ${wrote} component token partials written\n` +
+    `${warnings.length ? `⚠ ${warnings.length} warning(s) — see above` : '✓ no warnings'}`,
 );

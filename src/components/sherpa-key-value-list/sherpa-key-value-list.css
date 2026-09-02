@@ -18,17 +18,17 @@
 .list {
   margin: 0;
   display: grid;
-  row-gap: var(--sherpa-core-space-xs, 8px);
+  row-gap: var(--sherpa-display-space-xs, 8px);
 }
 
 .key {
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   font-weight: var(--sherpa-font-weight-medium, 500);
 }
 
 .value {
   margin: 0;
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #18191a);
   min-inline-size: 0;
 }
 
@@ -36,15 +36,15 @@
 :host([data-layout="horizontal"]) .list,
 :host(:not([data-layout])) .list {
   grid-template-columns: minmax(auto, max-content) 1fr;
-  column-gap: var(--sherpa-core-space-base, 16px);
+  column-gap: var(--sherpa-display-space-base, 16px);
   align-items: baseline;
 }
 
 /* ── Stacked: one column, key above its value ──────────────────────── */
 :host([data-layout="stacked"]) .list {
   grid-template-columns: 1fr;
-  row-gap: var(--sherpa-core-space-sm, 12px);
+  row-gap: var(--sherpa-display-space-sm, 12px);
 }
 :host([data-layout="stacked"]) .key {
-  margin-block-end: var(--sherpa-core-space-3xs, 2px);
+  margin-block-end: var(--sherpa-display-space-3xs, 2px);
 }

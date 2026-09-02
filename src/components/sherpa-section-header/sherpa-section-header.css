@@ -23,7 +23,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
 }
 
 .lead {
@@ -31,13 +31,13 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
 }
 
 /* ── Title ───────────────────────────────────────────────────────────── */
 .title {
   margin: 0;
-  color: var(--sherpa-content-title-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #18191a);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--_title-size);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -50,7 +50,7 @@
 /* ── Description ─────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
@@ -60,7 +60,7 @@
 /* A link inside the heading or description inherits the accent link colour. */
 ::slotted(a),
 .lead a {
-  color: var(--sherpa-content-link-base, #3c5edd);
+  color: var(--sherpa-theme-content-link-base, #3c5edd);
 }
 
 /* ── Actions ─────────────────────────────────────────────────────────── */
@@ -68,7 +68,7 @@
   display: none;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-core-space-xs, 8px);
+  gap: var(--sherpa-display-space-xs, 8px);
 }
 :host([data-has-actions]) .actions { display: flex; }
 
@@ -79,7 +79,7 @@
 /* ── Divider ─────────────────────────────────────────────────────────── */
 .divider {
   display: none;
-  margin: var(--sherpa-core-space-xs, 8px) 0 0;
+  margin: var(--sherpa-display-space-xs, 8px) 0 0;
   border: none;
   border-top: var(--sherpa-core-border-width-base, 1px) solid
     var(--sherpa-border-primary, #d5d5d5);

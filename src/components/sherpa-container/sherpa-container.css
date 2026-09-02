@@ -20,13 +20,13 @@
   min-width: 0;
 
   /* Surface + border fill the whole box; status cascade re-points them. */
-  background: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
-  border: var(--sherpa-container-border-width, 1px) solid
-    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
-  border-radius: var(--sherpa-container-border-radius-top-left, 4px);
-  color: var(--sherpa-container-content-default, #2e2e33);
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  border: var(--sherpa-style-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  color: var(--sherpa-style-content-base, #2e2e33);
 
-  --_pad: var(--sherpa-container-space-padding-md, 16px);
+  --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_shadow: none;
   box-shadow: var(--_shadow);
 }
@@ -48,8 +48,8 @@
 :host([data-elevation="lg"]) { --_shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14)); }
 
 /* ── Padding scale — bound to the scoped container-space vars ──────── */
-:host([data-padding="none"]) { --_pad: var(--sherpa-container-space-padding-none, 0); }
-:host([data-padding="sm"]) { --_pad: var(--sherpa-container-space-padding-sm, 8px); }
+:host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
+:host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-core-space-lg, 20px); }
 
 /* ── Regions ───────────────────────────────────────────────────────── */
@@ -68,13 +68,13 @@
    same status-aware border as the card. */
 :host([data-has-header]) .header {
   display: block;
-  border-bottom: var(--sherpa-container-border-width, 1px) solid
-    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
+  border-bottom: var(--sherpa-style-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-top: var(--sherpa-container-border-width, 1px) solid
-    var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
+  border-top: var(--sherpa-style-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
 }
 
 /* ── State overlay — one region, the active state shown by data-state ─
@@ -90,20 +90,20 @@
   border-radius: inherit;
 }
 .state > slot { display: none; }
-.state-text { color: var(--sherpa-content-secondary-base, #404047); font-size: var(--sherpa-font-size-body-base, 14px); }
+.state-text { color: var(--sherpa-theme-content-body-1, #404047); font-size: var(--sherpa-font-size-body-base, 14px); }
 
 :host([data-state]) .state { display: flex; }
 :host([data-state="loading"]) .state-loading { display: inline-flex; }
 :host([data-state="empty"]) .state-empty { display: inline-flex; }
 :host([data-state="error"]) .state-error { display: inline-flex; }
-:host([data-state="error"]) .state-text { color: var(--sherpa-status-critical-color-5, #bf2c09); }
+:host([data-state="error"]) .state-text { color: var(--sherpa-theme-surface-critical-4, #bf2c09); }
 
 /* Minimal spinner (the default loading content) */
 .spinner {
   width: 20px;
   height: 20px;
   border: 2px solid var(--sherpa-border-primary, #c0c0cc);
-  border-top-color: var(--sherpa-content-active-base, #8500cc);
+  border-top-color: var(--sherpa-theme-content-active-base, #8500cc);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }

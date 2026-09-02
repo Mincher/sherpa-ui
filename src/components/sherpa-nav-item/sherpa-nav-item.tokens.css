@@ -1,72 +1,92 @@
 /**
  * sherpa-nav-item.tokens.css — component-scoped token aliases, PROJECTED from Figma
  * (the "navigation" collection). DO NOT EDIT BY HAND — edit in Figma, re-project.
- * These alias up through overrides → style → core. The component's own [data-nav-state]
- * re-points them per variant. Import/adopt this alongside the component's CSS.
+ * The component's own [data-nav-state] re-points these per mode. Adopted alongside the
+ * component's own CSS (see SherpaElement.tokens).
  */
 @layer components {
   :host {
-    --_nav-container-has-child-items: revert-layer;
-    --_nav-container-has-search-button: none;
-    --_nav-container-has-search-input: revert-layer;
-    --sherpa-nav-container-header-label: Product name;
-    --_nav-container-is-maximised: revert-layer;
-    --sherpa-nav-container-pin-button: active;
-    --sherpa-nav-container-setting-button: default;
-    --sherpa-nav-container-size-width: 320px;
-    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
-    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+    --_has-search-input: revert-layer;
+    --_is-expanded: revert-layer;
+    --_is-hidden-collapsed: revert-layer;
+    --_is-hidden-expanded: none;
+    --sherpa-navigation-nav-container-header-label: Product name;
+    --sherpa-navigation-nav-container-pin-button: active;
+    --sherpa-navigation-nav-container-setting-button: default;
+    --sherpa-navigation-nav-layout-padding: var(--sherpa-theme-padding-md);
+    --sherpa-navigation-nav-layout-width: 320px;
+    --sherpa-navigation-nav-shadow-blur: 0px;
+    --sherpa-navigation-nav-shadow-offset-x: 0px;
+    --sherpa-navigation-nav-shadow-offset-y: 0px;
+    --sherpa-navigation-nav-shadow-spread: 0px;
+    --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
   }
 
   :host([data-nav-state="collapsed"]) {
-    --_nav-container-has-child-items: none;
-    --_nav-container-has-search-button: revert-layer;
-    --_nav-container-has-search-input: none;
-    --sherpa-nav-container-header-label: Product name;
-    --_nav-container-is-maximised: none;
-    --sherpa-nav-container-pin-button: default;
-    --sherpa-nav-container-setting-button: default;
-    --sherpa-nav-container-size-width: 40px;
-    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-none);
-    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+    --_has-search-input: none;
+    --_is-expanded: none;
+    --_is-hidden-collapsed: none;
+    --_is-hidden-expanded: revert-layer;
+    --sherpa-navigation-nav-container-header-label: Product name;
+    --sherpa-navigation-nav-container-pin-button: default;
+    --sherpa-navigation-nav-container-setting-button: default;
+    --sherpa-navigation-nav-layout-padding: var(--sherpa-theme-padding-none);
+    --sherpa-navigation-nav-layout-width: 40px;
+    --sherpa-navigation-nav-shadow-blur: 0px;
+    --sherpa-navigation-nav-shadow-offset-x: 0px;
+    --sherpa-navigation-nav-shadow-offset-y: 0px;
+    --sherpa-navigation-nav-shadow-spread: 0px;
+    --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
   }
 
   :host([data-nav-state="hover"]) {
-    --_nav-container-has-child-items: revert-layer;
-    --_nav-container-has-search-button: none;
-    --_nav-container-has-search-input: revert-layer;
-    --sherpa-nav-container-header-label: Product name;
-    --_nav-container-is-maximised: revert-layer;
-    --sherpa-nav-container-pin-button: default;
-    --sherpa-nav-container-setting-button: default;
-    --sherpa-nav-container-size-width: 320px;
-    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
-    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+    --_has-search-input: revert-layer;
+    --_is-expanded: revert-layer;
+    --_is-hidden-collapsed: revert-layer;
+    --_is-hidden-expanded: none;
+    --sherpa-navigation-nav-container-header-label: Product name;
+    --sherpa-navigation-nav-container-pin-button: default;
+    --sherpa-navigation-nav-container-setting-button: default;
+    --sherpa-navigation-nav-layout-padding: var(--sherpa-theme-padding-md);
+    --sherpa-navigation-nav-layout-width: 320px;
+    --sherpa-navigation-nav-shadow-blur: var(--sherpa-elevation-blur);
+    --sherpa-navigation-nav-shadow-offset-x: var(--sherpa-elevation-offset-x);
+    --sherpa-navigation-nav-shadow-offset-y: var(--sherpa-elevation-offset-y);
+    --sherpa-navigation-nav-shadow-spread: var(--sherpa-elevation-spread);
+    --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
   }
 
   :host([data-nav-state="pinned"]) {
-    --_nav-container-has-child-items: revert-layer;
-    --_nav-container-has-search-button: none;
-    --_nav-container-has-search-input: revert-layer;
-    --sherpa-nav-container-header-label: Product name;
-    --_nav-container-is-maximised: revert-layer;
-    --sherpa-nav-container-pin-button: active;
-    --sherpa-nav-container-setting-button: default;
-    --sherpa-nav-container-size-width: 320px;
-    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
-    --sherpa-nav-container-surface-default: var(--sherpa-app-secondary);
+    --_has-search-input: revert-layer;
+    --_is-expanded: revert-layer;
+    --_is-hidden-collapsed: revert-layer;
+    --_is-hidden-expanded: none;
+    --sherpa-navigation-nav-container-header-label: Product name;
+    --sherpa-navigation-nav-container-pin-button: active;
+    --sherpa-navigation-nav-container-setting-button: default;
+    --sherpa-navigation-nav-layout-padding: var(--sherpa-theme-padding-md);
+    --sherpa-navigation-nav-layout-width: 320px;
+    --sherpa-navigation-nav-shadow-blur: 0px;
+    --sherpa-navigation-nav-shadow-offset-x: 0px;
+    --sherpa-navigation-nav-shadow-offset-y: 0px;
+    --sherpa-navigation-nav-shadow-spread: 0px;
+    --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
   }
 
   :host([data-nav-state="settings"]) {
-    --_nav-container-has-child-items: revert-layer;
-    --_nav-container-has-search-button: none;
-    --_nav-container-has-search-input: revert-layer;
-    --sherpa-nav-container-header-label: Settings;
-    --_nav-container-is-maximised: revert-layer;
-    --sherpa-nav-container-pin-button: active;
-    --sherpa-nav-container-setting-button: active;
-    --sherpa-nav-container-size-width: 320px;
-    --sherpa-nav-container-space-padding: var(--sherpa-container-space-padding-sm);
-    --sherpa-nav-container-surface-default: var(--sherpa-surface-secondary-base);
+    --_has-search-input: revert-layer;
+    --_is-expanded: revert-layer;
+    --_is-hidden-collapsed: revert-layer;
+    --_is-hidden-expanded: none;
+    --sherpa-navigation-nav-container-header-label: Settings;
+    --sherpa-navigation-nav-container-pin-button: active;
+    --sherpa-navigation-nav-container-setting-button: active;
+    --sherpa-navigation-nav-layout-padding: var(--sherpa-theme-padding-md);
+    --sherpa-navigation-nav-layout-width: 320px;
+    --sherpa-navigation-nav-shadow-blur: 0px;
+    --sherpa-navigation-nav-shadow-offset-x: 0px;
+    --sherpa-navigation-nav-shadow-offset-y: 0px;
+    --sherpa-navigation-nav-shadow-spread: 0px;
+    --sherpa-navigation-nav-surface-default: var(--sherpa-theme-surface-default-1);
   }
 }

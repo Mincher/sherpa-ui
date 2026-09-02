@@ -21,11 +21,11 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
 
-  --_surface: var(--_status-surface, var(--sherpa-container-surface-default, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-container-border-default, #b2b2bf));
-  --_accent: var(--sherpa-control-surface-accent, #3c5edd);
-  --_pad: var(--sherpa-core-space-md, 16px);
-  --_radius: var(--sherpa-container-border-radius-top-left, 8px);
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  --_pad: var(--sherpa-display-space-sm, 16px);
+  --_radius: var(--sherpa-structure-rounding-top-left, 8px);
 }
 
 /* ── The card box ─────────────────────────────────────────────────── */
@@ -34,7 +34,7 @@
   flex-direction: column;
   min-width: 0;
   background: var(--_surface);
-  border: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius: var(--_radius);
   color: var(--sherpa-content-primary-base, #2e2e33);
   cursor: pointer;
@@ -66,7 +66,7 @@
 .header {
   display: none;
   flex-direction: column;
-  gap: var(--sherpa-core-space-3xs, 2px);
+  gap: var(--sherpa-display-space-3xs, 2px);
 }
 :host([data-has-header]) .header,
 :host([data-label]) .header,
@@ -88,14 +88,14 @@
 :host([data-has-header]) .body,
 :host([data-label]) .body,
 :host([data-description]) .body {
-  border-top: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border-top: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 /* Footer divider (below the body); suppressed in horizontal layout. */
 :host(:not([data-layout="horizontal"])) .footer {
-  border-top: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border-top: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 :host([data-layout="horizontal"]) .footer {
-  border-left: var(--sherpa-container-border-width, 1px) solid var(--_border);
+  border-left: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 
 /* ── Header text ──────────────────────────────────────────────────── */
@@ -106,7 +106,7 @@
   line-height: 1.4;
 }
 .description {
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: 1.4;
 }
@@ -115,7 +115,7 @@
 
 /* ── Hover ────────────────────────────────────────────────────────── */
 :host(:not([disabled]):hover) .card {
-  border-color: var(--sherpa-border-interactive-hover, #8d8d99);
+  border-color: var(--sherpa-theme-border-default-1, #8d8d99);
 }
 
 /* ── Selected — accent ring + subtle accent face ──────────────────── */
@@ -127,7 +127,7 @@
 /* ── Focus-within — box-shadow ring, never a bare outline (WCAG 2.4.11) ── */
 :host(:focus-within) .card {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-control-border-default, #b2b2bf);
+  box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b2b2bf);
 }
 :host([data-selected]:focus-within) .card {
   box-shadow: inset 0 0 0 1px var(--_accent), 0 0 0 2px var(--_accent);
@@ -137,15 +137,15 @@
 :host([disabled]) .card {
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--sherpa-container-surface-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  border-color: var(--sherpa-theme-border-default-2, #c0c0cc);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-content-inactive-base, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
 }
 
 /* ── Status cascade re-inks the description (face/ring read --_status-*). ── */
 :host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-content-secondary-base, #404047));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
 }

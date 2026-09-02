@@ -36,8 +36,8 @@
 .detail {
   display: none;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
-  padding-inline: var(--sherpa-core-space-sm, 12px);
+  gap: var(--sherpa-display-space-sm, 12px);
+  padding-inline: var(--sherpa-display-space-sm, 12px);
 }
 :host([data-has-detail]) .detail { display: inline-flex; }
 
@@ -45,44 +45,44 @@
 .tab {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-core-space-sm, 12px);
-  padding: var(--sherpa-core-space-sm, 12px) var(--sherpa-core-space-base, 16px);
+  gap: var(--sherpa-display-space-sm, 12px);
+  padding: var(--sherpa-display-space-sm, 12px) var(--sherpa-display-space-base, 16px);
   margin: 0;
   background: transparent;
   border: none;
-  border-bottom: var(--sherpa-core-border-width-sm, 0.5px) solid
+  border-bottom: var(--sherpa-display-border-width-sm, 0.5px) solid
     var(--sherpa-border-primary, #d5d5d5);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: var(--sherpa-core-fonts-scale-xl, 20px);
+  line-height: var(--sherpa-display-fonts-scale-xl, 20px);
   white-space: nowrap;
-  color: var(--sherpa-content-secondary-base, #404047);
+  color: var(--sherpa-theme-content-body-1, #404047);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 }
 
 .tab:hover {
-  background: var(--sherpa-surface-interactive-tertiary-hover, #c0c0cc33);
-  color: var(--sherpa-content-title-base, #18191a);
+  background: var(--sherpa-theme-surface-default-transparent, #c0c0cc33);
+  color: var(--sherpa-theme-content-body-base, #18191a);
 }
 
 .tab:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-interactive-primary, #3c5edd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Active tab — accent underline + accent label ─────────────────────── */
 .tab[data-active] {
-  border-bottom-color: var(--sherpa-border-interactive-active, #c046ff);
-  color: var(--sherpa-content-active-base, #8500cc);
+  border-bottom-color: var(--sherpa-theme-border-active-base, #c046ff);
+  color: var(--sherpa-theme-content-active-base, #8500cc);
 }
 
 /* ── Panels — only the active one shows ───────────────────────────────── */
 .panels {
   flex: 1 1 auto;
   min-height: 0;
-  padding-block-start: var(--sherpa-core-space-base, 16px);
+  padding-block-start: var(--sherpa-display-space-base, 16px);
 }
 /* All slotted panels are hidden; the active one is marked data-tab-active
    (a data-* attribute the JS reflects onto the consumer's light-DOM child —

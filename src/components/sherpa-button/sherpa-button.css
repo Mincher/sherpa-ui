@@ -13,16 +13,16 @@
   vertical-align: middle;
   /* Per-corner radius so [data-snap] can join buttons into a seamless group:
      [data-snap="left"] rounds only the left corners, "middle" squares all, etc. */
-  border-start-start-radius: var(--sherpa-grouping-radius-top-left, 4px);
-  border-start-end-radius: var(--sherpa-grouping-radius-top-right, 4px);
-  border-end-start-radius: var(--sherpa-grouping-radius-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-grouping-radius-bottom-right, 4px);
+  border-start-start-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
 
   /* primary look — control surface accent; variants re-point below */
-  --_surface: var(--sherpa-control-surface-accent, #3c5edd);
-  --_surface-hover: var(--sherpa-surface-interactive-primary-hover, #173382);
-  --_surface-down: var(--sherpa-surface-interactive-primary-down, #0f0f57);
-  --_content: var(--sherpa-content-title-on-color, #ffffff);
+  --_surface: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  --_surface-hover: var(--sherpa-theme-surface-accent-hover, #173382);
+  --_surface-down: var(--sherpa-theme-surface-accent-down, #0f0f57);
+  --_content: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   --_border: transparent;
 }
 
@@ -30,15 +30,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-button-space-gap, 8px);
+  gap: var(--sherpa-structure-space-gap, 8px);
   width: 100%;
-  min-height: var(--sherpa-button-size-height, 32px);
-  padding-inline: var(--sherpa-button-space-padding, 12px);
+  min-height: var(--sherpa-structure-height, 32px);
+  padding-inline: var(--sherpa-structure-space-padding, 12px);
   border: 1px solid var(--_border);
   border-radius: inherit;
   margin: 0;
   font-family: inherit;
-  font-size: var(--sherpa-button-font-size, 14px);
+  font-size: var(--sherpa-structure-font-size, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1;
   color: var(--_content);
@@ -59,27 +59,27 @@
   outline: none;
   box-shadow:
     0 0 0 2px var(--sherpa-app-primary, #ffffff),
-    0 0 0 4px var(--sherpa-control-border-accent, #3c5edd);
+    0 0 0 4px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Variants ─────────────────────────────────────────────────────── */
 
 :host([data-variant="secondary"]) {
-  --_surface: var(--sherpa-control-surface-default, #ffffff);
-  --_surface-hover: var(--sherpa-control-surface-hover, #fafafa);
-  --_surface-down: var(--sherpa-control-surface-down, #f2f2f2);
-  --_content: var(--sherpa-control-content-default, #18191a);
-  --_border: var(--sherpa-control-border-default, #d5d5d5);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_surface-hover: var(--sherpa-theme-surface-default-hover, #fafafa);
+  --_surface-down: var(--sherpa-theme-surface-default-down, #f2f2f2);
+  --_content: var(--sherpa-style-content-base, #18191a);
+  --_border: var(--sherpa-style-border-base, #d5d5d5);
 }
 
 :host([data-variant="tertiary"]) {
   --_surface: transparent;
-  --_surface-hover: var(--sherpa-control-surface-hover, #f2f2f5);
-  --_surface-down: var(--sherpa-control-surface-down, #e6e6ec);
+  --_surface-hover: var(--sherpa-theme-surface-default-hover, #f2f2f5);
+  --_surface-down: var(--sherpa-theme-surface-default-down, #e6e6ec);
   /* Neutral content, NOT a blue link. control-content-default resolves to
      content-primary-base, which the theme layer INVERTS by mode: dark ink on a
      light background, light ink on a dark background. Matches Figma tertiary. */
-  --_content: var(--sherpa-control-content-default, #2e2e33);
+  --_content: var(--sherpa-style-content-base, #2e2e33);
   --_border: transparent;
 }
 
@@ -87,7 +87,7 @@
   --_surface: transparent;
   --_surface-hover: rgba(255, 255, 255, 0.16);
   --_surface-down: rgba(255, 255, 255, 0.24);
-  --_content: var(--sherpa-content-title-on-color, #ffffff);
+  --_content: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   --_border: transparent;
 }
 
@@ -96,15 +96,15 @@
 :host([data-type="icon"]) .trigger {
   padding-inline: 0;
   aspect-ratio: 1;
-  min-width: var(--sherpa-button-size-height, 32px);
+  min-width: var(--sherpa-structure-height, 32px);
 }
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ─────── */
 
 .icon {
   display: none;
-  inline-size: var(--sherpa-button-size-icon, 16px);
-  block-size: var(--sherpa-button-size-icon, 16px);
+  inline-size: var(--sherpa-structure-icon-size, 16px);
+  block-size: var(--sherpa-structure-icon-size, 16px);
   font-style: normal;
   line-height: 1;
   color: var(--_content);
@@ -120,8 +120,8 @@
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-content-inactive-base, #5c5c66);
-  background: var(--sherpa-control-surface-inactive, #d5d5d5);
-  border-color: var(--sherpa-border-interactive-inactive, #d5d5dc);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
+  border-color: var(--sherpa-theme-border-default-2, #d5d5dc);
 }
-:host([disabled]) .icon { color: var(--sherpa-content-inactive-base, #5c5c66); }
+:host([disabled]) .icon { color: var(--sherpa-theme-content-body-2, #5c5c66); }

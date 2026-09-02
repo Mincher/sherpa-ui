@@ -17,13 +17,13 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-control-space-gap-sm, 4px);
-  padding: var(--sherpa-control-space-padding-xs, 2px) var(--sherpa-control-space-padding-sm, 8px);
-  border: var(--sherpa-control-border-width, 1px) solid
-    var(--_status-border, var(--sherpa-control-border-default, #b2b2bf));
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
-  background: var(--_status-surface, var(--sherpa-control-surface-default, #ffffff));
-  color: var(--_status-text, var(--sherpa-content-title-base, #18191a));
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 8px);
+  border: var(--sherpa-style-border-width, 1px) solid
+    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -36,8 +36,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-icon-2xs, 12px);
-  block-size: var(--sherpa-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
   color: inherit;
 }
 :host(:not([data-icon])) .icon { display: none; }
@@ -47,12 +47,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-size-icon-2xs, 14px);
-  block-size: var(--sherpa-size-icon-2xs, 14px);
-  margin-inline-start: var(--sherpa-control-space-gap-sm, 2px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 14px);
+  margin-inline-start: var(--sherpa-theme-gap-sm, 2px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
   background: transparent;
   color: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -67,17 +67,17 @@
 }
 .close:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-control-border-accent, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Collapsed: small circular indicator ───────────────────────────── */
 :host([data-collapsed]) .pill {
-  inline-size: var(--sherpa-core-space-xs, 8px);
-  block-size: var(--sherpa-core-space-xs, 8px);
+  inline-size: var(--sherpa-display-space-xs, 8px);
+  block-size: var(--sherpa-display-space-xs, 8px);
   padding: 0;
-  border-radius: var(--sherpa-core-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-border-rounding-full, 999px);
   overflow: hidden;
   font-size: 0;
   /* the collapsed dot fills with the status colour (or neutral) */
-  background: var(--_status-surface-strong, var(--_status-border, var(--sherpa-control-border-default, #b2b2bf)));
+  background: var(--_status-surface-strong, var(--_status-border, var(--sherpa-style-border-base, #b2b2bf)));
 }
