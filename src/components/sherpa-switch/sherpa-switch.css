@@ -28,14 +28,17 @@
 /**
  * sherpa-switch — presentation.
  *
- * A pill track with a sliding knob and an ON/OFF label. The visual form
- * (rectangular default vs. simple pill) is driven by the projected switch tokens
- * above — this file never re-declares radius/thumb/track per style. State routes
- * through a single --_fill custom property: OFF = the inactive neutral surface,
- * ON = the strong success surface (Figma "on" track). Routing state through one
- * property (not swapping the `background` rule) keeps the computed value reliable
- * across an early getComputedStyle read. The knob "slides" by flipping the track
- * flex-direction: OFF at the start, ON at the end. Disabled uses inactive tokens,
+ * A pill track with a sliding knob and an ON/OFF label, built on a native
+ * <input type="checkbox" role="switch">. The <label class="track"> is the visible
+ * control; the real input is visually hidden but focusable and drives every state
+ * through the sibling combinator (.input:checked ~ …, .input:disabled ~ …). No JS
+ * touches visibility. The visual form (rectangular default vs. simple pill) is driven
+ * by the projected switch tokens above — this file never re-declares radius/thumb/track
+ * per style. State routes through a single --_fill custom property: OFF = the inactive
+ * neutral surface, ON = the strong success surface (Figma "on" track). Routing state
+ * through one property (not swapping the `background` rule) keeps the computed value
+ * reliable across an early getComputedStyle read. The knob "slides" by flipping the
+ * track flex-direction: OFF at the start, ON at the end. Disabled uses inactive tokens,
  * never opacity.
  */
 
@@ -47,7 +50,7 @@
   --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 
-/* ── Track: the interactive button ─────────────────────────────────────── */
+/* ── Track: the <label> the whole control lives in ─────────────────────── */
 .track {
   display: inline-flex;
   align-items: center;
@@ -65,7 +68,22 @@
   cursor: pointer;
   transition: background-color 120ms ease;
 }
-.track:focus-visible {
+
+/* ── Input: the real, focusable checkbox — visually removed, semantics kept ──
+   appearance:none strips the native tick box; it stays a zero-footprint sibling so
+   the knob/label lay the track out. Keyboard Space toggles it natively. ── */
+.input {
+  appearance: none;
+  position: absolute;
+  margin: 0;
+  inline-size: 0;
+  block-size: 0;
+  opacity: 0;
+  pointer-events: none; /* the wrapping <label> already forwards clicks */
+}
+
+/* Focus ring lives on the track when the (hidden) input is keyboard-focused. */
+.track:has(.input:focus-visible) {
   outline: none;
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
@@ -88,124 +106,29 @@
   text-align: center;
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
-:host([data-state="on"]) .label::after { content: "ON"; }
-:host(:not([data-state="on"])) .label::after {
+.input:checked ~ .label::after { content: "ON"; }
+.input:not(:checked) ~ .label::after {
   content: "OFF";
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 
 /* ── ON state — re-point the fill to the strong success surface; slide knob ── */
-:host([data-state="on"]) {
+.track:has(.input:checked) {
   --_fill: var(--sherpa-theme-surface-success-3, #007a45);
 }
-:host([data-state="on"]) .track {
-  flex-direction: row-reverse;
+.input:checked ~ .knob {
+  order: 1; /* knob slides to the end */
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
 :host([disabled]) {
   pointer-events: none;
 }
-:host([disabled]) .track {
+.track:has(.input:disabled) {
   cursor: not-allowed;
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }
-:host([disabled]) .label {
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-}
-
-/**
- * sherpa-switch.css — all switch presentation.
- *
- * A pill track with a sliding knob and an ON/OFF text label. The visual form
- * (rectangular default vs. simple pill) is NOT re-declared here per-style: the
- * switch binds its scoped --sherpa-switch-* vars once, and the token layer's
- * [data-variant="simple"] mode block re-points radius/thumb/track for the pill
- * form. Only the structural bits (flex direction, label visibility) stay local.
- * State (on/off), disabled and focus are pure data-* / :host selectors. The knob
- * "slides" by flipping the flex direction: OFF at the start, ON at the end.
- */
-
-:host {
-  /* One fill token the track consumes; the ON state re-points it. Routing state
-     through a single custom property (not swapping the `background` rule) keeps
-     the computed value reliable — a swapped rule can go stale after an early
-     getComputedStyle read. */
-  --_fill: var(--sherpa-theme-surface-default-2, #b7b7b7);
-
-  display: inline-flex;
-  vertical-align: middle;
-}
-
-/* ── Track: the interactive button ─────────────────────────────────────── */
-.track {
-  display: inline-flex;
-  align-items: center;
-  flex-direction: row; /* OFF: knob at the start */
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-display-space-3xs, 2px) var(--sherpa-display-space-3xs, 2px);
-  border: var(--sherpa-display-border-width-sm, 1px) solid
-    var(--sherpa-style-border-base, #b2b2bf);
-  border-radius: var(--sherpa-display-border-rounding-full, 4px);
-  background: var(--_fill);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  cursor: pointer;
-  transition: background-color 120ms ease;
-}
-
-.track:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
-}
-
-/* ── Knob: the sliding control surface ─────────────────────────────────── */
-.knob {
-  flex-shrink: 0;
-  width: var(--sherpa-display-size-sm, 16px);
-  height: var(--sherpa-display-size-sm, 16px);
-  border-radius: var(--sherpa-display-border-rounding-full, 3px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-}
-
-/* ── Label: ON / OFF text ──────────────────────────────────────────────
-   Visibility is Figma-driven: the switch token partial sets --_has-label
-   (revert-layer in standard, none in the "simple" mode). ── */
-.label {
-  display: var(--_has-label, inline-flex);
-  min-width: 24px;
-  text-align: center;
-  color: var(--sherpa-style-content-inverse, #fafafa);
-}
-:host([data-state="on"]) .label::after { content: "ON"; }
-:host(:not([data-state="on"])) .label::after {
-  content: "OFF";
-  color: var(--sherpa-style-content-base, #2e2e33);
-}
-
-/* ── ON state — re-point the single fill token; slide the knob to the end ── */
-:host([data-state="on"]) {
-  --_fill: var(--sherpa-theme-surface-success-3, #058142);
-}
-:host([data-state="on"]) .track {
-  flex-direction: row-reverse;
-}
-
-/* ── Simple (pill) form — radius/thumb come from the switch token partial's
-   [data-style="simple"] mode block; the label hides via --_has-label (also
-   set by that mode). No local visibility rule needed. ── */
-
-/* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
-:host([disabled]) {
-  pointer-events: none;
-}
-:host([disabled]) .track {
-  cursor: not-allowed;
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
-}
-:host([disabled]) .label {
+.track:has(.input:disabled) .label {
   color: var(--sherpa-theme-content-body-2, #5c5c66);
 }

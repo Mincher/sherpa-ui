@@ -1,24 +1,26 @@
 <!--
   sherpa-switch — an immediate binary toggle.
 
-  One flat template. A real <button role="switch"> owns the semantics and focus;
-  the visual form (rectangular default vs. simple pill) is a CSS variant on
-  data-style — the same track markup restyles, no second template needed. The
-  pill form's radius/thumb sizing lives in the token layer's [data-variant="simple"]
-  mode block (the switch binds its scoped --sherpa-switch-* vars once); the CSS
-  here only toggles the label off for the simple form.
+  Native-first (naming standard D1/D11): a real <input type="checkbox" role="switch">
+  owns the value, keyboard (Space), focus and form participation. A <label> wraps the
+  whole track so a click anywhere toggles the input natively — no JS click handler.
+  An <input> can't hold child elements, so the visual knob + ON/OFF label are sibling
+  spans; CSS keys them off the input's :checked / :disabled / :focus-visible state via
+  the sibling combinator. The visual form (rectangular default vs. simple pill) is a
+  CSS variant on data-style — the same track markup restyles, no second template.
 
   Public API:
-    data-state — on | off        (current value; JS keeps it and aria-checked in sync)
+    checked    — native boolean       (current value; drives :checked visuals)
     data-style — default (rectangular, ON/OFF label, square thumb)
                | simple  (pill, no label, round thumb)
-    disabled   — native boolean
+    disabled   — native boolean       (reflected onto the inner input)
 
   Fires: change  (detail: { checked: boolean })
 -->
 <template id="default">
-  <button type="button" class="track" role="switch" aria-checked="false">
+  <label class="track" part="track">
+    <input class="input" type="checkbox" role="switch" />
     <span class="knob" aria-hidden="true"></span>
     <span class="label" aria-hidden="true"></span>
-  </button>
+  </label>
 </template>

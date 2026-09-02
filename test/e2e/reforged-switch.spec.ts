@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-switch on the reforged base — a binary toggle backed by a real
- * <button role="switch">. Proves the default off state, click toggling with the
- * `change` event, the checked/state property API, the disabled inactive tokens,
- * aria-checked sync, and the simple pill variant hiding its label.
+ * sherpa-switch on the reforged base — a binary toggle backed by a native
+ * <input type="checkbox" role="switch"> inside a <label>. Proves the default off
+ * state, native toggling (click / checked property) with the `change` event, the
+ * checked property API, the disabled inactive tokens, and the simple pill variant
+ * hiding its label.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -12,7 +13,6 @@ const HARNESS = '/test/reforged/harness.html';
 type SwitchEl = HTMLElement & {
   rendered?: Promise<void>;
   checked?: boolean;
-  state?: string;
   disabled?: boolean;
 };
 
@@ -23,26 +23,26 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test('defaults to off and exposes a switch button', async ({ page }) => {
+test('defaults to off and exposes a native switch input', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-switch') as SwitchEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const btn = el.shadowRoot!.querySelector('.track')!;
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>('.input')!;
     return {
-      state: el.getAttribute('data-state'),
       checked: el.checked,
-      role: btn.getAttribute('role'),
-      aria: btn.getAttribute('aria-checked'),
+      inputChecked: input.checked,
+      type: input.getAttribute('type'),
+      role: input.getAttribute('role'),
     };
   });
-  expect(r.state).toBe('off');
   expect(r.checked).toBe(false);
+  expect(r.inputChecked).toBe(false);
+  expect(r.type).toBe('checkbox');
   expect(r.role).toBe('switch');
-  expect(r.aria).toBe('false');
 });
 
-test('clicking toggles state and fires change with { checked }', async ({ page }) => {
+test('clicking the label toggles and fires change with { checked }', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-switch') as SwitchEl;
     document.getElementById('root')!.appendChild(el);
@@ -51,37 +51,36 @@ test('clicking toggles state and fires change with { checked }', async ({ page }
     const events: boolean[] = [];
     el.addEventListener('change', (e) => events.push((e as CustomEvent).detail.checked));
 
-    const btn = el.shadowRoot!.querySelector<HTMLElement>('.track')!;
-    btn.click(); // → on
-    const afterOn = { state: el.getAttribute('data-state'), aria: btn.getAttribute('aria-checked') };
-    btn.click(); // → off
-    const afterOff = { state: el.getAttribute('data-state'), aria: btn.getAttribute('aria-checked') };
+    const label = el.shadowRoot!.querySelector<HTMLElement>('.track')!;
+    label.click(); // → on (native label forwards the click to the input)
+    const afterOn = el.checked;
+    label.click(); // → off
+    const afterOff = el.checked;
 
     return { events, afterOn, afterOff };
   });
   expect(r.events).toEqual([true, false]);
-  expect(r.afterOn).toEqual({ state: 'on', aria: 'true' });
-  expect(r.afterOff).toEqual({ state: 'off', aria: 'false' });
+  expect(r.afterOn).toBe(true);
+  expect(r.afterOff).toBe(false);
 });
 
-test('checked/state property setters reflect to attribute + aria', async ({ page }) => {
+test('the checked property setter reflects to the input + attribute', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-switch') as SwitchEl;
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
     el.checked = true;
-    // Setter writes data-state; onChange mirrors aria (attributeChangedCallback is sync).
-    const btn = el.shadowRoot!.querySelector('.track')!;
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>('.input')!;
     return {
-      state: el.getAttribute('data-state'),
       checkedGetter: el.checked,
-      aria: btn.getAttribute('aria-checked'),
+      inputChecked: input.checked,
+      attr: el.hasAttribute('checked'),
     };
   });
-  expect(r.state).toBe('on');
   expect(r.checkedGetter).toBe(true);
-  expect(r.aria).toBe('true');
+  expect(r.inputChecked).toBe(true);
+  expect(r.attr).toBe(true);
 });
 
 test('the on state paints the success fill', async ({ page }) => {
@@ -90,14 +89,14 @@ test('the on state paints the success fill', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const paint = async (on: boolean) => {
       const el = document.createElement('sherpa-switch') as SwitchEl;
-      if (on) el.setAttribute('data-state', 'on');
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
+      if (on) el.checked = true;
       return getComputedStyle(el.shadowRoot!.querySelector('.track')!).backgroundColor;
     };
     return { off: await paint(false), on: await paint(true) };
   });
-  expect(r.on).toBe('rgb(0, 122, 69)'); // ON → theme-surface-success-3 (success-4 #007A45, strong green)
+  expect(r.on).toBe('rgb(0, 122, 69)'); // ON → theme-surface-success-3 (#007A45, strong green)
   expect(r.off).not.toBe(r.on);
 });
 
@@ -110,18 +109,21 @@ test('disabled blocks toggling and uses inactive tokens (never opacity)', async 
 
     let fired = 0;
     el.addEventListener('change', () => fired++);
-    const btn = el.shadowRoot!.querySelector<HTMLElement>('.track')!;
-    btn.click();
+    const label = el.shadowRoot!.querySelector<HTMLElement>('.track')!;
+    label.click(); // a disabled input can't be toggled by a click
 
-    const cs = getComputedStyle(btn);
+    const cs = getComputedStyle(el.shadowRoot!.querySelector('.track')!);
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>('.input')!;
     return {
-      state: el.getAttribute('data-state'),
+      checked: el.checked,
+      inputDisabled: input.disabled,
       fired,
       bg: cs.backgroundColor,
       opacity: getComputedStyle(el).opacity,
     };
   });
-  expect(r.state).toBe('off'); // no toggle while disabled
+  expect(r.checked).toBe(false); // no toggle while disabled
+  expect(r.inputDisabled).toBe(true);
   expect(r.fired).toBe(0);
   expect(r.bg).toBe('rgb(179, 179, 195)'); // theme-surface-default-2 (neutral-3 #B3B3C3) inactive
   expect(r.opacity).toBe('1'); // disabled must not rely on opacity

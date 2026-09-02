@@ -1,52 +1,53 @@
 /**
  * sherpa-switch — an on/off toggle for settings.
  *
- * CSS handles the look — on and off, the plain pill style, disabled, and focus.
- * This file flips the state on click, keeps the button's aria-checked in sync,
- * and fires change.
+ * Native-first (naming standard D1/D11): the component IS a native
+ * <input type="checkbox" role="switch"> wrapped in a <label>. The label forwards
+ * clicks and Space toggles the input natively, so there is no JS click handler and
+ * no aria to sync — the input's own `checked` is the value and CSS keys off
+ * `:checked`. This file only mirrors `checked`/`disabled` onto the inner input and
+ * re-dispatches the input's native `change` as a composed `change` (the native one
+ * bubbles inside the shadow root but is NOT composed, so app code wouldn't see it).
  *
  * @element sherpa-switch
- * @attr {enum}    data-state — on | off       (current value, read/write)
+ * @attr {boolean} checked    — native on/off value (read/write; drives :checked visuals)
  * @attr {enum}    data-style — default (rectangular, ON/OFF label) | simple (pill)
- * @attr {boolean} disabled   — native disabled state
+ * @attr {boolean} disabled   — native disabled state (reflected onto the inner input)
  *
  * @fires change — every toggle. bubbles + composed. detail: { checked: boolean }
  *
- * @prop {boolean} checked  — whether the switch is on (read/write)
- * @prop {string}  state    — "on" | "off" (read/write)
- * @prop {boolean} disabled — disabled state (read/write)
+ * @prop {boolean} checked  — whether the switch is on (delegates to the inner input)
+ * @prop {boolean} disabled — disabled state (reflects host attr + inner input)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
-  static override observed = ['data-state'];
 
-  override onRender(): void {
-    if (!this.dataset['state']) this.dataset['state'] = 'off';
-    this.$('.track')?.addEventListener('click', this.#onClick);
-    this.#syncAria();
+  #input(): HTMLInputElement | null {
+    return this.$<HTMLInputElement>('.input');
   }
 
-  override onChange(name: string): void {
-    if (name === 'data-state') this.#syncAria();
+  override onRender(): void {
+    const input = this.#input();
+    if (!input) return;
+    // Adopt any pre-set host state onto the real control.
+    if (this.hasAttribute('checked')) input.checked = true;
+    input.disabled = this.hasAttribute('disabled');
+    // Re-dispatch the input's native change as a composed component event.
+    input.addEventListener('change', this.#onChange);
   }
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
-  get state(): string {
-    return this.dataset['state'] === 'on' ? 'on' : 'off';
-  }
-  set state(value: string) {
-    this.dataset['state'] = value === 'on' ? 'on' : 'off';
-  }
-
   get checked(): boolean {
-    return this.state === 'on';
+    return this.#input()?.checked ?? this.hasAttribute('checked');
   }
   set checked(value: boolean) {
-    this.state = value ? 'on' : 'off';
+    const input = this.#input();
+    if (input) input.checked = value;
+    this.toggleAttribute('checked', value);
   }
 
   get disabled(): boolean {
@@ -54,20 +55,17 @@ export class SherpaSwitch extends SherpaElement {
   }
   set disabled(value: boolean) {
     this.toggleAttribute('disabled', value);
+    const input = this.#input();
+    if (input) input.disabled = value;
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  #onClick = (): void => {
-    if (this.disabled) return;
-    this.state = this.checked ? 'off' : 'on';
-    this.emit('change', { checked: this.checked });
+  #onChange = (): void => {
+    const checked = this.#input()?.checked ?? false;
+    this.toggleAttribute('checked', checked);
+    this.emit('change', { checked });
   };
-
-  /** Mirror the current value onto the inner switch button for AT. */
-  #syncAria(): void {
-    this.$('.track')?.setAttribute('aria-checked', String(this.checked));
-  }
 }
 
 customElements.define('sherpa-switch', SherpaSwitch);
