@@ -26,7 +26,7 @@ test('default is a neutral pill: white surface, grey border, dark text', async (
   });
   expect(r.bg).toBe('rgb(255, 255, 255)'); // control-surface-default (neutral)
   expect(r.border).not.toBe(r.bg); // a visible grey border
-  expect(r.text).toBe('rgb(24, 25, 26)'); // content-title-base dark ink
+  expect(r.text).toBe('rgb(12, 11, 17)'); // style-content-base → content-body-base (neutral-5 #0C0B11) dark ink
 });
 
 test('an ancestor [data-status] colours the pill via the cascade', async ({ page }) => {

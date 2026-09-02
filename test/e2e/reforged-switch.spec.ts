@@ -97,7 +97,7 @@ test('the on state paints the success fill', async ({ page }) => {
     };
     return { off: await paint(false), on: await paint(true) };
   });
-  expect(r.on).toBe('rgb(5, 129, 66)'); // switch-surface-track-on → success #058142 (Figma)
+  expect(r.on).toBe('rgb(0, 122, 69)'); // ON → theme-surface-success-3 (success-4 #007A45, strong green)
   expect(r.off).not.toBe(r.on);
 });
 
@@ -123,7 +123,7 @@ test('disabled blocks toggling and uses inactive tokens (never opacity)', async 
   });
   expect(r.state).toBe('off'); // no toggle while disabled
   expect(r.fired).toBe(0);
-  expect(r.bg).toBe('rgb(213, 213, 213)'); // surface-interactive-inactive #d5d5d5
+  expect(r.bg).toBe('rgb(179, 179, 195)'); // theme-surface-default-2 (neutral-3 #B3B3C3) inactive
   expect(r.opacity).toBe('1'); // disabled must not rely on opacity
 });
 

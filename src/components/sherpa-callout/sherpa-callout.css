@@ -1,20 +1,25 @@
 /**
- * sherpa-callout — a status message box (matches Figma Callout).
+ * sherpa-callout — presentation.
  *
- * The box is a neutral container by default: status-surface fill, status-border,
- * status-tinted text — all from the [data-status] cascade (--_status-*). Only a
- * status re-points those; a bare callout reads as the neutral/info default. A
- * round icon badge carries the status colour; the action link stays a link.
- * Geometry = the container-scoped vars.
+ * A status message box (Figma Callout). The box fills with the status surface,
+ * borders with the status border, and re-inks its title/message — all from the
+ * look-tier cascade (--_status-*). Only a [data-status] re-points those; a bare
+ * callout reads as the neutral default. A round icon badge carries the strong
+ * status colour; the dismiss button is attribute-gated. Geometry chains to the
+ * shared Structure/Theme tokens.
+ *
+ *   surface → var(--_status-surface, style-surface-base)
+ *   border  → var(--_status-border,  style-border-base)
+ *   badge   → var(--_status-surface-strong, theme-surface-info-4)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* cascade fallbacks so a bare (status-less) callout still resolves */
-  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #e8e8f6));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_badge: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
 }
 
@@ -26,12 +31,12 @@
   border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 8px);
   background: var(--_surface);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  color: var(--_content);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
 }
 
-/* ── Status icon badge — a round chip in the status colour ───────────── */
+/* ── Status icon badge — a round chip in the strong status colour ────── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
@@ -47,7 +52,7 @@
   font-style: normal;
   line-height: 1;
 }
-/* Text glyph per status — no icon font dependency, pure CSS content. */
+/* Text glyph per status — no icon font, pure CSS content. */
 :host([data-status="info"])     .icon::after { content: "i"; }
 :host([data-status="success"])  .icon::after { content: "\2713"; } /* ✓ */
 :host([data-status="warning"])  .icon::after { content: "!"; }
@@ -58,21 +63,21 @@
 /* ── Content ─────────────────────────────────────────────────────────── */
 .content {
   flex: 1;
-  min-width: 0;
+  min-inline-size: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-space-2xs, 4px);
 }
 
 .title {
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--_content);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1.35;
 }
 :host(:not([data-title])) .title { display: none; }
 
-.message { color: var(--sherpa-content-primary-base, #2e2e33); }
+.message { color: var(--_content); }
 :host(:not([data-has-content])) .message { display: none; }
 
 /* ── Dismiss button ──────────────────────────────────────────────────── */
@@ -88,7 +93,7 @@
   border: none;
   border-radius: var(--sherpa-display-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--_content);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -96,9 +101,8 @@
     background-color 100ms ease,
     color 100ms ease;
 }
-.close:hover {
-  color: var(--sherpa-theme-content-body-base, #18191a);
-  background: color-mix(in srgb, currentColor 14%, transparent);
+@supports (color: color-mix(in oklab, red, blue)) {
+  .close:hover { background: color-mix(in oklab, currentColor 14%, transparent); }
 }
 .close:focus-visible {
   outline: none;

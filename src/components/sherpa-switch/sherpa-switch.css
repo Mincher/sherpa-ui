@@ -26,6 +26,96 @@
 /* == end sherpa:tokens == */
 
 /**
+ * sherpa-switch — presentation.
+ *
+ * A pill track with a sliding knob and an ON/OFF label. The visual form
+ * (rectangular default vs. simple pill) is driven by the projected switch tokens
+ * above — this file never re-declares radius/thumb/track per style. State routes
+ * through a single --_fill custom property: OFF = the inactive neutral surface,
+ * ON = the strong success surface (Figma "on" track). Routing state through one
+ * property (not swapping the `background` rule) keeps the computed value reliable
+ * across an early getComputedStyle read. The knob "slides" by flipping the track
+ * flex-direction: OFF at the start, ON at the end. Disabled uses inactive tokens,
+ * never opacity.
+ */
+
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+
+  /* One fill token the track consumes; ON re-points it to the success surface. */
+  --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
+}
+
+/* ── Track: the interactive button ─────────────────────────────────────── */
+.track {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row; /* OFF: knob at the start */
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  inline-size: var(--sherpa-switch-size-width, 40px);
+  min-block-size: var(--sherpa-switch-size-height, 20px);
+  padding: var(--sherpa-switch-size-padding, 2px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-style-border-base, #8d8d99);
+  border-radius: var(--sherpa-switch-radius-track, 4px);
+  background: var(--_fill);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.track:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+}
+
+/* ── Knob: the sliding control surface ─────────────────────────────────── */
+.knob {
+  flex-shrink: 0;
+  inline-size: var(--sherpa-switch-size-thumb, 16px);
+  block-size: var(--sherpa-switch-size-thumb, 16px);
+  border-radius: var(--sherpa-switch-radius-thumb, 3px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* ── Label: ON / OFF text ─────────────────────────────────────────────────
+   Visibility is Figma-driven: --_has-label = revert-layer (standard) / none
+   (simple), set by the projected token region above. ── */
+.label {
+  display: var(--_has-label, inline-flex);
+  min-inline-size: 24px;
+  text-align: center;
+  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+}
+:host([data-state="on"]) .label::after { content: "ON"; }
+:host(:not([data-state="on"])) .label::after {
+  content: "OFF";
+  color: var(--sherpa-style-content-base, #0c0b11);
+}
+
+/* ── ON state — re-point the fill to the strong success surface; slide knob ── */
+:host([data-state="on"]) {
+  --_fill: var(--sherpa-theme-surface-success-3, #007a45);
+}
+:host([data-state="on"]) .track {
+  flex-direction: row-reverse;
+}
+
+/* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
+:host([disabled]) {
+  pointer-events: none;
+}
+:host([disabled]) .track {
+  cursor: not-allowed;
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+}
+:host([disabled]) .label {
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+}
+
+/**
  * sherpa-switch.css — all switch presentation.
  *
  * A pill track with a sliding knob and an ON/OFF text label. The visual form

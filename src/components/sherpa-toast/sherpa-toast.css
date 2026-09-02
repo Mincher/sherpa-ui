@@ -1,28 +1,32 @@
 /**
- * sherpa-toast.css — all toast presentation.
+ * sherpa-toast — presentation.
  *
  * A transient status box: the whole card fills with the status surface via the
- * [data-status] cascade (--_status-surface), with a status border and status
- * text. Only a status re-points those; a bare toast reads as the neutral/info
+ * look-tier cascade (--_status-surface), with a status border and status ink.
+ * Only a [data-status] re-points those; a bare toast reads as the neutral
  * default. No color-mix tint, no leading accent bar — that was the old design.
- * Geometry = the container-scoped vars. Pure data-* selectors — JS never styles.
+ * Geometry chains to the shared Structure/Theme tokens. Pure data-* selectors.
+ *
+ *   surface → var(--_status-surface, style-surface-base)
+ *   border  → var(--_status-border,  style-border-base)
+ *   content → var(--_status-text,    style-content-base)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* cascade fallbacks so a bare (status-less) toast still resolves */
-  --_surface: var(--_status-surface, var(--sherpa-surface-primary-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-border-primary, #d5d5d5));
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #e8e8f6));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
 }
 
 .toast {
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-display-space-sm, 12px);
-  min-width: 260px;
-  max-width: 420px;
+  min-inline-size: 260px;
+  max-inline-size: 420px;
   padding: var(--sherpa-theme-padding-lg, 16px);
   border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 8px);
@@ -32,8 +36,8 @@
 
 .message {
   flex: 1 1 auto;
-  min-width: 0;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
+  min-inline-size: 0;
+  color: var(--_content);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.4;
 }
@@ -50,21 +54,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--sherpa-display-size-md, 20px);
-  height: var(--sherpa-display-size-md, 20px);
+  inline-size: var(--sherpa-display-size-md, 20px);
+  block-size: var(--sherpa-display-size-md, 20px);
   margin-inline-start: var(--sherpa-display-space-2xs, 4px);
   padding: 0;
   border: none;
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
+  color: var(--_content);
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease;
 }
-.close:hover {
-  background: color-mix(in srgb, currentColor 18%, transparent);
+@supports (color: color-mix(in oklab, red, blue)) {
+  .close:hover { background: color-mix(in oklab, currentColor 18%, transparent); }
 }
 .close:focus-visible {
   outline: none;

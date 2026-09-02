@@ -51,8 +51,8 @@ test('status fills the box with the status surface + border (Figma model)', asyn
     const cs = getComputedStyle(box);
     return { surface: cs.backgroundColor, border: cs.borderTopColor };
   });
-  expect(r.surface).toBe('rgb(255, 247, 245)'); // status-critical-color-1 #FFF7F5 (box tint)
-  expect(r.border).toBe('rgb(191, 44, 9)'); // status-critical-color-5 #BF2C09 (border)
+  expect(r.surface).toBe('rgb(255, 218, 209)'); // theme-surface-critical-base (critical-1 #FFDAD1) box tint
+  expect(r.border).toBe('rgb(221, 44, 1)'); // theme-border-critical-2 (critical-3 #DD2C01) border
 });
 
 test('data-title renders into the title node; absent title hides it', async ({ page }) => {

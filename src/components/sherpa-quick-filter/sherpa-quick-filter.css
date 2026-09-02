@@ -1,19 +1,25 @@
 /**
- * sherpa-quick-filter.css — a toggleable filter chip.
+ * sherpa-quick-filter — presentation.
  *
- * A pill. Inactive: neutral surface, border/interactive/inactive, tertiary ink.
- * Active/selected: fills surface/interactive/active/base (the soft brand tint, a
- * real token — not a color-mix) with a border/interactive/active edge and brand
- * ink. This is the Figma fill model; the old color-mix tint + accent bar is gone.
- * The count badge uses the badge-scoped surface/border/content vars; the menu
- * caret is attribute-gated. Pure data-* selectors — JS never styles.
+ * A toggleable filter chip. Inactive: neutral surface, grey border, muted ink.
+ * Active/selected: fills the brand-tint surface with a brand border + brand ink.
+ * The ai type carries the brand-purple accent even when inactive — the brand
+ * accent is the strong brand ramp step (border-active-2 = #C046FF), NOT the
+ * light brand-active surface. The count badge + menu caret are attribute-gated.
+ * Pure data-* selectors; JS never styles.
+ *
+ *   accent  → var(--_status-border, theme-border-active-2)   (brand #C046FF)
+ *   tint    → var(--sherpa-theme-surface-active-base)        (soft brand fill)
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
-  --_accent: var(--sherpa-theme-border-active-base, #c046ff);
-  --_active-surface: var(--sherpa-theme-surface-active-base, #f8ebff);
+  inline-size: fit-content;
+
+  /* The strong brand accent (ramp step 2 = #C046FF), not the light surface. */
+  --_accent: var(--_status-border, var(--sherpa-theme-border-active-2, #c046ff));
+  --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
 .chip {
@@ -21,19 +27,24 @@
   align-items: center;
   gap: var(--sherpa-display-space-2xs, 4px);
   padding: var(--sherpa-display-space-3xs, 2px) var(--sherpa-display-space-sm, 12px);
-  min-height: var(--sherpa-display-size-xl, 28px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-2, #8d8d99);
+  min-block-size: var(--sherpa-display-size-xl, 28px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-style-border-base, #8d8d99);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-surface-primary-base, #ffffff);
+  background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-2, #5c5c66);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: 1;
   cursor: pointer;
-  transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
 }
-.chip:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+@supports (color: color-mix(in oklab, red, blue)) {
+  .chip:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 94%, currentColor); }
+}
 .chip:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
@@ -45,7 +56,7 @@
   border-color: var(--_accent);
 }
 
-/* Active/selected → brand-tint fill + brand border/ink (real token fill). */
+/* Active/selected → brand-tint fill + brand border/ink. */
 :host([data-active]) .chip {
   background: var(--_active-surface);
   border-color: var(--_accent);
@@ -64,8 +75,8 @@
   padding-inline: var(--sherpa-display-space-3xs, 2px);
   border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-base, #c0c0cc);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
@@ -78,13 +89,13 @@
   block-size: 0;
   border-inline: 4px solid transparent;
   border-block-start: 5px solid currentColor;
-  opacity: 0.7;
 }
 
+/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) .chip {
   cursor: not-allowed;
   pointer-events: none;
   color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #c0c0cc);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }
