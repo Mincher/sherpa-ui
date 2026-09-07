@@ -135,7 +135,7 @@
 .section-label {
   margin: 0;
   padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-sm, 12px);
-  font-size: var(--sherpa-font-size-body-xs, 11px);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   text-transform: uppercase;
   letter-spacing: 0.04em;

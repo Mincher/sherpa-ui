@@ -17,6 +17,12 @@
  *   E disabled-opacity  `opacity` under `:host([disabled])` — compounds in dark mode.
  *   W viewport-media `@media` other than forced-colors / prefers-* — components use
  *                    @container, not viewport media (warning; --strict makes it fail).
+ *   W off-grid       an odd px literal (>=1px, not on the 2px grid) in a spacing/sizing/
+ *                    radius property. Sherpa uses an 8px grid with a 4px text sub-grid;
+ *                    2px/1px are edge cases, sub-1px is stroke-only. Allowed: sub-1px +
+ *                    1px, 999px (pill), all `border*` props (CSS triangles / hairlines),
+ *                    and font-size (occasional 2px-step scale). Fallbacks count too —
+ *                    keep them equal to the on-grid token they back.
  *
  * Only the AUTHORED region is linted (below the generated `sherpa:tokens` marker):
  * the projector owns everything above it.
@@ -49,6 +55,12 @@ function insideHostBlock(rule) {
     p = p.parent;
   }
   return false;
+}
+
+/** The comment node immediately following a decl (same line), else ''. */
+function nextComment(decl) {
+  const next = decl.next?.();
+  return next && next.type === 'comment' ? next.text : '';
 }
 
 const findings = [];
@@ -105,6 +117,26 @@ function lintFile(file, cssRaw) {
         }
         p = p.parent;
       }
+    }
+  });
+
+  root.walkDecls((decl) => {
+    // Grid compliance: odd px literals in spacing/sizing/radius props. `border*`
+    // (triangles/hairlines) and font-size are exempt; sub-1px + 1px + 999px allowed.
+    const prop = decl.prop;
+    if (/^border/.test(prop) || prop === 'font-size') return;
+    if (!/(margin|padding|gap|inset|top|right|bottom|left|width|height|size|radius|rounding|translate)/i.test(prop)) return;
+    const line = decl.source?.start?.line ?? 0;
+    // Explicit opt-out for intentionally off-grid drawn glyphs (CSS triangles /
+    // chevrons): a trailing `/* off-grid-ok */` comment on the declaration.
+    const trailing = (decl.raws?.value?.raw ?? '') + (decl.raws?.between ?? '');
+    if (/off-grid-ok/.test(trailing) || /off-grid-ok/.test(nextComment(decl))) return;
+    for (const m of decl.value.matchAll(/(?<![\w.])(\d+)px\b/g)) {
+      const v = Number(m[1]);
+      if (v <= 1 || v === 999) continue;      // 1px edge case + 999 pill idiom
+      if (v % 2 === 0) continue;               // on the 2px grid
+      report('warning', file, line, 'off-grid',
+        `${prop}: ${v}px is off the 2px/8px grid — use a grid step (…, 2, 4, 8…), the token's real value, or add /* off-grid-ok */ if it's a drawn glyph.`);
     }
   });
 

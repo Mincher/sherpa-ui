@@ -101,8 +101,8 @@
 
 /* ── Chevron glyphs (pure CSS, no icon font) ──────────────────────────── */
 .chev {
-  inline-size: 7px;
-  block-size: 7px;
+  inline-size: 7px; /* off-grid-ok */
+  block-size: 7px; /* off-grid-ok */
   border-right: var(--sherpa-display-border-width-lg, 2px) solid currentColor;
   border-bottom: var(--sherpa-display-border-width-lg, 2px) solid currentColor;
   box-sizing: border-box;

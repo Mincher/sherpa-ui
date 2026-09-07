@@ -112,7 +112,7 @@
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   background: var(--sherpa-theme-surface-default-base, #d92d20);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-font-size-body-xs, 11px);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-display-size-md, 16px);
   text-align: center;

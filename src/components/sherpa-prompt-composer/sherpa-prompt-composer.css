@@ -26,10 +26,10 @@
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 3px)
-    var(--sherpa-structure-rounding-top-right, 3px)
-    var(--sherpa-structure-rounding-bottom-right, 3px)
-    var(--sherpa-structure-rounding-bottom-left, 3px);
+    var(--sherpa-structure-rounding-top-left, 4px)
+    var(--sherpa-structure-rounding-top-right, 4px)
+    var(--sherpa-structure-rounding-bottom-right, 4px)
+    var(--sherpa-structure-rounding-bottom-left, 4px);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus-within {

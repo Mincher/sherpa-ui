@@ -32,7 +32,8 @@
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
-  /* Sort caret — hidden unless this column is the active sort. */
+  /* Sort caret — a pure-CSS triangle (border trick); the 3px sides are half the
+     6px arrow width, off-grid by geometry not spacing. Hidden unless active sort. */
   &[data-sort="asc"] .sort-icon {
     border-inline: 3px solid transparent;
     border-block-end: 4px solid currentColor;

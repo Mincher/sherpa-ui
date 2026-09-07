@@ -16,10 +16,10 @@
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 3px)
-    var(--sherpa-structure-rounding-top-right, 3px)
-    var(--sherpa-structure-rounding-bottom-right, 3px)
-    var(--sherpa-structure-rounding-bottom-left, 3px);
+    var(--sherpa-structure-rounding-top-left, 4px)
+    var(--sherpa-structure-rounding-top-right, 4px)
+    var(--sherpa-structure-rounding-bottom-right, 4px)
+    var(--sherpa-structure-rounding-bottom-left, 4px);
   overflow: hidden;
 }
 
@@ -52,7 +52,7 @@
   gap: var(--sherpa-structure-space-gap, 2px);
   padding: var(--sherpa-structure-space-padding, 2px) var(--sherpa-display-space-xs, 8px);
   border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-2, #c0c0cc);
-  border-radius: var(--sherpa-display-border-rounding-sm, 3px);
+  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-style-content-base, #2e2e33);
   font-family: inherit;
