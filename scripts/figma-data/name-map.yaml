@@ -215,6 +215,10 @@ map:
       folded 2026-08-27: ".Grid Column Header" removed; header now Grid Cell Type=header. No
       dedicated live component and no component spec.
 figmaOnly:
+  - { figma: Accordion, nodeId: "1003:33646", note: "split from Container Type=accordion 2026-09-07; code = sherpa-accordion (native <details>)" }
+  - { figma: Dialog, nodeId: "1003:33675", note: "split from Container; code = sherpa-dialog (native <dialog> modal)" }
+  - { figma: Panel, nodeId: "1003:33690", note: "split from Container; code = sherpa-panel" }
+  - { figma: "Overlay Panel", nodeId: "1003:33705", note: "split from Container; code = sherpa-overlay-panel (native <dialog> non-modal)" }
   # --- new standalone Figma components with no code yet ---
   - figma: Banner
     nodeId: '62:274'

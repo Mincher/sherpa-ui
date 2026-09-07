@@ -1,0 +1,66 @@
+/**
+ * sherpa-dialog.css — a modal card surface on native <dialog>.
+ *
+ * The card look mirrors sherpa-container: one --_surface / --_border pair that
+ * the status cascade (--_status-*) re-points. The <dialog> is centred in the
+ * top layer by the UA; we give it the card border, radius and an elevation
+ * shadow, and tint the ::backdrop. Header / footer collapse when empty (the
+ * base class reflects data-has-header/footer); the header also appears when a
+ * data-heading is set. Visibility is CSS-only — JS never toggles display.
+ */
+
+:host {
+  /* The host is a zero-box anchor; the real surface is the <dialog> in the top layer. */
+  display: contents;
+
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_pad: var(--sherpa-theme-padding-lg, 16px);
+}
+
+.root {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  max-inline-size: min(92vw, 32rem);
+  max-block-size: 85vh;
+  padding: 0;
+  overflow: auto;
+
+  background: var(--_surface);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  color: var(--sherpa-style-content-base, #2e2e33);
+  box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
+}
+
+.root::backdrop {
+  background: color-mix(in srgb, #101014 45%, transparent);
+}
+
+/* ── Regions ───────────────────────────────────────────────────────── */
+.header,
+.footer {
+  display: none;
+  padding: var(--_pad);
+}
+.body {
+  padding: var(--_pad);
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+/* Header shows when the slot has content OR a data-heading is set. */
+:host([data-has-header]) .header,
+:host([data-heading]) .header {
+  display: block;
+  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}
+:host([data-has-footer]) .footer {
+  display: block;
+  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}
+
+.heading-text {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}

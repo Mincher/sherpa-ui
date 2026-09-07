@@ -1,0 +1,31 @@
+<!--
+  sherpa-accordion — a disclosure card built on native <details> / <summary>.
+
+  Native-first (naming standard D2/D12): the open/closed state IS the native
+  <details open> attribute — there is no data-expanded. <summary> owns the button
+  role, keyboard (Enter / Space) and focus for free; clicking it toggles the
+  disclosure with no JS. The chevron rotates via CSS on `.root[open]`. The card
+  surface (border, radius, status cascade) mirrors sherpa-container.
+
+  Public API:
+    data-heading  — the summary label (fallback to slotted [slot=heading])
+    open          — native boolean (current disclosure state; drives [open] visuals)
+    data-status   — status colour cascade (critical | warning | success | info | urgent)
+
+  Slots:
+    heading   — rich summary content (overrides data-heading)
+    (default) — the disclosure body
+
+  Fires: toggle (detail: { open: boolean })
+-->
+<template id="default">
+  <details class="root" part="root">
+    <summary class="header" part="header">
+      <span class="chevron" aria-hidden="true"></span>
+      <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading"></slot></span>
+    </summary>
+    <div class="body" part="body">
+      <slot></slot>
+    </div>
+  </details>
+</template>

@@ -1,0 +1,68 @@
+/**
+ * sherpa-panel.css — a persistent inline panel surface.
+ *
+ * The card look mirrors sherpa-container: one --_surface / --_border pair that
+ * the status cascade (--_status-*) re-points. It stretches to fill its parent
+ * (fill is the panel default). Header / body / footer collapse the same way as
+ * the container; the header also appears when a data-heading is set.
+ * data-collapsed hides the body + footer. All visibility is CSS-only.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  align-self: stretch;
+  block-size: 100%;
+
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_pad: var(--sherpa-theme-padding-lg, 16px);
+
+  background: var(--_surface);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  color: var(--sherpa-style-content-base, #2e2e33);
+}
+
+.root {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  flex: 1 1 auto;
+}
+
+/* ── Regions ───────────────────────────────────────────────────────── */
+.header,
+.footer {
+  display: none;
+  padding: var(--_pad);
+}
+.body {
+  padding: var(--_pad);
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+:host([data-has-header]) .header,
+:host([data-heading]) .header {
+  display: block;
+  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}
+:host([data-has-footer]) .footer {
+  display: block;
+  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}
+
+.heading-text {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* ── Collapsed: keep the header, hide the body + footer ─────────────── */
+:host([data-collapsed]) .body,
+:host([data-collapsed]) .footer {
+  display: none;
+}
+:host([data-collapsed]) .header {
+  border-block-end: none;
+}

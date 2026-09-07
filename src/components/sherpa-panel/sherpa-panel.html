@@ -1,0 +1,36 @@
+<!--
+  sherpa-panel — a persistent inline panel (a semantic <section> card).
+
+  Native-first (naming standard D2/D12): a panel is a persistent, in-flow region
+  — not floating and not a disclosure — so the correct native home is a plain
+  semantic <section>, NOT <dialog> or <details>. Its header / body / footer
+  regions mirror sherpa-container and collapse when empty. `data-collapsed`
+  hides the body/footer (an opt-in NON-default state per the boolean-verb rule);
+  visibility is CSS-only.
+
+  Public API:
+    data-heading    — convenience header label (a slotted [slot=header] overrides it)
+    data-collapsed  — boolean; hides the body/footer, leaving the header
+    data-status     — status colour cascade (critical | warning | success | info | urgent)
+
+  Slots:
+    header    — header region (reflects data-has-header)
+    (default) — the panel body
+    footer    — footer region (reflects data-has-footer)
+
+  Fires: nothing by itself — it's a surface. Consumers wire their own controls.
+-->
+<template id="default">
+  <section class="root" part="root">
+    <div class="header" part="header">
+      <span class="heading-text"></span>
+      <slot name="header"></slot>
+    </div>
+    <div class="body" part="body">
+      <slot></slot>
+    </div>
+    <div class="footer" part="footer">
+      <slot name="footer"></slot>
+    </div>
+  </section>
+</template>

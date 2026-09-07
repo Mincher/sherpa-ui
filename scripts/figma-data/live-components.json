@@ -293,19 +293,8 @@
   },
   "Container": {
     "type": "COMPONENT",
-    "nodeId": "58:66573",
-    "variantAxes": [
-      {
-        "name": "Type",
-        "values": [
-          "default",
-          "dialog",
-          "panel",
-          "overlay-panel",
-          "accordion"
-        ]
-      }
-    ],
+    "nodeId": "24:234",
+    "variantAxes": [],
     "booleanProps": [
       "expanded"
     ],
@@ -313,7 +302,7 @@
     "instanceProps": []
   },
   "Container Header": {
-    "type": "COMPONENT",
+    "type": "COMPONENT_SET",
     "nodeId": "912:33355",
     "variantAxes": [
       {
@@ -945,6 +934,38 @@
   "Dialog [Deprecated]": {
     "type": "COMPONENT",
     "nodeId": "52:66459",
+    "variantAxes": [],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": []
+  },
+  "Accordion": {
+    "type": "COMPONENT",
+    "nodeId": "1003:33646",
+    "variantAxes": [],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": []
+  },
+  "Dialog": {
+    "type": "COMPONENT",
+    "nodeId": "1003:33675",
+    "variantAxes": [],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": []
+  },
+  "Panel": {
+    "type": "COMPONENT",
+    "nodeId": "1003:33690",
+    "variantAxes": [],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": []
+  },
+  "Overlay Panel": {
+    "type": "COMPONENT",
+    "nodeId": "1003:33705",
     "variantAxes": [],
     "booleanProps": [],
     "textProps": [],

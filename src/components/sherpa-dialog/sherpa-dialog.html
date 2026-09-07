@@ -1,0 +1,35 @@
+<!--
+  sherpa-dialog — a modal surface built on the native <dialog> element.
+
+  Native-first (naming standard D2/D12): a real <dialog> gives us modality,
+  the ::backdrop, focus-trap, ESC-to-close and the top-layer for free via
+  showModal(). The header / body / footer regions mirror sherpa-container and
+  collapse when their slot is empty. JS only opens/closes the dialog and
+  re-dispatches the native `close` event as a composed one.
+
+  Public API:
+    data-heading  — convenience header label (a slotted [slot=header] overrides it)
+    open          — native boolean (read reflects dialog.open; set → showModal()/close())
+    data-status   — status colour cascade (critical | warning | success | info | urgent)
+
+  Slots:
+    header    — header region (reflects data-has-header)
+    (default) — the dialog body
+    footer    — footer region (reflects data-has-footer)
+
+  Fires: close (detail: { })
+-->
+<template id="default">
+  <dialog class="root" part="root">
+    <div class="header" part="header">
+      <span class="heading-text"></span>
+      <slot name="header"></slot>
+    </div>
+    <div class="body" part="body">
+      <slot></slot>
+    </div>
+    <div class="footer" part="footer">
+      <slot name="footer"></slot>
+    </div>
+  </dialog>
+</template>

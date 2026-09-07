@@ -1,0 +1,77 @@
+/**
+ * sherpa-accordion.css — a disclosure card surface.
+ *
+ * A bordered card whose <summary> is a full-width toggle row and whose body
+ * shows only while the native <details> is [open]. The surface tokens mirror
+ * sherpa-container: one --_surface / --_border pair that the status cascade
+ * (--_status-*) re-points, no accent bars. JS never toggles visibility — the
+ * body's presence is driven purely by the native [open] attribute.
+ */
+
+:host {
+  display: block;
+  min-inline-size: 0;
+
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+
+  background: var(--_surface);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  color: var(--sherpa-style-content-base, #2e2e33);
+
+  --_pad: var(--sherpa-theme-padding-lg, 16px);
+}
+
+.root {
+  border-radius: inherit;
+}
+
+/* ── Summary: the toggle row ─────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 8px);
+  padding: var(--_pad);
+  cursor: pointer;
+  list-style: none;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--sherpa-style-content-base, #2e2e33);
+  border-radius: inherit;
+}
+/* Kill the native disclosure triangle across engines. */
+.header::-webkit-details-marker { display: none; }
+.header::marker { content: ''; }
+
+.header:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-style-border-active-base, #3c5edd);
+}
+
+.heading {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* ── Chevron — rotates when open ─────────────────────────────────────── */
+.chevron {
+  inline-size: 10px;
+  block-size: 10px;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+  flex: 0 0 auto;
+  margin-inline-start: 2px;
+}
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+
+.root[open] .chevron {
+  transform: rotate(45deg);
+}
+
+/* ── Body: shown only while open (the divider matches the card border) ── */
+.body {
+  padding: var(--_pad);
+  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}

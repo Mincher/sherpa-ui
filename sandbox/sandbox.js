@@ -10,15 +10,16 @@ import '/dist/index.js';
 
 // ── Component manifest (the 47 src/components dirs) ─────────────────────────
 const COMPONENTS = [
-  'sherpa-app-header', 'sherpa-barchart', 'sherpa-breadcrumbs', 'sherpa-button',
+  'sherpa-accordion', 'sherpa-app-header', 'sherpa-barchart', 'sherpa-breadcrumbs', 'sherpa-button',
   'sherpa-calendar', 'sherpa-callout', 'sherpa-chart-legend', 'sherpa-chat-message',
   'sherpa-code-block', 'sherpa-container', 'sherpa-container-footer', 'sherpa-container-header',
-  'sherpa-data-grid', 'sherpa-donut-chart', 'sherpa-empty-state', 'sherpa-file-upload',
+  'sherpa-data-grid', 'sherpa-dialog', 'sherpa-donut-chart', 'sherpa-empty-state', 'sherpa-file-upload',
   // NOTE: sherpa-grid-cell has a src dir but is not registered by /dist/index.js
   // and ships no template, so it is intentionally omitted from the picker.
   'sherpa-gauge-chart', 'sherpa-input-text', 'sherpa-key-value-list',
   'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',
   'sherpa-metric', 'sherpa-nav', 'sherpa-nav-item', 'sherpa-nav-section',
+  'sherpa-overlay-panel', 'sherpa-panel',
   'sherpa-pagination', 'sherpa-progress-bar', 'sherpa-progress-step-tracker', 'sherpa-prompt-composer',
   'sherpa-quick-filter', 'sherpa-quick-filter-toolbar', 'sherpa-section-header', 'sherpa-select-card',
   'sherpa-select-checkbox', 'sherpa-select-group', 'sherpa-select-radio', 'sherpa-slider',

@@ -1,0 +1,38 @@
+<!--
+  sherpa-overlay-panel — a NON-modal floating panel on native <dialog>.
+
+  Native-first (naming standard D2/D12): a native <dialog> opened with show()
+  (not showModal()) is a floating panel — it sits in the top layer but WITHOUT a
+  backdrop, without a focus-trap, and without ESC-to-close, so the page behind
+  stays interactive. Same header / body / footer regions as sherpa-dialog. We
+  chose <dialog>.show() over the Popover API because it shares sherpa-dialog's
+  exact structure and lifecycle (one difference: show vs showModal) and gives an
+  imperative show()/close() API; the Popover API's light-dismiss + toggle model
+  would diverge from the dialog family for no gain here.
+
+  Public API:
+    data-heading  — convenience header label (a slotted [slot=header] overrides it)
+    open          — native boolean (read reflects dialog.open; set → show()/close())
+    data-status   — status colour cascade (critical | warning | success | info | urgent)
+
+  Slots:
+    header    — header region (reflects data-has-header)
+    (default) — the panel body
+    footer    — footer region (reflects data-has-footer)
+
+  Fires: close (detail: { })
+-->
+<template id="default">
+  <dialog class="root" part="root">
+    <div class="header" part="header">
+      <span class="heading-text"></span>
+      <slot name="header"></slot>
+    </div>
+    <div class="body" part="body">
+      <slot></slot>
+    </div>
+    <div class="footer" part="footer">
+      <slot name="footer"></slot>
+    </div>
+  </dialog>
+</template>

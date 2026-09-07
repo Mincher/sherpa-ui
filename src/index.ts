@@ -78,6 +78,10 @@ export { SherpaPromptComposer } from './components/sherpa-prompt-composer/sherpa
 export { SherpaToolbar } from './components/sherpa-toolbar/sherpa-toolbar.js';
 export { SherpaChartLegend, type LegendItem } from './components/sherpa-chart-legend/sherpa-chart-legend.js';
 export { SherpaFileUpload } from './components/sherpa-file-upload/sherpa-file-upload.js';
+export { SherpaAccordion } from './components/sherpa-accordion/sherpa-accordion.js';
+export { SherpaDialog } from './components/sherpa-dialog/sherpa-dialog.js';
+export { SherpaOverlayPanel } from './components/sherpa-overlay-panel/sherpa-overlay-panel.js';
+export { SherpaPanel } from './components/sherpa-panel/sherpa-panel.js';
 export { SherpaProgressStepTracker } from './components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.js';
 export { SherpaQuickFilter } from './components/sherpa-quick-filter/sherpa-quick-filter.js';
 export { SherpaGaugeChart } from './components/sherpa-gauge-chart/sherpa-gauge-chart.js';

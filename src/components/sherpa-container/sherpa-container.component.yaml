@@ -166,41 +166,15 @@ $extensions:
   sherpa:
     figmaName: Container
     category: container
-    variantAxes:
-      - name: Type
-        values:
-          - default
-          - dialog
-          - panel
-          - overlay-panel
-          - accordion
+    variantAxes: []
     booleanProps:
       - expanded
     divergence:
       note: >-
-        2026-08-26: 1 Figma component → many HTML elements. The single "Container" COMPONENT_SET
-        (Type=default|dialog|panel|overlay-panel|accordion) already carries all variants in Figma,
-        but those Type values are DISTINCT HTML elements with their own native behaviour/a11y — a
-        code component per Type maps in via figmaName "Container" (same 1:many pattern as Input
-        Field; see sherpa-input-text _divergence.oneToMany).
-      oneToMany:
-        figmaComponent: Container
-        note: >-
-          Type variant = which HTML element. Already built as variants in Figma; code splits per
-          element.
-        types:
-          - figmaType: default
-            html: <div> / <section>
-            codeComponent: sherpa-container
-          - figmaType: dialog
-            html: <dialog>
-            codeComponent: sherpa-dialog
-          - figmaType: panel
-            html: <section> / <aside>
-            codeComponent: sherpa-panel
-          - figmaType: overlay-panel
-            html: <aside> (overlay)
-            codeComponent: sherpa-overlay-panel
-          - figmaType: accordion
-            html: <details> / <summary>
-            codeComponent: sherpa-accordion
+        2026-09-07 SPLIT DONE: the former Container Type axis (default|dialog|panel|overlay-panel|
+        accordion) was split into SEPARATE components in Figma AND code (ratified D2/D12). Figma
+        "Container" is now a plain COMPONENT (Type=default only), and dialog/panel/overlay-panel/
+        accordion are standalone Figma components + code components on native elements:
+        dialog→sherpa-dialog (<dialog> modal), overlay-panel→sherpa-overlay-panel (<dialog>
+        non-modal), accordion→sherpa-accordion (<details>), panel→sherpa-panel (<section>).
+        sherpa-container is now just the base card surface (header/body/footer slots + states).
