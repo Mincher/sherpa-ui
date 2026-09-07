@@ -10,6 +10,22 @@
  * data length — JS never sets display/width/colour here.
  */
 
+/* Typed JS→CSS bridges: TS writes the raw values (--_v0..7) plus the normalisation
+ * range (--_min / --_range) on the host; the calc()s on .shape read them. Typing as
+ * <number> guards the syntax and lets the trend animate; inherits so the host-set
+ * values reach the descendants. Non-Chromium falls back to the plain declarations
+ * on :host below. */
+@property --_v0 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v1 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v2 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v3 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v4 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v5 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v6 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_v7 { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_min { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --_range { syntax: "<number>"; inherits: true; initial-value: 1; }
+
 :host {
   display: inline-flex;
   vertical-align: middle;

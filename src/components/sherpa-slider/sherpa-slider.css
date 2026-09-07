@@ -13,6 +13,16 @@
  * status-cascade accent was drift and has been removed.
  */
 
+/* Typed JS→CSS bridge: TS writes value→--_pct as a percentage. Typing it lets the
+ * fill width animate and guards the syntax; inherits so the host-set value reaches
+ * the descendant .fill. Non-Chromium ignores @property and falls back to the plain
+ * `--_pct: 0%` declaration on :host below. */
+@property --_pct {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
 :host {
   display: flex;
   flex-direction: column;

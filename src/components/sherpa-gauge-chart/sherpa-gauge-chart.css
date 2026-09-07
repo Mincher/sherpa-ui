@@ -10,6 +10,21 @@
  * accent (#3b4ccd). No per-status blocks — one routing rule covers them all.
  */
 
+/* Typed JS→CSS bridges: TS writes --_fill-pct (sweep) and --_angle (needle). Typing
+ * makes both animate smoothly and guards the syntax; inherits so the host-set values
+ * reach the .gauge / .needle descendants. Non-Chromium falls back to the plain
+ * declarations on :host below. */
+@property --_fill-pct {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+@property --_angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: -90deg;
+}
+
 :host {
   display: inline-flex;
   flex-direction: column;

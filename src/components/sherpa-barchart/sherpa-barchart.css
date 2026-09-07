@@ -6,6 +6,15 @@
  * (categorical). Hover/focus lift; the x-axis label sits beneath each bar.
  */
 
+/* Typed JS→CSS bridge: TS writes each bar's height as --_h (percentage) on the .bar
+ * itself and CSS reads it there — inherits:false so a bar's height never leaks to
+ * children. Typing lets the bar grow animate; non-Chromium uses the var() fallback. */
+@property --_h {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
 :host {
   display: inline-flex;
   flex-direction: column;
