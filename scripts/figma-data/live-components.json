@@ -372,14 +372,15 @@
     "instanceProps": []
   },
   "Chat Message": {
-    "type": "COMPONENT",
+    "type": "COMPONENT_SET",
     "nodeId": "228:6615",
     "variantAxes": [
       {
         "name": "Type",
         "values": [
-          "received",
-          "sent"
+          "assistant",
+          "user",
+          "system"
         ]
       }
     ],

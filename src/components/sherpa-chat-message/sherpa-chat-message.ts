@@ -1,7 +1,7 @@
 /**
  * sherpa-chat-message — one chat bubble in a thread.
  *
- * data-role (assistant, user, or system) sets the layout and colour, all in CSS.
+ * data-type (assistant, user, or system) sets the layout and colour, all in CSS.
  * JS only writes the text — author, time, and message. If you slot in your own
  * body content, it replaces the data-content text.
  */
@@ -13,7 +13,7 @@ export class SherpaChatMessage extends SherpaElement {
   static override observed = ['data-author', 'data-time', 'data-content'];
 
   override onRender(): void {
-    if (!this.dataset['role']) this.dataset['role'] = 'assistant';
+    if (!this.dataset['type']) this.dataset['type'] = 'assistant';
     this.#sync();
   }
 

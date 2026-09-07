@@ -62,7 +62,12 @@ props:
     kind: content
     description: optional text body (the default slot overrides it when slotted)
   - $type: prop
-    name: data-role
+    name: data-time
+    type: string
+    kind: visibility
+    description: optional timestamp shown beside the author
+  - $type: prop
+    name: data-type
     type: enum
     kind: style
     values:
@@ -70,11 +75,6 @@ props:
       - user
       - system
     description: assistant  | user (right, accent) | system (centred, muted)
-  - $type: prop
-    name: data-time
-    type: string
-    kind: visibility
-    description: optional timestamp shown beside the author
 states:
   - $type: state
     name: author
@@ -87,13 +87,13 @@ states:
     selector: ":host([data-has-content])"
   - $type: state
     name: assistant
-    selector: ":host([data-role=\"assistant\"])"
+    selector: ":host([data-type=\"assistant\"])"
   - $type: state
     name: user
-    selector: ":host([data-role=\"user\"])"
+    selector: ":host([data-type=\"user\"])"
   - $type: state
     name: system
-    selector: ":host([data-role=\"system\"])"
+    selector: ":host([data-type=\"system\"])"
   - $type: state
     name: not-author
     selector: ":host(:not([data-author]))"

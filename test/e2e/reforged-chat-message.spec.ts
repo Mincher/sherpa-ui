@@ -31,7 +31,7 @@ test('defaults to the assistant role', async ({ page }) => {
     el.setAttribute('data-content', 'hello');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return el.dataset.role;
+    return el.dataset.type;
   });
   expect(role).toBe('assistant');
 });
@@ -91,7 +91,7 @@ test('assistant shows the avatar; user hides it', async ({ page }) => {
     const vis = async (role?: string) => {
       const el = document.createElement('sherpa-chat-message') as WithRender;
       el.setAttribute('data-content', 'x');
-      if (role) el.setAttribute('data-role', role);
+      if (role) el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       return getComputedStyle(el.shadowRoot!.querySelector('.avatar')!).display !== 'none';
@@ -119,7 +119,7 @@ test('role drives the bubble colour: user differs from assistant, system is mute
     const bg = async (role: string) => {
       const el = document.createElement('sherpa-chat-message') as WithRender;
       el.setAttribute('data-content', 'x');
-      el.setAttribute('data-role', role);
+      el.setAttribute('data-type', role);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       return getComputedStyle(el.shadowRoot!.querySelector('.bubble')!).backgroundColor;
