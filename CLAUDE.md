@@ -134,7 +134,23 @@ Three tiers:
 | Semantic aliases | `--sherpa-*` | Always consume with a hardcoded fallback |
 | Component-private | `--_*` | Internal only — never in public API |
 
-Always write: `var(--sherpa-space-sm, 12px)`. The fallback is required.
+Always write: `var(--sherpa-space-sm, 12px)`. The fallback is required — and the
+fallback value **must equal the on-grid value the token resolves to** (a stale
+off-grid fallback is drift even though it only surfaces if the token goes missing).
+
+### Spacing grid
+
+All sizing, spacing, and radius follow an **8px grid** with a **4px sub-grid** for
+text. **2px and 1px** increments are for edge cases only. **Values below 1px** exist
+only for stroke widths (border widths). The projected Figma tokens are all on-grid;
+consume them rather than hand-writing px.
+
+`npm run lint:css` warns on any odd px literal (≥1px, not `999`) in a spacing/sizing/
+radius property (`off-grid`). Exempt: `border*` props and `font-size`; `1px` and
+sub-1px (strokes); `999px` (the fully-round pill idiom). A genuinely off-grid **drawn
+glyph** (a pure-CSS triangle/chevron, where the px is geometry not spacing) opts out
+with a trailing `/* off-grid-ok */` comment on the declaration — do not use it to
+excuse real spacing drift.
 
 Cascade layer order (declared in `css/styles/index.css`):
 ```
@@ -232,6 +248,7 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 | `&` nesting inside `:host {}` | Standalone `:host(…)` rules |
 | `light-dark()` in component CSS | Theme files own mode; components are mode-agnostic |
 | `outline: --focus-ring()` for focus indicators | `outline: none; box-shadow: 0 0 0 2px var(…, #hex)` |
+| Odd px (`3px`, `11px`) for spacing/size/radius | On-grid step (8/4/2px) or the token's real value |
 
 ---
 
