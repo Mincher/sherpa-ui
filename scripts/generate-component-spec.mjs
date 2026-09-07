@@ -65,6 +65,7 @@ import yaml from 'js-yaml';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
+import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -389,48 +390,8 @@ function collectEventNames(text, set) {
   }
 }
 
-// ══ authored CSS token-binding extraction (mirrors roundtrip-component.mjs) ══════
-function authoredCss(css) {
-  const end = css.indexOf('/* == end sherpa:tokens == */');
-  return end === -1 ? css : css.slice(end + '/* == end sherpa:tokens == */'.length);
-}
-function stripCssComments(css) { return css.replace(/\/\*[\s\S]*?\*\//g, ''); }
-/** Returns ordered [{ el, prop, sherpaVar }] taking the FIRST binding per el.prop. */
-function extractCssBindings(cssRaw) {
-  const css = stripCssComments(cssRaw);
-  const seen = new Set();
-  const out = [];
-  const re = /([^{}]+?)\s*\{([^{}]*)\}/g;
-  let m;
-  while ((m = re.exec(css))) {
-    const sel = m[1].trim();
-    const body = m[2];
-    const cm = /^\.([\w-]+)$/.exec(sel);   // plain single-class rules only
-    if (!cm) continue;
-    const el = cm[1];
-    const record = (prop, sherpaVar) => {
-      const key = `${el}.${prop}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      out.push({ el, prop, sherpaVar });
-    };
-    for (const d of body.split(';')) {
-      const cd = /^\s*([\w-]+)\s*:\s*(.+)$/.exec(d);
-      if (!cd) continue;
-      const prop = cd[1];
-      const val = cd[2];
-      if (prop === 'border') {
-        const vars = [...val.matchAll(/var\(\s*--sherpa-([\w-]+)/g)].map((mm) => mm[1]);
-        if (vars[0]) record('border-width', vars[0]);
-        if (vars[1]) record('border-color', vars[1]);
-        continue;
-      }
-      const vm = /var\(\s*--sherpa-([\w-]+)/.exec(val);
-      if (vm) record(prop, vm[1]);
-    }
-  }
-  return out;
-}
+// authored-CSS reading (authoredCss / extractBindings / parseStates) now lives in
+// ./lib/css-reader.mjs — a shared PostCSS reader used by roundtrip-component.mjs too.
 
 /**
  * A `--sherpa-X` var name → a `{ref}` string. Scoped component vars
@@ -492,28 +453,6 @@ function parseTsJsProps(ts) {
   return [...props.values()];
 }
 
-// ══ authored-CSS state selectors → states[] (name + selector) ════════════════════
-function parseStates(cssAuthored) {
-  const css = stripCssComments(cssAuthored);
-  const states = [];
-  const seen = new Set();
-  const add = (name, selector) => { if (!seen.has(selector)) { seen.add(selector); states.push({ name, selector }); } };
-  // :host([data-state="on"])  → name = the attr's value or the attr
-  for (const m of css.matchAll(/:host\(\[data-([\w-]+)(?:="([^"]*)")?\]\)/g)) {
-    const [, attr, val] = m;
-    const name = val || attr;
-    add(name, m[0]);
-  }
-  for (const m of css.matchAll(/:host\(:not\(\[data-([\w-]+)(?:="([^"]*)")?\]\)\)/g)) {
-    const [, attr, val] = m;
-    add(`not-${val || attr}`, m[0]);
-  }
-  if (/:host\(\[disabled\]\)/.test(css)) add('disabled', ':host([disabled])');
-  const fv = /(\.[\w-]+):focus-visible/.exec(css);
-  if (fv) add('focus-visible', fv[0]);
-  else if (/:focus-visible/.test(css)) add('focus-visible', ':focus-visible');
-  return states;
-}
 
 // ══ the generator ════════════════════════════════════════════════════════════════
 function generateSpec(name) {
@@ -673,7 +612,7 @@ function generateSpec(name) {
   // ── tokens (authored CSS bindings) ────────────────────────────────────────────
   const tokens = {};
   if (css) {
-    for (const { el, prop, sherpaVar } of extractCssBindings(authoredCss(css))) {
+    for (const { el, prop, sherpaVar } of extractBindings(authoredCss(css))) {
       tokens[`${el}.${prop}`] = varToRef(sherpaVar, name, generateSpec._tokens);
     }
   }
@@ -819,8 +758,8 @@ function htmlDiff(genHtml, realHtml, diffs) {
   }
 }
 function cssDiff(genCss, realAuthored, diffs) {
-  const gen = bindingsMap(extractCssBindings(genCss));
-  const real = bindingsMap(extractCssBindings(realAuthored));
+  const gen = bindingsMap(extractBindings(genCss));
+  const real = bindingsMap(extractBindings(realAuthored));
   for (const [k, v] of Object.entries(gen)) {
     if (real[k] === undefined) diffs.push(`CSS ${k}: generated binds --sherpa-${v}; authored has none`);
     else if (real[k] !== v) diffs.push(`CSS ${k}: --sherpa-${v}≠--sherpa-${real[k]}`);

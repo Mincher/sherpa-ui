@@ -144,6 +144,8 @@ tokens:
   promo.gap: "{sherpa.structure-space-gap}"
   promo.padding: "{sherpa.theme-padding-sm}"
   promo.border-radius: "{sherpa.display-border-rounding-base}"
+  promo.border-width: "{sherpa.style-border-width}"
+  promo.border-color: "{sherpa.style-border-base}"
   promo.background: "{sherpa.style-surface-base}"
   promo.color: "{sherpa.style-content-base}"
   promo-icon.inline-size: "{sherpa.display-size-lg}"

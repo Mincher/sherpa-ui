@@ -84,6 +84,7 @@ tokens:
   group-label.font-size: "{sherpa.font-size-body-small}"
   group-label.font-weight: "{sherpa.font-weight-semibold}"
   group-list.gap: "{sherpa.display-space-2xs}"
+  item-row.border-block-end: "{sherpa.display-border-width-sm}"
   item.gap: "{sherpa.display-space-xs}"
   item.padding: "{sherpa.display-space-xs}"
   item.color: "{sherpa.theme-content-body-2}"

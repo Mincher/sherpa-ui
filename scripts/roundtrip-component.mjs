@@ -42,6 +42,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
+import { authoredCss, extractBindingsMap } from './lib/css-reader.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -169,57 +170,15 @@ function checkHtml(genHtml, realHtml) {
 }
 
 // ── CSS: authored region + token-binding extraction ────────────────────────────
-function authoredCss(css) {
-  const end = css.indexOf('/* == end sherpa:tokens == */');
-  return end === -1 ? css : css.slice(end + '/* == end sherpa:tokens == */'.length);
-}
-// pull `--sherpa-*` var refs per element rule. Returns { '.el': { prop: 'sherpa-x' } }
-// taking the FIRST occurrence of each element block (the live one; the file may
-// carry a stale duplicate block below it).
-function stripCssComments(css) {
-  return css.replace(/\/\*[\s\S]*?\*\//g, '');
-}
-function extractCssBindings(cssRaw) {
-  const css = stripCssComments(cssRaw);
-  const out = {};
-  // match each `selector { body }` block. Selector = run with no braces/semicolons;
-  // body = run with no braces. No `}`-anchor (consecutive rules would be skipped).
-  const re = /([^{}]+?)\s*\{([^{}]*)\}/g;
-  let m;
-  while ((m = re.exec(css))) {
-    const sel = m[1].trim();
-    const body = m[2];
-    // only plain element rules like `.track` / `.knob` / `.label` (no combinators)
-    const cm = /^\.([\w-]+)$/.exec(sel);
-    if (!cm) continue;
-    const el = cm[1];
-    out[el] ??= {};
-    const decls = body.split(';');
-    for (const d of decls) {
-      const cd = /^\s*([\w-]+)\s*:\s*(.+)$/.exec(d);
-      if (!cd) continue;
-      const prop = cd[1];
-      const val = cd[2];
-      const record = (p, v) => { if (v && !(p in out[el])) out[el][p] = v.replace(/^--sherpa-/, ''); };
-      // The `border` shorthand carries width + colour vars: expand it into the
-      // longhands the compiler emits (border-width / border-color). Order in the
-      // authored CSS is `<width-var> solid <color-var>`.
-      if (prop === 'border') {
-        const vars = [...val.matchAll(/var\(\s*(--sherpa-[\w-]+)/g)].map((mm) => mm[1]);
-        if (vars[0]) record('border-width', vars[0]);
-        if (vars[1]) record('border-color', vars[1]);
-        continue;
-      }
-      const vm = /var\(\s*(--sherpa-[\w-]+)/.exec(val);
-      if (vm) record(prop, vm[1]);
-    }
-  }
-  return out;
-}
+// authoredCss + binding extraction now come from the shared PostCSS reader
+// (./lib/css-reader.mjs). extractBindingsMap returns { '.el': { prop: 'sherpa-x' } }
+// taking the FIRST binding per el.prop, with the `border` shorthand expanded to
+// border-width/border-color — identical to the former local regex reader.
+
 // what compileDef emitted, parsed the same way (its output has no token region)
 function checkCss(genCss, realCssAuthored) {
-  const gen = extractCssBindings(genCss);
-  const real = extractCssBindings(realCssAuthored);
+  const gen = extractBindingsMap(genCss);
+  const real = extractBindingsMap(realCssAuthored);
   const diffs = [];
   for (const [el, props] of Object.entries(gen)) {
     for (const [prop, sherpaVar] of Object.entries(props)) {

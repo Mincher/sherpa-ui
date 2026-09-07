@@ -81,6 +81,7 @@ tokens:
   detail.padding-inline: "{sherpa.display-space-sm}"
   tab.gap: "{sherpa.display-space-sm}"
   tab.padding: "{sherpa.display-space-sm}"
+  tab.border-block-end: "{sherpa.display-border-width-sm}"
   tab.font-size: "{sherpa.font-size-body-base}"
   tab.font-weight: "{sherpa.font-weight-semibold}"
   tab.line-height: "{sherpa.display-fonts-scale-xl}"

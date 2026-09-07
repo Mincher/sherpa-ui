@@ -147,6 +147,7 @@ events:
     composed: true
 tokens:
   pane.border-width: "{sherpa.style-border-width}"
+  pane.border-radius: "{sherpa.structure-rounding-top-left}"
   pane-heading.padding: "{sherpa.display-space-xs}"
   pane-heading.border-block-end: "{sherpa.style-border-width}"
   pane-heading.color: "{sherpa.theme-content-body-base}"
@@ -155,6 +156,7 @@ tokens:
   pane-list.padding: "{sherpa.structure-space-padding}"
   pane-empty.padding: "{sherpa.display-space-base}"
   pane-empty.color: "{sherpa.theme-content-body-1}"
+  row.border-radius: "{sherpa.structure-rounding-top-left}"
   moves.gap: "{sherpa.display-space-xs}"
 $extensions:
   sherpa:

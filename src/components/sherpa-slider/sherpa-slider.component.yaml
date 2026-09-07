@@ -160,6 +160,8 @@ tokens:
   value-input.inline-size: "{sherpa.display-size-6xl}"
   value-input.min-block-size: "{sherpa.display-size-2xl}"
   value-input.padding: "{sherpa.display-space-2xs}"
+  value-input.border-width: "{sherpa.style-border-width}"
+  value-input.border-color: "{sherpa.theme-border-default-2}"
   value-input.border-radius: "{sherpa.display-border-rounding-base}"
   value-input.background: "{sherpa.style-surface-base}"
   value-input.color: "{sherpa.style-content-base}"

@@ -124,6 +124,7 @@ tokens:
   author.font-weight: "{sherpa.font-weight-medium}"
   time.color: "{sherpa.theme-content-body-1}"
   bubble.padding: "{sherpa.display-space-2xs}"
+  bubble.border-radius: "{sherpa.structure-rounding-top-left}"
 $extensions:
   sherpa:
     figmaName: Chat Message

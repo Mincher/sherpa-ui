@@ -98,6 +98,7 @@ tokens:
   description.font-size: "{sherpa.font-size-body-base}"
   actions.gap: "{sherpa.display-space-xs}"
   divider.margin-block-start: "{sherpa.display-space-xs}"
+  divider.border-block-start: "{sherpa.display-border-width-base}"
 $extensions:
   sherpa:
     figmaName: Section Header

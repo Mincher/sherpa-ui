@@ -99,6 +99,7 @@ tokens:
   form.gap: "{sherpa.display-space-xs}"
   form.padding: "{sherpa.display-space-xs}"
   form.border-width: "{sherpa.style-border-width}"
+  form.border-radius: "{sherpa.structure-rounding-top-left}"
   input.min-block-size: "{sherpa.display-size-lg}"
   input.font-size: "{sherpa.font-size-body-large}"
   input.color: "{sherpa.style-content-base}"

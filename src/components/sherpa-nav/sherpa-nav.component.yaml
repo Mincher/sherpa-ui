@@ -133,6 +133,7 @@ events:
 tokens:
   rail.background: "{sherpa.style-surface-base}"
   rail.color: "{sherpa.style-content-base}"
+  rail.border-inline-end: "{sherpa.display-border-width-base}"
   header.gap: "{sherpa.display-space-xs}"
   header.padding: "{sherpa.display-space-sm}"
   brand.gap: "{sherpa.display-space-sm}"
@@ -148,6 +149,8 @@ tokens:
   search.padding-inline: "{sherpa.display-space-sm}"
   search.block-size: "{sherpa.display-size-2xl}"
   search.border-radius: "{sherpa.display-border-rounding-base}"
+  search.border-width: "{sherpa.display-border-width-base}"
+  search.border-color: "{sherpa.style-border-base}"
   search.background: "{sherpa.style-surface-base}"
   search-icon.font-size: "{sherpa.font-size-body-small}"
   search-input.font-size: "{sherpa.font-size-body-base}"
@@ -162,6 +165,7 @@ tokens:
   section-label.color: "{sherpa.theme-content-body-1}"
   section-items.gap: "{sherpa.display-space-3xs}"
   footer.padding: "{sherpa.display-space-sm}"
+  footer.border-block-start: "{sherpa.display-border-width-base}"
 $extensions:
   sherpa:
     figmaName: Primary Navigation
