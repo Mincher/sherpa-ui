@@ -114,9 +114,7 @@
 /* data-loading is the ratified boolean-verb loading state. empty / error are
    slot-driven (D6): data-has-empty / data-has-error come from the base class's
    slot-presence reflection. The overlay shows when any of the three is active. */
-:host([data-loading]) .state,
-:host([data-has-empty]) .state,
-:host([data-has-error]) .state { display: flex; }
+:host(:is([data-loading], [data-has-empty], [data-has-error])) .state { display: flex; }
 :host([data-loading]) .state-loading { display: inline-flex; }
 :host([data-has-empty]) .state-empty { display: inline-flex; }
 :host([data-has-error]) .state-error { display: inline-flex; }

@@ -142,8 +142,6 @@
   cursor: not-allowed;
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
-:host([disabled]) .title,
-:host([disabled]) .description,
-:host([disabled]) .leading {
+:host([disabled]) :is(.title, .description, .leading) {
   color: var(--sherpa-theme-content-body-2, #5c5c66);
 }

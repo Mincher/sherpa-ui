@@ -88,13 +88,11 @@
 
 /* ── Layout visibility (day | month | year) ─────────────────────────── */
 .cal-grid { display: none; }
-:host(:not([data-view])) .cal-days,
-:host([data-view="day"]) .cal-days { display: grid; }
+:host(:is(:not([data-view]), [data-view="day"])) .cal-days { display: grid; }
 :host([data-view="month"]) .cal-months { display: grid; }
 :host([data-view="year"]) .cal-years { display: grid; }
 /* The weekday row belongs to the day layout only. */
-:host([data-view="month"]) .cal-weekdays,
-:host([data-view="year"]) .cal-weekdays { display: none; }
+:host(:is([data-view="month"], [data-view="year"])) .cal-weekdays { display: none; }
 
 .cal-label { cursor: pointer; border: none; background: transparent; font-family: inherit; }
 .cal-label:hover { color: var(--_accent); }

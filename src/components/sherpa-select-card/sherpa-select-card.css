@@ -66,9 +66,7 @@
   flex-direction: column;
   gap: var(--sherpa-display-space-3xs, 2px);
 }
-:host([data-has-header]) .header,
-:host([data-label]) .header,
-:host([data-description]) .header {
+:host(:is([data-has-header], [data-label], [data-description])) .header {
   display: flex;
 }
 
@@ -83,9 +81,7 @@
 }
 
 /* When body has content and header shows, divide them. */
-:host([data-has-header]) .body,
-:host([data-label]) .body,
-:host([data-description]) .body {
+:host(:is([data-has-header], [data-label], [data-description])) .body {
   border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 /* Footer divider (below the body); suppressed in horizontal orientation. */

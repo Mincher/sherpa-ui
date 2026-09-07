@@ -161,9 +161,6 @@
 .footer:not(:has(*)) { display: none; }
 
 /* ── Collapsed (icon-only rail) ─────────────────────────────────────── */
-:host([data-collapsed]) .product,
-:host([data-collapsed]) .search,
-:host([data-collapsed]) .section-label,
-:host([data-collapsed]) .footer { display: none; }
+:host([data-collapsed]) :is(.product, .search, .section-label, .footer) { display: none; }
 :host([data-collapsed]) .brand { justify-content: center; }
 :host([data-collapsed]) .brand-actions { display: none; }

@@ -190,8 +190,7 @@
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) { pointer-events: none; }
-:host([disabled]) .row,
-:host([disabled]) .promo {
+:host([disabled]) :is(.row, .promo) {
   cursor: not-allowed;
   color: var(--sherpa-theme-content-body-2, #5c5c66);
   background: var(--sherpa-theme-surface-default-2, #c0c0cc);
