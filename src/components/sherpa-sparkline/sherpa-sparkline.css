@@ -69,47 +69,47 @@
   position: relative;
   flex: 1 1 0%;
   min-inline-size: 0;
-}
 
-/* Map each shape to its adjacent raw-value pair. */
-.shape[data-index="0"] { --_v-start: var(--_v0); --_v-end: var(--_v1); }
-.shape[data-index="1"] { --_v-start: var(--_v1); --_v-end: var(--_v2); }
-.shape[data-index="2"] { --_v-start: var(--_v2); --_v-end: var(--_v3); }
-.shape[data-index="3"] { --_v-start: var(--_v3); --_v-end: var(--_v4); }
-.shape[data-index="4"] { --_v-start: var(--_v4); --_v-end: var(--_v5); }
-.shape[data-index="5"] { --_v-start: var(--_v5); --_v-end: var(--_v6); }
-.shape[data-index="6"] { --_v-start: var(--_v6); --_v-end: var(--_v7); }
+  /* Map each shape to its adjacent raw-value pair. */
+  &[data-index="0"] { --_v-start: var(--_v0); --_v-end: var(--_v1); }
+  &[data-index="1"] { --_v-start: var(--_v1); --_v-end: var(--_v2); }
+  &[data-index="2"] { --_v-start: var(--_v2); --_v-end: var(--_v3); }
+  &[data-index="3"] { --_v-start: var(--_v3); --_v-end: var(--_v4); }
+  &[data-index="4"] { --_v-start: var(--_v4); --_v-end: var(--_v5); }
+  &[data-index="5"] { --_v-start: var(--_v5); --_v-end: var(--_v6); }
+  &[data-index="6"] { --_v-start: var(--_v6); --_v-end: var(--_v7); }
 
-/* Filled area under the line — pseudo so points aren't clipped. */
-.shape::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* Translucent area fill; degrades to no fill (stroke still shows) where color-mix is absent. */
-  background: transparent;
-  clip-path: polygon(
-    0% calc(100% - var(--_n-start) * 1%),
-    100% calc(100% - var(--_n-end) * 1%),
-    100% 100%,
-    0% 100%
-  );
-}
-@supports (color: color-mix(in srgb, red, blue)) {
-  .shape::before { background: color-mix(in srgb, currentColor 24%, transparent); }
-}
+  /* Filled area under the line — pseudo so points aren't clipped. */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Translucent area fill; degrades to no fill (stroke still shows) where color-mix is absent. */
+    background: transparent;
+    clip-path: polygon(
+      0% calc(100% - var(--_n-start) * 1%),
+      100% calc(100% - var(--_n-end) * 1%),
+      100% 100%,
+      0% 100%
+    );
+  }
+  @supports (color: color-mix(in srgb, red, blue)) {
+    &::before { background: color-mix(in srgb, currentColor 24%, transparent); }
+  }
 
-/* Stroke on the top edge. */
-.shape::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: currentColor;
-  clip-path: polygon(
-    0% calc(100% - var(--_n-start) * 1% - var(--_stroke)),
-    100% calc(100% - var(--_n-end) * 1% - var(--_stroke)),
-    100% calc(100% - var(--_n-end) * 1% + var(--_stroke)),
-    0% calc(100% - var(--_n-start) * 1% + var(--_stroke))
-  );
+  /* Stroke on the top edge. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    clip-path: polygon(
+      0% calc(100% - var(--_n-start) * 1% - var(--_stroke)),
+      100% calc(100% - var(--_n-end) * 1% - var(--_stroke)),
+      100% calc(100% - var(--_n-end) * 1% + var(--_stroke)),
+      0% calc(100% - var(--_n-start) * 1% + var(--_stroke))
+    );
+  }
 }
 
 /* ── Bar variant: flat-topped columns (both corners share the end value) ─ */
@@ -130,9 +130,10 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease;
+
+  &[data-role="start"] { inset-block-start: calc(100% - var(--_n-start) * 1%); inset-inline-start: 0%; }
+  &[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 }
-.point[data-role="start"] { inset-block-start: calc(100% - var(--_n-start) * 1%); inset-inline-start: 0%; }
-.point[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 
 :host(:hover) .point:not([hidden]) { opacity: 1; }
 :host([data-variant="bar"]) .point { display: none; }

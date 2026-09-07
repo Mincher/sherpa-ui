@@ -39,22 +39,23 @@
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   overflow: hidden;
   background: var(--_track); /* Firefox track + fallback */
-}
-/* Track (WebKit/Blink) */
-.bar::-webkit-progress-bar {
-  background: var(--_track);
-  border-radius: inherit;
-}
-/* Fill (WebKit/Blink) */
-.bar::-webkit-progress-value {
-  background: var(--_fill);
-  border-radius: inherit;
-  transition: inline-size 240ms ease;
-}
-/* Fill (Firefox) */
-.bar::-moz-progress-bar {
-  background: var(--_fill);
-  border-radius: inherit;
+
+  /* Track (WebKit/Blink) */
+  &::-webkit-progress-bar {
+    background: var(--_track);
+    border-radius: inherit;
+  }
+  /* Fill (WebKit/Blink) */
+  &::-webkit-progress-value {
+    background: var(--_fill);
+    border-radius: inherit;
+    transition: inline-size 240ms ease;
+  }
+  /* Fill (Firefox) */
+  &::-moz-progress-bar {
+    background: var(--_fill);
+    border-radius: inherit;
+  }
 }
 
 /* ── Indeterminate — a sweeping band (native valueless <progress>) ─────── */

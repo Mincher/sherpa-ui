@@ -43,8 +43,9 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-theme-content-body-base, #18191a);
+
+  &:empty { display: none; }
 }
-.title:empty { display: none; }
 
 /* ── Gauge: a full circle clipped to its top half ────────────────── */
 .gauge {
@@ -92,8 +93,9 @@
   transform-origin: bottom center;
   transform: rotate(var(--_angle));
   transition: transform 300ms ease;
+
+  @media (prefers-reduced-motion: reduce) { transition: none; }
 }
-@media (prefers-reduced-motion: reduce) { .needle { transition: none; } }
 
 /* ── Centre value ────────────────────────────────────────────────── */
 .centre {

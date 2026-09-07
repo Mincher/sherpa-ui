@@ -45,8 +45,12 @@
 }
 :host([data-label]) .head { display: flex; }
 
-.label { color: var(--sherpa-theme-content-body-1, #404047); font-weight: var(--sherpa-font-weight-medium, 500); }
-.label:empty { display: none; }
+.label {
+  color: var(--sherpa-theme-content-body-1, #404047);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+
+  &:empty { display: none; }
+}
 
 /* ── Slider row: track + editable value input ──────────────────────── */
 .slider-row {
@@ -73,13 +77,14 @@
   /* hide the native number spinners — the slider is the primary control */
   appearance: textfield;
   -moz-appearance: textfield;
-}
-.value-input::-webkit-outer-spin-button,
-.value-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.value-input:focus-visible {
-  outline: none;
-  border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  &:focus-visible {
+    outline: none;
+    border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 :host([data-show-value]) .value-input { display: block; }
 :host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
@@ -125,39 +130,40 @@
   appearance: none;
   cursor: pointer;
   z-index: 1;
-}
-.range:focus { outline: none; }
 
-/* The native rail is invisible — the styled .track shows instead. */
-.range::-webkit-slider-runnable-track { background: transparent; block-size: var(--_thumb); }
-.range::-moz-range-track { background: transparent; block-size: var(--_thumb); }
+  &:focus { outline: none; }
 
-/* Thumb. */
-.range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  inline-size: var(--_thumb);
-  block-size: var(--_thumb);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
-  box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
-}
-.range::-moz-range-thumb {
-  inline-size: var(--_thumb);
-  block-size: var(--_thumb);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
-  box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
-}
+  /* The native rail is invisible — the styled .track shows instead. */
+  &::-webkit-slider-runnable-track { background: transparent; block-size: var(--_thumb); }
+  &::-moz-range-track { background: transparent; block-size: var(--_thumb); }
 
-/* Focus ring — explicit box-shadow, never a silent --focus-ring(). */
-.range:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
-}
-.range:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  /* Thumb. */
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    inline-size: var(--_thumb);
+    block-size: var(--_thumb);
+    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    background: var(--sherpa-style-surface-base, #ffffff);
+    border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
+    box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+  }
+  &::-moz-range-thumb {
+    inline-size: var(--_thumb);
+    block-size: var(--_thumb);
+    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    background: var(--sherpa-style-surface-base, #ffffff);
+    border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
+    box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+  }
+
+  /* Focus ring — explicit box-shadow, never a silent --focus-ring(). */
+  &:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
+  &:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */

@@ -41,8 +41,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:empty { display: none; }
 }
-.label:empty { display: none; }
 
 /* ── Row: figures + sparkline ──────────────────────────────────────── */
 .row {

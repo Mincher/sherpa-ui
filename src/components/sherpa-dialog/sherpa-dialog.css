@@ -32,10 +32,10 @@
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   color: var(--sherpa-style-content-base, #2e2e33);
   box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
-}
 
-.root::backdrop {
-  background: color-mix(in srgb, #101014 45%, transparent);
+  &::backdrop {
+    background: color-mix(in srgb, #101014 45%, transparent);
+  }
 }
 
 /* ── Regions ───────────────────────────────────────────────────────── */

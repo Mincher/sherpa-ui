@@ -60,14 +60,15 @@
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
-}
-.cal-nav:hover {
-  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-  color: var(--sherpa-theme-content-body-base, #18191a);
-}
-.cal-nav:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  &:hover {
+    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+    color: var(--sherpa-theme-content-body-base, #18191a);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* ── Weekday row + day grid share the 7-column track ────────────────── */
@@ -94,9 +95,15 @@
 /* The weekday row belongs to the day layout only. */
 :host(:is([data-view="month"], [data-view="year"])) .cal-weekdays { display: none; }
 
-.cal-label { cursor: pointer; border: none; background: transparent; font-family: inherit; }
-.cal-label:hover { color: var(--_accent); }
-.cal-label:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd); border-radius: var(--sherpa-display-border-rounding-base, 4px); }
+.cal-label {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+
+  &:hover { color: var(--_accent); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd); border-radius: var(--sherpa-display-border-rounding-base, 4px); }
+}
 
 .cal-weekdays span {
   text-align: center;
@@ -121,14 +128,15 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
-}
-.cal-cell:hover {
-  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-  color: var(--sherpa-theme-content-body-base, #18191a);
-}
-.cal-cell:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  &:hover {
+    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+    color: var(--sherpa-theme-content-body-base, #18191a);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* Today — a ring, not a fill (fill is reserved for the selection). */
@@ -221,8 +229,9 @@
   color: var(--sherpa-style-content-base, #2e2e33);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
-}
-.cal-time:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }

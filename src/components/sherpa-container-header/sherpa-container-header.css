@@ -54,9 +54,10 @@
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #5c5c66);
   cursor: grab;
+
+  &:active { cursor: grabbing; }
 }
 :host([data-draggable]) .drag { display: inline-flex; }
-.drag:active { cursor: grabbing; }
 
 /* ── Icon ─────────────────────────────────────────────────────────────── */
 .icon {
@@ -123,13 +124,12 @@ slot[name="heading"] { display: contents; }
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #5c5c66));
   cursor: pointer;
   transition: background-color 100ms ease;
-}
-.toggle:hover,
-.close:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
-.toggle:focus-visible,
-.close:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 :host([data-collapsible]) .toggle { display: inline-flex; }
 :host([data-dismissible]) .close { display: inline-flex; }

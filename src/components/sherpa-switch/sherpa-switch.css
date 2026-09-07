@@ -67,6 +67,24 @@
   font-weight: var(--sherpa-font-weight-semibold, 600);
   cursor: pointer;
   transition: background-color 120ms ease;
+
+  /* Focus ring lives on the track when the (hidden) input is keyboard-focused. */
+  &:has(.input:focus-visible) {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
+
+  /* ── ON state — re-point the fill to the strong success surface ── */
+  &:has(.input:checked) {
+    --_fill: var(--sherpa-theme-surface-success-3, #007a45);
+  }
+
+  /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
+  &:has(.input:disabled) {
+    cursor: not-allowed;
+    background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+    border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  }
 }
 
 /* ── Input: the real, focusable checkbox — visually removed, semantics kept ──
@@ -80,12 +98,6 @@
   block-size: 0;
   opacity: 0;
   pointer-events: none; /* the wrapping <label> already forwards clicks */
-}
-
-/* Focus ring lives on the track when the (hidden) input is keyboard-focused. */
-.track:has(.input:focus-visible) {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Knob: the sliding control surface ─────────────────────────────────── */
@@ -112,10 +124,7 @@
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 
-/* ── ON state — re-point the fill to the strong success surface; slide knob ── */
-.track:has(.input:checked) {
-  --_fill: var(--sherpa-theme-surface-success-3, #007a45);
-}
+/* ── ON state — slide knob to the end ──────────────────────────────────── */
 .input:checked ~ .knob {
   order: 1; /* knob slides to the end */
 }
@@ -123,11 +132,6 @@
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
 :host([disabled]) {
   pointer-events: none;
-}
-.track:has(.input:disabled) {
-  cursor: not-allowed;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }
 .track:has(.input:disabled) .label {
   color: var(--sherpa-theme-content-body-2, #5c5c66);

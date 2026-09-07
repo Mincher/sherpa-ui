@@ -57,10 +57,12 @@
   font-weight: var(--sherpa-font-weight-bold, 700);
   color: var(--sherpa-theme-content-body-base, #18191a);
   font-variant-numeric: tabular-nums;
+
+  &:empty { display: none; }
 }
-.value:empty { display: none; }
 .sub {
   font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-theme-content-body-1, #404047);
+
+  &:empty { display: none; }
 }
-.sub:empty { display: none; }

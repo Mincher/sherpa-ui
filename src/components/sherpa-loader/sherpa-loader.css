@@ -50,17 +50,22 @@
   height: var(--_spinner-size);
   border-radius: var(--sherpa-display-border-rounding-full, 999px);
   border: var(--_spinner-weight) solid var(--sherpa-style-border-base, #d5d5d5);
-}
 
-/* The rotating worm — one arc drawn over the track, top edge cut away. */
-.spinner::after {
-  content: "";
-  position: absolute;
-  inset: calc(var(--_spinner-weight) * -1);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  border: var(--_spinner-weight) solid var(--_arc);
-  border-block-start-color: transparent;
-  animation: sherpa-loader-spin 0.8s linear infinite;
+  /* The rotating worm — one arc drawn over the track, top edge cut away. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--_spinner-weight) * -1);
+    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    border: var(--_spinner-weight) solid var(--_arc);
+    border-block-start-color: transparent;
+    animation: sherpa-loader-spin 0.8s linear infinite;
+
+    /* ── Reduced motion: freeze the arc (still communicates a partial ring) ─── */
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
 }
 
 /* ── Sizes (unset = md) ────────────────────────────────────────────────── */
@@ -71,13 +76,6 @@
 :host([data-size="lg"]) {
   --_spinner-size: var(--sherpa-display-size-3xl, 40px);
   --_spinner-weight: 4px;
-}
-
-/* ── Reduced motion: freeze the arc (still communicates a partial ring) ─── */
-@media (prefers-reduced-motion: reduce) {
-  .spinner::after {
-    animation: none;
-  }
 }
 
 @keyframes sherpa-loader-spin {

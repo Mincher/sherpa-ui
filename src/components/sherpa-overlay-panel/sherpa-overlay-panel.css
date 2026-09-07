@@ -36,10 +36,10 @@
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   color: var(--sherpa-style-content-base, #2e2e33);
   box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
-}
 
-/* No backdrop — a non-modal panel must leave the page behind interactive. */
-.root::backdrop { background: transparent; }
+  /* No backdrop — a non-modal panel must leave the page behind interactive. */
+  &::backdrop { background: transparent; }
+}
 
 /* ── Regions ───────────────────────────────────────────────────────── */
 .header,

@@ -41,13 +41,15 @@
     background-color 100ms ease,
     border-color 100ms ease,
     color 100ms ease;
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .chip:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 94%, currentColor); }
-}
-.chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 94%, currentColor); }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* AI type carries the brand accent even when inactive. */

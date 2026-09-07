@@ -30,8 +30,9 @@
   display: flex;
   overflow-x: auto;
   scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
 }
-.tabs::-webkit-scrollbar { display: none; }
 
 .detail {
   display: none;
@@ -60,22 +61,27 @@
   color: var(--sherpa-theme-content-body-1, #404047);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
-}
 
-.tab:hover {
-  background: var(--sherpa-theme-surface-default-transparent, #c0c0cc33);
-  color: var(--sherpa-theme-content-body-base, #18191a);
-}
+  &:hover {
+    background: var(--sherpa-theme-surface-default-transparent, #c0c0cc33);
+    color: var(--sherpa-theme-content-body-base, #18191a);
+  }
 
-.tab:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
-}
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 
-/* ── Active tab — accent underline + accent label ─────────────────────── */
-.tab[data-current] {
-  border-block-end-color: var(--sherpa-theme-border-active-base, #c046ff);
-  color: var(--sherpa-theme-content-active-base, #8500cc);
+  /* ── Active tab — accent underline + accent label ─────────────────────── */
+  &[data-current] {
+    border-block-end-color: var(--sherpa-theme-border-active-base, #c046ff);
+    color: var(--sherpa-theme-content-active-base, #8500cc);
+  }
+
+  /* Reduced motion — drop the tab colour/border transition. */
+  @media (prefers-reduced-motion: reduce) {
+    & { transition: none; }
+  }
 }
 
 /* ── Panels — only the active one shows ───────────────────────────────── */
@@ -89,8 +95,3 @@
    CSS still owns the actual display switch). */
 ::slotted([data-tab]) { display: none; }
 ::slotted([data-tab-active]) { display: block; }
-
-/* Reduced motion — drop the tab colour/border transition. */
-@media (prefers-reduced-motion: reduce) {
-  .tab { transition: none; }
-}

@@ -49,14 +49,14 @@
   border-radius: var(--sherpa-display-border-rounding-sm, 2px);
   padding: var(--sherpa-display-space-3xs, 2px) 0;
   cursor: pointer;
-}
 
-/* An anchor with an href is an active crumb — underline on hover. */
-.link[href]:hover { text-decoration: underline; }
+  /* An anchor with an href is an active crumb — underline on hover. */
+  &[href]:hover { text-decoration: underline; }
 
-.link:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* Current page crumb: title colour, regular weight, non-interactive. */

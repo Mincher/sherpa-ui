@@ -68,23 +68,23 @@
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1.4;
   transition: border-color 120ms ease, box-shadow 120ms ease;
+
+  &::placeholder { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--_border-focus);
+    box-shadow: 0 0 0 2px var(--_border-focus);
+  }
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:focus-visible {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+    }
+  }
 }
 textarea.control {
   min-block-size: auto;
   resize: vertical;
-}
-
-.control::placeholder { color: var(--sherpa-theme-content-body-2, #5c5c66); }
-
-.control:focus-visible {
-  outline: none;
-  border-color: var(--_border-focus);
-  box-shadow: 0 0 0 2px var(--_border-focus);
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .control:focus-visible {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
-  }
 }
 
 /* ── Validation — native :user-invalid, or an explicit data-error ─────

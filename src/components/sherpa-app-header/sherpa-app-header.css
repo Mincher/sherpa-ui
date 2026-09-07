@@ -150,12 +150,22 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:empty { display: none; }
 }
-.title:empty { display: none; }
 
 /* Filters row — the embedded quick-filter toolbar; collapses when empty */
-.filters { display: flex; min-inline-size: 0; }
-.filters:not(:has(*)) { display: none; }
+.filters {
+  display: flex;
+  min-inline-size: 0;
+
+  &:not(:has(*)) { display: none; }
+
+  /* Narrow container: drop the embedded filters row */
+  @container sherpa-app-header (max-width: 480px) {
+    & { display: none; }
+  }
+}
 .filters ::slotted(*) { inline-size: 100%; }
 
 /* ── Loading bar ────────────────────────────────────────────────────── */
@@ -182,9 +192,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
   :host([data-loading]) .loading-fill { animation: none; inline-size: 100%; transform: none; opacity: 0.6; }
-}
-
-/* Narrow container: drop the embedded filters row */
-@container sherpa-app-header (max-width: 480px) {
-  .filters { display: none; }
 }

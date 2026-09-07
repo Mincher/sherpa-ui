@@ -66,11 +66,13 @@
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease;
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .close:hover { background: color-mix(in oklab, currentColor 18%, transparent); }
-}
-.close:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, currentColor 18%, transparent); }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }

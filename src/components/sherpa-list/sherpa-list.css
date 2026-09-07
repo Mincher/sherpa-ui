@@ -30,8 +30,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--_row-gap);
+
+  &:empty { display: none; }
 }
-.rows:empty { display: none; }
 
 /* ── Bordered — container surface fill + container border ───────────── */
 :host([data-variant="bordered"]) {

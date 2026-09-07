@@ -48,8 +48,9 @@
   block-size: var(--sherpa-display-size-3xl, 40px);
   flex-shrink: 0;
   font-size: var(--sherpa-font-size-body-large, 18px);
+
+  &:not(:has(*)):empty { display: none; }
 }
-.brand-icon:not(:has(*)):empty { display: none; }
 
 .product {
   flex: 1 1 auto;
@@ -59,16 +60,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:empty { display: none; }
 }
-.product:empty { display: none; }
 
 .brand-actions {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-space-2xs, 4px);
   flex-shrink: 0;
+
+  &:not(:has(*)) { display: none; }
 }
-.brand-actions:not(:has(*)) { display: none; }
 
 /* ── Search ─────────────────────────────────────────────────────────── */
 .search {
@@ -95,8 +98,9 @@
   font: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-style-content-base, #18191a);
+
+  &::placeholder { color: var(--sherpa-theme-content-body-1, #5c5c66); }
 }
-.search-input::placeholder { color: var(--sherpa-theme-content-body-1, #5c5c66); }
 
 /* ── Quick items ────────────────────────────────────────────────────── */
 .quick {
@@ -106,8 +110,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-space-3xs, 2px);
+
+  &:not(:has(*)) { display: none; }
 }
-.quick:not(:has(*)) { display: none; }
 
 /* ── Content (scrolling sections) ───────────────────────────────────── */
 .content {
@@ -135,8 +140,9 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--sherpa-theme-content-body-1, #5c5c66);
+
+  &:empty { display: none; }
 }
-.section-label:empty { display: none; }
 
 .section-items {
   list-style: none;
@@ -157,8 +163,9 @@
   padding: var(--sherpa-display-space-sm, 12px);
   border-block-start: var(--sherpa-display-border-width-base, 1px) solid
     var(--sherpa-style-border-base, #d5d5d5);
+
+  &:not(:has(*)) { display: none; }
 }
-.footer:not(:has(*)) { display: none; }
 
 /* ── Collapsed (icon-only rail) ─────────────────────────────────────── */
 :host([data-collapsed]) :is(.product, .search, .section-label, .footer) { display: none; }

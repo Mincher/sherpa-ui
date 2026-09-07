@@ -61,34 +61,34 @@
   background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
-}
 
-/* Checked radio keeps its face + ring; a coloured inner dot appears. */
-.control:checked {
-  background: var(--_surface);
-  border-color: var(--_border);
-}
-.control:checked::after {
-  content: "";
-  display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background-color: var(--_dot);
-}
+  /* Checked radio keeps its face + ring; a coloured inner dot appears. */
+  &:checked {
+    background: var(--_surface);
+    border-color: var(--_border);
+  }
+  &:checked::after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    background-color: var(--_dot);
+  }
 
-/* ── Hover / active ───────────────────────────────────────────────── */
-.control:hover:not(:disabled) {
-  border-color: var(--sherpa-theme-border-default-1, #8d8d99);
-}
-.control:active:not(:disabled) {
-  transform: scale(0.92);
-}
+  /* ── Hover / active ───────────────────────────────────────────────── */
+  &:hover:not(:disabled) {
+    border-color: var(--sherpa-theme-border-default-1, #8d8d99);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+  }
 
-/* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
-.control:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b2b2bf);
+  /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b2b2bf);
+  }
 }
 
 /* ── Label + description ──────────────────────────────────────────── */
