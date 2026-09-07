@@ -73,7 +73,10 @@ test('the heading slot overrides data-heading', async ({ page }) => {
     await new Promise((res) => setTimeout(res, 0));
     return {
       hasHeadingAttr: el.hasAttribute('data-has-heading'),
-      textHidden: getComputedStyle(el.shadowRoot!.querySelector('.title')!).display === 'none',
+      // The default .title is FALLBACK content inside <slot name="heading">; a
+      // filled slot leaves it unrendered (computed display is "" not "none"), so
+      // assert the real contract — it isn't visible — via checkVisibility().
+      textHidden: !el.shadowRoot!.querySelector('.title')!.checkVisibility(),
     };
   });
   expect(r.hasHeadingAttr).toBe(true);

@@ -131,11 +131,13 @@ test('a slotted heading collapses the default .title', async ({ page }) => {
     await new Promise((res) => requestAnimationFrame(res));
     return {
       hasHeading: el.hasAttribute('data-has-heading'),
-      titleDisplay: getComputedStyle(el.shadowRoot!.querySelector('.title')!).display,
+      // Default .title is slot fallback; a filled slot leaves it unrendered
+      // (display "" not "none"). Assert the real contract via checkVisibility().
+      titleHidden: !el.shadowRoot!.querySelector('.title')!.checkVisibility(),
     };
   });
   expect(r.hasHeading).toBe(true);
-  expect(r.titleDisplay).toBe('none');
+  expect(r.titleHidden).toBe(true);
 });
 
 test('data-divider shows the bottom rule', async ({ page }) => {

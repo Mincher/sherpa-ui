@@ -137,11 +137,13 @@ test('a slotted body replaces the default message text', async ({ page }) => {
     await new Promise((res) => requestAnimationFrame(res));
     return {
       hasContent: el.hasAttribute('data-has-content'),
-      msgTextDisplay: getComputedStyle(el.shadowRoot!.querySelector('.message-text')!).display,
+      // Default .message-text is slot fallback; a filled slot leaves it unrendered
+      // (display "" not "none"). Assert the real contract via checkVisibility().
+      msgTextHidden: !el.shadowRoot!.querySelector('.message-text')!.checkVisibility(),
     };
   });
   expect(r.hasContent).toBe(true);
-  expect(r.msgTextDisplay).toBe('none');
+  expect(r.msgTextHidden).toBe(true);
 });
 
 test('a slotted icon hides the default glyph', async ({ page }) => {
@@ -158,9 +160,11 @@ test('a slotted icon hides the default glyph', async ({ page }) => {
     await new Promise((res) => requestAnimationFrame(res));
     return {
       hasIcon: el.hasAttribute('data-has-icon'),
-      glyphDisplay: getComputedStyle(el.shadowRoot!.querySelector('.glyph')!).display,
+      // Default .glyph is slot fallback; a filled slot leaves it unrendered
+      // (display "" not "none"). Assert the real contract via checkVisibility().
+      glyphHidden: !el.shadowRoot!.querySelector('.glyph')!.checkVisibility(),
     };
   });
   expect(r.hasIcon).toBe(true);
-  expect(r.glyphDisplay).toBe('none');
+  expect(r.glyphHidden).toBe(true);
 });
