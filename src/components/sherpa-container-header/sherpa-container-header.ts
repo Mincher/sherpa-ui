@@ -9,8 +9,14 @@
  * CSS handles the look. JS writes the heading, description, and icon text, keeps
  * the collapse toggle in sync, and fires the header's events.
  *
+ * A `panel` variant (data-variant) presents the same skeleton as a link-style
+ * title with a right-aligned actions group and a bottom metadata strip; the
+ * default variant is today's single-row header. The look is entirely CSS —
+ * data-variant only selects it.
+ *
  * @element sherpa-container-header
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
+ * @attr {string}  data-variant      — default | panel (default: default)
  * @attr {string}  data-heading      — heading text (or use the `heading` slot)
  * @attr {string}  data-description  — secondary text below the heading
  * @attr {string}  data-icon         — a glyph before the title
@@ -19,9 +25,10 @@
  * @attr {boolean} data-collapsible  — show the collapse toggle
  * @attr {boolean} data-collapsed    — collapsed state (opt-in; absent = expanded default)
  *
- * @slot heading — custom heading element (replaces the default .title)
- * @slot icon    — custom icon element
- * @slot actions — extra trailing action controls
+ * @slot heading  — custom heading element (replaces the default .title)
+ * @slot icon     — custom icon element
+ * @slot actions  — extra trailing action controls
+ * @slot metadata — bottom metadata strip (Panel) / secondary content (Default)
  *
  * @fires dismiss — detail: {}
  * @fires toggle  — detail: { collapsed }

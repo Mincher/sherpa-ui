@@ -6,14 +6,20 @@
     data-variant    fill (default, stretches) | fit (hugs content)
     data-elevation  none (default) | sm | md | lg
     data-loading    show the loading overlay (ratified boolean-verb state)
-    data-state      empty | error   (shows the matching overlay; TODO D6: move to slot-driven :has())
     data-padding    none | sm | base (default) | lg
+
+  The empty and error overlays are SLOT-DRIVEN (ratified D6): slot content into
+  the empty / error slot and the matching overlay shows automatically. There is
+  no data-state attribute — the base class reflects named-slot presence as
+  data-has-{slot} on the host and CSS keys the overlay off it.
 
   Slots:
     (default) — the card body
     header    — header region (reflects data-has-header)
     footer    — footer region (reflects data-has-footer)
-    loading / empty / error — custom state content (each has a default)
+    loading   — loading content (has a default spinner); shown by data-loading
+    empty     — empty-state content; slotting it shows the empty overlay (data-has-empty)
+    error     — error-state content; slotting it shows the error overlay (data-has-error)
 
   Fires: nothing by itself — it's a surface. Consumers wire their own controls.
 -->

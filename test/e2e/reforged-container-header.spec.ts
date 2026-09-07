@@ -165,3 +165,89 @@ test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ p
   expect(r.collapsedAfter).toBe(true);
   expect(r.detail).toEqual({ collapsed: true });
 });
+
+/* ── Panel variant + metadata slot ─────────────────────────────────────── */
+
+test('the metadata slot is hidden when empty and appears when slotted', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const bare = document.createElement('sherpa-container-header') as HeaderEl;
+    bare.setAttribute('data-heading', 'Bare');
+    document.getElementById('root')!.appendChild(bare);
+    await bare.rendered;
+    await new Promise((res) => setTimeout(res, 0));
+
+    const withMeta = document.createElement('sherpa-container-header') as HeaderEl;
+    withMeta.setAttribute('data-heading', 'Meta');
+    withMeta.innerHTML = '<span slot="metadata">Updated 2h ago</span>';
+    document.getElementById('root')!.appendChild(withMeta);
+    await withMeta.rendered;
+    await new Promise((res) => setTimeout(res, 0));
+
+    const vis = (el: HTMLElement) =>
+      getComputedStyle(el.shadowRoot!.querySelector('.metadata')!).display !== 'none';
+
+    return {
+      bareMetadataVisible: vis(bare),
+      metaAttr: withMeta.hasAttribute('data-has-metadata'),
+      metaVisible: vis(withMeta),
+    };
+  });
+  expect(r.bareMetadataVisible).toBe(false); // no metadata slotted → hidden
+  expect(r.metaAttr).toBe(true);
+  expect(r.metaVisible).toBe(true);
+});
+
+test('the panel variant renders a link-style title and the metadata row', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    // A default header to contrast the title colour against.
+    const dflt = document.createElement('sherpa-container-header') as HeaderEl;
+    dflt.setAttribute('data-heading', 'Default');
+    document.getElementById('root')!.appendChild(dflt);
+    await dflt.rendered;
+
+    const panel = document.createElement('sherpa-container-header') as HeaderEl;
+    panel.setAttribute('data-variant', 'panel');
+    panel.setAttribute('data-heading', 'Panel title');
+    panel.innerHTML = '<span slot="metadata">buildings · Acme Corp</span>';
+    document.getElementById('root')!.appendChild(panel);
+    await panel.rendered;
+    await new Promise((res) => setTimeout(res, 0));
+
+    const s = panel.shadowRoot!;
+    const titleColor = getComputedStyle(s.querySelector('.title')!).color;
+    const defaultTitleColor = getComputedStyle(dflt.shadowRoot!.querySelector('.title')!).color;
+    return {
+      variant: panel.getAttribute('data-variant'),
+      titleText: s.querySelector('.title')!.textContent,
+      metadataVisible: getComputedStyle(s.querySelector('.metadata')!).display !== 'none',
+      // panel title uses the content-link token → differs from the default title colour
+      titleColorDiffers: titleColor !== defaultTitleColor,
+    };
+  });
+  expect(r.variant).toBe('panel');
+  expect(r.titleText).toBe('Panel title');
+  expect(r.metadataVisible).toBe(true);
+  expect(r.titleColorDiffers).toBe(true);
+});
+
+test('the default variant is unchanged: metadata hidden, no link-style title', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container-header') as HeaderEl;
+    el.setAttribute('data-heading', 'Default header');
+    el.setAttribute('data-description', 'A subtitle');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await new Promise((res) => setTimeout(res, 0));
+    const s = el.shadowRoot!;
+    return {
+      variant: el.getAttribute('data-variant'), // unset by default
+      metadataVisible: getComputedStyle(s.querySelector('.metadata')!).display !== 'none',
+      descriptionVisible: getComputedStyle(s.querySelector('.description')!).display !== 'none',
+      title: s.querySelector('.title')!.textContent,
+    };
+  });
+  expect(r.variant).toBeNull();
+  expect(r.metadataVisible).toBe(false); // no metadata slotted → hidden (Default)
+  expect(r.descriptionVisible).toBe(true); // Default still shows description
+  expect(r.title).toBe('Default header');
+});

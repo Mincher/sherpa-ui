@@ -3,7 +3,9 @@ import { test, expect } from '@playwright/test';
 /**
  * sherpa-container on the reforged base — the composition surface. Exercises the
  * base class's slot-presence reflection (data-has-header/footer), elevation,
- * padding, and the populate({state}) → overlay data path.
+ * padding, the populate({state}) → loading overlay data path, and the SLOT-DRIVEN
+ * empty / error overlays (ratified D6: no data-state attr — slotting [slot="error"]
+ * reflects data-has-error and shows the overlay through CSS).
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -92,19 +94,55 @@ test('populate({state}) toggles the state overlay; clearing removes it', async (
   expect(r.clearedHidden).toBe(true);
 });
 
-test('error state shows the error slot, not loading/empty', async ({ page }) => {
+test('slotting [slot="error"] shows the error overlay (slot-driven, D6), not loading/empty', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-state', 'error');
-    el.innerHTML = '<p>body</p>';
+    // No data-state attribute — the overlay is driven purely by slot content.
+    el.innerHTML = '<p>body</p><div slot="error">It broke.</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    await new Promise((res) => setTimeout(res, 0)); // let slotchange reflect data-has-error
+
     const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
-    return { error: shown('.state-error'), loading: shown('.state-loading'), empty: shown('.state-empty') };
+    return {
+      hasErrorAttr: el.hasAttribute('data-has-error'),
+      hasStateAttr: el.hasAttribute('data-state'),
+      overlay: shown('.state'),
+      error: shown('.state-error'),
+      loading: shown('.state-loading'),
+      empty: shown('.state-empty'),
+    };
   });
+  expect(r.hasErrorAttr).toBe(true); // base class reflected the error slot
+  expect(r.hasStateAttr).toBe(false); // no public data-state API
+  expect(r.overlay).toBe(true);
   expect(r.error).toBe(true);
   expect(r.loading).toBe(false);
   expect(r.empty).toBe(false);
+});
+
+test('slotting [slot="empty"] shows the empty overlay (slot-driven, D6)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
+    el.innerHTML = '<p>body</p><div slot="empty">No rows.</div>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await new Promise((res) => setTimeout(res, 0));
+
+    const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
+    return {
+      hasEmptyAttr: el.hasAttribute('data-has-empty'),
+      overlay: shown('.state'),
+      empty: shown('.state-empty'),
+      error: shown('.state-error'),
+      loading: shown('.state-loading'),
+    };
+  });
+  expect(r.hasEmptyAttr).toBe(true);
+  expect(r.overlay).toBe(true);
+  expect(r.empty).toBe(true);
+  expect(r.error).toBe(false);
+  expect(r.loading).toBe(false);
 });
 
 test('data-color-set tints the container surface via the color-sets override', async ({ page }) => {

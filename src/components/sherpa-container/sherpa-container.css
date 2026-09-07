@@ -90,9 +90,15 @@
   border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
 }
 
-/* ── State overlay — one region, the active state shown by data-state ─
+/* ── State overlay — one region, driven by data-loading + slot presence ─
    This scrim is a UX affordance, not a status surface: it dims the card while a
-   state is active. It is deliberately a neutral surface overlay, never a tint. */
+   state is active. It is deliberately a neutral surface overlay, never a tint.
+
+   loading is the one explicit state attribute (data-loading). empty / error are
+   SLOT-DRIVEN (ratified D6): the base class reflects named-slot presence as
+   data-has-{slot} on the host, so slotting content into [slot="empty"] /
+   [slot="error"] shows that overlay. No data-state attribute, no :host(:has())
+   (which silently no-ops in Chromium). */
 .state {
   display: none;
   position: absolute;
@@ -105,14 +111,16 @@
 .state > slot { display: none; }
 .state-text { color: var(--sherpa-theme-content-body-1, #404047); font-size: var(--sherpa-font-size-body-base, 14px); }
 
-/* data-loading is the ratified boolean-verb loading state; empty/error stay on
-   data-state pending the slot-driven (:has()) overlay refactor (D6 — deferred). */
+/* data-loading is the ratified boolean-verb loading state. empty / error are
+   slot-driven (D6): data-has-empty / data-has-error come from the base class's
+   slot-presence reflection. The overlay shows when any of the three is active. */
 :host([data-loading]) .state,
-:host([data-state]) .state { display: flex; }
+:host([data-has-empty]) .state,
+:host([data-has-error]) .state { display: flex; }
 :host([data-loading]) .state-loading { display: inline-flex; }
-:host([data-state="empty"]) .state-empty { display: inline-flex; }
-:host([data-state="error"]) .state-error { display: inline-flex; }
-:host([data-state="error"]) .state-text { color: var(--sherpa-theme-content-critical-base, #bf2c09); }
+:host([data-has-empty]) .state-empty { display: inline-flex; }
+:host([data-has-error]) .state-error { display: inline-flex; }
+:host([data-has-error]) .state-text { color: var(--sherpa-theme-content-critical-base, #bf2c09); }
 
 /* Minimal spinner (the default loading content) */
 .spinner {

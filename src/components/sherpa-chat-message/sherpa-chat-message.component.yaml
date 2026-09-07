@@ -131,7 +131,8 @@ $extensions:
     variantAxes:
       - name: Type
         values:
-          - received
-          - sent
+          - assistant
+          - user
+          - system
     booleanProps:
       - hasAvatar

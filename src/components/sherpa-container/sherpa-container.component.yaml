@@ -59,6 +59,12 @@ props:
       - lg
     description: none  | sm | md | lg
   - $type: prop
+    name: data-loading
+    type: string
+    kind: style
+    default: false
+    description: show the loading overlay (ratified boolean-verb state)
+  - $type: prop
     name: data-padding
     type: enum
     kind: style
@@ -69,19 +75,13 @@ props:
       - lg
     description: none | sm | base  | lg
   - $type: prop
-    name: data-loading
-    type: boolean
-    kind: style
-    default: false
-    description: show the loading overlay (ratified boolean-verb state)
-  - $type: prop
     name: data-state
     type: enum
     kind: style
     values:
       - empty
       - error
-    description: empty | error   (shows the matching overlay; TODO D6 slot-driven :has())
+    description: "empty | error   (shows the matching overlay; TODO D6: move to slot-driven :has())"
   - $type: prop
     name: data-variant
     type: enum
@@ -140,11 +140,11 @@ states:
     name: has-footer
     selector: ":host([data-has-footer])"
   - $type: state
-    name: state
-    selector: ":host([data-state])"
-  - $type: state
     name: loading
     selector: ":host([data-loading])"
+  - $type: state
+    name: state
+    selector: ":host([data-state])"
   - $type: state
     name: empty
     selector: ":host([data-state=\"empty\"])"
@@ -166,7 +166,6 @@ $extensions:
   sherpa:
     figmaName: Container
     category: container
-    variantAxes: []
     booleanProps:
       - expanded
     divergence:

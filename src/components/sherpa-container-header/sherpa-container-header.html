@@ -3,10 +3,18 @@
 
   Matches the Figma "Container Header": an optional drag handle + icon on the
   lead, a title + optional description, then a trailing actions region with an
-  optional collapse toggle and a dismiss (close) button.
+  optional collapse toggle and a dismiss (close) button. A `metadata` slot sits
+  below the heading row — a bottom metadata strip in Panel, secondary content in
+  Default.
+
+  Two presets share ONE skeleton (heading row + metadata row), switched by
+  data-variant:
+    default  single row — title + optional description + actions (today's header)
+    panel    link-style title + right-side actions group + bottom metadata row
 
   Public API:
-    data-heading      heading text (rendered into .title)
+    data-variant     default | panel   (default default)
+    data-heading     heading text (rendered into .title)
     data-description  secondary text (rendered into .description)
     data-icon         a glyph before the title (shows the icon slot)
     data-draggable    show the drag handle
@@ -15,38 +23,45 @@
     data-collapsed    collapsed state (opt-in; absent = expanded default; the toggle reflects it)
 
   Slots:
-    heading  — custom heading element (replaces the default .title)
-    icon     — custom icon element (else data-icon glyph)
-    actions  — extra trailing action controls (before toggle/close)
+    heading   — custom heading element (replaces the default .title)
+    icon      — custom icon element (else data-icon glyph)
+    actions   — extra trailing action controls (before toggle/close)
+    metadata  — bottom metadata strip (Panel) / secondary content (Default)
 
   Fires:
-    dismiss  — detail: {}              (close button)
-    toggle   — detail: { collapsed }   (collapse toggle)
-    drag     — detail: {}              (drag handle pointerdown)
+    dismiss  (detail: {})
+    toggle   (detail: { collapsed })
+    drag     (detail: {})
 -->
 <template id="default">
-  <header class="row" part="row">
-    <button class="drag" part="drag" type="button" aria-label="Drag to reorder">
-      <span class="drag-glyph" aria-hidden="true">&#x2830;</span>
-    </button>
+  <header class="header" part="header">
+    <div class="row" part="row">
+      <button class="drag" part="drag" type="button" aria-label="Drag to reorder">
+        <span class="drag-glyph" aria-hidden="true">&#x2830;</span>
+      </button>
 
-    <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+      <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
 
-    <div class="labels" part="labels">
-      <slot name="heading">
-        <span class="title" part="title"></span>
-      </slot>
-      <span class="description" part="description"></span>
+      <div class="labels" part="labels">
+        <slot name="heading">
+          <span class="title" part="title"></span>
+        </slot>
+        <span class="description" part="description"></span>
+      </div>
+
+      <div class="actions" part="actions">
+        <slot name="actions" data-accepts="control,input"></slot>
+        <button class="toggle" part="toggle" type="button" aria-expanded="true" aria-label="Collapse">
+          <span class="toggle-glyph" aria-hidden="true">&#x25B4;</span>
+        </button>
+        <button class="close" part="close" type="button" aria-label="Close">
+          <span class="close-glyph" aria-hidden="true">&#x2715;</span>
+        </button>
+      </div>
     </div>
 
-    <div class="actions" part="actions">
-      <slot name="actions" data-accepts="control,input"></slot>
-      <button class="toggle" part="toggle" type="button" aria-expanded="true" aria-label="Collapse">
-        <span class="toggle-glyph" aria-hidden="true">&#x25B4;</span>
-      </button>
-      <button class="close" part="close" type="button" aria-label="Close">
-        <span class="close-glyph" aria-hidden="true">&#x2715;</span>
-      </button>
+    <div class="metadata" part="metadata">
+      <slot name="metadata" data-accepts="content,control"></slot>
     </div>
   </header>
 </template>
