@@ -58,6 +58,11 @@ props:
       message text (rendered into .message-text) data-illustration built-in glyph: empty  | search |
       folder | data | error | success
   - $type: prop
+    name: data-heading
+    type: string
+    kind: content
+    description: heading text (rendered into .title)
+  - $type: prop
     name: data-size
     type: enum
     kind: style
@@ -65,12 +70,7 @@ props:
       - sm
       - md
       - lg
-    description: sm | md (default, unset) | lg
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: content
-    description: heading text (rendered into .title)
+    description: sm | md  | lg
 states:
   - $type: state
     name: has-icon
@@ -106,7 +106,7 @@ states:
     name: lg
     selector: ":host([data-size=\"lg\"])"
   - $type: state
-    name: not-title
+    name: not-heading
     selector: ":host(:not([data-heading]))"
 events:
   - $type: event

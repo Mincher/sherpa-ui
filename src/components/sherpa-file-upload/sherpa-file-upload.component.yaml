@@ -135,6 +135,11 @@ props:
     kind: content
     description: label above the drop zone (hidden when empty)
   - $type: prop
+    name: data-loading
+    type: string
+    kind: style
+    description: in-flight state (disables the upload button)
+  - $type: prop
     name: data-max-size
     type: string
     kind: content
@@ -144,11 +149,6 @@ props:
     type: string
     kind: content
     description: allow selecting more than one file → native multiple
-  - $type: prop
-    name: data-loading
-    type: string
-    kind: style
-    description: in-flight state (disables the upload button)
   - $type: prop
     name: disabled
     type: boolean
@@ -164,7 +164,7 @@ states:
     name: has-files
     selector: ":host([data-has-files])"
   - $type: state
-    name: uploading
+    name: loading
     selector: ":host([data-loading])"
   - $type: state
     name: disabled

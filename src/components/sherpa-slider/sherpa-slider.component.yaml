@@ -61,13 +61,13 @@ props:
   - $type: prop
     name: data-max
     type: string
-    kind: content
+    kind: style
     default: "100"
     description: — maximum value
   - $type: prop
     name: data-min
     type: string
-    kind: content
+    kind: style
     default: "0"
     description: — minimum value
   - $type: prop
@@ -79,13 +79,13 @@ props:
   - $type: prop
     name: data-step
     type: string
-    kind: content
+    kind: style
     default: "1"
     description: — step increment
   - $type: prop
     name: data-value
     type: string
-    kind: content
+    kind: style
     description: — current value
   - $type: prop
     name: data-value-readonly
@@ -99,6 +99,30 @@ props:
     kind: content
     default: false
     description: — disabled state
+  - $type: prop
+    name: max
+    type: string
+    native: true
+    kind: content
+    description: — maximum value (native, default 100)
+  - $type: prop
+    name: min
+    type: string
+    native: true
+    kind: content
+    description: — minimum value (native, default 0)
+  - $type: prop
+    name: step
+    type: string
+    native: true
+    kind: content
+    description: — step increment (native, default 1)
+  - $type: prop
+    name: value
+    type: string
+    native: true
+    kind: content
+    description: — current value (native)
 states:
   - $type: state
     name: label

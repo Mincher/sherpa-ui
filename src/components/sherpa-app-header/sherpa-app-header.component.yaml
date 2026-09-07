@@ -127,6 +127,11 @@ props:
     default: false
     description: — favourited state (the star toggle)
   - $type: prop
+    name: data-heading
+    type: string
+    kind: content
+    description: — the view title (hidden when empty)
+  - $type: prop
     name: data-icon
     type: string
     kind: content
@@ -141,11 +146,6 @@ props:
     type: string
     kind: content
     description: — notification count (shows the badge; hidden at 0/unset)
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: content
-    description: — the view title (hidden when empty)
 states:
   - $type: state
     name: favorite

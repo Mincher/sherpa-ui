@@ -112,6 +112,11 @@ props:
     default: false
     description: expanded state (the toggle reflects it)
   - $type: prop
+    name: data-heading
+    type: string
+    kind: content
+    description: primary text
+  - $type: prop
     name: data-icon
     type: string
     kind: content
@@ -133,11 +138,6 @@ props:
     kind: style
     default: false
     description: selection state (for the leading control)
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: content
-    description: primary text
   - $type: prop
     name: disabled
     type: boolean

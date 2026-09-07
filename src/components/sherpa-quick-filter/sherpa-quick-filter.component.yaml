@@ -46,16 +46,16 @@ anatomy:
           aria-hidden: "true"
 props:
   - $type: prop
+    name: data-count
+    type: string
+    kind: visibility
+    description: badge number (shown when present)
+  - $type: prop
     name: data-current
     type: boolean
     kind: style
     default: false
     description: selected/on state
-  - $type: prop
-    name: data-count
-    type: string
-    kind: visibility
-    description: badge number (shown when present)
   - $type: prop
     name: data-label
     type: string
@@ -69,13 +69,10 @@ props:
     description: show a dropdown-trigger caret
   - $type: prop
     name: data-type
-    type: enum
+    type: boolean
     kind: style
-    values:
-      - default
-      - ai
-      - populated
-    description: default | ai | populated
+    default: false
+    description: default | ai | populated data-current selected/on state
 states:
   - $type: state
     name: ai

@@ -56,6 +56,11 @@ props:
     kind: style
     description: show the close button (fires callout-dismiss)
   - $type: prop
+    name: data-heading
+    type: string
+    kind: content
+    description: heading text (rendered into .title)
+  - $type: prop
     name: data-status
     type: enum
     kind: style
@@ -66,11 +71,6 @@ props:
       - critical
       - urgent
     description: info | success | warning | critical | urgent
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: content
-    description: heading text (rendered into .title)
 states:
   - $type: state
     name: info
@@ -91,7 +91,7 @@ states:
     name: not-status
     selector: ":host(:not([data-status]))"
   - $type: state
-    name: not-title
+    name: not-heading
     selector: ":host(:not([data-heading]))"
   - $type: state
     name: not-has-content

@@ -41,15 +41,15 @@ anatomy:
         slot: trailing
 props:
   - $type: prop
-    name: data-current
-    type: string
-    kind: style
-    description: current item in the nav set
-  - $type: prop
     name: data-badge
     type: string
     kind: visibility
     description: trailing count/badge text
+  - $type: prop
+    name: data-current
+    type: string
+    kind: style
+    description: current item in the nav set
   - $type: prop
     name: data-description
     type: string
@@ -87,7 +87,7 @@ props:
     native: true
     default: false
     description: >-
-      disabled state The active row fills surface/interactive/active/base with content/active/base
+      disabled state The current row fills surface/interactive/active/base with content/active/base
       ink (the brand accent). The trailing chip is a round status element filled by the ancestor
       [data-status] cascade; a plain success dot pins the success ink.
 states:

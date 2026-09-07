@@ -50,6 +50,11 @@ props:
     default: false
     description: show a bottom divider
   - $type: prop
+    name: data-heading
+    type: string
+    kind: content
+    description: heading text (rendered into .title)
+  - $type: prop
     name: data-size
     type: enum
     kind: style
@@ -57,12 +62,7 @@ props:
       - sm
       - md
       - lg
-    description: sm | md (default, unset) | lg
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: content
-    description: heading text (rendered into .title)
+    description: sm | md  | lg
 states:
   - $type: state
     name: has-heading

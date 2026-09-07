@@ -49,6 +49,11 @@ props:
     kind: content
     description: header title (used when no header slot is given)
   - $type: prop
+    name: data-multiple
+    type: string
+    kind: content
+    description: present → default footer control is a checkbox, not a radio
+  - $type: prop
     name: data-orientation
     type: enum
     kind: style
@@ -57,11 +62,6 @@ props:
       - horizontal
     default: vertical
     description: vertical | horizontal (footer beside the body vs below; default vertical)
-  - $type: prop
-    name: data-multiple
-    type: string
-    kind: content
-    description: present → default footer control is a checkbox, not a radio
   - $type: prop
     name: data-selected
     type: string

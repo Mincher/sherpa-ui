@@ -27,9 +27,10 @@ anatomy:
       - el: span
         class: icon
         part: icon
-        slot: icon
         attrs:
           aria-hidden: "true"
+        children:
+          - slot: icon
       - el: span
         class: label
         slot: ""
@@ -47,7 +48,7 @@ anatomy:
 props:
   - $type: prop
     name: data-dismissible
-    type: boolean
+    type: string
     kind: style
     default: false
     description: show the close button (selects the dismissible template)
@@ -56,14 +57,6 @@ props:
     type: string
     kind: visibility
     description: leading icon glyph value (shown when present; or slot "icon")
-  - $type: prop
-    name: data-type
-    type: enum
-    kind: style
-    values:
-      - dot
-      - full
-    description: dot | full  (dot = a small circular indicator; default full)
   - $type: prop
     name: data-status
     type: enum
@@ -75,6 +68,11 @@ props:
       - critical
       - urgent
     description: info | success | warning | critical | urgent (via the cascade)
+  - $type: prop
+    name: data-type
+    type: string
+    kind: style
+    description: dot   (render as a small circular indicator; default full)
 states:
   - $type: state
     name: dot

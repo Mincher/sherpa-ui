@@ -73,7 +73,11 @@ props:
       - sm
       - base
       - lg
-    description: none | sm | base  | lg
+    description: >-
+      none | sm | base  | lg The empty and error overlays are SLOT-DRIVEN (ratified D6): slot
+      content into the empty / error slot and the matching overlay shows automatically. There is no
+      data-state attribute — the base class reflects named-slot presence as data-has-{slot} on the
+      host and CSS keys the overlay off it.
   - $type: prop
     name: data-state
     type: enum
@@ -143,14 +147,11 @@ states:
     name: loading
     selector: ":host([data-loading])"
   - $type: state
-    name: state
-    selector: ":host([data-state])"
+    name: has-empty
+    selector: ":host([data-has-empty])"
   - $type: state
-    name: empty
-    selector: ":host([data-state=\"empty\"])"
-  - $type: state
-    name: error
-    selector: ":host([data-state=\"error\"])"
+    name: has-error
+    selector: ":host([data-has-error])"
 events:
   - $type: event
     name: nothing

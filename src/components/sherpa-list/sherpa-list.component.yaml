@@ -47,8 +47,8 @@ props:
     type: string
     kind: visibility
     description: >-
-      empty-state message No events of its own — child rows emit item-click, which the list
-      uses to keep a single current row.
+      empty-state message No events of its own — child rows emit item-click, which the list uses to
+      keep a single current row.
   - $type: prop
     name: data-variant
     type: enum
