@@ -1,19 +1,27 @@
 <!--
   sherpa-calendar — a date picker with day / month / year views.
 
-  Matches the Figma "Grid" Layout axis (day | month | year). The header label is
-  a button that zooms OUT (day → month → year); picking a month/year zooms back
-  IN. Prev/next step whatever the current view shows. A day grid, a month grid,
-  and a year grid are stamped from cloning prototypes; CSS shows the one that
-  matches data-view.
+  Two selection TYPES (Figma Calendar `Type` axis) and an optional time picker
+  (Figma `hasTime` boolean). The day/month/year VIEW is the code's own zoom
+  mechanism — it is the equivalent of the Figma Calendar's Grid-collection swap
+  (which grid the component shows), NOT the Figma Type axis. The header label is a
+  button that zooms OUT (day → month → year); picking a month/year zooms back IN.
+  Prev/next step whatever the current view shows. A day grid, a month grid, and a
+  year grid are stamped from cloning prototypes; CSS shows the one matching data-view.
 
   Public API:
-    data-value  — selected day (ISO YYYY-MM-DD); highlighted in the day grid
-    data-min    — earliest selectable day (ISO); earlier days are disabled
-    data-max    — latest selectable day (ISO); later days are disabled
-    data-view   — day | month | year (the active picker; default day)
+    data-type       single | range (default single) — one day, or a two-click start→end range
+    data-view       day | month | year (default day) — the active picker (the Grid-collection swap)
+    data-value      selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set
+    data-value-start  range start, ISO YYYY-MM-DD (range mode)
+    data-value-end    range end, ISO YYYY-MM-DD (range mode)
+    data-min        earliest selectable day (ISO); earlier days are disabled
+    data-max        latest selectable day (ISO); later days are disabled
+    data-has-time   (boolean) show a native <input type=time> in the footer
 
-  Fires: datetime-change — detail: { value: string } (a selectable day clicked)
+  Fires:
+    datetime-change (detail: value string — a single day or its date+time chosen)
+    range-select (detail: start string end string — a range completed both ends chosen)
 -->
 <template id="default">
   <div class="cal" part="cal">
@@ -31,6 +39,13 @@
     <div class="cal-days cal-grid" part="days" role="grid"></div>
     <div class="cal-months cal-grid" part="months" role="grid"></div>
     <div class="cal-years cal-grid" part="years" role="grid"></div>
+
+    <!-- Native time picker — shown only when data-has-time is set (CSS owns it). -->
+    <div class="cal-time-row" part="time-row">
+      <label class="cal-time-label" part="time-label">Time
+        <input type="time" class="cal-time" part="time" />
+      </label>
+    </div>
   </div>
 
   <!-- Cell prototype — cloned per day/month/year by JS, never rendered directly. -->

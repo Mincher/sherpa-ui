@@ -11,8 +11,8 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-calendar
 $description: >-
-  A date picker with day / month / year views. The header label zooms out day→month→year; picking
-  a month/year zooms back in.
+  A date picker with day / month / year views. The header label zooms out day→month→year; picking a
+  month/year zooms back in.
 element:
   $type: element
   tag: div
@@ -75,6 +75,19 @@ anatomy:
           part: years
           attrs:
             role: grid
+        - el: div
+          class: cal-time-row
+          part: time-row
+          children:
+            - el: label
+              class: cal-time-label
+              part: time-label
+              children:
+                - el: input
+                  class: cal-time
+                  part: time
+                  attrs:
+                    type: time
     - el: template
       class: cal-cell-tpl
       children:
@@ -85,6 +98,46 @@ anatomy:
             role: gridcell
 props:
   - $type: prop
+    name: data-has-time
+    type: boolean
+    kind: content
+    default: false
+    description: show a native <input type=time> in the footer
+  - $type: prop
+    name: data-max
+    type: string
+    kind: content
+    description: latest selectable day (ISO); later days are disabled
+  - $type: prop
+    name: data-min
+    type: string
+    kind: content
+    description: earliest selectable day (ISO); earlier days are disabled
+  - $type: prop
+    name: data-type
+    type: enum
+    kind: content
+    values:
+      - single
+      - range
+    default: single
+    description: single | range  — one day, or a two-click start→end range
+  - $type: prop
+    name: data-value
+    type: string
+    kind: content
+    description: selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set
+  - $type: prop
+    name: data-value-end
+    type: string
+    kind: content
+    description: range end, ISO YYYY-MM-DD (range mode)
+  - $type: prop
+    name: data-value-start
+    type: string
+    kind: content
+    description: range start, ISO YYYY-MM-DD (range mode)
+  - $type: prop
     name: data-view
     type: enum
     kind: content
@@ -93,22 +146,7 @@ props:
       - month
       - year
     default: day
-    description: day | month | year (the active picker; default day)
-  - $type: prop
-    name: data-max
-    type: string
-    kind: content
-    description: — latest selectable day (ISO); later days are disabled
-  - $type: prop
-    name: data-min
-    type: string
-    kind: content
-    description: — earliest selectable day (ISO); earlier days are disabled
-  - $type: prop
-    name: data-value
-    type: string
-    kind: content
-    description: — selected day (ISO YYYY-MM-DD); highlighted in the day grid
+    description: day | month | year  — the active picker (the Grid-collection swap)
 states:
   - $type: state
     name: day
@@ -119,6 +157,9 @@ states:
   - $type: state
     name: year
     selector: ":host([data-view=\"year\"])"
+  - $type: state
+    name: has-time
+    selector: ":host([data-has-time])"
   - $type: state
     name: not-view
     selector: ":host(:not([data-view]))"
@@ -137,6 +178,10 @@ events:
     trigger:
       "on": click
       node: .cal-prev
+  - $type: event
+    name: range-select
+    bubbles: true
+    composed: true
 tokens:
   cal.gap: "{sherpa.theme-gap-md}"
   cal.padding: "{sherpa.theme-padding-lg}"
@@ -157,24 +202,35 @@ tokens:
   cal-cell.border-radius: "{sherpa.display-border-rounding-base}"
   cal-cell.color: "{sherpa.style-content-base}"
   cal-cell.font-size: "{sherpa.font-size-body-base}"
+  cal-time-label.gap: "{sherpa.display-space-xs}"
+  cal-time-label.font-size: "{sherpa.font-size-body-small}"
+  cal-time-label.font-weight: "{sherpa.font-weight-medium}"
+  cal-time-label.color: "{sherpa.theme-content-body-1}"
+  cal-time.padding-block: "{sherpa.display-space-3xs}"
+  cal-time.padding-inline: "{sherpa.display-space-xs}"
+  cal-time.border-width: "{sherpa.style-border-width}"
+  cal-time.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-time.background: "{sherpa.style-surface-base}"
+  cal-time.color: "{sherpa.style-content-base}"
+  cal-time.font-size: "{sherpa.font-size-body-base}"
 $extensions:
   sherpa:
     figmaName: Calendar
     category: container
     variantAxes:
-      - name: Layout
+      - name: Type
         values:
-          - month
-          - year
-          - day
+          - single
+          - range
+    booleanProps:
+      - hasTime
     divergence:
-      "2026-09-02": >-
-        Figma DIVERGED. The old "Grid" component (Layout: month/year/day) was renamed/ remodelled to
-        "Calendar" (268:14601) with Type: single/range + hasTime — a single vs range date selection
-        model with an optional time picker. The CODE keeps the day/month/year zoom navigation (its
-        own value). These are different axes: Figma models WHAT is selected (single/range), code
-        models the ZOOM view (day/month/year). Reconcile later — either add single/range to the code
-        or re-model the Figma component. figmaVerbatim._status = divergent until then.
+      "2026-09-07": >-
+        RESOLVED. The code now models the Figma Calendar (268:14601) verbatim: Type=single|range
+        (data-type) + hasTime (data-has-time). data-view (day|month|year) is NOT a divergent axis —
+        it is the code's equivalent of the Figma Calendar's Grid-collection swap (which grid the
+        component shows: the day grid, the month grid, or the year grid). It is an internal zoom
+        mechanism, not the Figma Type axis, and is intentionally kept. No outstanding drift.
     jsProps:
       - name: value
         type: string

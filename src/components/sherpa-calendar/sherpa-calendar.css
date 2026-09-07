@@ -151,6 +151,25 @@
   color: var(--_accent-on);
 }
 
+/* ── Range band (data-type="range") ─────────────────────────────────────
+   Days between the two ends get a subtle accent-tinted band; the ends keep the
+   solid accent fill (via [data-selected] above) plus a data-range-end cap. The
+   band cells drop their corner radius and bleed across the 2px grid gap with a
+   left/right box-shadow so the fill reads as one continuous strip. */
+.cal-cell[data-in-range] {
+  background: var(--sherpa-theme-surface-accent-transparent, #eaeefc);
+  color: var(--sherpa-theme-content-body-base, #18191a);
+  border-radius: 0;
+  border-color: transparent;
+  box-shadow:
+    calc(-1 * var(--sherpa-display-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #eaeefc),
+    var(--sherpa-display-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #eaeefc);
+}
+.cal-cell[data-in-range]:hover {
+  background: var(--sherpa-theme-surface-accent-transparent, #eaeefc);
+  color: var(--sherpa-theme-content-body-base, #18191a);
+}
+
 /* Blank spacer cells — no chrome, no interaction. */
 .cal-cell[data-blank] {
   visibility: hidden;
@@ -170,4 +189,42 @@
 .cal-years .cal-cell {
   inline-size: 100%;
   block-size: var(--sherpa-display-size-3xl, 40px);
+}
+
+/* ── Time row (data-has-time) — CSS owns visibility ─────────────────────── */
+.cal-time-row { display: none; }
+:host([data-has-time]) .cal-time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-start: var(--sherpa-display-space-3xs, 2px);
+  padding-block-start: var(--sherpa-theme-gap-md, 8px);
+  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+}
+
+.cal-time-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-space-xs, 8px);
+  inline-size: 100%;
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-theme-content-body-1, #404047);
+}
+
+.cal-time {
+  margin-inline-start: auto;
+  min-inline-size: 0;
+  padding-block: var(--sherpa-display-space-3xs, 2px);
+  padding-inline: var(--sherpa-display-space-xs, 8px);
+  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #2e2e33);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+}
+.cal-time:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }

@@ -4,13 +4,27 @@
  * It has three views: days, months, and years. Clicking the header label zooms
  * out (day → month → year); picking a month or year zooms back in. The prev/next
  * arrows move by a month in the day view, a year in the month view, and a decade
- * in the year view. data-value holds the chosen day as YYYY-MM-DD; data-min and
- * data-max set the range of days you can pick.
+ * in the year view. data-min / data-max set the range of days you can pick.
+ *
+ * TYPE (data-type = single | range) mirrors the Figma Calendar `Type` axis:
+ *   single (default) — one day. data-value holds it as YYYY-MM-DD.
+ *   range            — two-click start→end selection. data-value-start /
+ *                      data-value-end hold the two ends (YYYY-MM-DD). Days
+ *                      between get data-in-range; the two ends get data-range-end.
+ *
+ * hasTime (data-has-time) mirrors the Figma boolean: shows a native
+ * <input type="time"> in the footer. When set, data-value carries the time too as
+ * YYYY-MM-DDThh:mm (single mode); the grid still keys off the date part.
+ *
+ * data-view (day | month | year) is the code's own zoom mechanism — it is the
+ * equivalent of the Figma Calendar's Grid-collection swap (the grid the component
+ * shows). It is NOT the Figma Type axis and is intentionally kept.
  *
  * All three views share one cell template, and CSS shows whichever view is
- * active. Each cell's look — selected, today, out of range, blank — is CSS.
+ * active. Each cell's look — selected, today, in-range, out of range, blank — is CSS.
  *
- * @fires datetime-change  detail: { value: string }  — a selectable day was clicked
+ * @fires datetime-change  detail: { value: string }              — a single day (or its date+time) was chosen
+ * @fires range-select     detail: { start: string, end: string } — a range completed (both ends chosen)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -21,29 +35,38 @@ const MONTHS = [
 const MONTHS_SHORT = MONTHS.map((m) => m.slice(0, 3));
 
 const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^\d{2}:\d{2}$/;
 type View = 'day' | 'month' | 'year';
+type CalType = 'single' | 'range';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const toIso = (y: number, m: number, d: number): string => `${y}-${pad2(m + 1)}-${pad2(d)}`;
 
+/** The date part (YYYY-MM-DD) of a value that may carry a `Thh:mm` time tail. */
+const datePart = (v: string | null | undefined): string => (v ?? '').split('T')[0] ?? '';
+
 function parseIso(iso: string | null | undefined): [number, number, number] | null {
-  if (!iso || !ISO_RE.test(iso)) return null;
-  const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
-  return [y, m - 1, d];
+  const d = datePart(iso);
+  if (!d || !ISO_RE.test(d)) return null;
+  const [y, m, day] = d.split('-').map(Number) as [number, number, number];
+  return [y, m - 1, day];
 }
 
 export class SherpaCalendar extends SherpaElement {
   static override css = new URL('./sherpa-calendar.css', import.meta.url);
   static override html = new URL('./sherpa-calendar.html', import.meta.url);
-  static override observed = ['data-value', 'data-min', 'data-max', 'data-view'];
+  static override observed = [
+    'data-value', 'data-value-start', 'data-value-end',
+    'data-min', 'data-max', 'data-view', 'data-type', 'data-has-time',
+  ];
 
   /** Currently viewed year / 0-indexed month (drives the grids). */
   #viewYear = new Date().getFullYear();
   #viewMonth = new Date().getMonth();
 
   override onRender(): void {
-    const sel = parseIso(this.dataset['value']);
-    if (sel) { this.#viewYear = sel[0]; this.#viewMonth = sel[1]; }
+    const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
+    if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     if (!this.dataset['view']) this.dataset['view'] = 'day';
     this.$('.cal-prev')?.addEventListener('click', this.#onPrev);
     this.$('.cal-next')?.addEventListener('click', this.#onNext);
@@ -51,14 +74,17 @@ export class SherpaCalendar extends SherpaElement {
     this.$('.cal-days')?.addEventListener('click', this.#onDayClick);
     this.$('.cal-months')?.addEventListener('click', this.#onMonthClick);
     this.$('.cal-years')?.addEventListener('click', this.#onYearClick);
+    this.$('.cal-time')?.addEventListener('input', this.#onTimeInput);
+    this.#syncTimeInput();
     this.#render();
   }
 
   override onChange(name: string): void {
-    if (name === 'data-value') {
-      const sel = parseIso(this.dataset['value']);
-      if (sel) { this.#viewYear = sel[0]; this.#viewMonth = sel[1]; }
+    if (name === 'data-value' || name === 'data-value-start') {
+      const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
+      if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     }
+    if (name === 'data-value') this.#syncTimeInput();
     this.#render();
   }
 
@@ -70,6 +96,14 @@ export class SherpaCalendar extends SherpaElement {
   get #view(): View {
     const v = this.dataset['view'];
     return v === 'month' || v === 'year' ? v : 'day';
+  }
+
+  get #type(): CalType {
+    return this.dataset['type'] === 'range' ? 'range' : 'single';
+  }
+
+  get #hasTime(): boolean {
+    return this.dataset['hasTime'] != null;
   }
 
   /* ── Rendering ──────────────────────────────────────────────────────── */
@@ -98,10 +132,15 @@ export class SherpaCalendar extends SherpaElement {
     const y = this.#viewYear, m = this.#viewMonth;
     const firstWeekday = new Date(y, m, 1).getDay();
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const selected = this.dataset['value'] ?? '';
     const min = this.dataset['min'] ?? '';
     const max = this.dataset['max'] ?? '';
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+    // Selection depends on type. In single mode a lone selected day; in range
+    // mode a start / end pair (with an optional in-between band).
+    const single = this.#type === 'single' ? datePart(this.dataset['value']) : '';
+    const start = this.#type === 'range' ? datePart(this.dataset['valueStart']) : '';
+    const end = this.#type === 'range' ? datePart(this.dataset['valueEnd']) : '';
 
     grid.replaceChildren();
     for (let i = 0; i < firstWeekday; i++) {
@@ -115,9 +154,21 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(d);
       cell.dataset['iso'] = iso;
-      if (iso === selected) cell.setAttribute('data-selected', '');
       if (iso === todayIso) cell.setAttribute('data-today', '');
       if ((min && iso < min) || (max && iso > max)) cell.setAttribute('disabled', '');
+
+      if (this.#type === 'single') {
+        if (iso === single) cell.setAttribute('data-selected', '');
+      } else {
+        const isStart = !!start && iso === start;
+        const isEnd = !!end && iso === end;
+        if (isStart || isEnd) {
+          cell.setAttribute('data-selected', '');
+          cell.setAttribute('data-range-end', '');
+        } else if (start && end && iso > start && iso < end) {
+          cell.setAttribute('data-in-range', '');
+        }
+      }
       grid.appendChild(cell);
     }
   }
@@ -125,7 +176,7 @@ export class SherpaCalendar extends SherpaElement {
   #renderMonths(): void {
     const grid = this.$('.cal-months');
     if (!grid) return;
-    const sel = parseIso(this.dataset['value']);
+    const sel = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
     const now = new Date();
     grid.replaceChildren();
     MONTHS_SHORT.forEach((name, i) => {
@@ -142,7 +193,7 @@ export class SherpaCalendar extends SherpaElement {
     const grid = this.$('.cal-years');
     if (!grid) return;
     const start = this.#decadeStart();
-    const sel = parseIso(this.dataset['value']);
+    const sel = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
     const nowY = new Date().getFullYear();
     grid.replaceChildren();
     for (let i = 0; i < 12; i++) {
@@ -159,6 +210,15 @@ export class SherpaCalendar extends SherpaElement {
   /** First year of the 12-year block the view year sits in. */
   #decadeStart(): number {
     return this.#viewYear - ((this.#viewYear % 12));
+  }
+
+  /** Push the date part of data-value into the time input (keeps them in step). */
+  #syncTimeInput(): void {
+    const input = this.$<HTMLInputElement>('.cal-time');
+    if (!input) return;
+    const v = this.dataset['value'] ?? '';
+    const t = v.includes('T') ? v.split('T')[1] ?? '' : '';
+    input.value = TIME_RE.test(t) ? t : '';
   }
 
   /* ── Interaction ────────────────────────────────────────────────────── */
@@ -209,9 +269,58 @@ export class SherpaCalendar extends SherpaElement {
     if (!cell || cell.hasAttribute('disabled') || cell.hasAttribute('data-blank')) return;
     const iso = cell.dataset['iso'];
     if (!iso) return;
-    this.dataset['value'] = iso;
+    if (this.#type === 'range') this.#pickRange(iso);
+    else this.#pickSingle(iso);
+  };
+
+  /** Single mode — set data-value (with the current time tail if hasTime), emit. */
+  #pickSingle(iso: string): void {
+    const time = this.#hasTime ? this.#currentTime() : '';
+    const value = time ? `${iso}T${time}` : iso;
+    this.dataset['value'] = value;
+    this.#syncTimeInput();
     this.#render();
-    this.emit('datetime-change', { value: iso });
+    this.emit('datetime-change', { value });
+  }
+
+  /**
+   * Range mode — two-click start→end.
+   *   1st click (or a 3rd, restarting): set start, clear end.
+   *   2nd click: record the end day (swap if it lands before the start), emit range-select.
+   */
+  #pickRange(iso: string): void {
+    const start = datePart(this.dataset['valueStart']);
+    const end = datePart(this.dataset['valueEnd']);
+    if (!start || (start && end)) {
+      // begin a fresh range
+      this.dataset['valueStart'] = iso;
+      delete this.dataset['valueEnd'];
+      this.#render();
+      return;
+    }
+    // complete the range (order the two ends)
+    let s = start, e = iso;
+    if (e < s) { [s, e] = [e, s]; }
+    this.dataset['valueStart'] = s;
+    this.dataset['valueEnd'] = e;
+    this.#render();
+    this.emit('range-select', { start: s, end: e });
+  }
+
+  /** hh:mm currently held in the time input (empty if unset). */
+  #currentTime(): string {
+    const input = this.$<HTMLInputElement>('.cal-time');
+    return input && TIME_RE.test(input.value) ? input.value : '';
+  }
+
+  /** Time input changed — fold it into data-value and re-emit datetime-change. */
+  #onTimeInput = (): void => {
+    const date = datePart(this.dataset['value']);
+    if (!date) return; // no day chosen yet — nothing to combine with
+    const time = this.#currentTime();
+    const value = time ? `${date}T${time}` : date;
+    this.dataset['value'] = value;
+    this.emit('datetime-change', { value });
   };
 }
 
