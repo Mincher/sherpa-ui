@@ -108,6 +108,19 @@
     background-color 120ms ease,
     border-color 120ms ease,
     color 120ms ease;
+
+  /* Interactive states — derived from the seed, mode-safe via currentColor. */
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
+    &:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--sherpa-app-base, #ffffff),
+      0 0 0 4px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* ── Variants ─────────────────────────────────────────────────────────────
@@ -139,19 +152,7 @@
   --_border: transparent;
 }
 
-/* ── Interactive states — derived from the seed, mode-safe via currentColor ── */
-@supports (color: color-mix(in oklab, red, blue)) {
-  .trigger:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
-  .trigger:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
-}
-
 :host(:focus-visible) { outline: none; }
-.trigger:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--sherpa-app-base, #ffffff),
-    0 0 0 4px var(--sherpa-theme-border-accent-base, #3c5edd);
-}
 
 /* ── Icon-only (square) ─────────────────────────────────────────────────── */
 

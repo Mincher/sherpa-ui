@@ -138,18 +138,22 @@ export function extractBindings(cssRaw) {
         seen.add(key);
         out.push({ el, prop, sherpaVar });
       };
-      rule.walkDecls((decl) => {
-        const prop = decl.prop;
-        const val = decl.value;
+      // Only this rule's OWN direct declarations — NOT nested child rules'
+      // (`&:hover`, `&:focus-visible` …). walkDecls would recurse and wrongly
+      // attribute a nested pseudo's binding to the plain-class parent.
+      for (const node of rule.nodes ?? []) {
+        if (node.type !== 'decl') continue;
+        const prop = node.prop;
+        const val = node.value;
         if (prop === 'border') {
           const vars = [...val.matchAll(/var\(\s*--sherpa-([\w-]+)/g)].map((mm) => mm[1]);
           if (vars[0]) record('border-width', vars[0]);
           if (vars[1]) record('border-color', vars[1]);
-          return;
+          continue;
         }
         const vm = /var\(\s*--sherpa-([\w-]+)/.exec(val);
         if (vm) record(prop, vm[1]);
-      });
+      }
     }
   });
   return out;
