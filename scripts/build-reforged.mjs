@@ -17,6 +17,11 @@ const OUT = join(ROOT, 'dist');
 console.log('› project-tokens');
 execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
 
+// Structural CSS lint — guards the shadow-DOM rules (no chained :host, no `&`
+// nesting inside :host{}, no light-dark/opacity-disabled). Fails the build on error.
+console.log('› lint:css');
+execSync('node scripts/lint-css.mjs', { stdio: 'inherit' });
+
 console.log('› tsc -p tsconfig.reforged.json');
 execSync('npx tsc -p tsconfig.reforged.json', { stdio: 'inherit' });
 
