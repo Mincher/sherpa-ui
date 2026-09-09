@@ -25,11 +25,13 @@ anatomy:
       - el: div
         class: region nav
         part: nav
-        slot: nav
+        children:
+          - slot: nav
       - el: header
         class: region header
         part: header
-        slot: header
+        children:
+          - slot: header
       - el: main
         class: region content
         part: content
@@ -59,3 +61,16 @@ tokens:
   nav.background: "{sherpa.theme-surface-default-base}"
   header.border-block-end: "{sherpa.display-mode-border-width-base}"
   content.padding: "{sherpa.layout-grid-padding}"
+$extensions:
+  sherpa:
+    figmaName: App Shell
+    category: container
+    divergence:
+      note: >-
+        2026-09-09: boilerplate app/view frame. Matches the Figma "App Shell" COMPONENT (page
+        sherpa-app-shell, node 1016:35752) — GRID: Primary Navigation (left rail) | App Header (top)
+        | content SLOT. PRE-COMPOSED: the nav/header <slot>s carry default
+        <sherpa-nav>/<sherpa-app-header> fallback instances (replaceable by slotting your own).
+        KNOWN DEF GAP: the thin-def model cannot represent slot FALLBACK content, so
+        generate-component-spec round-trip is expected-lossy here (validate passes; the anatomy
+        drops the fallback instances). The HTML is the source of truth, not the regenerated anatomy.

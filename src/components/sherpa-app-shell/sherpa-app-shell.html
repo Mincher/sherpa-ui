@@ -3,23 +3,28 @@
 
   A three-region grid: a nav rail down the left, an app-header across the top of
   the content, and a scrolling content area with the layout grid rules applied.
-  Drop a <sherpa-nav> in the nav slot, a <sherpa-app-header> in the header slot,
-  and your view content in the default slot. All three regions are empty by
-  default — this is a wrapper, not a composition.
+  Matching the Figma App Shell, the nav and header are PRE-COMPOSED: a
+  <sherpa-nav> and a <sherpa-app-header> ship in place. Drop your view content in
+  the default slot; override the nav/header by slotting your own into the named
+  slots (which replace the defaults).
 
   Public API:
     data-nav-collapsed   collapse the nav rail to icon width (boolean)
     data-no-header       let the content span the full height (no header row) (boolean)
 
   Slots:
-    nav       the navigation rail        (data-accepts: nav)
-    header    the app header row         (data-accepts: app-header, toolbar)
-    (default) the view content           (data-accepts: any)
+    nav       replace the default <sherpa-nav>          (data-accepts: nav)
+    header    replace the default <sherpa-app-header>   (data-accepts: app-header, toolbar)
+    (default) the view content                          (data-accepts: any)
 -->
 <template id="default">
   <div class="shell">
-    <div class="region nav" part="nav"><slot name="nav"></slot></div>
-    <header class="region header" part="header"><slot name="header"></slot></header>
+    <div class="region nav" part="nav">
+      <slot name="nav"><sherpa-nav></sherpa-nav></slot>
+    </div>
+    <header class="region header" part="header">
+      <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
+    </header>
     <main class="region content" part="content"><slot></slot></main>
   </div>
 </template>
