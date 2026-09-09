@@ -7,18 +7,23 @@
  * action link; a close button sits trailing. Geometry chains to Structure/Theme.
  *
  *   card    → style-surface-base / style-border-base   (neutral, status-independent)
- *   badge   → var(--_status-surface-strong, theme-surface-info-4)   (status hue)
+ *   content → var(--_status-text, style-content-base)   (status-hued ink)
+ *   badge   → var(--_status-icon, theme-surface-info-3) (strong status hue)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Card is neutral in every status — the hue lives on the badge only. */
+  /* Card surface + border stay neutral in every status. The status hue lives on
+     the INK and the BADGE, mirroring Figma: heading + value fill = style-content/base
+     re-points per status (→ --_status-text cascade); the badge carries the strong
+     --_status-icon hue so its white glyph keeps contrast. (Same model as callout,
+     verified against Figma 27:750, 2026-09-09.) */
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base, #b3b3c3);
-  --_content: var(--sherpa-style-content-base, #35353d);
-  --_badge: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  --_badge: var(--_status-icon, var(--sherpa-theme-surface-info-3, #006c91));
 }
 
 .toast {
@@ -41,8 +46,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 20px);
-  block-size: var(--sherpa-theme-size-icon-md, 20px);
+  inline-size: var(--sherpa-theme-size-icon-md, 24px);
+  block-size: var(--sherpa-theme-size-icon-md, 24px);
   border-radius: 50%;
   background: var(--_badge);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
@@ -74,7 +79,7 @@
 .value { display: none; }
 :host([data-value]) .value {
   display: block;
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--_content);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: 1.4;
 }

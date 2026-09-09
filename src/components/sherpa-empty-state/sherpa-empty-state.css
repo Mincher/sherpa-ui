@@ -39,7 +39,9 @@
   inline-size: var(--_icon-size);
   block-size: var(--_icon-size);
   padding: var(--sherpa-theme-padding-md, 8px);
-  border-radius: var(--sherpa-structure-rounding-top-left, 8px);
+  /* Figma icon tile rounds with border/rounding/lg (8px), not the 4px structure
+     corner token. */
+  border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }

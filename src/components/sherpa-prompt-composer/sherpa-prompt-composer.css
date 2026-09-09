@@ -4,10 +4,15 @@
  * A rounded surface holding an auto-growing textarea (JS sets the height; the
  * cap and scroll are here) and an accent circular send button. The surround
  * fills status-surface via the [data-status] cascade (--_status-surface, neutral
- * surface/primary/base fallback) with a status-border (--_status-border). The
- * send button is the accent primary action (accent #3c5edd, not brand purple).
- * Focus, hover, and disabled are pure CSS off native pseudo-classes /
- * :host([disabled]). Corner radii bind the snapping/grouping radius vars.
+ * style-surface/base fallback) with a status-border (--_status-border). The send
+ * button is the STRONG accent action (surface-accent/+2 = #3b4ccd) — surface-accent
+ * -base resolves to the pale #8aa3ff, too light under a white glyph. Focus, hover,
+ * and disabled are pure CSS off native pseudo-classes / :host([disabled]).
+ *
+ * NOTE (Figma-side): Figma 228:6617 models the send as a NEUTRAL bordered icon
+ * button (no accent / brand fill), and there is no semantic brand-surface token to
+ * bind a "brand purple" send. Code keeps a legible strong-accent send pending a
+ * ratified brand token / Figma update.
  */
 
 :host {
@@ -100,7 +105,12 @@
   transition: background-color 120ms ease, color 120ms ease;
 
   &:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
-  &:active { background: var(--sherpa-theme-surface-default-3, #35353d); }
+  /* On press the surface goes dark (surface/default/+3); invert the glyph to a
+     fixed light ink so it doesn't vanish into the dark press surface. */
+  &:active {
+    background: var(--sherpa-theme-surface-default-3, #35353d);
+    color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
@@ -123,14 +133,17 @@
   block-size: var(--sherpa-structure-height, 32px);
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  /* Strong accent disc so the white glyph stays legible. surface-accent-base
+     resolves to the PALE accent (#8aa3ff) — too light under a white glyph — so the
+     send binds the strong step (surface-accent/+2 = #3b4ccd). */
+  background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   cursor: pointer;
   flex-shrink: 0;
   transition: background-color 120ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-accent-hover, #4c63e5); }
-  &:active { background: var(--sherpa-theme-surface-accent-down, #173382); }
+  &:hover { background: var(--sherpa-theme-surface-accent-3, #2b34b4); }
+  &:active { background: var(--sherpa-theme-surface-accent-4, #1e189c); }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
@@ -148,7 +161,10 @@
   cursor: not-allowed;
 }
 :host([disabled]) .send {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  /* Keep the disabled send legible: content-body-2 (#b3b3c3) on surface-default-2
+     (#b3b3c3) would be glyph-on-same-colour (invisible). Darken the disabled surface
+     one step so the muted glyph reads. */
+  background: var(--sherpa-theme-surface-default-3, #35353d);
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
   cursor: not-allowed;
 }

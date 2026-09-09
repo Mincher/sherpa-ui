@@ -1,27 +1,34 @@
 /**
  * sherpa-callout — presentation.
  *
- * A status message box (Figma Callout). Per Figma the BOX stays NEUTRAL — white
- * surface, neutral border, dark ink — regardless of status; the status hue is
- * carried ONLY by the round icon badge. (Verified 2026-09-07: Figma Callout top
- * fill = style-surface/base = white in every status.) So surface/border/content
- * are fixed neutrals here; only --_badge follows the status cascade. Geometry
- * chains to the shared Structure/Theme tokens.
+ * A status message box (Figma Callout). Per Figma the BOX SURFACE + BORDER stay
+ * NEUTRAL — white surface, neutral border — in every status (style-surface/base and
+ * style-border/base do not re-point per status). The status hue lives on the INK and
+ * the BADGE: Figma's style-content/base re-points per status (info=#006c91,
+ * critical=#b72200, success=#007a45 …), mirrored here by the --_status-text cascade;
+ * the badge carries the strong --_status-icon hue so its white glyph keeps contrast.
+ * (Verified against Figma 27:733 Variant Reference, 2026-09-09.) Geometry chains to
+ * the shared Structure/Theme tokens.
  *
- *   surface → style-surface-base   (neutral, status-independent)
- *   border  → style-border-base    (neutral)
- *   badge   → var(--_status-surface-strong, theme-surface-info-4)  (status hue)
+ *   surface → style-surface-base           (neutral, status-independent)
+ *   border  → style-border-base            (neutral, status-independent)
+ *   content → var(--_status-text, style-content-base)   (status-hued ink)
+ *   badge   → var(--_status-icon, theme-surface-info-3) (strong status hue)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Box is neutral in every status — the hue lives on the badge only. */
+  /* Box surface + border stay neutral in every status (Figma: style-surface/base
+     and style-border/base do not re-point per status). The status hue lives on the
+     ink and the badge: Figma's style-content/base re-points per status, mirrored
+     here by the --_status-text cascade; the badge carries the strong status icon
+     hue so its white glyph keeps contrast. */
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base, #b3b3c3);
-  --_content: var(--sherpa-style-content-base, #35353d);
-  --_badge: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  --_badge: var(--_status-icon, var(--sherpa-theme-surface-info-3, #006c91));
 }
 
 .box {
@@ -30,9 +37,12 @@
   gap: var(--sherpa-theme-gap-lg, 12px);
   padding: var(--sherpa-theme-padding-lg, 16px);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  /* Figma: thick status-coloured accent stripe on the leading edge. */
+  /* Figma: a thicker leading edge (border/width/lg). Its colour is the neutral
+     status border (--_status-border resolves to the neutral default border in every
+     status, matching Figma's style-border/base), so this reads as a heavier rule,
+     not a coloured stripe. */
   border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid
-    var(--_status-border, var(--_badge));
+    var(--_status-border, var(--_border));
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   color: var(--_content);
@@ -46,8 +56,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 20px);
-  block-size: var(--sherpa-theme-size-icon-md, 20px);
+  inline-size: var(--sherpa-theme-size-icon-md, 24px);
+  block-size: var(--sherpa-theme-size-icon-md, 24px);
   border-radius: 50%;
   background: var(--_badge);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
@@ -93,8 +103,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 20px);
-  block-size: var(--sherpa-theme-size-icon-md, 20px);
+  inline-size: var(--sherpa-theme-size-icon-md, 24px);
+  block-size: var(--sherpa-theme-size-icon-md, 24px);
   padding: 0;
   margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   border: none;

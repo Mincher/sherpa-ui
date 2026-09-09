@@ -8,7 +8,10 @@
 
 :host {
   display: block;
-  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  /* Strong accent (surface-accent/+2 = #3b4ccd) for done/active steps. The -base
+     step resolves to the pale #8aa3ff, which would put a white check on a light disc
+     (done) and give a washed-out active ring — both low-contrast. */
+  --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_line: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_idle: var(--sherpa-theme-content-body-1, #35353d);
 }
