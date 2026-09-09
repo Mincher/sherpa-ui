@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en" data-theme="sherpa" data-mode="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analytics dashboard — Sherpa-UI example</title>
+
+  <!-- Design tokens (light DOM → inherit into every shadow root). -->
+  <link rel="stylesheet" href="../dist/styles/tokens/tokens.css" />
+
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+      color: var(--sherpa-theme-content-body-base, #0c0b11);
+      background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+    }
+
+    /* The app-shell already frames nav + header + content; give the content a
+       comfortable page inset and a vertical rhythm. */
+    .view {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-xl, 24px);
+      padding: var(--sherpa-display-mode-space-xl, 24px);
+      max-width: 1400px;
+    }
+
+    /* Metric-tile strip. */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--sherpa-display-mode-space-base, 16px);
+    }
+
+    /* Charts grid — two columns on wide screens, one when narrow. */
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: var(--sherpa-display-mode-space-base, 16px);
+    }
+
+    /* A framed panel around each chart / list so the raw display comps sit on
+       a card rather than floating on the page background. */
+    .panel {
+      background: var(--sherpa-theme-surface-default-base, #fff);
+      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
+      padding: var(--sherpa-display-mode-space-lg, 20px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-base, 16px);
+      min-width: 0;
+    }
+    .panel h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sherpa-theme-content-body-1, #35353d);
+    }
+
+    /* Give the CSS-drawn charts a predictable height so they render. */
+    sherpa-barchart, sherpa-line-chart { min-height: 220px; }
+    sherpa-donut-chart, sherpa-gauge-chart { min-height: 200px; }
+
+    .summary { max-width: 1400px; padding: 0 var(--sherpa-display-mode-space-xl, 24px)
+                var(--sherpa-display-mode-space-xl, 24px); }
+  </style>
+</head>
+<body>
+  <sherpa-app-shell>
+    <!-- Slot OUR OWN nav + header so we can populate() them directly. -->
+    <sherpa-nav slot="nav" data-active-id="view-dashboard"></sherpa-nav>
+
+    <sherpa-app-header slot="header" data-heading="Dashboard" data-notifications="4">
+      <!-- app-header.populate() stamps into these empty children by slot name. -->
+      <sherpa-breadcrumbs slot="breadcrumb"></sherpa-breadcrumbs>
+      <sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>
+    </sherpa-app-header>
+
+    <!-- ── The view (default slot) ─────────────────────────────────── -->
+    <div class="view">
+      <sherpa-section-header
+        data-heading="Overview"
+        data-size="lg">
+        <span slot="description">Fleet health and endpoint activity across the last 30 days.</span>
+      </sherpa-section-header>
+
+      <!-- Metric tiles with embedded sparklines. -->
+      <div class="metrics">
+        <sherpa-metric id="m-endpoints"></sherpa-metric>
+        <sherpa-metric id="m-alerts"></sherpa-metric>
+        <sherpa-metric id="m-uptime"></sherpa-metric>
+        <sherpa-metric id="m-patch"></sherpa-metric>
+      </div>
+
+      <!-- Charts grid. -->
+      <div class="charts">
+        <div class="panel">
+          <h3>Alerts by category</h3>
+          <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
+        </div>
+
+        <div class="panel">
+          <h3>Endpoints by OS</h3>
+          <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
+            <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
+          </sherpa-donut-chart>
+        </div>
+
+        <div class="panel">
+          <h3>Storage used</h3>
+          <sherpa-gauge-chart
+            id="gauge"
+            data-min="0"
+            data-max="100"
+            data-caption="4.2 TB of 6 TB used"
+            data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
+        </div>
+
+        <div class="panel">
+          <h3>Sessions vs. incidents</h3>
+          <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
+          <sherpa-chart-legend id="line-legend"></sherpa-chart-legend>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary stats panel (spans below the grid, still in default slot). -->
+    <div class="summary">
+      <div class="panel">
+        <h3>Summary</h3>
+        <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
+      </div>
+    </div>
+  </sherpa-app-shell>
+
+  <script type="module">
+    import '../dist/index.js';
+
+    // ── Nav config: a product + quick items + 3 sections of items. ──────
+    const navConfig = {
+      product: { name: 'N-central', icon: '◉' },
+      quickItems: [
+        { id: 'overview', label: 'Dashboard', icon: '▦', href: '#overview' },
+        { id: 'search',   label: 'Global search', icon: '⌕', href: '#search' },
+      ],
+      sections: [
+        { label: 'Views', items: [
+          { id: 'view-dashboard', label: 'Dashboard', icon: '▦', href: 'dashboard.html' },
+          { id: 'view-records',   label: 'Records',   icon: '▤', href: 'records.html' },
+          { id: 'view-settings',  label: 'Settings',  icon: '⚙', href: 'settings.html' },
+          { id: 'view-chat',      label: 'Assistant', icon: '✳', href: 'chat.html' },
+        ] },
+        {
+          label: 'Monitor',
+          items: [
+            { id: 'endpoints', label: 'Endpoints', icon: '◻', href: '#endpoints', badge: '1284' },
+            { id: 'alerts',    label: 'Alerts',    icon: '⚠', href: '#alerts', badge: '37' },
+            { id: 'health',    label: 'Health',    icon: '♥', href: '#health' },
+          ],
+        },
+        {
+          label: 'Manage',
+          items: [
+            { id: 'patches',  label: 'Patching',   icon: '⚙', href: '#patches' },
+            { id: 'backups',  label: 'Backups',    icon: '↻', href: '#backups' },
+            { id: 'automation', label: 'Automation', icon: '⚡', href: '#automation' },
+          ],
+        },
+        {
+          label: 'Admin',
+          items: [
+            { id: 'reports',  label: 'Reports',    icon: '▤', href: '#reports' },
+            { id: 'users',    label: 'Users',      icon: '○', href: '#users' },
+            { id: 'settings', label: 'Settings',   icon: '⚒', href: '#settings' },
+          ],
+        },
+      ],
+    };
+
+    // ── App-header config: breadcrumb trail + a couple of filters. ──────
+    const headerConfig = {
+      breadcrumb: [
+        { label: 'Home', href: '#home' },
+        { label: 'Monitoring', href: '#monitoring' },
+        { label: 'Dashboard' },
+      ],
+      filters: [
+        { id: 'all',      label: 'All sites',  active: true, count: 42 },
+        { id: 'critical', label: 'Critical',   count: 3 },
+        { id: 'offline',  label: 'Offline',    count: 8 },
+      ],
+    };
+
+    // ── Metric tiles (with sparkline series). ───────────────────────────
+    const metrics = {
+      'm-endpoints': {
+        name: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
+        values: [1180, 1195, 1210, 1188, 1230, 1255, 1249, 1270, 1284],
+      },
+      'm-alerts': {
+        name: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
+        values: [61, 58, 54, 49, 52, 45, 41, 39, 37],
+      },
+      'm-uptime': {
+        name: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
+        values: [98.4, 98.7, 98.5, 99.0, 98.9, 99.1, 99.0, 99.3, 99.2],
+      },
+      'm-patch': {
+        name: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
+        values: [74, 76, 79, 78, 81, 83, 84, 86, 87],
+      },
+    };
+
+    // ── Bar chart: 8 alert categories (raw data-viz colours via colorIndex). ──
+    const barData = [
+      { label: 'Disk',      value: 42, colorIndex: 1 },
+      { label: 'CPU',       value: 31, colorIndex: 2 },
+      { label: 'Memory',    value: 28, colorIndex: 3 },
+      { label: 'Network',   value: 22, colorIndex: 4 },
+      { label: 'Security',  value: 19, colorIndex: 5 },
+      { label: 'Services',  value: 14, colorIndex: 6 },
+      { label: 'Backup',    value: 11, colorIndex: 7 },
+      { label: 'Antivirus', value: 8,  colorIndex: 8 },
+    ];
+
+    // ── Donut: 5 OS slices. ─────────────────────────────────────────────
+    const donutData = [
+      { label: 'Windows 11', value: 612, colorIndex: 1 },
+      { label: 'Windows 10', value: 388, colorIndex: 2 },
+      { label: 'macOS',      value: 174, colorIndex: 3 },
+      { label: 'Linux',      value: 84,  colorIndex: 4 },
+      { label: 'Other',      value: 26,  colorIndex: 5 },
+    ];
+
+    // ── Line chart: 2 series over 8 months. ─────────────────────────────
+    const lineData = {
+      labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      series: [
+        { name: 'Sessions',  values: [820, 932, 901, 934, 1290, 1330, 1220, 1410] },
+        { name: 'Incidents', values: [62, 55, 71, 48, 90, 76, 58, 44] },
+      ],
+    };
+    const lineLegend = [
+      { label: 'Sessions',  colorIndex: 1 },
+      { label: 'Incidents', colorIndex: 2 },
+    ];
+
+    // ── Summary key/value stats. ────────────────────────────────────────
+    const summary = [
+      { key: 'Sites monitored',   value: '42' },
+      { key: 'Devices online',    value: '1,238 / 1,284' },
+      { key: 'Mean response',     value: '142 ms' },
+      { key: 'Tickets today',     value: '19' },
+      { key: 'Automations run',   value: '3,472' },
+      { key: 'Last sync',         value: '2 min ago' },
+    ];
+
+    // ── Wait for the elements to define, then populate. ─────────────────
+    await Promise.all([
+      customElements.whenDefined('sherpa-app-shell'),
+      customElements.whenDefined('sherpa-nav'),
+      customElements.whenDefined('sherpa-app-header'),
+      customElements.whenDefined('sherpa-metric'),
+      customElements.whenDefined('sherpa-barchart'),
+      customElements.whenDefined('sherpa-donut-chart'),
+      customElements.whenDefined('sherpa-gauge-chart'),
+      customElements.whenDefined('sherpa-line-chart'),
+      customElements.whenDefined('sherpa-chart-legend'),
+      customElements.whenDefined('sherpa-key-value-list'),
+    ]);
+
+    const $ = (sel) => document.querySelector(sel);
+
+    // Shell chrome.
+    $('sherpa-app-shell sherpa-nav').populate(navConfig);
+    $('sherpa-app-shell sherpa-app-header').populate(headerConfig);
+
+    // Metric tiles.
+    for (const [id, data] of Object.entries(metrics)) {
+      document.getElementById(id).populate(data);
+    }
+
+    // Charts.
+    $('#bar').populate(barData);
+    $('#donut').populate(donutData);
+    $('#donut-legend').populate(donutData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex })));
+    $('#gauge').populate(70);
+    $('#line').populate(lineData);
+    $('#line-legend').populate(lineLegend);
+    $('#kv').populate(summary);
+
+    // ── A little interactivity so the demo is live. ─────────────────────
+    // Nav selection updates the active item + header heading.
+    $('sherpa-app-shell sherpa-nav').addEventListener('nav-select', (e) => {
+      const nav = e.currentTarget;
+      nav.dataset.activeId = e.detail.id;
+      const label = navConfig.sections
+        .flatMap((s) => s.items)
+        .concat(navConfig.quickItems)
+        .find((i) => i.id === e.detail.id)?.label;
+      if (label) $('sherpa-app-shell sherpa-app-header').dataset.heading = label;
+    });
+
+    // Bar clicks log to the console (bar-click is the barchart's event).
+    $('#bar').addEventListener('bar-click', (e) => {
+      console.log('bar-click', e.detail);
+    });
+
+    // Quick-filter changes update the header heading suffix for visible feedback.
+    $('sherpa-app-shell sherpa-app-header').addEventListener('quick-filter-change', (e) => {
+      console.log('quick-filter-change', e.detail);
+    });
+  </script>
+</body>
+</html>

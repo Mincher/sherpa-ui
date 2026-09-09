@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en" data-theme="sherpa" data-mode="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Records / CRUD table — Sherpa-UI example</title>
+
+  <!-- Design tokens (light DOM → inherit into every shadow root). -->
+  <link rel="stylesheet" href="../dist/styles/tokens/tokens.css" />
+
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+      background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+      color: var(--sherpa-theme-content-body-base, #0c0b11);
+    }
+
+    /* The view sits in the app-shell content slot. */
+    .view {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-lg, 16px);
+      padding: var(--sherpa-display-mode-space-lg, 16px);
+      max-width: 1200px;
+    }
+
+    /* Surface card wrapping the grid + toolbar + pagination. */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-base, 12px);
+      background: var(--sherpa-theme-surface-default-base, #fff);
+      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      border-radius: var(--sherpa-display-mode-border-rounding-base, 8px);
+      padding: var(--sherpa-display-mode-space-lg, 16px);
+    }
+
+    /* The dialog form fields stack vertically with a gap. */
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-base, 12px);
+      min-width: 380px;
+    }
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--sherpa-display-mode-space-sm, 8px);
+    }
+
+    /* Toast region, fixed bottom-right. */
+    .toast-region {
+      position: fixed;
+      right: var(--sherpa-display-mode-space-lg, 16px);
+      bottom: var(--sherpa-display-mode-space-lg, 16px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-sm, 8px);
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <sherpa-app-shell>
+    <!-- Slot our own nav + header so we can populate() them directly. -->
+    <sherpa-nav slot="nav" data-active-id="view-records"></sherpa-nav>
+    <sherpa-app-header slot="header" data-heading="Customers" data-icon="&#128100;"></sherpa-app-header>
+
+    <!-- The records view in the default (content) slot. -->
+    <div class="view">
+      <sherpa-section-header data-heading="Customers">
+        <span slot="description">Manage customer accounts, plans and billing.</span>
+        <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
+          Add customer
+        </sherpa-button>
+      </sherpa-section-header>
+
+      <div class="panel">
+        <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
+        <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
+        <sherpa-pagination
+          id="pager"
+          data-page="1"
+          data-page-size="10"
+          data-total-pages="3"
+          data-rows-options="10,25,50"></sherpa-pagination>
+      </div>
+    </div>
+  </sherpa-app-shell>
+
+  <!-- Add / edit customer dialog. -->
+  <sherpa-dialog id="dialog" data-heading="Add customer">
+    <div class="form">
+      <sherpa-input-text id="f-name" data-label="Name" placeholder="Jane Doe" required></sherpa-input-text>
+      <sherpa-input-text id="f-email" data-label="Email" type="email" placeholder="jane@acme.com" required></sherpa-input-text>
+      <sherpa-select-group id="f-plan" data-label="Plan"></sherpa-select-group>
+    </div>
+    <div slot="footer" class="dialog-footer">
+      <sherpa-button id="cancel-btn">Cancel</sherpa-button>
+      <sherpa-button id="save-btn" data-look="saturated">Save</sherpa-button>
+    </div>
+  </sherpa-dialog>
+
+  <!-- Toast feedback region. -->
+  <div class="toast-region" id="toasts"></div>
+
+  <script type="module">
+    import '../dist/index.js';
+
+    /* ── Data: ~30 customers ──────────────────────────────────────────── */
+    const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
+                   'Yuki','Carlos','Freya','Noah','Zara','Isaac','Maya','Leon','Amara','Felix',
+                   'Ingrid','Rashid','Elena','Tomas','Hana','Bruno','Lila','Kofi','Greta','Sven'];
+    const last  = ['Okafor','Reyes','Khan','Moreau','Berg','Haddad','Nair','Walsh','Costa','Blum',
+                   'Tanaka','Vega','Lund','Schmidt','Ali','Cohen','Iyer','Petit','Diallo','Braun',
+                   'Solberg','Aziz','Popov','Novak','Sato','Ferrari','Roy','Mensah','Meyer','Dahl'];
+    const plans  = ['Free','Starter','Pro','Enterprise'];
+    const states = ['active','trial','suspended','churned'];
+
+    const customers = Array.from({ length: 30 }, (_, i) => {
+      const name = `${first[i]} ${last[i]}`;
+      const status = states[i % states.length];
+      const plan = plans[(i * 3 + 1) % plans.length];
+      const d = new Date(2025, i % 12, ((i * 7) % 27) + 1);
+      return {
+        name,
+        email: `${first[i].toLowerCase()}.${last[i].toLowerCase()}@example.com`,
+        status,
+        plan,
+        created: d.toISOString().slice(0, 10),
+        spend: `$${(120 + ((i * 137) % 900)).toLocaleString()}`,
+      };
+    });
+
+    const columns = [
+      { field: 'name',    header: 'Name',    sortable: true },
+      { field: 'email',   header: 'Email',   sortable: true },
+      { field: 'status',  header: 'Status',  sortable: true },
+      { field: 'plan',    header: 'Plan',    sortable: true },
+      { field: 'created', header: 'Created', sortable: true, type: 'date' },
+      { field: 'spend',   header: 'Spend',   sortable: true },
+    ];
+
+    /* ── Live view state: filtered → sorted → paged ──────────────────── */
+    let activeFilters = [];         // status ids from the quick-filter toolbar
+    let sort = { field: null, direction: 'asc' };
+    let page = 1;
+    let pageSize = 10;
+
+    const applyFilter = (rows) =>
+      activeFilters.length ? rows.filter((r) => activeFilters.includes(r.status)) : rows;
+
+    const applySort = (rows) => {
+      if (!sort.field) return rows;
+      const dir = sort.direction === 'desc' ? -1 : 1;
+      return [...rows].sort((a, b) =>
+        String(a[sort.field]).localeCompare(String(b[sort.field]), undefined, { numeric: true }) * dir);
+    };
+
+    const currentRows = () => applySort(applyFilter(customers));
+
+    const render = () => {
+      const rows = currentRows();
+      const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+      if (page > totalPages) page = totalPages;
+      const start = (page - 1) * pageSize;
+      const slice = rows.slice(start, start + pageSize);
+      grid.populate({ columns, rows: slice });
+      pager.dataset.totalPages = String(totalPages);
+      pager.dataset.page = String(page);
+    };
+
+    /* ── Populate everything once the elements are defined ──────────── */
+    const grid   = document.getElementById('grid');
+    const qft     = document.getElementById('qft');
+    const pager   = document.getElementById('pager');
+    const dialog  = document.getElementById('dialog');
+    const nav      = document.querySelector('sherpa-app-shell sherpa-nav');
+    const header  = document.querySelector('sherpa-app-shell sherpa-app-header');
+    const planGroup = document.getElementById('f-plan');
+    const toasts   = document.getElementById('toasts');
+
+    await Promise.all([
+      customElements.whenDefined('sherpa-app-shell'),
+      customElements.whenDefined('sherpa-nav'),
+      customElements.whenDefined('sherpa-app-header'),
+      customElements.whenDefined('sherpa-data-grid'),
+      customElements.whenDefined('sherpa-quick-filter-toolbar'),
+      customElements.whenDefined('sherpa-pagination'),
+      customElements.whenDefined('sherpa-dialog'),
+      customElements.whenDefined('sherpa-select-group'),
+      customElements.whenDefined('sherpa-toast'),
+    ]);
+
+    /* Nav rail. */
+    nav.populate({
+      product: { name: 'Sherpa CRM', icon: '&#9968;' },
+      quickItems: [
+        { id: 'home',    label: 'Home',    icon: '&#127968;', href: '#' },
+        { id: 'search',  label: 'Search',  icon: '&#128269;', href: '#' },
+      ],
+      sections: [
+        { label: 'Views', items: [
+          { id: 'view-dashboard', label: 'Dashboard', icon: '▦', href: 'dashboard.html' },
+          { id: 'view-records',   label: 'Records',   icon: '▤', href: 'records.html' },
+          { id: 'view-settings',  label: 'Settings',  icon: '⚙', href: 'settings.html' },
+          { id: 'view-chat',      label: 'Assistant', icon: '✳', href: 'chat.html' },
+        ] },
+        { label: 'Workspace', items: [
+          { id: 'dashboard', label: 'Dashboard', icon: '&#128202;', href: '#' },
+          { id: 'customers', label: 'Customers', icon: '&#128100;', href: '#', badge: '30' },
+          { id: 'invoices',  label: 'Invoices',  icon: '&#129534;', href: '#' },
+        ]},
+        { label: 'Settings', items: [
+          { id: 'team',    label: 'Team',    icon: '&#128101;', href: '#' },
+          { id: 'billing', label: 'Billing', icon: '&#128179;', href: '#' },
+        ]},
+      ],
+    });
+
+    /* App header breadcrumb. */
+    header.populate({
+      breadcrumb: [
+        { label: 'Home', href: '#' },
+        { label: 'Workspace', href: '#' },
+        { label: 'Customers' },
+      ],
+    });
+
+    /* Quick-filter chips — status segments with counts. */
+    const countOf = (s) => customers.filter((c) => c.status === s).length;
+    qft.populate([
+      { id: 'active',    label: 'Active',    type: 'data', count: countOf('active') },
+      { id: 'trial',     label: 'Trial',     type: 'data', count: countOf('trial') },
+      { id: 'suspended', label: 'Suspended', type: 'data', count: countOf('suspended') },
+      { id: 'churned',   label: 'Churned',   type: 'data', count: countOf('churned') },
+    ]);
+
+    /* Plan radio group in the dialog. */
+    planGroup.populate(plans.map((p) => ({ value: p.toLowerCase(), label: p })));
+
+    render();
+
+    /* ── Wiring ──────────────────────────────────────────────────────── */
+
+    // Sort: re-sort + re-populate.
+    grid.addEventListener('sort-change', (e) => {
+      sort = { field: e.detail.field, direction: e.detail.direction };
+      render();
+    });
+
+    // Quick filters: filter the rows, reset to page 1.
+    qft.addEventListener('quick-filter-change', (e) => {
+      activeFilters = e.detail.active || [];
+      page = 1;
+      render();
+    });
+
+    // Pagination: swap the visible slice.
+    pager.addEventListener('page-change', (e) => {
+      page = e.detail.page;
+      render();
+    });
+    pager.addEventListener('page-size-change', (e) => {
+      pageSize = e.detail.pageSize;
+      page = 1;
+      render();
+    });
+
+    // Dialog open/close + save → toast.
+    document.getElementById('add-btn').addEventListener('button-click', () => {
+      dialog.dataset.heading = 'Add customer';
+      dialog.showModal();
+    });
+    document.getElementById('cancel-btn').addEventListener('button-click', () => dialog.close());
+
+    document.getElementById('save-btn').addEventListener('button-click', () => {
+      const name = document.getElementById('f-name').value || 'New customer';
+      dialog.close();
+      const toast = document.createElement('sherpa-toast');
+      toast.dataset.status = 'success';
+      toast.dataset.heading = `${name} saved`;
+      toast.dataset.value = 'The customer record was created.';
+      toast.dataset.duration = '5000';
+      toast.addEventListener('toast-dismiss', () => toast.remove());
+      toasts.appendChild(toast);
+    });
+  </script>
+</body>
+</html>
