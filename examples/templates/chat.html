@@ -1,0 +1,94 @@
+<!-- Bespoke per-view markup for the "chat" example.
+     Served by the template server (GET /template/view/chat) and injected into the
+     example page shell. The page's own module script populates the nav/header and
+     wires the composer/thread after injection. -->
+<sherpa-app-shell data-no-header>
+  <!-- Slot our own nav + header so the app can populate() them directly. -->
+  <sherpa-nav slot="nav" data-active-id="view-chat"></sherpa-nav>
+  <sherpa-app-header slot="header" data-heading="Assistant" data-icon="&#x2728;"></sherpa-app-header>
+
+  <!-- The chat view lives in the default slot. -->
+  <div class="chat">
+    <div class="thread" id="thread" role="log" aria-live="polite" aria-label="Conversation">
+
+      <sherpa-chat-message
+        data-type="system"
+        data-message="New conversation started · Assistant v4">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="user"
+        data-name="Will"
+        data-timestamp="09:41"
+        data-message="Hey — can you help me debounce a search input in vanilla JS?">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="assistant"
+        data-name="Assistant"
+        data-timestamp="09:41"
+        data-message="Sure. Debouncing waits until the user stops typing before firing the handler. Here's a small reusable helper:">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message data-type="assistant" data-name="Assistant" data-timestamp="09:41">
+        <sherpa-code-block
+          data-language="javascript"
+          data-line-numbers
+          data-code="function debounce(fn, delay = 300) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+const search = debounce((q) => fetchResults(q), 250);
+input.addEventListener('input', (e) => search(e.target.value));">
+        </sherpa-code-block>
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="user"
+        data-name="Will"
+        data-timestamp="09:42"
+        data-message="Nice. What's a sensible default delay for a type-ahead?">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="assistant"
+        data-name="Assistant"
+        data-timestamp="09:42"
+        data-message="200–300ms feels responsive without hammering the network. Go lower (150ms) for local filtering, higher (400ms+) if each keystroke hits an expensive API.">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="user"
+        data-name="Will"
+        data-timestamp="09:43"
+        data-message="Great — and should I cancel in-flight requests too?">
+      </sherpa-chat-message>
+
+      <sherpa-chat-message
+        data-type="assistant"
+        data-name="Assistant"
+        data-timestamp="09:43"
+        data-message="Yes. Pair the debounce with an AbortController so a newer query cancels the older fetch — that avoids out-of-order responses overwriting fresh results.">
+      </sherpa-chat-message>
+
+      <!-- Typing indicator — toggled via [hidden] from JS. -->
+      <sherpa-loader class="typing" id="typing" data-size="sm" hidden>
+        <span slot="label">Assistant is typing…</span>
+      </sherpa-loader>
+
+    </div>
+
+    <div class="composer-dock">
+      <div class="composer-inner">
+        <sherpa-prompt-composer
+          id="composer"
+          data-placeholder="Message the assistant… (Enter to send, Shift+Enter for a newline)">
+        </sherpa-prompt-composer>
+      </div>
+    </div>
+  </div>
+</sherpa-app-shell>

@@ -38,6 +38,7 @@
     "mcp": "node mcp-server/index.js",
     "preview": "npx --yes serve . --listen 4000 --no-clipboard",
     "sandbox": "npm run build && npx --yes serve . --listen 4000 --no-clipboard",
+    "serve:examples": "node server/index.mjs",
     "prebuild": "npm run clean",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

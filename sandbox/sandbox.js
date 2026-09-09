@@ -3,10 +3,13 @@
 // sherpa-* element, then derives each component's public API at runtime by
 // parsing the leading `Public API:` HTML comment in its template file.
 //
-// The parser below is a faithful port of parsePublicApi / parseFires /
-// parseEnumValues / commentDescription from scripts/generate-component-spec.mjs.
+// The parser lives in the shared, dependency-free module
+// server/public-api-parser.mjs (also used by the example template server), so the
+// sandbox and the server can never drift from each other or from the real
+// component templates.
 
 import '/dist/index.js';
+import { parseComponentSpec } from '/server/public-api-parser.mjs';
 
 // ── Component manifest (the 53 src/components dirs) ─────────────────────────
 const COMPONENTS = [
@@ -26,127 +29,6 @@ const COMPONENTS = [
   'sherpa-toast', 'sherpa-toolbar', 'sherpa-tooltip', 'sherpa-transfer-list',
 ];
 
-// ══ Ported parser (from scripts/generate-component-spec.mjs) ════════════════
-
-const NATIVE_ATTRS = new Set([
-  'disabled', 'name', 'value', 'required', 'readonly', 'placeholder',
-  'checked', 'min', 'max', 'step', 'minlength', 'maxlength', 'pattern',
-  'multiple', 'href', 'target', 'type', 'rows', 'cols', 'autocomplete',
-]);
-
-function htmlComment(html) {
-  const m = /<!--([\s\S]*?)-->/.exec(html);
-  return m ? m[1] : '';
-}
-
-function commentDescription(comment, name) {
-  const lines = comment.split('\n').map((l) => l.trim()).filter(Boolean);
-  for (const l of lines) {
-    const m = new RegExp(`^${name}\\s*[—-]\\s*(.+)$`).exec(l);
-    if (m) return m[1].trim();
-  }
-  return '';
-}
-
-function parseEnumValues(rest) {
-  if (!rest.includes('|')) return null;
-  const noParens = rest.replace(/\([^)]*\)/g, ' ');
-  const m = /^([\w-]+(?:\s*\|\s*[\w-]+)+)/.exec(noParens.trim());
-  if (!m) return null;
-  return m[1].split('|').map((s) => s.trim()).filter(Boolean);
-}
-
-function parsePublicApi(comment) {
-  const props = {};
-  const lines = comment.split('\n');
-  let start = -1, indent = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const m = /^(\s*)Public API[^:]*:/i.exec(lines[i]);
-    if (m) { start = i + 1; indent = m[1].length; break; }
-  }
-  if (start === -1) return props;
-
-  const entries = [];
-  for (let i = start; i < lines.length; i++) {
-    const raw = lines[i];
-    if (!raw.trim()) {
-      let j = i + 1; while (j < lines.length && !lines[j].trim()) j++;
-      if (j >= lines.length) break;
-      if (/^\s*(Slots|Fires|Events|Templates)\s*:/i.test(lines[j])) break;
-      continue;
-    }
-    const lead = (/^(\s*)/.exec(raw) || [])[1].length;
-    if (lead <= indent) {
-      if (/^\s*[A-Z][\w ]*:/.test(raw) && !/^\s*(data-|[a-z][\w-]*\s)/.test(raw)) break;
-    }
-    const trimmed = raw.trim();
-    const nameHead = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)(\s{2,}|\s*[—-]\s|\s*$)/;
-    const looksEntry = nameHead.test(trimmed);
-    if (!looksEntry && entries.length) { entries[entries.length - 1] += ' ' + trimmed; continue; }
-    entries.push(trimmed);
-  }
-
-  for (const entry of entries) {
-    let mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s{2,}(.*)$/.exec(entry);
-    if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s*[—-]\s*(.*)$/.exec(entry);
-    if (!mm) mm = /^([a-z][\w-]*)\s*$/.exec(entry) ? [entry, entry.trim(), ''] : null;
-    if (!mm) continue;
-    const names = mm[1].split('/').map((s) => s.trim()).filter(Boolean);
-    const rest = (mm[2] ?? '').trim();
-
-    for (const nm of names) {
-      const p = { name: nm };
-      const isNative = !nm.startsWith('data-') && NATIVE_ATTRS.has(nm);
-      if (isNative) p.native = true;
-
-      const NATIVE_BOOL = new Set(['disabled', 'readonly', 'required', 'checked', 'multiple']);
-      if (/\(boolean\)/i.test(rest) || (isNative && NATIVE_BOOL.has(nm)) || (isNative && /\bboolean\b/i.test(rest))) {
-        p.type = 'boolean';
-      } else {
-        const values = parseEnumValues(rest);
-        if (values && values.length > 1) { p.type = 'enum'; p.values = values; }
-      }
-      const defM = /\(default\s+([^)]+)\)/i.exec(rest);
-      if (defM) {
-        const d = defM[1].trim();
-        if (d !== 'omitted' && d !== 'none' && d !== 'unset') p.default = d;
-      }
-      if (p.type === 'boolean' && p.default === undefined) p.default = false;
-      if (!p.type) p.type = 'string';
-
-      const desc = rest.replace(/\((?:boolean|default[^)]*)\)/gi, '').trim();
-      if (desc) p.description = desc;
-      props[nm] = p;
-    }
-  }
-  return props;
-}
-
-function collectEventNames(text, set) {
-  const cleaned = text.replace(/\(detail[^)]*\)/gi, '').replace(/\(re-dispatched[^)]*\)/gi, '');
-  for (const frag of cleaned.split(/[,\n]/)) {
-    const mm = /^\s*([a-z][\w-]*)/.exec(frag.replace(/^[—-]\s*/, '').trim());
-    if (mm && mm[1] && mm[1] !== 'detail') set.add(mm[1]);
-  }
-}
-
-function parseFires(comment) {
-  const out = new Set();
-  const lines = comment.split('\n');
-  let inFires = false, indent = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const m = /^(\s*)Fires\s*:(.*)$/i.exec(lines[i]);
-    if (m) { inFires = true; indent = m[1].length; collectEventNames(m[2], out); continue; }
-    if (inFires) {
-      if (!lines[i].trim()) { inFires = false; continue; }
-      const lead = (/^(\s*)/.exec(lines[i]) || [])[1].length;
-      if (lead <= indent) { inFires = false; continue; }
-      collectEventNames(lines[i], out);
-    }
-  }
-  return [...out];
-}
-
 // ══ Runtime spec loading ════════════════════════════════════════════════════
 
 const specCache = new Map();
@@ -158,13 +40,7 @@ async function loadSpec(name) {
     const res = await fetch(`/dist/components/${name}/${name}.html`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
-    const comment = htmlComment(html);
-    spec.props = parsePublicApi(comment);
-    spec.events = parseFires(comment);
-    spec.description = commentDescription(comment, name);
-    if (Object.keys(spec.props).length === 0 && spec.events.length === 0) {
-      spec.error = 'no Public API / Fires block parsed';
-    }
+    spec = parseComponentSpec(name, html);
   } catch (e) {
     spec.error = String(e && e.message || e);
   }

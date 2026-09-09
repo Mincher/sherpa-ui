@@ -59,130 +59,18 @@
   </style>
 </head>
 <body>
-  <sherpa-app-shell>
-    <!-- Slot our own nav + header so we can populate() them directly. -->
-    <sherpa-nav slot="nav" data-active-id="view-settings"></sherpa-nav>
-    <sherpa-app-header slot="header" data-heading="Settings" data-icon="⚙"></sherpa-app-header>
-
-    <!-- The settings view — default slot. -->
-    <form class="settings" id="settings-form" novalidate>
-
-      <!-- ── Profile ─────────────────────────────────────────────── -->
-      <section class="section">
-        <sherpa-section-header data-heading="Profile" data-size="lg">
-          <span slot="description">How you appear to your team.</span>
-        </sherpa-section-header>
-
-        <sherpa-input-text
-          data-label="Full name"
-          data-description="Shown on your profile and in comments."
-          name="name"
-          value="Will Mincher"
-          placeholder="Your name"></sherpa-input-text>
-
-        <sherpa-input-text
-          data-label="Email"
-          data-error="Enter a valid work email address."
-          name="email"
-          value="not-an-email"
-          placeholder="you@example.com"></sherpa-input-text>
-
-        <sherpa-input-text
-          data-label="Bio"
-          data-description="A short line about you (optional)."
-          data-multiline
-          name="bio"
-          maxlength="240"
-          placeholder="Tell us a little about yourself…"></sherpa-input-text>
-      </section>
-
-      <!-- ── Preferences ─────────────────────────────────────────── -->
-      <section class="section">
-        <sherpa-section-header data-heading="Preferences" data-size="lg">
-          <span slot="description">Control notifications and appearance.</span>
-        </sherpa-section-header>
-
-        <div class="switch-row">
-          <div class="meta">
-            <strong>Email notifications</strong>
-            <span>Weekly digest and mentions.</span>
-          </div>
-          <sherpa-switch id="sw-email" name="notify" checked></sherpa-switch>
-        </div>
-
-        <div class="switch-row">
-          <div class="meta">
-            <strong>Dark mode</strong>
-            <span>Toggle the whole app between light and dark.</span>
-          </div>
-          <sherpa-switch id="sw-dark" name="dark"></sherpa-switch>
-        </div>
-
-        <div class="switch-row">
-          <div class="meta">
-            <strong>Compact density</strong>
-            <span>Tighten spacing across dense views.</span>
-          </div>
-          <sherpa-switch id="sw-compact" name="compact" data-style="simple"></sherpa-switch>
-        </div>
-
-        <!-- Theme radios via populate([{value,label,description}]) -->
-        <sherpa-select-group
-          id="theme-group"
-          data-label="Colour theme"
-          data-description="Applied the next time the app loads."></sherpa-select-group>
-
-        <!-- Slider via populate({ value }) -->
-        <sherpa-slider
-          id="page-size"
-          data-label="Items per page"
-          data-show-value
-          min="10" max="100" step="10"></sherpa-slider>
-      </section>
-
-      <!-- ── Plan ────────────────────────────────────────────────── -->
-      <section class="section">
-        <sherpa-section-header data-heading="Plan features" data-size="lg">
-          <span slot="description">Turn optional capabilities on or off.</span>
-        </sherpa-section-header>
-
-        <sherpa-select-group id="features" data-label="Included features" data-multiple>
-          <div class="plan-cards" slot="options">
-            <sherpa-select-card
-              data-select-mode="checkbox"
-              data-label="Advanced analytics"
-              data-description="Trend charts and exports."
-              name="features" value="analytics" data-selected></sherpa-select-card>
-            <sherpa-select-card
-              data-select-mode="checkbox"
-              data-label="API access"
-              data-description="Programmatic tokens + webhooks."
-              name="features" value="api"></sherpa-select-card>
-            <sherpa-select-card
-              data-select-mode="checkbox"
-              data-label="Priority support"
-              data-description="24/7 response SLA."
-              name="features" value="support" data-selected></sherpa-select-card>
-          </div>
-        </sherpa-select-group>
-      </section>
-
-      <!-- ── Note + actions ──────────────────────────────────────── -->
-      <sherpa-callout data-status="info" data-heading="Heads up">
-        Changes apply immediately for you, and roll out to your team within a few minutes.
-      </sherpa-callout>
-
-      <sherpa-container-footer data-align="end">
-        <sherpa-button type="button" id="cancel-btn" data-look="transparent">Cancel</sherpa-button>
-        <sherpa-button type="submit" id="save-btn" data-look="saturated">Save changes</sherpa-button>
-      </sherpa-container-footer>
-
-    </form>
-  </sherpa-app-shell>
+  <!-- Markup is NOT hardcoded here — the bespoke view template is fetched from
+       the template server (GET /template/view/settings) and injected below, so
+       the example can't drift from the real components. -->
+  <main id="view-root"></main>
 
   <script type="module">
     import '../dist/index.js';
     import { SherpaToast } from '../dist/index.js';
+
+    // ── Fetch the bespoke per-view markup and inject it before wiring. ──
+    const viewRoot = document.getElementById('view-root');
+    viewRoot.innerHTML = await (await fetch('/template/view/settings')).text();
 
     await Promise.all([
       customElements.whenDefined('sherpa-app-shell'),

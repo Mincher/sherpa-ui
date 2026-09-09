@@ -1,0 +1,70 @@
+<!-- Bespoke per-view markup for the "dashboard" example.
+     Served by the template server (GET /template/view/dashboard) and injected
+     into the example page shell. The page's own module script populates the
+     nav/header/metrics/charts and wires events after injection. -->
+<sherpa-app-shell>
+  <!-- Slot OUR OWN nav + header so the app can populate() them directly. -->
+  <sherpa-nav slot="nav" data-active-id="view-dashboard"></sherpa-nav>
+
+  <sherpa-app-header slot="header" data-heading="Dashboard" data-notifications="4">
+    <!-- app-header.populate() stamps into these empty children by slot name. -->
+    <sherpa-breadcrumbs slot="breadcrumb"></sherpa-breadcrumbs>
+    <sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>
+  </sherpa-app-header>
+
+  <!-- ── The view (default slot) ─────────────────────────────────── -->
+  <div class="view">
+    <sherpa-section-header
+      data-heading="Overview"
+      data-size="lg">
+      <span slot="description">Fleet health and endpoint activity across the last 30 days.</span>
+    </sherpa-section-header>
+
+    <!-- Metric tiles with embedded sparklines. -->
+    <div class="metrics">
+      <sherpa-metric id="m-endpoints"></sherpa-metric>
+      <sherpa-metric id="m-alerts"></sherpa-metric>
+      <sherpa-metric id="m-uptime"></sherpa-metric>
+      <sherpa-metric id="m-patch"></sherpa-metric>
+    </div>
+
+    <!-- Charts grid. -->
+    <div class="charts">
+      <div class="panel">
+        <h3>Alerts by category</h3>
+        <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
+      </div>
+
+      <div class="panel">
+        <h3>Endpoints by OS</h3>
+        <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
+          <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
+        </sherpa-donut-chart>
+      </div>
+
+      <div class="panel">
+        <h3>Storage used</h3>
+        <sherpa-gauge-chart
+          id="gauge"
+          data-min="0"
+          data-max="100"
+          data-caption="4.2 TB of 6 TB used"
+          data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
+      </div>
+
+      <div class="panel">
+        <h3>Sessions vs. incidents</h3>
+        <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
+        <sherpa-chart-legend id="line-legend"></sherpa-chart-legend>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary stats panel (spans below the grid, still in default slot). -->
+  <div class="summary">
+    <div class="panel">
+      <h3>Summary</h3>
+      <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
+    </div>
+  </div>
+</sherpa-app-shell>
