@@ -58,11 +58,13 @@
   border-color: var(--_accent);
 }
 
-/* Active/selected → brand-tint fill + brand border/ink. */
+/* Active/selected → brand-tint fill + brand border, darker-purple ink.
+   Figma Style: active binds the label to content-active-1 (#8300b6, a darker
+   brand step than the #c046ff border) — the text is deeper than the border. */
 :host([data-current]) .chip {
   background: var(--_active-surface);
   border-color: var(--_accent);
-  color: var(--_accent);
+  color: var(--sherpa-theme-content-active-1, #8300b6);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -119,7 +121,9 @@
 :host([disabled]) .chip {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  /* Figma inactive keeps the label dark ink (#35353d); only the surface greys.
+     content-body-2 (#b3b3c3) matched the grey surface exactly → invisible text. */
+  color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }

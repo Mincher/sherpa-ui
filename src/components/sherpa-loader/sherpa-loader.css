@@ -71,7 +71,8 @@
   --_spinner-weight: 1px;
 }
 :host([data-size="lg"]) {
-  --_spinner-size: var(--sherpa-display-mode-size-3xl, 40px);
+  /* Figma Size=lg spinner is 48px (size-4xl), not 40px. */
+  --_spinner-size: var(--sherpa-display-mode-size-4xl, 48px);
   --_spinner-weight: 4px;
 }
 

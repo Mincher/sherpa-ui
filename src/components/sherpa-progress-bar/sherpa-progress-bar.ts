@@ -24,7 +24,7 @@ interface ProgressData {
 export class SherpaProgressBar extends SherpaElement {
   static override css = new URL('./sherpa-progress-bar.css', import.meta.url);
   static override html = new URL('./sherpa-progress-bar.html', import.meta.url);
-  static override observed = ['data-value', 'data-indeterminate', 'data-label'];
+  static override observed = ['value', 'data-value', 'data-indeterminate', 'data-label'];
 
   override onRender(): void {
     this.#sync();
@@ -43,10 +43,14 @@ export class SherpaProgressBar extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────────── */
 
   get value(): number {
-    return this.#clamp(this.#bar()?.value ?? this.dataset['value']);
+    // The documented public API is the native `value` attribute; keep data-value
+    // as a fallback for callers that used the data-* form.
+    return this.#clamp(
+      this.getAttribute('value') ?? this.#bar()?.value ?? this.dataset['value'],
+    );
   }
   set value(v: number) {
-    this.dataset['value'] = String(this.#clamp(v));
+    this.setAttribute('value', String(this.#clamp(v)));
     this.#sync();
   }
 
@@ -64,7 +68,8 @@ export class SherpaProgressBar extends SherpaElement {
     if (this.hasAttribute('data-indeterminate')) {
       bar.removeAttribute('value'); // native indeterminate progress
     } else {
-      bar.value = this.#clamp(this.dataset['value']); // native determinate + aria-valuenow
+      // Prefer the native `value` attribute (public API), fall back to data-value.
+      bar.value = this.#clamp(this.getAttribute('value') ?? this.dataset['value']); // native determinate + aria-valuenow
     }
 
     // Mirror the text into the label span (CSS shows/hides it off data-label).

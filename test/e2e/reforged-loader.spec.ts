@@ -51,7 +51,7 @@ test('data-size drives the spinner diameter', async ({ page }) => {
   });
   expect(r.small).toBe('12px'); // size-xs
   expect(r.def).toBe('20px'); // size-md (default, unset)
-  expect(r.large).toBe('40px'); // size-3xl (core-scale-500)
+  expect(r.large).toBe('48px'); // size-4xl (Figma Size=lg spinner is 48px)
 });
 
 test('data-panel adds a solid surface background', async ({ page }) => {
