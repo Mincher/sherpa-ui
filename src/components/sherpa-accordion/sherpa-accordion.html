@@ -8,21 +8,26 @@
   surface (border, radius, status cascade) mirrors sherpa-container.
 
   Public API:
-    data-heading  — the summary label (fallback to slotted [slot=heading])
-    open          — native boolean (current disclosure state; drives [open] visuals)
-    data-status   — status colour cascade (critical | warning | success | info | urgent)
+    data-heading      — the summary title (fallback to slotted [slot=heading])
+    data-description  — optional secondary line under the title (fallback to slotted [slot=description])
+    open              — native boolean (current disclosure state; drives [open] visuals)
+    data-status       — status colour cascade (critical | warning | success | info | urgent)
 
   Slots:
-    heading   — rich summary content (overrides data-heading)
-    (default) — the disclosure body
+    heading     — rich summary title (overrides data-heading)
+    description — rich secondary line under the title (overrides data-description)
+    (default)   — the disclosure body
 
   Fires: toggle (detail: { open: boolean })
 -->
 <template id="default">
   <details class="root" part="root">
     <summary class="header" part="header">
+      <span class="titles" part="titles">
+        <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading"></slot></span>
+        <span class="description" part="description"><span class="description-text"></span><slot name="description"></slot></span>
+      </span>
       <span class="chevron" aria-hidden="true"></span>
-      <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading"></slot></span>
     </summary>
     <div class="body" part="body">
       <slot></slot>

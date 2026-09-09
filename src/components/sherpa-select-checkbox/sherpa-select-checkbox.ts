@@ -5,6 +5,7 @@
  * native attributes onto it, exposes its checked, indeterminate, and value
  * states, and re-fires the change event. CSS handles the whole look — the box,
  * the tick, the dash, disabled, and focus.
+ * @fires change — checked/indeterminate changes. bubbles + composed. detail: { checked: boolean, value: string, indeterminate: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

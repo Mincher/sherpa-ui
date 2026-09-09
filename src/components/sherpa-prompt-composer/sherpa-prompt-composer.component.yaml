@@ -41,9 +41,59 @@ anatomy:
         part: tools
         children:
           - el: div
-            class: actions
-            part: actions
-            slot: actions
+            class: leading
+            part: leading
+            children:
+              - el: button
+                class: lead-btn attach
+                part: attach
+                attrs:
+                  type: button
+                  aria-label: Attach
+                children:
+                  - el: svg
+                    class: glyph
+                    attrs:
+                      viewBox: 0 0 24 24
+                      aria-hidden: "true"
+                      fill: none
+                      stroke: currentColor
+                      stroke-width: "2"
+                      stroke-linecap: round
+                      stroke-linejoin: round
+                    children:
+                      - el: path
+                        attrs:
+                          d: >-
+                            M21.44 11.05 12.25 20.24a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24
+                            4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49
+              - el: button
+                class: lead-btn lab
+                part: lab
+                attrs:
+                  type: button
+                  aria-label: Lab
+                children:
+                  - el: svg
+                    class: glyph
+                    attrs:
+                      viewBox: 0 0 24 24
+                      aria-hidden: "true"
+                      fill: none
+                      stroke: currentColor
+                      stroke-width: "2"
+                      stroke-linecap: round
+                      stroke-linejoin: round
+                    children:
+                      - el: path
+                        attrs:
+                          d: >-
+                            M9 3h6M10 3v6.5L4.6 18.1A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.7-2.9L14
+                            9.5V3M8 15h8
+              - el: div
+                class: extras
+                part: extras
+                slot: extras
           - el: button
             class: send
             part: send
@@ -57,17 +107,22 @@ anatomy:
                   aria-hidden: "true"
 props:
   - $type: prop
+    name: data-no-leading-actions
+    type: string
+    kind: style
+    description: — hide the two default leading buttons (attach + lab)
+  - $type: prop
     name: data-placeholder
     type: string
     kind: content
-    description: textarea placeholder
+    description: — textarea placeholder
   - $type: prop
     name: disabled
     type: boolean
     native: true
     kind: content
     default: false
-    description: — disables the input + send button
+    description: — disables the input, leading buttons + send button
   - $type: prop
     name: value
     type: string
@@ -75,14 +130,17 @@ props:
     description: — JS property; clear() resets it
 states:
   - $type: state
-    name: has-actions
-    selector: ":host([data-has-actions])"
+    name: has-extras
+    selector: ":host([data-has-extras])"
+  - $type: state
+    name: no-leading-actions
+    selector: ":host([data-no-leading-actions])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: .send:focus-visible
+    selector: .lead-btn:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -95,6 +153,14 @@ events:
     trigger:
       "on": submit
       node: .form
+  - $type: event
+    name: composer-attach
+    bubbles: true
+    composed: true
+  - $type: event
+    name: composer-lab
+    bubbles: true
+    composed: true
 tokens:
   form.gap: "{sherpa.display-space-xs}"
   form.padding: "{sherpa.display-space-xs}"
@@ -104,7 +170,12 @@ tokens:
   input.font-size: "{sherpa.font-size-body-large}"
   input.color: "{sherpa.style-content-base}"
   tools.gap: "{sherpa.display-space-2xs}"
-  actions.gap: "{sherpa.display-space-2xs}"
+  leading.gap: "{sherpa.display-space-2xs}"
+  extras.gap: "{sherpa.display-space-2xs}"
+  lead-btn.inline-size: "{sherpa.structure-height}"
+  lead-btn.block-size: "{sherpa.structure-height}"
+  lead-btn.border-radius: "{sherpa.display-border-rounding-full}"
+  lead-btn.color: "{sherpa.style-content-base}"
   send.inline-size: "{sherpa.structure-height}"
   send.block-size: "{sherpa.structure-height}"
   send.border-radius: "{sherpa.display-border-rounding-full}"

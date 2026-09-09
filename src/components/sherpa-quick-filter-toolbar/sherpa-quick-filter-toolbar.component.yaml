@@ -14,6 +14,9 @@ $description: a strip of quick-filter chips above a grid/list.
 element:
   $type: element
   tag: div
+  attributes:
+    role: toolbar
+    aria-label: Quick filters
   provides: []
 templates:
   - default
@@ -22,6 +25,9 @@ anatomy:
     - el: div
       class: bar
       part: bar
+      attrs:
+        role: toolbar
+        aria-label: Quick filters
       children:
         - el: div
           class: view-zone
@@ -77,6 +83,18 @@ $extensions:
         values:
           - data
           - view
+    divergence:
+      note: >-
+        INTENTIONAL simplification. Figma "Filter Toolbar" (150:3688) is a fuller toolbar: it bakes
+        in a leading view chip (Type=view) or a Switch (Type=data), divider-separated preset/filter
+        chips, and a trailing ACTION CLUSTER (Add split menu, AI/brand filter, undo, refresh,
+        favourite/star, Save-view split menu, overflow), plus view-scope events (view-menu-open /
+        view-change / view-save / view-favorite / data-refresh / ai-filter-request). The shipped
+        code is a deliberately SIMPLER 3-zone slot bar (view / chips / actions): the action cluster,
+        dividers and save-view controls are DELEGATED to slotted content (the `actions` and `view`
+        slots), not built in, and those extra Figma events are the host's responsibility, not fired
+        here. Chips are stamped by populate(); the only event emitted is quick-filter-change. Do not
+        expand to match Figma without a deliberate decision.
     jsProps:
       - name: active
         type: string

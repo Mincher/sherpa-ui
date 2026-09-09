@@ -1,20 +1,22 @@
 /**
  * sherpa-code-block.css — a monospace code display with a copy button.
  *
- * A bordered surface: a header row (language label + copy button) over a
- * scrollable <pre>. The card fills status-surface via the [data-status] cascade
- * (--_status-surface, neutral surface/primary fallback) with a status-border
- * (--_status-border); the header divider matches. The <pre> sits on
- * surface/secondary/base. Line breaks and indentation are preserved by
- * white-space: pre. The copy button's "Copied" confirmation is driven purely by
- * data-copied. Corner radii bind the snapping/grouping radius vars.
+ * A bordered surface: a white header row (language label + copy button) over a
+ * tinted, scrollable <pre>. The card border binds --_status-border (neutral
+ * border/default fallback). The header sits on style-surface/base (white); the
+ * code region sits on the stronger surface/default/1 tint (Figma = a subtle
+ * lavender panel). Line breaks and indentation are preserved by white-space:
+ * pre. When data-line-numbers is set, a left gutter column of line numbers is
+ * shown (JS fills .gutter with one number per line; CSS reveals it). The copy
+ * button's "Copied" confirmation is driven purely by data-copied. Corner radii
+ * bind the snapping/grouping radius vars.
  */
 
 :host {
   display: block;
   container: sherpa-code-block / inline-size;
-  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  border: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
+  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -28,19 +30,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-display-space-sm, 12px);
-  min-block-size: var(--sherpa-display-size-xl, 28px);
-  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-sm, 12px);
-  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+  min-block-size: var(--sherpa-display-mode-size-xl, 28px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 .language {
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  letter-spacing: var(--sherpa-theme-content-letter-spacing-base, 0);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:empty { display: none; }
 }
@@ -50,11 +52,11 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-structure-space-gap, 2px);
-  padding: var(--sherpa-structure-space-padding, 2px) var(--sherpa-display-space-xs, 8px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-theme-border-default-2, #c0c0cc);
-  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  padding: var(--sherpa-structure-space-padding, 2px) var(--sherpa-display-mode-space-xs, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-small, 12px);
   cursor: pointer;
@@ -75,8 +77,8 @@
 /* ── Code ───────────────────────────────────────────────────────────── */
 .pre {
   margin: 0;
-  padding: var(--sherpa-display-space-sm, 12px);
-  background: var(--sherpa-theme-surface-default-1, #fdfdfd);
+  padding: var(--sherpa-display-mode-space-sm, 12px);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   overflow-x: auto;
 }
 .code {
@@ -86,9 +88,28 @@
   line-height: 1.5;
   white-space: pre;
   tab-size: 2;
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 
   @container sherpa-code-block (max-width: 400px) {
     & { font-size: var(--sherpa-font-size-body-small, 12px); }
   }
 }
+
+/* ── Line-number gutter ─────────────────────────────────────────────── */
+/* JS writes newline-separated numbers into .gutter; CSS reveals it only
+   when data-line-numbers is set, and lays code out as a two-column flow. */
+.gutter {
+  display: none;
+  flex: none;
+  padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
+  white-space: pre;
+  text-align: end;
+  user-select: none;
+  color: var(--sherpa-theme-content-body-1, #35353D);
+}
+:host([data-line-numbers]) .code {
+  display: flex;
+  align-items: flex-start;
+}
+:host([data-line-numbers]) .gutter { display: block; }
+:host([data-line-numbers]) .code-text { flex: 1 1 auto; min-inline-size: 0; }

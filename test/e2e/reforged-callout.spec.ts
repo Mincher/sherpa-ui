@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => customElements.whenDefined('sherpa-callout'));
 });
 
-test('data-status drives a soft status surface distinct per status', async ({ page }) => {
+test('data-status tints the ICON BADGE, not the box (Figma model)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const mk = async (status?: string) => {
       const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
@@ -25,7 +25,11 @@ test('data-status drives a soft status surface distinct per status', async ({ pa
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       const box = el.shadowRoot!.querySelector('.box')!;
-      return getComputedStyle(box).backgroundColor;
+      const icon = el.shadowRoot!.querySelector('.icon')!;
+      return {
+        box: getComputedStyle(box).backgroundColor,
+        badge: getComputedStyle(icon).backgroundColor,
+      };
     };
     return {
       info: await mk('info'),
@@ -34,13 +38,17 @@ test('data-status drives a soft status surface distinct per status', async ({ pa
       critical: await mk('critical'),
     };
   });
-  // Each status yields its own tint, and none collapses to transparent-only.
-  const values = [r.info, r.success, r.warning, r.critical];
-  expect(new Set(values).size).toBe(4);
-  for (const v of values) expect(v).not.toBe('rgba(0, 0, 0, 0)');
+  // Figma: the BOX surface stays neutral (white) across every status …
+  for (const v of [r.info, r.success, r.warning, r.critical]) {
+    expect(v.box).toBe('rgb(255, 255, 255)');
+  }
+  // … while the icon BADGE carries a distinct status hue per status.
+  const badges = [r.info.badge, r.success.badge, r.warning.badge, r.critical.badge];
+  expect(new Set(badges).size).toBe(4);
+  for (const b of badges) expect(b).not.toBe('rgba(0, 0, 0, 0)');
 });
 
-test('status fills the box with the status surface + border (Figma model)', async ({ page }) => {
+test('the box surface + border stay NEUTRAL under a status (Figma model)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-status', 'critical');
@@ -51,8 +59,10 @@ test('status fills the box with the status surface + border (Figma model)', asyn
     const cs = getComputedStyle(box);
     return { surface: cs.backgroundColor, border: cs.borderTopColor };
   });
-  expect(r.surface).toBe('rgb(255, 218, 209)'); // theme-surface-critical-base (critical-1 #FFDAD1) box tint
-  expect(r.border).toBe('rgb(221, 44, 1)'); // theme-border-critical-2 (critical-3 #DD2C01) border
+  // Verified against live Figma (Callout top fill = style-surface/base = white in
+  // every status; the status hue lives only on the icon badge).
+  expect(r.surface).toBe('rgb(255, 255, 255)'); // style-surface-base (neutral white)
+  expect(r.border).toBe('rgb(179, 179, 195)'); // style-border-base (neutral #b3b3c3)
 });
 
 test('data-heading renders into the title node; absent title hides it', async ({ page }) => {

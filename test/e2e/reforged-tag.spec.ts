@@ -25,8 +25,9 @@ test('default is a neutral pill: white surface, grey border, dark text', async (
     return { bg: cs.backgroundColor, border: cs.borderTopColor, text: cs.color };
   });
   expect(r.bg).toBe('rgb(255, 255, 255)'); // control-surface-default (neutral)
+  expect(r.border).toBe('rgb(179, 179, 195)'); // style-border-base → theme-border-default-2 (#b3b3c3 grey)
   expect(r.border).not.toBe(r.bg); // a visible grey border
-  expect(r.text).toBe('rgb(12, 11, 17)'); // style-content-base → content-body-base (neutral-5 #0C0B11) dark ink
+  expect(r.text).toBe('rgb(53, 53, 61)'); // style-content-base → content-body-1 (#35353d) dark ink
 });
 
 test('an ancestor [data-status] colours the pill via the cascade', async ({ page }) => {
@@ -39,12 +40,17 @@ test('an ancestor [data-status] colours the pill via the cascade', async ({ page
       host.appendChild(el);
       document.getElementById('root')!.appendChild(host);
       await el.rendered;
-      return getComputedStyle(el.shadowRoot!.querySelector('.pill')!).backgroundColor;
+      const cs = getComputedStyle(el.shadowRoot!.querySelector('.pill')!);
+      return { bg: cs.backgroundColor, text: cs.color };
     };
     return { neutral: await mk(), critical: await mk('critical') };
   });
-  expect(r.neutral).toBe('rgb(255, 255, 255)'); // no status = neutral white
-  expect(r.critical).not.toBe(r.neutral); // status surface fills the pill
+  // Subtle-status model: the plain pill SURFACE (and border) stay neutral under a
+  // status — the status hue is carried by --_status-text (and, on the dot,
+  // --_status-surface-strong), not the base surface.
+  expect(r.neutral.bg).toBe('rgb(255, 255, 255)'); // no status = neutral white
+  expect(r.critical.bg).toBe('rgb(255, 255, 255)'); // status: surface stays neutral white
+  expect(r.critical.text).not.toBe(r.neutral.text); // the text carries the status hue (--_status-text)
 });
 
 test('dismissible template adds a close button that fires tag-remove', async ({ page }) => {

@@ -43,7 +43,18 @@ anatomy:
         class: icon icon-end
         attrs:
           aria-hidden: "true"
+      - el: span
+        class: badge
+        children:
+          - slot: badge
+            attrs:
+              data-accepts: badge
 props:
+  - $type: prop
+    name: data-badge
+    type: string
+    kind: content
+    description: trailing badge glyph/text value (or slot a node into "badge")
   - $type: prop
     name: data-icon-end
     type: string
@@ -60,6 +71,16 @@ props:
     kind: content
     description: label text (or use the default slot)
   - $type: prop
+    name: data-look
+    type: enum
+    kind: style
+    values:
+      - saturated
+      - transparent
+    description: >-
+      saturated (primary) | transparent (tertiary) (omitted = default / "secondary": white surface,
+      grey border, dark ink)
+  - $type: prop
     name: data-size
     type: enum
     kind: style
@@ -67,12 +88,10 @@ props:
       - 2xs
       - xs
       - sm
-      - md
+      - lg
       - xl
-      - 2xl
-      - 3xl
-    default: md
-    description: 2xs | xs | sm | md | xl | 2xl | 3xl
+    default: omitted = base size
+    description: 2xs | xs | sm | lg | xl
   - $type: prop
     name: data-status
     type: enum
@@ -83,7 +102,7 @@ props:
       - success
       - info
       - urgent
-    description: critical | warning | success | info | urgent
+    description: critical | warning | success | info | urgent  (tints the look tier)
   - $type: prop
     name: data-type
     type: string
@@ -108,17 +127,11 @@ props:
     description: native disabled state
 states:
   - $type: state
-    name: primary
-    selector: ":host([data-variant=\"primary\"])"
+    name: saturated
+    selector: ":host([data-look=\"saturated\"])"
   - $type: state
-    name: secondary
-    selector: ":host([data-variant=\"secondary\"])"
-  - $type: state
-    name: tertiary
-    selector: ":host([data-variant=\"tertiary\"])"
-  - $type: state
-    name: tertiary-on-color
-    selector: ":host([data-variant=\"tertiary-on-color\"])"
+    name: transparent
+    selector: ":host([data-look=\"transparent\"])"
   - $type: state
     name: icon
     selector: ":host([data-type=\"icon\"])"
@@ -128,6 +141,12 @@ states:
   - $type: state
     name: icon-end
     selector: ":host([data-icon-end])"
+  - $type: state
+    name: badge
+    selector: ":host([data-badge])"
+  - $type: state
+    name: has-badge
+    selector: ":host([data-has-badge])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"

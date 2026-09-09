@@ -2,7 +2,7 @@
  * sherpa-list-item — one row inside a sherpa-list.
  *
  * From left to right: a leading area (drag handle, expand toggle, checkbox or
- * radio, icon), then a heading and description, then a trailing slot. Each leading
+ * radio, icon), then a label and description, then a trailing slot. Each leading
  * bit is turned on with a data-* flag and shown by CSS. JS writes the text and
  * icon, keeps the expand and select states in sync, handles clicks and keyboard,
  * and fires the matching events.
@@ -11,7 +11,7 @@
  * or Space) marks it the current row and fires item-click.
  *
  * Public API:
- *   data-heading / data-description text
+ *   data-label / data-description   text (data-heading is a back-compat alias for data-label)
  *   data-icon                       leading icon glyph
  *   data-current                    current-row visual state
  *   data-interactive                enable hover + click behaviour
@@ -20,7 +20,7 @@
  *   disabled                        disabled state
  *
  * @tier sub-component
- * @fires item-click  — detail: { heading }
+ * @fires item-click  — detail: { label }
  * @fires item-expand — detail: { expanded }
  * @fires item-select — detail: { selected }
  * @fires item-drag   — detail: {}
@@ -31,27 +31,29 @@ export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
-  static override observed = ['data-heading', 'data-description', 'data-icon', 'data-interactive', 'data-expanded'];
+  static override observed = ['data-label', 'data-heading', 'data-description', 'data-icon', 'data-expanded', 'data-selected'];
+
+  /** Prefer data-label; fall back to the legacy data-heading alias. */
+  #labelText(): string { return this.dataset['label'] ?? this.dataset['heading'] ?? ''; }
 
   override onRender(): void {
-    this.#syncHeading();
+    this.#syncLabel();
     this.#syncDescription();
     this.#syncIcon();
-    this.#syncInteractive();
+    this.#syncSelected();
     this.#syncExpanded();
     this.addEventListener('click', this.#onClick);
-    this.addEventListener('keydown', this.#onKeyDown);
     this.$('.expand')?.addEventListener('click', this.#onExpand);
-    this.$('.control')?.addEventListener('click', this.#onSelect);
+    this.$('.checkbox')?.addEventListener('change', this.#onSelect);
     this.$('.drag')?.addEventListener('pointerdown', this.#onDrag);
   }
 
   override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncHeading();
+    if (name === 'data-label' || name === 'data-heading') this.#syncLabel();
     else if (name === 'data-description') this.#syncDescription();
     else if (name === 'data-icon') this.#syncIcon();
-    else if (name === 'data-interactive') this.#syncInteractive();
     else if (name === 'data-expanded') this.#syncExpanded();
+    else if (name === 'data-selected') this.#syncSelected();
   }
 
   /* ── Public API ───────────────────────────────────────────────── */
@@ -64,14 +66,13 @@ export class SherpaListItem extends SherpaElement {
 
   /* ── Sync ─────────────────────────────────────────────────────── */
 
-  #syncHeading(): void {
-    const el = this.$('.title');
-    if (el) el.textContent = this.dataset['heading'] ?? '';
+  // Title/description appear in both the <button> and the static content span.
+  #syncLabel(): void {
+    for (const el of this.$$('.title')) el.textContent = this.#labelText();
   }
 
   #syncDescription(): void {
-    const el = this.$('.description');
-    if (el) el.textContent = this.dataset['description'] ?? '';
+    for (const el of this.$$('.description')) el.textContent = this.dataset['description'] ?? '';
   }
 
   #syncIcon(): void {
@@ -79,13 +80,10 @@ export class SherpaListItem extends SherpaElement {
     if (el) el.textContent = this.dataset['icon'] ?? '';
   }
 
-  /** Interactive rows are keyboard-reachable; non-interactive ones are not. */
-  #syncInteractive(): void {
-    if (this.dataset['interactive'] !== undefined) {
-      if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
-    } else {
-      this.removeAttribute('tabindex');
-    }
+  /** Keep the native checkbox checked-state in sync with data-selected. */
+  #syncSelected(): void {
+    const box = this.$<HTMLInputElement>('.checkbox');
+    if (box) box.checked = this.hasAttribute('data-selected');
   }
 
   #syncExpanded(): void {
@@ -97,7 +95,7 @@ export class SherpaListItem extends SherpaElement {
   #activate(): void {
     if (this.dataset['interactive'] === undefined || this.hasAttribute('disabled')) return;
     this.current = true;
-    this.emit('item-click', { heading: this.dataset['heading'] ?? '' });
+    this.emit('item-click', { label: this.#labelText() });
   }
 
   #onClick = (event: Event): void => {
@@ -109,14 +107,6 @@ export class SherpaListItem extends SherpaElement {
     this.#activate();
   };
 
-  #onKeyDown = (event: KeyboardEvent): void => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      if (this.dataset['interactive'] === undefined || this.hasAttribute('disabled')) return;
-      event.preventDefault();
-      this.#activate();
-    }
-  };
-
   #onExpand = (event: Event): void => {
     event.stopPropagation();
     const expanded = !this.hasAttribute('data-expanded');
@@ -124,10 +114,11 @@ export class SherpaListItem extends SherpaElement {
     this.emit('item-expand', { expanded });
   };
 
+  // Native <input type="checkbox"> "change" — mirror its state onto data-selected.
   #onSelect = (event: Event): void => {
     event.stopPropagation();
     if (this.hasAttribute('disabled')) return;
-    const selected = !this.selected;
+    const selected = (event.target as HTMLInputElement).checked;
     this.selected = selected;
     this.emit('item-select', { selected });
   };

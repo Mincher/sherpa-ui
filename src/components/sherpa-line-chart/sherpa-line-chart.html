@@ -15,16 +15,18 @@
   Fires: nothing — display only.
 -->
 <template id="default">
-  <div class="chart-header" part="header">
-    <span class="title"><slot name="title"></slot></span>
-  </div>
-  <div class="plot" part="plot">
+  <figure class="chart-figure" part="figure">
+    <figcaption class="chart-header" part="header">
+      <span class="title"><slot name="title"></slot></span>
+    </figcaption>
+    <div class="plot" part="plot" role="img" aria-label="Line chart">
     <svg class="svg" part="svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <g class="grid"></g>
       <g class="series-layer"></g>
     </svg>
     <div class="x-axis" part="x-axis"></div>
-  </div>
+    </div>
+  </figure>
 
   <!--
     Series <g>/<path>/<polyline> are built in the TS via createElementNS (SVG

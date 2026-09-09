@@ -9,13 +9,16 @@
  * a sherpa-breadcrumbs, its clicks come back out as breadcrumb-click.
  *
  * populate({ breadcrumb?, filters? }) is a shortcut: give it breadcrumb and
- * filter data and it fills in the breadcrumbs and quick-filter toolbar for you,
- * so you don't have to write that markup by hand.
+ * filter data and it fills in a consumer-slotted sherpa-breadcrumbs /
+ * sherpa-quick-filter-toolbar for you. Slot the empty host in the light DOM
+ * (<sherpa-breadcrumbs slot="breadcrumb">, <sherpa-quick-filter-toolbar
+ * slot="filters">) and populate() feeds it the data.
  *
- * @fires back             — detail: {}
- * @fires favorite-toggle  — detail: { favorite }
- * @fires view-export      — detail: {}
- * @fires breadcrumb-click — detail: { index, label, href }
+ * @fires back-click          — detail: {}
+ * @fires favorite-toggle     — detail: { favorite }
+ * @fires view-export         — detail: {}
+ * @fires notifications-open  — detail: {}
+ * @fires breadcrumb-click    — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -39,6 +42,7 @@ export class SherpaAppHeader extends SherpaElement {
     this.$('.back')?.addEventListener('click', this.#onBack);
     this.$('.favorite')?.addEventListener('click', this.#onFavorite);
     this.$('.export')?.addEventListener('click', this.#onExport);
+    this.$('.notif-btn')?.addEventListener('click', this.#onNotifications);
     // Re-dispatch a slotted breadcrumbs' selection as our own header event.
     this.$('.breadcrumb')?.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
   }
@@ -54,15 +58,11 @@ export class SherpaAppHeader extends SherpaElement {
     if (Array.isArray(cfg.filters)) this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters);
   }
 
-  /** Create (or reuse) a composed child in a named slot and populate it. */
+  /** Populate a consumer-slotted composed child (no structural createElement). */
   #stamp(slot: string, tag: string, data: unknown): void {
-    let el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
-    if (!el) {
-      el = document.createElement(tag) as Populatable;
-      el.setAttribute('slot', slot);
-      this.appendChild(el);
-    }
-    const run = (): void => el!.populate?.(data);
+    const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
+    if (!el) return; // consumer must slot the empty host; we never create one
+    const run = (): void => el.populate?.(data);
     if (el.rendered) void Promise.resolve(el.rendered).then(run);
     else queueMicrotask(run);
   }
@@ -87,7 +87,7 @@ export class SherpaAppHeader extends SherpaElement {
 
   /* ── Events ─────────────────────────────────────────────────────── */
 
-  #onBack = (): void => { this.emit('back', {}); };
+  #onBack = (): void => { this.emit('back-click', {}); };
 
   #onFavorite = (): void => {
     const favorite = !this.hasAttribute('data-favorite');
@@ -96,6 +96,8 @@ export class SherpaAppHeader extends SherpaElement {
   };
 
   #onExport = (): void => { this.emit('view-export', {}); };
+
+  #onNotifications = (): void => { this.emit('notifications-open', {}); };
 
   #onBreadcrumb = (event: Event): void => {
     const { index, label, href } = (event as CustomEvent).detail ?? {};

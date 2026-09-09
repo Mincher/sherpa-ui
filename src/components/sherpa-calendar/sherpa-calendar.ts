@@ -25,6 +25,8 @@
  *
  * @fires datetime-change  detail: { value: string }              — a single day (or its date+time) was chosen
  * @fires range-select     detail: { start: string, end: string } — a range completed (both ends chosen)
+ * @fires calendar-cancel  detail: {}                             — the footer Cancel button was pressed
+ * @fires calendar-apply   detail: { value: string }             — the footer Apply button confirmed the current value
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -75,6 +77,9 @@ export class SherpaCalendar extends SherpaElement {
     this.$('.cal-months')?.addEventListener('click', this.#onMonthClick);
     this.$('.cal-years')?.addEventListener('click', this.#onYearClick);
     this.$('.cal-time')?.addEventListener('input', this.#onTimeInput);
+    this.$('.cal-today')?.addEventListener('click', this.#onToday);
+    this.$('.cal-cancel')?.addEventListener('click', this.#onCancel);
+    this.$('.cal-apply')?.addEventListener('click', this.#onApply);
     this.#syncTimeInput();
     this.#render();
   }
@@ -130,7 +135,9 @@ export class SherpaCalendar extends SherpaElement {
     const grid = this.$('.cal-days');
     if (!grid) return;
     const y = this.#viewYear, m = this.#viewMonth;
-    const firstWeekday = new Date(y, m, 1).getDay();
+    // Monday-first grid: convert JS getDay() (0=Sun) to a Mon=0…Sun=6 index so
+    // the first column is Monday, matching the Figma weekday header.
+    const firstWeekday = (new Date(y, m, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const min = this.dataset['min'] ?? '';
     const max = this.dataset['max'] ?? '';
@@ -154,19 +161,21 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(d);
       cell.dataset['iso'] = iso;
-      if (iso === todayIso) cell.setAttribute('data-today', '');
+      if (iso === todayIso) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
       if ((min && iso < min) || (max && iso > max)) cell.setAttribute('disabled', '');
 
       if (this.#type === 'single') {
-        if (iso === single) cell.setAttribute('data-selected', '');
+        if (iso === single) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
       } else {
         const isStart = !!start && iso === start;
         const isEnd = !!end && iso === end;
         if (isStart || isEnd) {
           cell.setAttribute('data-selected', '');
           cell.setAttribute('data-range-end', '');
+          cell.setAttribute('aria-selected', 'true');
         } else if (start && end && iso > start && iso < end) {
           cell.setAttribute('data-in-range', '');
+          cell.setAttribute('aria-selected', 'true');
         }
       }
       grid.appendChild(cell);
@@ -183,8 +192,8 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
-      if (sel && sel[0] === this.#viewYear && sel[1] === i) cell.setAttribute('data-selected', '');
-      if (now.getFullYear() === this.#viewYear && now.getMonth() === i) cell.setAttribute('data-today', '');
+      if (sel && sel[0] === this.#viewYear && sel[1] === i) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
+      if (now.getFullYear() === this.#viewYear && now.getMonth() === i) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
       grid.appendChild(cell);
     });
   }
@@ -201,8 +210,8 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
-      if (sel && sel[0] === year) cell.setAttribute('data-selected', '');
-      if (year === nowY) cell.setAttribute('data-today', '');
+      if (sel && sel[0] === year) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
+      if (year === nowY) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
       grid.appendChild(cell);
     }
   }
@@ -321,6 +330,36 @@ export class SherpaCalendar extends SherpaElement {
     const value = time ? `${date}T${time}` : date;
     this.dataset['value'] = value;
     this.emit('datetime-change', { value });
+  };
+
+  /* ── Footer actions ─────────────────────────────────────────────────── */
+
+  /**
+   * Today — jump the view to today's month and select today (single mode) or
+   * begin a fresh range at today (range mode). Reuses the normal pick path so
+   * datetime-change / range-select still fire.
+   */
+  #onToday = (): void => {
+    const now = new Date();
+    this.#viewYear = now.getFullYear();
+    this.#viewMonth = now.getMonth();
+    this.dataset['view'] = 'day';
+    const iso = toIso(now.getFullYear(), now.getMonth(), now.getDate());
+    const min = this.dataset['min'] ?? '';
+    const max = this.dataset['max'] ?? '';
+    if ((min && iso < min) || (max && iso > max)) { this.#render(); return; }
+    if (this.#type === 'range') this.#pickRange(iso);
+    else this.#pickSingle(iso);
+  };
+
+  /** Cancel — let the host tear down / revert. Carries no value. */
+  #onCancel = (): void => {
+    this.emit('calendar-cancel', {});
+  };
+
+  /** Apply — confirm the current value (the single day, or its date+time tail). */
+  #onApply = (): void => {
+    this.emit('calendar-apply', { value: this.dataset['value'] ?? '' });
   };
 }
 

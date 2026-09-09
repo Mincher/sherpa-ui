@@ -2,15 +2,17 @@
  * sherpa-select-card — a selectable card with header / content / footer slots.
  *
  * The whole card is one big option. Clicking it toggles [data-selected]; CSS
- * draws the selected ring. The footer carries a default select control — a
- * sherpa-select-radio, or a sherpa-select-checkbox when data-multiple is set —
- * kept in sync with the card's selected state so either target flips both. When
- * a consumer slots their own footer, that control is theirs to wire; the card
- * still reports selection through the change event.
+ * draws the selected ring. The footer carries two pre-placed select controls —
+ * a sherpa-select-radio and a sherpa-select-checkbox — and CSS shows exactly
+ * one based on data-select-mode (radio by default, checkbox for multi-select).
+ * Both are kept in sync with the card's selected state so the visible target
+ * flips with the card. When a consumer slots their own footer, that control is
+ * theirs to wire; the card still reports selection through the change event.
  *
  * Radios sharing a `name` group up: selecting one card deselects its siblings
  * (mirroring sherpa-select-radio, which native grouping can't do across shadow
  * roots). Everything visual lives in CSS off data-* — JS only sets attributes.
+ * @fires change — selection changes. bubbles + composed. detail: { selected: boolean, value: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
@@ -29,7 +31,7 @@ export class SherpaSelectCard extends SherpaElement {
     'data-label',
     'data-description',
     'data-selected',
-    'data-multiple',
+    'data-select-mode',
     'name',
     'value',
     'disabled',
@@ -40,7 +42,7 @@ export class SherpaSelectCard extends SherpaElement {
   override onRender(): void {
     this.#card = this.$('.card');
     if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
-    this.setAttribute('role', this.hasAttribute('data-multiple') ? 'checkbox' : 'radio');
+    this.#syncRole();
 
     this.#syncText();
     this.#syncControl();
@@ -55,13 +57,23 @@ export class SherpaSelectCard extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-label' || name === 'data-description') this.#syncText();
-    else if (name === 'data-multiple') {
-      this.setAttribute('role', this.hasAttribute('data-multiple') ? 'checkbox' : 'radio');
+    else if (name === 'data-select-mode') {
+      this.#syncRole();
       this.#syncControl();
     } else if (name === 'data-selected') {
       this.#syncControl();
       this.#syncAria();
     } else this.#syncControl();
+  }
+
+  /** true when the card is in checkbox (multi-select) mode. */
+  #isCheckbox(): boolean {
+    return this.dataset['selectMode'] === 'checkbox';
+  }
+
+  /** Host role follows the select mode: checkbox for multi, radio otherwise. */
+  #syncRole(): void {
+    this.setAttribute('role', this.#isCheckbox() ? 'checkbox' : 'radio');
   }
 
   /** Header title + description into the shadow (CSS collapses empties). */
@@ -72,39 +84,22 @@ export class SherpaSelectCard extends SherpaElement {
     if (description) description.textContent = this.dataset['description'] ?? '';
   }
 
-  /** The default footer control, if the footer slot is using its fallback. */
-  #footerControl(): FooterControl | null {
-    return this.$<FooterControl>('.footer-control');
-  }
-
   /**
-   * Swap the default footer control to match data-multiple (radio ↔ checkbox)
-   * and mirror the card's name / value / disabled / selected onto it. A slotted
-   * footer overrides the default, so this is a no-op then.
+   * Mirror the card's name / value / disabled / selected onto BOTH pre-placed
+   * footer controls (radio + checkbox). CSS shows only one — but keeping both in
+   * sync means switching data-select-mode never surfaces a stale control. A
+   * slotted footer overrides the defaults, so this is a no-op then (no controls).
    */
   #syncControl(): void {
-    const control = this.#footerControl();
-    if (!control) return;
-
-    const wantCheckbox = this.hasAttribute('data-multiple');
-    const isCheckbox = control.tagName.toLowerCase() === 'sherpa-select-checkbox';
-    if (wantCheckbox !== isCheckbox) {
-      // Replace the control element in place, keeping its class + part hooks.
-      const tag = wantCheckbox ? 'sherpa-select-checkbox' : 'sherpa-select-radio';
-      const next = document.createElement(tag);
-      next.className = control.className;
-      next.setAttribute('part', control.getAttribute('part') ?? 'footer-control');
-      control.replaceWith(next);
+    const controls = this.$$<FooterControl>('.footer-control');
+    for (const c of controls) {
+      if (this.hasAttribute('name')) c.setAttribute('name', this.getAttribute('name') ?? '');
+      else c.removeAttribute('name');
+      c.value = this.getAttribute('value') ?? '';
+      c.checked = this.hasAttribute('data-selected');
+      if (this.hasAttribute('disabled')) c.setAttribute('disabled', '');
+      else c.removeAttribute('disabled');
     }
-
-    const c = this.#footerControl();
-    if (!c) return;
-    if (this.hasAttribute('name')) c.setAttribute('name', this.getAttribute('name') ?? '');
-    else c.removeAttribute('name');
-    c.value = this.getAttribute('value') ?? '';
-    c.checked = this.hasAttribute('data-selected');
-    if (this.hasAttribute('disabled')) c.setAttribute('disabled', '');
-    else c.removeAttribute('disabled');
   }
 
   /** Keep aria-checked in step with the visual selected state. */
@@ -116,10 +111,12 @@ export class SherpaSelectCard extends SherpaElement {
 
   #onCardClick = (event: MouseEvent): void => {
     if (this.hasAttribute('disabled')) return;
-    // A click that lands on the footer control itself already fires its own
+    // A click that lands on a footer control itself already fires its own
     // change (→ #onControlChange); don't double-toggle from the card too.
-    const control = this.#footerControl();
-    if (control && event.composedPath().includes(control)) return;
+    const path = event.composedPath();
+    for (const control of this.$$('.footer-control')) {
+      if (path.includes(control)) return;
+    }
     this.#toggle();
   };
 
@@ -131,24 +128,24 @@ export class SherpaSelectCard extends SherpaElement {
     }
   };
 
-  /** The default footer control changed → adopt its checked state. */
+  /** A default footer control changed → adopt its checked state. */
   #onControlChange = (event: Event): void => {
-    const control = this.#footerControl();
-    if (!control || event.target !== control) return; // slotted control: consumer owns it
+    const control = this.$$<FooterControl>('.footer-control').find((c) => c === event.target);
+    if (!control) return; // slotted control: consumer owns it
     event.stopPropagation(); // we re-emit our own change below
     this.#setSelected(control.checked);
   };
 
   /** Toggle for radios means "select" (can't unselect by re-click); checkboxes flip. */
   #toggle(): void {
-    if (this.hasAttribute('data-multiple')) this.#setSelected(!this.hasAttribute('data-selected'));
+    if (this.#isCheckbox()) this.#setSelected(!this.hasAttribute('data-selected'));
     else this.#setSelected(true);
   }
 
   /** Apply a selected state, coordinate the radio group, and report it. */
   #setSelected(next: boolean): void {
     this.toggleAttribute('data-selected', next);
-    if (next && !this.hasAttribute('data-multiple')) this.#deselectGroup();
+    if (next && !this.#isCheckbox()) this.#deselectGroup();
     this.emit('change', { selected: next, value: this.value });
   }
 

@@ -590,13 +590,15 @@ function generateSpec(name) {
     return an - bn || a.name.localeCompare(b.name);
   });
 
-  // ── events: HTML `Fires:` list, UNION the prior spec's events ─────────────────
-  // Fires names are the code ground truth; the prior spec supplies the `trigger`
-  // block (on/node) that can't be read from the comment.
+  // ── events: driven by the code's `Fires:` list (ground truth) ────────────────
+  // The HTML `Fires:` comment (kept in sync with the TS @fires / emit() strings) is
+  // the AUTHORITATIVE set of event names. The prior spec only supplies the `trigger`
+  // block (on/node) that can't be read from the comment — it must NOT introduce or
+  // keep event names, or renamed/removed events would linger forever (stale-event bug).
   const priorEvents = {};
   for (const e of (existing.events ?? [])) if (e && e.name) priorEvents[e.name] = e;
   const firesNames = comment ? parseFires(comment) : [];
-  const eventNames = new Set([...Object.keys(priorEvents), ...firesNames]);
+  const eventNames = new Set(firesNames);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: true };

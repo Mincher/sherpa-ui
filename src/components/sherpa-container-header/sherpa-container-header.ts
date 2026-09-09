@@ -14,6 +14,14 @@
  * default variant is today's single-row header. The look is entirely CSS —
  * data-variant only selects it.
  *
+ * Figma's third variant, `accordion`, is intentionally NOT a data-variant value.
+ * It is the default skeleton with a disclosure chevron in place of the close X —
+ * which is precisely `data-collapsible` here (shows the .toggle button, fires
+ * header-collapse, rotates on data-collapsed). Reproduce Figma's accordion header
+ * with data-collapsible (omit data-dismissible). A self-contained disclosure card
+ * with its own <details>/<summary> chevron is the separate `sherpa-accordion`
+ * component, so this header needs no `accordion` variant of its own.
+ *
  * @element sherpa-container-header
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  * @attr {string}  data-variant      — default | panel (default: default)
@@ -30,9 +38,9 @@
  * @slot actions  — extra trailing action controls
  * @slot metadata — bottom metadata strip (Panel) / secondary content (Default)
  *
- * @fires dismiss — detail: {}
- * @fires toggle  — detail: { collapsed }
- * @fires drag    — detail: {}
+ * @fires header-dismiss  — the close button is clicked. bubbles + composed. detail: {}
+ * @fires header-collapse — the collapse toggle fires. bubbles + composed. detail: { collapsed: boolean }
+ * @fires header-drag     — the drag handle is pressed. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -85,15 +93,15 @@ export class SherpaContainerHeader extends SherpaElement {
 
   /* ── Events ─────────────────────────────────────────────────────── */
 
-  #onDismiss = (): void => { this.emit('dismiss', {}); };
+  #onDismiss = (): void => { this.emit('header-dismiss', {}); };
 
   #onToggle = (): void => {
     const collapsed = !this.hasAttribute('data-collapsed');
     this.toggleAttribute('data-collapsed', collapsed);
-    this.emit('toggle', { collapsed });
+    this.emit('header-collapse', { collapsed });
   };
 
-  #onDrag = (): void => { this.emit('drag', {}); };
+  #onDrag = (): void => { this.emit('header-drag', {}); };
 }
 
 customElements.define('sherpa-container-header', SherpaContainerHeader);

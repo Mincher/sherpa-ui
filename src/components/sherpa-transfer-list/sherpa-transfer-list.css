@@ -13,16 +13,16 @@
 :host {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  gap: var(--sherpa-display-space-base, 16px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
   align-items: stretch;
   min-block-size: 240px;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
 
   /* cascade fallbacks so a bare (status-less) list still resolves */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
+  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 .panes {
@@ -34,7 +34,7 @@
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -44,13 +44,13 @@
   overflow: hidden;
 }
 .pane-heading {
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
-  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  margin: 0;
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 .pane-list {
   list-style: none;
@@ -63,8 +63,8 @@
 .pane-empty {
   display: none;
   margin: 0;
-  padding: var(--sherpa-display-space-base, 16px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  padding: var(--sherpa-display-mode-space-base, 16px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   text-align: center;
 }
 /* Empty pane: hide the list, show the placeholder. */
@@ -87,7 +87,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 /* The move controls are sherpa-button instances — they own their own look. */
 .move { flex-shrink: 0; }
@@ -97,8 +97,8 @@
   pointer-events: none;
 }
 :host([disabled]) .pane {
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 
 /* ── Responsive: stack panes when narrow ──────────────────────────── */

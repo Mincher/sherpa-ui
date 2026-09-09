@@ -7,10 +7,12 @@
  * the track, the thumb, the label/value visibility, the disabled look — is pure
  * CSS off data-*. JS never sets width/display/colour here.
  *
- * Per its Figma bindings the slider is a NEUTRAL control: the empty rail fills
- * surface/interactive/inactive and the filled portion + thumb ink take
- * content/secondary/base. No status/accent surface is bound — the old
- * status-cascade accent was drift and has been removed.
+ * Per its Figma bindings the empty rail fills a NEUTRAL surface (surface/default/+2);
+ * the filled portion + thumb take the primary accent (--_accent, Figma
+ * surface/interactive/primary). The old status-cascade accent was drift and is gone.
+ *
+ * Accepted divergence: the value field here is a bare native number input, whereas
+ * Figma dresses it as the fuller Input Field (atom) chrome — left as-is by design.
  */
 
 /* Typed JS→CSS bridge: TS writes value→--_pct as a percentage. Typing it lets the
@@ -26,14 +28,15 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Filled range + thumb take the primary accent (Figma: surface/interactive/primary). */
-  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  --_thumb: var(--sherpa-display-size-md, 20px);
-  --_rail: var(--sherpa-display-space-2xs, 4px);
+  /* Filled range + thumb take the accent indicator (Figma: style-indicator/accent
+     → surface/accent/+2 = #3b4ccd). */
+  --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
+  --_thumb: var(--sherpa-display-mode-size-md, 20px);
+  --_rail: var(--sherpa-display-mode-space-2xs, 4px);
   --_pct: 0%;
 }
 
@@ -46,7 +49,7 @@
 :host([data-label]) .head { display: flex; }
 
 .label {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-weight: var(--sherpa-font-weight-medium, 500);
 
   &:empty { display: none; }
@@ -56,20 +59,20 @@
 .slider-row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 
 /* Numeric value input — mono + right-aligned per the numeric convention */
 .value-input {
   display: none;
-  inline-size: var(--sherpa-display-size-6xl, 56px);
-  min-block-size: var(--sherpa-display-size-2xl, 32px);
-  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-xs, 8px);
-  border: var(--sherpa-style-border-width, 1px) solid
-    var(--sherpa-theme-border-default-2, #8c8c99);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  inline-size: var(--sherpa-display-mode-size-6xl, 64px);
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
@@ -108,8 +111,8 @@
   position: absolute;
   inset-inline: 0;
   block-size: var(--_rail);
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   overflow: hidden;
 }
 .fill {
@@ -143,17 +146,17 @@
     appearance: none;
     inline-size: var(--_thumb);
     block-size: var(--_thumb);
-    border-radius: var(--sherpa-display-border-rounding-full, 999px);
-    background: var(--sherpa-style-surface-base, #ffffff);
-    border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+    background: var(--_accent);
+    border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
     box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
   }
   &::-moz-range-thumb {
     inline-size: var(--_thumb);
     block-size: var(--_thumb);
-    border-radius: var(--sherpa-display-border-rounding-full, 999px);
-    background: var(--sherpa-style-surface-base, #ffffff);
-    border: var(--sherpa-display-border-width-base, 1px) solid var(--_accent);
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+    background: var(--_accent);
+    border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
     box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
   }
 
@@ -172,5 +175,4 @@
 :host([disabled]) .track {
   background: var(--sherpa-theme-surface-default-2, #d5d5d5);
 }
-:host([disabled]) .label,
-:host([disabled]) .value-out { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }

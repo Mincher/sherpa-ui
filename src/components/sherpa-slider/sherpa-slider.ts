@@ -38,6 +38,7 @@ export class SherpaSlider extends SherpaElement {
     'step',
     'value',
     'disabled',
+    'data-value-readonly',
   ];
 
   #input: HTMLInputElement | null = null;
@@ -63,7 +64,13 @@ export class SherpaSlider extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'min' || name === 'max' || name === 'step' || name === 'disabled') {
+    if (
+      name === 'min' ||
+      name === 'max' ||
+      name === 'step' ||
+      name === 'disabled' ||
+      name === 'data-value-readonly'
+    ) {
       this.#syncInputAttrs();
     }
     this.#sync();
@@ -118,6 +125,8 @@ export class SherpaSlider extends SherpaElement {
     if (this.#valueField) {
       this.#valueField.min = min; this.#valueField.max = max; this.#valueField.step = step;
       this.#valueField.disabled = disabled;
+      // Mirror data-value-readonly onto the native input so it is truly read-only.
+      this.#valueField.readOnly = this.hasAttribute('data-value-readonly');
     }
   }
 

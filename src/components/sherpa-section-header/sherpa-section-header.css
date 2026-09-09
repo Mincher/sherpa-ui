@@ -15,7 +15,7 @@
   display: block;
 
   /* default size — md (unset) */
-  --_title-size: var(--sherpa-font-size-heading-h2, 20px);
+  --_title-size: var(--sherpa-font-size-body-base, 14px);
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────── */
@@ -23,7 +23,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 .lead {
@@ -31,16 +31,16 @@
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* ── Title ───────────────────────────────────────────────────────────── */
 .title {
   margin: 0;
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--_title-size);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: 1.3;
 }
 
@@ -50,9 +50,9 @@
 /* ── Description ─────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: 1.45;
 }
 :host([data-has-description]) .description { display: block; }
@@ -68,20 +68,23 @@
   display: none;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host([data-has-actions]) .actions { display: flex; }
 
 /* ── Size scale ──────────────────────────────────────────────────────── */
-:host([data-size="sm"]) { --_title-size: var(--sherpa-font-size-body-large, 16px); }
-:host([data-size="lg"]) { --_title-size: var(--sherpa-font-size-heading-h1, 24px); }
+/* base title = body-base (14, matches Figma); sm/lg step down/up from it. */
+:host([data-size="sm"]) { --_title-size: var(--sherpa-font-size-body-small, 12px); }
+:host([data-size="lg"]) { --_title-size: var(--sherpa-font-size-heading-h2, 20px); }
 
 /* ── Divider ─────────────────────────────────────────────────────────── */
+/* Figma draws the rule ALWAYS, in the darker border/default/+2. Default-on;
+   an explicit data-divider="none" opts out. */
 .divider {
-  display: none;
-  margin-block-start: var(--sherpa-display-space-xs, 8px);
+  display: block;
+  margin-block-start: var(--sherpa-display-mode-space-xs, 8px);
   border: none;
-  border-block-start: var(--sherpa-display-border-width-base, 1px) solid
-    var(--sherpa-style-border-base, #d5d5d5);
+  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([data-divider]) .divider { display: block; }
+:host([data-divider="none"]) .divider { display: none; }

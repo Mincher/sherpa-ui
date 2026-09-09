@@ -16,7 +16,7 @@ export class SherpaCallout extends SherpaElement {
   static override observed = ['data-heading'];
 
   override onRender(): void {
-    if (!this.hasAttribute('role')) this.setAttribute('role', 'note');
+    if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
     this.#syncTitle();
     this.$('.close')?.addEventListener('click', this.#onDismiss);
   }

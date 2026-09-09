@@ -78,10 +78,6 @@ events:
     name: close
     bubbles: true
     composed: true
-  - $type: event
-    name: re-dispatched
-    bubbles: true
-    composed: true
 tokens:
   root.border-width: "{sherpa.style-border-width}"
   root.border-radius: "{sherpa.structure-rounding-top-left}"

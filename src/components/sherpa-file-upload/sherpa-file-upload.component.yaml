@@ -185,6 +185,10 @@ events:
       "on": drop
       node: .drop-zone
   - $type: event
+    name: files
+    bubbles: true
+    composed: true
+  - $type: event
     name: file-remove
     bubbles: true
     composed: true
@@ -212,10 +216,6 @@ events:
     trigger:
       "on": change
       node: .file-input
-  - $type: event
-    name: files
-    bubbles: true
-    composed: true
 tokens:
   field.gap: "{sherpa.display-space-2xs}"
   label.font-size: "{sherpa.font-size-body-base}"
@@ -226,7 +226,7 @@ tokens:
   drop-zone.gap: "{sherpa.display-space-xs}"
   drop-zone.padding: "{sherpa.display-space-xl}"
   drop-zone.border-width: "{sherpa.style-border-width}"
-  drop-zone.border-color: "{sherpa.theme-border-default-2}"
+  drop-zone.border-color: "{sherpa.theme-border-active-2}"
   drop-zone.border-radius: "{sherpa.display-border-rounding-base}"
   drop-zone.background: "{sherpa.theme-surface-default-2}"
   drop-zone.color: "{sherpa.style-content-base}"

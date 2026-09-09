@@ -3,16 +3,18 @@
  *
  * Matches the Figma "App Header": two stacked rows (history+actions, then view
  * details with an embedded filter toolbar) over a thin loading bar. Flat surface
- * (surface/primary/base), border/primary dividers, brand-tinted loading fill,
- * a badge-surface notification count. Regions collapse when empty. All CSS off
- * data-* + slot presence; JS only mirrors text/count and wires the events.
+ * (surface/default/base), border dividers, a brand-purple loading fill and
+ * favourite star (surface/content-active), an accent-filled notification badge
+ * (surface-accent, matching Figma's blue Notif Badge). Regions collapse when
+ * empty. All CSS off data-* + slot presence; JS only mirrors text/count and
+ * wires the events.
  */
 
 :host {
   display: block;
   container: sherpa-app-header / inline-size;
   background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 .bar {
@@ -23,8 +25,8 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-sm, 12px);
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* ── Row 1: history + actions ───────────────────────────────────────── */
@@ -32,28 +34,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-display-space-xs, 8px);
-  min-block-size: var(--sherpa-display-size-lg, 24px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  min-block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
 
 .history {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-inline-size: 0;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   flex: 0 0 auto;
 }
 
 .divider {
-  inline-size: var(--sherpa-display-border-width-base, 1px);
-  block-size: var(--sherpa-display-size-md, 16px);
-  background: var(--sherpa-style-border-base, #d5d5d5);
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  background: var(--sherpa-theme-border-default-2, #b3b3c3);
   flex-shrink: 0;
 }
 
@@ -65,13 +67,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-lg, 24px);
-  block-size: var(--sherpa-display-size-lg, 24px);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #5c5c66);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
@@ -81,7 +83,7 @@
 .export:hover,
 .notif-btn:hover {
   background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 .back:focus-visible,
 .favorite:focus-visible,
@@ -93,9 +95,9 @@
 
 .back { font-size: var(--sherpa-font-size-heading-h2, 20px); }
 
-/* Favourited state — brand-accent filled star */
+/* Favourited state — brand filled star (active = brand ramp) */
 :host([data-favorite]) .favorite {
-  color: var(--sherpa-display-color-brand-color-3, #c046ff);
+  color: var(--sherpa-theme-content-active-2, #c046ff);
 }
 
 /* ── Notifications: button + count badge ────────────────────────────── */
@@ -106,15 +108,15 @@
   position: absolute;
   inset-block-start: -2px;
   inset-inline-end: -2px;
-  min-inline-size: var(--sherpa-display-size-md, 16px);
-  block-size: var(--sherpa-display-size-md, 16px);
-  padding-inline: var(--sherpa-display-space-3xs, 2px);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-default-base, #d92d20);
+  min-inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: var(--sherpa-display-size-md, 16px);
+  line-height: var(--sherpa-display-mode-size-md, 20px);
   text-align: center;
 }
 :host([data-notifications]) .notif-badge { display: block; }
@@ -123,13 +125,13 @@
 .row-view {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 
 .title-row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
 }
 
@@ -137,7 +139,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-md, 16px);
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
   flex-shrink: 0;
 }
 :host([data-icon]) .view-icon { display: inline-flex; }
@@ -146,7 +148,7 @@
   margin: 0;
   font-size: var(--sherpa-font-size-heading-h2, 20px);
   font-weight: var(--sherpa-font-weight-bold, 700);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -170,7 +172,7 @@
 
 /* ── Loading bar ────────────────────────────────────────────────────── */
 .loading-bar {
-  block-size: var(--sherpa-display-border-width-lg, 2px);
+  block-size: var(--sherpa-display-mode-border-width-lg, 2px);
   background: transparent;
   overflow: hidden;
 }
@@ -178,7 +180,7 @@
   display: block;
   block-size: 100%;
   inline-size: 40%;
-  background: var(--sherpa-display-color-brand-color-3, #c046ff);
+  background: var(--sherpa-theme-surface-active-2, #c046ff);
   transform: translateX(-100%);
 }
 :host(:not([data-loading])) .loading-bar { visibility: hidden; }
@@ -189,7 +191,4 @@
   0%   { transform: translateX(-100%); }
   50%  { transform: translateX(150%); }
   100% { transform: translateX(400%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  :host([data-loading]) .loading-fill { animation: none; inline-size: 100%; transform: none; opacity: 0.6; }
 }

@@ -3,9 +3,9 @@
  *
  * It has a drop zone, a note about the max size and allowed types, a list of
  * picked files (each row shows an icon, name, size, status, and a remove button),
- * and a row of actions to clear all or upload. Clicking or pressing a key on the
- * drop zone opens the file picker; you can also drop files onto it. CSS handles
- * the drag highlight and disabled look; JS holds the files and fires the events.
+ * and a row of actions to clear all or upload. A native "browse" button opens the
+ * file picker; you can also drop files onto the zone. CSS handles the drag
+ * highlight and disabled look; JS holds the files and fires the events.
  *
  * @fires file-add          detail: { added: File[], files: File[] }
  * @fires file-remove       detail: { removed: File, files: File[] }
@@ -30,9 +30,9 @@ export class SherpaFileUpload extends SherpaElement {
     this.#syncText();
     this.#syncInput();
 
+    this.$('.browse')?.addEventListener('click', this.#open);
+
     const zone = this.$('.drop-zone');
-    zone?.addEventListener('click', this.#open);
-    zone?.addEventListener('keydown', this.#onKeydown);
     zone?.addEventListener('dragenter', this.#onDragEnter);
     zone?.addEventListener('dragover', this.#onDragOver);
     zone?.addEventListener('dragleave', this.#onDragLeave);
@@ -74,14 +74,6 @@ export class SherpaFileUpload extends SherpaElement {
 
   #open = (): void => {
     if (!this.hasAttribute('disabled')) this.#input?.click();
-  };
-
-  #onKeydown = (event: Event): void => {
-    const e = event as KeyboardEvent;
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      this.#open();
-    }
   };
 
   #onDragEnter = (event: Event): void => {

@@ -13,84 +13,50 @@ $name: sherpa-nav-section
 $description: a labelled group of nav items in a settings-style panel.
 element:
   $type: element
-  tag: nav
-  attributes:
-    aria-label: Section navigation
+  tag: span
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: nav
-      class: panel
-      part: panel
+    - el: span
+      class: label
+      part: label
+    - el: span
+      class: rule
+      part: rule
       attrs:
-        aria-label: Section navigation
-      children:
-        - el: h2
-          class: heading
-          part: heading
-        - el: div
-          class: groups
-          part: groups
-    - el: template
-      class: group-tpl
-      children:
-        - el: section
-          class: group
-          children:
-            - el: h3
-              class: group-label
-              part: group-label
-            - el: ul
-              class: group-list
-              attrs:
-                role: list
+        aria-hidden: "true"
 props:
   - $type: prop
     name: data-active-id
     type: string
-    kind: content
+    kind: style
     description: id of the currently active item
+  - $type: prop
+    name: data-collapsed
+    type: string
+    kind: style
+    description: present on a collapsed rail — hides the label, keeps the rule
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: optional panel heading text
+  - $type: prop
+    name: data-label
+    type: string
+    kind: content
+    description: the section label text (rendered verbatim — author its case)
 states:
   - $type: state
-    name: not-heading
-    selector: ":host(:not([data-heading]))"
-  - $type: state
-    name: focus-visible
-    selector: .item:focus-visible
-events:
-  - $type: event
-    name: item-select
-    bubbles: true
-    composed: true
-    trigger:
-      "on": click
-      node: .groups
+    name: collapsed
+    selector: ":host([data-collapsed])"
 tokens:
-  heading.padding: "{sherpa.display-space-xs}"
-  heading.color: "{sherpa.theme-content-body-2}"
-  heading.font-size: "{sherpa.font-size-heading-h2}"
-  heading.font-weight: "{sherpa.font-weight-semibold}"
-  groups.padding-block: "{sherpa.display-space-xs}"
-  groups.gap: "{sherpa.display-space-xs}"
-  group-label.padding: "{sherpa.display-space-2xs}"
-  group-label.color: "{sherpa.theme-content-body-2}"
-  group-label.font-size: "{sherpa.font-size-body-small}"
-  group-label.font-weight: "{sherpa.font-weight-semibold}"
-  group-list.gap: "{sherpa.display-space-2xs}"
-  item-row.border-block-end: "{sherpa.display-border-width-sm}"
-  item.gap: "{sherpa.display-space-xs}"
-  item.padding: "{sherpa.display-space-xs}"
-  item.color: "{sherpa.theme-content-body-2}"
-  item.font-size: "{sherpa.font-size-body-base}"
-  item.font-weight: "{sherpa.font-weight-medium}"
-  item-icon.inline-size: "{sherpa.display-size-md}"
+  label.color: "{sherpa.theme-content-body-1}"
+  label.font-size: "{sherpa.font-size-body-xs}"
+  label.font-weight: "{sherpa.font-weight-regular}"
+  rule.border-block-start: "{sherpa.display-border-width-sm}"
 $extensions:
   sherpa:
     figmaName: Navigation Section/default

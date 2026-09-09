@@ -1,51 +1,100 @@
 /**
  * sherpa-toast — presentation.
  *
- * A transient status box: the whole card fills with the status surface via the
- * look-tier cascade (--_status-surface), with a status border and status ink.
- * Only a [data-status] re-points those; a bare toast reads as the neutral
- * default. No color-mix tint, no leading accent bar — that was the old design.
- * Geometry chains to the shared Structure/Theme tokens. Pure data-* selectors.
+ * Per Figma the CARD is NEUTRAL (white surface, grey border, dark ink) in every
+ * status — the status hue is carried ONLY by the round icon badge (same model as
+ * sherpa-callout). A content column holds heading + optional value + optional
+ * action link; a close button sits trailing. Geometry chains to Structure/Theme.
  *
- *   surface → var(--_status-surface, style-surface-base)
- *   border  → var(--_status-border,  style-border-base)
- *   content → var(--_status-text,    style-content-base)
+ *   card    → style-surface-base / style-border-base   (neutral, status-independent)
+ *   badge   → var(--_status-surface-strong, theme-surface-info-4)   (status hue)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #e8e8f6));
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  /* Card is neutral in every status — the hue lives on the badge only. */
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base, #e8e8f6);
+  --_content: var(--sherpa-style-content-base, #0c0b11);
+  --_badge: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
 }
 
 .toast {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-display-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
   min-inline-size: 260px;
   max-inline-size: 420px;
   padding: var(--sherpa-theme-padding-lg, 16px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: var(--_surface);
+  color: var(--_content);
   box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(26, 26, 32, 0.16));
 }
 
-.message {
+/* ── Status icon badge — a round chip in the strong status colour ────── */
+.icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-theme-size-icon-md, 20px);
+  block-size: var(--sherpa-theme-size-icon-md, 20px);
+  border-radius: 50%;
+  background: var(--_badge);
+  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-bold, 700);
+  line-height: 1;
+}
+:host([data-status="info"])     .icon::after { content: "i"; }
+:host([data-status="success"])  .icon::after { content: "\2713"; }
+:host([data-status="warning"])  .icon::after { content: "!"; }
+:host([data-status="critical"]) .icon::after { content: "!"; }
+:host([data-status="urgent"])   .icon::after { content: "!"; }
+:host(:not([data-status]))      .icon::after { content: "i"; }
+
+/* ── Content column ────────────────────────────────────────────────── */
+.content {
   flex: 1 1 auto;
   min-inline-size: 0;
-  color: var(--_content);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+.heading {
   font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: 1.4;
 }
-
-/* Action links inside the message stay link-coloured. */
-.message ::slotted(a),
-.message a {
-  color: var(--sherpa-theme-content-link-base, #3c5edd);
+/* Value detail — only with data-value. */
+.value { display: none; }
+:host([data-value]) .value {
+  display: block;
+  color: var(--sherpa-style-content-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: 1.4;
+}
+/* Action link — only with data-action. */
+.action { display: none; }
+:host([data-action]) .action {
+  display: inline-block;
+  align-self: flex-start;
+  margin-block-start: var(--sherpa-theme-gap-sm, 4px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-theme-content-link-1, #2b34b4);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  cursor: pointer;
+}
+.action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
 /* ── Close button ──────────────────────────────────────────────────── */
@@ -54,14 +103,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-md, 20px);
-  block-size: var(--sherpa-display-size-md, 20px);
-  margin-inline-start: var(--sherpa-display-space-2xs, 4px);
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: transparent;
-  color: var(--_content);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1;
   cursor: pointer;

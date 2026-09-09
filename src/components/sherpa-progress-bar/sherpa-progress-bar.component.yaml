@@ -76,11 +76,6 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   label.font-size: "{sherpa.font-size-body-base}"
   label.color: "{sherpa.theme-content-body-base}"

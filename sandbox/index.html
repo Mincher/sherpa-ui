@@ -10,9 +10,9 @@
     :root { color-scheme: light dark; }
     html, body { margin: 0; height: 100%; }
     body {
-      font-family: var(--sherpa-font-family-base, system-ui, sans-serif);
-      color: var(--sherpa-content-primary-default, #1c1c22);
-      background: var(--sherpa-surface-page-default, #f5f5f7);
+      font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+      color: var(--sherpa-theme-content-body-base, #0c0b11);
+      background: var(--sherpa-theme-surface-default-1, #e8e8f6);
     }
 
     /* ── Overall three-pane app frame ────────────────────────────────── */
@@ -25,15 +25,15 @@
         "picker preview form";
       height: 100vh;
       gap: 1px;
-      background: var(--sherpa-border-container-default, #d5d5dd);
+      background: var(--sherpa-style-border-base, #e8e8f6);
     }
-    .topbar  { grid-area: topbar;  padding: 12px 20px; background: var(--sherpa-surface-container-default, #fff);
+    .topbar  { grid-area: topbar;  padding: 12px 20px; background: var(--sherpa-theme-surface-default-1, #e8e8f6);
                display: flex; align-items: center; gap: 16px; }
     .topbar h1 { font-size: 16px; margin: 0; font-weight: 700; }
     .topbar .spacer { flex: 1; }
-    .topbar .desc { font-size: 12px; color: var(--sherpa-content-secondary-default, #5c5c66); }
+    .topbar .desc { font-size: 12px; color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
-    .pane { background: var(--sherpa-surface-page-default, #fff); overflow: auto; }
+    .pane { background: var(--sherpa-theme-surface-default-1, #e8e8f6); overflow: auto; }
     .picker  { grid-area: picker;  padding: 8px; }
     .preview { grid-area: preview; display: flex; flex-direction: column; }
     .form    { grid-area: form;    padding: 12px; display: flex; flex-direction: column; gap: 10px; }
@@ -45,52 +45,52 @@
       font: inherit; font-size: 13px; cursor: pointer;
       background: transparent; color: inherit;
     }
-    .picker-item:hover { background: var(--sherpa-surface-container-hover, #ececf0); }
+    .picker-item:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
     .picker-item[aria-current="true"] {
-      background: var(--sherpa-surface-control-primary-default, #3c5edd); color: #fff; font-weight: 600;
+      background: var(--sherpa-theme-surface-accent-2, #3b4ccd); color: #fff; font-weight: 600;
     }
     .picker-search { width: 100%; box-sizing: border-box; padding: 6px 8px; margin-bottom: 8px;
-      border: 1px solid var(--sherpa-border-container-default, #d5d5dd); border-radius: 6px; font: inherit; }
+      border: 1px solid var(--sherpa-style-border-base, #e8e8f6); border-radius: 6px; font: inherit; }
 
     /* ── Preview stage ───────────────────────────────────────────────── */
     .stage {
       flex: 1; display: flex; align-items: center; justify-content: center;
       padding: 32px; overflow: auto;
       background:
-        repeating-conic-gradient(var(--sherpa-surface-page-default, #f0f0f3) 0% 25%, transparent 0% 50%) 50% / 24px 24px;
+        repeating-conic-gradient(var(--sherpa-theme-surface-default-1, #e8e8f6) 0% 25%, transparent 0% 50%) 50% / 24px 24px;
     }
     .stage-inner { max-width: 100%; }
-    .preview-meta { padding: 10px 20px; border-top: 1px solid var(--sherpa-border-container-default, #d5d5dd);
-      background: var(--sherpa-surface-container-default, #fff); font-size: 12px;
-      color: var(--sherpa-content-secondary-default, #5c5c66); }
-    .preview-meta code { font-family: var(--sherpa-font-family-mono, monospace); }
+    .preview-meta { padding: 10px 20px; border-top: 1px solid var(--sherpa-style-border-base, #e8e8f6);
+      background: var(--sherpa-theme-surface-default-1, #e8e8f6); font-size: 12px;
+      color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+    .preview-meta code { font-family: var(--sherpa-font-family-mono, ui-monospace, monospace); }
 
     /* ── Right form ──────────────────────────────────────────────────── */
     .control-row { display: flex; flex-direction: column; gap: 4px;
-      padding: 8px; border-radius: 8px; background: var(--sherpa-surface-container-default, #fff);
-      border: 1px solid var(--sherpa-border-container-default, #e2e2e8); }
+      padding: 8px; border-radius: 8px; background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+      border: 1px solid var(--sherpa-style-border-base, #e8e8f6); }
     .control-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .control-name { font-family: var(--sherpa-font-family-mono, monospace); font-size: 12px; font-weight: 600; }
+    .control-name { font-family: var(--sherpa-font-family-mono, ui-monospace, monospace); font-size: 12px; font-weight: 600; }
     .control-badge { font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
       padding: 1px 6px; border-radius: 999px;
-      background: var(--sherpa-surface-container-hover, #ececf0);
-      color: var(--sherpa-content-secondary-default, #5c5c66); }
-    .control-desc { font-size: 11px; color: var(--sherpa-content-secondary-default, #5c5c66); }
+      background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+      color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+    .control-desc { font-size: 11px; color: var(--sherpa-theme-content-body-2, #b3b3c3); }
     .control-row select { font: inherit; padding: 4px 6px; border-radius: 6px;
-      border: 1px solid var(--sherpa-border-container-default, #d5d5dd); width: 100%; box-sizing: border-box; }
+      border: 1px solid var(--sherpa-style-border-base, #e8e8f6); width: 100%; box-sizing: border-box; }
     .control-reset { border: none; background: transparent; cursor: pointer; font-size: 11px;
-      color: var(--sherpa-content-link-default, #3c5edd); padding: 0; }
+      color: var(--sherpa-theme-content-link-base, #1e189c); padding: 0; }
 
-    .event-log { flex: 1; min-height: 120px; overflow: auto; font-family: var(--sherpa-font-family-mono, monospace);
-      font-size: 11px; background: var(--sherpa-surface-container-default, #fff);
-      border: 1px solid var(--sherpa-border-container-default, #e2e2e8); border-radius: 8px; padding: 8px; }
-    .event-line { padding: 2px 0; border-bottom: 1px dotted var(--sherpa-border-container-default, #eee); }
-    .event-name { color: var(--sherpa-content-link-default, #3c5edd); font-weight: 700; }
-    .event-time { color: var(--sherpa-content-secondary-default, #9a9aa2); }
+    .event-log { flex: 1; min-height: 120px; overflow: auto; font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+      font-size: 11px; background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+      border: 1px solid var(--sherpa-style-border-base, #e8e8f6); border-radius: 8px; padding: 8px; }
+    .event-line { padding: 2px 0; border-bottom: 1px dotted var(--sherpa-style-border-base, #e8e8f6); }
+    .event-name { color: var(--sherpa-theme-content-link-base, #1e189c); font-weight: 700; }
+    .event-time { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
     .form-section-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
-      color: var(--sherpa-content-secondary-default, #5c5c66); font-weight: 700; margin-top: 6px; }
-    .empty-hint { font-size: 12px; color: var(--sherpa-content-secondary-default, #5c5c66); padding: 8px; }
+      color: var(--sherpa-theme-content-body-2, #b3b3c3); font-weight: 700; margin-top: 6px; }
+    .empty-hint { font-size: 12px; color: var(--sherpa-theme-content-body-2, #b3b3c3); padding: 8px; }
   </style>
 </head>
 <body>
@@ -119,7 +119,7 @@
       <div id="controls"></div>
       <div class="form-section-label">Event log</div>
       <sherpa-toolbar style="margin-bottom:4px;">
-        <sherpa-button id="clear-log" data-variant="tertiary" data-size="2xs">Clear log</sherpa-button>
+        <sherpa-button id="clear-log" data-look="transparent" data-size="2xs">Clear log</sherpa-button>
       </sherpa-toolbar>
       <div class="event-log" id="event-log"><div class="empty-hint">No events yet.</div></div>
     </aside>

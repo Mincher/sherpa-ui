@@ -4,7 +4,7 @@
   A fixed set of 8 point slots (7 segments). JS supplies the raw values as
   --_v0..--_v7 plus --_min / --_range on the host; CSS normalises each value to
   0–100 with calc() and positions the shapes. Unused segments/points collapse
-  via [hidden] (a data-presence toggle, not a style toggle).
+  from the host's data-len (CSS owns the visibility, not JS).
 
   Public API:
     data-values   — comma-separated or JSON array (e.g. "10,25,15,30")
@@ -14,7 +14,7 @@
   Fires: nothing.
 -->
 <template id="default">
-  <div class="chart" part="chart">
+  <div class="chart" part="chart" role="img" aria-label="Sparkline trend">
     <div class="shape" data-index="0">
       <span class="point" data-role="start" data-index="0"></span>
       <span class="point" data-role="end" data-index="1"></span>

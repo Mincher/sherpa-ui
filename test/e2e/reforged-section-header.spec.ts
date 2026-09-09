@@ -140,28 +140,30 @@ test('a slotted heading collapses the default .title', async ({ page }) => {
   expect(r.titleHidden).toBe(true);
 });
 
-test('data-divider shows the bottom rule', async ({ page }) => {
+test('the bottom rule shows by default; data-divider="none" hides it', async ({ page }) => {
+  // Ratified 2026-09-08 (visual-diff): Figma shows the section-header divider
+  // ALWAYS — so it is default-on; data-divider="none" is the opt-out.
   const r = await page.evaluate(async () => {
-    const without = document.createElement('sherpa-section-header') as HTMLElement & {
+    const byDefault = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    without.setAttribute('data-heading', 'x');
-    document.getElementById('root')!.appendChild(without);
-    await without.rendered;
+    byDefault.setAttribute('data-heading', 'x');
+    document.getElementById('root')!.appendChild(byDefault);
+    await byDefault.rendered;
 
-    const withDiv = document.createElement('sherpa-section-header') as HTMLElement & {
+    const hidden = document.createElement('sherpa-section-header') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    withDiv.setAttribute('data-heading', 'x');
-    withDiv.setAttribute('data-divider', '');
-    document.getElementById('root')!.appendChild(withDiv);
-    await withDiv.rendered;
+    hidden.setAttribute('data-heading', 'x');
+    hidden.setAttribute('data-divider', 'none');
+    document.getElementById('root')!.appendChild(hidden);
+    await hidden.rendered;
 
     return {
-      without: getComputedStyle(without.shadowRoot!.querySelector('.divider')!).display,
-      withDiv: getComputedStyle(withDiv.shadowRoot!.querySelector('.divider')!).display,
+      byDefault: getComputedStyle(byDefault.shadowRoot!.querySelector('.divider')!).display,
+      hidden: getComputedStyle(hidden.shadowRoot!.querySelector('.divider')!).display,
     };
   });
-  expect(r.without).toBe('none');
-  expect(r.withDiv).toBe('block');
+  expect(r.byDefault).toBe('block');
+  expect(r.hidden).toBe('none');
 });

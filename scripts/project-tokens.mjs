@@ -87,24 +87,56 @@ const warn = (msg) => {
 //   modeAxis:'light-dark' → this collection re-points in dark mode (dump `dark`
 //                       override, or the display-{compact,comfortable} density exts).
 // ──────────────────────────────────────────────────────────────────────────
+// The cascade layer order — one @layer per Figma collection family, mirroring the
+// design-system tiers (2026-09-07 re-alignment). Each named layer owns its base
+// values PLUS its own mode/extension variation blocks:
+//   core         — shared base geometry only (primitives stay INLINED as literals).
+//   display-mode — the light/dark colour+scale ramp + its dark re-point + DENSITY
+//                  ([data-density] compact/comfortable extensions of the same ramp).
+//   theme        — the semantic surface/border/content/size/weight/font layer,
+//                  scoped [data-theme="<name>"] (default also on :root) so a second
+//                  named theme is just another block. + font atoms + text classes.
+//   layout       — grid layout properties (Layout Grid) + the .sherpa-view utility.
+//   structure    — bound sizes / content sizes / per-corner rounding for anchoring
+//                  components + SNAP ([data-snap] per-edge rounding extensions).
+//   style        — default + status styling ([data-status]) + look tiers ([data-look])
+//                  + the categorical data-viz series (all "styling").
+//   elevation    — shadow styling ([data-elevation]) + convenience shadow aliases.
+//   components   — each component's own scoped partial (always last → last word).
+const LAYER_ORDER = [
+  'core',
+  'display-mode',
+  'theme',
+  'layout',
+  'structure',
+  'style',
+  'elevation',
+  'components',
+];
+
+// ROUTING — the ONLY hand-config. `target` is either a LAYER NAME (global emit into
+// that @layer), 'skip', or a {scoped} component partial. `modeAxis:'light-dark'` marks
+// a collection that re-points in dark mode. `attr` turns a collection's non-primary
+// MODES into [attr="mode"] blocks inside the same layer.
 const ROUTING = {
   // Reference-only — never emitted (all refs into it are inlined to literals).
   primitives: { target: 'skip' },
 
-  // The light/dark colour + scale ramp. Everything colour-ish resolves through it,
-  // so it must be a real emitted layer with a dark re-point.
-  display: { target: 'core', modeAxis: 'light-dark' },
+  // The light/dark colour + scale ramp → @layer display-mode (its dark re-point +
+  // density extensions live in the same layer).
+  // NB collection slug is 'display-mode' since the 2026-09-09 re-export (was 'display').
+  'display-mode': { target: 'display-mode', modeAxis: 'light-dark' },
 
-  // The big semantic layer (single mode `Sherpa`, 303 leaves, resolves 100%).
-  theme: { target: 'style' },
+  // The big semantic layer (single mode `Sherpa`, 303 leaves) → @layer theme,
+  // scoped [data-theme].
+  theme: { target: 'theme' },
 
-  // Shared control geometry. The overhaul merged control/button/container sizing into
-  // `structure` (size modes default/2xs/xs/sm/lg/xl). It is Button's primary consumer
-  // via [data-size], so it is projected into the button partial with a name-remap onto
-  // Button's public var contract; its primary values also stay GLOBAL (@layer core) so
-  // other components (input/nav/container) can consume the shared geometry.
+  // Shared control geometry → @layer structure. Also Button's primary consumer via
+  // [data-size], so it is projected into the button partial with a name-remap onto
+  // Button's public var contract; its primary values ALSO stay GLOBAL (@layer
+  // structure) so other components (input/nav/container) consume the shared geometry.
   structure: {
-    target: { scoped: 'sherpa-button', alsoGlobal: 'core' },
+    target: { scoped: 'sherpa-button', alsoGlobal: 'structure' },
     attr: 'data-size',
     // structure leaf path → the button public var name the component's CSS consumes.
     renameMap: {
@@ -116,22 +148,24 @@ const ROUTING = {
       'structure/structure-space/padding': 'sherpa-button-space-padding',
     },
   },
-  grid: { target: 'override', attr: null }, // primary feeds the .sherpa-view grid; breakpoints handled bespoke
-  elevation: { target: 'override', attr: 'data-elevation' },
+  // NB collection slug is 'layout' since the 2026-09-09 re-export (was 'grid').
+  layout: { target: 'layout', attr: null }, // primary feeds the .sherpa-view grid; breakpoints handled bespoke
+  elevation: { target: 'elevation', attr: 'data-elevation' },
 
-  // Status look (8 status modes). Primary values → global --sherpa-style-* vars; the
-  // per-status [data-status] cascade is emitted bespoke as the --_status-* contract
-  // components actually consume (see statusBlocks), so attr:null here avoids emitting
-  // a second, redundant --sherpa-style-* mode cascade.
-  style: { target: 'override', attr: null },
+  // Status look (8 status modes) → @layer style. Primary values → global --sherpa-style-*
+  // vars; the per-status [data-status] cascade is emitted bespoke as the --_status-*
+  // contract components consume (see statusBlocks), so attr:null avoids a second,
+  // redundant --sherpa-style-* mode cascade.
+  style: { target: 'style', attr: null },
 
-  // Consumed bespoke: the typography collection drives the .sherpa-text-<mode> utility
-  // classes + the font atoms (Figma-derived), not a flat --sherpa-typography-* dump.
-  typography: { target: 'skip' },
+  // Typography folded into Theme's `content/` group (2026-09-07). The .sherpa-text-<mode>
+  // utility classes + font atoms are emitted bespoke from doc.theme.content (size/
+  // line-height/letter-spacing/weight/font), NOT a flat dump — see the typography block
+  // below. No standalone `typography` collection any more.
 
-  // Categorical / sequential / divergent series. Primary (categorical) → the 11
-  // public --sherpa-categorical-* names via a bespoke emit below.
-  'data-viz': { target: 'override', attr: null },
+  // Categorical / sequential / divergent series → @layer style (styling). Primary
+  // (categorical) → the 11 public --sherpa-categorical-* names via a bespoke emit below.
+  'data-viz': { target: 'style', attr: null },
 
   // Component-scoped collections. Emit each component's Figma collection into its
   // own partial; non-primary modes → :host([attr="mode"]).
@@ -140,21 +174,25 @@ const ROUTING = {
   switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-style' },
 
   // Extension-only collections (no leaves in the dump) — consumed from the cache.
-  hero: { target: 'skip' }, // → typography classes
-  mono: { target: 'skip' }, // → typography classes
-  'style-transparent': { target: 'skip' }, // → [data-look="transparent"] status blocks
-  'style-saturated': { target: 'skip' }, // → [data-look="saturated"] status blocks
-  'structure-snap-all-edges': { target: 'skip' }, // → [data-snap] blocks
+  // (hero/mono collections deleted 2026-09-07 — families now in content/font/*.)
+  'style-transparent': { target: 'skip' }, // → [data-look="transparent"] @layer style
+  'style-saturated': { target: 'skip' }, // → [data-look="saturated"] @layer style
+  'structure-snap-all-edges': { target: 'skip' }, // → [data-snap] @layer structure
   'structure-snap-right-edge': { target: 'skip' },
   'structure-snap-left-edge': { target: 'skip' },
   'structure-snap-top-edge': { target: 'skip' },
   'structure-snap-bottom-edge': { target: 'skip' },
-  'display-compact': { target: 'skip' }, // → [data-density="compact"]
-  'display-comfortable': { target: 'skip' }, // → [data-density="comfortable"]
+  'display-mode-compact': { target: 'skip' }, // → [data-density="compact"] @layer display-mode
+  'display-mode-comfortable': { target: 'skip' }, // → [data-density="comfortable"] @layer display-mode
+  // The extension CACHE (figma.extensions.json) still uses the pre-rename slugs —
+  // keep them routed so the density extensions resolve from the cache.
+  'display-compact': { target: 'skip' },
+  'display-comfortable': { target: 'skip' },
 
   // Empty in this dump (0 leaves) — kept as explicit skips so they don't warn.
-  'grid-calendar-d': { target: 'skip' },
-  'grid-calendar-m-y': { target: 'skip' },
+  'layout-calendar-d': { target: 'skip' },
+  'layout-calendar-m-y': { target: 'skip' },
+  'layout-app-shell': { target: 'skip' },
 };
 
 // ── helpers (ported from the previous projector; sound) ─────────────────────
@@ -301,14 +339,13 @@ const propertyRegistrations = `  @property --sherpa-elevation-color {
 // ════════════════════════════════════════════════════════════════════════════
 // Collect leaves per collection and route them.
 // ════════════════════════════════════════════════════════════════════════════
-const buckets = {
-  core: [], // { name, value(light), dark }
-  coreDark: [],
-  style: [],
-  styleDark: [],
-  override: [], // primary :root lines
-  overrideModeBlocks: [], // [attr="mode"] { … } strings
-};
+// Per-layer buckets. Each named layer collects its own `root` (:root / primary lines),
+// `rootDark` (light-dark re-point), and `modeBlocks` ([attr="mode"] strings). The
+// bespoke sections (status/look/viz/snap/density/shadow/theme-scope/text) are slotted
+// into their assigned layer at write time.
+const GLOBAL_LAYERS = ['core', 'display-mode', 'theme', 'layout', 'structure', 'style', 'elevation'];
+const layers = {};
+for (const name of GLOBAL_LAYERS) layers[name] = { root: [], rootDark: [], modeBlocks: [] };
 const scopedPartials = []; // { comp, css }
 
 for (const slug of Object.keys(doc)) {
@@ -323,30 +360,21 @@ for (const slug of Object.keys(doc)) {
   const leaves = [...walkLeaves(doc[slug], [slug])];
   for (const leaf of leaves) scopeCheck(leaf);
 
-  // ── global targets (core / style) ──
-  if (route.target === 'core' || route.target === 'style') {
-    const dst = route.target === 'core' ? buckets.core : buckets.style;
-    const darkDst = route.target === 'core' ? buckets.coreDark : buckets.styleDark;
+  // ── global target: `route.target` is a layer name ──
+  if (typeof route.target === 'string' && layers[route.target]) {
+    const L = layers[route.target];
+    const byMode = {};
     for (const leaf of leaves) {
       if (typeof leaf.value === 'boolean') continue; // booleans are scoped visibility flags only
       const v = toCss(leaf.value, leaf.type);
       if (v == null) continue;
-      dst.push(`  ${leaf.name}: ${v};`);
+      L.root.push(`  ${leaf.name}: ${v};`);
+      // light/dark re-point (display ramp) — into the SAME layer.
       if (route.modeAxis === 'light-dark' && leaf.modes.dark != null) {
         const dv = toCss(leaf.modes.dark, leaf.type);
-        if (dv != null && dv !== v) darkDst.push(`  ${leaf.name}: ${dv};`);
+        if (dv != null && dv !== v) L.rootDark.push(`  ${leaf.name}: ${dv};`);
       }
-    }
-    continue;
-  }
-
-  // ── override target (primary → :root, modes → [attr="mode"]) ──
-  if (route.target === 'override') {
-    const byMode = {};
-    for (const leaf of leaves) {
-      if (typeof leaf.value === 'boolean') continue;
-      const v = toCss(leaf.value, leaf.type);
-      if (v != null) buckets.override.push(`  ${leaf.name}: ${v};`);
+      // non-primary modes → [attr="mode"] blocks in the same layer.
       if (!route.attr) continue;
       for (const [mode, mval] of Object.entries(leaf.modes)) {
         const mv = toCss(mval, leaf.type);
@@ -355,7 +383,7 @@ for (const slug of Object.keys(doc)) {
       }
     }
     for (const [mode, lines] of Object.entries(byMode)) {
-      buckets.overrideModeBlocks.push(`  [${route.attr}="${mode}"] {\n${lines.join('\n')}\n  }`);
+      L.modeBlocks.push(`  [${route.attr}="${mode}"] {\n${lines.join('\n')}\n  }`);
     }
     continue;
   }
@@ -363,9 +391,9 @@ for (const slug of Object.keys(doc)) {
   // ── scoped target → a component partial (optionally also global) ──
   if (typeof route.target === 'object' && route.target.scoped) {
     // A collection can be BOTH a component's scoped source AND a shared global base
-    // (structure): emit its primary values into @layer core so other components can
-    // consume the geometry, then also emit the per-mode component partial.
-    if (route.target.alsoGlobal === 'core') {
+    // (structure): emit its primary values into its named layer so other components
+    // can consume the geometry, then also emit the per-mode component partial.
+    if (route.target.alsoGlobal && layers[route.target.alsoGlobal]) {
       for (const leaf of leaves) {
         if (typeof leaf.value === 'boolean') continue;
         const v = toCss(leaf.value, leaf.type);
@@ -373,7 +401,7 @@ for (const slug of Object.keys(doc)) {
         // leaf.name already strips a redundant repeated collection segment
         // (structure/structure-rounding → --sherpa-structure-rounding-*) so the
         // global names match what [data-snap] and components consume.
-        buckets.core.push(`  ${leaf.name}: ${v};`);
+        layers[route.target.alsoGlobal].root.push(`  ${leaf.name}: ${v};`);
       }
     }
     scopedPartials.push(
@@ -395,7 +423,7 @@ for (const slug of Object.keys(doc)) {
 const stateDerivations = [];
 {
   const seenFam = new Set();
-  for (const line of buckets.style) {
+  for (const line of layers.theme.root) {
     const m = line.trim().match(/^(--sherpa-theme-surface-[a-z]+-base):/);
     if (!m) continue;
     const seed = m[1];
@@ -492,27 +520,43 @@ ${TOKENS_MARK_END}`;
 // sensible DEFAULT weight per mode class (headings h1–h5 → semibold; body base/
 // large/small/xs → regular) so `.sherpa-text-<mode>` is a complete text style; a
 // consumer overrides `font-weight` on the element to pick a different ramp step.
-const typoLeaves = [...walkLeaves(doc.typography ?? {}, ['typography'])];
-const typoBy = {}; // property-name → { primary, modes, type }
+// Typography now lives INSIDE Theme as FLAT leaves under `content/` (2026-09-07 —
+// the Typography/Hero/Mono collections were deleted; their SIZE modes were flattened
+// into `content/size/<step>`, `content/line-height/<step>`, `content/letter-spacing/
+// <step>`, plus the mode-independent `content/weight/<w>` ramp and `content/font/*`).
+// There is no mode axis any more: each size STEP is its own var. We read those leaves
+// into `typoBy` keyed by "<prop>/<step>" and expose the SAME typoVal(prop, mode)
+// signature the emit code below expects — `mode` selects the step for size/line-height/
+// letter-spacing; the weight ramp is step-independent (weight/<w> keys).
+const typoLeaves = [...walkLeaves(doc.theme?.content ?? {}, ['content'])];
+const typoBy = {}; // "size/h1" | "line-height/base" | "letter-spacing/xs" | "weight/regular" → { value, type }
 for (const leaf of typoLeaves) {
-  const key = leaf.path.slice(1).join('/'); // e.g. 'size', 'weight/regular'
-  typoBy[key] = { primary: leaf.value, modes: leaf.modes, type: leaf.type };
+  const key = leaf.path.slice(1).join('/'); // strip leading 'content'
+  if (!/^(size|line-height|letter-spacing|weight|paragraph-spacing)(\/|$)/.test(key)) continue;
+  typoBy[key] = { value: leaf.value, type: leaf.type };
 }
 const TYPO_MODES = ['base', 'h1', 'h2', 'h3', 'h4', 'h5', 'large', 'small', 'xs'];
 const HEADING_MODES = new Set(['h1', 'h2', 'h3', 'h4', 'h5']);
 const defaultWeightFor = (mode) => (HEADING_MODES.has(mode) ? 'semibold' : 'regular');
 
-/** Resolve a typography property at a given mode → CSS value (primary if unset). */
+/**
+ * Resolve a typography property at a given size step → CSS value.
+ * `prop` is a per-step group ('size'|'line-height'|'letter-spacing') resolved as
+ * `<prop>/<mode>`, or a fully-qualified step-independent key ('weight/regular',
+ * 'paragraph-spacing') resolved as-is.
+ */
 function typoVal(prop, mode, type) {
-  const rec = typoBy[prop];
+  const key = prop.includes('/') || prop === 'paragraph-spacing' ? prop : `${prop}/${mode}`;
+  const rec = typoBy[key];
   if (!rec) return null;
-  const val = mode in (rec.modes ?? {}) ? rec.modes[mode] : rec.primary;
-  return toCss(val, type ?? rec.type);
+  return toCss(rec.value, type ?? rec.type);
 }
-/** Same, but from the extension cache (hero/mono). Falls back to base typography. */
-function extTypoVal(slug, prop, mode) {
-  const v = extDoc[slug]?.vars?.[prop];
-  if (v && v[mode] != null) return literal(v[mode], prop.startsWith('weight') ? 'fontWeight' : 'dimension');
+/**
+ * Hero/Mono no longer exist as collections — they were folded into `content/font/*`
+ * and share body's sizes. Their text classes differ only by font-family (handled in
+ * fontAtomLines below), so this always defers to the base typography value.
+ */
+function extTypoVal(_slug, _prop, _mode) {
   return null;
 }
 
@@ -524,7 +568,9 @@ const FONT_MONO = 'ui-monospace, "JetBrains Mono", monospace';
 
 function textClass(className, family, valueOf) {
   // valueOf(prop) → CSS value for size/line-height/letter-spacing.
-  return `  .${className} {
+  // `:where(.class)` = ZERO specificity: these are utilities, so any app/component rule
+  // overrides them without a specificity fight.
+  return `  :where(.${className}) {
     font-family: ${family};
     font-size: ${valueOf('size')};
     line-height: ${valueOf('line-height')};
@@ -718,7 +764,10 @@ function densityBlock(slug, name) {
   const lightLines = [];
   const darkLines = [];
   for (const [rawPath, byMode] of Object.entries(cache)) {
-    const cssName = `--${PREFIX}${toIdent(['display', ...rawPath.split('/')])}`;
+    // Prefix must match the base ramp's var names — the collection slug is
+    // 'display-mode' since the 2026-09-09 re-export (was 'display'), so density
+    // overrides must shadow --sherpa-display-mode-* (not the old --sherpa-display-*).
+    const cssName = `--${PREFIX}${toIdent(['display-mode', ...rawPath.split('/')])}`;
     const lv = byMode.light;
     if (lv != null) lightLines.push(`    ${cssName}: ${literal(lv, 'dimension')};`);
     if (byMode.dark != null && byMode.dark !== byMode.light)
@@ -800,88 +849,54 @@ const header = `/**
  * re-project. Load once in the document; the resolved --sherpa-* values inherit into
  * every component shadow root.
  *
- * Layers mirror Figma's aliasing tiers (Primitives resolved away → reference-only):
- *   core → style → overrides → components.  Component-scoped collections live in each
- *   component's own <comp>.tokens.css partial (@layer components).
+ * Cascade layers mirror the Figma collection families (Primitives resolved away →
+ * reference-only). Each layer owns its base values PLUS its own mode/extension blocks:
+ *   core         — shared base geometry (primitives inlined as literals).
+ *   display-mode — light/dark colour+scale ramp + dark re-point + density.
+ *   theme        — semantic surface/border/content/size/weight/font, scoped [data-theme].
+ *   layout       — grid layout properties + the .sherpa-view utility.
+ *   structure    — bound sizes / content sizes / per-corner rounding + snap.
+ *   style        — default + status ([data-status]) + look ([data-look]) + data-viz.
+ *   elevation    — shadow styling ([data-elevation]).
+ *   components   — each component's own scoped partial (last → last word).
  */
-@layer core, style, overrides, components;
+@layer ${LAYER_ORDER.join(', ')};
 
 ${propertyRegistrations}`;
 
-const css = `${header}
-
-@layer core {
-  :root {
-${buckets.core.join('\n')}
-  }
-
+// ── small emit helpers ──────────────────────────────────────────────────────
+/** A :root block for a layer's primary lines (skips empty). */
+const rootBlock = (lines) => (lines.length ? `  :root {\n${lines.join('\n')}\n  }` : '');
+/** The standard light/dark re-point pair for a layer's dark lines. */
+const darkBlocks = (darkLines) =>
+  darkLines.length
+    ? `
   /* Dark mode: explicit choice wins. */
   :root[data-mode="dark"] {
-${buckets.coreDark.join('\n')}
+${darkLines.join('\n')}
   }
 
   /* Dark mode: follow the OS unless an explicit light choice overrides it. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-mode="light"]) {
-${buckets.coreDark.map((l) => '  ' + l).join('\n')}
+${darkLines.map((l) => '  ' + l).join('\n')}
     }
-  }
-}
+  }`
+    : '';
+const joinBlocks = (arr) => arr.filter(Boolean).join('\n\n');
 
-@layer style {
-  :root {
-${buckets.style.join('\n')}
+// ── per-layer bodies ─────────────────────────────────────────────────────────
+// core — shared base geometry only.
+const coreLayer = `@layer core {
+${rootBlock(layers.core.root)}
+}`;
 
-    /* typography atoms — derived from real Figma typography modes (see projector) */
-${fontAtomLines.join('\n')}
+// display-mode — the ramp (light) + dark re-point + density ([data-density]).
+const displayModeLayer = `@layer display-mode {
+${rootBlock(layers['display-mode'].root)}
+${darkBlocks(layers['display-mode'].rootDark)}
 
-    /* interactive states — color-mix derivations (replace the removed shade/tint hack) */
-${stateDerivations.join('\n')}
-  }
-${
-  buckets.styleDark.length
-    ? `
-  :root[data-mode="dark"] {
-${buckets.styleDark.join('\n')}
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-mode="light"]) {
-${buckets.styleDark.map((l) => '  ' + l).join('\n')}
-    }
-  }
-`
-    : ''
-}
-  /* Text roles — one class per Figma typography MODE (base, h1–h5, large, small, xs),
-     for body, hero, and mono families. Weight defaults per mode; override on element. */
-${textClassBlocks.join('\n\n')}
-}
-
-@layer overrides {
-  :root {
-${buckets.override.join('\n')}
-
-    /* elevation shadow convenience aliases */
-${shadowAliasLines.join('\n')}
-
-    /* categorical data-viz series — stable public names */
-${categoricalLines.join('\n')}
-  }
-
-  /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
-${statusBlocks.join('\n\n')}
-
-  /* Look tiers — [data-look] re-points the status cascade per status mode. */
-${lookBlocks.join('\n\n')}
-
-  /* Elevation ([data-elevation]) · other override collection modes */
-${buckets.overrideModeBlocks.join('\n\n')}
-
-  /* Snap — per-edge corner rounding ([data-snap]). */
-${snapBlocks.join('\n\n')}
-
-  /* Density — [data-density] overrides the display ramp (light). */
+  /* Density — [data-density] overrides the ramp (light). */
 ${densityCompact.light}
 
 ${densityComfortable.light}
@@ -897,10 +912,95 @@ ${densityCompact.dark.replace(/^/gm, '  ')}
 ${densityComfortable.dark.replace(/^/gm, '  ')}
     }
   }
+}`;
+
+// theme — semantic layer, scoped [data-theme="sherpa"] (default also on :root so a
+// document with no data-theme still resolves). Font atoms + interactive-state
+// derivations + text-role classes ride here. A second named theme is just another
+// [data-theme="<name>"] block.
+const themeVars = [
+  ...layers.theme.root,
+  '',
+  '    /* typography atoms — derived from Figma content/* (see projector) */',
+  ...fontAtomLines,
+  '',
+  '    /* interactive states — color-mix derivations */',
+  ...stateDerivations,
+];
+const themeLayer = `@layer theme {
+  :root,
+  [data-theme="sherpa"] {
+${themeVars.join('\n')}
+  }
+${darkBlocks(layers.theme.rootDark)}
+
+  /* Text roles — one class per Figma type step (base, h1–h5, large, small, xs), for
+     body, hero, and mono families. Weight defaults per step; override on element. */
+${textClassBlocks.join('\n\n')}
+}`;
+
+// layout — grid properties + the .sherpa-view app-shell utility.
+const layoutLayer = `@layer layout {
+${rootBlock(layers.layout.root)}
 
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
 ${viewFrameBlock}
-}
+}`;
+
+// structure — bound sizes / content sizes / per-corner rounding + snap ([data-snap]).
+const structureLayer = `@layer structure {
+${rootBlock(layers.structure.root)}
+
+  /* Snap — per-edge corner rounding ([data-snap]). */
+${joinBlocks(snapBlocks)}
+}`;
+
+// style — default styling + status cascade + look tiers + categorical data-viz series.
+const styleVars = [
+  ...layers.style.root,
+  '',
+  '    /* categorical data-viz series — stable public names */',
+  ...categoricalLines,
+];
+const styleLayer = `@layer style {
+  :root {
+${styleVars.join('\n')}
+  }
+
+  /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
+${joinBlocks(statusBlocks)}
+
+  /* Look tiers — [data-look] re-points the status cascade per status mode. */
+${joinBlocks(lookBlocks)}
+${layers.style.modeBlocks.length ? '\n' + joinBlocks(layers.style.modeBlocks) : ''}
+}`;
+
+// elevation — shadow styling ([data-elevation]) + convenience aliases.
+const elevationLayer = `@layer elevation {
+  :root {
+${layers.elevation.root.join('\n')}
+
+    /* elevation shadow convenience aliases */
+${shadowAliasLines.join('\n')}
+  }
+${layers.elevation.modeBlocks.length ? '\n' + joinBlocks(layers.elevation.modeBlocks) : ''}
+}`;
+
+const css = `${header}
+
+${coreLayer}
+
+${displayModeLayer}
+
+${themeLayer}
+
+${layoutLayer}
+
+${structureLayer}
+
+${styleLayer}
+
+${elevationLayer}
 `;
 
 writeFileSync(OUT, css);
@@ -924,10 +1024,13 @@ for (const { comp, css: region } of scopedPartials) {
 
 console.log(
   `\n✓ tokens.css written\n` +
-    `  core        ${buckets.core.length} vars (+${buckets.coreDark.length} dark)\n` +
-    `  style       ${buckets.style.length} vars (+${buckets.styleDark.length} dark), ${fontAtomLines.length} font atoms, ${textClassBlocks.length} text classes\n` +
-    `  overrides   ${buckets.override.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${snapBlocks.length} snap, ${categoricalLines.length} categorical\n` +
-    `  density     compact+comfortable (163 vars each)\n` +
+    `  core         ${layers.core.root.length} vars\n` +
+    `  display-mode ${layers['display-mode'].root.length} vars (+${layers['display-mode'].rootDark.length} dark) + density (compact+comfortable)\n` +
+    `  theme        ${layers.theme.root.length} vars, ${fontAtomLines.length} font atoms, ${textClassBlocks.length} text classes\n` +
+    `  layout       ${layers.layout.root.length} vars + .sherpa-view\n` +
+    `  structure    ${layers.structure.root.length} vars, ${snapBlocks.length} snap\n` +
+    `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length} categorical\n` +
+    `  elevation    ${layers.elevation.root.length} vars, ${shadowAliasLines.length} shadow aliases, ${layers.elevation.modeBlocks.length} [data-elevation]\n` +
     `✓ ${wrote} component token regions inlined into <comp>.css\n` +
     `${warnings.length ? `⚠ ${warnings.length} warning(s) — see above` : '✓ no warnings'}`,
 );

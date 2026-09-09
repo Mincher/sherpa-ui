@@ -9,8 +9,8 @@
 :host {
   display: block;
   --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  --_line: var(--sherpa-style-border-base, #d5d5d5);
-  --_idle: var(--sherpa-theme-content-body-1, #404047);
+  --_line: var(--sherpa-theme-border-default-2, #b3b3c3);
+  --_idle: var(--sherpa-theme-content-body-1, #35353d);
 }
 
 .steps {
@@ -20,17 +20,32 @@
   display: flex;
   align-items: flex-start;
 }
+.step-item {
+  display: flex;
+  flex: 0 0 auto;
+}
 
-/* ── Step node ───────────────────────────────────────────────────────── */
+/* ── Step node — a native button; reset chrome, CSS owns the look ─────── */
 .step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   cursor: pointer;
   flex: 0 0 auto;
-  inline-size: var(--sherpa-display-size-3xl, 40px);
+  inline-size: var(--sherpa-display-mode-size-3xl, 40px);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+
+  &:focus-visible { outline: none; }
+  &:focus-visible .marker {
+    box-shadow: 0 0 0 2px var(--_accent);
+  }
 }
 
 .marker {
@@ -38,14 +53,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-xl, 28px);
-  block-size: var(--sherpa-display-size-xl, 28px);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  border: var(--sherpa-display-border-width-base, 1px) solid var(--_line);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_line);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--_idle);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
 }
 .number { display: block; }
 .check { display: none; }
@@ -53,16 +68,16 @@
 .text {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:empty { display: none; }
 }
@@ -70,8 +85,8 @@
 /* ── Connector line between steps ────────────────────────────────────── */
 .connector {
   flex: 1 1 auto;
-  block-size: var(--sherpa-display-border-width-lg, 2px);
-  margin-block-start: calc(var(--sherpa-display-size-xl, 28px) / 2);
+  block-size: var(--sherpa-display-mode-border-width-lg, 2px);
+  margin-block-start: calc(var(--sherpa-display-mode-size-lg, 24px) / 2);
   background: var(--_line);
 }
 
@@ -96,7 +111,7 @@
   }
 }
 .step[data-state='active'] .label {
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 

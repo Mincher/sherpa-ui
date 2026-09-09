@@ -1,10 +1,28 @@
 /**
- * sherpa-data-grid — a sortable table.
+ * sherpa-data-grid — a sortable table that composes the Grid Cell model.
  *
  * Give it data with populate({ columns, rows }) and it draws the header and rows.
  * Clicking a sortable column header sorts by it, toggling between ascending and
- * descending. Clicking a row fires row-click. This is a plain grid — the heavier
- * features (grouping, aggregation, export, selection) are left out on purpose.
+ * descending. Clicking a row fires row-click.
+ *
+ * Two opt-in features mirror the Figma Grid Cell (926:34253):
+ *   • data-selectable adds a leading checkbox column (a select-all in the header
+ *     and a checkbox per row); toggling emits selection-change.
+ *   • data-filterable adds a secondary header row of per-column filter inputs;
+ *     typing emits filter-change.
+ * Both are CSS-gated — the columns/rows exist in the template always and only JS
+ * behaviour (selection tracking, filter dispatch) lives here.
+ *
+ * @element sherpa-data-grid
+ * @attr {enum}    data-sort-field      current sort column field
+ * @attr {enum}    data-sort-direction  asc | desc
+ * @attr {boolean} data-selectable      show a leading checkbox column
+ * @attr {boolean} data-filterable      show a secondary filter-input header row
+ *
+ * @fires sort-change      — a sortable header is clicked. bubbles + composed. detail: { field: string, direction: 'asc' | 'desc' }
+ * @fires row-click        — a row is clicked. bubbles + composed. detail: { index: number, row: object }
+ * @fires selection-change — a selection checkbox toggles. bubbles + composed. detail: { selected: string[] }
+ * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -34,6 +52,11 @@ export class SherpaDataGrid extends SherpaElement {
   override onRender(): void {
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick);
     this.$('.body')?.addEventListener('click', this.#onRowClick);
+    // Selection: select-all in the header, per-row boxes delegated on the body.
+    this.$('.select-all')?.addEventListener('change', this.#onSelectAll);
+    this.$('.body')?.addEventListener('change', this.#onRowSelect);
+    // Filter: delegate input from the secondary header row.
+    this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
     if (this.#columns.length) this.#render();
   }
 
@@ -55,6 +78,12 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleAttribute('data-empty', this.#rows.length === 0);
     this.#renderHead();
     this.#renderBody();
+    // Fresh rows stamp unchecked — clear the header select-all to match.
+    const selectAll = this.$<HTMLInputElement>('.select-all');
+    if (selectAll) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    }
   }
 
   #renderHead(): void {
@@ -64,7 +93,8 @@ export class SherpaDataGrid extends SherpaElement {
     const sortField = this.dataset['sortField'];
     const sortDir = this.dataset['sortDirection'];
 
-    headRow.replaceChildren();
+    // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
+    headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
     for (const col of this.#columns) {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
@@ -73,6 +103,25 @@ export class SherpaDataGrid extends SherpaElement {
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
       if (sortable && col.field === sortField) th.dataset['sort'] = sortDir ?? 'asc';
       headRow.appendChild(th);
+    }
+
+    this.#renderFilterRow();
+  }
+
+  /** Stamp one filter input per column into the secondary header row. */
+  #renderFilterRow(): void {
+    const filterRow = this.$('.filter-row');
+    const tpl = this.$<HTMLTemplateElement>('template.filter-cell-tpl');
+    if (!filterRow || !tpl) return;
+
+    // Keep the fixed leading spacer <th>; rebuild only the dynamic filter cells.
+    filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());
+    for (const col of this.#columns) {
+      const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      th.dataset['field'] = col.field;
+      const input = th.querySelector<HTMLInputElement>('.filter-input')!;
+      input.placeholder = `Filter ${col.header ?? col.field}`;
+      filterRow.appendChild(th);
     }
   }
 
@@ -124,16 +173,63 @@ export class SherpaDataGrid extends SherpaElement {
     const next = active && this.dataset['sortDirection'] === 'asc' ? 'desc' : 'asc';
     this.dataset['sortField'] = field;
     this.dataset['sortDirection'] = next;
-    this.emit('grid-sort-change', { field, direction: next });
+    this.emit('sort-change', { field, direction: next });
     // onChange re-renders.
   };
 
   #onRowClick = (event: Event): void => {
+    // A click on a selection checkbox is selection, not row activation.
+    if ((event.target as HTMLElement).closest('.select-cell')) return;
     const tr = (event.target as HTMLElement).closest<HTMLElement>('.row');
     const raw = tr?.dataset['index'];
     if (raw == null) return;
     const index = Number(raw);
     this.emit('row-click', { index, row: this.#sortedRows()[index] });
+  };
+
+  /* ── Selection ──────────────────────────────────────────────────── */
+
+  /** Header select-all: set every row checkbox to match, then broadcast. */
+  #onSelectAll = (event: Event): void => {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.$$<HTMLInputElement>('.row-select').forEach((box) => (box.checked = checked));
+    this.#emitSelection();
+  };
+
+  /** A single row checkbox toggled: reconcile the select-all state, broadcast. */
+  #onRowSelect = (event: Event): void => {
+    if (!(event.target as HTMLElement).classList.contains('row-select')) return;
+    this.#syncSelectAll();
+    this.#emitSelection();
+  };
+
+  /** Reflect all/none/indeterminate on the header select-all box. */
+  #syncSelectAll(): void {
+    const all = this.$$<HTMLInputElement>('.row-select');
+    const selectAll = this.$<HTMLInputElement>('.select-all');
+    if (!selectAll) return;
+    const checked = all.filter((b) => b.checked).length;
+    selectAll.checked = checked > 0 && checked === all.length;
+    selectAll.indeterminate = checked > 0 && checked < all.length;
+  }
+
+  /** Emit the current selection as row indices (strings) in sorted-view order. */
+  #emitSelection(): void {
+    const selected = this.$$<HTMLInputElement>('.row-select')
+      .filter((box) => box.checked)
+      .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
+      .filter((id) => id !== '');
+    this.emit('selection-change', { selected });
+  }
+
+  /* ── Column filters ─────────────────────────────────────────────── */
+
+  #onFilterInput = (event: Event): void => {
+    const input = event.target as HTMLElement;
+    if (!input.classList.contains('filter-input')) return;
+    const field = input.closest<HTMLElement>('.filter-cell')?.dataset['field'];
+    if (!field) return;
+    this.emit('filter-change', { field, value: (input as HTMLInputElement).value });
   };
 }
 

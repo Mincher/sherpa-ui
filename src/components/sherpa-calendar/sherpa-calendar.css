@@ -8,8 +8,8 @@
 
 :host {
   display: inline-block;
-  --_border: var(--sherpa-style-border-base, #d5d5d5);
-  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
+  --_accent: var(--sherpa-theme-surface-accent-base, #8AA3FF);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
@@ -18,8 +18,9 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-md, 8px);
   inline-size: fit-content;
-  padding: var(--sherpa-theme-padding-lg, 12px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  padding: var(--sherpa-theme-padding-lg, 16px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -34,7 +35,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 .cal-label {
@@ -42,32 +43,32 @@
   text-align: center;
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 
 .cal-nav {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-structure-height, 28px);
-  block-size: var(--sherpa-structure-height, 28px);
+  inline-size: var(--sherpa-structure-height, 32px);
+  block-size: var(--sherpa-structure-height, 32px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-heading-h2, 20px);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
 
   &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-    color: var(--sherpa-theme-content-body-base, #18191a);
+    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
+    color: var(--sherpa-theme-content-body-base, #0C0B11);
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
   }
 }
 
@@ -75,8 +76,8 @@
 .cal-weekdays,
 .cal-days {
   display: grid;
-  grid-template-columns: repeat(7, var(--sherpa-display-size-2xl, 32px));
-  gap: var(--sherpa-display-space-3xs, 2px);
+  grid-template-columns: repeat(7, var(--sherpa-display-mode-size-2xl, 32px));
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
 /* Month / year grids are wider cells in fewer columns. */
@@ -84,7 +85,7 @@
 .cal-years {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 /* ── Layout visibility (day | month | year) ─────────────────────────── */
@@ -102,15 +103,15 @@
   font-family: inherit;
 
   &:hover { color: var(--_accent); }
-  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd); border-radius: var(--sherpa-display-border-rounding-base, 4px); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF); border-radius: var(--sherpa-display-mode-border-rounding-base, 4px); }
 }
 
 .cal-weekdays span {
   text-align: center;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-theme-content-body-1, #404047);
-  padding-block: var(--sherpa-display-space-3xs, 2px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
 /* ── Day cells ──────────────────────────────────────────────────────── */
@@ -118,30 +119,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  block-size: var(--sherpa-display-size-2xl, 32px);
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: 0;
-  border: var(--sherpa-style-border-width, 1px) solid transparent;
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
   &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-    color: var(--sherpa-theme-content-body-base, #18191a);
+    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
+    color: var(--sherpa-theme-content-body-base, #0C0B11);
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
   }
 }
 
 /* Today — a ring, not a fill (fill is reserved for the selection). */
 .cal-cell[data-today] {
-  border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
+  border-color: var(--sherpa-theme-border-accent-base, #8AA3FF);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -163,17 +164,17 @@
    band cells drop their corner radius and bleed across the 2px grid gap with a
    left/right box-shadow so the fill reads as one continuous strip. */
 .cal-cell[data-in-range] {
-  background: var(--sherpa-theme-surface-accent-transparent, #eaeefc);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
   border-radius: 0;
   border-color: transparent;
   box-shadow:
-    calc(-1 * var(--sherpa-display-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #eaeefc),
-    var(--sherpa-display-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #eaeefc);
+    calc(-1 * var(--sherpa-display-mode-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A),
+    var(--sherpa-display-mode-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
 }
 .cal-cell[data-in-range]:hover {
-  background: var(--sherpa-theme-surface-accent-transparent, #eaeefc);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
 }
 
 /* Blank spacer cells — no chrome, no interaction. */
@@ -186,7 +187,7 @@
 .cal-cell[disabled]:not([data-blank]) {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #B3B3C3);
   background: transparent;
 }
 
@@ -194,7 +195,7 @@
 .cal-months .cal-cell,
 .cal-years .cal-cell {
   inline-size: 100%;
-  block-size: var(--sherpa-display-size-3xl, 40px);
+  block-size: var(--sherpa-display-mode-size-3xl, 40px);
 }
 
 /* ── Time row (data-has-time) — CSS owns visibility ─────────────────────── */
@@ -203,35 +204,111 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-block-start: var(--sherpa-display-space-3xs, 2px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
   padding-block-start: var(--sherpa-theme-gap-md, 8px);
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 
 .cal-time-label {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   inline-size: 100%;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 
 .cal-time {
   margin-inline-start: auto;
   min-inline-size: 0;
-  padding-block: var(--sherpa-display-space-3xs, 2px);
-  padding-inline: var(--sherpa-display-space-xs, 8px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
+  padding-inline: var(--sherpa-display-mode-space-xs, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+  }
+}
+
+/* ── Footer action row — Today link | Cancel / Apply ────────────────────── */
+.cal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
+  padding-block-start: var(--sherpa-theme-gap-md, 8px);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+}
+
+.cal-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* Today — a text-only link, no chrome. */
+.cal-today {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--_accent);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  }
+}
+
+/* Cancel / Apply share a button shell; Apply gets the accent fill. */
+.cal-cancel,
+.cal-apply {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--sherpa-structure-height, 32px);
+  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
+  padding-inline: var(--sherpa-theme-padding-lg, 16px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
+
+  &:hover {
+    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+  }
+}
+
+.cal-apply {
+  border-color: var(--_accent);
+  background: var(--_accent);
+  color: var(--_accent-on);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+
+  &:hover {
+    background: var(--_accent);
+    color: var(--_accent-on);
   }
 }

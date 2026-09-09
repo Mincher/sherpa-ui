@@ -42,7 +42,7 @@ export class SherpaDonutChart extends SherpaElement {
   #renderRing(): void {
     const total = this.#slices.reduce((sum, s) => sum + Math.max(0, s.value), 0);
     if (total <= 0) {
-      this.style.setProperty('--_ring', 'conic-gradient(var(--sherpa-border-container-default) 0 100%)');
+      this.style.setProperty('--_ring', 'conic-gradient(var(--sherpa-style-border-base, #d5d5d5) 0 100%)');
       return;
     }
     const stops: string[] = [];

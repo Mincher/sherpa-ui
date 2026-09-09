@@ -6,16 +6,20 @@
   badge and a menu-trigger affordance.
 
   Public API:
-    data-type    default | ai | populated
-    data-current selected/on state (boolean)
-    data-label   chip text (or use the default slot)
-    data-count   badge number (shown when present)
-    data-menu    show a dropdown-trigger caret (boolean)
+    data-type       default | ai | populated
+    data-current    selected/on state (boolean)
+    data-label      chip text (or use the default slot)
+    data-icon-start leading icon glyph (Figma "Icon" — a funnel by default)
+    data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
+    data-count      badge number (shown when present)
+    data-menu       show a dropdown-trigger caret (boolean)
 
   Fires: quick-filter-click — detail: { active }
 -->
 <template id="default">
   <button class="chip" part="chip" type="button">
+    <span class="indicator" part="indicator" aria-hidden="true"></span>
+    <span class="icon" part="icon" aria-hidden="true"></span>
     <span class="label"><slot></slot></span>
     <span class="count" part="count" aria-hidden="true"></span>
     <span class="caret" part="caret" aria-hidden="true"></span>

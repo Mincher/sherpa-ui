@@ -15,30 +15,122 @@ $description: >-
   (secondary-header), or group (row-spanning accordion). Content is a slot the designer/consumer
   fills — alignment, emphasis, and numeric formatting are content choices, not variants. A leading
   checkbox and header/filter actions are boolean toggles.
+element:
+  $type: element
+  tag: div
+  provides: []
 templates:
   - default
+anatomy:
+  root:
+    el: div
+    class: cell
+    part: cell
+    children:
+      - el: button
+        class: toggle
+        part: toggle
+        attrs:
+          type: button
+          aria-label: Toggle group
+        children:
+          - el: span
+            class: toggle-caret
+            attrs:
+              aria-hidden: "true"
+      - el: span
+        class: checkbox
+        part: checkbox
+        children:
+          - slot: checkbox
+      - el: span
+        class: content
+        part: content
+        slot: ""
+      - el: span
+        class: actions
+        part: actions
+        children:
+          - el: button
+            class: sort
+            part: sort
+            attrs:
+              type: button
+              aria-label: Sort
+            children:
+              - el: span
+                class: sort-caret
+                attrs:
+                  aria-hidden: "true"
+          - el: button
+            class: menu
+            part: menu
+            attrs:
+              type: button
+              aria-label: Column menu
+            children:
+              - el: span
+                attrs:
+                  aria-hidden: "true"
 props:
   - $type: prop
-    name: data-has-actions
-    type: string
-    kind: visibility
-    default: false
-    description: Show trailing sort + menu buttons. Available on any cell (most common on headers).
-  - $type: prop
-    name: data-has-checkbox
-    type: string
-    kind: visibility
-    default: false
-    description: Show a leading checkbox — a selection cell (body) or select-all (header).
-  - $type: prop
-    name: data-type
+    name: data-expanded
     type: string
     kind: style
+    description: group is open (boolean; drives the toggle caret)
+  - $type: prop
+    name: data-has-actions
+    type: boolean
+    kind: style
+    default: false
     description: >-
-      Cell role. cell = a body cell; header = a column header; filter = the optional
-      secondary-header cell (a column filter — a transparent Input sitting in the header band);
-      group = a row-spanning group header that toggles its rows open/closed (accordion).
-      Alignment/emphasis/numeric format are content in the slot, not variants.
+      show the trailing sort + menu buttons  data-sort-direction asc | desc   (header sort state;
+      drives the caret)
+  - $type: prop
+    name: data-has-checkbox
+    type: boolean
+    kind: style
+    default: false
+    description: show the leading selection checkbox
+  - $type: prop
+    name: data-type
+    type: enum
+    kind: style
+    values:
+      - cell
+      - header
+      - filter
+      - group
+    default: cell
+    description: cell | header | filter | group
+states:
+  - $type: state
+    name: header
+    selector: ":host([data-type=\"header\"])"
+  - $type: state
+    name: filter
+    selector: ":host([data-type=\"filter\"])"
+  - $type: state
+    name: group
+    selector: ":host([data-type=\"group\"])"
+  - $type: state
+    name: has-checkbox
+    selector: ":host([data-has-checkbox])"
+  - $type: state
+    name: expanded
+    selector: ":host([data-expanded])"
+  - $type: state
+    name: has-actions
+    selector: ":host([data-has-actions])"
+  - $type: state
+    name: asc
+    selector: ":host([data-sort-direction=\"asc\"])"
+  - $type: state
+    name: desc
+    selector: ":host([data-sort-direction=\"desc\"])"
+  - $type: state
+    name: focus-visible
+    selector: .sort:focus-visible
 events:
   - $type: event
     name: sort-change
@@ -52,6 +144,18 @@ events:
     name: group-toggle
     bubbles: true
     composed: true
+tokens:
+  cell.gap: "{sherpa.theme-gap-sm}"
+  cell.padding: "{sherpa.theme-padding-sm}"
+  cell.min-block-size: "{sherpa.structure-height}"
+  cell.border-block-end: "{sherpa.style-border-width}"
+  cell.background: "{sherpa.style-surface-base}"
+  sort.inline-size: "{sherpa.theme-size-icon-sm}"
+  sort.block-size: "{sherpa.theme-size-icon-sm}"
+  sort.color: "{sherpa.style-content-secondary}"
+  menu.inline-size: "{sherpa.theme-size-icon-sm}"
+  menu.block-size: "{sherpa.theme-size-icon-sm}"
+  menu.color: "{sherpa.style-content-secondary}"
 $extensions:
   sherpa:
     figmaName: Grid Cell

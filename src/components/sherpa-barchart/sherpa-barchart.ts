@@ -5,6 +5,7 @@
  * per item and hands two numbers to CSS: the bar's height (as a percent of the
  * tallest) and its colour. CSS grows each bar up from the baseline. Clicking a
  * bar fires bar-click.
+ * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

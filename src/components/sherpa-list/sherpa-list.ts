@@ -10,7 +10,7 @@
  * there are no rows, an empty-state message (data-empty) shows in their place.
  *
  * Public API:
- *   data-variant  default | bordered | divided
+ *   data-variant  (default — dividers between rows) | bordered | plain (no dividers)
  *   data-empty    empty-state message (shown when no rows are present)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -61,18 +61,20 @@ export class SherpaList extends SherpaElement {
   }
 
   #render(): void {
-    const container = this.$('.rows');
+    const container = this.$('.body');
     const tpl = this.$<HTMLTemplateElement>('template.row-tpl');
     if (!container || !tpl) return;
 
-    container.replaceChildren();
+    // Clear only the previously-stamped <li> rows, leaving the <slot> in place.
+    for (const li of this.$$('.body > .row-item')) li.remove();
     for (const row of this.#rows) {
-      const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      item.dataset['heading'] = row.title;
+      const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const item = li.querySelector('sherpa-list-item') as HTMLElement;
+      item.dataset['label'] = row.title;
       if (row.description) item.dataset['description'] = row.description;
       if (row.active) item.setAttribute('data-current', '');
       if (row.interactive) item.setAttribute('data-interactive', '');
-      container.appendChild(item);
+      container.appendChild(li);
     }
     this.#syncEmpty();
   }
@@ -80,7 +82,7 @@ export class SherpaList extends SherpaElement {
   /** Live count of rows across both fill modes (slotted + data-driven). */
   #rowCount(): number {
     const slotted = this.querySelectorAll(':scope > sherpa-list-item').length;
-    const stamped = this.$$('.rows > sherpa-list-item').length;
+    const stamped = this.$$('.body > .row-item').length;
     return slotted + stamped;
   }
 
@@ -103,7 +105,7 @@ export class SherpaList extends SherpaElement {
     if (!clicked) return;
     const rows = [
       ...this.querySelectorAll<ListItemEl>(':scope > sherpa-list-item'),
-      ...this.$$<ListItemEl>('.rows > sherpa-list-item'),
+      ...this.$$<ListItemEl>('.body .row-item > sherpa-list-item'),
     ];
     for (const row of rows) {
       if (row !== clicked) row.removeAttribute('data-current');

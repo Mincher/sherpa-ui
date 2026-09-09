@@ -11,15 +11,21 @@
 :host {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_plot-height: 180px;
+}
+
+/* Figure semantics without a layout box: children stay direct flex items. */
+.chart-figure {
+  display: contents;
+  margin: 0;
 }
 
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
 
   &:empty { display: none; }
 }
@@ -37,7 +43,7 @@
 }
 
 .grid line {
-  stroke: var(--sherpa-style-border-base, #d5d5d5);
+  stroke: var(--sherpa-style-border-base, #E8E8F6);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
@@ -60,9 +66,9 @@
 .x-axis {
   display: flex;
   justify-content: space-between;
-  margin-block-start: var(--sherpa-display-space-2xs, 4px);
+  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .x-label {
   flex: 1 1 0;

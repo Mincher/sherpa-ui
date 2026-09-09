@@ -1,23 +1,39 @@
 <!--
   sherpa-data-grid — a sortable data table.
 
-  populate({ columns, rows }) where columns is [{ field, header?, align?, type? }]
+  populate({ columns, rows }) where columns is [{ field, header?, type?, sortable? }]
   and rows is an array of records. Header cells and body rows are stamped from
   cloning prototypes. Clicking a sortable header sorts by that field (asc → desc →
   asc) and reflects data-sort-field / data-sort-direction on the host. Clicking a
   row emits row-click.
 
+  Composes the Grid Cell model (Figma 926:34253): a leading selection checkbox
+  column (data-selectable) and a secondary filter-input header row (data-filterable)
+  are both opt-in and CSS-gated — the columns/rows exist in the template always and
+  CSS reveals them off the host attribute.
+
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
+    data-selectable                          show a leading checkbox column (select-all + per-row)
+    data-filterable                          show a secondary header row of filter inputs
 
   Fires:
-    grid-sort-change — detail: { field, direction }
+    sort-change      — detail: { field, direction }
     row-click        — detail: { index, row }
+    selection-change — detail: { selected: string[] }   (row indices as strings)
+    filter-change    — detail: { field, value }
 -->
 <template id="default">
   <table class="grid" part="grid">
     <thead class="head" part="head">
-      <tr class="head-row"></tr>
+      <tr class="head-row">
+        <th class="select-cell select-head" scope="col">
+          <input class="select-all" type="checkbox" aria-label="Select all rows" />
+        </th>
+      </tr>
+      <tr class="filter-row">
+        <th class="select-cell filter-spacer" scope="col" aria-hidden="true"></th>
+      </tr>
     </thead>
     <tbody class="body" part="body"></tbody>
   </table>
@@ -34,8 +50,18 @@
     </th>
   </template>
 
+  <template class="filter-cell-tpl">
+    <th class="filter-cell" scope="col">
+      <input class="filter-input" type="text" />
+    </th>
+  </template>
+
   <template class="row-tpl">
-    <tr class="row"></tr>
+    <tr class="row">
+      <td class="select-cell">
+        <input class="row-select" type="checkbox" aria-label="Select row" />
+      </td>
+    </tr>
   </template>
 
   <template class="cell-tpl">

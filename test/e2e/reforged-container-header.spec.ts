@@ -142,7 +142,7 @@ test('data-dismissible close button fires dismiss', async ({ page }) => {
     const close = el.shadowRoot!.querySelector('.close') as HTMLElement;
     const closeVisible = getComputedStyle(close).display !== 'none';
     let dismissed = false;
-    el.addEventListener('dismiss', () => (dismissed = true));
+    el.addEventListener('header-dismiss', () => (dismissed = true));
     close.click();
     await new Promise((res) => setTimeout(res, 0));
     return { closeVisible, dismissed };
@@ -160,7 +160,7 @@ test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ p
     await el.rendered;
     const toggle = el.shadowRoot!.querySelector('.toggle') as HTMLElement;
     let detail: unknown = null;
-    el.addEventListener('toggle', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('header-collapse', (e) => (detail = (e as CustomEvent).detail));
     toggle.click();
     await new Promise((res) => setTimeout(res, 0));
     return { collapsedAfter: el.hasAttribute('data-collapsed'), detail };

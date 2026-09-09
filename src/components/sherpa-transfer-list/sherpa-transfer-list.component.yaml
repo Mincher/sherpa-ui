@@ -29,7 +29,7 @@ anatomy:
           class: pane source
           part: pane
           children:
-            - el: div
+            - el: h3
               class: pane-heading
               part: heading
             - el: ul
@@ -84,7 +84,7 @@ anatomy:
           class: pane target
           part: pane
           children:
-            - el: div
+            - el: h3
               class: pane-heading
               part: heading
             - el: ul

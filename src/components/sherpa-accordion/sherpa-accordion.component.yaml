@@ -33,26 +33,42 @@ anatomy:
         part: header
         children:
           - el: span
+            class: titles
+            part: titles
+            children:
+              - el: span
+                class: heading
+                part: heading
+                children:
+                  - el: span
+                    class: heading-text
+                  - slot: heading
+              - el: span
+                class: description
+                part: description
+                children:
+                  - el: span
+                    class: description-text
+                  - slot: description
+          - el: span
             class: chevron
             attrs:
               aria-hidden: "true"
-          - el: span
-            class: heading
-            part: heading
-            children:
-              - el: span
-                class: heading-text
-              - slot: heading
       - el: div
         class: body
         part: body
         slot: ""
 props:
   - $type: prop
+    name: data-description
+    type: string
+    kind: content
+    description: — optional secondary line under the title (fallback to slotted [slot=description])
+  - $type: prop
     name: data-heading
     type: string
     kind: content
-    description: — the summary label (fallback to slotted [slot=heading])
+    description: — the summary title (fallback to slotted [slot=heading])
   - $type: prop
     name: data-status
     type: string
@@ -63,6 +79,12 @@ props:
     type: string
     description: — native boolean (current disclosure state; drives [open] visuals)
 states:
+  - $type: state
+    name: description
+    selector: ":host([data-description])"
+  - $type: state
+    name: has-description
+    selector: ":host([data-has-description])"
   - $type: state
     name: focus-visible
     selector: .header:focus-visible
@@ -75,14 +97,12 @@ events:
     name: toggle
     bubbles: true
     composed: true
-  - $type: event
-    name: re-dispatched
-    bubbles: true
-    composed: true
 tokens:
   header.gap: "{sherpa.theme-gap-sm}"
-  header.font-weight: "{sherpa.font-weight-semibold}"
   header.color: "{sherpa.style-content-base}"
+  titles.gap: "{sherpa.theme-gap-sm}"
+  heading.font-weight: "{sherpa.font-weight-semibold}"
+  description.color: "{sherpa.style-content-subtle}"
   body.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:

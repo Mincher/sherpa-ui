@@ -12,6 +12,15 @@
     default  single row — title + optional description + actions (today's header)
     panel    link-style title + right-side actions group + bottom metadata row
 
+  Figma has a third variant, `accordion`. It is NOT a data-variant value here:
+  it is the default skeleton whose trailing affordance is a disclosure chevron
+  instead of a close X — i.e. exactly `data-collapsible` (shows .toggle, fires
+  header-collapse, rotates on data-collapsed). Set data-collapsible (and omit
+  data-dismissible) to reproduce Figma's accordion header. A fully standalone
+  disclosure CARD (native <details>/<summary>, its own chevron) is the separate
+  `sherpa-accordion` component — this header only supplies the collapse toggle
+  for a container it heads, so no `accordion` variant value is needed.
+
   Public API:
     data-variant     default | panel   (default default)
     data-heading     heading text (rendered into .title)
@@ -29,9 +38,9 @@
     metadata  — bottom metadata strip (Panel) / secondary content (Default)
 
   Fires:
-    dismiss  (detail: {})
-    toggle   (detail: { collapsed })
-    drag     (detail: {})
+    header-dismiss   (detail: {})
+    header-collapse  (detail: { collapsed })
+    header-drag      (detail: {})
 -->
 <template id="default">
   <header class="header" part="header">

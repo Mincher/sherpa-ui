@@ -1,34 +1,55 @@
 <!--
-  sherpa-pagination — page navigation.
+  sherpa-pagination — results-size + page navigation control.
 
-  A previous button, a windowed run of numbered page buttons (with ellipsis gaps
-  for large ranges), and a next button. The numbered buttons and gaps are stamped
-  from cloning prototypes (<template class="num-tpl"> / <template class="gap-tpl">,
-  no id → the base parser ignores them). Clicking a page emits page-change.
+  Two zones on one row:
+    results  — a "Rows per page" label + a native <select> for the page size.
+    controls — first («) + prev (‹) buttons · a native number <input> for the
+               current page · "of N" total text · next (›) + last (») buttons.
+
+  Both native controls are composed directly (progressive enhancement): the
+  <select> and <input type="number"> work without JS; JS only reflects state,
+  clamps, and emits events. The rows <select> options are stamped from a cloning
+  prototype (<template class="rows-opt-tpl">, no id → the base parser ignores it).
 
   Public API:
-    data-total-pages  — total page count (default 1)
-    data-current-page — the active 1-based page (default 1)
+    data-page          — current 1-based page (default 1)
+    data-total-pages   — total page count (default 1)
+    data-page-size     — active rows-per-page value (default first option)
+    data-rows-options  — comma list of rows-per-page choices, e.g. "10,25,50"
 
-  Fires: page-change — detail: { page }
+  Fires:
+    page-change       — detail: { page }
+    page-size-change  — detail: { pageSize }
 -->
 <template id="default">
-  <nav class="pager" part="pager" aria-label="Pagination">
-    <button class="btn prev" data-action="prev" type="button" aria-label="Previous page">
-      <span class="chev chev-left" aria-hidden="true"></span>
-    </button>
+  <div class="pagination" part="pagination">
+    <div class="results" part="results">
+      <label class="rows-label" for="rows">Rows per page</label>
+      <select class="rows" id="rows" part="rows"></select>
+    </div>
 
-    <span class="numbers" part="numbers"></span>
+    <nav class="controls" part="controls" aria-label="Pagination">
+      <button class="btn first" data-action="first" type="button" aria-label="First page">
+        <span class="chev chev-double-left" aria-hidden="true"></span>
+      </button>
+      <button class="btn prev" data-action="prev" type="button" aria-label="Previous page">
+        <span class="chev chev-left" aria-hidden="true"></span>
+      </button>
 
-    <button class="btn next" data-action="next" type="button" aria-label="Next page">
-      <span class="chev chev-right" aria-hidden="true"></span>
-    </button>
-  </nav>
+      <input class="page-input" type="number" inputmode="numeric" min="1" step="1"
+             part="page-input" aria-label="Page number" />
+      <span class="total" part="total" aria-hidden="true">of 1</span>
 
-  <template class="num-tpl">
-    <button class="btn num" data-action="page" type="button"></button>
-  </template>
-  <template class="gap-tpl">
-    <span class="gap" aria-hidden="true">…</span>
+      <button class="btn next" data-action="next" type="button" aria-label="Next page">
+        <span class="chev chev-right" aria-hidden="true"></span>
+      </button>
+      <button class="btn last" data-action="last" type="button" aria-label="Last page">
+        <span class="chev chev-double-right" aria-hidden="true"></span>
+      </button>
+    </nav>
+  </div>
+
+  <template class="rows-opt-tpl">
+    <option></option>
   </template>
 </template>

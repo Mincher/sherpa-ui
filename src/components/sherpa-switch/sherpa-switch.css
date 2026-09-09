@@ -6,21 +6,21 @@
   :host {
     --_has-label: revert-layer;
     --sherpa-switch-radius-thumb: 3px;
-    --sherpa-switch-radius-track: var(--sherpa-display-border-rounding-base);
-    --sherpa-switch-size-height: var(--sherpa-display-size-md);
-    --sherpa-switch-size-padding: var(--sherpa-display-space-3xs);
-    --sherpa-switch-size-thumb: var(--sherpa-display-size-sm);
-    --sherpa-switch-size-width: var(--sherpa-display-size-4xl);
+    --sherpa-switch-radius-track: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-switch-size-height: var(--sherpa-display-mode-size-md);
+    --sherpa-switch-size-padding: var(--sherpa-display-mode-space-3xs);
+    --sherpa-switch-size-thumb: var(--sherpa-display-mode-size-sm);
+    --sherpa-switch-size-width: var(--sherpa-display-mode-size-4xl);
   }
 
   :host([data-style="simple"]) {
     --_has-label: none;
     --sherpa-switch-radius-thumb: 999px;
-    --sherpa-switch-radius-track: var(--sherpa-display-border-rounding-full);
-    --sherpa-switch-size-height: var(--sherpa-display-size-sm);
-    --sherpa-switch-size-padding: var(--sherpa-display-space-3xs);
-    --sherpa-switch-size-thumb: var(--sherpa-display-size-xs);
-    --sherpa-switch-size-width: var(--sherpa-display-size-xl);
+    --sherpa-switch-radius-track: var(--sherpa-display-mode-border-rounding-full);
+    --sherpa-switch-size-height: var(--sherpa-display-mode-size-sm);
+    --sherpa-switch-size-padding: var(--sherpa-display-mode-space-3xs);
+    --sherpa-switch-size-thumb: var(--sherpa-display-mode-size-xs);
+    --sherpa-switch-size-width: var(--sherpa-display-mode-size-xl);
   }
 }
 /* == end sherpa:tokens == */
@@ -59,7 +59,7 @@
   inline-size: var(--sherpa-switch-size-width, 40px);
   min-block-size: var(--sherpa-switch-size-height, 20px);
   padding: var(--sherpa-switch-size-padding, 2px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--sherpa-style-border-base, #8d8d99);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -106,7 +106,7 @@
   inline-size: var(--sherpa-switch-size-thumb, 16px);
   block-size: var(--sherpa-switch-size-thumb, 16px);
   border-radius: var(--sherpa-switch-radius-thumb, 3px);
-  background: var(--sherpa-style-surface-base, #ffffff);
+  background: var(--sherpa-theme-content-body-4, #ffffff);
 }
 
 /* ── Label: ON / OFF text ─────────────────────────────────────────────────
@@ -121,7 +121,7 @@
 .input:checked ~ .label::after { content: "ON"; }
 .input:not(:checked) ~ .label::after {
   content: "OFF";
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
 /* ── ON state — slide knob to the end ──────────────────────────────────── */

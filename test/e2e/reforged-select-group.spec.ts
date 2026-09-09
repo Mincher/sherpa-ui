@@ -39,7 +39,7 @@ test('renders one child per option with label + description', async ({ page }) =
     el.populate!(options);
     await new Promise((res) => setTimeout(res, 10));
     const s = el.shadowRoot!;
-    const children = s.querySelectorAll('sherpa-select-radio');
+    const children = el.querySelectorAll('sherpa-select-radio'); // options are slotted (light DOM)
     return {
       heading: s.querySelector('.label')!.textContent,
       count: children.length,
@@ -62,7 +62,7 @@ test('data-multiple renders checkboxes and allows multi-select', async ({ page }
     el.populate!(options);
     await new Promise((res) => setTimeout(res, 10));
 
-    const boxes = el.shadowRoot!.querySelectorAll('sherpa-select-checkbox');
+    const boxes = el.querySelectorAll('sherpa-select-checkbox');
     el.value = ['a', 'c'];
     return {
       tag: boxes.length,
@@ -99,7 +99,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
     el.addEventListener('change', (e) => (detail = (e as CustomEvent).detail.value));
 
     // Click the inner native checkbox of the first child (Alpha).
-    const child = el.shadowRoot!.querySelector('sherpa-select-checkbox') as HTMLElement & {
+    const child = el.querySelector('sherpa-select-checkbox') as HTMLElement & {
       rendered?: Promise<void>;
     };
     await child.rendered;

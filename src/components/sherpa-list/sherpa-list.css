@@ -3,8 +3,8 @@
  *
  * The body is a single flex column holding both the stamped data rows (.rows)
  * and slotted rows (the default slot), so variant treatments apply uniformly.
- * Variants (default | bordered | divided) and the empty state are pure CSS off
- * data-* on the host; JS only stamps rows and toggles data-empty-visible.
+ * Variants (default is divided | bordered | plain) and the empty state are pure
+ * CSS off data-* on the host; JS only stamps rows and toggles data-empty-visible.
  *
  * Figma model: the list is a container. Its geometry binds the container-scoped
  * collection (container-border/*, container-surface/default); rows within bind
@@ -15,23 +15,24 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  color: var(--sherpa-style-content-base, #18191a);
-  --_row-gap: var(--sherpa-display-space-3xs, 2px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
+/* Native <ul> — reset the default list chrome; it is a flex column so both
+   fill modes (stamped <li> + slotted rows) stack evenly. */
 .body {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: var(--_row-gap);
 }
 
-/* The stamped-rows container is itself a column so both sources stack evenly. */
-.rows {
+.row-item {
   display: flex;
   flex-direction: column;
-  gap: var(--_row-gap);
-
-  &:empty { display: none; }
 }
 
 /* ── Bordered — container surface fill + container border ───────────── */
@@ -41,19 +42,26 @@
 :host([data-variant="bordered"]) .body {
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+    var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   overflow: hidden;
 }
 
-/* ── Divided — hairlines between adjacent rows (both fill modes) ────── */
-:host([data-variant="divided"]) {
+/* ── Divided — hairlines between adjacent rows (both fill modes) ──────
+   This is the DEFAULT look (matches Figma): dividers show unless the host
+   opts out with data-variant="plain". Bordered also shows dividers.        */
+:host(:not([data-variant="plain"])) {
   --_row-gap: 0;
 }
-:host([data-variant="divided"]) .rows > sherpa-list-item:not(:last-child),
-:host([data-variant="divided"]) ::slotted(sherpa-list-item:not(:last-child)) {
+:host(:not([data-variant="plain"])) .body > .row-item:not(:last-child),
+:host(:not([data-variant="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+    var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+}
+
+/* Plain — no dividers, spaced rows (the former "default" look). */
+:host([data-variant="plain"]) {
+  --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
 /* ── Empty state ───────────────────────────────────────────────────── */
@@ -61,7 +69,7 @@
   display: none;
   padding: var(--sherpa-theme-padding-lg, 16px);
   text-align: center;
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }

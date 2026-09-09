@@ -4,6 +4,7 @@
  * CSS handles how it looks — the styles, sizes, states, and the disabled look.
  * This file only sets sensible defaults, copies the label and icon into place,
  * and fires button-click when someone clicks it.
+ * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -14,6 +15,7 @@ export class SherpaButton extends SherpaElement {
     'data-label',
     'data-icon-start',
     'data-icon-end',
+    'data-badge',
     'disabled',
   ];
 
@@ -23,14 +25,15 @@ export class SherpaButton extends SherpaElement {
   }
 
   override onRender(): void {
-    // Defaults — a bare <sherpa-button> is a primary, base-size button.
-    if (this.dataset['type'] !== 'icon' && !this.dataset['variant']) {
-      this.dataset['variant'] = 'primary';
-    }
-    if (!this.dataset['size']) this.dataset['size'] = 'md';
-
+    // No appearance default: a bare <sherpa-button> is the DEFAULT ("secondary")
+    // look — white surface, grey border, dark ink. Emphasis is opt-in via
+    // data-look="saturated" (primary) / "transparent" (tertiary), the shared
+    // look-tier system (matches Figma — the Button has no variant axis).
+    // No size default either: a bare button uses the base :host {} token block;
+    // sizes come from the Structure collection (2xs | xs | sm | lg | xl).
     this.#syncLabel();
     this.#syncIcons();
+    this.#syncBadge();
     this.#syncDisabled();
 
     this.$('.trigger')?.addEventListener('click', this.#onClick);
@@ -39,6 +42,7 @@ export class SherpaButton extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-label') this.#syncLabel();
     else if (name === 'data-icon-start' || name === 'data-icon-end') this.#syncIcons();
+    else if (name === 'data-badge') this.#syncBadge();
     else if (name === 'disabled') this.#syncDisabled();
   }
 
@@ -47,6 +51,13 @@ export class SherpaButton extends SherpaElement {
     const label = this.$('.label');
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
+  }
+
+  /** Mirror a data-badge value into the badge slot's fallback; CSS shows it. */
+  #syncBadge(): void {
+    const slot = this.$('.badge slot');
+    const value = this.dataset['badge'];
+    if (slot) slot.textContent = value ?? '';
   }
 
   #syncIcons(): void {

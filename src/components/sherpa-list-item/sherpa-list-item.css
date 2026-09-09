@@ -22,7 +22,7 @@
   padding: var(--sherpa-structure-space-padding, 8px);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: var(--_status-surface, transparent);
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   transition: background-color 100ms ease, color 100ms ease;
 }
 
@@ -32,7 +32,7 @@
   align-items: center;
   gap: var(--sherpa-structure-space-gap, 8px);
   flex-shrink: 0;
-  min-block-size: var(--sherpa-font-size-body-large, 20px);
+  min-block-size: var(--sherpa-font-size-body-large, 16px);
 }
 
 /* Drag handle + expand toggle: icon-glyph buttons, hidden by default */
@@ -55,27 +55,34 @@
 .expand-glyph { transition: transform 120ms ease; }
 :host([data-expanded]) .expand-glyph { transform: rotate(90deg); }
 
-/* Leading selection control — the built-in box, or a slotted control */
+/* Leading selection control — the built-in native checkbox, or a slotted control */
 .control { display: none; align-items: center; flex-shrink: 0; }
 :host([data-selectable]) .control { display: inline-flex; }
 .checkbox {
-  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
-  block-size: var(--sherpa-theme-size-icon-xs, 16px);
-  border: var(--sherpa-style-border-width, 1px) solid
-    var(--sherpa-style-border-base, #8c8c99);
-  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  appearance: none;
+  margin: 0;
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-style-surface-base, #ffffff);
   box-sizing: border-box;
+  cursor: pointer;
 }
-:host([data-selected]) .checkbox {
-  background: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  border-color: var(--sherpa-theme-surface-accent-base, #3c5edd);
+/* Selection reflects the host state (JS keeps data-selected + the input checked
+   in sync); the tick is a pure-CSS glyph drawn on the checked box. */
+:host([data-selected]) .checkbox,
+.checkbox:checked {
+  background: var(--sherpa-style-indicator-accent, #3b4ccd);
+  border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
 /* Leading icon / avatar slot — shown when data-icon set or a leading slot filled */
 .leading {
   display: none;
   align-items: center;
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
 }
 :host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }
@@ -85,26 +92,38 @@
 :host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }
 
 /* ── Content column (title + description) ──────────────────────────── */
+/* Interactive rows expose a native <button> as the click target; static rows a
+   plain span. CSS shows exactly one off :host([data-interactive]). */
 .content {
   flex: 1 1 auto;
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  align-items: flex-start;
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
 }
+.content-button { display: none; }
+:host([data-interactive]) .content-button { display: flex; cursor: pointer; }
+:host([data-interactive]) .content-static { display: none; }
 
 .title {
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   overflow: hidden;
   text-overflow: ellipsis;
 }
-:host(:not([data-heading])) .title { display: none; }
+:host(:not([data-label]):not([data-heading])) .title { display: none; }
 
 .description {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
 }
 :host(:not([data-description])) .description { display: none; }
 
@@ -122,8 +141,10 @@
 :host([data-interactive]:hover) .row {
   background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
 }
-:host([data-interactive]:focus-visible) { outline: none; }
-:host([data-interactive]:focus-visible) .row {
+/* Focus lands on the native <button> content target — ring it there. */
+.content-button:focus-visible {
+  outline: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 

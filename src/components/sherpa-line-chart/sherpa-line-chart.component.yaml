@@ -13,38 +13,45 @@ $name: sherpa-line-chart
 $description: a line/area chart over one or more numeric series.
 element:
   $type: element
-  tag: div
+  tag: figure
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: div
-      class: chart-header
-      part: header
+    - el: figure
+      class: chart-figure
+      part: figure
       children:
-        - el: span
-          class: title
-          slot: title
-    - el: div
-      class: plot
-      part: plot
-      children:
-        - el: svg
-          class: svg
-          part: svg
-          attrs:
-            viewBox: 0 0 100 100
-            preserveAspectRatio: none
-            aria-hidden: "true"
+        - el: figcaption
+          class: chart-header
+          part: header
           children:
-            - el: g
-              class: grid
-            - el: g
-              class: series-layer
+            - el: span
+              class: title
+              slot: title
         - el: div
-          class: x-axis
-          part: x-axis
+          class: plot
+          part: plot
+          attrs:
+            role: img
+            aria-label: Line chart
+          children:
+            - el: svg
+              class: svg
+              part: svg
+              attrs:
+                viewBox: 0 0 100 100
+                preserveAspectRatio: none
+                aria-hidden: "true"
+              children:
+                - el: g
+                  class: grid
+                - el: g
+                  class: series-layer
+            - el: div
+              class: x-axis
+              part: x-axis
     - el: template
       class: xlabel-tpl
       children:

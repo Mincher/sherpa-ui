@@ -3,8 +3,12 @@
  *
  * A text box that grows as you type, with a send button. Pressing send (or Enter
  * without Shift) fires prompt-submit with the text, then clears the box — but
- * only if you actually typed something. There are optional slots beside the send
- * button for attachment and action buttons. CSS handles the look.
+ * only if you actually typed something. Two default leading buttons (attach + lab)
+ * each fire their own event; set data-no-leading-actions to hide them. An `extras`
+ * slot holds extra consumer controls beside them. CSS handles the look.
+ * @fires prompt-submit — the prompt is submitted. bubbles + composed. detail: { text: string }
+ * @fires composer-attach — the attach (paperclip) button is pressed. bubbles + composed. detail: {}
+ * @fires composer-lab — the lab (flask) button is pressed. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -25,6 +29,8 @@ export class SherpaPromptComposer extends SherpaElement {
     this.#input?.addEventListener('input', this.#autoresize);
     this.#input?.addEventListener('keydown', this.#onKeyDown);
     this.$('.send')?.addEventListener('click', this.#onSend);
+    this.$('.attach')?.addEventListener('click', () => this.#onLeading('composer-attach'));
+    this.$('.lab')?.addEventListener('click', () => this.#onLeading('composer-lab'));
   }
 
   override onChange(name: string): void {
@@ -62,6 +68,7 @@ export class SherpaPromptComposer extends SherpaElement {
     const off = this.hasAttribute('disabled');
     if (this.#input) this.#input.disabled = off;
     this.$<HTMLButtonElement>('.send')?.toggleAttribute('disabled', off);
+    this.$$<HTMLButtonElement>('.lead-btn').forEach((b) => b.toggleAttribute('disabled', off));
   }
 
   /* ── Behaviour ─────────────────────────────────────────────────────── */
@@ -74,6 +81,12 @@ export class SherpaPromptComposer extends SherpaElement {
   };
 
   #onSend = (): void => this.#submit();
+
+  /** Emit a leading-button event unless disabled. */
+  #onLeading(name: 'composer-attach' | 'composer-lab'): void {
+    if (this.hasAttribute('disabled')) return;
+    this.emit(name, {});
+  }
 
   #onSubmit = (e: Event): void => {
     e.preventDefault();

@@ -14,18 +14,20 @@
   Fires: step-click — detail: { index, label }
 -->
 <template id="default">
-  <ol class="steps" part="steps" role="list"></ol>
+  <ol class="steps" part="steps"></ol>
 
   <template class="step-tpl">
-    <li class="step" role="listitem">
-      <span class="marker" part="marker">
-        <span class="number"></span>
-        <span class="check" aria-hidden="true">✓</span>
-      </span>
-      <span class="text">
-        <span class="label"></span>
-        <span class="description"></span>
-      </span>
+    <li class="step-item">
+      <button type="button" class="step" part="step">
+        <span class="marker" part="marker">
+          <span class="number"></span>
+          <span class="check" aria-hidden="true">✓</span>
+        </span>
+        <span class="text">
+          <span class="label"></span>
+          <span class="description"></span>
+        </span>
+      </button>
     </li>
   </template>
 

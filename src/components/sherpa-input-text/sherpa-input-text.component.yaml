@@ -35,11 +35,29 @@ anatomy:
       - el: span
         class: description
         part: description
-      - el: input
-        class: control
-        part: control
-        attrs:
-          type: text
+      - el: span
+        class: control-row
+        part: control-row
+        children:
+          - el: span
+            class: icon icon-start
+            part: icon-start
+            attrs:
+              aria-hidden: "true"
+          - el: input
+            class: control
+            part: control
+            attrs:
+              type: text
+          - el: span
+            class: icon icon-end
+            part: icon-end
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: actions
+            part: actions
+            slot: actions
       - el: span
         class: message
         part: message
@@ -61,7 +79,18 @@ props:
     name: data-error
     type: string
     kind: content
-    description: error message (shown when set / on :user-invalid; default style)
+    default: style
+    description: validation message — shown as a filled critical bar
+  - $type: prop
+    name: data-icon-end
+    type: string
+    kind: content
+    description: trailing icon glyph inside the control row (CSS-gated)
+  - $type: prop
+    name: data-icon-start
+    type: string
+    kind: content
+    description: leading icon glyph inside the control row (CSS-gated)
   - $type: prop
     name: data-label
     type: string
@@ -90,6 +119,15 @@ props:
     native: true
     description: native value (also a JS property)
 states:
+  - $type: state
+    name: icon-start
+    selector: ":host([data-icon-start])"
+  - $type: state
+    name: icon-end
+    selector: ":host([data-icon-end])"
+  - $type: state
+    name: has-actions
+    selector: ":host([data-has-actions])"
   - $type: state
     name: error
     selector: ":host([data-error])"
@@ -123,14 +161,22 @@ tokens:
   description.font-size: "{sherpa.font-size-body-small}"
   description.color: "{sherpa.theme-content-body-1}"
   description.margin-bottom: "{sherpa.theme-padding-xs}"
-  control.min-block-size: "{sherpa.display-size-2xl}"
-  control.padding: "{sherpa.theme-padding-sm}"
-  control.border-width: "{sherpa.style-border-width}"
-  control.border-radius: "{sherpa.structure-rounding-top-left}"
-  control.background: "{sherpa.style-surface-base}"
+  control-row.gap: "{sherpa.structure-space-gap}"
+  control-row.min-block-size: "{sherpa.display-size-2xl}"
+  control-row.padding-inline: "{sherpa.structure-space-padding}"
+  control-row.border-width: "{sherpa.style-border-width}"
+  control-row.border-radius: "{sherpa.structure-rounding-top-left}"
+  control-row.background: "{sherpa.style-surface-base}"
+  control.padding-block: "{sherpa.theme-padding-sm}"
   control.color: "{sherpa.style-content-base}"
   control.font-size: "{sherpa.font-size-body-large}"
-  message.font-size: "{sherpa.font-size-body-small}"
+  icon.inline-size: "{sherpa.display-size-md}"
+  icon.block-size: "{sherpa.display-size-md}"
+  icon.color: "{sherpa.theme-content-body-1}"
+  actions.gap: "{sherpa.structure-space-gap}"
+  message.padding: "{sherpa.theme-padding-sm}"
+  message.border-radius: "{sherpa.structure-rounding-top-left}"
+  message.font-size: "{sherpa.font-size-body-large}"
   field-minimal.gap: "{sherpa.display-space-xs}"
 $extensions:
   sherpa:

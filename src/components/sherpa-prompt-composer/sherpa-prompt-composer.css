@@ -15,16 +15,17 @@
 
   /* cascade fallbacks so a bare (status-less) composer still resolves */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
+  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 .form {
   display: flex;
-  align-items: flex-end;
-  gap: var(--sherpa-display-space-xs, 8px);
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -47,34 +48,71 @@
 .input {
   flex: 1 1 auto;
   min-inline-size: 0;
-  min-block-size: var(--sherpa-display-size-lg, 24px);
+  min-block-size: var(--sherpa-display-mode-size-lg, 24px);
   max-block-size: 160px;
   border: none;
   background: transparent;
   resize: none;
   overflow-y: auto;
   font-family: inherit;
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:focus { outline: none; }
-  &::placeholder { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 }
 
-/* ── Tools row (actions + send) ─────────────────────────────────────── */
+/* ── Tools row (leading buttons + extras … send) ────────────────────── */
 .tools {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  justify-content: space-between;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   flex: 0 0 auto;
 }
-.actions {
+.leading {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
+.extras {
   display: none;
   align-items: center;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-:host([data-has-actions]) .actions { display: flex; }
+:host([data-has-extras]) .extras { display: flex; }
+
+/* Default leading buttons — subtle icon buttons */
+.lead-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-structure-height, 32px);
+  block-size: var(--sherpa-structure-height, 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 120ms ease, color 120ms ease;
+
+  &:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
+  &:active { background: var(--sherpa-theme-surface-default-3, #35353d); }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
+}
+.lead-btn .glyph {
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+}
+
+/* Hide the two default leading buttons when opted out */
+:host([data-no-leading-actions]) .lead-btn { display: none; }
 
 /* ── Send button — accent primary action ────────────────────────────── */
 .send {
@@ -84,7 +122,7 @@
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--sherpa-theme-surface-accent-base, #3c5edd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   cursor: pointer;
@@ -102,7 +140,7 @@
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
 :host([disabled]) .form {
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }
 :host([disabled]) .input {
@@ -110,7 +148,12 @@
   cursor: not-allowed;
 }
 :host([disabled]) .send {
-  background: var(--sherpa-theme-surface-default-2, #c0c0cc);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  cursor: not-allowed;
+}
+:host([disabled]) .lead-btn {
+  background: transparent;
   color: var(--sherpa-theme-content-body-2, #5c5c66);
   cursor: not-allowed;
 }

@@ -12,6 +12,8 @@
     data-label       row label text
     data-badge       trailing count/badge text
     data-status-dot  render the trailing chip as a small success/online dot
+    data-expandable  show a trailing expand chevron (for nested/expandable items)
+    data-expanded    expanded state — rotates the chevron (set by the click handler)
     data-description promo description (promo variant only)
     data-current     current item in the nav set
     data-href        render the row as a link
@@ -21,19 +23,42 @@
   The current row fills surface/interactive/active/base with content/active/base
   ink (the brand accent). The trailing chip is a round status element filled by
   the ancestor [data-status] cascade; a plain success dot pins the success ink.
+  Expandable items (data-expandable) show a trailing chevron caret; clicking it
+  fires item-expand and toggles data-expanded, which rotates the caret.
 
   Fires: item-click — detail: { label, href }
+  Fires: item-expand — detail: { expanded } — fired when the expand chevron is clicked
+-->
+<!--
+  The activation target is a native control: a <button> for a plain row, an
+  <a href> for a real link. Both live in the template; CSS shows the right one
+  off :host([data-href]). The trailing expand chevron is its own <button>.
 -->
 <template id="default">
-  <a class="row" part="row">
+  <button class="row row-button" part="row" type="button">
     <span class="icon" part="icon" aria-hidden="true"></span>
     <span class="label" part="label"></span>
-    <span class="badge" part="badge"><slot name="trailing"></slot></span>
+  </button>
+  <a class="row row-link" part="row">
+    <span class="icon" part="icon" aria-hidden="true"></span>
+    <span class="label" part="label"></span>
   </a>
+  <span class="badge" part="badge"><slot name="trailing"></slot></span>
+  <button class="expand" part="expand" type="button" aria-label="Expand">
+    <span class="expand-chevron" aria-hidden="true">&#x203A;</span>
+  </button>
 </template>
 
 <template id="promo">
-  <a class="promo" part="row">
+  <button class="promo promo-button" part="row" type="button">
+    <span class="promo-icon" part="icon" aria-hidden="true"></span>
+    <span class="promo-body">
+      <span class="promo-heading" part="heading"></span>
+      <span class="promo-description" part="description"></span>
+    </span>
+    <span class="promo-chevron" part="chevron" aria-hidden="true">&#x203A;</span>
+  </button>
+  <a class="promo promo-link" part="row">
     <span class="promo-icon" part="icon" aria-hidden="true"></span>
     <span class="promo-body">
       <span class="promo-heading" part="heading"></span>

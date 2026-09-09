@@ -13,13 +13,13 @@ $name: sherpa-chat-message
 $description: a single chat bubble for AI / messaging threads.
 element:
   $type: element
-  tag: div
+  tag: article
   provides: []
 templates:
   - default
 anatomy:
   root:
-    el: div
+    el: article
     class: message
     part: message
     children:
@@ -40,7 +40,7 @@ anatomy:
               - el: span
                 class: author
                 part: author
-              - el: span
+              - el: time
                 class: time
                 part: time
           - el: div
@@ -62,10 +62,25 @@ props:
     kind: content
     description: optional text body (the default slot overrides it when slotted)
   - $type: prop
+    name: data-message
+    type: string
+    kind: content
+    description: "optional text body (the default slot overrides it when slotted) (alias: data-content)"
+  - $type: prop
+    name: data-name
+    type: string
+    kind: content
+    description: "optional author name shown above the bubble (alias: data-author)"
+  - $type: prop
     name: data-time
     type: string
     kind: visibility
     description: optional timestamp shown beside the author
+  - $type: prop
+    name: data-timestamp
+    type: string
+    kind: content
+    description: "optional timestamp shown beside the name (alias: data-time)"
   - $type: prop
     name: data-type
     type: enum
@@ -77,8 +92,14 @@ props:
     description: assistant  | user (right, accent) | system (centred, muted)
 states:
   - $type: state
+    name: name
+    selector: ":host([data-name])"
+  - $type: state
     name: author
     selector: ":host([data-author])"
+  - $type: state
+    name: timestamp
+    selector: ":host([data-timestamp])"
   - $type: state
     name: time
     selector: ":host([data-time])"
@@ -94,12 +115,6 @@ states:
   - $type: state
     name: system
     selector: ":host([data-type=\"system\"])"
-  - $type: state
-    name: not-author
-    selector: ":host(:not([data-author]))"
-  - $type: state
-    name: not-time
-    selector: ":host(:not([data-time]))"
 events:
   - $type: event
     name: nothing

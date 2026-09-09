@@ -13,26 +13,33 @@ $name: sherpa-barchart
 $description: a vertical bar chart for categorical comparison.
 element:
   $type: element
-  tag: div
+  tag: figure
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: div
-      class: chart-header
-      part: header
+    - el: figure
+      class: chart-figure
+      part: figure
       children:
-        - el: span
-          class: title
-          slot: title
-    - el: div
-      class: plot
-      part: plot
-      children:
+        - el: figcaption
+          class: chart-header
+          part: header
+          children:
+            - el: span
+              class: title
+              slot: title
         - el: div
-          class: bars
-          part: bars
+          class: plot
+          part: plot
+          attrs:
+            role: img
+            aria-label: Bar chart
+          children:
+            - el: div
+              class: bars
+              part: bars
     - el: template
       class: bar-tpl
       children:

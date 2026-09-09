@@ -13,13 +13,13 @@ $name: sherpa-container
 $description: the base card surface.
 element:
   $type: element
-  tag: div
+  tag: header
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: div
+    - el: header
       class: header
       part: header
       slot: header
@@ -27,7 +27,7 @@ anatomy:
       class: body
       part: body
       slot: ""
-    - el: div
+    - el: footer
       class: footer
       part: footer
       slot: footer

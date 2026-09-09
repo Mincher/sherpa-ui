@@ -2,8 +2,8 @@
  * sherpa-file-upload.css — all presentation.
  *
  * A dashed drop zone over a file list. The drop zone fills surface/tertiary/base
- * with a dashed border/interactive/secondary; hover/drag/focus re-point the border
- * to the accent. Each listed file is a status chip — it fills status-surface via
+ * with a resting brand/accent magenta dashed border (border-active-2 = #c046ff, per
+ * Figma); hover/drag/focus re-point the border to the blue accent. Each listed file is a status chip — it fills status-surface via
  * the [data-status] cascade (--_status-surface, neutral surface/primary fallback)
  * with a status-border (--_status-border) and status-tinted text (--_status-text).
  * Drag state (data-dragover), file presence (data-has-files), and disabled are
@@ -16,27 +16,27 @@
 
   /* cascade fallbacks so a bare (status-less) file chip still resolves */
   --_file-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_file-border: var(--_status-border, var(--sherpa-style-border-base, #c0c0cc));
-  --_file-text: var(--_status-text, var(--sherpa-style-content-base, #2e2e33));
+  --_file-border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  --_file-text: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 
 .label {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 .label:empty,
 .helper:empty { display: none; }
 
 .helper {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 
 /* ── Drop zone ───────────────────────────────────────────────────────── */
@@ -44,33 +44,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
-  padding: var(--sherpa-display-space-xl, 24px) var(--sherpa-display-space-lg, 20px);
-  border: var(--sherpa-style-border-width, 1px) dashed var(--sherpa-theme-border-default-2, #c0c0cc);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-xl, 24px) var(--sherpa-display-mode-space-lg, 20px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: center;
-  cursor: pointer;
   transition: border-color 120ms ease, background-color 120ms ease;
 
   &:hover { border-color: var(--_accent); }
-  &:focus-visible {
-    outline: none;
+
+  /* When the browse button inside has keyboard focus, ring the whole zone. */
+  &:has(.browse:focus-visible) {
     border-color: var(--_accent);
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
   }
 }
 
 .drop-icon {
   font-size: var(--sherpa-font-size-heading-h1, 24px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .browse {
-  color: var(--sherpa-style-content-base, #2e2e33);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-weight: var(--sherpa-font-weight-medium, 500);
   text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
 }
 
 /* ── Drag-over state ─────────────────────────────────────────────────── */
@@ -86,7 +95,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 
   &:empty { display: none; }
 }
@@ -94,23 +103,23 @@
 .file-item {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-sm, 12px);
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_file-border);
-  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_file-border);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_file-surface);
   color: var(--_file-text);
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
-.file-icon { color: var(--sherpa-theme-content-body-1, #404047); flex-shrink: 0; }
+.file-icon { color: var(--sherpa-theme-content-body-1, #35353D); flex-shrink: 0; }
 .file-body {
   flex: 1 1 auto;
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
-.file-line { display: flex; align-items: baseline; gap: var(--sherpa-display-space-xs, 8px); }
+.file-line { display: flex; align-items: baseline; gap: var(--sherpa-display-mode-space-xs, 8px); }
 .file-name {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -120,13 +129,13 @@
   text-overflow: ellipsis;
 }
 .file-size {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-small, 12px);
   flex-shrink: 0;
 }
 .file-status {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:empty { display: none; }
 }
@@ -135,12 +144,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-structure-height, 24px);
-  block-size: var(--sherpa-structure-height, 24px);
+  inline-size: var(--sherpa-structure-height, 32px);
+  block-size: var(--sherpa-structure-height, 32px);
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-large, 16px);
   line-height: 1;
   cursor: pointer;
@@ -159,24 +168,24 @@
 :host([disabled]) .drop-zone {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  color: var(--sherpa-theme-content-body-2, #B3B3C3);
+  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
+  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
 }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #B3B3C3); }
 
 /* ── Details (max size + allowed types) ──────────────────────────────── */
 .details {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 
   &:not(:has(.max-size:not(:empty))):not(:has(.allowed-types:not(:empty))) { display: none; }
 }
 .max-size,
 .allowed-types {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .max-size:empty,
 .allowed-types:empty { display: none; }
@@ -186,7 +195,7 @@
   display: none;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sherpa-display-space-base, 16px);
+  gap: var(--sherpa-display-mode-space-base, 16px);
 }
 /* The actions row appears once at least one file is present. */
 :host([data-has-files]) .actions { display: flex; }
@@ -196,10 +205,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-display-space-xs, 8px);
-  min-block-size: var(--sherpa-display-size-2xl, 32px);
-  padding-inline: var(--sherpa-display-space-sm, 12px);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding-inline: var(--sherpa-display-mode-space-sm, 12px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   cursor: pointer;
@@ -207,10 +216,10 @@
 }
 /* Clear all — secondary (outline) button */
 .clear-all {
-  border: var(--sherpa-style-border-width, 1px) solid
-    var(--sherpa-theme-border-default-2, #8c8c99);
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #B3B3C3);
   background: transparent;
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
 }
@@ -231,7 +240,7 @@
 :host([disabled]) .clear-all,
 :host([disabled]) .upload {
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
+  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
+  color: var(--sherpa-theme-content-body-2, #B3B3C3);
 }

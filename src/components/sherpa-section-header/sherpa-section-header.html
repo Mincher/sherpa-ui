@@ -2,12 +2,12 @@
   sherpa-section-header — a semantic heading row for a content section.
 
   A title (data-heading or a slotted heading), an optional description, and a
-  trailing actions slot. data-size scales the heading; data-divider draws a rule.
+  trailing actions slot. data-size scales the heading; the bottom rule shows by default (data-divider="none" hides it).
 
   Public API:
     data-heading  heading text (rendered into .title)
     data-size     sm | md (default, unset) | lg
-    data-divider  show a bottom divider (boolean)
+    data-divider  bottom divider; shown by DEFAULT — set data-divider="none" to hide it
 
   Slots:
     heading      — custom heading element (replaces the default .title)

@@ -4,6 +4,7 @@
  * CSS handles the look — the colour, the style, and the dot type (data-type="dot").
  * The only behaviour is the optional close button (data-dismissible), which fires
  * tag-remove so the app can remove it, plus mirroring the data-icon glyph value.
+ * @fires tag-remove — the dismiss button is clicked. bubbles + composed.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

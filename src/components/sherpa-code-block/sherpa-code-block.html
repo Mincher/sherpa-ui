@@ -2,13 +2,16 @@
   sherpa-code-block — a monospace code display with a copy button.
 
   Public API:
-    data-code      the code to show (also settable via the default slot)
-    data-language  a short language label shown in the header (e.g. "ts")
+    data-code          the code to show (also settable via the default slot)
+    data-language      a short language label shown in the header (e.g. "bash")
+    data-line-numbers  boolean — render a line-number gutter beside the code.
+                       Numbers derive from the code's line count; CSS-gated.
 
   Slot:
     (default) — the code, when data-code is not set
 
-  Fires: code-copy — detail: { code } — on a successful clipboard write.
+  Fires:
+    code-copy — detail: { code } — on a successful clipboard write.
 -->
 <template id="default">
   <div class="header" part="header">
@@ -18,5 +21,5 @@
       <span class="copied-label">Copied</span>
     </button>
   </div>
-  <pre class="pre" part="pre"><code class="code" part="code"><slot></slot></code></pre>
+  <pre class="pre" part="pre"><code class="code" part="code"><span class="gutter" part="gutter" aria-hidden="true"></span><span class="code-text" part="code-text"><slot></slot></span></code></pre>
 </template>

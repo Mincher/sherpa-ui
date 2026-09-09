@@ -1,20 +1,25 @@
 /**
- * sherpa-pagination — the page-number strip for long lists.
+ * sherpa-pagination — results-size + page navigation control.
  *
- * data-total-pages and data-current-page drive a prev arrow, the page numbers,
- * and a next arrow. It shows the first page, the last page, and the pages around
- * the current one, with "…" gaps in between. The current page is highlighted and
- * can't be clicked; the arrows go grey at the first and last page. Clicking a
- * page number moves to it and fires page-change.
+ * A "results" zone (a "Rows per page" label + a native <select> for the page
+ * size) sits beside a "controls" zone: first (««) + prev (‹) buttons, a native
+ * number <input> for the current page, "of N" total text, and next (›) + last
+ * (»») buttons. Both native controls work without JS; JS only stamps the select
+ * options, clamps values, reflects state, and emits events. First/prev disable
+ * at page 1 and next/last at the last page (native `disabled` → inactive tokens).
  *
  * @element sherpa-pagination
- * @attr {number} data-total-pages  — total page count (default 1)
- * @attr {number} data-current-page — active 1-based page (default 1)
+ * @attr {number} data-page          — current 1-based page (default 1)
+ * @attr {number} data-total-pages   — total page count (default 1)
+ * @attr {number} data-page-size     — active rows-per-page value (default first option)
+ * @attr {string} data-rows-options  — comma list of rows choices, e.g. "10,25,50"
  *
- * @fires page-change — bubbles + composed. detail: { page }
+ * @fires page-change      — bubbles + composed. detail: { page }
+ * @fires page-size-change — bubbles + composed. detail: { pageSize }
  *
- * @prop {number} page       — current page (read/write)
- * @prop {number} totalPages — total page count (read/write)
+ * @prop {number} page        — current page (read/write)
+ * @prop {number} totalPages  — total page count (read/write)
+ * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -22,15 +27,19 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);
   static override html = new URL('./sherpa-pagination.html', import.meta.url);
-  static override observed = ['data-total-pages', 'data-current-page'];
+  static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
 
   override onRender(): void {
-    // One delegated listener for the whole pager — buttons come and go, this stays.
-    this.$('.pager')?.addEventListener('click', this.#onClick);
+    // Delegated click for the four nav buttons — they live in our own shadow tree.
+    this.$('.controls')?.addEventListener('click', this.#onClick);
+    this.$('.rows')?.addEventListener('change', this.#onRowsChange);
+    this.$('.page-input')?.addEventListener('change', this.#onPageInput);
+    this.#renderOptions();
     this.#render();
   }
 
-  override onChange(): void {
+  override onChange(name: string): void {
+    if (name === 'data-rows-options') this.#renderOptions();
     this.#render();
   }
 
@@ -44,18 +53,31 @@ export class SherpaPagination extends SherpaElement {
   }
 
   get page(): number {
-    const raw = parseInt(this.dataset['currentPage'] ?? '', 10) || 1;
+    const raw = parseInt(this.dataset['page'] ?? '', 10) || 1;
     return Math.min(this.totalPages, Math.max(1, raw));
   }
   set page(value: number) {
-    this.setAttribute('data-current-page', String(this.#clamp(value)));
+    this.setAttribute('data-page', String(this.#clamp(value)));
+  }
+
+  get pageSize(): number {
+    const opts = this.#rowsOptions();
+    const raw = parseInt(this.dataset['pageSize'] ?? '', 10);
+    if (!Number.isNaN(raw)) return raw;
+    return opts[0] ?? 10;
+  }
+  set pageSize(value: number) {
+    this.setAttribute('data-page-size', String(Math.max(1, Math.trunc(value) || 1)));
   }
 
   /** Navigate to a page (clamped) and emit page-change if it changed. */
   goToPage(n: number): void {
     const next = this.#clamp(n);
-    if (next === this.page) return;
-    this.setAttribute('data-current-page', String(next));
+    if (next === this.page) {
+      this.#render(); // snap the input back if the user typed an out-of-range value
+      return;
+    }
+    this.setAttribute('data-page', String(next));
     this.emit('page-change', { page: next });
   }
 
@@ -65,71 +87,88 @@ export class SherpaPagination extends SherpaElement {
     return Math.min(this.totalPages, Math.max(1, Math.trunc(n) || 1));
   }
 
-  /** Build a windowed page list: 1 … p-1 [p] p+1 … N, gaps marked as null. */
-  #window(page: number, total: number): (number | null)[] {
-    const wanted = new Set<number>([1, total, page - 1, page, page + 1]);
-    const sorted = [...wanted].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
-    const out: (number | null)[] = [];
-    let prev = 0;
-    for (const n of sorted) {
-      if (prev) {
-        // A gap of exactly one missing page: show that page rather than an
-        // ellipsis (an ellipsis hiding a single number wastes space + misleads).
-        if (n - prev === 2) out.push(prev + 1);
-        else if (n - prev > 1) out.push(null);
-      }
-      out.push(n);
-      prev = n;
+  /** Parse data-rows-options into a numeric list; default to a sensible set. */
+  #rowsOptions(): number[] {
+    const raw = this.dataset['rowsOptions'] ?? '';
+    const parsed = raw
+      .split(',')
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !Number.isNaN(n) && n > 0);
+    return parsed.length ? parsed : [10, 25, 50];
+  }
+
+  /** Stamp the rows-per-page <option>s from a cloning prototype. */
+  #renderOptions(): void {
+    const select = this.$<HTMLSelectElement>('.rows');
+    const optTpl = this.$<HTMLTemplateElement>('template.rows-opt-tpl');
+    if (!select || !optTpl) return;
+
+    select.replaceChildren();
+    for (const n of this.#rowsOptions()) {
+      const opt = optTpl.content.firstElementChild!.cloneNode(true) as HTMLOptionElement;
+      opt.value = String(n);
+      opt.textContent = String(n);
+      select.appendChild(opt);
     }
-    return out;
   }
 
   #render(): void {
-    const numbers = this.$('.numbers');
-    const numTpl = this.$<HTMLTemplateElement>('template.num-tpl');
-    const gapTpl = this.$<HTMLTemplateElement>('template.gap-tpl');
-    if (!numbers || !numTpl || !gapTpl) return;
-
-    const page = this.page;
     const total = this.totalPages;
+    const page = this.page;
 
-    numbers.replaceChildren();
-    for (const n of this.#window(page, total)) {
-      if (n === null) {
-        numbers.appendChild(gapTpl.content.firstElementChild!.cloneNode(true));
-        continue;
-      }
-      const btn = numTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      btn.dataset['page'] = String(n);
-      btn.textContent = String(n);
-      btn.setAttribute('aria-label', `Page ${n}`);
-      if (n === page) {
-        btn.toggleAttribute('data-current', true);
-        btn.setAttribute('aria-current', 'page');
-      }
-      numbers.appendChild(btn);
+    // Reflect the current page into the native input + its clamp range.
+    const input = this.$<HTMLInputElement>('.page-input');
+    if (input) {
+      input.max = String(total);
+      input.value = String(page);
     }
 
-    // Boundary disabling on prev/next (native disabled → inactive tokens).
+    // Reflect the total text.
+    const totalEl = this.$('.total');
+    if (totalEl) totalEl.textContent = `of ${total}`;
+
+    // Reflect the active page size onto the select.
+    const select = this.$<HTMLSelectElement>('.rows');
+    if (select) select.value = String(this.pageSize);
+
+    // Boundary disabling (native disabled → inactive tokens; CSS owns the look).
+    this.$<HTMLButtonElement>('.first')!.disabled = page <= 1;
     this.$<HTMLButtonElement>('.prev')!.disabled = page <= 1;
     this.$<HTMLButtonElement>('.next')!.disabled = page >= total;
+    this.$<HTMLButtonElement>('.last')!.disabled = page >= total;
   }
 
   #onClick = (event: Event): void => {
-    // The pager's buttons live in our OWN shadow tree, so event.target is not
-    // retargeted — closest() finds the button (or its inner glyph's button).
-    // This is the safe case; a child *custom element* emitting a composed event
-    // would need composedPath() instead.
-    const btn = (event.target as HTMLElement).closest<HTMLElement & { disabled?: boolean }>('.btn');
+    const btn = (event.target as HTMLElement).closest<HTMLButtonElement>('.btn');
     if (!btn || btn.disabled) return;
 
-    const action = btn.dataset['action'];
-    if (action === 'prev') this.goToPage(this.page - 1);
-    else if (action === 'next') this.goToPage(this.page + 1);
-    else if (action === 'page') {
-      const n = parseInt(btn.dataset['page'] ?? '', 10);
-      if (!Number.isNaN(n)) this.goToPage(n);
+    switch (btn.dataset['action']) {
+      case 'first':
+        this.goToPage(1);
+        break;
+      case 'prev':
+        this.goToPage(this.page - 1);
+        break;
+      case 'next':
+        this.goToPage(this.page + 1);
+        break;
+      case 'last':
+        this.goToPage(this.totalPages);
+        break;
     }
+  };
+
+  #onPageInput = (event: Event): void => {
+    const input = event.target as HTMLInputElement;
+    this.goToPage(parseInt(input.value, 10));
+  };
+
+  #onRowsChange = (event: Event): void => {
+    const select = event.target as HTMLSelectElement;
+    const size = parseInt(select.value, 10);
+    if (Number.isNaN(size)) return;
+    this.setAttribute('data-page-size', String(size));
+    this.emit('page-size-change', { pageSize: size });
   };
 }
 

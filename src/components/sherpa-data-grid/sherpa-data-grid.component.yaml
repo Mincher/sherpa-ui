@@ -33,6 +33,25 @@ anatomy:
           children:
             - el: tr
               class: head-row
+              children:
+                - el: th
+                  class: select-cell select-head
+                  attrs:
+                    scope: col
+                  children:
+                    - el: input
+                      class: select-all
+                      attrs:
+                        type: checkbox
+                        aria-label: Select all rows
+            - el: tr
+              class: filter-row
+              children:
+                - el: th
+                  class: select-cell filter-spacer
+                  attrs:
+                    scope: col
+                    aria-hidden: "true"
         - el: tbody
           class: body
           part: body
@@ -63,6 +82,16 @@ anatomy:
                     aria-hidden: "true"
 props:
   - $type: prop
+    name: data-filterable
+    type: string
+    kind: style
+    description: show a secondary header row of filter inputs
+  - $type: prop
+    name: data-selectable
+    type: string
+    kind: style
+    description: show a leading checkbox column (select-all + per-row)
+  - $type: prop
     name: data-sort-direction
     type: string
     kind: content
@@ -77,16 +106,23 @@ states:
     name: empty
     selector: ":host([data-empty])"
   - $type: state
+    name: selectable
+    selector: ":host([data-selectable])"
+  - $type: state
+    name: filterable
+    selector: ":host([data-filterable])"
+  - $type: state
     name: focus-visible
-    selector: .head-btn:focus-visible
+    selector: .select-all:focus-visible
 events:
   - $type: event
-    name: grid-sort-change
+    name: sort-change
     bubbles: true
     composed: true
-    trigger:
-      "on": click
-      node: .head-row
+  - $type: event
+    name: direction
+    bubbles: true
+    composed: true
   - $type: event
     name: row-click
     bubbles: true
@@ -95,14 +131,39 @@ events:
       "on": click
       node: .body
   - $type: event
-    name: direction
-    bubbles: true
-    composed: true
-  - $type: event
     name: row
     bubbles: true
     composed: true
+  - $type: event
+    name: selection-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: value
+    bubbles: true
+    composed: true
 tokens:
+  select-cell.inline-size: "{sherpa.display-space-2xl}"
+  select-cell.padding: "{sherpa.display-space-xs}"
+  select-head.background: "{sherpa.theme-surface-default-2}"
+  select-head.border-block-end: "{sherpa.display-border-width-base}"
+  select-all.accent-color: "{sherpa.theme-border-accent-base}"
+  row-select.accent-color: "{sherpa.theme-border-accent-base}"
+  filter-cell.padding: "{sherpa.display-space-2xs}"
+  filter-cell.background: "{sherpa.theme-surface-default-2}"
+  filter-cell.border-block-end: "{sherpa.display-border-width-base}"
+  filter-spacer.background: "{sherpa.theme-surface-default-2}"
+  filter-spacer.border-block-end: "{sherpa.display-border-width-base}"
+  filter-input.padding: "{sherpa.display-space-2xs}"
+  filter-input.color: "{sherpa.theme-content-body-base}"
+  filter-input.background: "{sherpa.theme-surface-default-base}"
+  filter-input.border-width: "{sherpa.display-border-width-base}"
+  filter-input.border-color: "{sherpa.style-border-base}"
+  filter-input.border-radius: "{sherpa.display-border-rounding-sm}"
   head-cell.background: "{sherpa.theme-surface-default-2}"
   head-cell.border-block-end: "{sherpa.display-border-width-base}"
   head-btn.gap: "{sherpa.display-space-2xs}"

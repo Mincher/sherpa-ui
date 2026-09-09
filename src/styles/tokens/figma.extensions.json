@@ -171,238 +171,6 @@
       }
     }
   },
-  "hero": {
-    "collectionId": "VariableCollectionId:932:36266",
-    "defaultMode": "base",
-    "vars": {
-      "paragraph-spacing": {
-        "base": 8,
-        "h1": 8,
-        "h2": 8,
-        "h3": 8,
-        "h4": 8,
-        "h5": 8,
-        "large": 8,
-        "small": 8,
-        "xs": 8
-      },
-      "size": {
-        "base": 14,
-        "h1": 24,
-        "h2": 20,
-        "h3": 16,
-        "h4": 14,
-        "h5": 12,
-        "large": 16,
-        "small": 12,
-        "xs": 10
-      },
-      "line-height": {
-        "base": 20,
-        "h1": 32,
-        "h2": 28,
-        "h3": 24,
-        "h4": 20,
-        "h5": 16,
-        "large": 24,
-        "small": 16,
-        "xs": 16
-      },
-      "weight/light": {
-        "base": 300,
-        "h1": 300,
-        "h2": 300,
-        "h3": 300,
-        "h4": 300,
-        "h5": 300,
-        "large": 300,
-        "small": 300,
-        "xs": 300
-      },
-      "weight/regular": {
-        "base": 400,
-        "h1": 400,
-        "h2": 400,
-        "h3": 400,
-        "h4": 400,
-        "h5": 400,
-        "large": 400,
-        "small": 400,
-        "xs": 400
-      },
-      "weight/medium": {
-        "base": 500,
-        "h1": 500,
-        "h2": 500,
-        "h3": 500,
-        "h4": 500,
-        "h5": 500,
-        "large": 500,
-        "small": 500,
-        "xs": 500
-      },
-      "weight/semibold": {
-        "base": 600,
-        "h1": 600,
-        "h2": 600,
-        "h3": 600,
-        "h4": 600,
-        "h5": 600,
-        "large": 600,
-        "small": 600,
-        "xs": 600
-      },
-      "weight/bold": {
-        "base": 700,
-        "h1": 700,
-        "h2": 700,
-        "h3": 700,
-        "h4": 700,
-        "h5": 700,
-        "large": 700,
-        "small": 700,
-        "xs": 700
-      },
-      "weight/black": {
-        "base": 900,
-        "h1": 900,
-        "h2": 900,
-        "h3": 900,
-        "h4": 900,
-        "h5": 900,
-        "large": 900,
-        "small": 900,
-        "xs": 900
-      },
-      "letter-spacing": {
-        "base": 0,
-        "h1": 0,
-        "h2": 0,
-        "h3": 0,
-        "h4": 0,
-        "h5": 0,
-        "large": 0,
-        "small": 0,
-        "xs": 0
-      }
-    }
-  },
-  "mono": {
-    "collectionId": "VariableCollectionId:932:36267",
-    "defaultMode": "base",
-    "vars": {
-      "paragraph-spacing": {
-        "base": 8,
-        "h1": 8,
-        "h2": 8,
-        "h3": 8,
-        "h4": 8,
-        "h5": 8,
-        "large": 8,
-        "small": 8,
-        "xs": 8
-      },
-      "size": {
-        "base": 14,
-        "h1": 24,
-        "h2": 20,
-        "h3": 16,
-        "h4": 14,
-        "h5": 12,
-        "large": 16,
-        "small": 12,
-        "xs": 10
-      },
-      "line-height": {
-        "base": 20,
-        "h1": 32,
-        "h2": 28,
-        "h3": 24,
-        "h4": 20,
-        "h5": 16,
-        "large": 24,
-        "small": 16,
-        "xs": 16
-      },
-      "weight/light": {
-        "base": 300,
-        "h1": 300,
-        "h2": 300,
-        "h3": 300,
-        "h4": 300,
-        "h5": 300,
-        "large": 300,
-        "small": 300,
-        "xs": 300
-      },
-      "weight/regular": {
-        "base": 400,
-        "h1": 400,
-        "h2": 400,
-        "h3": 400,
-        "h4": 400,
-        "h5": 400,
-        "large": 400,
-        "small": 400,
-        "xs": 400
-      },
-      "weight/medium": {
-        "base": 500,
-        "h1": 500,
-        "h2": 500,
-        "h3": 500,
-        "h4": 500,
-        "h5": 500,
-        "large": 500,
-        "small": 500,
-        "xs": 500
-      },
-      "weight/semibold": {
-        "base": 600,
-        "h1": 600,
-        "h2": 600,
-        "h3": 600,
-        "h4": 600,
-        "h5": 600,
-        "large": 600,
-        "small": 600,
-        "xs": 600
-      },
-      "weight/bold": {
-        "base": 700,
-        "h1": 700,
-        "h2": 700,
-        "h3": 700,
-        "h4": 700,
-        "h5": 700,
-        "large": 700,
-        "small": 700,
-        "xs": 700
-      },
-      "weight/black": {
-        "base": 900,
-        "h1": 900,
-        "h2": 900,
-        "h3": 900,
-        "h4": 900,
-        "h5": 900,
-        "large": 900,
-        "small": 900,
-        "xs": 900
-      },
-      "letter-spacing": {
-        "base": 0,
-        "h1": 0,
-        "h2": 0,
-        "h3": 0,
-        "h4": 0,
-        "h5": 0,
-        "large": 0,
-        "small": 0,
-        "xs": 0
-      }
-    }
-  },
   "structure-snap-all-edges": {
     "collectionId": "VariableCollectionId:955:36419",
     "defaultMode": "default",
@@ -1235,51 +1003,51 @@
       },
       "size/3xs": {
         "light": 2,
-        "dark": 4
+        "dark": 2
       },
       "size/2xs": {
         "light": 4,
-        "dark": 8
+        "dark": 4
       },
       "size/xs": {
         "light": 8,
-        "dark": 12
+        "dark": 8
       },
       "size/sm": {
         "light": 12,
-        "dark": 16
+        "dark": 12
       },
       "size/md": {
         "light": 16,
-        "dark": 20
+        "dark": 16
       },
       "size/lg": {
         "light": 20,
-        "dark": 24
+        "dark": 20
       },
       "size/xl": {
         "light": 24,
-        "dark": 28
+        "dark": 24
       },
       "size/2xl": {
         "light": 28,
-        "dark": 32
+        "dark": 28
       },
       "size/3xl": {
         "light": 36,
-        "dark": 40
+        "dark": 36
       },
       "size/4xl": {
         "light": 40,
-        "dark": 48
+        "dark": 40
       },
       "size/5xl": {
         "light": 48,
-        "dark": 56
+        "dark": 48
       },
       "size/6xl": {
         "light": 56,
-        "dark": 64
+        "dark": 56
       },
       "space/snapped": {
         "light": 0,
@@ -1295,47 +1063,47 @@
       },
       "space/2xs": {
         "light": 2,
-        "dark": 4
+        "dark": 2
       },
       "space/xs": {
         "light": 4,
-        "dark": 8
+        "dark": 4
       },
       "space/sm": {
         "light": 8,
-        "dark": 12
+        "dark": 8
       },
       "space/base": {
         "light": 12,
-        "dark": 16
+        "dark": 12
       },
       "space/lg": {
         "light": 16,
-        "dark": 20
+        "dark": 16
       },
       "space/xl": {
         "light": 20,
-        "dark": 24
+        "dark": 20
       },
       "space/2xl": {
         "light": 28,
-        "dark": 32
+        "dark": 28
       },
       "space/3xl": {
         "light": 36,
-        "dark": 40
+        "dark": 36
       },
       "space/4xl": {
         "light": 40,
-        "dark": 48
+        "dark": 40
       },
       "space/5xl": {
         "light": 48,
-        "dark": 56
+        "dark": 48
       },
       "space/6xl": {
         "light": 56,
-        "dark": 64
+        "dark": 56
       },
       "fonts/weight/300": {
         "light": 300,
@@ -1893,47 +1661,47 @@
       },
       "size/3xs": {
         "light": 8,
-        "dark": 4
+        "dark": 8
       },
       "size/2xs": {
         "light": 12,
-        "dark": 8
+        "dark": 12
       },
       "size/xs": {
         "light": 16,
-        "dark": 12
+        "dark": 16
       },
       "size/sm": {
         "light": 20,
-        "dark": 16
+        "dark": 20
       },
       "size/md": {
         "light": 24,
-        "dark": 20
+        "dark": 24
       },
       "size/lg": {
         "light": 28,
-        "dark": 24
+        "dark": 28
       },
       "size/xl": {
         "light": 32,
-        "dark": 28
+        "dark": 32
       },
       "size/2xl": {
         "light": 36,
-        "dark": 32
+        "dark": 36
       },
       "size/3xl": {
         "light": 48,
-        "dark": 40
+        "dark": 48
       },
       "size/4xl": {
         "light": 56,
-        "dark": 48
+        "dark": 56
       },
       "size/5xl": {
         "light": 64,
-        "dark": 56
+        "dark": 64
       },
       "size/6xl": {
         "light": 64,
@@ -1949,47 +1717,47 @@
       },
       "space/3xs": {
         "light": 4,
-        "dark": 2
+        "dark": 4
       },
       "space/2xs": {
         "light": 8,
-        "dark": 4
+        "dark": 8
       },
       "space/xs": {
         "light": 12,
-        "dark": 8
+        "dark": 12
       },
       "space/sm": {
         "light": 16,
-        "dark": 12
+        "dark": 16
       },
       "space/base": {
         "light": 20,
-        "dark": 16
+        "dark": 20
       },
       "space/lg": {
         "light": 24,
-        "dark": 20
+        "dark": 24
       },
       "space/xl": {
         "light": 28,
-        "dark": 24
+        "dark": 28
       },
       "space/2xl": {
         "light": 36,
-        "dark": 32
+        "dark": 36
       },
       "space/3xl": {
         "light": 48,
-        "dark": 40
+        "dark": 48
       },
       "space/4xl": {
         "light": 56,
-        "dark": 48
+        "dark": 56
       },
       "space/5xl": {
         "light": 64,
-        "dark": 56
+        "dark": 64
       },
       "space/6xl": {
         "light": 64,

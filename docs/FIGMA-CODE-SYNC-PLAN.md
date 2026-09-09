@@ -9,9 +9,10 @@ Finish **parity** first, then build the **sync** machinery.
 
 ## Phase A — Finish parity (components match Figma)
 
-Token parity is **done**: every component var resolves through the projected layer,
-laid out in `@layer core → style → overrides` (+ per-component partials). Round-trip
-proven lossless (908 tokens, 0 diff).
+Token parity is **done**: every component var resolves through the projected layers,
+laid out in `@layer core → display-mode → theme → layout → structure → style →
+elevation → components` (the layer families mirror the Figma collections; component
+partials are the final layer). Round-trip proven lossless (908 tokens, 0 diff).
 
 What remains is **design parity** — some components were never checked against their
 Figma render (the rebuild workflow only covered the scoped-collection families).

@@ -19,15 +19,16 @@
     data-favorite        — favourited state (the star toggle)
 
   Slots:
-    breadcrumb — a custom breadcrumb trail (else populate() stamps a sherpa-breadcrumbs)
+    breadcrumb — a custom breadcrumb trail (slot a sherpa-breadcrumbs for populate())
     actions    — trailing app actions (buttons)
-    filters    — the view-scope filter toolbar (else populate() stamps a quick-filter-toolbar)
+    filters    — the view-scope filter toolbar (slot a quick-filter-toolbar for populate())
 
   Fires:
-    back             — detail: {}            (back button)
-    favorite-toggle  — detail: { favorite }  (star toggle)
-    view-export      — detail: {}            (export action)
-    breadcrumb-click — detail: { index, label, href }  (re-dispatched from breadcrumbs)
+    back-click          — detail: {}            (back button)
+    favorite-toggle     — detail: { favorite }  (star toggle)
+    view-export         — detail: {}            (export action)
+    notifications-open  — detail: {}            (notifications button)
+    breadcrumb-click    — detail: { index, label, href }  (re-dispatched from breadcrumbs)
 -->
 <template id="default">
   <header class="bar" part="bar" role="banner">

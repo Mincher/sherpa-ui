@@ -44,15 +44,15 @@ props:
     kind: content
     description: helper line under the title
   - $type: prop
+    name: data-footer
+    type: string
+    kind: style
+    description: none → hide the footer region entirely (CSS-only)
+  - $type: prop
     name: data-label
     type: string
     kind: content
     description: header title (used when no header slot is given)
-  - $type: prop
-    name: data-multiple
-    type: string
-    kind: content
-    description: present → default footer control is a checkbox, not a radio
   - $type: prop
     name: data-orientation
     type: enum
@@ -62,6 +62,17 @@ props:
       - horizontal
     default: vertical
     description: vertical | horizontal (footer beside the body vs below; default vertical)
+  - $type: prop
+    name: data-select-mode
+    type: enum
+    kind: content
+    values:
+      - radio
+      - checkbox
+    default: radio
+    description: >-
+      radio | checkbox — which footer control shows . checkbox = multi-select (re-click toggles);
+      radio = single-select.
   - $type: prop
     name: data-selected
     type: string
@@ -103,6 +114,9 @@ states:
   - $type: state
     name: none
     selector: ":host([data-footer=\"none\"])"
+  - $type: state
+    name: checkbox
+    selector: ":host([data-select-mode=\"checkbox\"])"
   - $type: state
     name: selected
     selector: ":host([data-selected])"

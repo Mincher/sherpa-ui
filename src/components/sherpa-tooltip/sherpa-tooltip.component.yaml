@@ -32,6 +32,11 @@ anatomy:
         - el: span
           class: tip-text
         - slot: tip
+        - el: span
+          class: arrow
+          part: arrow
+          attrs:
+            aria-hidden: "true"
 props:
   - $type: prop
     name: data-placement

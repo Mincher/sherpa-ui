@@ -2,33 +2,33 @@
  * sherpa-loader.css — all loader presentation.
  *
  * A track ring plus a single rotating arc (the ::after worm). The track ring
- * binds the neutral Style border; the moving arc is the brand colour, routed
+ * binds the neutral Style border; the moving arc is the accent colour, routed
  * through the semantic --_arc property so it stays a single source of truth. The
  * loader is a neutral spinner — it carries no status binding. Size, orientation,
- * and the optional panel surface are pure data-* selectors. The animation is
- * disabled under prefers-reduced-motion, leaving a static partial ring.
+ * and the optional panel surface are pure data-* selectors.
  */
 
 :host {
   /* private knobs, overridden per size */
-  --_spinner-size: var(--sherpa-display-size-md, 20px);
+  --_spinner-size: var(--sherpa-display-mode-size-md, 20px);
   --_spinner-weight: 2px;
-  /* The rotating arc: the brand/active token — one place to re-point it. */
-  --_arc: var(--sherpa-theme-content-active-base, #8500cc);
+  /* The rotating arc: the accent indicator token (Figma style-indicator/accent) —
+     one place to re-point it. Accent blue, NOT the active purple. */
+  --_arc: var(--sherpa-style-indicator-accent, #3b4ccd);
 
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-display-space-sm, 12px);
-  padding: var(--sherpa-display-space-base, 16px);
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-base, 16px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* ── Panel: solid surface background for full-area loading ─────────────── */
 :host([data-panel]) {
   background: var(--sherpa-style-surface-base, #ffffff);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 /* ── Orientation ───────────────────────────────────────────────────────── */
@@ -46,35 +46,32 @@
 .spinner {
   flex-shrink: 0;
   position: relative;
-  width: var(--_spinner-size);
-  height: var(--_spinner-size);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
-  border: var(--_spinner-weight) solid var(--sherpa-style-border-base, #d5d5d5);
+  inline-size: var(--_spinner-size);
+  block-size: var(--_spinner-size);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  /* Figma track binds style-surface/darker (a stale alias resolving to #b3b3c3);
+     the nearest live token is theme-surface-default-2. */
+  border: var(--_spinner-weight) solid var(--sherpa-theme-surface-default-2, #b3b3c3);
 
   /* The rotating worm — one arc drawn over the track, top edge cut away. */
   &::after {
     content: "";
     position: absolute;
     inset: calc(var(--_spinner-weight) * -1);
-    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     border: var(--_spinner-weight) solid var(--_arc);
     border-block-start-color: transparent;
     animation: sherpa-loader-spin 0.8s linear infinite;
-
-    /* ── Reduced motion: freeze the arc (still communicates a partial ring) ─── */
-    @media (prefers-reduced-motion: reduce) {
-      animation: none;
-    }
   }
 }
 
 /* ── Sizes (unset = md) ────────────────────────────────────────────────── */
 :host([data-size="sm"]) {
-  --_spinner-size: var(--sherpa-display-size-xs, 12px);
+  --_spinner-size: var(--sherpa-display-mode-size-xs, 12px);
   --_spinner-weight: 1px;
 }
 :host([data-size="lg"]) {
-  --_spinner-size: var(--sherpa-display-size-3xl, 40px);
+  --_spinner-size: var(--sherpa-display-mode-size-3xl, 40px);
   --_spinner-weight: 4px;
 }
 

@@ -173,26 +173,17 @@ states:
     selector: .toggle:focus-visible
 events:
   - $type: event
-    name: dismiss
+    name: header-dismiss
     bubbles: true
     composed: true
-    trigger:
-      "on": click
-      node: .close
   - $type: event
-    name: toggle
+    name: header-collapse
     bubbles: true
     composed: true
-    trigger:
-      "on": click
-      node: .toggle
   - $type: event
-    name: drag
+    name: header-drag
     bubbles: true
     composed: true
-    trigger:
-      "on": pointerdown
-      node: .drag
 tokens:
   header.gap: "{sherpa.theme-gap-md}"
   row.gap: "{sherpa.theme-gap-md}"
@@ -234,8 +225,23 @@ $extensions:
         values:
           - Default
           - Panel
+          - accordion
     booleanProps:
       - hasDragHandle
       - hasActions
       - hasIcon
       - hasMetadata
+    _divergence:
+      accordionVariant: >-
+        Figma's Container Header set has three Variant values
+        (default / accordion / Panel). Code data-variant exposes only
+        `default` and `panel`. The `accordion` variant is the default
+        skeleton whose trailing affordance is a disclosure chevron
+        (iconStart 17:4752) instead of the close X (iconStart 17:4120) —
+        i.e. exactly the existing `data-collapsible` state (shows .toggle,
+        fires header-collapse, rotates on data-collapsed). It is therefore
+        represented as a boolean state, not a data-variant value, to avoid a
+        redundant second path to the same chevron affordance. A fully
+        standalone disclosure card (native <details>/<summary>, own chevron)
+        is the separate `sherpa-accordion` component. No `accordion`
+        data-variant value is planned.

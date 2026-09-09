@@ -7,6 +7,8 @@
  *
  * Shortcut: SherpaToast.info/success/warning/critical(message, opts?) makes a
  * toast, adds it to the page, and hands it back.
+ * @fires toast-dismiss — the toast is dismissed (close or auto). bubbles + composed. detail: {}
+ * @fires toast-action  — the action link is clicked. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -23,13 +25,14 @@ type ToastStatus = 'info' | 'success' | 'warning' | 'critical';
 export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
-  static override observed = ['data-message'];
+  static override observed = ['data-heading', 'data-message', 'data-value', 'data-action'];
 
   #timer: ReturnType<typeof setTimeout> | null = null;
 
   override onRender(): void {
-    this.#syncMessage();
+    this.#syncContent();
     this.$('.close')?.addEventListener('click', () => this.dismiss());
+    this.$('.action')?.addEventListener('click', () => this.emit('toast-action', {}));
   }
 
   override onConnect(): void {
@@ -45,7 +48,7 @@ export class SherpaToast extends SherpaElement {
   }
 
   override onChange(): void {
-    this.#syncMessage();
+    this.#syncContent();
   }
 
   /** Dismiss the toast: stop the timer, announce, and remove from the DOM. */
@@ -58,9 +61,15 @@ export class SherpaToast extends SherpaElement {
     this.remove();
   }
 
-  #syncMessage(): void {
-    const el = this.$('.message');
-    if (el && this.dataset['message'] !== undefined) el.textContent = this.dataset['message'];
+  /** Mirror heading (data-heading, or the data-message alias), value, and action. */
+  #syncContent(): void {
+    const heading = this.$('.heading');
+    const headingText = this.dataset['heading'] ?? this.dataset['message'];
+    if (heading && headingText !== undefined) heading.textContent = headingText;
+    const value = this.$('.value');
+    if (value) value.textContent = this.dataset['value'] ?? '';
+    const action = this.$('.action');
+    if (action) action.textContent = this.dataset['action'] ?? '';
   }
 
   /* ── Static factory helpers ────────────────────────────────────────── */

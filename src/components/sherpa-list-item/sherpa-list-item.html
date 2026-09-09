@@ -7,7 +7,7 @@
   data-* flag; the leading slot still accepts a custom icon/avatar.
 
   Public API:
-    data-heading      primary text
+    data-label        primary text (data-heading is a back-compat alias)
     data-description  secondary text
     data-icon         a leading icon glyph
     data-current      current-row state
@@ -21,11 +21,15 @@
 
   Slots:
     leading   — a custom icon / avatar (in addition to the data-icon glyph)
-    control   — a custom selection control (else the built-in checkbox box)
+    control   — a custom selection control (else the built-in native checkbox)
     trailing  — actions / badges
 
+  Activation: interactive rows expose a native <button> as the click target
+  (keyboard-reachable, Enter/Space activatable); static rows render a plain span.
+  CSS shows exactly one off :host([data-interactive]).
+
   Fires:
-    item-click   — detail: { heading }
+    item-click   — detail: { label }
     item-expand  — detail: { expanded }
     item-select  — detail: { selected }
     item-drag    — detail: {}
@@ -40,7 +44,7 @@
         <span class="expand-glyph" aria-hidden="true">&#x25B8;</span>
       </button>
       <span class="control" part="control">
-        <slot name="control"><span class="checkbox" aria-hidden="true"></span></slot>
+        <slot name="control"><input class="checkbox" type="checkbox" aria-label="Select row" /></slot>
       </span>
       <span class="leading" part="leading" aria-hidden="true">
         <span class="icon" part="icon"></span>
@@ -48,7 +52,11 @@
       </span>
     </span>
 
-    <span class="content" part="content">
+    <button class="content content-button" part="content" type="button">
+      <span class="title" part="title"></span>
+      <span class="description" part="description"></span>
+    </button>
+    <span class="content content-static" part="content">
       <span class="title" part="title"></span>
       <span class="description" part="description"></span>
     </span>

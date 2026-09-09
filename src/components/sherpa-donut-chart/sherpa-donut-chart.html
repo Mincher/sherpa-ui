@@ -16,14 +16,14 @@
   Fires: nothing — display only (compose with sherpa-chart-legend).
 -->
 <template id="default">
-  <div class="layout" part="layout">
+  <figure class="layout" part="layout">
     <div class="ring-wrap">
-      <div class="ring" part="ring"></div>
+      <div class="ring" part="ring" role="img" aria-label="Donut chart"></div>
       <div class="centre">
         <span class="value" part="value"></span>
         <span class="sub" part="sub"></span>
       </div>
     </div>
     <slot name="legend"></slot>
-  </div>
+  </figure>
 </template>

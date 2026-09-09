@@ -57,7 +57,7 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
     await new Promise((res) => setTimeout(res, 10));
 
     const names = () =>
-      Array.from(el.shadowRoot!.querySelectorAll('.body .row .cell:first-child')).map((c) => c.textContent);
+      Array.from(el.shadowRoot!.querySelectorAll('.body .row')).map((row) => row.querySelector('.cell')!.textContent);
     const scoreHeader = () =>
       Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.head-cell')).find(
         (h) => h.dataset['field'] === 'score',

@@ -22,34 +22,34 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
 
   /* private surface + ink for the bubble; role blocks re-pin these */
-  --_surface: var(--sherpa-theme-surface-default-1, #fdfdfd);
-  --_ink: var(--sherpa-theme-content-body-base, #18191a);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 .message {
   display: grid;
-  grid-template-columns: var(--sherpa-display-size-lg, 24px) minmax(0, 1fr);
-  gap: var(--sherpa-display-space-xs, 8px);
+  grid-template-columns: var(--sherpa-display-mode-size-lg, 24px) minmax(0, 1fr);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   align-items: start;
-  max-width: 100%;
+  max-inline-size: 100%;
 }
 
 .stack {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
-  min-width: 0;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  min-inline-size: 0;
 }
 
 /* ── Avatar ──────────────────────────────────────────────────────────── */
 .avatar {
-  width: var(--sherpa-display-size-lg, 24px);
-  height: var(--sherpa-display-size-lg, 24px);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--_status-surface, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-font-size-body-small, 12px);
@@ -58,31 +58,33 @@
 }
 /* Default glyph: a small filled dot; a slotted avatar hides it via the slot. */
 .avatar-glyph {
-  width: var(--sherpa-theme-size-icon-2xs, 10px);
-  height: var(--sherpa-theme-size-icon-2xs, 10px);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: currentColor;
 }
 
 /* ── Meta row (author + time) ────────────────────────────────────────── */
 .meta {
   display: none;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   align-items: baseline;
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .author { font-weight: var(--sherpa-font-weight-medium, 500); }
-.time { color: var(--sherpa-theme-content-body-1, #404047); }
+.time { color: var(--sherpa-theme-content-body-1, #35353d); }
 
+:host([data-name]) .meta,
 :host([data-author]) .meta,
+:host([data-timestamp]) .meta,
 :host([data-time]) .meta { display: flex; }
-:host(:not([data-author])) .author { display: none; }
-:host(:not([data-time])) .time { display: none; }
+:host(:not([data-name]):not([data-author])) .author { display: none; }
+:host(:not([data-timestamp]):not([data-time])) .time { display: none; }
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
 .bubble {
-  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-sm, 12px);
   background: var(--_surface);
   color: var(--_ink);
   border-radius:
@@ -98,13 +100,13 @@
 :host([data-has-content]) .content { display: none; }
 
 .bubble ::slotted(*) { margin: 0; }
-.bubble ::slotted(* + *) { margin-top: var(--sherpa-display-space-xs, 8px); }
+.bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 
 /* ── Assistant (default): left-aligned, neutral Style surface, avatar shown ─ */
 :host,
 :host([data-type="assistant"]) {
-  --_surface: var(--sherpa-theme-surface-default-1, #fdfdfd);
-  --_ink: var(--sherpa-theme-content-body-base, #18191a);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* ── User: right-aligned, accent surface, no avatar ──────────────────── */
@@ -113,7 +115,7 @@
   justify-items: end;
 }
 :host([data-type="user"]) .avatar { display: none; }
-:host([data-type="user"]) .stack { align-items: flex-end; max-width: 85%; }
+:host([data-type="user"]) .stack { align-items: flex-end; max-inline-size: 85%; }
 :host([data-type="user"]) {
   /* Look-tier routing: an ancestor status recolours; else the Saturated accent. */
   --_surface: var(--_status-surface, #3b4ccd);
@@ -132,6 +134,6 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
 }
 :host([data-type="system"]) {
-  --_surface: var(--sherpa-theme-surface-default-2, #f2f2f5);
-  --_ink: var(--sherpa-theme-content-body-1, #404047);
+  --_surface: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  --_ink: var(--sherpa-theme-content-body-1, #35353d);
 }

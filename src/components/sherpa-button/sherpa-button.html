@@ -6,13 +6,19 @@
     icon    — icon only (square)
 
   Public API (data-* + native):
-    data-variant   primary | secondary | tertiary | tertiary-on-color
-    data-size      2xs | xs | sm | md | xl | 2xl | 3xl   (default md)
+    data-look      saturated (primary) | transparent (tertiary)
+                   (omitted = default / "secondary": white surface, grey border, dark ink)
+    data-size      2xs | xs | sm | lg | xl   (default omitted = base size)
     data-type      icon            (default omitted)
-    data-status    critical | warning | success | info | urgent
+    data-status    critical | warning | success | info | urgent  (tints the look tier)
     data-icon-start / data-icon-end   icon glyph value
+    data-badge     trailing badge glyph/text value (or slot a node into "badge")
     data-label     label text (or use the default slot)
     disabled       native disabled state
+
+  Slots:
+    (default)      label content
+    badge          trailing badge — data-accepts: badge
 
   Fires: button-click
 -->
@@ -21,6 +27,7 @@
     <i class="icon icon-start" aria-hidden="true"></i>
     <span class="label"><slot></slot></span>
     <i class="icon icon-end" aria-hidden="true"></i>
+    <span class="badge"><slot name="badge" data-accepts="badge"></slot></span>
   </button>
 </template>
 

@@ -167,12 +167,9 @@ states:
     selector: .back:focus-visible
 events:
   - $type: event
-    name: back
+    name: back-click
     bubbles: true
     composed: true
-    trigger:
-      "on": click
-      node: .back
   - $type: event
     name: favorite-toggle
     bubbles: true
@@ -236,7 +233,7 @@ tokens:
   notif-badge.block-size: "{sherpa.display-size-md}"
   notif-badge.padding-inline: "{sherpa.display-space-3xs}"
   notif-badge.border-radius: "{sherpa.display-border-rounding-full}"
-  notif-badge.background: "{sherpa.theme-surface-default-base}"
+  notif-badge.background: "{sherpa.theme-surface-accent-2}"
   notif-badge.color: "{sherpa.theme-content-body-base-fixed}"
   notif-badge.font-size: "{sherpa.font-size-body-xs}"
   notif-badge.font-weight: "{sherpa.font-weight-semibold}"
@@ -248,7 +245,7 @@ tokens:
   title.font-weight: "{sherpa.font-weight-bold}"
   title.color: "{sherpa.theme-content-body-base}"
   loading-bar.block-size: "{sherpa.display-border-width-lg}"
-  loading-fill.background: "{sherpa.display-color-brand-color-3}"
+  loading-fill.background: "{sherpa.theme-surface-active-2}"
 $extensions:
   sherpa:
     figmaName: App Header

@@ -51,9 +51,9 @@ npm run mcp               # stdio transport — connect from Claude Desktop / Cu
 - **CSS** with design tokens sourced from Figma Variables.
 - **MCP server** (`mcp-server/`) — gives AI agents structured access to schemas, tokens, patterns, and architecture rules.
 
-### Component anatomy (three-file split)
+### Component anatomy (three source files + one generated def)
 
-Every component lives in `components/sherpa-<name>/` with exactly three files:
+Every component lives in `src/components/sherpa-<name>/`. Three hand-written source files:
 
 | File | Owns |
 |------|------|
@@ -61,22 +61,28 @@ Every component lives in `components/sherpa-<name>/` with exactly three files:
 | `sherpa-<name>.css` | **All** presentation: variants, states, visibility, responsiveness, transitions |
 | `sherpa-<name>.html` | Shadow DOM template, slots, semantic structure |
 
+A fourth file, `sherpa-<name>.component.yaml`, is **generated** (by `scripts/*.mjs` from the
+source + Figma) and git-tracked — it is the component's thin def, consumed by the MCP and the
+spec/validate tooling. Never hand-edit it; regenerate it.
+
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 
-### `SherpaElement` base class (`components/utilities/sherpa-element/sherpa-element.ts`)
+### `SherpaElement` base class (`src/core/sherpa-element.ts`)
 
 All components extend this. It handles template fetching (with class-level cache), shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support.
 
 ```ts
 export class SherpaFoo extends SherpaElement {
-  static override get cssUrl()  { return new URL('./sherpa-foo.css',  import.meta.url).href; }
-  static override get htmlUrl() { return new URL('./sherpa-foo.html', import.meta.url).href; }
-  static override get observedAttributes() { return [...super.observedAttributes, 'data-variant']; }
+  static override css = new URL('./sherpa-foo.css', import.meta.url);
+  static override html = new URL('./sherpa-foo.html', import.meta.url);
+  static override observed = ['data-variant'];
 
   override onRender()  { /* shadow DOM ready — cache refs, set defaults, wire host listeners */ }
   override onConnect() { /* fires once after first render — for one-time setup needing DOM */ }
   override onDisconnect() { /* clean up timers / observers */ }
-  override onAttributeChanged(name, oldVal, newVal) { /* react to attribute changes */ }
+  override onChange(name: string, oldVal: string | null, newVal: string | null) { /* react to attribute changes */ }
+
+  #onClick = (): void => { this.emit('foo-click'); };  // emit() sets bubbles + composed
 }
 customElements.define('sherpa-foo', SherpaFoo);
 ```
@@ -152,12 +158,26 @@ glyph** (a pure-CSS triangle/chevron, where the px is geometry not spacing) opts
 with a trailing `/* off-grid-ok */` comment on the declaration — do not use it to
 excuse real spacing drift.
 
-Cascade layer order (declared in `css/styles/index.css`):
+Cascade layer order (declared in the generated `src/styles/tokens/tokens.css`) mirrors
+the Figma collection families — each layer owns its base values plus its own mode /
+extension blocks:
 ```
-reset → primitives → alias → platform → theme → density → status → components → utilities
+core → display-mode → theme → layout → structure → style → elevation → components
 ```
+- **core** — shared base geometry (Primitives are inlined as literals, not emitted).
+- **display-mode** — light/dark colour+scale ramp + dark re-point + density (`[data-density]`).
+- **theme** — semantic surface/border/content/size/weight/font, scoped `[data-theme]`; font atoms + `.sherpa-text-*` classes.
+- **layout** — grid properties + the `.sherpa-view` app-shell utility.
+- **structure** — bound sizes / content sizes / per-corner rounding + snap (`[data-snap]`).
+- **style** — default + status (`[data-status]`) + look tiers (`[data-look]`) + categorical data-viz series.
+- **elevation** — shadow styling (`[data-elevation]`).
+- **components** — each component's own scoped partial, last (guaranteed last word).
 
-Themes live in `css/styles/sherpa-themes.css` (always loaded). Activate via `<html data-theme="apex-2-purple">`. Mode via `<html data-mode="auto|light|dark|hc">`. `ThemeManager` (`components/utilities/theme-manager.js`) handles persistence. There is no `light-dark()` in component CSS — themes own mode handling.
+Layers are re-projected from Figma by `scripts/project-tokens.mjs`; edit tokens in Figma,
+re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
+`<html data-theme="sherpa">`. Mode via `<html data-mode="auto|light|dark|hc">`.
+`ThemeManager` handles persistence. There is no `light-dark()` in component CSS — the
+display-mode layer owns mode handling.
 
 ### Status cascade (`[data-status]`)
 
@@ -225,7 +245,7 @@ See `patterns/flows/add|edit|delete.html` for canonical HTML structure.
 
 ### Container queries
 
-Components use `@container` for responsive adaptation — **no viewport `@media` queries** inside component CSS. Four `@media (forced-colors: active)` blocks exist for OS accessibility; these are intentional exceptions.
+Components use `@container` for responsive adaptation — **no viewport `@media` queries** inside component CSS. The only sanctioned `@media` inside a component is `(forced-colors: active)` for OS high-contrast. Do **not** add `@media (prefers-reduced-motion)` blocks to component CSS — motion gating is owned globally, not per component.
 
 ```css
 :host { container: sherpa-card / inline-size; }

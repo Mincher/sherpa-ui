@@ -144,20 +144,3 @@ test('slotting [slot="empty"] shows the empty overlay (slot-driven, D6)', async 
   expect(r.error).toBe(false);
   expect(r.loading).toBe(false);
 });
-
-test('data-color-set tints the container surface via the color-sets override', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const mk = async (set?: string) => {
-      const c = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-      if (set) c.setAttribute('data-color-set', set);
-      c.innerHTML = '<div slot="body">x</div>';
-      document.getElementById('root')!.appendChild(c);
-      await c.rendered;
-      return getComputedStyle(c).backgroundColor;
-    };
-    return { neutral: await mk(), violet: await mk('violet'), teal: await mk('teal') };
-  });
-  expect(r.neutral).toBe('rgb(255, 255, 255)'); // passthrough = white
-  expect(r.violet).not.toBe(r.neutral); // hue re-points the surface
-  expect(r.teal).not.toBe(r.violet); // each hue distinct
-});

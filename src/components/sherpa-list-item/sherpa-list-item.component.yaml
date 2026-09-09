@@ -128,6 +128,11 @@ props:
     default: false
     description: hover + click behaviour
   - $type: prop
+    name: data-label
+    type: string
+    kind: content
+    description: primary text (data-heading is a back-compat alias)
+  - $type: prop
     name: data-selectable
     type: string
     kind: style
@@ -175,9 +180,6 @@ states:
   - $type: state
     name: current
     selector: ":host([data-current])"
-  - $type: state
-    name: not-heading
-    selector: ":host(:not([data-heading]))"
   - $type: state
     name: not-description
     selector: ":host(:not([data-description]))"

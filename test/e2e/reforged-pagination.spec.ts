@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * sherpa-pagination on the reforged base — page navigation. Proves the numbered
- * buttons render from data-total-pages, the current page is highlighted +
- * non-interactive, clicking a page / prev / next fires page-change and moves
- * data-current-page, prev/next disable at the boundaries, and large ranges window
- * with ellipsis gaps.
+ * sherpa-pagination on the reforged base — the Figma two-zone control (48:65826):
+ * a "Rows per page" select + a first/prev · page-input · "of N" · next/last stepper.
+ * Proves the page input + total render, prev/next/first/last move and disable at the
+ * boundaries, page-change / page-size-change fire, and the rows-per-page select works.
  */
 
 const HARNESS = '/test/reforged/harness.html';
@@ -14,6 +13,7 @@ type PagerEl = HTMLElement & {
   rendered?: Promise<void>;
   page?: number;
   totalPages?: number;
+  pageSize?: number;
   goToPage?: (n: number) => void;
 };
 
@@ -25,100 +25,81 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => customElements.whenDefined('sherpa-pagination'));
 });
 
-test('renders a numbered button per page and highlights the current one', async ({ page }) => {
+test('renders the page input + "of N" total and the rows-per-page select', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-pagination') as PagerEl;
-    el.setAttribute('data-total-pages', '5');
-    el.setAttribute('data-current-page', '2');
+    el.setAttribute('data-page', '2');
+    el.setAttribute('data-total-pages', '10');
+    el.setAttribute('data-rows-options', '10,25,50');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-
-    const nums = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.num')).map(
-      (b) => b.textContent,
-    );
-    const current = el.shadowRoot!.querySelector('.num[data-current]')?.textContent;
-    const currentAria = el.shadowRoot!.querySelector('.num[data-current]')?.getAttribute('aria-current');
-    return { nums, current, currentAria };
+    const input = el.shadowRoot!.querySelector<HTMLInputElement>('.page-input')!;
+    const total = el.shadowRoot!.querySelector('.total')!.textContent ?? '';
+    const opts = Array.from(el.shadowRoot!.querySelectorAll('.rows option')).map((o) => o.textContent);
+    return { value: input.value, max: input.max, total: total.trim(), opts };
   });
-  expect(r.nums).toEqual(['1', '2', '3', '4', '5']); // small range → no gaps
-  expect(r.current).toBe('2'); // current-page highlighted
-  expect(r.currentAria).toBe('page');
+  expect(r.value).toBe('2');
+  expect(r.max).toBe('10');
+  expect(r.total).toContain('10'); // "of 10"
+  expect(r.opts).toEqual(['10', '25', '50']);
 });
 
-test('clicking a page fires page-change and moves data-current-page', async ({ page }) => {
+test('first / prev / next / last move the page and fire page-change', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-pagination') as PagerEl;
-    el.setAttribute('data-total-pages', '5');
-    el.setAttribute('data-current-page', '1');
+    el.setAttribute('data-page', '5');
+    el.setAttribute('data-total-pages', '10');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-
-    let fired: number | null = null;
-    el.addEventListener('page-change', (e) => (fired = (e as CustomEvent).detail.page));
-
-    // Page 2 is always in the window adjacent to current=1 (page 3 would be
-    // ellipsised at this current page).
-    const two = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.num')).find(
-      (b) => b.dataset['page'] === '2',
-    )!;
-    two.click();
-    await new Promise((res) => setTimeout(res, 10));
-
-    const current = el.shadowRoot!.querySelector('.num[data-current]')?.textContent;
-    return { fired, page: el.getAttribute('data-current-page'), current };
+    const pages: number[] = [];
+    el.addEventListener('page-change', (e) => pages.push((e as CustomEvent).detail.page));
+    const click = (sel: string) => el.shadowRoot!.querySelector<HTMLButtonElement>(sel)!.click();
+    click('.btn.prev');
+    click('.btn.next');
+    click('.btn.first');
+    click('.btn.last');
+    return { pages, page: el.getAttribute('data-page') };
   });
-  expect(r.fired).toBe(2);
-  expect(r.page).toBe('2');
-  expect(r.current).toBe('2'); // re-render highlighted the new page
+  expect(r.pages).toEqual([4, 5, 1, 10]);
+  expect(r.page).toBe('10');
 });
 
-test('prev / next move by one and disable at the boundaries', async ({ page }) => {
+test('prev / first disable at page 1; next / last disable at the last page', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-pagination') as PagerEl;
-    el.setAttribute('data-total-pages', '3');
-    el.setAttribute('data-current-page', '1');
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
-
-    const prev = el.shadowRoot!.querySelector<HTMLButtonElement>('.prev')!;
-    const next = el.shadowRoot!.querySelector<HTMLButtonElement>('.next')!;
-
-    const prevDisabledAtStart = prev.disabled;
-
-    let last: number | null = null;
-    el.addEventListener('page-change', (e) => (last = (e as CustomEvent).detail.page));
-
-    next.click(); // 1 → 2
-    await new Promise((res) => setTimeout(res, 10));
-    const afterNext = el.getAttribute('data-current-page');
-
-    next.click(); // 2 → 3 (now at last)
-    await new Promise((res) => setTimeout(res, 10));
-    const nextDisabledAtEnd = el.shadowRoot!.querySelector<HTMLButtonElement>('.next')!.disabled;
-
-    return { prevDisabledAtStart, afterNext, nextDisabledAtEnd, last };
+    const mk = async (pageNo: string) => {
+      const el = document.createElement('sherpa-pagination') as PagerEl;
+      el.setAttribute('data-page', pageNo);
+      el.setAttribute('data-total-pages', '10');
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      const dis = (sel: string) => el.shadowRoot!.querySelector<HTMLButtonElement>(sel)!.disabled;
+      return { prev: dis('.btn.prev'), first: dis('.btn.first'), next: dis('.btn.next'), last: dis('.btn.last') };
+    };
+    return { atStart: await mk('1'), atEnd: await mk('10') };
   });
-  expect(r.prevDisabledAtStart).toBe(true); // page 1 → prev disabled
-  expect(r.afterNext).toBe('2');
-  expect(r.nextDisabledAtEnd).toBe(true); // last page → next disabled
-  expect(r.last).toBe(3);
+  expect(r.atStart.prev).toBe(true);
+  expect(r.atStart.first).toBe(true);
+  expect(r.atStart.next).toBe(false);
+  expect(r.atEnd.next).toBe(true);
+  expect(r.atEnd.last).toBe(true);
+  expect(r.atEnd.prev).toBe(false);
 });
 
-test('large ranges window with ellipsis gaps around the current page', async ({ page }) => {
+test('changing the rows-per-page select fires page-size-change', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-pagination') as PagerEl;
-    el.setAttribute('data-total-pages', '20');
-    el.setAttribute('data-current-page', '10');
+    el.setAttribute('data-page', '1');
+    el.setAttribute('data-total-pages', '10');
+    el.setAttribute('data-rows-options', '10,25,50');
+    el.setAttribute('data-page-size', '10');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-
-    const nums = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.num')).map(
-      (b) => b.textContent,
-    );
-    const gaps = el.shadowRoot!.querySelectorAll('.gap').length;
-    return { nums, gaps };
+    let size: number | null = null;
+    el.addEventListener('page-size-change', (e) => (size = (e as CustomEvent).detail.pageSize));
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>('.rows')!;
+    select.value = '25';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return { size };
   });
-  // 1 … 9 10 11 … 20  → the numbers present, two ellipsis gaps
-  expect(r.nums).toEqual(['1', '9', '10', '11', '20']);
-  expect(r.gaps).toBe(2);
+  expect(r.size).toBe(25);
 });

@@ -78,7 +78,7 @@ test('back / export fire their events; favourite toggles and fires', async ({ pa
     const s = el.shadowRoot!;
 
     const seen: Record<string, unknown> = {};
-    el.addEventListener('back', () => (seen['back'] = true));
+    el.addEventListener('back-click', () => (seen['back'] = true));
     el.addEventListener('view-export', () => (seen['export'] = true));
     el.addEventListener('favorite-toggle', (e) => (seen['fav'] = (e as CustomEvent).detail.favorite));
 
@@ -116,6 +116,11 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
     await import('/dist/components/sherpa-breadcrumbs/sherpa-breadcrumbs.js');
     await import('/dist/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js');
     const el = document.createElement('sherpa-app-header') as WithRender;
+    // populate() only wires UP consumer-slotted children — it never creates them.
+    // Pre-place the empty hosts in the light DOM before calling populate().
+    el.innerHTML =
+      '<sherpa-breadcrumbs slot="breadcrumb"></sherpa-breadcrumbs>' +
+      '<sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({

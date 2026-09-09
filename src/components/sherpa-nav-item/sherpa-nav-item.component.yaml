@@ -39,6 +39,18 @@ anatomy:
         class: badge
         part: badge
         slot: trailing
+      - el: button
+        class: expand
+        part: expand
+        attrs:
+          type: button
+          aria-hidden: "true"
+          tabindex: "-1"
+        children:
+          - el: span
+            class: expand-chevron
+            attrs:
+              aria-hidden: "true"
 props:
   - $type: prop
     name: data-badge
@@ -54,6 +66,18 @@ props:
     name: data-description
     type: string
     kind: content
+  - $type: prop
+    name: data-expandable
+    type: string
+    kind: style
+    description: show a trailing expand chevron (for nested/expandable items)
+  - $type: prop
+    name: data-expanded
+    type: string
+    kind: style
+    description: >-
+      expanded state — rotates the chevron (set by the click handler) data-description promo
+      description (promo variant only)
   - $type: prop
     name: data-href
     type: string
@@ -73,9 +97,7 @@ props:
     name: data-status-dot
     type: string
     kind: style
-    description: >-
-      render the trailing chip as a small success/online dot data-description promo description
-      (promo variant only)
+    description: render the trailing chip as a small success/online dot
   - $type: prop
     name: data-variant
     type: string
@@ -89,7 +111,9 @@ props:
     description: >-
       disabled state The current row fills surface/interactive/active/base with content/active/base
       ink (the brand accent). The trailing chip is a round status element filled by the ancestor
-      [data-status] cascade; a plain success dot pins the success ink.
+      [data-status] cascade; a plain success dot pins the success ink. Expandable items
+      (data-expandable) show a trailing chevron caret; clicking it fires item-expand and toggles
+      data-expanded, which rotates the caret.
 states:
   - $type: state
     name: icon
@@ -100,6 +124,12 @@ states:
   - $type: state
     name: has-trailing
     selector: ":host([data-has-trailing])"
+  - $type: state
+    name: expandable
+    selector: ":host([data-expandable])"
+  - $type: state
+    name: expanded
+    selector: ":host([data-expanded])"
   - $type: state
     name: status-dot
     selector: ":host([data-status-dot])"
@@ -115,7 +145,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (templateId, current). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (templateId, current, expanded). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: item-click
@@ -123,6 +153,10 @@ events:
     composed: true
   - $type: event
     name: href
+    bubbles: true
+    composed: true
+  - $type: event
+    name: item-expand
     bubbles: true
     composed: true
 tokens:
@@ -141,6 +175,10 @@ tokens:
   badge.color: "{sherpa.theme-content-body-base-fixed}"
   badge.font-size: "{sherpa.font-size-body-small}"
   badge.font-weight: "{sherpa.font-weight-semibold}"
+  expand.inline-size: "{sherpa.theme-size-icon-xs}"
+  expand.block-size: "{sherpa.theme-size-icon-xs}"
+  expand.padding: "{sherpa.display-space-none}"
+  expand.color: "{sherpa.theme-content-body-1}"
   promo.gap: "{sherpa.structure-space-gap}"
   promo.padding: "{sherpa.theme-padding-sm}"
   promo.border-radius: "{sherpa.display-border-rounding-base}"
@@ -173,5 +211,8 @@ $extensions:
         type: string
         access: read
       - name: current
+        type: string
+        access: read-write
+      - name: expanded
         type: string
         access: read-write

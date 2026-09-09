@@ -74,14 +74,14 @@ test('data-panel adds a solid surface background', async ({ page }) => {
   expect(r.panel).toBe('rgb(255, 255, 255)'); // surface-container-default
 });
 
-test('the rotating arc uses the primary token colour', async ({ page }) => {
+test('the rotating arc uses the accent-blue indicator token (matches Figma)', async ({ page }) => {
   const color = await page.evaluate(async () => {
     const el = document.createElement('sherpa-loader') as HTMLElement & { rendered?: Promise<void> };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.spinner')!, '::after').borderRightColor;
   });
-  expect(color).toBe('rgb(36, 0, 54)'); // theme-content-active-base #240036 (brand)
+  expect(color).toBe('rgb(59, 76, 205)'); // style-indicator-accent #3b4ccd (Figma arc), not the old purple
 });
 
 test('vertical orientation stacks spinner over label', async ({ page }) => {

@@ -24,35 +24,43 @@ test('renders the template into a shadow root and applies default attrs', async 
     el.textContent = 'Save';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    const trigger = el.shadowRoot!.querySelector('.trigger')!;
+    const cs = getComputedStyle(trigger);
     return {
-      hasTrigger: !!el.shadowRoot?.querySelector('.trigger'),
-      variant: el.getAttribute('data-variant'),
+      hasTrigger: !!trigger,
+      look: el.getAttribute('data-look'),
       size: el.getAttribute('data-size'),
+      bg: cs.backgroundColor,
+      border: cs.borderTopColor,
       adopted: (el.shadowRoot?.adoptedStyleSheets?.length ?? 0) > 0,
     };
   });
   expect(r.hasTrigger).toBe(true);
-  expect(r.variant).toBe('primary'); // default applied in onRender
-  expect(r.size).toBe('md');
-  expect(r.adopted).toBe(true); // stylesheets adopted into the shadow root
+  // DEFAULT appearance ("secondary", matches Figma): no data-look, white surface, grey border.
+  expect(r.look).toBe(null);
+  expect(r.bg).toBe('rgb(255, 255, 255)');
+  expect(r.border).not.toBe(r.bg); // a visible grey border
+  expect(r.size).toBe(null); // no default size — bare button uses the base :host token block
+  expect(r.adopted).toBe(true);
 });
 
-test('CSS owns the look: data-variant drives the rendered background', async ({ page }) => {
+test('CSS owns the look: data-look drives the rendered background', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const mk = async (variant?: string) => {
+    const mk = async (look?: string) => {
       const el = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
-      if (variant) el.setAttribute('data-variant', variant);
+      if (look) el.setAttribute('data-look', look);
       el.textContent = 'X';
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       const trigger = el.shadowRoot!.querySelector('.trigger')!;
       return getComputedStyle(trigger).backgroundColor;
     };
-    return { primary: await mk(), secondary: await mk('secondary'), tertiary: await mk('tertiary') };
+    return { def: await mk(), saturated: await mk('saturated'), transparent: await mk('transparent') };
   });
-  // Primary is a solid accent fill; secondary is a pale surface; tertiary is transparent.
-  expect(r.primary).not.toBe(r.secondary);
-  expect(r.tertiary).toBe('rgba(0, 0, 0, 0)'); // transparent
+  // default = white surface; saturated = solid accent fill; transparent = ghost.
+  expect(r.def).toBe('rgb(255, 255, 255)');
+  expect(r.saturated).not.toBe(r.def); // a distinct filled emphasis
+  expect(r.transparent).toMatch(/, 0\)$/); // fully transparent (alpha 0), any base channel
 });
 
 test('emits button-click; suppresses it when disabled', async ({ page }) => {

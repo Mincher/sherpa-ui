@@ -1,9 +1,17 @@
 /**
  * sherpa-input-text — a text field with a label.
  *
- * JS copies the label, description, error, placeholder, and native attributes
- * onto the real input, exposes its `value`, and re-fires the input and change
- * events. The invalid look is handled by CSS; JS just carries the value.
+ * JS copies the label, description, error, icon glyphs, placeholder, and native
+ * attributes onto the shadow DOM, exposes the control's `value`, and re-fires
+ * the input and change events. The control-row look, icon/actions visibility,
+ * and the filled critical validation bar are all handled by CSS; JS just carries
+ * the text and value.
+ *
+ * The `actions` slot (trailing steppers/buttons) needs no JS — SherpaElement
+ * auto-sets data-has-actions on the host from slot presence and CSS gates it.
+ *
+ * @fires input — on each keystroke. detail: { value: string }
+ * @fires change — on commit (blur/enter). detail: { value: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -27,7 +35,14 @@ type Control = HTMLInputElement | HTMLTextAreaElement;
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
-  static override observed = ['data-label', 'data-description', 'data-error', ...MIRRORED];
+  static override observed = [
+    'data-label',
+    'data-description',
+    'data-error',
+    'data-icon-start',
+    'data-icon-end',
+    ...MIRRORED,
+  ];
 
   #control: Control | null = null;
 
@@ -63,6 +78,9 @@ export class SherpaInputText extends SherpaElement {
     set('.label', this.dataset['label']);
     set('.description', this.dataset['description']);
     set('.message', this.dataset['error']);
+    // Icon glyphs — the ::before content reads data-glyph; CSS gates visibility.
+    this.$('.icon-start')?.setAttribute('data-glyph', this.dataset['iconStart'] ?? '');
+    this.$('.icon-end')?.setAttribute('data-glyph', this.dataset['iconEnd'] ?? '');
   }
 
   /** Mirror native attributes host → inner control. */

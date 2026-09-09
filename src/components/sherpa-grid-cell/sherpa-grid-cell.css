@@ -1,0 +1,116 @@
+/**
+ * sherpa-grid-cell — presentation.
+ *
+ * One atomic Data Grid cell. data-type sets the role treatment; the checkbox,
+ * actions, and group-toggle parts are CSS-gated off data-* flags. Surfaces are
+ * neutral Style tokens; the header band is a slightly stronger fill. Numeric
+ * right-alignment / emphasis live in the slotted content, not here.
+ */
+
+:host {
+  display: block;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-theme-padding-sm, 4px);
+  min-block-size: var(--sherpa-structure-height, 32px);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* Header + filter sit on the header band (a stronger neutral fill), header is bold. */
+:host([data-type="header"]) .cell,
+:host([data-type="filter"]) .cell {
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+}
+:host([data-type="header"]) .content {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+:host([data-type="group"]) .cell {
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+.content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* ── Leading checkbox — only with data-has-checkbox ─────────────────── */
+.checkbox { display: none; }
+:host([data-has-checkbox]) .checkbox {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+/* ── Group toggle — only for data-type="group" ─────────────────────── */
+.toggle { display: none; }
+:host([data-type="group"]) .toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: var(--sherpa-theme-size-icon-sm, 20px);
+  block-size: var(--sherpa-theme-size-icon-sm, 20px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.toggle-caret {
+  inline-size: 0;
+  block-size: 0;
+  border-block: 4px solid transparent; /* off-grid-ok */
+  border-inline-start: 5px solid currentColor; /* off-grid-ok */
+  transition: transform 120ms ease;
+}
+:host([data-expanded]) .toggle-caret { transform: rotate(90deg); }
+
+/* ── Trailing actions — only with data-has-actions ─────────────────── */
+.actions { display: none; }
+:host([data-has-actions]) .actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  flex: 0 0 auto;
+}
+.sort,
+.menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
+  block-size: var(--sherpa-theme-size-icon-xs, 16px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  }
+}
+/* Sort caret — a small triangle; direction flips it, unset = faint neutral. */
+.sort-caret {
+  inline-size: 0;
+  block-size: 0;
+  border-inline: 4px solid transparent; /* off-grid-ok */
+  border-block-start: 5px solid currentColor; /* off-grid-ok */
+}
+:host([data-sort-direction="asc"]) .sort { color: var(--sherpa-style-content-base, #0c0b11); }
+:host([data-sort-direction="asc"]) .sort-caret {
+  border-block-start: 0;
+  border-block-end: 5px solid currentColor; /* off-grid-ok */
+}
+:host([data-sort-direction="desc"]) .sort { color: var(--sherpa-style-content-base, #0c0b11); }

@@ -16,38 +16,42 @@
 /**
  * sherpa-input-text.css — all field presentation.
  *
- * Label + control + message. Geometry binds the control-scoped tokens
- * (control-space/-border) and the input rounding var. Validation styling is
- * native — `:user-invalid` on the control (or an explicit data-error) drives the
- * error look through the STATUS CASCADE: setting data-status="critical" (or the
- * native invalid state) fills the border/message with --_status-border/--_status-text,
- * no per-status blocks and no phantom critical tokens. Label/description/message
- * collapse when empty via :empty. Focus, disabled, and error are pure CSS.
+ * Label + control row + validation bar. The control row is a bordered box that
+ * holds a leading icon glyph, the native control, a trailing icon glyph, and an
+ * `actions` slot (steppers etc). Icons/actions are CSS-gated on data-icon-start /
+ * data-icon-end / the auto-set data-has-actions. Geometry binds the control-scoped
+ * tokens (control-space/-border) and the input rounding var.
+ *
+ * Validation (default / multiline) is Figma's FILLED critical bar: `:user-invalid`
+ * on the control (or an explicit data-error) reveals a full-width red bar with
+ * light text under the control, styled through the STATUS CASCADE. Label/
+ * description/message collapse when empty via :empty. Focus, disabled, error CSS-only.
  */
 
 :host {
   display: block;
-  --_border: var(--sherpa-theme-border-default-2, #d5d5d5);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_border-focus: var(--sherpa-theme-border-accent-base, #3c5edd);
   /* Error look routes through the status cascade; critical fallback resolves the ink. */
   --_border-error: var(--_status-border, #bf2c09);
-  --_text-error: var(--_status-text, #bf2c09);
+  --_surface-error: var(--_status-surface-strong, #bf2c09);
+  --_text-on-error: var(--_status-text-on-color, #ffffff);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-structure-space-gap, 8px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
 }
 
 .label {
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
   margin-bottom: var(--sherpa-theme-padding-xs, 2px);
 }
 .label:empty,
@@ -56,83 +60,157 @@
   display: none;
 }
 
-.control {
+/* ── Control row — a bordered box: leading icon, control, trailing icon, actions ── */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-structure-space-gap, 8px);
   inline-size: 100%;
-  min-block-size: var(--sherpa-display-size-2xl, 32px);
-  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding-inline: var(--sherpa-structure-space-padding, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #2e2e33);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-large, 16px);
-  line-height: 1.4;
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
+}
 
-  &::placeholder { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+/* The native control is borderless inside the row — the row owns the box. */
+.control {
+  flex: 1 1 auto;
+  inline-size: auto;
+  min-inline-size: 0;
+  padding-block: var(--sherpa-theme-padding-sm, 4px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: 1.4;
+}
+.control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+.control:focus-visible { outline: none; }
 
-  &:focus-visible {
-    outline: none;
-    border-color: var(--_border-focus);
-    box-shadow: 0 0 0 2px var(--_border-focus);
-  }
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:focus-visible {
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
-    }
+/* Focus lives on the row so the whole box (icons + actions) is ringed. */
+.control-row:focus-within {
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 2px var(--_border-focus);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .control-row:focus-within {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
   }
 }
+
 textarea.control {
-  min-block-size: auto;
   resize: vertical;
+  align-self: stretch;
 }
 
-/* ── Validation — native :user-invalid, or an explicit data-error ─────
-   Both borrow the status cascade so a data-status="critical" host or the
+/* ── Icon glyphs — CSS-gated on the glyph attributes ─────────────────── */
+.icon {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+.icon::before {
+  content: attr(data-glyph);
+  font-family: inherit;
+  line-height: 1;
+}
+:host([data-icon-start]) .icon-start { display: inline-flex; }
+:host([data-icon-end]) .icon-end { display: inline-flex; }
+
+/* ── Actions slot — CSS-gated on SherpaElement's auto-set data-has-actions ── */
+.actions {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--sherpa-structure-space-gap, 8px);
+}
+:host([data-has-actions]) .actions { display: inline-flex; }
+
+/* ── Validation — Figma's FILLED critical bar ─────────────────────────
+   Native :user-invalid, or an explicit data-error, tints the row border and
+   reveals a full-width red bar with light text directly under the control. The
+   colours borrow the status cascade so a data-status="critical" host and the
    browser's own invalid state paint the same critical ink. */
-.control:user-invalid,
-:host([data-error]) .control {
+.control-row:has(.control:user-invalid),
+:host([data-error]) .control-row {
   border-color: var(--_border-error);
 }
-.control:user-invalid:focus-visible,
-:host([data-error]) .control:focus-visible {
+.control-row:has(.control:user-invalid):focus-within,
+:host([data-error]) .control-row:focus-within {
   box-shadow: 0 0 0 2px var(--_border-error);
 }
 @supports (color: color-mix(in oklab, red, blue)) {
-  .control:user-invalid:focus-visible,
-  :host([data-error]) .control:focus-visible {
+  .control-row:has(.control:user-invalid):focus-within,
+  :host([data-error]) .control-row:focus-within {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
   }
 }
+
+/* The filled bar: hidden by default, shown when invalid / data-error and it holds text. */
 .message {
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--_text-error);
+  display: none;
+  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
+  border-radius: 0 0 var(--sherpa-structure-rounding-top-left, 4px) var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--_surface-error);
+  color: var(--_text-on-error);
+  font-size: var(--sherpa-font-size-body-large, 16px);
+  line-height: 1.4;
+}
+.control-row:has(.control:user-invalid) ~ .message:not(:empty),
+:host([data-error]) .message:not(:empty) {
+  display: block;
 }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
+:host([disabled]) .control-row {
+  cursor: not-allowed;
+  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+}
 :host([disabled]) .control {
   cursor: not-allowed;
   color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
 }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }
 
 /* ── Minimal style — a bare inline field (label beside the control) ──── */
 /* Layout only: label + control on one row. The label and control keep the
    SAME text styles as the default variant — minimal changes the arrangement,
-   not the typography. (The label stays content-title/600; the control stays
-   size-lg/content-primary; the placeholder stays content-tertiary.) */
+   not the typography. The minimal control keeps its own border (no row wrapper). */
 .field-minimal {
   flex-direction: row;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 .field-minimal .label { flex-shrink: 0; }
 .field-minimal .control {
   flex: 1 1 auto;
   inline-size: auto;
   min-inline-size: 0;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+}
+.field-minimal .control:focus-visible {
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 2px var(--_border-focus);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .field-minimal .control:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+  }
+}
+.field-minimal .control:user-invalid {
+  border-color: var(--_border-error);
 }
 /* Borderless — the control is a bare field (e.g. a grid column filter). */
 :host([data-borderless]) .field-minimal .control {

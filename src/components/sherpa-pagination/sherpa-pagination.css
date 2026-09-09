@@ -1,111 +1,160 @@
 /**
  * sherpa-pagination.css — all pager presentation.
  *
- * A row of square buttons: previous, the windowed numbers (with ellipsis gaps),
- * next. Geometry binds the button-scoped tokens (button-size/height,
- * button-space/gap+padding) and the shared snapping/grouping corner radius, so
- * button sizes re-point from the token layer rather than per-size blocks here.
+ * Two zones on one row: a "Rows per page" label + native <select>, and a set of
+ * nav buttons (first/prev, a native number <input>, "of N", next/last). Geometry
+ * binds the shared structure tokens (height, gap, padding, rounding) so control
+ * sizes re-point from the token layer rather than per-size blocks here.
  *
- * The current page is marked data-current (reflected by the JS) and reads as the
- * STATUS SURFACE fill — background:--_status-surface, border:--_status-border —
- * cascading from any ancestor data-status, with a neutral selected fallback when
- * none is set. (The old accent/on-color fill was drift.) Prev/next disable at the
- * boundaries via the native `disabled` attribute (inactive tokens, never opacity).
- * JS only stamps buttons and reflects state; CSS owns every visual.
+ * Both native controls (select, number input) carry the field look — border,
+ * rounding, focus ring. Prev/next/first/last disable at the boundaries via the
+ * native `disabled` attribute (inactive tokens per property, never opacity). JS
+ * only stamps <option>s, clamps values, and reflects state; CSS owns every visual.
  */
 
 :host {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 2px);
+  justify-content: space-between;
+  gap: var(--sherpa-structure-space-gap, 8px);
+  inline-size: 100%;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  --_btn: var(--sherpa-structure-height, 28px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  --_control: var(--sherpa-display-mode-size-2xl, 32px);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
+  --_border-focus: var(--sherpa-theme-border-accent-base, #3c5edd);
 }
 
-.pager {
+/* ── Results zone — label + rows-per-page select ─────────────────────── */
+.results {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 2px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-.numbers {
+.rows-label {
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  white-space: nowrap;
+}
+
+/* ── Controls zone — nav buttons + page input + total ────────────────── */
+.controls {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 2px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* ── Buttons ───────────────────────────────────────────────────────────── */
+.total {
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  white-space: nowrap;
+}
+
+/* ── Native field look (select + number input) ───────────────────────── */
+.rows,
+.page-input {
+  block-size: var(--_control);
+  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.rows:focus-visible,
+.page-input:focus-visible {
+  outline: none;
+  border-color: var(--_border-focus);
+  box-shadow: 0 0 0 2px var(--_border-focus);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  .rows:focus-visible,
+  .page-input:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+  }
+}
+
+.page-input {
+  inline-size: 5ch;
+  text-align: center;
+}
+
+/* ── Nav buttons ──────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-inline-size: var(--_btn);
-  block-size: var(--_btn);
-  padding-inline: var(--sherpa-structure-space-padding, 4px);
-  border: var(--sherpa-style-border-width, 1px) solid transparent;
+  min-inline-size: var(--_control);
+  block-size: var(--_control);
+  padding-inline: var(--sherpa-structure-space-padding, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-theme-content-body-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 
-  &:hover:not(:disabled):not([data-current]) {
+  &:hover:not(:disabled) {
     background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
-    color: var(--sherpa-theme-content-body-base, #18191a);
   }
-  &:active:not(:disabled):not([data-current]) {
+  &:active:not(:disabled) {
     background: var(--sherpa-theme-surface-default-transparent, #ededf0);
   }
-
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    & { transition: none; }
-  }
 }
 
-/* ── Current page — status-surface fill, neutral text, non-interactive ──
-   background + border cascade from any ancestor data-status; with none set,
-   a neutral selected surface + primary border stand in. */
-.btn[data-current] {
-  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #fdfdfd));
-  border-color: var(--_status-border, var(--sherpa-style-border-base, #d5d5d5));
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #2e2e33));
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  cursor: default;
-  pointer-events: none;
-}
-
-/* ── Disabled (prev/next at boundaries) — inactive tokens, never opacity ─ */
+/* ── Disabled (prev/next/first/last at boundaries) — inactive tokens ──── */
 .btn:disabled {
   cursor: not-allowed;
   pointer-events: none;
   color: var(--sherpa-theme-content-body-2, #5c5c66);
 }
 
-/* ── Ellipsis gap ──────────────────────────────────────────────────────── */
-.gap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-inline-size: var(--_btn);
-  block-size: var(--_btn);
-  color: var(--sherpa-theme-content-body-1, #404047);
-}
-
 /* ── Chevron glyphs (pure CSS, no icon font) ──────────────────────────── */
 .chev {
+  position: relative;
   inline-size: 7px; /* off-grid-ok */
   block-size: 7px; /* off-grid-ok */
-  border-right: var(--sherpa-display-border-width-lg, 2px) solid currentColor;
-  border-bottom: var(--sherpa-display-border-width-lg, 2px) solid currentColor;
   box-sizing: border-box;
 }
-.chev-left { transform: rotate(135deg); }
-.chev-right { transform: rotate(-45deg); }
+.chev::before,
+.chev::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inline-size: 7px; /* off-grid-ok */
+  block-size: 7px; /* off-grid-ok */
+  border-right: var(--sherpa-display-mode-border-width-lg, 2px) solid currentColor;
+  border-bottom: var(--sherpa-display-mode-border-width-lg, 2px) solid currentColor;
+  box-sizing: border-box;
+}
+/* Single chevrons hide the second stroke. */
+.chev-left::after,
+.chev-right::after {
+  content: none;
+}
+.chev-left::before { inset-inline-start: 0; transform: rotate(135deg); }
+.chev-right::before { inset-inline-start: 0; transform: rotate(-45deg); }
+
+/* Double chevrons — two nested strokes offset along the inline axis. */
+.chev-double-left::before { inset-inline-start: -3px /* off-grid-ok */; transform: rotate(135deg); }
+.chev-double-left::after  { inset-inline-start: 3px /* off-grid-ok */; transform: rotate(135deg); }
+.chev-double-right::before { inset-inline-start: -3px /* off-grid-ok */; transform: rotate(-45deg); }
+.chev-double-right::after  { inset-inline-start: 3px /* off-grid-ok */; transform: rotate(-45deg); }
+
+/* ── Disabled fields ──────────────────────────────────────────────────── */
+:host([disabled]) .rows,
+:host([disabled]) .page-input {
+  cursor: not-allowed;
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
+  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+}

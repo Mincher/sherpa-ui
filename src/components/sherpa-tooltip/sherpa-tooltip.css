@@ -9,7 +9,8 @@
  * Figma binding model: the bubble fills content/primary/base (the dark neutral)
  * with text in content/title/on-color (white); the corner rounds border/rounding/base
  * and the tip pads space/2xs × space/xs. No elevation token is bound — the bubble
- * carries no shadow.
+ * carries no shadow. A 12×6 pointer arrow (.arrow) in the same fill points from the
+ * bubble back toward the trigger; its side flips with data-placement.
  */
 
 :host {
@@ -17,9 +18,9 @@
   position: relative;
   vertical-align: middle;
 
-  --_gap: var(--sherpa-display-space-2xs, 4px);
-  --_bg: var(--sherpa-style-content-base, #2e2e33);
-  --_fg: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  --_gap: var(--sherpa-display-mode-space-2xs, 4px);
+  --_bg: var(--sherpa-style-content-base, #35353d);
+  --_fg: var(--sherpa-theme-content-body-4, #ffffff);
 }
 
 .anchor {
@@ -30,25 +31,50 @@
 .bubble {
   position: absolute;
   z-index: 10;
-  left: 50%;
-  bottom: calc(100% + var(--_gap));
+  inset-inline-start: 50%;
+  inset-block-end: calc(100% + var(--_gap));
   transform: translateX(-50%);
   max-width: 16rem;
   width: max-content;
-  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   background: var(--_bg);
   color: var(--_fg);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: 1.4;
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease, visibility 120ms ease;
+}
+
+/* ── The pointer arrow — a CSS border-triangle in the bubble fill ─────────
+   Figma draws a 12×6 tail (same fill as the bubble) that points from the
+   bubble back toward the trigger. Rendered here as a border-triangle whose
+   coloured border edge faces the anchor; the three transparent edges shape
+   the wide, shallow triangle. Default (placement top) points down.
+
+   NOTE: the arrow deliberately keeps PHYSICAL top/right/bottom/left offsets.
+   They are welded to the physical border-width/border-color triangle geometry
+   (a physical border edge is coloured to make the point); swapping only the
+   offsets to logical inset-* would desync the point direction from the coloured
+   border in RTL. Geometry, not spacing — leave physical. */
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  /* Down-pointing: 12 wide (2×6 side borders) × 6 tall (top border). */
+  border-width: 6px 6px 0 6px;
+  border-color: var(--_bg) transparent transparent transparent;
+  /* Sit centred on the bubble's bottom edge. */
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .tip-text { color: inherit; }
@@ -65,25 +91,50 @@ slot[name="tip"] { display: none; }
 
 /* ── Placement — plain absolute sides off data-placement ──────────────── */
 :host([data-placement="bottom"]) .bubble {
-  bottom: auto;
-  top: calc(100% + var(--_gap));
+  inset-block-end: auto;
+  inset-block-start: calc(100% + var(--_gap));
 }
 :host([data-placement="left"]) .bubble {
-  left: auto;
-  right: calc(100% + var(--_gap));
-  bottom: 50%;
-  top: auto;
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--_gap));
+  inset-block-end: 50%;
+  inset-block-start: auto;
   transform: translateY(50%);
 }
 :host([data-placement="right"]) .bubble {
-  left: calc(100% + var(--_gap));
-  right: auto;
-  bottom: 50%;
-  top: auto;
+  inset-inline-start: calc(100% + var(--_gap));
+  inset-inline-end: auto;
+  inset-block-end: 50%;
+  inset-block-start: auto;
   transform: translateY(50%);
 }
 
-/* ── Reduced motion ───────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .bubble { transition: none; }
+/* ── Arrow follows the placement — always points back at the trigger ────── */
+:host([data-placement="bottom"]) .arrow {
+  /* Points up, sits on the bubble's top edge. */
+  top: auto;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent var(--_bg) transparent;
+}
+:host([data-placement="left"]) .arrow {
+  /* Points right, sits on the bubble's right edge. */
+  top: 50%;
+  bottom: auto;
+  left: 100%;
+  transform: translateY(-50%);
+  border-width: 6px 0 6px 6px;
+  border-color: transparent transparent transparent var(--_bg);
+}
+:host([data-placement="right"]) .arrow {
+  /* Points left, sits on the bubble's left edge. */
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%);
+  border-width: 6px 6px 6px 0;
+  border-color: transparent var(--_bg) transparent transparent;
 }

@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-test('semantic tokens resolve through Core → Primitives in the light DOM', async ({ page }) => {
+test('semantic tokens resolve through the display-mode + style layers in the light DOM', async ({ page }) => {
   const v = await page.evaluate(() => {
     const probe = document.createElement('div');
     document.body.appendChild(probe);
@@ -23,11 +23,11 @@ test('semantic tokens resolve through Core → Primitives in the light DOM', asy
     probe.setAttribute('data-look', 'saturated');
     probe.style.background = 'var(--_status-surface)';
     const accent = getComputedStyle(probe).backgroundColor;
-    const space = getComputedStyle(document.documentElement).getPropertyValue('--sherpa-display-space-base').trim();
+    const space = getComputedStyle(document.documentElement).getPropertyValue('--sherpa-display-mode-space-base').trim();
     probe.remove();
     return { space, accent };
   });
-  expect(v.space).toBe('16px'); // --sherpa-display-space-base = 16px
+  expect(v.space).toBe('16px'); // --sherpa-display-mode-space-base = 16px
   expect(v.accent).toBe('rgb(59, 76, 205)'); // #3b4ccd — the Saturated look strong accent
 });
 
@@ -37,7 +37,7 @@ test('tokens inherit into a shadow root (button uses the real accent, not a fall
     el.textContent = 'Save';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    el.setAttribute('data-variant', 'primary');
+    el.setAttribute('data-look', 'saturated'); // primary = the Saturated look tier (no data-variant)
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.trigger')!).backgroundColor;
   });
@@ -48,7 +48,7 @@ test('the layer owns mode: data-mode="dark" re-points semantic tokens; component
   const r = await page.evaluate(async () => {
     const probe = document.createElement('div');
     document.body.appendChild(probe);
-    probe.style.background = 'var(--sherpa-theme-app-base)';
+    probe.style.background = 'var(--sherpa-theme-surface-default-base)';
     const read = () => getComputedStyle(probe).backgroundColor;
     const light = read();
     document.documentElement.setAttribute('data-mode', 'dark');

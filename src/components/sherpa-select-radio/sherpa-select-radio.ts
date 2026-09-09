@@ -5,6 +5,7 @@
  * and native attributes onto it, exposes its checked and value states, and
  * re-fires the change event. Radios sharing the same `name` group up on their
  * own. CSS handles the whole look — the circle, the dot, disabled, and focus.
+ * @fires change — selection changes. bubbles + composed. detail: { checked: boolean, value: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

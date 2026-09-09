@@ -95,18 +95,23 @@ test('interactive item is focusable and fires item-click on click', async ({ pag
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
+    // The activation target is a native <button class="content-button">.
+    const button = el.shadowRoot!.querySelector<HTMLButtonElement>('.content-button')!;
+
     let detail: unknown = null;
     el.addEventListener('item-click', (e) => (detail = (e as CustomEvent).detail));
-    el.click();
+    button.focus();
+    const focused = el.shadowRoot!.activeElement === button; // native button → keyboard reachable
+    button.click();
     return {
-      tabindex: el.getAttribute('tabindex'),
+      focused,
       current: el.hasAttribute('data-current'),
       detail,
     };
   });
-  expect(r.tabindex).toBe('0'); // interactive → keyboard reachable
+  expect(r.focused).toBe(true); // native <button> content target → keyboard reachable
   expect(r.current).toBe(true); // click marks it the current row
-  expect(r.detail).toEqual({ heading: 'Clickable' });
+  expect(r.detail).toEqual({ label: 'Clickable' });
 });
 
 test('non-interactive item does not fire or become active on click', async ({ page }) => {
@@ -227,9 +232,12 @@ test('data-selectable control toggles selection and fires item-select', async ({
     await el.rendered;
     const control = el.shadowRoot!.querySelector('.control') as HTMLElement;
     const visible = getComputedStyle(control).display !== 'none';
+    // The built-in selection control is a native <input type="checkbox" class="checkbox">;
+    // clicking it toggles checked and fires the native "change" that flips data-selected.
+    const checkbox = el.shadowRoot!.querySelector('.checkbox') as HTMLInputElement;
     let detail: unknown = null;
     el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
-    control.click();
+    checkbox.click();
     await new Promise((res) => setTimeout(res, 0));
     return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };
   });

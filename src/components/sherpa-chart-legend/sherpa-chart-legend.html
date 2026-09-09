@@ -9,13 +9,13 @@
   Public API:
     data-orientation  horizontal (default) | vertical
 
-  Fires: legend-item-click — detail: { index, label }
+  Fires: legend-item-click — detail: { index, label, active }
 -->
 <template id="default">
-  <ul class="legend" part="legend" role="list"></ul>
+  <ul class="legend" part="legend"></ul>
 
   <template class="item-tpl">
-    <li class="item" role="listitem">
+    <li class="item">
       <button class="row" type="button">
         <span class="swatch" part="swatch" aria-hidden="true"></span>
         <span class="label" part="label"></span>

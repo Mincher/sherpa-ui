@@ -3,7 +3,7 @@
  *
  * A title (from data-heading, or your own slotted heading), an optional description,
  * and a slot for action buttons on the right. data-size sets how big the heading
- * is; data-divider draws a line under the row. CSS handles the look; JS only
+ * is; the bottom rule shows by default (set data-divider="none" to hide it). CSS handles the look; JS only
  * writes the heading text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

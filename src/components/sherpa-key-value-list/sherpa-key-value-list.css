@@ -5,46 +5,57 @@
  *   horizontal (default) — key / value side by side (a two-column grid)
  *   vertical             — key above value, each pair block-stacked
  *
+ * The value renders inside a subtle grey rounded pill (a surface chip) that
+ * hugs its content; the key stays plain text.
+ *
  * JS only stamps the dt/dd pairs; every visual decision lives here.
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
 .list {
   margin: 0;
   display: grid;
-  row-gap: var(--sherpa-display-space-xs, 8px);
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 .key {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-weight: var(--sherpa-font-weight-medium, 500);
 }
 
+/* The value sits inside a subtle grey rounded pill that hugs its content
+   (Figma: Value Slot = surface/default-2 fill, rounding/sm, padding/sm). */
 .value {
   margin: 0;
-  color: var(--sherpa-theme-content-body-base, #18191a);
   min-inline-size: 0;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--sherpa-theme-padding-sm, 4px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
 /* ── Horizontal (default): key column + flexible value column ───────── */
 :host([data-orientation="horizontal"]) .list,
 :host(:not([data-orientation])) .list {
   grid-template-columns: minmax(auto, max-content) 1fr;
-  column-gap: var(--sherpa-display-space-base, 16px);
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
   align-items: baseline;
 }
 
 /* ── Vertical: one column, key above its value ─────────────────────── */
 :host([data-orientation="vertical"]) .list {
   grid-template-columns: 1fr;
-  row-gap: var(--sherpa-display-space-sm, 12px);
+  row-gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 :host([data-orientation="vertical"]) .key {
-  margin-block-end: var(--sherpa-display-space-3xs, 2px);
+  margin-block-end: var(--sherpa-display-mode-space-3xs, 2px);
 }

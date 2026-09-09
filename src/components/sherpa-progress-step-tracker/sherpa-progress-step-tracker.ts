@@ -63,12 +63,13 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
     track.replaceChildren();
     this.#steps.forEach((step, i) => {
-      const node = stepTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      node.dataset['index'] = String(i);
-      node.querySelector('.number')!.textContent = String(i + 1);
-      node.querySelector('.label')!.textContent = step.label;
-      node.querySelector('.description')!.textContent = step.description ?? '';
-      track.appendChild(node);
+      const item = stepTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const button = item.querySelector<HTMLElement>('.step')!;
+      button.dataset['index'] = String(i);
+      button.querySelector('.number')!.textContent = String(i + 1);
+      button.querySelector('.label')!.textContent = step.label;
+      button.querySelector('.description')!.textContent = step.description ?? '';
+      track.appendChild(item);
       if (i < this.#steps.length - 1 && connTpl) {
         track.appendChild(connTpl.content.firstElementChild!.cloneNode(true));
       }
@@ -82,6 +83,9 @@ export class SherpaProgressStepTracker extends SherpaElement {
     for (const node of this.$$('.step')) {
       const i = Number(node.dataset['index']);
       node.dataset['state'] = i < current ? 'done' : i === current ? 'active' : 'todo';
+      // Expose the active step to assistive tech (WAI-ARIA current step).
+      if (i === current) node.setAttribute('aria-current', 'step');
+      else node.removeAttribute('aria-current');
     }
   }
 

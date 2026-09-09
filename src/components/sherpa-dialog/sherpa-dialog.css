@@ -14,7 +14,7 @@
   display: contents;
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
@@ -28,9 +28,9 @@
   overflow: auto;
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #0c0b11);
   box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
 
   &::backdrop {
@@ -54,11 +54,11 @@
 :host([data-has-header]) .header,
 :host([data-heading]) .header {
   display: block;
-  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 
 .heading-text {

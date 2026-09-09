@@ -23,12 +23,53 @@ test('renders the message and reflects the status', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return {
-      message: el.shadowRoot!.querySelector('.message')!.textContent,
+      message: el.shadowRoot!.querySelector('.heading')!.textContent,
       status: el.getAttribute('data-status'),
     };
   });
   expect(r.message).toBe('Saved.');
   expect(r.status).toBe('success');
+});
+
+test('the card stays NEUTRAL under a status; the icon badge carries the hue (Figma model)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-status', 'critical');
+    el.setAttribute('data-heading', 'Boom');
+    el.setAttribute('data-duration', '0');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const card = getComputedStyle(el.shadowRoot!.querySelector('.toast')!);
+    const badge = getComputedStyle(el.shadowRoot!.querySelector('.icon')!);
+    return { card: card.backgroundColor, badge: badge.backgroundColor };
+  });
+  expect(r.card).toBe('rgb(255, 255, 255)'); // neutral white card
+  expect(r.badge).not.toBe('rgb(255, 255, 255)'); // badge carries the status hue
+});
+
+test('data-value and data-action reveal the detail line and action link', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-heading', 'Saved');
+    el.setAttribute('data-value', '3 items updated');
+    el.setAttribute('data-action', 'Undo');
+    el.setAttribute('data-duration', '0');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    let acted = false;
+    el.addEventListener('toast-action', () => (acted = true));
+    const value = el.shadowRoot!.querySelector('.value')!;
+    const action = el.shadowRoot!.querySelector<HTMLButtonElement>('.action')!;
+    const valueShown = getComputedStyle(value).display !== 'none';
+    const actionShown = getComputedStyle(action).display !== 'none';
+    action.click();
+    return { value: value.textContent, action: action.textContent, valueShown, actionShown, acted };
+  });
+  expect(r.value).toBe('3 items updated');
+  expect(r.action).toBe('Undo');
+  expect(r.valueShown).toBe(true);
+  expect(r.actionShown).toBe(true);
+  expect(r.acted).toBe(true);
 });
 
 test('the close button fires toast-dismiss and removes the toast', async ({ page }) => {
@@ -76,7 +117,7 @@ test('static helper creates, appends, and returns a toast', async ({ page }) => 
     return {
       inBody: toast.parentElement === document.body,
       status: toast.getAttribute('data-status'),
-      message: toast.shadowRoot!.querySelector('.message')!.textContent,
+      message: toast.shadowRoot!.querySelector('.heading')!.textContent,
     };
   });
   expect(r.inBody).toBe(true);

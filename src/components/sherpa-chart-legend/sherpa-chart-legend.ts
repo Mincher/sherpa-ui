@@ -4,6 +4,7 @@
  * Give it a list with populate([{ label, value?, colorIndex }]) and it draws one
  * row per item. JS tells each row which colour to use; CSS draws the swatch.
  * Clicking a row toggles it on or off and fires legend-item-click.
+ * @fires legend-item-click — a legend row is clicked. bubbles + composed. detail: { index: number, label: string, active: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -58,8 +59,13 @@ export class SherpaChartLegend extends SherpaElement {
     const raw = item?.dataset['index'];
     if (raw == null) return;
     // Toggle current state (default current → false → true).
-    item!.dataset['current'] = item!.dataset['current'] === 'false' ? 'true' : 'false';
-    this.emit('legend-item-click', { index: Number(raw), label: this.#items[Number(raw)]?.label ?? '' });
+    const active = item!.dataset['current'] === 'false' ? 'true' : 'false';
+    item!.dataset['current'] = active;
+    this.emit('legend-item-click', {
+      index: Number(raw),
+      label: this.#items[Number(raw)]?.label ?? '',
+      active: active === 'true',
+    });
   };
 }
 

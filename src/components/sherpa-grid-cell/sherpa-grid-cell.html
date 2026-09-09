@@ -1,0 +1,50 @@
+<!--
+  sherpa-grid-cell — the single atomic cell of the Data Grid (Figma Grid Cell 926:34253).
+
+  data-type sets the role:
+    cell    — a body cell (default)
+    header  — a column header (bold; the common home for sort + select-all)
+    filter  — a secondary-header cell holding a column filter control
+    group   — a row-spanning group header with an expand/collapse toggle (accordion)
+
+  All roles share one anatomy; CSS shows the parts each role uses. A leading
+  checkbox (data-has-checkbox) and trailing actions (data-has-actions: a sort
+  button + a menu button) are opt-in. The group toggle shows only for data-type="group".
+  Content is a slot the consumer fills — alignment / emphasis / numeric format are
+  content choices, not variants.
+
+  Public API:
+    data-type          cell | header | filter | group   (default cell)
+    data-has-checkbox  show the leading selection checkbox (boolean)
+    data-has-actions   show the trailing sort + menu buttons (boolean)
+    data-sort-direction asc | desc   (header sort state; drives the caret)
+    data-expanded      group is open (boolean; drives the toggle caret)
+
+  Slots:
+    (default) — the cell content
+    selection — a custom selection control (else a native checkbox is used)
+
+  Fires:
+    sort-change  (detail: { direction })   — the sort button is clicked (header)
+    menu-open    (detail: {})              — the menu button is clicked
+    group-toggle (detail: { expanded })    — the group toggle is clicked (group)
+-->
+<template id="default">
+  <div class="cell" part="cell">
+    <button class="toggle" part="toggle" type="button" aria-label="Toggle group">
+      <span class="toggle-caret" aria-hidden="true"></span>
+    </button>
+    <span class="checkbox" part="checkbox">
+      <slot name="selection"><input class="check" type="checkbox" /></slot>
+    </span>
+    <span class="content" part="content"><slot></slot></span>
+    <span class="actions" part="actions">
+      <button class="sort" part="sort" type="button" aria-label="Sort">
+        <span class="sort-caret" aria-hidden="true"></span>
+      </button>
+      <button class="menu" part="menu" type="button" aria-label="Column menu">
+        <span aria-hidden="true">&#8942;</span>
+      </button>
+    </span>
+  </div>
+</template>

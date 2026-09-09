@@ -1,132 +1,42 @@
 /**
- * sherpa-nav-section.css — a settings-style secondary navigation panel.
+ * sherpa-nav-section.css — a section-label divider for a navigation rail.
  *
- * A vertical column: an optional heading, then labelled groups of item rows.
- * Pure data-* selectors; JS only stamps the rows and reflects the active id.
+ * A horizontal row: a short label + a hairline rule that fills the remaining
+ * width. Pure data-* selectors; JS only mirrors data-label into the label span.
  *
- * Figma bindings: the panel is a flat, transparent surface (no fill token) with
- * a trailing rule drawn from border/primary at border/width/lg (border/stroke/
- * 200 hairline where finer) and border/rounding/none. The only content ink is
- * content/tertiary/base — heading, group labels and item rows all resolve from
- * it; the active row differs by weight, not colour.
+ * Figma bindings (node 32:43134): the row is a transparent surface (no fill),
+ * height 24px, padding space/2xs (4px) block × space/xs (8px) inline, gap
+ * space/xs (8px), centred. The label is content/body/+1 ink at content/size/xs
+ * (10px) in the body font at regular weight. The rule is a border/stroke/200
+ * hairline in border/default/+2. Collapsed (isExpanded=false) hides the label.
  */
 
 :host {
   display: flex;
-  flex-direction: column;
-  min-inline-size: 0;
-  min-block-size: 0;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  border-inline-end: var(--sherpa-display-border-width-lg, 2px) solid
-    var(--sherpa-style-border-base, #d5d5d5);
-  border-radius: var(--sherpa-display-border-rounding-none, 0px);
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  overflow: hidden;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  min-block-size: 0;
-  block-size: 100%;
-}
-
-.heading {
-  margin: 0;
-  padding: var(--sherpa-display-space-xs, 8px);
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  font-size: var(--sherpa-font-size-heading-h2, 20px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
-:host(:not([data-heading])) .heading { display: none; }
-
-.groups {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-block-size: 0;
-  overflow-y: auto;
-  padding-block: var(--sherpa-display-space-xs, 8px);
-  gap: var(--sherpa-display-space-xs, 8px);
-}
-
-/* ── Group ─────────────────────────────────────────────────────────── */
-.group { display: flex; flex-direction: column; }
-
-.group-label {
-  margin: 0;
-  padding: var(--sherpa-display-space-2xs, 4px) var(--sherpa-display-space-xs, 8px);
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.group[data-no-label] .group-label { display: none; }
-
-.group-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
-}
-
-/* ── Item rows ─────────────────────────────────────────────────────── */
-.item-row {
-  margin: 0;
-  /* hairline divider between rows — border/stroke/200 in border/primary */
-  border-block-end: var(--sherpa-display-border-width-sm, 0.5px) solid
-    var(--sherpa-style-border-base, #d5d5d5);
-
-  &:last-child { border-block-end: none; }
-}
-
-.item {
-  display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-xs, 8px);
-  inline-size: 100%;
-  padding: var(--sherpa-display-space-xs, 8px);
-  border: none;
-  background: transparent;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  text-align: start;
-  cursor: pointer;
-  transition: color 100ms ease;
-
-  &:hover {
-    color: var(--sherpa-theme-content-body-base, #2e2e33);
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
-  }
-}
-
-.item-icon {
-  display: inline-flex;
-  inline-size: var(--sherpa-display-size-md, 20px);
-  justify-content: center;
-  flex-shrink: 0;
-
-  &:empty { display: none; }
-}
-
-.item-label {
-  flex: 1 1 auto;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+}
+
+.label {
+  flex: 0 0 auto;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ── Current item — same ink, heavier weight ───────────────────────── */
-.item-row[data-current] .item {
-  color: var(--sherpa-theme-content-body-base, #2e2e33);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+/* Collapsed rail — only the rule remains. */
+:host([data-collapsed]) .label { display: none; }
+
+.rule {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  block-size: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }

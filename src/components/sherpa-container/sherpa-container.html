@@ -24,17 +24,17 @@
   Fires: nothing by itself — it's a surface. Consumers wire their own controls.
 -->
 <template id="default">
-  <div class="header" part="header">
+  <header class="header" part="header">
     <slot name="header"></slot>
-  </div>
+  </header>
 
   <div class="body" part="body">
     <slot></slot>
   </div>
 
-  <div class="footer" part="footer">
+  <footer class="footer" part="footer">
     <slot name="footer"></slot>
-  </div>
+  </footer>
 
   <div class="state" role="status" aria-live="polite" part="state">
     <slot name="loading" class="state-loading">

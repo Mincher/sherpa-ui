@@ -1,25 +1,26 @@
 /**
  * sherpa-callout — presentation.
  *
- * A status message box (Figma Callout). The box fills with the status surface,
- * borders with the status border, and re-inks its title/message — all from the
- * look-tier cascade (--_status-*). Only a [data-status] re-points those; a bare
- * callout reads as the neutral default. A round icon badge carries the strong
- * status colour; the dismiss button is attribute-gated. Geometry chains to the
- * shared Structure/Theme tokens.
+ * A status message box (Figma Callout). Per Figma the BOX stays NEUTRAL — white
+ * surface, neutral border, dark ink — regardless of status; the status hue is
+ * carried ONLY by the round icon badge. (Verified 2026-09-07: Figma Callout top
+ * fill = style-surface/base = white in every status.) So surface/border/content
+ * are fixed neutrals here; only --_badge follows the status cascade. Geometry
+ * chains to the shared Structure/Theme tokens.
  *
- *   surface → var(--_status-surface, style-surface-base)
- *   border  → var(--_status-border,  style-border-base)
- *   badge   → var(--_status-surface-strong, theme-surface-info-4)
+ *   surface → style-surface-base   (neutral, status-independent)
+ *   border  → style-border-base    (neutral)
+ *   badge   → var(--_status-surface-strong, theme-surface-info-4)  (status hue)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #e8e8f6));
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  /* Box is neutral in every status — the hue lives on the badge only. */
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base, #e8e8f6);
+  --_content: var(--sherpa-style-content-base, #0c0b11);
   --_badge: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
 }
 
@@ -28,8 +29,11 @@
   align-items: flex-start;
   gap: var(--sherpa-theme-gap-lg, 12px);
   padding: var(--sherpa-theme-padding-lg, 16px);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  /* Figma: thick status-coloured accent stripe on the leading edge. */
+  border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid
+    var(--_status-border, var(--_badge));
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   color: var(--_content);
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -66,18 +70,21 @@
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 .title {
   color: var(--_content);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.35;
 }
 :host(:not([data-heading])) .title { display: none; }
 
-.message { color: var(--_content); }
+.message {
+  color: var(--_content);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+}
 :host(:not([data-has-content])) .message { display: none; }
 
 /* ── Dismiss button ──────────────────────────────────────────────────── */
@@ -89,9 +96,9 @@
   inline-size: var(--sherpa-theme-size-icon-md, 20px);
   block-size: var(--sherpa-theme-size-icon-md, 20px);
   padding: 0;
-  margin-inline-start: var(--sherpa-display-space-2xs, 4px);
+  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-sm, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: transparent;
   color: var(--_content);
   font-size: 18px;

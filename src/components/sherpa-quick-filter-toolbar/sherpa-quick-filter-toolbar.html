@@ -14,9 +14,27 @@
     actions  — trailing controls (add filter, clear, …)
 
   Fires: quick-filter-change — detail: { active: string[] }
+
+  ── FIGMA DIVERGENCE (intentional) ──────────────────────────────────────────
+  Figma "Filter Toolbar" (node 150:3688) is a fuller toolbar than this code, on
+  purpose. Figma bakes in, as built-in instances:
+    • a leading view chip (Type=view) or a Switch toggle (Type=data);
+    • filter/preset chips separated by vertical Dividers;
+    • a trailing ACTION CLUSTER: Add (split menu), AI/brand filter, undo,
+      refresh, favourite/star, Save-view (split menu) and an overflow (⋮).
+    • view-scope actions (view-menu-open / view-change / view-save /
+      view-favorite / data-refresh / ai-filter-request) per Figma's description.
+  This component is a deliberately SIMPLER 3-zone slot bar (view / chips /
+  actions). The action cluster, dividers and save-view controls are NOT built
+  in — the host composes them into the `actions` (and `view`) slots. Chips are
+  stamped by populate(); dividers/presets/switch are host-supplied via slots.
+  The extra Figma events above are therefore the host's responsibility, not
+  fired here. See the component's .thin.yaml `_divergence` block for the record.
+  DO NOT expand this component to match Figma without a deliberate decision.
+  ─────────────────────────────────────────────────────────────────────────────
 -->
 <template id="default">
-  <div class="bar" part="bar">
+  <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
     <div class="view-zone" part="view-zone">
       <slot name="view"></slot>
     </div>

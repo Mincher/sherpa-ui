@@ -106,30 +106,44 @@
  */
 
 :host {
-  display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-}
-
-/* ── Default row ───────────────────────────────────────────────────── */
-.row {
   display: flex;
   align-items: center;
   gap: var(--sherpa-structure-space-gap, 8px);
-  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
-  color: var(--sherpa-style-content-base, #0c0b11);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+}
+
+/* ── Default row — the activation target is a native <button> or <a href> ─── */
+.row {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-structure-space-gap, 8px);
+  padding: 0 var(--sherpa-display-mode-space-xs, 8px);
+  min-block-size: var(--sherpa-display-mode-size-lg, 24px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
+  font-weight: var(--sherpa-font-weight-light, 300);
+  text-align: start;
   text-decoration: none;
+  border: 0;
+  background: none;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
 }
+
+/* Show the <button> for a plain row, the <a href> for a real link. */
+.row-link { display: none; }
+:host([data-href]) .row-button { display: none; }
+:host([data-href]) .row-link { display: flex; }
 
 .icon {
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
   flex-shrink: 0;
 }
 :host([data-icon]) .icon { display: inline-flex; }
@@ -148,11 +162,11 @@
   display: none;
   align-items: center;
   flex-shrink: 0;
-  padding-inline: var(--sherpa-display-space-2xs, 4px);
-  min-inline-size: var(--sherpa-display-size-md, 20px);
-  block-size: var(--sherpa-display-size-md, 20px);
+  padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
+  min-inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
   justify-content: center;
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--_status-surface-strong, var(--sherpa-theme-surface-active-base, #f4ebfd));
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-font-size-body-small, 12px);
@@ -161,19 +175,42 @@
 :host([data-badge]) .badge,
 :host([data-has-trailing]) .badge { display: inline-flex; }
 
+/* Trailing expand chevron — shown for expandable/nested items. A caret that
+   rotates 90deg when the item is expanded. CSS owns visibility + rotation. */
+.expand {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
+  block-size: var(--sherpa-theme-size-icon-xs, 16px);
+  padding: var(--sherpa-display-mode-space-none, 0px);
+  border: 0;
+  background: none;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  cursor: pointer;
+}
+:host([data-expandable]) .expand { display: inline-flex; }
+
+.expand-chevron {
+  display: inline-flex;
+  transition: transform 100ms ease;
+}
+:host([data-expanded]) .expand-chevron { transform: rotate(90deg); }
+
 /* Success / online dot — a small round marker pinned to the success ink. */
 :host([data-status-dot]) .badge {
-  min-inline-size: var(--sherpa-display-size-2xs, 8px);
-  inline-size: var(--sherpa-display-size-2xs, 8px);
-  block-size: var(--sherpa-display-size-2xs, 8px);
-  padding-inline: var(--sherpa-display-space-none, 0px);
+  min-inline-size: var(--sherpa-display-mode-size-2xs, 8px);
+  inline-size: var(--sherpa-display-mode-size-2xs, 8px);
+  block-size: var(--sherpa-display-mode-size-2xs, 8px);
+  padding-inline: var(--sherpa-display-mode-space-none, 0px);
   background: var(--sherpa-theme-surface-success-3, #058142);
 }
 
 /* ── Hover / focus ─────────────────────────────────────────────────── */
 :host(:hover) .row {
   background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 :host(:focus-visible) { outline: none; }
 :host(:focus-visible) .row,
@@ -183,8 +220,8 @@
 
 /* ── Current ───────────────────────────────────────────────────────── */
 :host([data-current]) .row {
-  background: var(--sherpa-theme-surface-active-base, #f4ebfd);
-  color: var(--sherpa-theme-content-active-base, #4d049f);
+  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  color: var(--sherpa-theme-content-active-1, #8300b6);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -199,22 +236,34 @@
   background: var(--sherpa-theme-surface-default-2, #c0c0cc);
   color: var(--sherpa-theme-content-body-2, #5c5c66);
 }
+:host([disabled]) .expand {
+  cursor: not-allowed;
+  color: var(--sherpa-theme-content-body-2, #5c5c66);
+}
 
-/* ── Promo (CTA) variant ───────────────────────────────────────────── */
+/* ── Promo (CTA) variant — activation target is a native <button> or <a href> ─ */
 .promo {
+  flex: 1 1 auto;
+  min-inline-size: 0;
   display: flex;
   align-items: center;
   gap: var(--sherpa-structure-space-gap, 8px);
-  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-display-space-xs, 8px);
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
-  border: var(--sherpa-style-border-width, 1px) solid
-    var(--sherpa-style-border-base, #e8e8f6);
+  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-family: inherit;
+  text-align: start;
   text-decoration: none;
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease;
 }
+/* Show the <button> for a plain promo, the <a href> for a real link. */
+.promo-link { display: none; }
+:host([data-href]) .promo-button { display: none; }
+:host([data-href]) .promo-link { display: flex; }
 :host([data-variant="promo"]:hover) .promo {
   background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
   border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
@@ -224,10 +273,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-lg, 24px);
-  block-size: var(--sherpa-display-size-lg, 24px);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   flex-shrink: 0;
-  border-radius: var(--sherpa-display-border-rounding-xl, 16px);
+  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
   background: var(--sherpa-theme-surface-active-base, #f4ebfd);
   color: var(--sherpa-theme-content-active-base, #4d049f);
 }
@@ -235,23 +284,23 @@
 .promo-body {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-none, 0px);
+  gap: var(--sherpa-display-mode-space-none, 0px);
   flex: 1 1 auto;
   min-inline-size: 0;
 }
 .promo-heading {
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 .promo-description {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
 
   &:empty { display: none; }
 }
 
 .promo-chevron {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   flex-shrink: 0;
 }

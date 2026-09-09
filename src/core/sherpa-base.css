@@ -24,3 +24,22 @@
 :host([hidden]) {
   display: none !important;
 }
+
+/* ── Forced colours (Windows High Contrast) ──────────────────────────────────
+ * Components draw focus rings with box-shadow (see each component's :focus-visible).
+ * box-shadow is STRIPPED in forced-colors mode, so those rings would vanish — a
+ * WCAG 2.4.7 failure. Restore a real outline (which forced-colors honours) for any
+ * focused element, host or inner. `Highlight` is the OS's system focus colour.
+ * One block here covers every shadow root (this sheet is adopted into all of them). */
+@media (forced-colors: active) {
+  :host(:focus-visible),
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* Selected / active surfaces lose their tint in forced-colors; keep a border cue. */
+  :host([data-selected]),
+  :host([aria-selected="true"]) {
+    outline: 1px solid Highlight;
+  }
+}

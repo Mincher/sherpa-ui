@@ -6,11 +6,18 @@
  * re-project. Load once in the document; the resolved --sherpa-* values inherit into
  * every component shadow root.
  *
- * Layers mirror Figma's aliasing tiers (Primitives resolved away → reference-only):
- *   core → style → overrides → components.  Component-scoped collections live in each
- *   component's own <comp>.tokens.css partial (@layer components).
+ * Cascade layers mirror the Figma collection families (Primitives resolved away →
+ * reference-only). Each layer owns its base values PLUS its own mode/extension blocks:
+ *   core         — shared base geometry (primitives inlined as literals).
+ *   display-mode — light/dark colour+scale ramp + dark re-point + density.
+ *   theme        — semantic surface/border/content/size/weight/font, scoped [data-theme].
+ *   layout       — grid layout properties + the .sherpa-view utility.
+ *   structure    — bound sizes / content sizes / per-corner rounding + snap.
+ *   style        — default + status ([data-status]) + look ([data-look]) + data-viz.
+ *   elevation    — shadow styling ([data-elevation]).
+ *   components   — each component's own scoped partial (last → last word).
  */
-@layer core, style, overrides, components;
+@layer core, display-mode, theme, layout, structure, style, elevation, components;
 
   @property --sherpa-elevation-color {
     syntax: '<color>';
@@ -19,450 +26,1176 @@
   }
 
 @layer core {
+
+}
+
+@layer display-mode {
   :root {
-  --sherpa-display-border-rounding-2xl: 24px;
-  --sherpa-display-border-rounding-base: 4px;
-  --sherpa-display-border-rounding-full: 999px;
-  --sherpa-display-border-rounding-lg: 8px;
-  --sherpa-display-border-rounding-none: 0px;
-  --sherpa-display-border-rounding-sm: 2px;
-  --sherpa-display-border-rounding-xl: 16px;
-  --sherpa-display-border-width-2xl: 8px;
-  --sherpa-display-border-width-3xl: 12px;
-  --sherpa-display-border-width-base: 1px;
-  --sherpa-display-border-width-lg: 2px;
-  --sherpa-display-border-width-none: 0px;
-  --sherpa-display-border-width-sm: 0.5px;
-  --sherpa-display-border-width-xl: 4px;
-  --sherpa-display-border-width-xs: 0.25px;
-  --sherpa-display-color-accent-color-1: #8AA3FF;
-  --sherpa-display-color-accent-color-2: #6681FF;
-  --sherpa-display-color-accent-color-3: #3B4CCD;
-  --sherpa-display-color-accent-color-4: #2B34B4;
-  --sherpa-display-color-accent-color-5: #1E189C;
-  --sherpa-display-color-brand-color-1: #F2DFFF;
-  --sherpa-display-color-brand-color-2: #D89CFF;
-  --sherpa-display-color-brand-color-3: #C046FF;
-  --sherpa-display-color-brand-color-4: #8300B6;
-  --sherpa-display-color-brand-color-5: #240036;
-  --sherpa-display-color-critical-color-1: #FFDAD1;
-  --sherpa-display-color-critical-color-2: #FF856D;
-  --sherpa-display-color-critical-color-3: #DD2C01;
-  --sherpa-display-color-critical-color-4: #B72200;
-  --sherpa-display-color-critical-color-5: #701100;
-  --sherpa-display-color-info-color-1: #D4F0FF;
-  --sherpa-display-color-info-color-2: #6FD1FF;
-  --sherpa-display-color-info-color-3: #008BBA;
-  --sherpa-display-color-info-color-4: #006C91;
-  --sherpa-display-color-info-color-5: #003246;
-  --sherpa-display-color-neutral-color-1: #FFFFFF;
-  --sherpa-display-color-neutral-color-2: #E8E8F6;
-  --sherpa-display-color-neutral-color-3: #B3B3C3;
-  --sherpa-display-color-neutral-color-4: #35353D;
-  --sherpa-display-color-neutral-color-5: #0C0B11;
-  --sherpa-display-color-neutral-fixed-color-1: #FFFFFF;
-  --sherpa-display-color-neutral-fixed-color-2: #E8E8F6;
-  --sherpa-display-color-neutral-fixed-color-3: #B3B3C3;
-  --sherpa-display-color-neutral-fixed-color-4: #35353D;
-  --sherpa-display-color-neutral-fixed-color-5: #0C0B11;
-  --sherpa-display-color-success-color-1: #BBFFD2;
-  --sherpa-display-color-success-color-2: #56E796;
-  --sherpa-display-color-success-color-3: #20C173;
-  --sherpa-display-color-success-color-4: #007A45;
-  --sherpa-display-color-success-color-5: #00391D;
-  --sherpa-display-color-tones-color-1: #F0F0FF;
-  --sherpa-display-color-tones-color-2: #D4D4E9;
-  --sherpa-display-color-tones-color-3: #9595A8;
-  --sherpa-display-color-tones-color-4: #9595A8;
-  --sherpa-display-color-tones-color-5: #505061;
-  --sherpa-display-color-urgent-color-1: #FFE6DA;
-  --sherpa-display-color-urgent-color-2: #FF955B;
-  --sherpa-display-color-urgent-color-3: #FF7300;
-  --sherpa-display-color-urgent-color-4: #A24600;
-  --sherpa-display-color-urgent-color-5: #4E1E00;
-  --sherpa-display-color-warning-color-1: #FFF4E1;
-  --sherpa-display-color-warning-color-2: #FFDDA0;
-  --sherpa-display-color-warning-color-3: #FFC44C;
-  --sherpa-display-color-warning-color-4: #A27500;
-  --sherpa-display-color-warning-color-5: #473100;
-  --sherpa-display-color-transparent-accent-color-1: #8AA3FF1A;
-  --sherpa-display-color-transparent-accent-color-2: #6681FF1A;
-  --sherpa-display-color-transparent-accent-color-3: #3B4CCD1A;
-  --sherpa-display-color-transparent-accent-color-4: #2B34B41A;
-  --sherpa-display-color-transparent-accent-color-5: #1E189C1A;
-  --sherpa-display-color-transparent-brand-color-1: #D89CFF1A;
-  --sherpa-display-color-transparent-brand-color-2: #CC76FF1A;
-  --sherpa-display-color-transparent-brand-color-3: #C046FF1A;
-  --sherpa-display-color-transparent-brand-color-4: #A41DE01A;
-  --sherpa-display-color-transparent-brand-color-5: #8300B61A;
-  --sherpa-display-color-transparent-critical-color-1: #FFDAD11A;
-  --sherpa-display-color-transparent-critical-color-2: #FF856D1A;
-  --sherpa-display-color-transparent-critical-color-3: #FC4E2D1A;
-  --sherpa-display-color-transparent-critical-color-4: #B722001A;
-  --sherpa-display-color-transparent-critical-color-5: #7011001A;
-  --sherpa-display-color-transparent-info-color-1: #D4F0FF1A;
-  --sherpa-display-color-transparent-info-color-2: #6FD1FF1A;
-  --sherpa-display-color-transparent-info-color-3: #008BBA1A;
-  --sherpa-display-color-transparent-info-color-4: #006C911A;
-  --sherpa-display-color-transparent-info-color-5: #0032461A;
-  --sherpa-display-color-transparent-neutral-color-1: #FFFFFF00;
-  --sherpa-display-color-transparent-neutral-color-2: #EEEEFC1A;
-  --sherpa-display-color-transparent-neutral-color-3: #B2B2BF1A;
-  --sherpa-display-color-transparent-neutral-color-4: #4E4E591A;
-  --sherpa-display-color-transparent-neutral-color-5: #15151E1A;
-  --sherpa-display-color-transparent-success-color-1: #BBFFD21A;
-  --sherpa-display-color-transparent-success-color-2: #56E7961A;
-  --sherpa-display-color-transparent-success-color-3: #20C1731A;
-  --sherpa-display-color-transparent-success-color-4: #007A451A;
-  --sherpa-display-color-transparent-success-color-5: #00391D1A;
-  --sherpa-display-color-transparent-tones-color-1: #F0F0FF1A;
-  --sherpa-display-color-transparent-tones-color-2: #D4D4E91A;
-  --sherpa-display-color-transparent-tones-color-3: #9595A81A;
-  --sherpa-display-color-transparent-tones-color-4: #9595A81A;
-  --sherpa-display-color-transparent-tones-color-5: #5050611A;
-  --sherpa-display-color-transparent-urgent-color-1: #FFE6DA1A;
-  --sherpa-display-color-transparent-urgent-color-2: #FF955B1A;
-  --sherpa-display-color-transparent-urgent-color-3: #FF73001A;
-  --sherpa-display-color-transparent-urgent-color-4: #A246001A;
-  --sherpa-display-color-transparent-urgent-color-5: #4E1E001A;
-  --sherpa-display-color-transparent-warning-color-1: #FFF4E11A;
-  --sherpa-display-color-transparent-warning-color-2: #FFDDA01A;
-  --sherpa-display-color-transparent-warning-color-3: #FFC44C1A;
-  --sherpa-display-color-transparent-warning-color-4: #A275001A;
-  --sherpa-display-color-transparent-warning-color-5: #4731001A;
-  --sherpa-display-fonts-scale-0: 0px;
-  --sherpa-display-fonts-scale-10xl: 48px;
-  --sherpa-display-fonts-scale-11xl: 52px;
-  --sherpa-display-fonts-scale-12xl: 56px;
-  --sherpa-display-fonts-scale-13xl: 64px;
-  --sherpa-display-fonts-scale-14xl: 72px;
-  --sherpa-display-fonts-scale-2xl: 24px;
-  --sherpa-display-fonts-scale-2xs: 8px;
-  --sherpa-display-fonts-scale-3xl: 28px;
-  --sherpa-display-fonts-scale-4xl: 30px;
-  --sherpa-display-fonts-scale-5xl: 32px;
-  --sherpa-display-fonts-scale-6xl: 36px;
-  --sherpa-display-fonts-scale-7xl: 40px;
-  --sherpa-display-fonts-scale-8xl: 42px;
-  --sherpa-display-fonts-scale-9xl: 44px;
-  --sherpa-display-fonts-scale-base: 14px;
-  --sherpa-display-fonts-scale-lg: 16px;
-  --sherpa-display-fonts-scale-sm: 12px;
-  --sherpa-display-fonts-scale-xl: 20px;
-  --sherpa-display-fonts-scale-xs: 10px;
-  --sherpa-display-fonts-weight-300: 300;
-  --sherpa-display-fonts-weight-400: 400;
-  --sherpa-display-fonts-weight-500: 500;
-  --sherpa-display-fonts-weight-600: 600;
-  --sherpa-display-fonts-weight-700: 700;
-  --sherpa-display-fonts-weight-900: 900;
-  --sherpa-display-size-2xl: 32px;
-  --sherpa-display-size-2xs: 8px;
-  --sherpa-display-size-3xl: 40px;
-  --sherpa-display-size-3xs: 4px;
-  --sherpa-display-size-4xl: 48px;
-  --sherpa-display-size-5xl: 56px;
-  --sherpa-display-size-6xl: 64px;
-  --sherpa-display-size-lg: 24px;
-  --sherpa-display-size-md: 20px;
-  --sherpa-display-size-none: 0px;
-  --sherpa-display-size-sm: 16px;
-  --sherpa-display-size-xl: 28px;
-  --sherpa-display-size-xs: 12px;
-  --sherpa-display-space-2xl: 32px;
-  --sherpa-display-space-2xs: 4px;
-  --sherpa-display-space-3xl: 40px;
-  --sherpa-display-space-3xs: 2px;
-  --sherpa-display-space-4xl: 48px;
-  --sherpa-display-space-5xl: 56px;
-  --sherpa-display-space-6xl: 64px;
-  --sherpa-display-space-base: 16px;
-  --sherpa-display-space-lg: 20px;
-  --sherpa-display-space-none: 0px;
-  --sherpa-display-space-sm: 12px;
-  --sherpa-display-space-snapped: -1px;
-  --sherpa-display-space-xl: 24px;
-  --sherpa-display-space-xs: 8px;
-  --sherpa-structure-height: var(--sherpa-display-size-2xl);
-  --sherpa-structure-icon-size: var(--sherpa-display-size-sm);
-  --sherpa-structure-font-line-height: var(--sherpa-display-fonts-scale-xl);
-  --sherpa-structure-font-size: var(--sherpa-display-fonts-scale-base);
-  --sherpa-structure-font-weight: var(--sherpa-display-fonts-weight-400);
-  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-border-rounding-base);
-  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-border-rounding-base);
-  --sherpa-structure-rounding-top-left: var(--sherpa-display-border-rounding-base);
-  --sherpa-structure-rounding-top-right: var(--sherpa-display-border-rounding-base);
-  --sherpa-structure-space-gap: var(--sherpa-display-space-xs);
-  --sherpa-structure-space-padding: var(--sherpa-display-space-xs);
+  --sherpa-display-mode-border-rounding-2xl: 24px;
+  --sherpa-display-mode-border-rounding-base: 4px;
+  --sherpa-display-mode-border-rounding-full: 999px;
+  --sherpa-display-mode-border-rounding-lg: 8px;
+  --sherpa-display-mode-border-rounding-none: 0px;
+  --sherpa-display-mode-border-rounding-sm: 2px;
+  --sherpa-display-mode-border-rounding-xl: 16px;
+  --sherpa-display-mode-border-width-2xl: 8px;
+  --sherpa-display-mode-border-width-3xl: 12px;
+  --sherpa-display-mode-border-width-base: 1px;
+  --sherpa-display-mode-border-width-lg: 2px;
+  --sherpa-display-mode-border-width-none: 0px;
+  --sherpa-display-mode-border-width-sm: 0.5px;
+  --sherpa-display-mode-border-width-xl: 4px;
+  --sherpa-display-mode-border-width-xs: 0.25px;
+  --sherpa-display-mode-color-accent-color-1: #8AA3FF;
+  --sherpa-display-mode-color-accent-color-2: #6681FF;
+  --sherpa-display-mode-color-accent-color-3: #3B4CCD;
+  --sherpa-display-mode-color-accent-color-4: #2B34B4;
+  --sherpa-display-mode-color-accent-color-5: #1E189C;
+  --sherpa-display-mode-color-app-color-1: #E8E8F6;
+  --sherpa-display-mode-color-brand-color-1: #F2DFFF;
+  --sherpa-display-mode-color-brand-color-2: #D89CFF;
+  --sherpa-display-mode-color-brand-color-3: #C046FF;
+  --sherpa-display-mode-color-brand-color-4: #8300B6;
+  --sherpa-display-mode-color-brand-color-5: #240036;
+  --sherpa-display-mode-color-critical-color-1: #FFDAD1;
+  --sherpa-display-mode-color-critical-color-2: #FF856D;
+  --sherpa-display-mode-color-critical-color-3: #DD2C01;
+  --sherpa-display-mode-color-critical-color-4: #B72200;
+  --sherpa-display-mode-color-critical-color-5: #701100;
+  --sherpa-display-mode-color-info-color-1: #D4F0FF;
+  --sherpa-display-mode-color-info-color-2: #6FD1FF;
+  --sherpa-display-mode-color-info-color-3: #008BBA;
+  --sherpa-display-mode-color-info-color-4: #006C91;
+  --sherpa-display-mode-color-info-color-5: #003246;
+  --sherpa-display-mode-color-neutral-color-1: #FFFFFF;
+  --sherpa-display-mode-color-neutral-color-2: #E8E8F6;
+  --sherpa-display-mode-color-neutral-color-3: #B3B3C3;
+  --sherpa-display-mode-color-neutral-color-4: #35353D;
+  --sherpa-display-mode-color-neutral-color-5: #0C0B11;
+  --sherpa-display-mode-color-neutral-fixed-color-1: #FFFFFF;
+  --sherpa-display-mode-color-neutral-fixed-color-2: #E8E8F6;
+  --sherpa-display-mode-color-neutral-fixed-color-3: #B3B3C3;
+  --sherpa-display-mode-color-neutral-fixed-color-4: #35353D;
+  --sherpa-display-mode-color-neutral-fixed-color-5: #0C0B11;
+  --sherpa-display-mode-color-success-color-1: #BBFFD2;
+  --sherpa-display-mode-color-success-color-2: #56E796;
+  --sherpa-display-mode-color-success-color-3: #20C173;
+  --sherpa-display-mode-color-success-color-4: #007A45;
+  --sherpa-display-mode-color-success-color-5: #00391D;
+  --sherpa-display-mode-color-tones-color-1: #F0F0FF;
+  --sherpa-display-mode-color-tones-color-2: #D4D4E9;
+  --sherpa-display-mode-color-tones-color-3: #9595A8;
+  --sherpa-display-mode-color-tones-color-4: #9595A8;
+  --sherpa-display-mode-color-tones-color-5: #505061;
+  --sherpa-display-mode-color-urgent-color-1: #FFE6DA;
+  --sherpa-display-mode-color-urgent-color-2: #FF955B;
+  --sherpa-display-mode-color-urgent-color-3: #FF7300;
+  --sherpa-display-mode-color-urgent-color-4: #A24600;
+  --sherpa-display-mode-color-urgent-color-5: #4E1E00;
+  --sherpa-display-mode-color-warning-color-1: #FFF4E1;
+  --sherpa-display-mode-color-warning-color-2: #FFDDA0;
+  --sherpa-display-mode-color-warning-color-3: #FFC44C;
+  --sherpa-display-mode-color-warning-color-4: #A27500;
+  --sherpa-display-mode-color-warning-color-5: #473100;
+  --sherpa-display-mode-color-transparent-accent-color-1: #8AA3FF1A;
+  --sherpa-display-mode-color-transparent-accent-color-2: #6681FF33;
+  --sherpa-display-mode-color-transparent-accent-color-3: #3B4CCD4D;
+  --sherpa-display-mode-color-transparent-accent-color-4: #2B34B466;
+  --sherpa-display-mode-color-transparent-accent-color-5: #1E189C80;
+  --sherpa-display-mode-color-transparent-brand-color-1: #D89CFF1A;
+  --sherpa-display-mode-color-transparent-brand-color-2: #CC76FF33;
+  --sherpa-display-mode-color-transparent-brand-color-3: #C046FF4D;
+  --sherpa-display-mode-color-transparent-brand-color-4: #A41DE066;
+  --sherpa-display-mode-color-transparent-brand-color-5: #8300B680;
+  --sherpa-display-mode-color-transparent-critical-color-1: #FFDAD11A;
+  --sherpa-display-mode-color-transparent-critical-color-2: #FF856D33;
+  --sherpa-display-mode-color-transparent-critical-color-3: #FC4E2D4D;
+  --sherpa-display-mode-color-transparent-critical-color-4: #B7220066;
+  --sherpa-display-mode-color-transparent-critical-color-5: #70110080;
+  --sherpa-display-mode-color-transparent-info-color-1: #D4F0FF1A;
+  --sherpa-display-mode-color-transparent-info-color-2: #6FD1FF33;
+  --sherpa-display-mode-color-transparent-info-color-3: #008BBA4D;
+  --sherpa-display-mode-color-transparent-info-color-4: #006C9166;
+  --sherpa-display-mode-color-transparent-info-color-5: #00324680;
+  --sherpa-display-mode-color-transparent-neutral-color-1: #FFFFFF00;
+  --sherpa-display-mode-color-transparent-neutral-color-2: #EEEEFC33;
+  --sherpa-display-mode-color-transparent-neutral-color-3: #B2B2BF4D;
+  --sherpa-display-mode-color-transparent-neutral-color-4: #4E4E5966;
+  --sherpa-display-mode-color-transparent-neutral-color-5: #15151E80;
+  --sherpa-display-mode-color-transparent-success-color-1: #BBFFD21A;
+  --sherpa-display-mode-color-transparent-success-color-2: #56E79633;
+  --sherpa-display-mode-color-transparent-success-color-3: #20C1734D;
+  --sherpa-display-mode-color-transparent-success-color-4: #007A4566;
+  --sherpa-display-mode-color-transparent-success-color-5: #00391D80;
+  --sherpa-display-mode-color-transparent-tones-color-1: #F0F0FF1A;
+  --sherpa-display-mode-color-transparent-tones-color-2: #D4D4E933;
+  --sherpa-display-mode-color-transparent-tones-color-3: #9595A84D;
+  --sherpa-display-mode-color-transparent-tones-color-4: #9595A866;
+  --sherpa-display-mode-color-transparent-tones-color-5: #50506180;
+  --sherpa-display-mode-color-transparent-urgent-color-1: #FFE6DA1A;
+  --sherpa-display-mode-color-transparent-urgent-color-2: #FF955B33;
+  --sherpa-display-mode-color-transparent-urgent-color-3: #FF73004D;
+  --sherpa-display-mode-color-transparent-urgent-color-4: #A2460066;
+  --sherpa-display-mode-color-transparent-urgent-color-5: #4E1E0080;
+  --sherpa-display-mode-color-transparent-warning-color-1: #FFF4E11A;
+  --sherpa-display-mode-color-transparent-warning-color-2: #FFDDA033;
+  --sherpa-display-mode-color-transparent-warning-color-3: #FFC44C4D;
+  --sherpa-display-mode-color-transparent-warning-color-4: #A2750066;
+  --sherpa-display-mode-color-transparent-warning-color-5: #47310080;
+  --sherpa-display-mode-fonts-scale-0: 0px;
+  --sherpa-display-mode-fonts-scale-10xl: 48px;
+  --sherpa-display-mode-fonts-scale-11xl: 52px;
+  --sherpa-display-mode-fonts-scale-12xl: 56px;
+  --sherpa-display-mode-fonts-scale-13xl: 64px;
+  --sherpa-display-mode-fonts-scale-14xl: 72px;
+  --sherpa-display-mode-fonts-scale-2xl: 24px;
+  --sherpa-display-mode-fonts-scale-2xs: 8px;
+  --sherpa-display-mode-fonts-scale-3xl: 28px;
+  --sherpa-display-mode-fonts-scale-4xl: 30px;
+  --sherpa-display-mode-fonts-scale-5xl: 32px;
+  --sherpa-display-mode-fonts-scale-6xl: 36px;
+  --sherpa-display-mode-fonts-scale-7xl: 40px;
+  --sherpa-display-mode-fonts-scale-8xl: 42px;
+  --sherpa-display-mode-fonts-scale-9xl: 44px;
+  --sherpa-display-mode-fonts-scale-base: 14px;
+  --sherpa-display-mode-fonts-scale-lg: 16px;
+  --sherpa-display-mode-fonts-scale-sm: 12px;
+  --sherpa-display-mode-fonts-scale-xl: 20px;
+  --sherpa-display-mode-fonts-scale-xs: 10px;
+  --sherpa-display-mode-fonts-weight-300: 300;
+  --sherpa-display-mode-fonts-weight-400: 400;
+  --sherpa-display-mode-fonts-weight-500: 500;
+  --sherpa-display-mode-fonts-weight-600: 600;
+  --sherpa-display-mode-fonts-weight-700: 700;
+  --sherpa-display-mode-fonts-weight-900: 900;
+  --sherpa-display-mode-size-2xl: 32px;
+  --sherpa-display-mode-size-2xs: 8px;
+  --sherpa-display-mode-size-3xl: 40px;
+  --sherpa-display-mode-size-3xs: 4px;
+  --sherpa-display-mode-size-4xl: 48px;
+  --sherpa-display-mode-size-5xl: 56px;
+  --sherpa-display-mode-size-6xl: 64px;
+  --sherpa-display-mode-size-lg: 24px;
+  --sherpa-display-mode-size-md: 20px;
+  --sherpa-display-mode-size-none: 0px;
+  --sherpa-display-mode-size-sm: 16px;
+  --sherpa-display-mode-size-xl: 28px;
+  --sherpa-display-mode-size-xs: 12px;
+  --sherpa-display-mode-space-2xl: 32px;
+  --sherpa-display-mode-space-2xs: 4px;
+  --sherpa-display-mode-space-3xl: 40px;
+  --sherpa-display-mode-space-3xs: 2px;
+  --sherpa-display-mode-space-4xl: 48px;
+  --sherpa-display-mode-space-5xl: 56px;
+  --sherpa-display-mode-space-6xl: 64px;
+  --sherpa-display-mode-space-base: 16px;
+  --sherpa-display-mode-space-lg: 20px;
+  --sherpa-display-mode-space-none: 0px;
+  --sherpa-display-mode-space-sm: 12px;
+  --sherpa-display-mode-space-snapped: -1px;
+  --sherpa-display-mode-space-xl: 24px;
+  --sherpa-display-mode-space-xs: 8px;
   }
 
   /* Dark mode: explicit choice wins. */
   :root[data-mode="dark"] {
-  --sherpa-display-color-accent-color-1: #1E189C;
-  --sherpa-display-color-accent-color-2: #2B34B4;
-  --sherpa-display-color-accent-color-4: #4C63E5;
-  --sherpa-display-color-accent-color-5: #6681FF;
-  --sherpa-display-color-brand-color-1: #240036;
-  --sherpa-display-color-brand-color-2: #610089;
-  --sherpa-display-color-brand-color-3: #A41DE0;
-  --sherpa-display-color-brand-color-4: #CC76FF;
-  --sherpa-display-color-brand-color-5: #E5BFFF;
-  --sherpa-display-color-critical-color-1: #4F0900;
-  --sherpa-display-color-critical-color-2: #931900;
-  --sherpa-display-color-critical-color-3: #B72200;
-  --sherpa-display-color-critical-color-4: #DD2C01;
-  --sherpa-display-color-critical-color-5: #FC4E2D;
-  --sherpa-display-color-info-color-1: #001925;
-  --sherpa-display-color-info-color-2: #004E6A;
-  --sherpa-display-color-info-color-3: #006C91;
-  --sherpa-display-color-info-color-4: #008BBA;
-  --sherpa-display-color-info-color-5: #6FD1FF;
-  --sherpa-display-color-neutral-color-1: #0C0B11;
-  --sherpa-display-color-neutral-color-2: #15151D;
-  --sherpa-display-color-neutral-color-3: #5D5D69;
-  --sherpa-display-color-neutral-color-4: #878794;
-  --sherpa-display-color-neutral-color-5: #C4C4D3;
-  --sherpa-display-color-success-color-1: #001C0C;
-  --sherpa-display-color-success-color-2: #005930;
-  --sherpa-display-color-success-color-3: #007A45;
-  --sherpa-display-color-success-color-4: #009D5A;
-  --sherpa-display-color-success-color-5: #20C173;
-  --sherpa-display-color-tones-color-1: #505061;
-  --sherpa-display-color-tones-color-2: #9595A8;
-  --sherpa-display-color-tones-color-4: #D4D4E9;
-  --sherpa-display-color-tones-color-5: #F0F0FF;
-  --sherpa-display-color-urgent-color-1: #290C00;
-  --sherpa-display-color-urgent-color-2: #773200;
-  --sherpa-display-color-urgent-color-3: #D05C00;
-  --sherpa-display-color-urgent-color-4: #FF7300;
-  --sherpa-display-color-urgent-color-5: #FF955B;
-  --sherpa-display-color-warning-color-1: #473100;
-  --sherpa-display-color-warning-color-2: #A27500;
-  --sherpa-display-color-warning-color-3: #D39A03;
-  --sherpa-display-color-warning-color-4: #FFC44C;
-  --sherpa-display-color-warning-color-5: #FFD17B;
-  --sherpa-display-color-transparent-accent-color-1: #1E189C1A;
-  --sherpa-display-color-transparent-accent-color-2: #2B34B41A;
-  --sherpa-display-color-transparent-accent-color-4: #4C63E51A;
-  --sherpa-display-color-transparent-accent-color-5: #6681FF1A;
-  --sherpa-display-color-transparent-brand-color-1: #8300B61A;
-  --sherpa-display-color-transparent-brand-color-2: #A41DE01A;
-  --sherpa-display-color-transparent-brand-color-3: #A41DE01A;
-  --sherpa-display-color-transparent-brand-color-4: #C046FF1A;
-  --sherpa-display-color-transparent-brand-color-5: #C046FF1A;
-  --sherpa-display-color-transparent-critical-color-1: #4F09001A;
-  --sherpa-display-color-transparent-critical-color-2: #9319001A;
-  --sherpa-display-color-transparent-critical-color-3: #B722001A;
-  --sherpa-display-color-transparent-critical-color-4: #DD2C011A;
-  --sherpa-display-color-transparent-critical-color-5: #FC4E2D1A;
-  --sherpa-display-color-transparent-info-color-1: #0019251A;
-  --sherpa-display-color-transparent-info-color-2: #004E6A1A;
-  --sherpa-display-color-transparent-info-color-3: #006C911A;
-  --sherpa-display-color-transparent-info-color-4: #008BBA1A;
-  --sherpa-display-color-transparent-info-color-5: #6FD1FF1A;
-  --sherpa-display-color-transparent-neutral-color-1: #15151E00;
-  --sherpa-display-color-transparent-neutral-color-2: #30303A1A;
-  --sherpa-display-color-transparent-neutral-color-3: #6E6D791A;
-  --sherpa-display-color-transparent-neutral-color-4: #8F8F9B1A;
-  --sherpa-display-color-transparent-neutral-color-5: #D0D0DD1A;
-  --sherpa-display-color-transparent-success-color-1: #001C0C1A;
-  --sherpa-display-color-transparent-success-color-2: #0059301A;
-  --sherpa-display-color-transparent-success-color-3: #007A451A;
-  --sherpa-display-color-transparent-success-color-4: #009D5A1A;
-  --sherpa-display-color-transparent-success-color-5: #20C1731A;
-  --sherpa-display-color-transparent-tones-color-1: #5050611A;
-  --sherpa-display-color-transparent-tones-color-2: #9595A81A;
-  --sherpa-display-color-transparent-tones-color-4: #D4D4E91A;
-  --sherpa-display-color-transparent-tones-color-5: #F0F0FF1A;
-  --sherpa-display-color-transparent-urgent-color-1: #290C001A;
-  --sherpa-display-color-transparent-urgent-color-2: #7732001A;
-  --sherpa-display-color-transparent-urgent-color-3: #D05C001A;
-  --sherpa-display-color-transparent-urgent-color-4: #FF73001A;
-  --sherpa-display-color-transparent-urgent-color-5: #FF955B1A;
-  --sherpa-display-color-transparent-warning-color-1: #4731001A;
-  --sherpa-display-color-transparent-warning-color-2: #A275001A;
-  --sherpa-display-color-transparent-warning-color-3: #D39A031A;
-  --sherpa-display-color-transparent-warning-color-4: #FFC44C1A;
-  --sherpa-display-color-transparent-warning-color-5: #FFD17B1A;
+  --sherpa-display-mode-color-accent-color-1: #1E189C;
+  --sherpa-display-mode-color-accent-color-2: #2B34B4;
+  --sherpa-display-mode-color-accent-color-4: #4C63E5;
+  --sherpa-display-mode-color-accent-color-5: #6681FF;
+  --sherpa-display-mode-color-app-color-1: #15151D;
+  --sherpa-display-mode-color-brand-color-1: #240036;
+  --sherpa-display-mode-color-brand-color-2: #610089;
+  --sherpa-display-mode-color-brand-color-3: #A41DE0;
+  --sherpa-display-mode-color-brand-color-4: #CC76FF;
+  --sherpa-display-mode-color-brand-color-5: #E5BFFF;
+  --sherpa-display-mode-color-critical-color-1: #4F0900;
+  --sherpa-display-mode-color-critical-color-2: #931900;
+  --sherpa-display-mode-color-critical-color-3: #B72200;
+  --sherpa-display-mode-color-critical-color-4: #DD2C01;
+  --sherpa-display-mode-color-critical-color-5: #FC4E2D;
+  --sherpa-display-mode-color-info-color-1: #001925;
+  --sherpa-display-mode-color-info-color-2: #004E6A;
+  --sherpa-display-mode-color-info-color-3: #006C91;
+  --sherpa-display-mode-color-info-color-4: #008BBA;
+  --sherpa-display-mode-color-info-color-5: #6FD1FF;
+  --sherpa-display-mode-color-neutral-color-1: #0C0B11;
+  --sherpa-display-mode-color-neutral-color-2: #15151D;
+  --sherpa-display-mode-color-neutral-color-3: #494954;
+  --sherpa-display-mode-color-neutral-color-4: #878794;
+  --sherpa-display-mode-color-neutral-color-5: #C4C4D3;
+  --sherpa-display-mode-color-success-color-1: #001C0C;
+  --sherpa-display-mode-color-success-color-2: #005930;
+  --sherpa-display-mode-color-success-color-3: #007A45;
+  --sherpa-display-mode-color-success-color-4: #009D5A;
+  --sherpa-display-mode-color-success-color-5: #20C173;
+  --sherpa-display-mode-color-tones-color-1: #505061;
+  --sherpa-display-mode-color-tones-color-2: #9595A8;
+  --sherpa-display-mode-color-tones-color-4: #D4D4E9;
+  --sherpa-display-mode-color-tones-color-5: #F0F0FF;
+  --sherpa-display-mode-color-urgent-color-1: #290C00;
+  --sherpa-display-mode-color-urgent-color-2: #773200;
+  --sherpa-display-mode-color-urgent-color-3: #D05C00;
+  --sherpa-display-mode-color-urgent-color-4: #FF7300;
+  --sherpa-display-mode-color-urgent-color-5: #FF955B;
+  --sherpa-display-mode-color-warning-color-1: #473100;
+  --sherpa-display-mode-color-warning-color-2: #A27500;
+  --sherpa-display-mode-color-warning-color-3: #D39A03;
+  --sherpa-display-mode-color-warning-color-4: #FFC44C;
+  --sherpa-display-mode-color-warning-color-5: #FFD17B;
+  --sherpa-display-mode-color-transparent-accent-color-1: #1E189C1A;
+  --sherpa-display-mode-color-transparent-accent-color-2: #2B34B433;
+  --sherpa-display-mode-color-transparent-accent-color-4: #4C63E566;
+  --sherpa-display-mode-color-transparent-accent-color-5: #6681FF80;
+  --sherpa-display-mode-color-transparent-brand-color-1: #8300B61A;
+  --sherpa-display-mode-color-transparent-brand-color-2: #A41DE033;
+  --sherpa-display-mode-color-transparent-brand-color-3: #A41DE04D;
+  --sherpa-display-mode-color-transparent-brand-color-4: #C046FF66;
+  --sherpa-display-mode-color-transparent-brand-color-5: #C046FF80;
+  --sherpa-display-mode-color-transparent-critical-color-1: #4F09001A;
+  --sherpa-display-mode-color-transparent-critical-color-2: #93190033;
+  --sherpa-display-mode-color-transparent-critical-color-3: #B722004D;
+  --sherpa-display-mode-color-transparent-critical-color-4: #DD2C0166;
+  --sherpa-display-mode-color-transparent-critical-color-5: #FC4E2D80;
+  --sherpa-display-mode-color-transparent-info-color-1: #0019251A;
+  --sherpa-display-mode-color-transparent-info-color-2: #004E6A33;
+  --sherpa-display-mode-color-transparent-info-color-3: #006C914D;
+  --sherpa-display-mode-color-transparent-info-color-4: #008BBA66;
+  --sherpa-display-mode-color-transparent-info-color-5: #6FD1FF80;
+  --sherpa-display-mode-color-transparent-neutral-color-1: #15151E00;
+  --sherpa-display-mode-color-transparent-neutral-color-2: #30303A33;
+  --sherpa-display-mode-color-transparent-neutral-color-3: #6E6D794D;
+  --sherpa-display-mode-color-transparent-neutral-color-4: #8F8F9B66;
+  --sherpa-display-mode-color-transparent-neutral-color-5: #D0D0DD80;
+  --sherpa-display-mode-color-transparent-success-color-1: #001C0C1A;
+  --sherpa-display-mode-color-transparent-success-color-2: #00593033;
+  --sherpa-display-mode-color-transparent-success-color-3: #007A454D;
+  --sherpa-display-mode-color-transparent-success-color-4: #009D5A66;
+  --sherpa-display-mode-color-transparent-success-color-5: #20C17380;
+  --sherpa-display-mode-color-transparent-tones-color-1: #5050611A;
+  --sherpa-display-mode-color-transparent-tones-color-2: #9595A833;
+  --sherpa-display-mode-color-transparent-tones-color-4: #D4D4E966;
+  --sherpa-display-mode-color-transparent-tones-color-5: #F0F0FF80;
+  --sherpa-display-mode-color-transparent-urgent-color-1: #290C001A;
+  --sherpa-display-mode-color-transparent-urgent-color-2: #77320033;
+  --sherpa-display-mode-color-transparent-urgent-color-3: #D05C004D;
+  --sherpa-display-mode-color-transparent-urgent-color-4: #FF730066;
+  --sherpa-display-mode-color-transparent-urgent-color-5: #FF955B80;
+  --sherpa-display-mode-color-transparent-warning-color-1: #4731001A;
+  --sherpa-display-mode-color-transparent-warning-color-2: #A2750033;
+  --sherpa-display-mode-color-transparent-warning-color-3: #D39A034D;
+  --sherpa-display-mode-color-transparent-warning-color-4: #FFC44C66;
+  --sherpa-display-mode-color-transparent-warning-color-5: #FFD17B80;
   }
 
   /* Dark mode: follow the OS unless an explicit light choice overrides it. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-mode="light"]) {
-    --sherpa-display-color-accent-color-1: #1E189C;
-    --sherpa-display-color-accent-color-2: #2B34B4;
-    --sherpa-display-color-accent-color-4: #4C63E5;
-    --sherpa-display-color-accent-color-5: #6681FF;
-    --sherpa-display-color-brand-color-1: #240036;
-    --sherpa-display-color-brand-color-2: #610089;
-    --sherpa-display-color-brand-color-3: #A41DE0;
-    --sherpa-display-color-brand-color-4: #CC76FF;
-    --sherpa-display-color-brand-color-5: #E5BFFF;
-    --sherpa-display-color-critical-color-1: #4F0900;
-    --sherpa-display-color-critical-color-2: #931900;
-    --sherpa-display-color-critical-color-3: #B72200;
-    --sherpa-display-color-critical-color-4: #DD2C01;
-    --sherpa-display-color-critical-color-5: #FC4E2D;
-    --sherpa-display-color-info-color-1: #001925;
-    --sherpa-display-color-info-color-2: #004E6A;
-    --sherpa-display-color-info-color-3: #006C91;
-    --sherpa-display-color-info-color-4: #008BBA;
-    --sherpa-display-color-info-color-5: #6FD1FF;
-    --sherpa-display-color-neutral-color-1: #0C0B11;
-    --sherpa-display-color-neutral-color-2: #15151D;
-    --sherpa-display-color-neutral-color-3: #5D5D69;
-    --sherpa-display-color-neutral-color-4: #878794;
-    --sherpa-display-color-neutral-color-5: #C4C4D3;
-    --sherpa-display-color-success-color-1: #001C0C;
-    --sherpa-display-color-success-color-2: #005930;
-    --sherpa-display-color-success-color-3: #007A45;
-    --sherpa-display-color-success-color-4: #009D5A;
-    --sherpa-display-color-success-color-5: #20C173;
-    --sherpa-display-color-tones-color-1: #505061;
-    --sherpa-display-color-tones-color-2: #9595A8;
-    --sherpa-display-color-tones-color-4: #D4D4E9;
-    --sherpa-display-color-tones-color-5: #F0F0FF;
-    --sherpa-display-color-urgent-color-1: #290C00;
-    --sherpa-display-color-urgent-color-2: #773200;
-    --sherpa-display-color-urgent-color-3: #D05C00;
-    --sherpa-display-color-urgent-color-4: #FF7300;
-    --sherpa-display-color-urgent-color-5: #FF955B;
-    --sherpa-display-color-warning-color-1: #473100;
-    --sherpa-display-color-warning-color-2: #A27500;
-    --sherpa-display-color-warning-color-3: #D39A03;
-    --sherpa-display-color-warning-color-4: #FFC44C;
-    --sherpa-display-color-warning-color-5: #FFD17B;
-    --sherpa-display-color-transparent-accent-color-1: #1E189C1A;
-    --sherpa-display-color-transparent-accent-color-2: #2B34B41A;
-    --sherpa-display-color-transparent-accent-color-4: #4C63E51A;
-    --sherpa-display-color-transparent-accent-color-5: #6681FF1A;
-    --sherpa-display-color-transparent-brand-color-1: #8300B61A;
-    --sherpa-display-color-transparent-brand-color-2: #A41DE01A;
-    --sherpa-display-color-transparent-brand-color-3: #A41DE01A;
-    --sherpa-display-color-transparent-brand-color-4: #C046FF1A;
-    --sherpa-display-color-transparent-brand-color-5: #C046FF1A;
-    --sherpa-display-color-transparent-critical-color-1: #4F09001A;
-    --sherpa-display-color-transparent-critical-color-2: #9319001A;
-    --sherpa-display-color-transparent-critical-color-3: #B722001A;
-    --sherpa-display-color-transparent-critical-color-4: #DD2C011A;
-    --sherpa-display-color-transparent-critical-color-5: #FC4E2D1A;
-    --sherpa-display-color-transparent-info-color-1: #0019251A;
-    --sherpa-display-color-transparent-info-color-2: #004E6A1A;
-    --sherpa-display-color-transparent-info-color-3: #006C911A;
-    --sherpa-display-color-transparent-info-color-4: #008BBA1A;
-    --sherpa-display-color-transparent-info-color-5: #6FD1FF1A;
-    --sherpa-display-color-transparent-neutral-color-1: #15151E00;
-    --sherpa-display-color-transparent-neutral-color-2: #30303A1A;
-    --sherpa-display-color-transparent-neutral-color-3: #6E6D791A;
-    --sherpa-display-color-transparent-neutral-color-4: #8F8F9B1A;
-    --sherpa-display-color-transparent-neutral-color-5: #D0D0DD1A;
-    --sherpa-display-color-transparent-success-color-1: #001C0C1A;
-    --sherpa-display-color-transparent-success-color-2: #0059301A;
-    --sherpa-display-color-transparent-success-color-3: #007A451A;
-    --sherpa-display-color-transparent-success-color-4: #009D5A1A;
-    --sherpa-display-color-transparent-success-color-5: #20C1731A;
-    --sherpa-display-color-transparent-tones-color-1: #5050611A;
-    --sherpa-display-color-transparent-tones-color-2: #9595A81A;
-    --sherpa-display-color-transparent-tones-color-4: #D4D4E91A;
-    --sherpa-display-color-transparent-tones-color-5: #F0F0FF1A;
-    --sherpa-display-color-transparent-urgent-color-1: #290C001A;
-    --sherpa-display-color-transparent-urgent-color-2: #7732001A;
-    --sherpa-display-color-transparent-urgent-color-3: #D05C001A;
-    --sherpa-display-color-transparent-urgent-color-4: #FF73001A;
-    --sherpa-display-color-transparent-urgent-color-5: #FF955B1A;
-    --sherpa-display-color-transparent-warning-color-1: #4731001A;
-    --sherpa-display-color-transparent-warning-color-2: #A275001A;
-    --sherpa-display-color-transparent-warning-color-3: #D39A031A;
-    --sherpa-display-color-transparent-warning-color-4: #FFC44C1A;
-    --sherpa-display-color-transparent-warning-color-5: #FFD17B1A;
+    --sherpa-display-mode-color-accent-color-1: #1E189C;
+    --sherpa-display-mode-color-accent-color-2: #2B34B4;
+    --sherpa-display-mode-color-accent-color-4: #4C63E5;
+    --sherpa-display-mode-color-accent-color-5: #6681FF;
+    --sherpa-display-mode-color-app-color-1: #15151D;
+    --sherpa-display-mode-color-brand-color-1: #240036;
+    --sherpa-display-mode-color-brand-color-2: #610089;
+    --sherpa-display-mode-color-brand-color-3: #A41DE0;
+    --sherpa-display-mode-color-brand-color-4: #CC76FF;
+    --sherpa-display-mode-color-brand-color-5: #E5BFFF;
+    --sherpa-display-mode-color-critical-color-1: #4F0900;
+    --sherpa-display-mode-color-critical-color-2: #931900;
+    --sherpa-display-mode-color-critical-color-3: #B72200;
+    --sherpa-display-mode-color-critical-color-4: #DD2C01;
+    --sherpa-display-mode-color-critical-color-5: #FC4E2D;
+    --sherpa-display-mode-color-info-color-1: #001925;
+    --sherpa-display-mode-color-info-color-2: #004E6A;
+    --sherpa-display-mode-color-info-color-3: #006C91;
+    --sherpa-display-mode-color-info-color-4: #008BBA;
+    --sherpa-display-mode-color-info-color-5: #6FD1FF;
+    --sherpa-display-mode-color-neutral-color-1: #0C0B11;
+    --sherpa-display-mode-color-neutral-color-2: #15151D;
+    --sherpa-display-mode-color-neutral-color-3: #494954;
+    --sherpa-display-mode-color-neutral-color-4: #878794;
+    --sherpa-display-mode-color-neutral-color-5: #C4C4D3;
+    --sherpa-display-mode-color-success-color-1: #001C0C;
+    --sherpa-display-mode-color-success-color-2: #005930;
+    --sherpa-display-mode-color-success-color-3: #007A45;
+    --sherpa-display-mode-color-success-color-4: #009D5A;
+    --sherpa-display-mode-color-success-color-5: #20C173;
+    --sherpa-display-mode-color-tones-color-1: #505061;
+    --sherpa-display-mode-color-tones-color-2: #9595A8;
+    --sherpa-display-mode-color-tones-color-4: #D4D4E9;
+    --sherpa-display-mode-color-tones-color-5: #F0F0FF;
+    --sherpa-display-mode-color-urgent-color-1: #290C00;
+    --sherpa-display-mode-color-urgent-color-2: #773200;
+    --sherpa-display-mode-color-urgent-color-3: #D05C00;
+    --sherpa-display-mode-color-urgent-color-4: #FF7300;
+    --sherpa-display-mode-color-urgent-color-5: #FF955B;
+    --sherpa-display-mode-color-warning-color-1: #473100;
+    --sherpa-display-mode-color-warning-color-2: #A27500;
+    --sherpa-display-mode-color-warning-color-3: #D39A03;
+    --sherpa-display-mode-color-warning-color-4: #FFC44C;
+    --sherpa-display-mode-color-warning-color-5: #FFD17B;
+    --sherpa-display-mode-color-transparent-accent-color-1: #1E189C1A;
+    --sherpa-display-mode-color-transparent-accent-color-2: #2B34B433;
+    --sherpa-display-mode-color-transparent-accent-color-4: #4C63E566;
+    --sherpa-display-mode-color-transparent-accent-color-5: #6681FF80;
+    --sherpa-display-mode-color-transparent-brand-color-1: #8300B61A;
+    --sherpa-display-mode-color-transparent-brand-color-2: #A41DE033;
+    --sherpa-display-mode-color-transparent-brand-color-3: #A41DE04D;
+    --sherpa-display-mode-color-transparent-brand-color-4: #C046FF66;
+    --sherpa-display-mode-color-transparent-brand-color-5: #C046FF80;
+    --sherpa-display-mode-color-transparent-critical-color-1: #4F09001A;
+    --sherpa-display-mode-color-transparent-critical-color-2: #93190033;
+    --sherpa-display-mode-color-transparent-critical-color-3: #B722004D;
+    --sherpa-display-mode-color-transparent-critical-color-4: #DD2C0166;
+    --sherpa-display-mode-color-transparent-critical-color-5: #FC4E2D80;
+    --sherpa-display-mode-color-transparent-info-color-1: #0019251A;
+    --sherpa-display-mode-color-transparent-info-color-2: #004E6A33;
+    --sherpa-display-mode-color-transparent-info-color-3: #006C914D;
+    --sherpa-display-mode-color-transparent-info-color-4: #008BBA66;
+    --sherpa-display-mode-color-transparent-info-color-5: #6FD1FF80;
+    --sherpa-display-mode-color-transparent-neutral-color-1: #15151E00;
+    --sherpa-display-mode-color-transparent-neutral-color-2: #30303A33;
+    --sherpa-display-mode-color-transparent-neutral-color-3: #6E6D794D;
+    --sherpa-display-mode-color-transparent-neutral-color-4: #8F8F9B66;
+    --sherpa-display-mode-color-transparent-neutral-color-5: #D0D0DD80;
+    --sherpa-display-mode-color-transparent-success-color-1: #001C0C1A;
+    --sherpa-display-mode-color-transparent-success-color-2: #00593033;
+    --sherpa-display-mode-color-transparent-success-color-3: #007A454D;
+    --sherpa-display-mode-color-transparent-success-color-4: #009D5A66;
+    --sherpa-display-mode-color-transparent-success-color-5: #20C17380;
+    --sherpa-display-mode-color-transparent-tones-color-1: #5050611A;
+    --sherpa-display-mode-color-transparent-tones-color-2: #9595A833;
+    --sherpa-display-mode-color-transparent-tones-color-4: #D4D4E966;
+    --sherpa-display-mode-color-transparent-tones-color-5: #F0F0FF80;
+    --sherpa-display-mode-color-transparent-urgent-color-1: #290C001A;
+    --sherpa-display-mode-color-transparent-urgent-color-2: #77320033;
+    --sherpa-display-mode-color-transparent-urgent-color-3: #D05C004D;
+    --sherpa-display-mode-color-transparent-urgent-color-4: #FF730066;
+    --sherpa-display-mode-color-transparent-urgent-color-5: #FF955B80;
+    --sherpa-display-mode-color-transparent-warning-color-1: #4731001A;
+    --sherpa-display-mode-color-transparent-warning-color-2: #A2750033;
+    --sherpa-display-mode-color-transparent-warning-color-3: #D39A034D;
+    --sherpa-display-mode-color-transparent-warning-color-4: #FFC44C66;
+    --sherpa-display-mode-color-transparent-warning-color-5: #FFD17B80;
+    }
+  }
+
+  /* Density — [data-density] overrides the ramp (light). */
+  [data-density="compact"] {
+    --sherpa-display-mode-border-rounding-none: 0px;
+    --sherpa-display-mode-border-rounding-sm: 2px;
+    --sherpa-display-mode-border-rounding-base: 4px;
+    --sherpa-display-mode-border-rounding-lg: 8px;
+    --sherpa-display-mode-border-rounding-xl: 16px;
+    --sherpa-display-mode-border-rounding-2xl: 24px;
+    --sherpa-display-mode-border-rounding-full: 999px;
+    --sherpa-display-mode-border-width-none: 0px;
+    --sherpa-display-mode-border-width-xs: 0.25px;
+    --sherpa-display-mode-border-width-sm: 0.5px;
+    --sherpa-display-mode-border-width-base: 1px;
+    --sherpa-display-mode-border-width-lg: 2px;
+    --sherpa-display-mode-border-width-xl: 4px;
+    --sherpa-display-mode-border-width-2xl: 8px;
+    --sherpa-display-mode-border-width-3xl: 12px;
+    --sherpa-display-mode-color-neutral-fixed-color-1: #ffffff;
+    --sherpa-display-mode-color-neutral-fixed-color-2: #e8e8f6;
+    --sherpa-display-mode-color-neutral-fixed-color-3: #b3b3c3;
+    --sherpa-display-mode-color-neutral-fixed-color-4: #35353d;
+    --sherpa-display-mode-color-neutral-fixed-color-5: #0c0b11;
+    --sherpa-display-mode-color-neutral-color-1: #ffffff;
+    --sherpa-display-mode-color-neutral-color-2: #e8e8f6;
+    --sherpa-display-mode-color-transparent-neutral-color-1: #ffffff00;
+    --sherpa-display-mode-color-neutral-color-3: #b3b3c3;
+    --sherpa-display-mode-color-transparent-neutral-color-2: #eeeefc1a;
+    --sherpa-display-mode-color-transparent-neutral-color-3: #b2b2bf1a;
+    --sherpa-display-mode-color-transparent-neutral-color-4: #4e4e591a;
+    --sherpa-display-mode-color-transparent-neutral-color-5: #15151e1a;
+    --sherpa-display-mode-color-transparent-brand-color-1: #d89cff1a;
+    --sherpa-display-mode-color-transparent-brand-color-2: #cc76ff1a;
+    --sherpa-display-mode-color-transparent-brand-color-3: #c046ff1a;
+    --sherpa-display-mode-color-transparent-brand-color-4: #a41de01a;
+    --sherpa-display-mode-color-transparent-brand-color-5: #8300b61a;
+    --sherpa-display-mode-color-transparent-accent-color-1: #8aa3ff1a;
+    --sherpa-display-mode-color-transparent-accent-color-2: #6681ff1a;
+    --sherpa-display-mode-color-transparent-accent-color-3: #3b4ccd1a;
+    --sherpa-display-mode-color-transparent-accent-color-4: #2b34b41a;
+    --sherpa-display-mode-color-transparent-accent-color-5: #1e189c1a;
+    --sherpa-display-mode-color-transparent-info-color-1: #d4f0ff1a;
+    --sherpa-display-mode-color-transparent-info-color-2: #6fd1ff1a;
+    --sherpa-display-mode-color-transparent-info-color-3: #008bba1a;
+    --sherpa-display-mode-color-transparent-info-color-4: #006c911a;
+    --sherpa-display-mode-color-transparent-info-color-5: #0032461a;
+    --sherpa-display-mode-color-transparent-warning-color-1: #fff4e11a;
+    --sherpa-display-mode-color-transparent-warning-color-2: #ffdda01a;
+    --sherpa-display-mode-color-transparent-warning-color-3: #ffc44c1a;
+    --sherpa-display-mode-color-transparent-warning-color-4: #a275001a;
+    --sherpa-display-mode-color-transparent-warning-color-5: #4731001a;
+    --sherpa-display-mode-color-transparent-urgent-color-1: #ffe6da1a;
+    --sherpa-display-mode-color-transparent-urgent-color-2: #ff955b1a;
+    --sherpa-display-mode-color-transparent-urgent-color-3: #ff73001a;
+    --sherpa-display-mode-color-transparent-urgent-color-4: #a246001a;
+    --sherpa-display-mode-color-transparent-urgent-color-5: #4e1e001a;
+    --sherpa-display-mode-color-transparent-critical-color-1: #ffdad11a;
+    --sherpa-display-mode-color-transparent-critical-color-2: #ff856d1a;
+    --sherpa-display-mode-color-transparent-critical-color-3: #fc4e2d1a;
+    --sherpa-display-mode-color-transparent-critical-color-4: #b722001a;
+    --sherpa-display-mode-color-transparent-critical-color-5: #7011001a;
+    --sherpa-display-mode-color-transparent-success-color-1: #bbffd21a;
+    --sherpa-display-mode-color-transparent-success-color-2: #56e7961a;
+    --sherpa-display-mode-color-transparent-success-color-3: #20c1731a;
+    --sherpa-display-mode-color-transparent-success-color-4: #007a451a;
+    --sherpa-display-mode-color-transparent-success-color-5: #00391d1a;
+    --sherpa-display-mode-color-transparent-tones-color-1: #f0f0ff1a;
+    --sherpa-display-mode-color-transparent-tones-color-2: #d4d4e91a;
+    --sherpa-display-mode-color-transparent-tones-color-3: #9595a81a;
+    --sherpa-display-mode-color-transparent-tones-color-4: #9595a81a;
+    --sherpa-display-mode-color-transparent-tones-color-5: #5050611a;
+    --sherpa-display-mode-fonts-scale-0: 0px;
+    --sherpa-display-mode-fonts-scale-2xs: 8px;
+    --sherpa-display-mode-fonts-scale-xs: 10px;
+    --sherpa-display-mode-fonts-scale-sm: 12px;
+    --sherpa-display-mode-fonts-scale-base: 14px;
+    --sherpa-display-mode-fonts-scale-lg: 16px;
+    --sherpa-display-mode-fonts-scale-xl: 20px;
+    --sherpa-display-mode-fonts-scale-2xl: 24px;
+    --sherpa-display-mode-fonts-scale-3xl: 28px;
+    --sherpa-display-mode-fonts-scale-4xl: 30px;
+    --sherpa-display-mode-fonts-scale-5xl: 32px;
+    --sherpa-display-mode-fonts-scale-6xl: 36px;
+    --sherpa-display-mode-fonts-scale-7xl: 40px;
+    --sherpa-display-mode-fonts-scale-8xl: 42px;
+    --sherpa-display-mode-fonts-scale-9xl: 44px;
+    --sherpa-display-mode-fonts-scale-10xl: 48px;
+    --sherpa-display-mode-fonts-scale-11xl: 52px;
+    --sherpa-display-mode-fonts-scale-12xl: 56px;
+    --sherpa-display-mode-fonts-scale-13xl: 64px;
+    --sherpa-display-mode-fonts-scale-14xl: 72px;
+    --sherpa-display-mode-size-none: 0px;
+    --sherpa-display-mode-size-3xs: 2px;
+    --sherpa-display-mode-size-2xs: 4px;
+    --sherpa-display-mode-size-xs: 8px;
+    --sherpa-display-mode-size-sm: 12px;
+    --sherpa-display-mode-size-md: 16px;
+    --sherpa-display-mode-size-lg: 20px;
+    --sherpa-display-mode-size-xl: 24px;
+    --sherpa-display-mode-size-2xl: 28px;
+    --sherpa-display-mode-size-3xl: 36px;
+    --sherpa-display-mode-size-4xl: 40px;
+    --sherpa-display-mode-size-5xl: 48px;
+    --sherpa-display-mode-size-6xl: 56px;
+    --sherpa-display-mode-space-snapped: 0px;
+    --sherpa-display-mode-space-none: 0px;
+    --sherpa-display-mode-space-3xs: 2px;
+    --sherpa-display-mode-space-2xs: 2px;
+    --sherpa-display-mode-space-xs: 4px;
+    --sherpa-display-mode-space-sm: 8px;
+    --sherpa-display-mode-space-base: 12px;
+    --sherpa-display-mode-space-lg: 16px;
+    --sherpa-display-mode-space-xl: 20px;
+    --sherpa-display-mode-space-2xl: 28px;
+    --sherpa-display-mode-space-3xl: 36px;
+    --sherpa-display-mode-space-4xl: 40px;
+    --sherpa-display-mode-space-5xl: 48px;
+    --sherpa-display-mode-space-6xl: 56px;
+    --sherpa-display-mode-fonts-weight-300: 300px;
+    --sherpa-display-mode-fonts-weight-400: 400px;
+    --sherpa-display-mode-fonts-weight-500: 500px;
+    --sherpa-display-mode-fonts-weight-600: 600px;
+    --sherpa-display-mode-fonts-weight-700: 700px;
+    --sherpa-display-mode-fonts-weight-900: 900px;
+    --sherpa-display-mode-color-brand-color-1: #f2dfff;
+    --sherpa-display-mode-color-brand-color-2: #d89cff;
+    --sherpa-display-mode-color-brand-color-3: #c046ff;
+    --sherpa-display-mode-color-brand-color-4: #8300b6;
+    --sherpa-display-mode-color-brand-color-5: #240036;
+    --sherpa-display-mode-color-accent-color-1: #8aa3ff;
+    --sherpa-display-mode-color-accent-color-2: #6681ff;
+    --sherpa-display-mode-color-accent-color-3: #3b4ccd;
+    --sherpa-display-mode-color-accent-color-4: #2b34b4;
+    --sherpa-display-mode-color-accent-color-5: #1e189c;
+    --sherpa-display-mode-color-info-color-1: #d4f0ff;
+    --sherpa-display-mode-color-info-color-2: #6fd1ff;
+    --sherpa-display-mode-color-info-color-3: #008bba;
+    --sherpa-display-mode-color-info-color-4: #006c91;
+    --sherpa-display-mode-color-info-color-5: #003246;
+    --sherpa-display-mode-color-warning-color-1: #fff4e1;
+    --sherpa-display-mode-color-warning-color-2: #ffdda0;
+    --sherpa-display-mode-color-warning-color-3: #ffc44c;
+    --sherpa-display-mode-color-warning-color-4: #a27500;
+    --sherpa-display-mode-color-warning-color-5: #473100;
+    --sherpa-display-mode-color-urgent-color-1: #ffe6da;
+    --sherpa-display-mode-color-urgent-color-2: #ff955b;
+    --sherpa-display-mode-color-urgent-color-3: #ff7300;
+    --sherpa-display-mode-color-urgent-color-4: #a24600;
+    --sherpa-display-mode-color-urgent-color-5: #4e1e00;
+    --sherpa-display-mode-color-critical-color-1: #ffdad1;
+    --sherpa-display-mode-color-critical-color-2: #ff856d;
+    --sherpa-display-mode-color-critical-color-3: #dd2c01;
+    --sherpa-display-mode-color-critical-color-4: #b72200;
+    --sherpa-display-mode-color-critical-color-5: #701100;
+    --sherpa-display-mode-color-success-color-1: #bbffd2;
+    --sherpa-display-mode-color-success-color-2: #56e796;
+    --sherpa-display-mode-color-success-color-3: #20c173;
+    --sherpa-display-mode-color-success-color-4: #007a45;
+    --sherpa-display-mode-color-success-color-5: #00391d;
+    --sherpa-display-mode-color-tones-color-1: #f0f0ff;
+    --sherpa-display-mode-color-tones-color-2: #d4d4e9;
+    --sherpa-display-mode-color-tones-color-3: #9595a8;
+    --sherpa-display-mode-color-tones-color-4: #9595a8;
+    --sherpa-display-mode-color-tones-color-5: #505061;
+    --sherpa-display-mode-color-neutral-color-4: #35353d;
+    --sherpa-display-mode-color-neutral-color-5: #0c0b11;
+  }
+
+  [data-density="comfortable"] {
+    --sherpa-display-mode-border-rounding-none: 0px;
+    --sherpa-display-mode-border-rounding-sm: 2px;
+    --sherpa-display-mode-border-rounding-base: 4px;
+    --sherpa-display-mode-border-rounding-lg: 8px;
+    --sherpa-display-mode-border-rounding-xl: 16px;
+    --sherpa-display-mode-border-rounding-2xl: 24px;
+    --sherpa-display-mode-border-rounding-full: 999px;
+    --sherpa-display-mode-border-width-none: 0px;
+    --sherpa-display-mode-border-width-xs: 0.25px;
+    --sherpa-display-mode-border-width-sm: 0.5px;
+    --sherpa-display-mode-border-width-base: 1px;
+    --sherpa-display-mode-border-width-lg: 2px;
+    --sherpa-display-mode-border-width-xl: 4px;
+    --sherpa-display-mode-border-width-2xl: 8px;
+    --sherpa-display-mode-border-width-3xl: 12px;
+    --sherpa-display-mode-color-neutral-fixed-color-1: #ffffff;
+    --sherpa-display-mode-color-neutral-fixed-color-2: #e8e8f6;
+    --sherpa-display-mode-color-neutral-fixed-color-3: #b3b3c3;
+    --sherpa-display-mode-color-neutral-fixed-color-4: #35353d;
+    --sherpa-display-mode-color-neutral-fixed-color-5: #0c0b11;
+    --sherpa-display-mode-color-neutral-color-1: #ffffff;
+    --sherpa-display-mode-color-neutral-color-2: #e8e8f6;
+    --sherpa-display-mode-color-transparent-neutral-color-1: #ffffff00;
+    --sherpa-display-mode-color-neutral-color-3: #b3b3c3;
+    --sherpa-display-mode-color-transparent-neutral-color-2: #eeeefc1a;
+    --sherpa-display-mode-color-transparent-neutral-color-3: #b2b2bf1a;
+    --sherpa-display-mode-color-transparent-neutral-color-4: #4e4e591a;
+    --sherpa-display-mode-color-transparent-neutral-color-5: #15151e1a;
+    --sherpa-display-mode-color-transparent-brand-color-1: #d89cff1a;
+    --sherpa-display-mode-color-transparent-brand-color-2: #cc76ff1a;
+    --sherpa-display-mode-color-transparent-brand-color-3: #c046ff1a;
+    --sherpa-display-mode-color-transparent-brand-color-4: #a41de01a;
+    --sherpa-display-mode-color-transparent-brand-color-5: #8300b61a;
+    --sherpa-display-mode-color-transparent-accent-color-1: #8aa3ff1a;
+    --sherpa-display-mode-color-transparent-accent-color-2: #6681ff1a;
+    --sherpa-display-mode-color-transparent-accent-color-3: #3b4ccd1a;
+    --sherpa-display-mode-color-transparent-accent-color-4: #2b34b41a;
+    --sherpa-display-mode-color-transparent-accent-color-5: #1e189c1a;
+    --sherpa-display-mode-color-transparent-info-color-1: #d4f0ff1a;
+    --sherpa-display-mode-color-transparent-info-color-2: #6fd1ff1a;
+    --sherpa-display-mode-color-transparent-info-color-3: #008bba1a;
+    --sherpa-display-mode-color-transparent-info-color-4: #006c911a;
+    --sherpa-display-mode-color-transparent-info-color-5: #0032461a;
+    --sherpa-display-mode-color-transparent-warning-color-1: #fff4e11a;
+    --sherpa-display-mode-color-transparent-warning-color-2: #ffdda01a;
+    --sherpa-display-mode-color-transparent-warning-color-3: #ffc44c1a;
+    --sherpa-display-mode-color-transparent-warning-color-4: #a275001a;
+    --sherpa-display-mode-color-transparent-warning-color-5: #4731001a;
+    --sherpa-display-mode-color-transparent-urgent-color-1: #ffe6da1a;
+    --sherpa-display-mode-color-transparent-urgent-color-2: #ff955b1a;
+    --sherpa-display-mode-color-transparent-urgent-color-3: #ff73001a;
+    --sherpa-display-mode-color-transparent-urgent-color-4: #a246001a;
+    --sherpa-display-mode-color-transparent-urgent-color-5: #4e1e001a;
+    --sherpa-display-mode-color-transparent-critical-color-1: #ffdad11a;
+    --sherpa-display-mode-color-transparent-critical-color-2: #ff856d1a;
+    --sherpa-display-mode-color-transparent-critical-color-3: #fc4e2d1a;
+    --sherpa-display-mode-color-transparent-critical-color-4: #b722001a;
+    --sherpa-display-mode-color-transparent-critical-color-5: #7011001a;
+    --sherpa-display-mode-color-transparent-success-color-1: #bbffd21a;
+    --sherpa-display-mode-color-transparent-success-color-2: #56e7961a;
+    --sherpa-display-mode-color-transparent-success-color-3: #20c1731a;
+    --sherpa-display-mode-color-transparent-success-color-4: #007a451a;
+    --sherpa-display-mode-color-transparent-success-color-5: #00391d1a;
+    --sherpa-display-mode-color-transparent-tones-color-1: #f0f0ff1a;
+    --sherpa-display-mode-color-transparent-tones-color-2: #d4d4e91a;
+    --sherpa-display-mode-color-transparent-tones-color-3: #9595a81a;
+    --sherpa-display-mode-color-transparent-tones-color-4: #9595a81a;
+    --sherpa-display-mode-color-transparent-tones-color-5: #5050611a;
+    --sherpa-display-mode-fonts-scale-0: 0px;
+    --sherpa-display-mode-fonts-scale-2xs: 8px;
+    --sherpa-display-mode-fonts-scale-xs: 10px;
+    --sherpa-display-mode-fonts-scale-sm: 12px;
+    --sherpa-display-mode-fonts-scale-base: 14px;
+    --sherpa-display-mode-fonts-scale-lg: 16px;
+    --sherpa-display-mode-fonts-scale-xl: 20px;
+    --sherpa-display-mode-fonts-scale-2xl: 24px;
+    --sherpa-display-mode-fonts-scale-3xl: 28px;
+    --sherpa-display-mode-fonts-scale-4xl: 30px;
+    --sherpa-display-mode-fonts-scale-5xl: 32px;
+    --sherpa-display-mode-fonts-scale-6xl: 36px;
+    --sherpa-display-mode-fonts-scale-7xl: 40px;
+    --sherpa-display-mode-fonts-scale-8xl: 42px;
+    --sherpa-display-mode-fonts-scale-9xl: 44px;
+    --sherpa-display-mode-fonts-scale-10xl: 48px;
+    --sherpa-display-mode-fonts-scale-11xl: 52px;
+    --sherpa-display-mode-fonts-scale-12xl: 56px;
+    --sherpa-display-mode-fonts-scale-13xl: 64px;
+    --sherpa-display-mode-fonts-scale-14xl: 72px;
+    --sherpa-display-mode-size-none: 0px;
+    --sherpa-display-mode-size-3xs: 8px;
+    --sherpa-display-mode-size-2xs: 12px;
+    --sherpa-display-mode-size-xs: 16px;
+    --sherpa-display-mode-size-sm: 20px;
+    --sherpa-display-mode-size-md: 24px;
+    --sherpa-display-mode-size-lg: 28px;
+    --sherpa-display-mode-size-xl: 32px;
+    --sherpa-display-mode-size-2xl: 36px;
+    --sherpa-display-mode-size-3xl: 48px;
+    --sherpa-display-mode-size-4xl: 56px;
+    --sherpa-display-mode-size-5xl: 64px;
+    --sherpa-display-mode-size-6xl: 64px;
+    --sherpa-display-mode-space-snapped: 0px;
+    --sherpa-display-mode-space-none: 0px;
+    --sherpa-display-mode-space-3xs: 4px;
+    --sherpa-display-mode-space-2xs: 8px;
+    --sherpa-display-mode-space-xs: 12px;
+    --sherpa-display-mode-space-sm: 16px;
+    --sherpa-display-mode-space-base: 20px;
+    --sherpa-display-mode-space-lg: 24px;
+    --sherpa-display-mode-space-xl: 28px;
+    --sherpa-display-mode-space-2xl: 36px;
+    --sherpa-display-mode-space-3xl: 48px;
+    --sherpa-display-mode-space-4xl: 56px;
+    --sherpa-display-mode-space-5xl: 64px;
+    --sherpa-display-mode-space-6xl: 64px;
+    --sherpa-display-mode-fonts-weight-300: 300px;
+    --sherpa-display-mode-fonts-weight-400: 400px;
+    --sherpa-display-mode-fonts-weight-500: 500px;
+    --sherpa-display-mode-fonts-weight-600: 600px;
+    --sherpa-display-mode-fonts-weight-700: 700px;
+    --sherpa-display-mode-fonts-weight-900: 900px;
+    --sherpa-display-mode-color-brand-color-1: #f2dfff;
+    --sherpa-display-mode-color-brand-color-2: #d89cff;
+    --sherpa-display-mode-color-brand-color-3: #c046ff;
+    --sherpa-display-mode-color-brand-color-4: #8300b6;
+    --sherpa-display-mode-color-brand-color-5: #240036;
+    --sherpa-display-mode-color-accent-color-1: #8aa3ff;
+    --sherpa-display-mode-color-accent-color-2: #6681ff;
+    --sherpa-display-mode-color-accent-color-3: #3b4ccd;
+    --sherpa-display-mode-color-accent-color-4: #2b34b4;
+    --sherpa-display-mode-color-accent-color-5: #1e189c;
+    --sherpa-display-mode-color-info-color-1: #d4f0ff;
+    --sherpa-display-mode-color-info-color-2: #6fd1ff;
+    --sherpa-display-mode-color-info-color-3: #008bba;
+    --sherpa-display-mode-color-info-color-4: #006c91;
+    --sherpa-display-mode-color-info-color-5: #003246;
+    --sherpa-display-mode-color-warning-color-1: #fff4e1;
+    --sherpa-display-mode-color-warning-color-2: #ffdda0;
+    --sherpa-display-mode-color-warning-color-3: #ffc44c;
+    --sherpa-display-mode-color-warning-color-4: #a27500;
+    --sherpa-display-mode-color-warning-color-5: #473100;
+    --sherpa-display-mode-color-urgent-color-1: #ffe6da;
+    --sherpa-display-mode-color-urgent-color-2: #ff955b;
+    --sherpa-display-mode-color-urgent-color-3: #ff7300;
+    --sherpa-display-mode-color-urgent-color-4: #a24600;
+    --sherpa-display-mode-color-urgent-color-5: #4e1e00;
+    --sherpa-display-mode-color-critical-color-1: #ffdad1;
+    --sherpa-display-mode-color-critical-color-2: #ff856d;
+    --sherpa-display-mode-color-critical-color-3: #dd2c01;
+    --sherpa-display-mode-color-critical-color-4: #b72200;
+    --sherpa-display-mode-color-critical-color-5: #701100;
+    --sherpa-display-mode-color-success-color-1: #bbffd2;
+    --sherpa-display-mode-color-success-color-2: #56e796;
+    --sherpa-display-mode-color-success-color-3: #20c173;
+    --sherpa-display-mode-color-success-color-4: #007a45;
+    --sherpa-display-mode-color-success-color-5: #00391d;
+    --sherpa-display-mode-color-tones-color-1: #f0f0ff;
+    --sherpa-display-mode-color-tones-color-2: #d4d4e9;
+    --sherpa-display-mode-color-tones-color-3: #9595a8;
+    --sherpa-display-mode-color-tones-color-4: #9595a8;
+    --sherpa-display-mode-color-tones-color-5: #505061;
+    --sherpa-display-mode-color-neutral-color-4: #35353d;
+    --sherpa-display-mode-color-neutral-color-5: #0c0b11;
+  }
+
+  /* Density dark re-points. */
+  :root[data-mode="dark"] {
+    [data-density="compact"] {
+      --sherpa-display-mode-color-neutral-color-1: #0c0b11;
+      --sherpa-display-mode-color-neutral-color-2: #15151d;
+      --sherpa-display-mode-color-transparent-neutral-color-1: #15151e00;
+      --sherpa-display-mode-color-neutral-color-3: #5d5d69;
+      --sherpa-display-mode-color-transparent-neutral-color-2: #30303a1a;
+      --sherpa-display-mode-color-transparent-neutral-color-3: #6e6d791a;
+      --sherpa-display-mode-color-transparent-neutral-color-4: #8f8f9b1a;
+      --sherpa-display-mode-color-transparent-neutral-color-5: #d0d0dd1a;
+      --sherpa-display-mode-color-transparent-brand-color-1: #8300b61a;
+      --sherpa-display-mode-color-transparent-brand-color-2: #a41de01a;
+      --sherpa-display-mode-color-transparent-brand-color-3: #a41de01a;
+      --sherpa-display-mode-color-transparent-brand-color-4: #c046ff1a;
+      --sherpa-display-mode-color-transparent-brand-color-5: #c046ff1a;
+      --sherpa-display-mode-color-transparent-accent-color-1: #1e189c1a;
+      --sherpa-display-mode-color-transparent-accent-color-2: #2b34b41a;
+      --sherpa-display-mode-color-transparent-accent-color-4: #4c63e51a;
+      --sherpa-display-mode-color-transparent-accent-color-5: #6681ff1a;
+      --sherpa-display-mode-color-transparent-info-color-1: #0019251a;
+      --sherpa-display-mode-color-transparent-info-color-2: #004e6a1a;
+      --sherpa-display-mode-color-transparent-info-color-3: #006c911a;
+      --sherpa-display-mode-color-transparent-info-color-4: #008bba1a;
+      --sherpa-display-mode-color-transparent-info-color-5: #6fd1ff1a;
+      --sherpa-display-mode-color-transparent-warning-color-1: #4731001a;
+      --sherpa-display-mode-color-transparent-warning-color-2: #a275001a;
+      --sherpa-display-mode-color-transparent-warning-color-3: #d39a031a;
+      --sherpa-display-mode-color-transparent-warning-color-4: #ffc44c1a;
+      --sherpa-display-mode-color-transparent-warning-color-5: #ffd17b1a;
+      --sherpa-display-mode-color-transparent-urgent-color-1: #290c001a;
+      --sherpa-display-mode-color-transparent-urgent-color-2: #7732001a;
+      --sherpa-display-mode-color-transparent-urgent-color-3: #d05c001a;
+      --sherpa-display-mode-color-transparent-urgent-color-4: #ff73001a;
+      --sherpa-display-mode-color-transparent-urgent-color-5: #ff955b1a;
+      --sherpa-display-mode-color-transparent-critical-color-1: #4f09001a;
+      --sherpa-display-mode-color-transparent-critical-color-2: #9319001a;
+      --sherpa-display-mode-color-transparent-critical-color-3: #b722001a;
+      --sherpa-display-mode-color-transparent-critical-color-4: #dd2c011a;
+      --sherpa-display-mode-color-transparent-critical-color-5: #fc4e2d1a;
+      --sherpa-display-mode-color-transparent-success-color-1: #001c0c1a;
+      --sherpa-display-mode-color-transparent-success-color-2: #0059301a;
+      --sherpa-display-mode-color-transparent-success-color-3: #007a451a;
+      --sherpa-display-mode-color-transparent-success-color-4: #009d5a1a;
+      --sherpa-display-mode-color-transparent-success-color-5: #20c1731a;
+      --sherpa-display-mode-color-transparent-tones-color-1: #5050611a;
+      --sherpa-display-mode-color-transparent-tones-color-2: #9595a81a;
+      --sherpa-display-mode-color-transparent-tones-color-4: #d4d4e91a;
+      --sherpa-display-mode-color-transparent-tones-color-5: #f0f0ff1a;
+      --sherpa-display-mode-color-brand-color-1: #240036;
+      --sherpa-display-mode-color-brand-color-2: #610089;
+      --sherpa-display-mode-color-brand-color-3: #a41de0;
+      --sherpa-display-mode-color-brand-color-4: #cc76ff;
+      --sherpa-display-mode-color-brand-color-5: #e5bfff;
+      --sherpa-display-mode-color-accent-color-1: #1e189c;
+      --sherpa-display-mode-color-accent-color-2: #2b34b4;
+      --sherpa-display-mode-color-accent-color-4: #4c63e5;
+      --sherpa-display-mode-color-accent-color-5: #6681ff;
+      --sherpa-display-mode-color-info-color-1: #001925;
+      --sherpa-display-mode-color-info-color-2: #004e6a;
+      --sherpa-display-mode-color-info-color-3: #006c91;
+      --sherpa-display-mode-color-info-color-4: #008bba;
+      --sherpa-display-mode-color-info-color-5: #6fd1ff;
+      --sherpa-display-mode-color-warning-color-1: #473100;
+      --sherpa-display-mode-color-warning-color-2: #a27500;
+      --sherpa-display-mode-color-warning-color-3: #d39a03;
+      --sherpa-display-mode-color-warning-color-4: #ffc44c;
+      --sherpa-display-mode-color-warning-color-5: #ffd17b;
+      --sherpa-display-mode-color-urgent-color-1: #290c00;
+      --sherpa-display-mode-color-urgent-color-2: #773200;
+      --sherpa-display-mode-color-urgent-color-3: #d05c00;
+      --sherpa-display-mode-color-urgent-color-4: #ff7300;
+      --sherpa-display-mode-color-urgent-color-5: #ff955b;
+      --sherpa-display-mode-color-critical-color-1: #4f0900;
+      --sherpa-display-mode-color-critical-color-2: #931900;
+      --sherpa-display-mode-color-critical-color-3: #b72200;
+      --sherpa-display-mode-color-critical-color-4: #dd2c01;
+      --sherpa-display-mode-color-critical-color-5: #fc4e2d;
+      --sherpa-display-mode-color-success-color-1: #001c0c;
+      --sherpa-display-mode-color-success-color-2: #005930;
+      --sherpa-display-mode-color-success-color-3: #007a45;
+      --sherpa-display-mode-color-success-color-4: #009d5a;
+      --sherpa-display-mode-color-success-color-5: #20c173;
+      --sherpa-display-mode-color-tones-color-1: #505061;
+      --sherpa-display-mode-color-tones-color-2: #9595a8;
+      --sherpa-display-mode-color-tones-color-4: #d4d4e9;
+      --sherpa-display-mode-color-tones-color-5: #f0f0ff;
+      --sherpa-display-mode-color-neutral-color-4: #878794;
+      --sherpa-display-mode-color-neutral-color-5: #c4c4d3;
+    }
+    [data-density="comfortable"] {
+      --sherpa-display-mode-color-neutral-color-1: #0c0b11;
+      --sherpa-display-mode-color-neutral-color-2: #15151d;
+      --sherpa-display-mode-color-transparent-neutral-color-1: #15151e00;
+      --sherpa-display-mode-color-neutral-color-3: #5d5d69;
+      --sherpa-display-mode-color-transparent-neutral-color-2: #30303a1a;
+      --sherpa-display-mode-color-transparent-neutral-color-3: #6e6d791a;
+      --sherpa-display-mode-color-transparent-neutral-color-4: #8f8f9b1a;
+      --sherpa-display-mode-color-transparent-neutral-color-5: #d0d0dd1a;
+      --sherpa-display-mode-color-transparent-brand-color-1: #8300b61a;
+      --sherpa-display-mode-color-transparent-brand-color-2: #a41de01a;
+      --sherpa-display-mode-color-transparent-brand-color-3: #a41de01a;
+      --sherpa-display-mode-color-transparent-brand-color-4: #c046ff1a;
+      --sherpa-display-mode-color-transparent-brand-color-5: #c046ff1a;
+      --sherpa-display-mode-color-transparent-accent-color-1: #1e189c1a;
+      --sherpa-display-mode-color-transparent-accent-color-2: #2b34b41a;
+      --sherpa-display-mode-color-transparent-accent-color-4: #4c63e51a;
+      --sherpa-display-mode-color-transparent-accent-color-5: #6681ff1a;
+      --sherpa-display-mode-color-transparent-info-color-1: #0019251a;
+      --sherpa-display-mode-color-transparent-info-color-2: #004e6a1a;
+      --sherpa-display-mode-color-transparent-info-color-3: #006c911a;
+      --sherpa-display-mode-color-transparent-info-color-4: #008bba1a;
+      --sherpa-display-mode-color-transparent-info-color-5: #6fd1ff1a;
+      --sherpa-display-mode-color-transparent-warning-color-1: #4731001a;
+      --sherpa-display-mode-color-transparent-warning-color-2: #a275001a;
+      --sherpa-display-mode-color-transparent-warning-color-3: #d39a031a;
+      --sherpa-display-mode-color-transparent-warning-color-4: #ffc44c1a;
+      --sherpa-display-mode-color-transparent-warning-color-5: #ffd17b1a;
+      --sherpa-display-mode-color-transparent-urgent-color-1: #290c001a;
+      --sherpa-display-mode-color-transparent-urgent-color-2: #7732001a;
+      --sherpa-display-mode-color-transparent-urgent-color-3: #d05c001a;
+      --sherpa-display-mode-color-transparent-urgent-color-4: #ff73001a;
+      --sherpa-display-mode-color-transparent-urgent-color-5: #ff955b1a;
+      --sherpa-display-mode-color-transparent-critical-color-1: #4f09001a;
+      --sherpa-display-mode-color-transparent-critical-color-2: #9319001a;
+      --sherpa-display-mode-color-transparent-critical-color-3: #b722001a;
+      --sherpa-display-mode-color-transparent-critical-color-4: #dd2c011a;
+      --sherpa-display-mode-color-transparent-critical-color-5: #fc4e2d1a;
+      --sherpa-display-mode-color-transparent-success-color-1: #001c0c1a;
+      --sherpa-display-mode-color-transparent-success-color-2: #0059301a;
+      --sherpa-display-mode-color-transparent-success-color-3: #007a451a;
+      --sherpa-display-mode-color-transparent-success-color-4: #009d5a1a;
+      --sherpa-display-mode-color-transparent-success-color-5: #20c1731a;
+      --sherpa-display-mode-color-transparent-tones-color-1: #5050611a;
+      --sherpa-display-mode-color-transparent-tones-color-2: #9595a81a;
+      --sherpa-display-mode-color-transparent-tones-color-4: #d4d4e91a;
+      --sherpa-display-mode-color-transparent-tones-color-5: #f0f0ff1a;
+      --sherpa-display-mode-color-brand-color-1: #240036;
+      --sherpa-display-mode-color-brand-color-2: #610089;
+      --sherpa-display-mode-color-brand-color-3: #a41de0;
+      --sherpa-display-mode-color-brand-color-4: #cc76ff;
+      --sherpa-display-mode-color-brand-color-5: #e5bfff;
+      --sherpa-display-mode-color-accent-color-1: #1e189c;
+      --sherpa-display-mode-color-accent-color-2: #2b34b4;
+      --sherpa-display-mode-color-accent-color-4: #4c63e5;
+      --sherpa-display-mode-color-accent-color-5: #6681ff;
+      --sherpa-display-mode-color-info-color-1: #001925;
+      --sherpa-display-mode-color-info-color-2: #004e6a;
+      --sherpa-display-mode-color-info-color-3: #006c91;
+      --sherpa-display-mode-color-info-color-4: #008bba;
+      --sherpa-display-mode-color-info-color-5: #6fd1ff;
+      --sherpa-display-mode-color-warning-color-1: #473100;
+      --sherpa-display-mode-color-warning-color-2: #a27500;
+      --sherpa-display-mode-color-warning-color-3: #d39a03;
+      --sherpa-display-mode-color-warning-color-4: #ffc44c;
+      --sherpa-display-mode-color-warning-color-5: #ffd17b;
+      --sherpa-display-mode-color-urgent-color-1: #290c00;
+      --sherpa-display-mode-color-urgent-color-2: #773200;
+      --sherpa-display-mode-color-urgent-color-3: #d05c00;
+      --sherpa-display-mode-color-urgent-color-4: #ff7300;
+      --sherpa-display-mode-color-urgent-color-5: #ff955b;
+      --sherpa-display-mode-color-critical-color-1: #4f0900;
+      --sherpa-display-mode-color-critical-color-2: #931900;
+      --sherpa-display-mode-color-critical-color-3: #b72200;
+      --sherpa-display-mode-color-critical-color-4: #dd2c01;
+      --sherpa-display-mode-color-critical-color-5: #fc4e2d;
+      --sherpa-display-mode-color-success-color-1: #001c0c;
+      --sherpa-display-mode-color-success-color-2: #005930;
+      --sherpa-display-mode-color-success-color-3: #007a45;
+      --sherpa-display-mode-color-success-color-4: #009d5a;
+      --sherpa-display-mode-color-success-color-5: #20c173;
+      --sherpa-display-mode-color-tones-color-1: #505061;
+      --sherpa-display-mode-color-tones-color-2: #9595a8;
+      --sherpa-display-mode-color-tones-color-4: #d4d4e9;
+      --sherpa-display-mode-color-tones-color-5: #f0f0ff;
+      --sherpa-display-mode-color-neutral-color-4: #878794;
+      --sherpa-display-mode-color-neutral-color-5: #c4c4d3;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode="light"]) {
+      [data-density="compact"] {
+        --sherpa-display-mode-color-neutral-color-1: #0c0b11;
+        --sherpa-display-mode-color-neutral-color-2: #15151d;
+        --sherpa-display-mode-color-transparent-neutral-color-1: #15151e00;
+        --sherpa-display-mode-color-neutral-color-3: #5d5d69;
+        --sherpa-display-mode-color-transparent-neutral-color-2: #30303a1a;
+        --sherpa-display-mode-color-transparent-neutral-color-3: #6e6d791a;
+        --sherpa-display-mode-color-transparent-neutral-color-4: #8f8f9b1a;
+        --sherpa-display-mode-color-transparent-neutral-color-5: #d0d0dd1a;
+        --sherpa-display-mode-color-transparent-brand-color-1: #8300b61a;
+        --sherpa-display-mode-color-transparent-brand-color-2: #a41de01a;
+        --sherpa-display-mode-color-transparent-brand-color-3: #a41de01a;
+        --sherpa-display-mode-color-transparent-brand-color-4: #c046ff1a;
+        --sherpa-display-mode-color-transparent-brand-color-5: #c046ff1a;
+        --sherpa-display-mode-color-transparent-accent-color-1: #1e189c1a;
+        --sherpa-display-mode-color-transparent-accent-color-2: #2b34b41a;
+        --sherpa-display-mode-color-transparent-accent-color-4: #4c63e51a;
+        --sherpa-display-mode-color-transparent-accent-color-5: #6681ff1a;
+        --sherpa-display-mode-color-transparent-info-color-1: #0019251a;
+        --sherpa-display-mode-color-transparent-info-color-2: #004e6a1a;
+        --sherpa-display-mode-color-transparent-info-color-3: #006c911a;
+        --sherpa-display-mode-color-transparent-info-color-4: #008bba1a;
+        --sherpa-display-mode-color-transparent-info-color-5: #6fd1ff1a;
+        --sherpa-display-mode-color-transparent-warning-color-1: #4731001a;
+        --sherpa-display-mode-color-transparent-warning-color-2: #a275001a;
+        --sherpa-display-mode-color-transparent-warning-color-3: #d39a031a;
+        --sherpa-display-mode-color-transparent-warning-color-4: #ffc44c1a;
+        --sherpa-display-mode-color-transparent-warning-color-5: #ffd17b1a;
+        --sherpa-display-mode-color-transparent-urgent-color-1: #290c001a;
+        --sherpa-display-mode-color-transparent-urgent-color-2: #7732001a;
+        --sherpa-display-mode-color-transparent-urgent-color-3: #d05c001a;
+        --sherpa-display-mode-color-transparent-urgent-color-4: #ff73001a;
+        --sherpa-display-mode-color-transparent-urgent-color-5: #ff955b1a;
+        --sherpa-display-mode-color-transparent-critical-color-1: #4f09001a;
+        --sherpa-display-mode-color-transparent-critical-color-2: #9319001a;
+        --sherpa-display-mode-color-transparent-critical-color-3: #b722001a;
+        --sherpa-display-mode-color-transparent-critical-color-4: #dd2c011a;
+        --sherpa-display-mode-color-transparent-critical-color-5: #fc4e2d1a;
+        --sherpa-display-mode-color-transparent-success-color-1: #001c0c1a;
+        --sherpa-display-mode-color-transparent-success-color-2: #0059301a;
+        --sherpa-display-mode-color-transparent-success-color-3: #007a451a;
+        --sherpa-display-mode-color-transparent-success-color-4: #009d5a1a;
+        --sherpa-display-mode-color-transparent-success-color-5: #20c1731a;
+        --sherpa-display-mode-color-transparent-tones-color-1: #5050611a;
+        --sherpa-display-mode-color-transparent-tones-color-2: #9595a81a;
+        --sherpa-display-mode-color-transparent-tones-color-4: #d4d4e91a;
+        --sherpa-display-mode-color-transparent-tones-color-5: #f0f0ff1a;
+        --sherpa-display-mode-color-brand-color-1: #240036;
+        --sherpa-display-mode-color-brand-color-2: #610089;
+        --sherpa-display-mode-color-brand-color-3: #a41de0;
+        --sherpa-display-mode-color-brand-color-4: #cc76ff;
+        --sherpa-display-mode-color-brand-color-5: #e5bfff;
+        --sherpa-display-mode-color-accent-color-1: #1e189c;
+        --sherpa-display-mode-color-accent-color-2: #2b34b4;
+        --sherpa-display-mode-color-accent-color-4: #4c63e5;
+        --sherpa-display-mode-color-accent-color-5: #6681ff;
+        --sherpa-display-mode-color-info-color-1: #001925;
+        --sherpa-display-mode-color-info-color-2: #004e6a;
+        --sherpa-display-mode-color-info-color-3: #006c91;
+        --sherpa-display-mode-color-info-color-4: #008bba;
+        --sherpa-display-mode-color-info-color-5: #6fd1ff;
+        --sherpa-display-mode-color-warning-color-1: #473100;
+        --sherpa-display-mode-color-warning-color-2: #a27500;
+        --sherpa-display-mode-color-warning-color-3: #d39a03;
+        --sherpa-display-mode-color-warning-color-4: #ffc44c;
+        --sherpa-display-mode-color-warning-color-5: #ffd17b;
+        --sherpa-display-mode-color-urgent-color-1: #290c00;
+        --sherpa-display-mode-color-urgent-color-2: #773200;
+        --sherpa-display-mode-color-urgent-color-3: #d05c00;
+        --sherpa-display-mode-color-urgent-color-4: #ff7300;
+        --sherpa-display-mode-color-urgent-color-5: #ff955b;
+        --sherpa-display-mode-color-critical-color-1: #4f0900;
+        --sherpa-display-mode-color-critical-color-2: #931900;
+        --sherpa-display-mode-color-critical-color-3: #b72200;
+        --sherpa-display-mode-color-critical-color-4: #dd2c01;
+        --sherpa-display-mode-color-critical-color-5: #fc4e2d;
+        --sherpa-display-mode-color-success-color-1: #001c0c;
+        --sherpa-display-mode-color-success-color-2: #005930;
+        --sherpa-display-mode-color-success-color-3: #007a45;
+        --sherpa-display-mode-color-success-color-4: #009d5a;
+        --sherpa-display-mode-color-success-color-5: #20c173;
+        --sherpa-display-mode-color-tones-color-1: #505061;
+        --sherpa-display-mode-color-tones-color-2: #9595a8;
+        --sherpa-display-mode-color-tones-color-4: #d4d4e9;
+        --sherpa-display-mode-color-tones-color-5: #f0f0ff;
+        --sherpa-display-mode-color-neutral-color-4: #878794;
+        --sherpa-display-mode-color-neutral-color-5: #c4c4d3;
+      }
+      [data-density="comfortable"] {
+        --sherpa-display-mode-color-neutral-color-1: #0c0b11;
+        --sherpa-display-mode-color-neutral-color-2: #15151d;
+        --sherpa-display-mode-color-transparent-neutral-color-1: #15151e00;
+        --sherpa-display-mode-color-neutral-color-3: #5d5d69;
+        --sherpa-display-mode-color-transparent-neutral-color-2: #30303a1a;
+        --sherpa-display-mode-color-transparent-neutral-color-3: #6e6d791a;
+        --sherpa-display-mode-color-transparent-neutral-color-4: #8f8f9b1a;
+        --sherpa-display-mode-color-transparent-neutral-color-5: #d0d0dd1a;
+        --sherpa-display-mode-color-transparent-brand-color-1: #8300b61a;
+        --sherpa-display-mode-color-transparent-brand-color-2: #a41de01a;
+        --sherpa-display-mode-color-transparent-brand-color-3: #a41de01a;
+        --sherpa-display-mode-color-transparent-brand-color-4: #c046ff1a;
+        --sherpa-display-mode-color-transparent-brand-color-5: #c046ff1a;
+        --sherpa-display-mode-color-transparent-accent-color-1: #1e189c1a;
+        --sherpa-display-mode-color-transparent-accent-color-2: #2b34b41a;
+        --sherpa-display-mode-color-transparent-accent-color-4: #4c63e51a;
+        --sherpa-display-mode-color-transparent-accent-color-5: #6681ff1a;
+        --sherpa-display-mode-color-transparent-info-color-1: #0019251a;
+        --sherpa-display-mode-color-transparent-info-color-2: #004e6a1a;
+        --sherpa-display-mode-color-transparent-info-color-3: #006c911a;
+        --sherpa-display-mode-color-transparent-info-color-4: #008bba1a;
+        --sherpa-display-mode-color-transparent-info-color-5: #6fd1ff1a;
+        --sherpa-display-mode-color-transparent-warning-color-1: #4731001a;
+        --sherpa-display-mode-color-transparent-warning-color-2: #a275001a;
+        --sherpa-display-mode-color-transparent-warning-color-3: #d39a031a;
+        --sherpa-display-mode-color-transparent-warning-color-4: #ffc44c1a;
+        --sherpa-display-mode-color-transparent-warning-color-5: #ffd17b1a;
+        --sherpa-display-mode-color-transparent-urgent-color-1: #290c001a;
+        --sherpa-display-mode-color-transparent-urgent-color-2: #7732001a;
+        --sherpa-display-mode-color-transparent-urgent-color-3: #d05c001a;
+        --sherpa-display-mode-color-transparent-urgent-color-4: #ff73001a;
+        --sherpa-display-mode-color-transparent-urgent-color-5: #ff955b1a;
+        --sherpa-display-mode-color-transparent-critical-color-1: #4f09001a;
+        --sherpa-display-mode-color-transparent-critical-color-2: #9319001a;
+        --sherpa-display-mode-color-transparent-critical-color-3: #b722001a;
+        --sherpa-display-mode-color-transparent-critical-color-4: #dd2c011a;
+        --sherpa-display-mode-color-transparent-critical-color-5: #fc4e2d1a;
+        --sherpa-display-mode-color-transparent-success-color-1: #001c0c1a;
+        --sherpa-display-mode-color-transparent-success-color-2: #0059301a;
+        --sherpa-display-mode-color-transparent-success-color-3: #007a451a;
+        --sherpa-display-mode-color-transparent-success-color-4: #009d5a1a;
+        --sherpa-display-mode-color-transparent-success-color-5: #20c1731a;
+        --sherpa-display-mode-color-transparent-tones-color-1: #5050611a;
+        --sherpa-display-mode-color-transparent-tones-color-2: #9595a81a;
+        --sherpa-display-mode-color-transparent-tones-color-4: #d4d4e91a;
+        --sherpa-display-mode-color-transparent-tones-color-5: #f0f0ff1a;
+        --sherpa-display-mode-color-brand-color-1: #240036;
+        --sherpa-display-mode-color-brand-color-2: #610089;
+        --sherpa-display-mode-color-brand-color-3: #a41de0;
+        --sherpa-display-mode-color-brand-color-4: #cc76ff;
+        --sherpa-display-mode-color-brand-color-5: #e5bfff;
+        --sherpa-display-mode-color-accent-color-1: #1e189c;
+        --sherpa-display-mode-color-accent-color-2: #2b34b4;
+        --sherpa-display-mode-color-accent-color-4: #4c63e5;
+        --sherpa-display-mode-color-accent-color-5: #6681ff;
+        --sherpa-display-mode-color-info-color-1: #001925;
+        --sherpa-display-mode-color-info-color-2: #004e6a;
+        --sherpa-display-mode-color-info-color-3: #006c91;
+        --sherpa-display-mode-color-info-color-4: #008bba;
+        --sherpa-display-mode-color-info-color-5: #6fd1ff;
+        --sherpa-display-mode-color-warning-color-1: #473100;
+        --sherpa-display-mode-color-warning-color-2: #a27500;
+        --sherpa-display-mode-color-warning-color-3: #d39a03;
+        --sherpa-display-mode-color-warning-color-4: #ffc44c;
+        --sherpa-display-mode-color-warning-color-5: #ffd17b;
+        --sherpa-display-mode-color-urgent-color-1: #290c00;
+        --sherpa-display-mode-color-urgent-color-2: #773200;
+        --sherpa-display-mode-color-urgent-color-3: #d05c00;
+        --sherpa-display-mode-color-urgent-color-4: #ff7300;
+        --sherpa-display-mode-color-urgent-color-5: #ff955b;
+        --sherpa-display-mode-color-critical-color-1: #4f0900;
+        --sherpa-display-mode-color-critical-color-2: #931900;
+        --sherpa-display-mode-color-critical-color-3: #b72200;
+        --sherpa-display-mode-color-critical-color-4: #dd2c01;
+        --sherpa-display-mode-color-critical-color-5: #fc4e2d;
+        --sherpa-display-mode-color-success-color-1: #001c0c;
+        --sherpa-display-mode-color-success-color-2: #005930;
+        --sherpa-display-mode-color-success-color-3: #007a45;
+        --sherpa-display-mode-color-success-color-4: #009d5a;
+        --sherpa-display-mode-color-success-color-5: #20c173;
+        --sherpa-display-mode-color-tones-color-1: #505061;
+        --sherpa-display-mode-color-tones-color-2: #9595a8;
+        --sherpa-display-mode-color-tones-color-4: #d4d4e9;
+        --sherpa-display-mode-color-tones-color-5: #f0f0ff;
+        --sherpa-display-mode-color-neutral-color-4: #878794;
+        --sherpa-display-mode-color-neutral-color-5: #c4c4d3;
+      }
     }
   }
 }
 
-@layer style {
-  :root {
-  --sherpa-theme-app-base: var(--sherpa-display-color-neutral-color-1);
-  --sherpa-theme-border-accent-1: var(--sherpa-display-color-accent-color-2);
-  --sherpa-theme-border-accent-2: var(--sherpa-display-color-accent-color-3);
-  --sherpa-theme-border-accent-3: var(--sherpa-display-color-accent-color-4);
-  --sherpa-theme-border-accent-4: var(--sherpa-display-color-accent-color-5);
-  --sherpa-theme-border-accent-base: var(--sherpa-display-color-accent-color-1);
-  --sherpa-theme-border-active-1: var(--sherpa-display-color-brand-color-2);
-  --sherpa-theme-border-active-2: var(--sherpa-display-color-brand-color-3);
-  --sherpa-theme-border-active-3: var(--sherpa-display-color-brand-color-4);
-  --sherpa-theme-border-active-4: var(--sherpa-display-color-brand-color-5);
-  --sherpa-theme-border-active-base: var(--sherpa-display-color-brand-color-1);
-  --sherpa-theme-border-critical-1: var(--sherpa-display-color-critical-color-2);
-  --sherpa-theme-border-critical-2: var(--sherpa-display-color-critical-color-3);
-  --sherpa-theme-border-critical-3: var(--sherpa-display-color-critical-color-4);
-  --sherpa-theme-border-critical-4: var(--sherpa-display-color-critical-color-5);
-  --sherpa-theme-border-critical-base: var(--sherpa-display-color-critical-color-1);
-  --sherpa-theme-border-default-1: var(--sherpa-display-color-neutral-color-2);
-  --sherpa-theme-border-default-2: var(--sherpa-display-color-neutral-color-3);
-  --sherpa-theme-border-default-3: var(--sherpa-display-color-neutral-color-4);
-  --sherpa-theme-border-default-4: var(--sherpa-display-color-neutral-color-5);
-  --sherpa-theme-border-default-base: var(--sherpa-display-color-neutral-color-1);
-  --sherpa-theme-border-info-1: var(--sherpa-display-color-info-color-2);
-  --sherpa-theme-border-info-2: var(--sherpa-display-color-info-color-3);
-  --sherpa-theme-border-info-3: var(--sherpa-display-color-info-color-4);
-  --sherpa-theme-border-info-4: var(--sherpa-display-color-info-color-5);
-  --sherpa-theme-border-info-base: var(--sherpa-display-color-info-color-1);
-  --sherpa-theme-border-success-1: var(--sherpa-display-color-success-color-2);
-  --sherpa-theme-border-success-2: var(--sherpa-display-color-success-color-3);
-  --sherpa-theme-border-success-3: var(--sherpa-display-color-success-color-4);
-  --sherpa-theme-border-success-4: var(--sherpa-display-color-success-color-5);
-  --sherpa-theme-border-success-base: var(--sherpa-display-color-success-color-1);
-  --sherpa-theme-border-urgent-1: var(--sherpa-display-color-urgent-color-2);
-  --sherpa-theme-border-urgent-2: var(--sherpa-display-color-urgent-color-3);
-  --sherpa-theme-border-urgent-3: var(--sherpa-display-color-urgent-color-4);
-  --sherpa-theme-border-urgent-4: var(--sherpa-display-color-urgent-color-5);
-  --sherpa-theme-border-urgent-base: var(--sherpa-display-color-urgent-color-1);
-  --sherpa-theme-border-warning-1: var(--sherpa-display-color-warning-color-2);
-  --sherpa-theme-border-warning-2: var(--sherpa-display-color-warning-color-3);
-  --sherpa-theme-border-warning-3: var(--sherpa-display-color-warning-color-4);
-  --sherpa-theme-border-warning-4: var(--sherpa-display-color-warning-color-5);
-  --sherpa-theme-border-warning-base: var(--sherpa-display-color-warning-color-1);
-  --sherpa-theme-content-active-1: var(--sherpa-display-color-brand-color-4);
-  --sherpa-theme-content-active-2: var(--sherpa-display-color-brand-color-3);
-  --sherpa-theme-content-active-3: var(--sherpa-display-color-brand-color-2);
-  --sherpa-theme-content-active-4: var(--sherpa-display-color-brand-color-1);
-  --sherpa-theme-content-active-base: var(--sherpa-display-color-brand-color-5);
-  --sherpa-theme-content-body-1: var(--sherpa-display-color-neutral-color-4);
-  --sherpa-theme-content-body-2: var(--sherpa-display-color-neutral-color-3);
-  --sherpa-theme-content-body-3: var(--sherpa-display-color-neutral-color-2);
-  --sherpa-theme-content-body-4: var(--sherpa-display-color-neutral-color-1);
-  --sherpa-theme-content-body-base: var(--sherpa-display-color-neutral-color-5);
-  --sherpa-theme-content-body-base-fixed: var(--sherpa-display-color-neutral-fixed-color-1);
-  --sherpa-theme-content-critical-1: var(--sherpa-display-color-critical-color-4);
-  --sherpa-theme-content-critical-2: var(--sherpa-display-color-critical-color-3);
-  --sherpa-theme-content-critical-3: var(--sherpa-display-color-critical-color-2);
-  --sherpa-theme-content-critical-4: var(--sherpa-display-color-critical-color-1);
-  --sherpa-theme-content-critical-base: var(--sherpa-display-color-critical-color-5);
-  --sherpa-theme-content-info-1: var(--sherpa-display-color-info-color-4);
-  --sherpa-theme-content-info-2: var(--sherpa-display-color-info-color-3);
-  --sherpa-theme-content-info-3: var(--sherpa-display-color-info-color-2);
-  --sherpa-theme-content-info-4: var(--sherpa-display-color-info-color-1);
-  --sherpa-theme-content-info-base: var(--sherpa-display-color-info-color-5);
-  --sherpa-theme-content-link-1: var(--sherpa-display-color-accent-color-4);
-  --sherpa-theme-content-link-2: var(--sherpa-display-color-accent-color-3);
-  --sherpa-theme-content-link-3: var(--sherpa-display-color-accent-color-2);
-  --sherpa-theme-content-link-4: var(--sherpa-display-color-accent-color-1);
-  --sherpa-theme-content-link-base: var(--sherpa-display-color-accent-color-5);
-  --sherpa-theme-content-success-1: var(--sherpa-display-color-success-color-4);
-  --sherpa-theme-content-success-2: var(--sherpa-display-color-success-color-3);
-  --sherpa-theme-content-success-3: var(--sherpa-display-color-success-color-2);
-  --sherpa-theme-content-success-4: var(--sherpa-display-color-success-color-1);
-  --sherpa-theme-content-success-base: var(--sherpa-display-color-success-color-5);
-  --sherpa-theme-content-urgent-1: var(--sherpa-display-color-urgent-color-4);
-  --sherpa-theme-content-urgent-2: var(--sherpa-display-color-urgent-color-3);
-  --sherpa-theme-content-urgent-3: var(--sherpa-display-color-urgent-color-2);
-  --sherpa-theme-content-urgent-4: var(--sherpa-display-color-urgent-color-1);
-  --sherpa-theme-content-urgent-base: var(--sherpa-display-color-urgent-color-5);
-  --sherpa-theme-content-warning-1: var(--sherpa-display-color-warning-color-4);
-  --sherpa-theme-content-warning-2: var(--sherpa-display-color-warning-color-3);
-  --sherpa-theme-content-warning-3: var(--sherpa-display-color-warning-color-2);
-  --sherpa-theme-content-warning-4: var(--sherpa-display-color-warning-color-1);
-  --sherpa-theme-content-warning-base: var(--sherpa-display-color-warning-color-5);
+@layer theme {
+  :root,
+  [data-theme="sherpa"] {
+  --sherpa-theme-border-accent-1: var(--sherpa-display-mode-color-accent-color-2);
+  --sherpa-theme-border-accent-2: var(--sherpa-display-mode-color-accent-color-3);
+  --sherpa-theme-border-accent-3: var(--sherpa-display-mode-color-accent-color-4);
+  --sherpa-theme-border-accent-4: var(--sherpa-display-mode-color-accent-color-5);
+  --sherpa-theme-border-accent-base: var(--sherpa-display-mode-color-accent-color-1);
+  --sherpa-theme-border-active-1: var(--sherpa-display-mode-color-brand-color-2);
+  --sherpa-theme-border-active-2: var(--sherpa-display-mode-color-brand-color-3);
+  --sherpa-theme-border-active-3: var(--sherpa-display-mode-color-brand-color-4);
+  --sherpa-theme-border-active-4: var(--sherpa-display-mode-color-brand-color-5);
+  --sherpa-theme-border-active-base: var(--sherpa-display-mode-color-brand-color-1);
+  --sherpa-theme-border-critical-1: var(--sherpa-display-mode-color-critical-color-2);
+  --sherpa-theme-border-critical-2: var(--sherpa-display-mode-color-critical-color-3);
+  --sherpa-theme-border-critical-3: var(--sherpa-display-mode-color-critical-color-4);
+  --sherpa-theme-border-critical-4: var(--sherpa-display-mode-color-critical-color-5);
+  --sherpa-theme-border-critical-base: var(--sherpa-display-mode-color-critical-color-1);
+  --sherpa-theme-border-default-1: var(--sherpa-display-mode-color-neutral-color-2);
+  --sherpa-theme-border-default-2: var(--sherpa-display-mode-color-neutral-color-3);
+  --sherpa-theme-border-default-3: var(--sherpa-display-mode-color-neutral-color-4);
+  --sherpa-theme-border-default-4: var(--sherpa-display-mode-color-neutral-color-5);
+  --sherpa-theme-border-default-base: var(--sherpa-display-mode-color-neutral-color-1);
+  --sherpa-theme-border-info-1: var(--sherpa-display-mode-color-info-color-2);
+  --sherpa-theme-border-info-2: var(--sherpa-display-mode-color-info-color-3);
+  --sherpa-theme-border-info-3: var(--sherpa-display-mode-color-info-color-4);
+  --sherpa-theme-border-info-4: var(--sherpa-display-mode-color-info-color-5);
+  --sherpa-theme-border-info-base: var(--sherpa-display-mode-color-info-color-1);
+  --sherpa-theme-border-success-1: var(--sherpa-display-mode-color-success-color-2);
+  --sherpa-theme-border-success-2: var(--sherpa-display-mode-color-success-color-3);
+  --sherpa-theme-border-success-3: var(--sherpa-display-mode-color-success-color-4);
+  --sherpa-theme-border-success-4: var(--sherpa-display-mode-color-success-color-5);
+  --sherpa-theme-border-success-base: var(--sherpa-display-mode-color-success-color-1);
+  --sherpa-theme-border-urgent-1: var(--sherpa-display-mode-color-urgent-color-2);
+  --sherpa-theme-border-urgent-2: var(--sherpa-display-mode-color-urgent-color-3);
+  --sherpa-theme-border-urgent-3: var(--sherpa-display-mode-color-urgent-color-4);
+  --sherpa-theme-border-urgent-4: var(--sherpa-display-mode-color-urgent-color-5);
+  --sherpa-theme-border-urgent-base: var(--sherpa-display-mode-color-urgent-color-1);
+  --sherpa-theme-border-warning-1: var(--sherpa-display-mode-color-warning-color-2);
+  --sherpa-theme-border-warning-2: var(--sherpa-display-mode-color-warning-color-3);
+  --sherpa-theme-border-warning-3: var(--sherpa-display-mode-color-warning-color-4);
+  --sherpa-theme-border-warning-4: var(--sherpa-display-mode-color-warning-color-5);
+  --sherpa-theme-border-warning-base: var(--sherpa-display-mode-color-warning-color-1);
+  --sherpa-theme-content-active-1: var(--sherpa-display-mode-color-brand-color-4);
+  --sherpa-theme-content-active-2: var(--sherpa-display-mode-color-brand-color-3);
+  --sherpa-theme-content-active-3: var(--sherpa-display-mode-color-brand-color-2);
+  --sherpa-theme-content-active-4: var(--sherpa-display-mode-color-brand-color-1);
+  --sherpa-theme-content-active-base: var(--sherpa-display-mode-color-brand-color-5);
+  --sherpa-theme-content-body-1: var(--sherpa-display-mode-color-neutral-color-4);
+  --sherpa-theme-content-body-2: var(--sherpa-display-mode-color-neutral-color-3);
+  --sherpa-theme-content-body-3: var(--sherpa-display-mode-color-neutral-color-2);
+  --sherpa-theme-content-body-4: var(--sherpa-display-mode-color-neutral-color-1);
+  --sherpa-theme-content-body-base: var(--sherpa-display-mode-color-neutral-color-5);
+  --sherpa-theme-content-body-base-fixed: var(--sherpa-display-mode-color-neutral-fixed-color-1);
+  --sherpa-theme-content-critical-1: var(--sherpa-display-mode-color-critical-color-4);
+  --sherpa-theme-content-critical-2: var(--sherpa-display-mode-color-critical-color-3);
+  --sherpa-theme-content-critical-3: var(--sherpa-display-mode-color-critical-color-2);
+  --sherpa-theme-content-critical-4: var(--sherpa-display-mode-color-critical-color-1);
+  --sherpa-theme-content-critical-base: var(--sherpa-display-mode-color-critical-color-5);
+  --sherpa-theme-content-font-body: Inter;
+  --sherpa-theme-content-font-hero: Inter;
+  --sherpa-theme-content-font-monospaced: JetBrains Mono;
+  --sherpa-theme-content-info-1: var(--sherpa-display-mode-color-info-color-4);
+  --sherpa-theme-content-info-2: var(--sherpa-display-mode-color-info-color-3);
+  --sherpa-theme-content-info-3: var(--sherpa-display-mode-color-info-color-2);
+  --sherpa-theme-content-info-4: var(--sherpa-display-mode-color-info-color-1);
+  --sherpa-theme-content-info-base: var(--sherpa-display-mode-color-info-color-5);
+  --sherpa-theme-content-letter-spacing-base: 0px;
+  --sherpa-theme-content-letter-spacing-h1: -0.20000000298023224px;
+  --sherpa-theme-content-letter-spacing-h2: -0.20000000298023224px;
+  --sherpa-theme-content-letter-spacing-h3: -0.20000000298023224px;
+  --sherpa-theme-content-letter-spacing-h4: -0.20000000298023224px;
+  --sherpa-theme-content-letter-spacing-h5: -0.20000000298023224px;
+  --sherpa-theme-content-letter-spacing-large: 0px;
+  --sherpa-theme-content-letter-spacing-small: 0px;
+  --sherpa-theme-content-letter-spacing-xs: 0px;
+  --sherpa-theme-content-line-height-base: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-line-height-h1: var(--sherpa-display-mode-fonts-scale-5xl);
+  --sherpa-theme-content-line-height-h2: var(--sherpa-display-mode-fonts-scale-3xl);
+  --sherpa-theme-content-line-height-h3: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-line-height-h4: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-line-height-h5: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-line-height-large: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-line-height-small: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-line-height-xs: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-link-1: var(--sherpa-display-mode-color-accent-color-4);
+  --sherpa-theme-content-link-2: var(--sherpa-display-mode-color-accent-color-3);
+  --sherpa-theme-content-link-3: var(--sherpa-display-mode-color-accent-color-2);
+  --sherpa-theme-content-link-4: var(--sherpa-display-mode-color-accent-color-1);
+  --sherpa-theme-content-link-base: var(--sherpa-display-mode-color-accent-color-5);
+  --sherpa-theme-content-paragraph-spacing: var(--sherpa-display-mode-fonts-scale-2xs);
+  --sherpa-theme-content-size-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-size-h1: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-theme-content-size-h2: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-theme-content-size-h3: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-size-h4: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-theme-content-size-h5: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-content-size-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-theme-content-size-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-theme-content-size-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-theme-content-success-1: var(--sherpa-display-mode-color-success-color-4);
+  --sherpa-theme-content-success-2: var(--sherpa-display-mode-color-success-color-3);
+  --sherpa-theme-content-success-3: var(--sherpa-display-mode-color-success-color-2);
+  --sherpa-theme-content-success-4: var(--sherpa-display-mode-color-success-color-1);
+  --sherpa-theme-content-success-base: var(--sherpa-display-mode-color-success-color-5);
+  --sherpa-theme-content-urgent-1: var(--sherpa-display-mode-color-urgent-color-4);
+  --sherpa-theme-content-urgent-2: var(--sherpa-display-mode-color-urgent-color-3);
+  --sherpa-theme-content-urgent-3: var(--sherpa-display-mode-color-urgent-color-2);
+  --sherpa-theme-content-urgent-4: var(--sherpa-display-mode-color-urgent-color-1);
+  --sherpa-theme-content-urgent-base: var(--sherpa-display-mode-color-urgent-color-5);
+  --sherpa-theme-content-warning-1: var(--sherpa-display-mode-color-warning-color-4);
+  --sherpa-theme-content-warning-2: var(--sherpa-display-mode-color-warning-color-3);
+  --sherpa-theme-content-warning-3: var(--sherpa-display-mode-color-warning-color-2);
+  --sherpa-theme-content-warning-4: var(--sherpa-display-mode-color-warning-color-1);
+  --sherpa-theme-content-warning-base: var(--sherpa-display-mode-color-warning-color-5);
+  --sherpa-theme-content-weight-black: var(--sherpa-display-mode-fonts-weight-900);
+  --sherpa-theme-content-weight-bold: var(--sherpa-display-mode-fonts-weight-700);
+  --sherpa-theme-content-weight-light: var(--sherpa-display-mode-fonts-weight-300);
+  --sherpa-theme-content-weight-medium: var(--sherpa-display-mode-fonts-weight-500);
+  --sherpa-theme-content-weight-regular: var(--sherpa-display-mode-fonts-weight-400);
+  --sherpa-theme-content-weight-semibold: var(--sherpa-display-mode-fonts-weight-600);
   --sherpa-theme-data-viz-categorical-color-1: #7B1CE6;
   --sherpa-theme-data-viz-categorical-color-10: #20C173;
   --sherpa-theme-data-viz-categorical-color-11: #878794;
@@ -601,110 +1334,110 @@
   --sherpa-theme-data-viz-sequential-turquoise-color-7: #008A75;
   --sherpa-theme-data-viz-sequential-turquoise-color-8: #007764;
   --sherpa-theme-data-viz-sequential-turquoise-color-9: #006453;
-  --sherpa-theme-elevation-blur-base: var(--sherpa-display-size-lg);
-  --sherpa-theme-elevation-blur-large: var(--sherpa-display-size-xl);
-  --sherpa-theme-elevation-blur-small: var(--sherpa-display-size-md);
-  --sherpa-theme-elevation-blur-sunken: var(--sherpa-display-size-xs);
-  --sherpa-theme-elevation-blur-xl: var(--sherpa-display-size-2xl);
-  --sherpa-theme-elevation-offset-x-base: var(--sherpa-display-size-2xs);
-  --sherpa-theme-elevation-offset-x-large: var(--sherpa-display-size-xs);
-  --sherpa-theme-elevation-offset-x-small: var(--sherpa-display-size-3xs);
-  --sherpa-theme-elevation-offset-x-sunken: var(--sherpa-display-size-3xs);
-  --sherpa-theme-elevation-offset-x-xl: var(--sherpa-display-size-sm);
-  --sherpa-theme-elevation-offset-y-base: var(--sherpa-display-size-sm);
-  --sherpa-theme-elevation-offset-y-large: var(--sherpa-display-size-sm);
-  --sherpa-theme-elevation-offset-y-small: var(--sherpa-display-size-sm);
-  --sherpa-theme-elevation-offset-y-sunken: var(--sherpa-display-size-sm);
-  --sherpa-theme-elevation-offset-y-xl: var(--sherpa-display-size-xl);
-  --sherpa-theme-elevation-spread-base: -12px;
-  --sherpa-theme-elevation-spread-large: -8px;
-  --sherpa-theme-elevation-spread-small: -16px;
+  --sherpa-theme-elevation-blur-base: 16px;
+  --sherpa-theme-elevation-blur-large: 24px;
+  --sherpa-theme-elevation-blur-small: 8px;
+  --sherpa-theme-elevation-blur-sunken: 8px;
+  --sherpa-theme-elevation-blur-xl: 32px;
+  --sherpa-theme-elevation-offset-x-base: 2px;
+  --sherpa-theme-elevation-offset-x-large: 4px;
+  --sherpa-theme-elevation-offset-x-small: 1px;
+  --sherpa-theme-elevation-offset-x-sunken: -2px;
+  --sherpa-theme-elevation-offset-x-xl: 8px;
+  --sherpa-theme-elevation-offset-y-base: 2px;
+  --sherpa-theme-elevation-offset-y-large: 4px;
+  --sherpa-theme-elevation-offset-y-small: 1px;
+  --sherpa-theme-elevation-offset-y-sunken: -2px;
+  --sherpa-theme-elevation-offset-y-xl: 8px;
+  --sherpa-theme-elevation-spread-base: -8px;
+  --sherpa-theme-elevation-spread-large: -12px;
+  --sherpa-theme-elevation-spread-small: -4px;
   --sherpa-theme-elevation-spread-sunken: -4px;
-  --sherpa-theme-elevation-spread-xl: -4px;
-  --sherpa-theme-gap-lg: var(--sherpa-display-space-sm);
-  --sherpa-theme-gap-md: var(--sherpa-display-space-xs);
-  --sherpa-theme-gap-sm: var(--sherpa-display-space-2xs);
-  --sherpa-theme-gap-xl: var(--sherpa-display-space-base);
-  --sherpa-theme-padding-lg: var(--sherpa-display-space-base);
-  --sherpa-theme-padding-md: var(--sherpa-display-space-xs);
-  --sherpa-theme-padding-none: var(--sherpa-display-space-none);
-  --sherpa-theme-padding-sm: var(--sherpa-display-space-2xs);
-  --sherpa-theme-padding-xs: var(--sherpa-display-space-3xs);
-  --sherpa-theme-size-icon-2xs: var(--sherpa-display-size-xs);
-  --sherpa-theme-size-icon-lg: var(--sherpa-display-size-xl);
-  --sherpa-theme-size-icon-md: var(--sherpa-display-size-lg);
-  --sherpa-theme-size-icon-sm: var(--sherpa-display-size-md);
-  --sherpa-theme-size-icon-xl: var(--sherpa-display-size-2xl);
-  --sherpa-theme-size-icon-xs: var(--sherpa-display-size-sm);
-  --sherpa-theme-surface-accent-1: var(--sherpa-display-color-accent-color-2);
-  --sherpa-theme-surface-accent-2: var(--sherpa-display-color-accent-color-3);
-  --sherpa-theme-surface-accent-3: var(--sherpa-display-color-accent-color-4);
-  --sherpa-theme-surface-accent-4: var(--sherpa-display-color-accent-color-5);
-  --sherpa-theme-surface-accent-base: var(--sherpa-display-color-accent-color-1);
-  --sherpa-theme-surface-accent-transparent: var(--sherpa-display-color-transparent-accent-color-3);
-  --sherpa-theme-surface-active-1: var(--sherpa-display-color-brand-color-2);
-  --sherpa-theme-surface-active-2: var(--sherpa-display-color-brand-color-3);
-  --sherpa-theme-surface-active-3: var(--sherpa-display-color-brand-color-4);
-  --sherpa-theme-surface-active-4: var(--sherpa-display-color-brand-color-5);
-  --sherpa-theme-surface-active-base: var(--sherpa-display-color-brand-color-1);
-  --sherpa-theme-surface-active-transparent: var(--sherpa-display-color-transparent-brand-color-3);
-  --sherpa-theme-surface-critical-1: var(--sherpa-display-color-critical-color-2);
-  --sherpa-theme-surface-critical-2: var(--sherpa-display-color-critical-color-3);
-  --sherpa-theme-surface-critical-3: var(--sherpa-display-color-critical-color-4);
-  --sherpa-theme-surface-critical-4: var(--sherpa-display-color-critical-color-5);
-  --sherpa-theme-surface-critical-base: var(--sherpa-display-color-critical-color-1);
-  --sherpa-theme-surface-critical-transparent: var(--sherpa-display-color-transparent-critical-color-3);
-  --sherpa-theme-surface-default-1: var(--sherpa-display-color-neutral-color-2);
-  --sherpa-theme-surface-default-2: var(--sherpa-display-color-neutral-color-3);
-  --sherpa-theme-surface-default-3: var(--sherpa-display-color-neutral-color-4);
-  --sherpa-theme-surface-default-4: var(--sherpa-display-color-neutral-color-5);
-  --sherpa-theme-surface-default-base: var(--sherpa-display-color-neutral-color-1);
+  --sherpa-theme-elevation-spread-xl: -16px;
+  --sherpa-theme-gap-lg: var(--sherpa-display-mode-space-sm);
+  --sherpa-theme-gap-md: var(--sherpa-display-mode-space-xs);
+  --sherpa-theme-gap-sm: var(--sherpa-display-mode-space-2xs);
+  --sherpa-theme-gap-xl: var(--sherpa-display-mode-space-base);
+  --sherpa-theme-padding-lg: var(--sherpa-display-mode-space-base);
+  --sherpa-theme-padding-md: var(--sherpa-display-mode-space-xs);
+  --sherpa-theme-padding-none: var(--sherpa-display-mode-space-none);
+  --sherpa-theme-padding-sm: var(--sherpa-display-mode-space-2xs);
+  --sherpa-theme-padding-xs: var(--sherpa-display-mode-space-3xs);
+  --sherpa-theme-size-icon-2xs: var(--sherpa-display-mode-size-xs);
+  --sherpa-theme-size-icon-lg: var(--sherpa-display-mode-size-xl);
+  --sherpa-theme-size-icon-md: var(--sherpa-display-mode-size-lg);
+  --sherpa-theme-size-icon-sm: var(--sherpa-display-mode-size-md);
+  --sherpa-theme-size-icon-xl: var(--sherpa-display-mode-size-2xl);
+  --sherpa-theme-size-icon-xs: var(--sherpa-display-mode-size-sm);
+  --sherpa-theme-surface-accent-1: var(--sherpa-display-mode-color-accent-color-2);
+  --sherpa-theme-surface-accent-2: var(--sherpa-display-mode-color-accent-color-3);
+  --sherpa-theme-surface-accent-3: var(--sherpa-display-mode-color-accent-color-4);
+  --sherpa-theme-surface-accent-4: var(--sherpa-display-mode-color-accent-color-5);
+  --sherpa-theme-surface-accent-base: var(--sherpa-display-mode-color-accent-color-1);
+  --sherpa-theme-surface-accent-transparent: var(--sherpa-display-mode-color-transparent-accent-color-3);
+  --sherpa-theme-surface-active-1: var(--sherpa-display-mode-color-brand-color-2);
+  --sherpa-theme-surface-active-2: var(--sherpa-display-mode-color-brand-color-3);
+  --sherpa-theme-surface-active-3: var(--sherpa-display-mode-color-brand-color-4);
+  --sherpa-theme-surface-active-4: var(--sherpa-display-mode-color-brand-color-5);
+  --sherpa-theme-surface-active-base: var(--sherpa-display-mode-color-brand-color-1);
+  --sherpa-theme-surface-active-transparent: var(--sherpa-display-mode-color-transparent-brand-color-3);
+  --sherpa-theme-surface-critical-1: var(--sherpa-display-mode-color-critical-color-2);
+  --sherpa-theme-surface-critical-2: var(--sherpa-display-mode-color-critical-color-3);
+  --sherpa-theme-surface-critical-3: var(--sherpa-display-mode-color-critical-color-4);
+  --sherpa-theme-surface-critical-4: var(--sherpa-display-mode-color-critical-color-5);
+  --sherpa-theme-surface-critical-base: var(--sherpa-display-mode-color-critical-color-1);
+  --sherpa-theme-surface-critical-transparent: var(--sherpa-display-mode-color-transparent-critical-color-3);
+  --sherpa-theme-surface-default-1: var(--sherpa-display-mode-color-neutral-color-2);
+  --sherpa-theme-surface-default-2: var(--sherpa-display-mode-color-neutral-color-3);
+  --sherpa-theme-surface-default-3: var(--sherpa-display-mode-color-neutral-color-4);
+  --sherpa-theme-surface-default-4: var(--sherpa-display-mode-color-neutral-color-5);
+  --sherpa-theme-surface-default-base: var(--sherpa-display-mode-color-neutral-color-1);
   --sherpa-theme-surface-default-transparent: #FFFFFF00;
-  --sherpa-theme-surface-info-1: var(--sherpa-display-color-info-color-2);
-  --sherpa-theme-surface-info-2: var(--sherpa-display-color-info-color-3);
-  --sherpa-theme-surface-info-3: var(--sherpa-display-color-info-color-4);
-  --sherpa-theme-surface-info-4: var(--sherpa-display-color-info-color-5);
-  --sherpa-theme-surface-info-base: var(--sherpa-display-color-info-color-1);
-  --sherpa-theme-surface-info-transparent: var(--sherpa-display-color-transparent-info-color-3);
-  --sherpa-theme-surface-success-1: var(--sherpa-display-color-success-color-2);
-  --sherpa-theme-surface-success-2: var(--sherpa-display-color-success-color-3);
-  --sherpa-theme-surface-success-3: var(--sherpa-display-color-success-color-4);
-  --sherpa-theme-surface-success-4: var(--sherpa-display-color-success-color-5);
-  --sherpa-theme-surface-success-base: var(--sherpa-display-color-success-color-1);
-  --sherpa-theme-surface-success-transparent: var(--sherpa-display-color-transparent-success-color-3);
-  --sherpa-theme-surface-urgent-1: var(--sherpa-display-color-urgent-color-2);
-  --sherpa-theme-surface-urgent-2: var(--sherpa-display-color-urgent-color-3);
-  --sherpa-theme-surface-urgent-3: var(--sherpa-display-color-urgent-color-4);
-  --sherpa-theme-surface-urgent-4: var(--sherpa-display-color-urgent-color-5);
-  --sherpa-theme-surface-urgent-base: var(--sherpa-display-color-urgent-color-1);
-  --sherpa-theme-surface-urgent-transparent: var(--sherpa-display-color-transparent-urgent-color-3);
-  --sherpa-theme-surface-warning-1: var(--sherpa-display-color-warning-color-2);
-  --sherpa-theme-surface-warning-2: var(--sherpa-display-color-warning-color-3);
-  --sherpa-theme-surface-warning-3: var(--sherpa-display-color-warning-color-4);
-  --sherpa-theme-surface-warning-4: var(--sherpa-display-color-warning-color-5);
-  --sherpa-theme-surface-warning-base: var(--sherpa-display-color-warning-color-1);
-  --sherpa-theme-surface-warning-transparent: var(--sherpa-display-color-transparent-warning-color-3);
+  --sherpa-theme-surface-info-1: var(--sherpa-display-mode-color-info-color-2);
+  --sherpa-theme-surface-info-2: var(--sherpa-display-mode-color-info-color-3);
+  --sherpa-theme-surface-info-3: var(--sherpa-display-mode-color-info-color-4);
+  --sherpa-theme-surface-info-4: var(--sherpa-display-mode-color-info-color-5);
+  --sherpa-theme-surface-info-base: var(--sherpa-display-mode-color-info-color-1);
+  --sherpa-theme-surface-info-transparent: var(--sherpa-display-mode-color-transparent-info-color-3);
+  --sherpa-theme-surface-success-1: var(--sherpa-display-mode-color-success-color-2);
+  --sherpa-theme-surface-success-2: var(--sherpa-display-mode-color-success-color-3);
+  --sherpa-theme-surface-success-3: var(--sherpa-display-mode-color-success-color-4);
+  --sherpa-theme-surface-success-4: var(--sherpa-display-mode-color-success-color-5);
+  --sherpa-theme-surface-success-base: var(--sherpa-display-mode-color-success-color-1);
+  --sherpa-theme-surface-success-transparent: var(--sherpa-display-mode-color-transparent-success-color-3);
+  --sherpa-theme-surface-urgent-1: var(--sherpa-display-mode-color-urgent-color-2);
+  --sherpa-theme-surface-urgent-2: var(--sherpa-display-mode-color-urgent-color-3);
+  --sherpa-theme-surface-urgent-3: var(--sherpa-display-mode-color-urgent-color-4);
+  --sherpa-theme-surface-urgent-4: var(--sherpa-display-mode-color-urgent-color-5);
+  --sherpa-theme-surface-urgent-base: var(--sherpa-display-mode-color-urgent-color-1);
+  --sherpa-theme-surface-urgent-transparent: var(--sherpa-display-mode-color-transparent-urgent-color-3);
+  --sherpa-theme-surface-warning-1: var(--sherpa-display-mode-color-warning-color-2);
+  --sherpa-theme-surface-warning-2: var(--sherpa-display-mode-color-warning-color-3);
+  --sherpa-theme-surface-warning-3: var(--sherpa-display-mode-color-warning-color-4);
+  --sherpa-theme-surface-warning-4: var(--sherpa-display-mode-color-warning-color-5);
+  --sherpa-theme-surface-warning-base: var(--sherpa-display-mode-color-warning-color-1);
+  --sherpa-theme-surface-warning-transparent: var(--sherpa-display-mode-color-transparent-warning-color-3);
 
-    /* typography atoms — derived from real Figma typography modes (see projector) */
+    /* typography atoms — derived from Figma content/* (see projector) */
   --sherpa-font-family-body: "Inter", system-ui, sans-serif;
   --sherpa-font-family-mono: ui-monospace, "JetBrains Mono", monospace;
-  --sherpa-font-weight-light: var(--sherpa-display-fonts-weight-300);
-  --sherpa-font-weight-regular: var(--sherpa-display-fonts-weight-400);
-  --sherpa-font-weight-medium: var(--sherpa-display-fonts-weight-500);
-  --sherpa-font-weight-semibold: var(--sherpa-display-fonts-weight-600);
-  --sherpa-font-weight-bold: var(--sherpa-display-fonts-weight-700);
-  --sherpa-font-weight-black: var(--sherpa-display-fonts-weight-900);
-  --sherpa-font-size-body-large: var(--sherpa-display-fonts-scale-lg);
-  --sherpa-font-size-body-base: var(--sherpa-display-fonts-scale-base);
-  --sherpa-font-size-body-small: var(--sherpa-display-fonts-scale-sm);
-  --sherpa-font-size-body-xs: var(--sherpa-display-fonts-scale-xs);
-  --sherpa-font-size-heading-h1: var(--sherpa-display-fonts-scale-2xl);
-  --sherpa-font-size-heading-h2: var(--sherpa-display-fonts-scale-xl);
-  --sherpa-font-size-heading-h3: var(--sherpa-display-fonts-scale-lg);
-  --sherpa-font-size-heading-h4: var(--sherpa-display-fonts-scale-base);
-  --sherpa-font-size-heading-h5: var(--sherpa-display-fonts-scale-sm);
+  --sherpa-font-weight-light: var(--sherpa-display-mode-fonts-weight-300);
+  --sherpa-font-weight-regular: var(--sherpa-display-mode-fonts-weight-400);
+  --sherpa-font-weight-medium: var(--sherpa-display-mode-fonts-weight-500);
+  --sherpa-font-weight-semibold: var(--sherpa-display-mode-fonts-weight-600);
+  --sherpa-font-weight-bold: var(--sherpa-display-mode-fonts-weight-700);
+  --sherpa-font-weight-black: var(--sherpa-display-mode-fonts-weight-900);
+  --sherpa-font-size-body-large: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-font-size-body-base: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-font-size-body-small: var(--sherpa-display-mode-fonts-scale-sm);
+  --sherpa-font-size-body-xs: var(--sherpa-display-mode-fonts-scale-xs);
+  --sherpa-font-size-heading-h1: var(--sherpa-display-mode-fonts-scale-2xl);
+  --sherpa-font-size-heading-h2: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-font-size-heading-h3: var(--sherpa-display-mode-fonts-scale-lg);
+  --sherpa-font-size-heading-h4: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-font-size-heading-h5: var(--sherpa-display-mode-fonts-scale-sm);
 
-    /* interactive states — color-mix derivations (replace the removed shade/tint hack) */
+    /* interactive states — color-mix derivations */
   --sherpa-theme-surface-accent-hover: color-mix(in oklab, var(--sherpa-theme-surface-accent-base) 92%, currentColor);
   --sherpa-theme-surface-accent-down: color-mix(in oklab, var(--sherpa-theme-surface-accent-base) 84%, currentColor);
   --sherpa-theme-surface-active-hover: color-mix(in oklab, var(--sherpa-theme-surface-active-base) 92%, currentColor);
@@ -723,226 +1456,335 @@
   --sherpa-theme-surface-warning-down: color-mix(in oklab, var(--sherpa-theme-surface-warning-base) 84%, currentColor);
   }
 
-  /* Text roles — one class per Figma typography MODE (base, h1–h5, large, small, xs),
-     for body, hero, and mono families. Weight defaults per mode; override on element. */
-  .sherpa-text-base {
+
+  /* Text roles — one class per Figma type step (base, h1–h5, large, small, xs), for
+     body, hero, and mono families. Weight defaults per step; override on element. */
+  :where(.sherpa-text-base) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-base);
-    line-height: var(--sherpa-display-fonts-scale-xl);
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
     letter-spacing: 0px;
-    font-weight: var(--sherpa-display-fonts-weight-400);
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
   }
 
-  .sherpa-text-hero-base {
+  :where(.sherpa-text-hero-base) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 14px;
-    line-height: 20px;
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
     letter-spacing: 0px;
-    font-weight: 400;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
   }
 
-  .sherpa-text-mono-base {
+  :where(.sherpa-text-mono-base) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 14px;
-    line-height: 20px;
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
     letter-spacing: 0px;
-    font-weight: 400;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
   }
 
-  .sherpa-text-h1 {
+  :where(.sherpa-text-h1) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-2xl);
-    line-height: var(--sherpa-display-fonts-scale-5xl);
+    font-size: var(--sherpa-display-mode-fonts-scale-2xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-5xl);
     letter-spacing: -0.20000000298023224px;
-    font-weight: var(--sherpa-display-fonts-weight-600);
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-h1 {
+  :where(.sherpa-text-hero-h1) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 24px;
-    line-height: 32px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-mono-h1 {
-    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 24px;
-    line-height: 32px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-h2 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-xl);
-    line-height: var(--sherpa-display-fonts-scale-3xl);
+    font-size: var(--sherpa-display-mode-fonts-scale-2xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-5xl);
     letter-spacing: -0.20000000298023224px;
-    font-weight: var(--sherpa-display-fonts-weight-600);
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-h2 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 20px;
-    line-height: 28px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-mono-h2 {
+  :where(.sherpa-text-mono-h1) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 20px;
-    line-height: 28px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-h3 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-lg);
-    line-height: var(--sherpa-display-fonts-scale-2xl);
+    font-size: var(--sherpa-display-mode-fonts-scale-2xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-5xl);
     letter-spacing: -0.20000000298023224px;
-    font-weight: var(--sherpa-display-fonts-weight-600);
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-h3 {
+  :where(.sherpa-text-h2) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-mono-h3 {
-    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-h4 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-base);
-    line-height: var(--sherpa-display-fonts-scale-xl);
+    font-size: var(--sherpa-display-mode-fonts-scale-xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-3xl);
     letter-spacing: -0.20000000298023224px;
-    font-weight: var(--sherpa-display-fonts-weight-600);
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-h4 {
+  :where(.sherpa-text-hero-h2) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-mono-h4 {
-    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-h5 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-sm);
-    line-height: var(--sherpa-display-fonts-scale-lg);
+    font-size: var(--sherpa-display-mode-fonts-scale-xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-3xl);
     letter-spacing: -0.20000000298023224px;
-    font-weight: var(--sherpa-display-fonts-weight-600);
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-h5 {
-    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0px;
-    font-weight: 600;
-  }
-
-  .sherpa-text-mono-h5 {
+  :where(.sherpa-text-mono-h2) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0px;
-    font-weight: 600;
+    font-size: var(--sherpa-display-mode-fonts-scale-xl);
+    line-height: var(--sherpa-display-mode-fonts-scale-3xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-large {
+  :where(.sherpa-text-h3) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-lg);
-    line-height: var(--sherpa-display-fonts-scale-2xl);
-    letter-spacing: 0px;
-    font-weight: var(--sherpa-display-fonts-weight-400);
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-large {
+  :where(.sherpa-text-hero-h3) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0px;
-    font-weight: 400;
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-mono-large {
+  :where(.sherpa-text-mono-h3) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0px;
-    font-weight: 400;
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-small {
+  :where(.sherpa-text-h4) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-sm);
-    line-height: var(--sherpa-display-fonts-scale-lg);
-    letter-spacing: 0px;
-    font-weight: var(--sherpa-display-fonts-weight-400);
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-small {
+  :where(.sherpa-text-hero-h4) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0px;
-    font-weight: 400;
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-mono-small {
+  :where(.sherpa-text-mono-h4) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 0px;
-    font-weight: 400;
+    font-size: var(--sherpa-display-mode-fonts-scale-base);
+    line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-xs {
+  :where(.sherpa-text-h5) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: var(--sherpa-display-fonts-scale-xs);
-    line-height: var(--sherpa-display-fonts-scale-lg);
-    letter-spacing: 0px;
-    font-weight: var(--sherpa-display-fonts-weight-400);
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-hero-xs {
+  :where(.sherpa-text-hero-h5) {
     font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-    font-size: 10px;
-    line-height: 16px;
-    letter-spacing: 0px;
-    font-weight: 400;
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
   }
 
-  .sherpa-text-mono-xs {
+  :where(.sherpa-text-mono-h5) {
     font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-    font-size: 10px;
-    line-height: 16px;
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: -0.20000000298023224px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-600);
+  }
+
+  :where(.sherpa-text-large) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
     letter-spacing: 0px;
-    font-weight: 400;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-hero-large) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-mono-large) {
+    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+    font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    line-height: var(--sherpa-display-mode-fonts-scale-2xl);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-small) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-hero-small) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-mono-small) {
+    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+    font-size: var(--sherpa-display-mode-fonts-scale-sm);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-xs) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-xs);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-hero-xs) {
+    font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+    font-size: var(--sherpa-display-mode-fonts-scale-xs);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  }
+
+  :where(.sherpa-text-mono-xs) {
+    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+    font-size: var(--sherpa-display-mode-fonts-scale-xs);
+    line-height: var(--sherpa-display-mode-fonts-scale-lg);
+    letter-spacing: 0px;
+    font-weight: var(--sherpa-display-mode-fonts-weight-400);
   }
 }
 
-@layer overrides {
+@layer layout {
+  :root {
+  --sherpa-layout-breakpoint: 375px;
+  --sherpa-layout-grid-columns: 4px;
+  --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
+  --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
+  --sherpa-layout-grid-max-width: 480px;
+  --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
+  --sherpa-layout-grid-row-height: var(--sherpa-display-mode-space-6xl);
+  }
+
+  /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
+  .sherpa-view {
+    --sherpa-view-nav-width: 240px;
+
+    display: grid;
+    grid-template-columns: var(--sherpa-view-nav-width) 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'nav header'
+      'nav body';
+    block-size: 100%;
+    min-block-size: 100vh;
+    background: var(--sherpa-app-primary, #ffffff);
+    color: var(--sherpa-content-primary-base, #2e2e33);
+  }
+  .sherpa-view[data-nav-collapsed] {
+    --sherpa-view-nav-width: 56px;
+  }
+  .sherpa-view > [data-region='nav'] {
+    grid-area: nav;
+    min-inline-size: 0;
+    border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
+      var(--sherpa-border-primary, #d5d5d5);
+    background: var(--sherpa-surface-primary-base, #ffffff);
+    overflow: hidden;
+  }
+  .sherpa-view > [data-region='header'] {
+    grid-area: header;
+    border-block-end: var(--sherpa-core-border-width-base, 1px) solid
+      var(--sherpa-border-primary, #d5d5d5);
+  }
+  .sherpa-view > [data-region='body'] {
+    grid-area: body;
+    min-block-size: 0;
+    overflow: auto;
+    padding: var(--sherpa-core-space-lg, 20px);
+  }
+  /* A view with no header region lets the body span both rows. */
+  .sherpa-view:not(:has(> [data-region='header'])) {
+    grid-template-areas:
+      'nav body'
+      'nav body';
+  }
+}
+
+@layer structure {
+  :root {
+  --sherpa-structure-height: var(--sherpa-display-mode-size-2xl);
+  --sherpa-structure-icon-size: var(--sherpa-theme-content-size-base);
+  --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+  --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-base);
+  --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-structure-space-gap: var(--sherpa-display-mode-space-xs);
+  --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
+  }
+
+  /* Snap — per-edge corner rounding ([data-snap]). */
+  [data-snap="all"] {
+    --sherpa-structure-rounding-top-left: 0px;
+    --sherpa-structure-rounding-top-right: 0px;
+    --sherpa-structure-rounding-bottom-left: 0px;
+    --sherpa-structure-rounding-bottom-right: 0px;
+  }
+
+  [data-snap="right"] {
+    --sherpa-structure-rounding-top-left: 4px;
+    --sherpa-structure-rounding-top-right: 0px;
+    --sherpa-structure-rounding-bottom-left: 4px;
+    --sherpa-structure-rounding-bottom-right: 0px;
+  }
+
+  [data-snap="left"] {
+    --sherpa-structure-rounding-top-left: 0px;
+    --sherpa-structure-rounding-top-right: 4px;
+    --sherpa-structure-rounding-bottom-left: 0px;
+    --sherpa-structure-rounding-bottom-right: 4px;
+  }
+
+  [data-snap="bottom"] {
+    --sherpa-structure-rounding-top-left: 4px;
+    --sherpa-structure-rounding-top-right: 4px;
+    --sherpa-structure-rounding-bottom-left: 0px;
+    --sherpa-structure-rounding-bottom-right: 0px;
+  }
+
+  [data-snap="top"] {
+    --sherpa-structure-rounding-top-left: 0px;
+    --sherpa-structure-rounding-top-right: 0px;
+    --sherpa-structure-rounding-bottom-left: 4px;
+    --sherpa-structure-rounding-bottom-right: 4px;
+  }
+}
+
+@layer style {
   :root {
   --sherpa-data-viz-series-1: var(--sherpa-theme-data-viz-categorical-color-1);
   --sherpa-data-viz-series-2: var(--sherpa-theme-data-viz-categorical-color-2);
@@ -955,33 +1797,18 @@
   --sherpa-data-viz-series-9: var(--sherpa-theme-data-viz-categorical-color-9);
   --sherpa-data-viz-series-10: var(--sherpa-theme-data-viz-categorical-color-10);
   --sherpa-data-viz-series-11: var(--sherpa-theme-data-viz-categorical-color-11);
-  --sherpa-elevation-blur: 0px;
-  --sherpa-elevation-color: #00000000;
-  --sherpa-elevation-offset-x: 0px;
-  --sherpa-elevation-offset-y: 0px;
-  --sherpa-elevation-spread: 0px;
-  --sherpa-grid-layout-grid-columns: 4px;
-  --sherpa-grid-layout-grid-gap-horizontal: var(--sherpa-display-space-base);
-  --sherpa-grid-layout-grid-gap-vertical: var(--sherpa-display-space-base);
-  --sherpa-grid-layout-grid-max-width: 480px;
-  --sherpa-grid-layout-grid-padding: var(--sherpa-display-space-base);
-  --sherpa-grid-layout-grid-row-height: var(--sherpa-display-space-6xl);
-  --sherpa-grid-breakpoint: 375;
-  --sherpa-style-border-base: var(--sherpa-theme-border-default-1);
-  --sherpa-style-border-width: var(--sherpa-display-border-width-sm);
-  --sherpa-style-content-base: var(--sherpa-theme-content-body-base);
+  --sherpa-style-border-base: var(--sherpa-theme-border-default-2);
+  --sherpa-style-border-base-1: var(--sherpa-theme-border-default-1);
+  --sherpa-style-border-width: var(--sherpa-display-mode-border-width-sm);
+  --sherpa-style-content-base: var(--sherpa-theme-content-body-1);
   --sherpa-style-content-inverse: var(--sherpa-theme-content-body-4);
-  --sherpa-style-content-secondary: var(--sherpa-theme-content-body-1);
-  --sherpa-style-content-tertiary: var(--sherpa-theme-content-body-2);
+  --sherpa-style-content-secondary: var(--sherpa-theme-content-body-2);
+  --sherpa-style-content-tertiary: var(--sherpa-theme-content-body-3);
   --sherpa-style-indicator-accent: var(--sherpa-theme-surface-accent-2);
   --sherpa-style-surface-base: var(--sherpa-theme-surface-default-base);
   --sherpa-style-surface-base-1: var(--sherpa-theme-surface-default-1);
   --sherpa-style-surface-base-2: var(--sherpa-theme-surface-default-2);
-
-    /* elevation shadow convenience aliases */
-  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
-  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
-  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
+  --sherpa-style-surface-shadow: var(--sherpa-display-mode-color-transparent-neutral-color-3);
 
     /* categorical data-viz series — stable public names */
   --sherpa-categorical-1: var(--sherpa-theme-data-viz-categorical-color-1);
@@ -999,45 +1826,45 @@
 
   /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
   [data-status="info"] {
-    --_status-surface: var(--sherpa-theme-surface-info-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-info-2);
-    --_status-border: var(--sherpa-theme-border-info-2);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-strong: var(--sherpa-theme-surface-info-1);
+    --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-info-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-surface-info-3);
   }
 
   [data-status="critical"] {
-    --_status-surface: var(--sherpa-theme-surface-critical-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-critical-2);
-    --_status-border: var(--sherpa-theme-border-critical-2);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-strong: var(--sherpa-theme-surface-critical-1);
+    --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-critical-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-surface-critical-3);
   }
 
   [data-status="warning"] {
-    --_status-surface: var(--sherpa-theme-surface-warning-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-warning-2);
-    --_status-border: var(--sherpa-theme-border-warning-2);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-strong: var(--sherpa-theme-surface-warning-1);
+    --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-body-base);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-surface-warning-3);
   }
 
   [data-status="urgent"] {
-    --_status-surface: var(--sherpa-theme-surface-urgent-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-urgent-2);
-    --_status-border: var(--sherpa-theme-border-urgent-2);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-strong: var(--sherpa-theme-surface-urgent-1);
+    --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-urgent-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-surface-urgent-3);
   }
 
   [data-status="success"] {
-    --_status-surface: var(--sherpa-theme-surface-success-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-success-2);
-    --_status-border: var(--sherpa-theme-border-success-2);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-strong: var(--sherpa-theme-surface-success-1);
+    --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-success-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-surface-success-3);
@@ -1045,10 +1872,10 @@
 
   [data-status="active"] {
     --_status-surface: var(--sherpa-theme-surface-active-base);
-    --_status-surface-strong: var(--sherpa-theme-surface-active-2);
+    --_status-surface-strong: var(--sherpa-theme-surface-active-1);
     --_status-border: var(--sherpa-theme-border-active-2);
     --_status-text: var(--sherpa-theme-content-active-1);
-    --_status-text-on-color: var(--sherpa-theme-content-active-1);
+    --_status-text-on-color: var(--sherpa-theme-content-body-4);
     --_status-icon: var(--sherpa-theme-content-active-1);
   }
 
@@ -1206,10 +2033,33 @@
     --_status-icon: #b3b3c3;
   }
 
-  /* Elevation ([data-elevation]) · other override collection modes */
+}
+
+@layer elevation {
+  :root {
+  --sherpa-elevation-blur: 0px;
+  --sherpa-elevation-color: #00000000;
+  --sherpa-elevation-offset-x: 0px;
+  --sherpa-elevation-offset-y: 0px;
+  --sherpa-elevation-spread: 0px;
+
+    /* elevation shadow convenience aliases */
+  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
+  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
+  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
+  }
+
+  [data-elevation="inset"] {
+    --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-sunken);
+    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
+    --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-sunken);
+    --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-sunken);
+    --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-sunken);
+  }
+
   [data-elevation="lg"] {
     --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-large);
-    --sherpa-elevation-color: #15151E33;
+    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
     --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-large);
     --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-large);
     --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-large);
@@ -1217,7 +2067,7 @@
 
   [data-elevation="md"] {
     --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-base);
-    --sherpa-elevation-color: #15151E33;
+    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
     --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-base);
     --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-base);
     --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-base);
@@ -1225,872 +2075,9 @@
 
   [data-elevation="sm"] {
     --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-small);
-    --sherpa-elevation-color: #15151E33;
+    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
     --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-small);
     --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-small);
     --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-small);
-  }
-
-  /* Snap — per-edge corner rounding ([data-snap]). */
-  [data-snap="all"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 0px;
-  }
-
-  [data-snap="right"] {
-    --sherpa-structure-rounding-top-left: 4px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 4px;
-    --sherpa-structure-rounding-bottom-right: 0px;
-  }
-
-  [data-snap="left"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 4px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 4px;
-  }
-
-  [data-snap="bottom"] {
-    --sherpa-structure-rounding-top-left: 4px;
-    --sherpa-structure-rounding-top-right: 4px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 0px;
-  }
-
-  [data-snap="top"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 4px;
-    --sherpa-structure-rounding-bottom-right: 4px;
-  }
-
-  /* Density — [data-density] overrides the display ramp (light). */
-  [data-density="compact"] {
-    --sherpa-display-border-rounding-none: 0px;
-    --sherpa-display-border-rounding-sm: 2px;
-    --sherpa-display-border-rounding-base: 4px;
-    --sherpa-display-border-rounding-lg: 8px;
-    --sherpa-display-border-rounding-xl: 16px;
-    --sherpa-display-border-rounding-2xl: 24px;
-    --sherpa-display-border-rounding-full: 999px;
-    --sherpa-display-border-width-none: 0px;
-    --sherpa-display-border-width-xs: 0.25px;
-    --sherpa-display-border-width-sm: 0.5px;
-    --sherpa-display-border-width-base: 1px;
-    --sherpa-display-border-width-lg: 2px;
-    --sherpa-display-border-width-xl: 4px;
-    --sherpa-display-border-width-2xl: 8px;
-    --sherpa-display-border-width-3xl: 12px;
-    --sherpa-display-color-neutral-fixed-color-1: #ffffff;
-    --sherpa-display-color-neutral-fixed-color-2: #e8e8f6;
-    --sherpa-display-color-neutral-fixed-color-3: #b3b3c3;
-    --sherpa-display-color-neutral-fixed-color-4: #35353d;
-    --sherpa-display-color-neutral-fixed-color-5: #0c0b11;
-    --sherpa-display-color-neutral-color-1: #ffffff;
-    --sherpa-display-color-neutral-color-2: #e8e8f6;
-    --sherpa-display-color-transparent-neutral-color-1: #ffffff00;
-    --sherpa-display-color-neutral-color-3: #b3b3c3;
-    --sherpa-display-color-transparent-neutral-color-2: #eeeefc1a;
-    --sherpa-display-color-transparent-neutral-color-3: #b2b2bf1a;
-    --sherpa-display-color-transparent-neutral-color-4: #4e4e591a;
-    --sherpa-display-color-transparent-neutral-color-5: #15151e1a;
-    --sherpa-display-color-transparent-brand-color-1: #d89cff1a;
-    --sherpa-display-color-transparent-brand-color-2: #cc76ff1a;
-    --sherpa-display-color-transparent-brand-color-3: #c046ff1a;
-    --sherpa-display-color-transparent-brand-color-4: #a41de01a;
-    --sherpa-display-color-transparent-brand-color-5: #8300b61a;
-    --sherpa-display-color-transparent-accent-color-1: #8aa3ff1a;
-    --sherpa-display-color-transparent-accent-color-2: #6681ff1a;
-    --sherpa-display-color-transparent-accent-color-3: #3b4ccd1a;
-    --sherpa-display-color-transparent-accent-color-4: #2b34b41a;
-    --sherpa-display-color-transparent-accent-color-5: #1e189c1a;
-    --sherpa-display-color-transparent-info-color-1: #d4f0ff1a;
-    --sherpa-display-color-transparent-info-color-2: #6fd1ff1a;
-    --sherpa-display-color-transparent-info-color-3: #008bba1a;
-    --sherpa-display-color-transparent-info-color-4: #006c911a;
-    --sherpa-display-color-transparent-info-color-5: #0032461a;
-    --sherpa-display-color-transparent-warning-color-1: #fff4e11a;
-    --sherpa-display-color-transparent-warning-color-2: #ffdda01a;
-    --sherpa-display-color-transparent-warning-color-3: #ffc44c1a;
-    --sherpa-display-color-transparent-warning-color-4: #a275001a;
-    --sherpa-display-color-transparent-warning-color-5: #4731001a;
-    --sherpa-display-color-transparent-urgent-color-1: #ffe6da1a;
-    --sherpa-display-color-transparent-urgent-color-2: #ff955b1a;
-    --sherpa-display-color-transparent-urgent-color-3: #ff73001a;
-    --sherpa-display-color-transparent-urgent-color-4: #a246001a;
-    --sherpa-display-color-transparent-urgent-color-5: #4e1e001a;
-    --sherpa-display-color-transparent-critical-color-1: #ffdad11a;
-    --sherpa-display-color-transparent-critical-color-2: #ff856d1a;
-    --sherpa-display-color-transparent-critical-color-3: #fc4e2d1a;
-    --sherpa-display-color-transparent-critical-color-4: #b722001a;
-    --sherpa-display-color-transparent-critical-color-5: #7011001a;
-    --sherpa-display-color-transparent-success-color-1: #bbffd21a;
-    --sherpa-display-color-transparent-success-color-2: #56e7961a;
-    --sherpa-display-color-transparent-success-color-3: #20c1731a;
-    --sherpa-display-color-transparent-success-color-4: #007a451a;
-    --sherpa-display-color-transparent-success-color-5: #00391d1a;
-    --sherpa-display-color-transparent-tones-color-1: #f0f0ff1a;
-    --sherpa-display-color-transparent-tones-color-2: #d4d4e91a;
-    --sherpa-display-color-transparent-tones-color-3: #9595a81a;
-    --sherpa-display-color-transparent-tones-color-4: #9595a81a;
-    --sherpa-display-color-transparent-tones-color-5: #5050611a;
-    --sherpa-display-fonts-scale-0: 0px;
-    --sherpa-display-fonts-scale-2xs: 8px;
-    --sherpa-display-fonts-scale-xs: 10px;
-    --sherpa-display-fonts-scale-sm: 12px;
-    --sherpa-display-fonts-scale-base: 14px;
-    --sherpa-display-fonts-scale-lg: 16px;
-    --sherpa-display-fonts-scale-xl: 20px;
-    --sherpa-display-fonts-scale-2xl: 24px;
-    --sherpa-display-fonts-scale-3xl: 28px;
-    --sherpa-display-fonts-scale-4xl: 30px;
-    --sherpa-display-fonts-scale-5xl: 32px;
-    --sherpa-display-fonts-scale-6xl: 36px;
-    --sherpa-display-fonts-scale-7xl: 40px;
-    --sherpa-display-fonts-scale-8xl: 42px;
-    --sherpa-display-fonts-scale-9xl: 44px;
-    --sherpa-display-fonts-scale-10xl: 48px;
-    --sherpa-display-fonts-scale-11xl: 52px;
-    --sherpa-display-fonts-scale-12xl: 56px;
-    --sherpa-display-fonts-scale-13xl: 64px;
-    --sherpa-display-fonts-scale-14xl: 72px;
-    --sherpa-display-size-none: 0px;
-    --sherpa-display-size-3xs: 2px;
-    --sherpa-display-size-2xs: 4px;
-    --sherpa-display-size-xs: 8px;
-    --sherpa-display-size-sm: 12px;
-    --sherpa-display-size-md: 16px;
-    --sherpa-display-size-lg: 20px;
-    --sherpa-display-size-xl: 24px;
-    --sherpa-display-size-2xl: 28px;
-    --sherpa-display-size-3xl: 36px;
-    --sherpa-display-size-4xl: 40px;
-    --sherpa-display-size-5xl: 48px;
-    --sherpa-display-size-6xl: 56px;
-    --sherpa-display-space-snapped: 0px;
-    --sherpa-display-space-none: 0px;
-    --sherpa-display-space-3xs: 2px;
-    --sherpa-display-space-2xs: 2px;
-    --sherpa-display-space-xs: 4px;
-    --sherpa-display-space-sm: 8px;
-    --sherpa-display-space-base: 12px;
-    --sherpa-display-space-lg: 16px;
-    --sherpa-display-space-xl: 20px;
-    --sherpa-display-space-2xl: 28px;
-    --sherpa-display-space-3xl: 36px;
-    --sherpa-display-space-4xl: 40px;
-    --sherpa-display-space-5xl: 48px;
-    --sherpa-display-space-6xl: 56px;
-    --sherpa-display-fonts-weight-300: 300px;
-    --sherpa-display-fonts-weight-400: 400px;
-    --sherpa-display-fonts-weight-500: 500px;
-    --sherpa-display-fonts-weight-600: 600px;
-    --sherpa-display-fonts-weight-700: 700px;
-    --sherpa-display-fonts-weight-900: 900px;
-    --sherpa-display-color-brand-color-1: #f2dfff;
-    --sherpa-display-color-brand-color-2: #d89cff;
-    --sherpa-display-color-brand-color-3: #c046ff;
-    --sherpa-display-color-brand-color-4: #8300b6;
-    --sherpa-display-color-brand-color-5: #240036;
-    --sherpa-display-color-accent-color-1: #8aa3ff;
-    --sherpa-display-color-accent-color-2: #6681ff;
-    --sherpa-display-color-accent-color-3: #3b4ccd;
-    --sherpa-display-color-accent-color-4: #2b34b4;
-    --sherpa-display-color-accent-color-5: #1e189c;
-    --sherpa-display-color-info-color-1: #d4f0ff;
-    --sherpa-display-color-info-color-2: #6fd1ff;
-    --sherpa-display-color-info-color-3: #008bba;
-    --sherpa-display-color-info-color-4: #006c91;
-    --sherpa-display-color-info-color-5: #003246;
-    --sherpa-display-color-warning-color-1: #fff4e1;
-    --sherpa-display-color-warning-color-2: #ffdda0;
-    --sherpa-display-color-warning-color-3: #ffc44c;
-    --sherpa-display-color-warning-color-4: #a27500;
-    --sherpa-display-color-warning-color-5: #473100;
-    --sherpa-display-color-urgent-color-1: #ffe6da;
-    --sherpa-display-color-urgent-color-2: #ff955b;
-    --sherpa-display-color-urgent-color-3: #ff7300;
-    --sherpa-display-color-urgent-color-4: #a24600;
-    --sherpa-display-color-urgent-color-5: #4e1e00;
-    --sherpa-display-color-critical-color-1: #ffdad1;
-    --sherpa-display-color-critical-color-2: #ff856d;
-    --sherpa-display-color-critical-color-3: #dd2c01;
-    --sherpa-display-color-critical-color-4: #b72200;
-    --sherpa-display-color-critical-color-5: #701100;
-    --sherpa-display-color-success-color-1: #bbffd2;
-    --sherpa-display-color-success-color-2: #56e796;
-    --sherpa-display-color-success-color-3: #20c173;
-    --sherpa-display-color-success-color-4: #007a45;
-    --sherpa-display-color-success-color-5: #00391d;
-    --sherpa-display-color-tones-color-1: #f0f0ff;
-    --sherpa-display-color-tones-color-2: #d4d4e9;
-    --sherpa-display-color-tones-color-3: #9595a8;
-    --sherpa-display-color-tones-color-4: #9595a8;
-    --sherpa-display-color-tones-color-5: #505061;
-    --sherpa-display-color-neutral-color-4: #35353d;
-    --sherpa-display-color-neutral-color-5: #0c0b11;
-  }
-
-  [data-density="comfortable"] {
-    --sherpa-display-border-rounding-none: 0px;
-    --sherpa-display-border-rounding-sm: 2px;
-    --sherpa-display-border-rounding-base: 4px;
-    --sherpa-display-border-rounding-lg: 8px;
-    --sherpa-display-border-rounding-xl: 16px;
-    --sherpa-display-border-rounding-2xl: 24px;
-    --sherpa-display-border-rounding-full: 999px;
-    --sherpa-display-border-width-none: 0px;
-    --sherpa-display-border-width-xs: 0.25px;
-    --sherpa-display-border-width-sm: 0.5px;
-    --sherpa-display-border-width-base: 1px;
-    --sherpa-display-border-width-lg: 2px;
-    --sherpa-display-border-width-xl: 4px;
-    --sherpa-display-border-width-2xl: 8px;
-    --sherpa-display-border-width-3xl: 12px;
-    --sherpa-display-color-neutral-fixed-color-1: #ffffff;
-    --sherpa-display-color-neutral-fixed-color-2: #e8e8f6;
-    --sherpa-display-color-neutral-fixed-color-3: #b3b3c3;
-    --sherpa-display-color-neutral-fixed-color-4: #35353d;
-    --sherpa-display-color-neutral-fixed-color-5: #0c0b11;
-    --sherpa-display-color-neutral-color-1: #ffffff;
-    --sherpa-display-color-neutral-color-2: #e8e8f6;
-    --sherpa-display-color-transparent-neutral-color-1: #ffffff00;
-    --sherpa-display-color-neutral-color-3: #b3b3c3;
-    --sherpa-display-color-transparent-neutral-color-2: #eeeefc1a;
-    --sherpa-display-color-transparent-neutral-color-3: #b2b2bf1a;
-    --sherpa-display-color-transparent-neutral-color-4: #4e4e591a;
-    --sherpa-display-color-transparent-neutral-color-5: #15151e1a;
-    --sherpa-display-color-transparent-brand-color-1: #d89cff1a;
-    --sherpa-display-color-transparent-brand-color-2: #cc76ff1a;
-    --sherpa-display-color-transparent-brand-color-3: #c046ff1a;
-    --sherpa-display-color-transparent-brand-color-4: #a41de01a;
-    --sherpa-display-color-transparent-brand-color-5: #8300b61a;
-    --sherpa-display-color-transparent-accent-color-1: #8aa3ff1a;
-    --sherpa-display-color-transparent-accent-color-2: #6681ff1a;
-    --sherpa-display-color-transparent-accent-color-3: #3b4ccd1a;
-    --sherpa-display-color-transparent-accent-color-4: #2b34b41a;
-    --sherpa-display-color-transparent-accent-color-5: #1e189c1a;
-    --sherpa-display-color-transparent-info-color-1: #d4f0ff1a;
-    --sherpa-display-color-transparent-info-color-2: #6fd1ff1a;
-    --sherpa-display-color-transparent-info-color-3: #008bba1a;
-    --sherpa-display-color-transparent-info-color-4: #006c911a;
-    --sherpa-display-color-transparent-info-color-5: #0032461a;
-    --sherpa-display-color-transparent-warning-color-1: #fff4e11a;
-    --sherpa-display-color-transparent-warning-color-2: #ffdda01a;
-    --sherpa-display-color-transparent-warning-color-3: #ffc44c1a;
-    --sherpa-display-color-transparent-warning-color-4: #a275001a;
-    --sherpa-display-color-transparent-warning-color-5: #4731001a;
-    --sherpa-display-color-transparent-urgent-color-1: #ffe6da1a;
-    --sherpa-display-color-transparent-urgent-color-2: #ff955b1a;
-    --sherpa-display-color-transparent-urgent-color-3: #ff73001a;
-    --sherpa-display-color-transparent-urgent-color-4: #a246001a;
-    --sherpa-display-color-transparent-urgent-color-5: #4e1e001a;
-    --sherpa-display-color-transparent-critical-color-1: #ffdad11a;
-    --sherpa-display-color-transparent-critical-color-2: #ff856d1a;
-    --sherpa-display-color-transparent-critical-color-3: #fc4e2d1a;
-    --sherpa-display-color-transparent-critical-color-4: #b722001a;
-    --sherpa-display-color-transparent-critical-color-5: #7011001a;
-    --sherpa-display-color-transparent-success-color-1: #bbffd21a;
-    --sherpa-display-color-transparent-success-color-2: #56e7961a;
-    --sherpa-display-color-transparent-success-color-3: #20c1731a;
-    --sherpa-display-color-transparent-success-color-4: #007a451a;
-    --sherpa-display-color-transparent-success-color-5: #00391d1a;
-    --sherpa-display-color-transparent-tones-color-1: #f0f0ff1a;
-    --sherpa-display-color-transparent-tones-color-2: #d4d4e91a;
-    --sherpa-display-color-transparent-tones-color-3: #9595a81a;
-    --sherpa-display-color-transparent-tones-color-4: #9595a81a;
-    --sherpa-display-color-transparent-tones-color-5: #5050611a;
-    --sherpa-display-fonts-scale-0: 0px;
-    --sherpa-display-fonts-scale-2xs: 8px;
-    --sherpa-display-fonts-scale-xs: 10px;
-    --sherpa-display-fonts-scale-sm: 12px;
-    --sherpa-display-fonts-scale-base: 14px;
-    --sherpa-display-fonts-scale-lg: 16px;
-    --sherpa-display-fonts-scale-xl: 20px;
-    --sherpa-display-fonts-scale-2xl: 24px;
-    --sherpa-display-fonts-scale-3xl: 28px;
-    --sherpa-display-fonts-scale-4xl: 30px;
-    --sherpa-display-fonts-scale-5xl: 32px;
-    --sherpa-display-fonts-scale-6xl: 36px;
-    --sherpa-display-fonts-scale-7xl: 40px;
-    --sherpa-display-fonts-scale-8xl: 42px;
-    --sherpa-display-fonts-scale-9xl: 44px;
-    --sherpa-display-fonts-scale-10xl: 48px;
-    --sherpa-display-fonts-scale-11xl: 52px;
-    --sherpa-display-fonts-scale-12xl: 56px;
-    --sherpa-display-fonts-scale-13xl: 64px;
-    --sherpa-display-fonts-scale-14xl: 72px;
-    --sherpa-display-size-none: 0px;
-    --sherpa-display-size-3xs: 8px;
-    --sherpa-display-size-2xs: 12px;
-    --sherpa-display-size-xs: 16px;
-    --sherpa-display-size-sm: 20px;
-    --sherpa-display-size-md: 24px;
-    --sherpa-display-size-lg: 28px;
-    --sherpa-display-size-xl: 32px;
-    --sherpa-display-size-2xl: 36px;
-    --sherpa-display-size-3xl: 48px;
-    --sherpa-display-size-4xl: 56px;
-    --sherpa-display-size-5xl: 64px;
-    --sherpa-display-size-6xl: 64px;
-    --sherpa-display-space-snapped: 0px;
-    --sherpa-display-space-none: 0px;
-    --sherpa-display-space-3xs: 4px;
-    --sherpa-display-space-2xs: 8px;
-    --sherpa-display-space-xs: 12px;
-    --sherpa-display-space-sm: 16px;
-    --sherpa-display-space-base: 20px;
-    --sherpa-display-space-lg: 24px;
-    --sherpa-display-space-xl: 28px;
-    --sherpa-display-space-2xl: 36px;
-    --sherpa-display-space-3xl: 48px;
-    --sherpa-display-space-4xl: 56px;
-    --sherpa-display-space-5xl: 64px;
-    --sherpa-display-space-6xl: 64px;
-    --sherpa-display-fonts-weight-300: 300px;
-    --sherpa-display-fonts-weight-400: 400px;
-    --sherpa-display-fonts-weight-500: 500px;
-    --sherpa-display-fonts-weight-600: 600px;
-    --sherpa-display-fonts-weight-700: 700px;
-    --sherpa-display-fonts-weight-900: 900px;
-    --sherpa-display-color-brand-color-1: #f2dfff;
-    --sherpa-display-color-brand-color-2: #d89cff;
-    --sherpa-display-color-brand-color-3: #c046ff;
-    --sherpa-display-color-brand-color-4: #8300b6;
-    --sherpa-display-color-brand-color-5: #240036;
-    --sherpa-display-color-accent-color-1: #8aa3ff;
-    --sherpa-display-color-accent-color-2: #6681ff;
-    --sherpa-display-color-accent-color-3: #3b4ccd;
-    --sherpa-display-color-accent-color-4: #2b34b4;
-    --sherpa-display-color-accent-color-5: #1e189c;
-    --sherpa-display-color-info-color-1: #d4f0ff;
-    --sherpa-display-color-info-color-2: #6fd1ff;
-    --sherpa-display-color-info-color-3: #008bba;
-    --sherpa-display-color-info-color-4: #006c91;
-    --sherpa-display-color-info-color-5: #003246;
-    --sherpa-display-color-warning-color-1: #fff4e1;
-    --sherpa-display-color-warning-color-2: #ffdda0;
-    --sherpa-display-color-warning-color-3: #ffc44c;
-    --sherpa-display-color-warning-color-4: #a27500;
-    --sherpa-display-color-warning-color-5: #473100;
-    --sherpa-display-color-urgent-color-1: #ffe6da;
-    --sherpa-display-color-urgent-color-2: #ff955b;
-    --sherpa-display-color-urgent-color-3: #ff7300;
-    --sherpa-display-color-urgent-color-4: #a24600;
-    --sherpa-display-color-urgent-color-5: #4e1e00;
-    --sherpa-display-color-critical-color-1: #ffdad1;
-    --sherpa-display-color-critical-color-2: #ff856d;
-    --sherpa-display-color-critical-color-3: #dd2c01;
-    --sherpa-display-color-critical-color-4: #b72200;
-    --sherpa-display-color-critical-color-5: #701100;
-    --sherpa-display-color-success-color-1: #bbffd2;
-    --sherpa-display-color-success-color-2: #56e796;
-    --sherpa-display-color-success-color-3: #20c173;
-    --sherpa-display-color-success-color-4: #007a45;
-    --sherpa-display-color-success-color-5: #00391d;
-    --sherpa-display-color-tones-color-1: #f0f0ff;
-    --sherpa-display-color-tones-color-2: #d4d4e9;
-    --sherpa-display-color-tones-color-3: #9595a8;
-    --sherpa-display-color-tones-color-4: #9595a8;
-    --sherpa-display-color-tones-color-5: #505061;
-    --sherpa-display-color-neutral-color-4: #35353d;
-    --sherpa-display-color-neutral-color-5: #0c0b11;
-  }
-
-  /* Density dark re-points. */
-  :root[data-mode="dark"] {
-    [data-density="compact"] {
-      --sherpa-display-color-neutral-color-1: #0c0b11;
-      --sherpa-display-color-neutral-color-2: #15151d;
-      --sherpa-display-color-transparent-neutral-color-1: #15151e00;
-      --sherpa-display-color-neutral-color-3: #5d5d69;
-      --sherpa-display-color-transparent-neutral-color-2: #30303a1a;
-      --sherpa-display-color-transparent-neutral-color-3: #6e6d791a;
-      --sherpa-display-color-transparent-neutral-color-4: #8f8f9b1a;
-      --sherpa-display-color-transparent-neutral-color-5: #d0d0dd1a;
-      --sherpa-display-color-transparent-brand-color-1: #8300b61a;
-      --sherpa-display-color-transparent-brand-color-2: #a41de01a;
-      --sherpa-display-color-transparent-brand-color-3: #a41de01a;
-      --sherpa-display-color-transparent-brand-color-4: #c046ff1a;
-      --sherpa-display-color-transparent-brand-color-5: #c046ff1a;
-      --sherpa-display-color-transparent-accent-color-1: #1e189c1a;
-      --sherpa-display-color-transparent-accent-color-2: #2b34b41a;
-      --sherpa-display-color-transparent-accent-color-4: #4c63e51a;
-      --sherpa-display-color-transparent-accent-color-5: #6681ff1a;
-      --sherpa-display-color-transparent-info-color-1: #0019251a;
-      --sherpa-display-color-transparent-info-color-2: #004e6a1a;
-      --sherpa-display-color-transparent-info-color-3: #006c911a;
-      --sherpa-display-color-transparent-info-color-4: #008bba1a;
-      --sherpa-display-color-transparent-info-color-5: #6fd1ff1a;
-      --sherpa-display-color-transparent-warning-color-1: #4731001a;
-      --sherpa-display-color-transparent-warning-color-2: #a275001a;
-      --sherpa-display-color-transparent-warning-color-3: #d39a031a;
-      --sherpa-display-color-transparent-warning-color-4: #ffc44c1a;
-      --sherpa-display-color-transparent-warning-color-5: #ffd17b1a;
-      --sherpa-display-color-transparent-urgent-color-1: #290c001a;
-      --sherpa-display-color-transparent-urgent-color-2: #7732001a;
-      --sherpa-display-color-transparent-urgent-color-3: #d05c001a;
-      --sherpa-display-color-transparent-urgent-color-4: #ff73001a;
-      --sherpa-display-color-transparent-urgent-color-5: #ff955b1a;
-      --sherpa-display-color-transparent-critical-color-1: #4f09001a;
-      --sherpa-display-color-transparent-critical-color-2: #9319001a;
-      --sherpa-display-color-transparent-critical-color-3: #b722001a;
-      --sherpa-display-color-transparent-critical-color-4: #dd2c011a;
-      --sherpa-display-color-transparent-critical-color-5: #fc4e2d1a;
-      --sherpa-display-color-transparent-success-color-1: #001c0c1a;
-      --sherpa-display-color-transparent-success-color-2: #0059301a;
-      --sherpa-display-color-transparent-success-color-3: #007a451a;
-      --sherpa-display-color-transparent-success-color-4: #009d5a1a;
-      --sherpa-display-color-transparent-success-color-5: #20c1731a;
-      --sherpa-display-color-transparent-tones-color-1: #5050611a;
-      --sherpa-display-color-transparent-tones-color-2: #9595a81a;
-      --sherpa-display-color-transparent-tones-color-4: #d4d4e91a;
-      --sherpa-display-color-transparent-tones-color-5: #f0f0ff1a;
-      --sherpa-display-size-3xs: 4px;
-      --sherpa-display-size-2xs: 8px;
-      --sherpa-display-size-xs: 12px;
-      --sherpa-display-size-sm: 16px;
-      --sherpa-display-size-md: 20px;
-      --sherpa-display-size-lg: 24px;
-      --sherpa-display-size-xl: 28px;
-      --sherpa-display-size-2xl: 32px;
-      --sherpa-display-size-3xl: 40px;
-      --sherpa-display-size-4xl: 48px;
-      --sherpa-display-size-5xl: 56px;
-      --sherpa-display-size-6xl: 64px;
-      --sherpa-display-space-2xs: 4px;
-      --sherpa-display-space-xs: 8px;
-      --sherpa-display-space-sm: 12px;
-      --sherpa-display-space-base: 16px;
-      --sherpa-display-space-lg: 20px;
-      --sherpa-display-space-xl: 24px;
-      --sherpa-display-space-2xl: 32px;
-      --sherpa-display-space-3xl: 40px;
-      --sherpa-display-space-4xl: 48px;
-      --sherpa-display-space-5xl: 56px;
-      --sherpa-display-space-6xl: 64px;
-      --sherpa-display-color-brand-color-1: #240036;
-      --sherpa-display-color-brand-color-2: #610089;
-      --sherpa-display-color-brand-color-3: #a41de0;
-      --sherpa-display-color-brand-color-4: #cc76ff;
-      --sherpa-display-color-brand-color-5: #e5bfff;
-      --sherpa-display-color-accent-color-1: #1e189c;
-      --sherpa-display-color-accent-color-2: #2b34b4;
-      --sherpa-display-color-accent-color-4: #4c63e5;
-      --sherpa-display-color-accent-color-5: #6681ff;
-      --sherpa-display-color-info-color-1: #001925;
-      --sherpa-display-color-info-color-2: #004e6a;
-      --sherpa-display-color-info-color-3: #006c91;
-      --sherpa-display-color-info-color-4: #008bba;
-      --sherpa-display-color-info-color-5: #6fd1ff;
-      --sherpa-display-color-warning-color-1: #473100;
-      --sherpa-display-color-warning-color-2: #a27500;
-      --sherpa-display-color-warning-color-3: #d39a03;
-      --sherpa-display-color-warning-color-4: #ffc44c;
-      --sherpa-display-color-warning-color-5: #ffd17b;
-      --sherpa-display-color-urgent-color-1: #290c00;
-      --sherpa-display-color-urgent-color-2: #773200;
-      --sherpa-display-color-urgent-color-3: #d05c00;
-      --sherpa-display-color-urgent-color-4: #ff7300;
-      --sherpa-display-color-urgent-color-5: #ff955b;
-      --sherpa-display-color-critical-color-1: #4f0900;
-      --sherpa-display-color-critical-color-2: #931900;
-      --sherpa-display-color-critical-color-3: #b72200;
-      --sherpa-display-color-critical-color-4: #dd2c01;
-      --sherpa-display-color-critical-color-5: #fc4e2d;
-      --sherpa-display-color-success-color-1: #001c0c;
-      --sherpa-display-color-success-color-2: #005930;
-      --sherpa-display-color-success-color-3: #007a45;
-      --sherpa-display-color-success-color-4: #009d5a;
-      --sherpa-display-color-success-color-5: #20c173;
-      --sherpa-display-color-tones-color-1: #505061;
-      --sherpa-display-color-tones-color-2: #9595a8;
-      --sherpa-display-color-tones-color-4: #d4d4e9;
-      --sherpa-display-color-tones-color-5: #f0f0ff;
-      --sherpa-display-color-neutral-color-4: #878794;
-      --sherpa-display-color-neutral-color-5: #c4c4d3;
-    }
-    [data-density="comfortable"] {
-      --sherpa-display-color-neutral-color-1: #0c0b11;
-      --sherpa-display-color-neutral-color-2: #15151d;
-      --sherpa-display-color-transparent-neutral-color-1: #15151e00;
-      --sherpa-display-color-neutral-color-3: #5d5d69;
-      --sherpa-display-color-transparent-neutral-color-2: #30303a1a;
-      --sherpa-display-color-transparent-neutral-color-3: #6e6d791a;
-      --sherpa-display-color-transparent-neutral-color-4: #8f8f9b1a;
-      --sherpa-display-color-transparent-neutral-color-5: #d0d0dd1a;
-      --sherpa-display-color-transparent-brand-color-1: #8300b61a;
-      --sherpa-display-color-transparent-brand-color-2: #a41de01a;
-      --sherpa-display-color-transparent-brand-color-3: #a41de01a;
-      --sherpa-display-color-transparent-brand-color-4: #c046ff1a;
-      --sherpa-display-color-transparent-brand-color-5: #c046ff1a;
-      --sherpa-display-color-transparent-accent-color-1: #1e189c1a;
-      --sherpa-display-color-transparent-accent-color-2: #2b34b41a;
-      --sherpa-display-color-transparent-accent-color-4: #4c63e51a;
-      --sherpa-display-color-transparent-accent-color-5: #6681ff1a;
-      --sherpa-display-color-transparent-info-color-1: #0019251a;
-      --sherpa-display-color-transparent-info-color-2: #004e6a1a;
-      --sherpa-display-color-transparent-info-color-3: #006c911a;
-      --sherpa-display-color-transparent-info-color-4: #008bba1a;
-      --sherpa-display-color-transparent-info-color-5: #6fd1ff1a;
-      --sherpa-display-color-transparent-warning-color-1: #4731001a;
-      --sherpa-display-color-transparent-warning-color-2: #a275001a;
-      --sherpa-display-color-transparent-warning-color-3: #d39a031a;
-      --sherpa-display-color-transparent-warning-color-4: #ffc44c1a;
-      --sherpa-display-color-transparent-warning-color-5: #ffd17b1a;
-      --sherpa-display-color-transparent-urgent-color-1: #290c001a;
-      --sherpa-display-color-transparent-urgent-color-2: #7732001a;
-      --sherpa-display-color-transparent-urgent-color-3: #d05c001a;
-      --sherpa-display-color-transparent-urgent-color-4: #ff73001a;
-      --sherpa-display-color-transparent-urgent-color-5: #ff955b1a;
-      --sherpa-display-color-transparent-critical-color-1: #4f09001a;
-      --sherpa-display-color-transparent-critical-color-2: #9319001a;
-      --sherpa-display-color-transparent-critical-color-3: #b722001a;
-      --sherpa-display-color-transparent-critical-color-4: #dd2c011a;
-      --sherpa-display-color-transparent-critical-color-5: #fc4e2d1a;
-      --sherpa-display-color-transparent-success-color-1: #001c0c1a;
-      --sherpa-display-color-transparent-success-color-2: #0059301a;
-      --sherpa-display-color-transparent-success-color-3: #007a451a;
-      --sherpa-display-color-transparent-success-color-4: #009d5a1a;
-      --sherpa-display-color-transparent-success-color-5: #20c1731a;
-      --sherpa-display-color-transparent-tones-color-1: #5050611a;
-      --sherpa-display-color-transparent-tones-color-2: #9595a81a;
-      --sherpa-display-color-transparent-tones-color-4: #d4d4e91a;
-      --sherpa-display-color-transparent-tones-color-5: #f0f0ff1a;
-      --sherpa-display-size-3xs: 4px;
-      --sherpa-display-size-2xs: 8px;
-      --sherpa-display-size-xs: 12px;
-      --sherpa-display-size-sm: 16px;
-      --sherpa-display-size-md: 20px;
-      --sherpa-display-size-lg: 24px;
-      --sherpa-display-size-xl: 28px;
-      --sherpa-display-size-2xl: 32px;
-      --sherpa-display-size-3xl: 40px;
-      --sherpa-display-size-4xl: 48px;
-      --sherpa-display-size-5xl: 56px;
-      --sherpa-display-space-3xs: 2px;
-      --sherpa-display-space-2xs: 4px;
-      --sherpa-display-space-xs: 8px;
-      --sherpa-display-space-sm: 12px;
-      --sherpa-display-space-base: 16px;
-      --sherpa-display-space-lg: 20px;
-      --sherpa-display-space-xl: 24px;
-      --sherpa-display-space-2xl: 32px;
-      --sherpa-display-space-3xl: 40px;
-      --sherpa-display-space-4xl: 48px;
-      --sherpa-display-space-5xl: 56px;
-      --sherpa-display-color-brand-color-1: #240036;
-      --sherpa-display-color-brand-color-2: #610089;
-      --sherpa-display-color-brand-color-3: #a41de0;
-      --sherpa-display-color-brand-color-4: #cc76ff;
-      --sherpa-display-color-brand-color-5: #e5bfff;
-      --sherpa-display-color-accent-color-1: #1e189c;
-      --sherpa-display-color-accent-color-2: #2b34b4;
-      --sherpa-display-color-accent-color-4: #4c63e5;
-      --sherpa-display-color-accent-color-5: #6681ff;
-      --sherpa-display-color-info-color-1: #001925;
-      --sherpa-display-color-info-color-2: #004e6a;
-      --sherpa-display-color-info-color-3: #006c91;
-      --sherpa-display-color-info-color-4: #008bba;
-      --sherpa-display-color-info-color-5: #6fd1ff;
-      --sherpa-display-color-warning-color-1: #473100;
-      --sherpa-display-color-warning-color-2: #a27500;
-      --sherpa-display-color-warning-color-3: #d39a03;
-      --sherpa-display-color-warning-color-4: #ffc44c;
-      --sherpa-display-color-warning-color-5: #ffd17b;
-      --sherpa-display-color-urgent-color-1: #290c00;
-      --sherpa-display-color-urgent-color-2: #773200;
-      --sherpa-display-color-urgent-color-3: #d05c00;
-      --sherpa-display-color-urgent-color-4: #ff7300;
-      --sherpa-display-color-urgent-color-5: #ff955b;
-      --sherpa-display-color-critical-color-1: #4f0900;
-      --sherpa-display-color-critical-color-2: #931900;
-      --sherpa-display-color-critical-color-3: #b72200;
-      --sherpa-display-color-critical-color-4: #dd2c01;
-      --sherpa-display-color-critical-color-5: #fc4e2d;
-      --sherpa-display-color-success-color-1: #001c0c;
-      --sherpa-display-color-success-color-2: #005930;
-      --sherpa-display-color-success-color-3: #007a45;
-      --sherpa-display-color-success-color-4: #009d5a;
-      --sherpa-display-color-success-color-5: #20c173;
-      --sherpa-display-color-tones-color-1: #505061;
-      --sherpa-display-color-tones-color-2: #9595a8;
-      --sherpa-display-color-tones-color-4: #d4d4e9;
-      --sherpa-display-color-tones-color-5: #f0f0ff;
-      --sherpa-display-color-neutral-color-4: #878794;
-      --sherpa-display-color-neutral-color-5: #c4c4d3;
-    }
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-mode="light"]) {
-      [data-density="compact"] {
-        --sherpa-display-color-neutral-color-1: #0c0b11;
-        --sherpa-display-color-neutral-color-2: #15151d;
-        --sherpa-display-color-transparent-neutral-color-1: #15151e00;
-        --sherpa-display-color-neutral-color-3: #5d5d69;
-        --sherpa-display-color-transparent-neutral-color-2: #30303a1a;
-        --sherpa-display-color-transparent-neutral-color-3: #6e6d791a;
-        --sherpa-display-color-transparent-neutral-color-4: #8f8f9b1a;
-        --sherpa-display-color-transparent-neutral-color-5: #d0d0dd1a;
-        --sherpa-display-color-transparent-brand-color-1: #8300b61a;
-        --sherpa-display-color-transparent-brand-color-2: #a41de01a;
-        --sherpa-display-color-transparent-brand-color-3: #a41de01a;
-        --sherpa-display-color-transparent-brand-color-4: #c046ff1a;
-        --sherpa-display-color-transparent-brand-color-5: #c046ff1a;
-        --sherpa-display-color-transparent-accent-color-1: #1e189c1a;
-        --sherpa-display-color-transparent-accent-color-2: #2b34b41a;
-        --sherpa-display-color-transparent-accent-color-4: #4c63e51a;
-        --sherpa-display-color-transparent-accent-color-5: #6681ff1a;
-        --sherpa-display-color-transparent-info-color-1: #0019251a;
-        --sherpa-display-color-transparent-info-color-2: #004e6a1a;
-        --sherpa-display-color-transparent-info-color-3: #006c911a;
-        --sherpa-display-color-transparent-info-color-4: #008bba1a;
-        --sherpa-display-color-transparent-info-color-5: #6fd1ff1a;
-        --sherpa-display-color-transparent-warning-color-1: #4731001a;
-        --sherpa-display-color-transparent-warning-color-2: #a275001a;
-        --sherpa-display-color-transparent-warning-color-3: #d39a031a;
-        --sherpa-display-color-transparent-warning-color-4: #ffc44c1a;
-        --sherpa-display-color-transparent-warning-color-5: #ffd17b1a;
-        --sherpa-display-color-transparent-urgent-color-1: #290c001a;
-        --sherpa-display-color-transparent-urgent-color-2: #7732001a;
-        --sherpa-display-color-transparent-urgent-color-3: #d05c001a;
-        --sherpa-display-color-transparent-urgent-color-4: #ff73001a;
-        --sherpa-display-color-transparent-urgent-color-5: #ff955b1a;
-        --sherpa-display-color-transparent-critical-color-1: #4f09001a;
-        --sherpa-display-color-transparent-critical-color-2: #9319001a;
-        --sherpa-display-color-transparent-critical-color-3: #b722001a;
-        --sherpa-display-color-transparent-critical-color-4: #dd2c011a;
-        --sherpa-display-color-transparent-critical-color-5: #fc4e2d1a;
-        --sherpa-display-color-transparent-success-color-1: #001c0c1a;
-        --sherpa-display-color-transparent-success-color-2: #0059301a;
-        --sherpa-display-color-transparent-success-color-3: #007a451a;
-        --sherpa-display-color-transparent-success-color-4: #009d5a1a;
-        --sherpa-display-color-transparent-success-color-5: #20c1731a;
-        --sherpa-display-color-transparent-tones-color-1: #5050611a;
-        --sherpa-display-color-transparent-tones-color-2: #9595a81a;
-        --sherpa-display-color-transparent-tones-color-4: #d4d4e91a;
-        --sherpa-display-color-transparent-tones-color-5: #f0f0ff1a;
-        --sherpa-display-size-3xs: 4px;
-        --sherpa-display-size-2xs: 8px;
-        --sherpa-display-size-xs: 12px;
-        --sherpa-display-size-sm: 16px;
-        --sherpa-display-size-md: 20px;
-        --sherpa-display-size-lg: 24px;
-        --sherpa-display-size-xl: 28px;
-        --sherpa-display-size-2xl: 32px;
-        --sherpa-display-size-3xl: 40px;
-        --sherpa-display-size-4xl: 48px;
-        --sherpa-display-size-5xl: 56px;
-        --sherpa-display-size-6xl: 64px;
-        --sherpa-display-space-2xs: 4px;
-        --sherpa-display-space-xs: 8px;
-        --sherpa-display-space-sm: 12px;
-        --sherpa-display-space-base: 16px;
-        --sherpa-display-space-lg: 20px;
-        --sherpa-display-space-xl: 24px;
-        --sherpa-display-space-2xl: 32px;
-        --sherpa-display-space-3xl: 40px;
-        --sherpa-display-space-4xl: 48px;
-        --sherpa-display-space-5xl: 56px;
-        --sherpa-display-space-6xl: 64px;
-        --sherpa-display-color-brand-color-1: #240036;
-        --sherpa-display-color-brand-color-2: #610089;
-        --sherpa-display-color-brand-color-3: #a41de0;
-        --sherpa-display-color-brand-color-4: #cc76ff;
-        --sherpa-display-color-brand-color-5: #e5bfff;
-        --sherpa-display-color-accent-color-1: #1e189c;
-        --sherpa-display-color-accent-color-2: #2b34b4;
-        --sherpa-display-color-accent-color-4: #4c63e5;
-        --sherpa-display-color-accent-color-5: #6681ff;
-        --sherpa-display-color-info-color-1: #001925;
-        --sherpa-display-color-info-color-2: #004e6a;
-        --sherpa-display-color-info-color-3: #006c91;
-        --sherpa-display-color-info-color-4: #008bba;
-        --sherpa-display-color-info-color-5: #6fd1ff;
-        --sherpa-display-color-warning-color-1: #473100;
-        --sherpa-display-color-warning-color-2: #a27500;
-        --sherpa-display-color-warning-color-3: #d39a03;
-        --sherpa-display-color-warning-color-4: #ffc44c;
-        --sherpa-display-color-warning-color-5: #ffd17b;
-        --sherpa-display-color-urgent-color-1: #290c00;
-        --sherpa-display-color-urgent-color-2: #773200;
-        --sherpa-display-color-urgent-color-3: #d05c00;
-        --sherpa-display-color-urgent-color-4: #ff7300;
-        --sherpa-display-color-urgent-color-5: #ff955b;
-        --sherpa-display-color-critical-color-1: #4f0900;
-        --sherpa-display-color-critical-color-2: #931900;
-        --sherpa-display-color-critical-color-3: #b72200;
-        --sherpa-display-color-critical-color-4: #dd2c01;
-        --sherpa-display-color-critical-color-5: #fc4e2d;
-        --sherpa-display-color-success-color-1: #001c0c;
-        --sherpa-display-color-success-color-2: #005930;
-        --sherpa-display-color-success-color-3: #007a45;
-        --sherpa-display-color-success-color-4: #009d5a;
-        --sherpa-display-color-success-color-5: #20c173;
-        --sherpa-display-color-tones-color-1: #505061;
-        --sherpa-display-color-tones-color-2: #9595a8;
-        --sherpa-display-color-tones-color-4: #d4d4e9;
-        --sherpa-display-color-tones-color-5: #f0f0ff;
-        --sherpa-display-color-neutral-color-4: #878794;
-        --sherpa-display-color-neutral-color-5: #c4c4d3;
-      }
-      [data-density="comfortable"] {
-        --sherpa-display-color-neutral-color-1: #0c0b11;
-        --sherpa-display-color-neutral-color-2: #15151d;
-        --sherpa-display-color-transparent-neutral-color-1: #15151e00;
-        --sherpa-display-color-neutral-color-3: #5d5d69;
-        --sherpa-display-color-transparent-neutral-color-2: #30303a1a;
-        --sherpa-display-color-transparent-neutral-color-3: #6e6d791a;
-        --sherpa-display-color-transparent-neutral-color-4: #8f8f9b1a;
-        --sherpa-display-color-transparent-neutral-color-5: #d0d0dd1a;
-        --sherpa-display-color-transparent-brand-color-1: #8300b61a;
-        --sherpa-display-color-transparent-brand-color-2: #a41de01a;
-        --sherpa-display-color-transparent-brand-color-3: #a41de01a;
-        --sherpa-display-color-transparent-brand-color-4: #c046ff1a;
-        --sherpa-display-color-transparent-brand-color-5: #c046ff1a;
-        --sherpa-display-color-transparent-accent-color-1: #1e189c1a;
-        --sherpa-display-color-transparent-accent-color-2: #2b34b41a;
-        --sherpa-display-color-transparent-accent-color-4: #4c63e51a;
-        --sherpa-display-color-transparent-accent-color-5: #6681ff1a;
-        --sherpa-display-color-transparent-info-color-1: #0019251a;
-        --sherpa-display-color-transparent-info-color-2: #004e6a1a;
-        --sherpa-display-color-transparent-info-color-3: #006c911a;
-        --sherpa-display-color-transparent-info-color-4: #008bba1a;
-        --sherpa-display-color-transparent-info-color-5: #6fd1ff1a;
-        --sherpa-display-color-transparent-warning-color-1: #4731001a;
-        --sherpa-display-color-transparent-warning-color-2: #a275001a;
-        --sherpa-display-color-transparent-warning-color-3: #d39a031a;
-        --sherpa-display-color-transparent-warning-color-4: #ffc44c1a;
-        --sherpa-display-color-transparent-warning-color-5: #ffd17b1a;
-        --sherpa-display-color-transparent-urgent-color-1: #290c001a;
-        --sherpa-display-color-transparent-urgent-color-2: #7732001a;
-        --sherpa-display-color-transparent-urgent-color-3: #d05c001a;
-        --sherpa-display-color-transparent-urgent-color-4: #ff73001a;
-        --sherpa-display-color-transparent-urgent-color-5: #ff955b1a;
-        --sherpa-display-color-transparent-critical-color-1: #4f09001a;
-        --sherpa-display-color-transparent-critical-color-2: #9319001a;
-        --sherpa-display-color-transparent-critical-color-3: #b722001a;
-        --sherpa-display-color-transparent-critical-color-4: #dd2c011a;
-        --sherpa-display-color-transparent-critical-color-5: #fc4e2d1a;
-        --sherpa-display-color-transparent-success-color-1: #001c0c1a;
-        --sherpa-display-color-transparent-success-color-2: #0059301a;
-        --sherpa-display-color-transparent-success-color-3: #007a451a;
-        --sherpa-display-color-transparent-success-color-4: #009d5a1a;
-        --sherpa-display-color-transparent-success-color-5: #20c1731a;
-        --sherpa-display-color-transparent-tones-color-1: #5050611a;
-        --sherpa-display-color-transparent-tones-color-2: #9595a81a;
-        --sherpa-display-color-transparent-tones-color-4: #d4d4e91a;
-        --sherpa-display-color-transparent-tones-color-5: #f0f0ff1a;
-        --sherpa-display-size-3xs: 4px;
-        --sherpa-display-size-2xs: 8px;
-        --sherpa-display-size-xs: 12px;
-        --sherpa-display-size-sm: 16px;
-        --sherpa-display-size-md: 20px;
-        --sherpa-display-size-lg: 24px;
-        --sherpa-display-size-xl: 28px;
-        --sherpa-display-size-2xl: 32px;
-        --sherpa-display-size-3xl: 40px;
-        --sherpa-display-size-4xl: 48px;
-        --sherpa-display-size-5xl: 56px;
-        --sherpa-display-space-3xs: 2px;
-        --sherpa-display-space-2xs: 4px;
-        --sherpa-display-space-xs: 8px;
-        --sherpa-display-space-sm: 12px;
-        --sherpa-display-space-base: 16px;
-        --sherpa-display-space-lg: 20px;
-        --sherpa-display-space-xl: 24px;
-        --sherpa-display-space-2xl: 32px;
-        --sherpa-display-space-3xl: 40px;
-        --sherpa-display-space-4xl: 48px;
-        --sherpa-display-space-5xl: 56px;
-        --sherpa-display-color-brand-color-1: #240036;
-        --sherpa-display-color-brand-color-2: #610089;
-        --sherpa-display-color-brand-color-3: #a41de0;
-        --sherpa-display-color-brand-color-4: #cc76ff;
-        --sherpa-display-color-brand-color-5: #e5bfff;
-        --sherpa-display-color-accent-color-1: #1e189c;
-        --sherpa-display-color-accent-color-2: #2b34b4;
-        --sherpa-display-color-accent-color-4: #4c63e5;
-        --sherpa-display-color-accent-color-5: #6681ff;
-        --sherpa-display-color-info-color-1: #001925;
-        --sherpa-display-color-info-color-2: #004e6a;
-        --sherpa-display-color-info-color-3: #006c91;
-        --sherpa-display-color-info-color-4: #008bba;
-        --sherpa-display-color-info-color-5: #6fd1ff;
-        --sherpa-display-color-warning-color-1: #473100;
-        --sherpa-display-color-warning-color-2: #a27500;
-        --sherpa-display-color-warning-color-3: #d39a03;
-        --sherpa-display-color-warning-color-4: #ffc44c;
-        --sherpa-display-color-warning-color-5: #ffd17b;
-        --sherpa-display-color-urgent-color-1: #290c00;
-        --sherpa-display-color-urgent-color-2: #773200;
-        --sherpa-display-color-urgent-color-3: #d05c00;
-        --sherpa-display-color-urgent-color-4: #ff7300;
-        --sherpa-display-color-urgent-color-5: #ff955b;
-        --sherpa-display-color-critical-color-1: #4f0900;
-        --sherpa-display-color-critical-color-2: #931900;
-        --sherpa-display-color-critical-color-3: #b72200;
-        --sherpa-display-color-critical-color-4: #dd2c01;
-        --sherpa-display-color-critical-color-5: #fc4e2d;
-        --sherpa-display-color-success-color-1: #001c0c;
-        --sherpa-display-color-success-color-2: #005930;
-        --sherpa-display-color-success-color-3: #007a45;
-        --sherpa-display-color-success-color-4: #009d5a;
-        --sherpa-display-color-success-color-5: #20c173;
-        --sherpa-display-color-tones-color-1: #505061;
-        --sherpa-display-color-tones-color-2: #9595a8;
-        --sherpa-display-color-tones-color-4: #d4d4e9;
-        --sherpa-display-color-tones-color-5: #f0f0ff;
-        --sherpa-display-color-neutral-color-4: #878794;
-        --sherpa-display-color-neutral-color-5: #c4c4d3;
-      }
-    }
-  }
-
-  /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
-  .sherpa-view {
-    --sherpa-view-nav-width: 240px;
-
-    display: grid;
-    grid-template-columns: var(--sherpa-view-nav-width) 1fr;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      'nav header'
-      'nav body';
-    block-size: 100%;
-    min-block-size: 100vh;
-    background: var(--sherpa-app-primary, #ffffff);
-    color: var(--sherpa-content-primary-base, #2e2e33);
-  }
-  .sherpa-view[data-nav-collapsed] {
-    --sherpa-view-nav-width: 56px;
-  }
-  .sherpa-view > [data-region='nav'] {
-    grid-area: nav;
-    min-inline-size: 0;
-    border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
-      var(--sherpa-border-primary, #d5d5d5);
-    background: var(--sherpa-surface-primary-base, #ffffff);
-    overflow: hidden;
-  }
-  .sherpa-view > [data-region='header'] {
-    grid-area: header;
-    border-block-end: var(--sherpa-core-border-width-base, 1px) solid
-      var(--sherpa-border-primary, #d5d5d5);
-  }
-  .sherpa-view > [data-region='body'] {
-    grid-area: body;
-    min-block-size: 0;
-    overflow: auto;
-    padding: var(--sherpa-core-space-lg, 20px);
-  }
-  /* A view with no header region lets the body span both rows. */
-  .sherpa-view:not(:has(> [data-region='header'])) {
-    grid-template-areas:
-      'nav body'
-      'nav body';
   }
 }

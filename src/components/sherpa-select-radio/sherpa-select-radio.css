@@ -22,21 +22,19 @@
   display: inline-flex;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  --_size: var(--sherpa-display-size-sm, 16px);
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_size: var(--sherpa-display-mode-size-sm, 16px);
+  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   /* The radio keeps a white face even under a status; only the ring/dot re-tint. */
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
-  /* Inner dot: the Saturated accent via the look-tier cascade; status re-tints. */
-  --_dot: var(--_status-surface, #3b4ccd);
+  --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
+  /* Inner dot: the Saturated accent (style-indicator/accent) via the look-tier
+     cascade; status re-tints. */
+  --_dot: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
 }
-
-/* Compact variant: the control alone, no label/description text. */
-:host([data-variant="minimal"]) .text { display: none; }
 
 .field {
   display: inline-flex;
   align-items: flex-start;
-  gap: var(--sherpa-display-space-xs, 8px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   cursor: pointer;
   user-select: none;
   inline-size: 100%;
@@ -56,8 +54,8 @@
   margin: 0;
   padding: 0;
   position: relative;
-  border: var(--sherpa-display-border-width-sm, 1px) solid var(--_border);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
@@ -70,9 +68,9 @@
   &:checked::after {
     content: "";
     display: block;
-    width: 10px;
-    height: 10px;
-    border-radius: var(--sherpa-display-border-rounding-full, 999px);
+    width: 8px;
+    height: 8px;
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     background-color: var(--_dot);
   }
 
@@ -87,7 +85,7 @@
   /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b2b2bf);
+    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #E8E8F6);
   }
 }
 
@@ -95,16 +93,16 @@
 .text {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
   min-width: 0;
 }
 .label {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.4;
 }
 .description {
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: 1.4;
 }

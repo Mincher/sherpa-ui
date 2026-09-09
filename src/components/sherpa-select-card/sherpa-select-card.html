@@ -3,18 +3,20 @@
 
   A bordered card the user can pick. The whole card is the click target; the
   selected look is drawn in CSS off [data-selected]. Three regions slot in
-  content; each collapses when empty (driven by data-has-{slot}). The FOOTER has
-  a default: a sherpa-select-radio that shows the card's selected state and is
-  kept in sync with the host. Provide footer content to replace it (e.g. with a
-  checkbox for multi-select), or set data-multiple to swap the default to a
-  checkbox.
+  content; each collapses when empty (driven by data-has-{slot}). The FOOTER
+  carries two pre-placed select controls — a sherpa-select-radio and a
+  sherpa-select-checkbox — and CSS shows exactly one based on data-select-mode.
+  Both are kept in sync with the host's selected state. Provide footer content
+  to replace them entirely, or set data-footer="none" to hide the footer.
 
   Public API:
     data-label        header title (used when no header slot is given)
     data-description  helper line under the title
     data-selected     present → the card is selected (also a JS property)
-    data-multiple     present → default footer control is a checkbox, not a radio
+    data-select-mode  radio | checkbox — which footer control shows (default radio).
+                      checkbox = multi-select (re-click toggles); radio = single-select.
     data-orientation  vertical | horizontal (footer beside the body vs below; default vertical)
+    data-footer       none → hide the footer region entirely (CSS-only)
     disabled          native — dims + blocks interaction
     value             submitted / reported value when selected
     name              radio group name (default footer)
@@ -22,7 +24,7 @@
   Slots:
     header    — header region (falls back to data-label / data-description)
     (default) — the card body / content
-    footer    — footer region (falls back to a select control)
+    footer    — footer region (falls back to the select controls)
 
   Fires: change — detail { selected, value }
 -->
@@ -41,7 +43,8 @@
 
     <div class="footer" part="footer">
       <slot name="footer">
-        <sherpa-select-radio class="footer-control" part="footer-control"></sherpa-select-radio>
+        <sherpa-select-radio class="footer-control control-radio" part="footer-control"></sherpa-select-radio>
+        <sherpa-select-checkbox class="footer-control control-checkbox" part="footer-control"></sherpa-select-checkbox>
       </slot>
     </div>
   </div>

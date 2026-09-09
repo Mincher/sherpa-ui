@@ -32,6 +32,16 @@ anatomy:
       type: button
     children:
       - el: span
+        class: indicator
+        part: indicator
+        attrs:
+          aria-hidden: "true"
+      - el: span
+        class: icon
+        part: icon
+        attrs:
+          aria-hidden: "true"
+      - el: span
         class: label
         slot: ""
       - el: span
@@ -57,10 +67,17 @@ props:
     default: false
     description: selected/on state
   - $type: prop
+    name: data-indicator
+    type: string
+    kind: style
+    description: show the leading status dot (Figma "Indicator (atom)", opt-in)
+  - $type: prop
     name: data-label
     type: string
     kind: content
-    description: chip text (or use the default slot)
+    description: >-
+      chip text (or use the default slot) data-icon-start leading icon glyph (Figma "Icon" — a
+      funnel by default)
   - $type: prop
     name: data-menu
     type: boolean
@@ -69,10 +86,14 @@ props:
     description: show a dropdown-trigger caret
   - $type: prop
     name: data-type
-    type: boolean
+    type: enum
     kind: style
+    values:
+      - default
+      - ai
+      - populated
     default: false
-    description: default | ai | populated data-current selected/on state
+    description: default | ai | populated
 states:
   - $type: state
     name: ai
@@ -80,6 +101,12 @@ states:
   - $type: state
     name: current
     selector: ":host([data-current])"
+  - $type: state
+    name: indicator
+    selector: ":host([data-indicator])"
+  - $type: state
+    name: icon-start
+    selector: ":host([data-icon-start])"
   - $type: state
     name: count
     selector: ":host([data-count])"

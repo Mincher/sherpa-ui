@@ -11,9 +11,9 @@
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #2e2e33);
-  border: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
-  border-radius: var(--sherpa-display-border-rounding-lg, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
   overflow: hidden;
 }
 
@@ -23,12 +23,66 @@
 }
 :host([data-empty]) .grid { display: none; }
 
+/* ── Selection column (opt-in) ─────────────────────────────────────── */
+/* The checkbox <th>/<td> exist in the template always; CSS reveals them. */
+.select-cell { display: none; }
+:host([data-selectable]) .select-cell { display: table-cell; }
+
+.select-cell {
+  inline-size: var(--sherpa-display-mode-space-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  text-align: center;
+  vertical-align: middle;
+}
+.select-head {
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+.select-all,
+.row-select {
+  cursor: pointer;
+  accent-color: var(--sherpa-theme-border-accent-base, #3c5edd);
+}
+.select-all:focus-visible,
+.row-select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+}
+
+/* ── Filter row (opt-in) ───────────────────────────────────────────── */
+/* The secondary header row exists always; CSS reveals it when filterable. */
+.filter-row { display: none; }
+:host([data-filterable]) .filter-row { display: table-row; }
+
+.filter-cell {
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+.filter-spacer {
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+.filter-input {
+  inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  font: inherit;
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-base, #fff);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 4px);
+}
+.filter-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+}
+
 /* ── Header ────────────────────────────────────────────────────────── */
 .head-cell {
   padding: 0;
   text-align: start;
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-block-end: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
@@ -46,14 +100,14 @@
 .head-btn {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
   border: none;
   background: none;
   font: inherit;
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   text-align: start;
   cursor: pointer;
 
@@ -72,12 +126,12 @@
 
   &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
   &:not(:last-child) .cell {
-    border-block-end: var(--sherpa-display-border-width-base, 1px) solid var(--sherpa-style-border-base, #d5d5d5);
+    border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   }
 }
 
 .cell {
-  padding: var(--sherpa-display-space-xs, 8px) var(--sherpa-display-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
   white-space: nowrap;
 
   /* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
@@ -91,8 +145,8 @@
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {
   display: none;
-  padding: var(--sherpa-display-space-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xl, 32px);
   text-align: center;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([data-empty]) .empty { display: block; }

@@ -1,23 +1,36 @@
 <!--
-  sherpa-toast — a transient notification.
+  sherpa-toast — a transient notification (Figma Toast 27:750).
 
-  A status box with a message and a close button. The whole card fills with the
-  status surface (via the [data-status] cascade) with a status border and status
-  text. Auto-dismisses after data-duration ms; the close button dismisses
-  manually. Message via data-message or the default slot.
+  A NEUTRAL card (white surface, grey border, dark ink — per Figma the box is not
+  status-filled) holding: a status icon badge (carries the status hue), a content
+  column (heading + optional value detail + optional action link), and a close
+  button. Auto-dismisses after data-duration ms; the close button dismisses
+  manually.
 
   Public API:
-    data-status    info (default) | success | warning | critical
-    data-message   the message text (or slot content)
+    data-status    info (default) | success | warning | critical | urgent
+    data-heading   the primary line (or the default slot)
+    data-value     the supporting detail line (shown when present)
+    data-action    an action link label (shown when present; fires toast-action)
     data-duration  auto-dismiss delay in ms (default 5000; 0 disables)
 
-  Static: SherpaToast.info/success/warning/critical(message, opts?)
+  Static: SherpaToast.info/success/warning/critical(heading, opts?)
 
-  Fires: toast-dismiss — on auto or manual dismiss
+  Slots:
+    (default) — the heading content (overrides data-heading)
+
+  Fires:
+    toast-dismiss  — on auto or manual dismiss. detail: {}
+    toast-action   — the action link is clicked. detail: {}
 -->
 <template id="default">
-  <div class="toast" part="toast" role="alert" aria-live="polite">
-    <span class="message" part="message"><slot></slot></span>
+  <div class="toast" part="toast" role="alert">
+    <span class="icon" part="icon" aria-hidden="true"></span>
+    <span class="content" part="content">
+      <span class="heading" part="heading"><slot></slot></span>
+      <span class="value" part="value"></span>
+      <button class="action" part="action" type="button"></button>
+    </span>
     <button class="close" part="close" type="button" aria-label="Dismiss">
       <span aria-hidden="true">&#215;</span>
     </button>

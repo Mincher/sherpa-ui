@@ -29,13 +29,83 @@ anatomy:
     class: root
     part: root
     children:
-      - el: div
+      - el: header
         class: header
         part: header
         children:
-          - el: span
-            class: heading-text
-          - slot: header
+          - el: div
+            class: row
+            part: row
+            children:
+              - el: span
+                class: icon
+                part: icon
+                slot: icon
+                attrs:
+                  aria-hidden: "true"
+              - el: div
+                class: labels
+                part: labels
+                children:
+                  - el: span
+                    class: title
+                    part: title
+                  - el: div
+                    class: description
+                    part: description
+                    children:
+                      - slot: description
+                        attrs:
+                          data-accepts: content,control
+              - el: div
+                class: toolbar
+                part: toolbar
+                children:
+                  - el: button
+                    class: collapse
+                    part: collapse
+                    attrs:
+                      type: button
+                      aria-expanded: "true"
+                      aria-label: Collapse
+                    children:
+                      - el: span
+                        class: collapse-glyph
+                        attrs:
+                          aria-hidden: "true"
+                  - el: button
+                    class: expand
+                    part: expand
+                    attrs:
+                      type: button
+                      aria-label: Expand
+                    children:
+                      - el: span
+                        class: expand-glyph
+                        attrs:
+                          aria-hidden: "true"
+                  - el: button
+                    class: external
+                    part: external
+                    attrs:
+                      type: button
+                      aria-label: Open externally
+                    children:
+                      - el: span
+                        class: external-glyph
+                        attrs:
+                          aria-hidden: "true"
+                  - el: button
+                    class: close
+                    part: close
+                    attrs:
+                      type: button
+                      aria-label: Close
+                    children:
+                      - el: span
+                        class: close-glyph
+                        attrs:
+                          aria-hidden: "true"
       - el: div
         class: body
         part: body
@@ -43,43 +113,115 @@ anatomy:
       - el: div
         class: footer
         part: footer
-        slot: footer
+        children:
+          - slot: footer
+            attrs:
+              data-accepts: control,input
 props:
+  - $type: prop
+    name: data-collapsed
+    type: string
+    kind: content
+    description: collapsed state (body/footer hidden; the collapse toggle reflects it)
+  - $type: prop
+    name: data-collapsible
+    type: string
+    kind: style
+    description: show the collapse toggle
+  - $type: prop
+    name: data-dismissible
+    type: string
+    kind: style
+    description: show the close button
+  - $type: prop
+    name: data-expandable
+    type: string
+    kind: style
+    description: show the expand button
+  - $type: prop
+    name: data-external
+    type: string
+    kind: style
+    description: show the external-link button
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: — convenience header label (a slotted [slot=header] overrides it)
+  - $type: prop
+    name: data-icon
+    type: string
+    kind: content
+    description: a glyph before the title (shows the icon slot area)
   - $type: prop
     name: data-status
     type: string
     kind: style
-    description: — status colour cascade (critical | warning | success | info | urgent)
+    description: >-
+      status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown
+      by opt-in data-* flags (CSS-gated):
+  - $type: prop
+    name: data-title
+    type: string
+    kind: content
+    description: link-style header title text (rendered into .title)
   - $type: prop
     name: open
     type: string
-    description: — native boolean (read reflects dialog.open; set → show()/close())
+    description: native boolean (read reflects dialog.open; set → show()/close())
 states:
   - $type: state
-    name: has-header
-    selector: ":host([data-has-header])"
+    name: icon
+    selector: ":host([data-icon])"
   - $type: state
-    name: heading
-    selector: ":host([data-heading])"
+    name: has-icon
+    selector: ":host([data-has-icon])"
+  - $type: state
+    name: title
+    selector: ":host([data-title])"
+  - $type: state
+    name: has-description
+    selector: ":host([data-has-description])"
+  - $type: state
+    name: collapsible
+    selector: ":host([data-collapsible])"
+  - $type: state
+    name: expandable
+    selector: ":host([data-expandable])"
+  - $type: state
+    name: external
+    selector: ":host([data-external])"
+  - $type: state
+    name: dismissible
+    selector: ":host([data-dismissible])"
+  - $type: state
+    name: collapsed
+    selector: ":host([data-collapsed])"
   - $type: state
     name: has-footer
     selector: ":host([data-has-footer])"
+  - $type: state
+    name: focus-visible
+    selector: .collapse:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (open). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: close
+    name: panel-collapse
     bubbles: true
     composed: true
   - $type: event
-    name: re-dispatched
+    name: panel-expand
+    bubbles: true
+    composed: true
+  - $type: event
+    name: panel-external
+    bubbles: true
+    composed: true
+  - $type: event
+    name: close
     bubbles: true
     composed: true
 tokens:
@@ -89,7 +231,42 @@ tokens:
   root.border-radius: "{sherpa.structure-rounding-top-left}"
   root.color: "{sherpa.style-content-base}"
   root.box-shadow: "{sherpa.shadow-lg}"
-  heading-text.font-weight: "{sherpa.font-weight-semibold}"
+  header.border-block-end: "{sherpa.style-border-width}"
+  row.gap: "{sherpa.theme-gap-md}"
+  row.padding: "{sherpa.theme-padding-md}"
+  icon.inline-size: "{sherpa.display-size-sm}"
+  icon.block-size: "{sherpa.display-size-sm}"
+  icon.margin-block-start: "{sherpa.display-space-3xs}"
+  icon.color: "{sherpa.theme-content-link-base}"
+  labels.gap: "{sherpa.display-space-3xs}"
+  title.color: "{sherpa.theme-content-link-base}"
+  title.font-family: "{sherpa.font-family-body}"
+  title.font-size: "{sherpa.font-size-body-large}"
+  title.font-weight: "{sherpa.font-weight-semibold}"
+  description.gap: "{sherpa.theme-gap-md}"
+  description.color: "{sherpa.theme-content-body-1}"
+  description.font-family: "{sherpa.font-family-body}"
+  description.font-size: "{sherpa.font-size-body-base}"
+  toolbar.gap: "{sherpa.display-space-2xs}"
+  collapse.inline-size: "{sherpa.display-size-2xl}"
+  collapse.block-size: "{sherpa.display-size-2xl}"
+  collapse.border-radius: "{sherpa.display-border-rounding-base}"
+  collapse.color: "{sherpa.theme-content-body-1}"
+  expand.inline-size: "{sherpa.display-size-2xl}"
+  expand.block-size: "{sherpa.display-size-2xl}"
+  expand.border-radius: "{sherpa.display-border-rounding-base}"
+  expand.color: "{sherpa.theme-content-body-1}"
+  external.inline-size: "{sherpa.display-size-2xl}"
+  external.block-size: "{sherpa.display-size-2xl}"
+  external.border-radius: "{sherpa.display-border-rounding-base}"
+  external.color: "{sherpa.theme-content-body-1}"
+  close.inline-size: "{sherpa.display-size-2xl}"
+  close.block-size: "{sherpa.display-size-2xl}"
+  close.border-radius: "{sherpa.display-border-rounding-base}"
+  close.color: "{sherpa.theme-content-body-1}"
+  footer.gap: "{sherpa.theme-gap-md}"
+  footer.padding: "{sherpa.theme-padding-md}"
+  footer.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:
     figmaName: Overlay Panel

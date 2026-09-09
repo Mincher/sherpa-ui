@@ -28,8 +28,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-theme-gap-md, 8px);
-  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding: var(--sherpa-theme-padding-md, 8px);
 }
 
 .labels {
@@ -37,7 +37,7 @@
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
   overflow: hidden;
 }
 
@@ -47,12 +47,12 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-sm, 16px);
-  block-size: var(--sherpa-display-size-sm, 16px);
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #5c5c66);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   cursor: grab;
 
   &:active { cursor: grabbing; }
@@ -65,9 +65,9 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-sm, 16px);
-  block-size: var(--sherpa-display-size-sm, 16px);
-  color: var(--_status-icon, var(--sherpa-theme-content-body-base, #18191a));
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  color: var(--_status-icon, var(--sherpa-theme-content-body-1, #35353d));
 }
 :host([data-icon]) .icon,
 :host([data-has-icon]) .icon { display: inline-flex; }
@@ -75,10 +75,10 @@
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #18191a));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0C0B11));
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-large, 16px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: 1.3;
   overflow: hidden;
   white-space: nowrap;
@@ -90,9 +90,9 @@ slot[name="heading"] { display: contents; }
 /* ── Description ──────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: 1.45;
   overflow: hidden;
   white-space: nowrap;
@@ -115,13 +115,13 @@ slot[name="heading"] { display: contents; }
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-size-2xl, 32px);
-  block-size: var(--sherpa-display-size-2xl, 32px);
+  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-border-rounding-base, 4px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #5c5c66));
+  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   cursor: pointer;
   transition: background-color 100ms ease;
 
@@ -149,7 +149,7 @@ slot[name="heading"] { display: contents; }
   align-items: center;
   gap: var(--sherpa-theme-gap-md, 8px);
   padding: 0 var(--sherpa-theme-padding-lg, 16px) var(--sherpa-theme-padding-md, 8px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1.45;
@@ -165,5 +165,5 @@ slot[name="heading"] { display: contents; }
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {
   .description { display: none; }
-  .row { gap: var(--sherpa-display-space-2xs, 4px); }
+  .row { gap: var(--sherpa-display-mode-space-2xs, 4px); }
 }

@@ -8,17 +8,31 @@
                 description / message rows (for dense placements like a grid
                 column filter). data-borderless drops the control's border.
 
+  The control row (default / multiline) is a horizontal field: an optional
+  leading icon glyph, the native control, an optional trailing icon glyph, and
+  an `actions` slot for trailing controls (steppers, buttons). Icons and the
+  actions slot are CSS-gated — they only show when their attribute / slot is set.
+
+  Validation (default / multiline): setting data-error (or the native invalid
+  state) paints a full-width FILLED critical bar with light text directly under
+  the control — the Figma `State=error` variant — not a plain message line.
+
   Public API:
     data-style        "minimal" for the bare inline field (default is the full molecule)
     data-borderless   drop the control border (minimal style)
     data-multiline    auto-growing <textarea> (default style only)
     data-label        field label (hidden when empty)
     data-description   helper text under the label (default style)
-    data-error        error message (shown when set / on :user-invalid; default style)
+    data-error        validation message — shown as a filled critical bar (default style)
+    data-icon-start    leading icon glyph inside the control row (CSS-gated)
+    data-icon-end      trailing icon glyph inside the control row (CSS-gated)
     placeholder       native placeholder
     value             native value (also a JS property)
     name / required / disabled / readonly / minlength / maxlength / pattern
                       native attributes, reflected to the inner control
+
+  Slots:
+    actions           trailing controls in the field row (steppers, buttons); CSS-gated
 
   Fires: input, change (re-dispatched from the inner control)
 -->
@@ -26,7 +40,12 @@
   <label class="field" part="field">
     <span class="label" part="label"></span>
     <span class="description" part="description"></span>
-    <input class="control" part="control" type="text" />
+    <span class="control-row" part="control-row">
+      <span class="icon icon-start" part="icon-start" aria-hidden="true"></span>
+      <input class="control" part="control" type="text" />
+      <span class="icon icon-end" part="icon-end" aria-hidden="true"></span>
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+    </span>
     <span class="message" part="message" aria-live="polite"></span>
   </label>
 </template>
@@ -35,7 +54,12 @@
   <label class="field" part="field">
     <span class="label" part="label"></span>
     <span class="description" part="description"></span>
-    <textarea class="control" part="control" rows="3"></textarea>
+    <span class="control-row" part="control-row">
+      <span class="icon icon-start" part="icon-start" aria-hidden="true"></span>
+      <textarea class="control" part="control" rows="3"></textarea>
+      <span class="icon icon-end" part="icon-end" aria-hidden="true"></span>
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+    </span>
     <span class="message" part="message" aria-live="polite"></span>
   </label>
 </template>

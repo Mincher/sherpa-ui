@@ -19,11 +19,11 @@
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #e8e8f6));
+  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
-  --_pad: var(--sherpa-display-space-sm, 16px);
-  --_radius: var(--sherpa-structure-rounding-top-left, 8px);
+  --_pad: var(--sherpa-theme-padding-lg, 16px);
+  --_radius: var(--sherpa-structure-rounding-top-left, 4px);
 }
 
 /* ── The card box ─────────────────────────────────────────────────── */
@@ -32,7 +32,7 @@
   flex-direction: column;
   min-inline-size: 0;
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-radius: var(--_radius);
   color: var(--_content);
   cursor: pointer;
@@ -58,13 +58,14 @@
 }
 .body {
   flex: 1 1 auto;
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }
 
 /* Header collapses when it has neither slotted content nor label/description. */
 .header {
   display: none;
   flex-direction: column;
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 :host(:is([data-has-header], [data-label], [data-description])) .header {
   display: flex;
@@ -80,16 +81,28 @@
   display: none;
 }
 
+/* Two pre-placed footer controls; CSS shows exactly one per data-select-mode.
+   Radio is the default when the attribute is absent. */
+.control-checkbox {
+  display: none;
+}
+:host([data-select-mode="checkbox"]) .control-radio {
+  display: none;
+}
+:host([data-select-mode="checkbox"]) .control-checkbox {
+  display: inline-flex;
+}
+
 /* When body has content and header shows, divide them. */
 :host(:is([data-has-header], [data-label], [data-description])) .body {
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 /* Footer divider (below the body); suppressed in horizontal orientation. */
 :host(:not([data-orientation="horizontal"])) .footer {
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 :host([data-orientation="horizontal"]) .footer {
-  border-inline-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-inline-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 
 /* ── Header text ──────────────────────────────────────────────────── */
@@ -111,7 +124,7 @@
 
 /* ── Hover ────────────────────────────────────────────────────────── */
 :host(:not([disabled]):hover) .card {
-  border-color: var(--sherpa-theme-border-default-1, #8d8d99);
+  border-color: var(--sherpa-theme-border-default-1, #E8E8F6);
 }
 
 /* ── Selected — accent ring + subtle accent face ──────────────────── */
@@ -123,7 +136,7 @@
 /* ── Focus-within — box-shadow ring, never a bare outline (WCAG 2.4.11) ── */
 :host(:focus-within) .card {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #e8e8f6);
+  box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #E8E8F6);
 }
 :host([data-selected]:focus-within) .card {
   box-shadow: inset 0 0 0 1px var(--_accent), 0 0 0 2px var(--_accent);
@@ -133,10 +146,10 @@
 :host([disabled]) .card {
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
+  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #B3B3C3);
 }

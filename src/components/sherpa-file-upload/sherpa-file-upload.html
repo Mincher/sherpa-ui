@@ -3,8 +3,8 @@
 
   Matches the Figma "File Uploader": a drop zone, a details block (max size +
   allowed types), a file list (each row: icon + name + size + status + remove),
-  and an actions row (clear-all + upload buttons). The drop area triggers a
-  hidden <input type="file"> on click / Enter / Space, or accepts dropped files.
+  and an actions row (clear-all + upload buttons). A native "browse" button
+  triggers a hidden <input type="file">; the drop area accepts dropped files.
 
   Public API:
     data-label      label above the drop zone (hidden when empty)
@@ -30,9 +30,9 @@
   <div class="field" part="field">
     <span class="label" part="label"></span>
 
-    <div class="drop-zone" part="drop-zone" role="button" tabindex="0">
+    <div class="drop-zone" part="drop-zone">
       <span class="drop-icon" aria-hidden="true">⬆</span>
-      <span class="drop-text">Drag and drop files here, or <span class="browse">browse</span></span>
+      <span class="drop-text">Drag and drop files here, or <button class="browse" part="browse" type="button">browse</button></span>
     </div>
 
     <div class="details" part="details">
@@ -40,7 +40,7 @@
       <span class="allowed-types" part="allowed-types"></span>
     </div>
 
-    <ul class="file-list" part="file-list" role="list"></ul>
+    <ul class="file-list" part="file-list"></ul>
 
     <div class="actions" part="actions">
       <slot name="actions"></slot>
@@ -54,7 +54,7 @@
   <input type="file" class="file-input" tabindex="-1" aria-hidden="true" />
 
   <template class="file-item-tpl">
-    <li class="file-item" role="listitem">
+    <li class="file-item">
       <span class="file-icon" aria-hidden="true">🖹</span>
       <span class="file-body">
         <span class="file-line">

@@ -52,6 +52,6 @@ test('data-status re-points the fill colour and a custom min/max scales', async 
     };
   });
   expect(r.pct).toBe('25%'); // 50% of the half
-  expect(r.fill.toLowerCase()).toBe('#dd2c01'); // strong critical status surface (--_status-surface-strong)
+  expect(r.fill.toLowerCase()).toBe('#ff856d'); // strong critical status surface (--_status-surface-strong → critical-color-2)
   expect(r.max).toBe('20');
 });

@@ -2,11 +2,18 @@
  * sherpa-select-group — a labelled group of checkboxes or radios.
  *
  * Set data-multiple for checkboxes (pick many) or leave it off for radios (pick
- * one). Give it options with populate([{ value, label, description? }]) and it
- * draws the rows. The `value` property gives you the current choice — a list of
- * values for checkboxes, or the single value for radios.
+ * one). Options arrive two ways: author them declaratively in the `options`
+ * slot, or call populate([{ value, label, description? }]) — populate stamps the
+ * same children into light DOM so they project through the slot. The `value`
+ * property gives you the current choice — a list of values for checkboxes, or
+ * the single value for radios.
  *
- * @fires change — detail: { value } (string[] when multiple, else string | null)
+ * A divider rule sits under the legend, and a validation line sits below the
+ * options; set data-error to show the message (or set data-status to re-ink it
+ * via the status cascade).
+ *
+ * @fires change — the selection changed. bubbles + composed.
+ *   detail: { value } (string[] when multiple, else string | null)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
@@ -28,9 +35,18 @@ let gid = 0;
 export class SherpaSelectGroup extends SherpaElement {
   static override css = new URL('./sherpa-select-group.css', import.meta.url);
   static override html = new URL('./sherpa-select-group.html', import.meta.url);
-  static override observed = ['data-label', 'data-description', 'data-multiple', 'disabled'];
+  static override observed = [
+    'data-label',
+    'data-description',
+    'data-error',
+    'data-multiple',
+    'disabled',
+  ];
 
   #options: SelectGroupOption[] = [];
+  /** Children this component stamped from populate() — tracked so a re-render
+   *  replaces only them and leaves declaratively-slotted children alone. */
+  #stamped: HTMLElement[] = [];
   /** Stable name shared by radios so native single-selection groups them. */
   #name = `sherpa-select-group-${++gid}`;
 
@@ -45,15 +61,17 @@ export class SherpaSelectGroup extends SherpaElement {
 
   override onRender(): void {
     this.#syncText();
-    // One delegated listener for every child. `change` is composed, so the real
+    // One delegated listener for every child. `change` is composed, so it climbs
+    // the composed path (through the slot into this shadow tree) and the real
     // originating child is found via composedPath(), never event.target.
     this.$('.options')?.addEventListener('change', this.#onChange);
     if (this.#options.length) this.#render();
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-description') this.#syncText();
-    else if (name === 'data-multiple') this.#render();
+    if (name === 'data-label' || name === 'data-description' || name === 'data-error') {
+      this.#syncText();
+    } else if (name === 'data-multiple') this.#render();
     else if (name === 'disabled') this.#syncDisabled();
   }
 
@@ -82,8 +100,15 @@ export class SherpaSelectGroup extends SherpaElement {
 
   /* ── Rendering ─────────────────────────────────────────────────────── */
 
+  /**
+   * The option children. They live in the host's LIGHT DOM (slotted through the
+   * `options` slot) whether authored declaratively or stamped by populate(), so
+   * this queries the host, not the shadow root.
+   */
   #children(): SelectChild[] {
-    return this.$$<SelectChild>(this.#childTag());
+    return Array.from(
+      this.querySelectorAll<SelectChild>(this.#childTag()),
+    );
   }
 
   #syncText(): void {
@@ -91,18 +116,27 @@ export class SherpaSelectGroup extends SherpaElement {
     if (label) label.textContent = this.dataset['label'] ?? '';
     const description = this.$('.description');
     if (description) description.textContent = this.dataset['description'] ?? '';
+    const validation = this.$('.validation');
+    if (validation) validation.textContent = this.dataset['error'] ?? '';
   }
 
+  /**
+   * Stamp the populate() options into the host's light DOM, assigned to the
+   * `options` slot so they project into the shadow layout. Replaces only the
+   * children this method previously stamped (tracked in #stamped) — declaratively
+   * authored slot children are left untouched. The children ARE design-system
+   * components (composition), so they are created by tag, not raw structural DOM.
+   */
   #render(): void {
-    const list = this.$('.options');
-    if (!list) return;
-
     const tag = this.#childTag();
     const disabled = this.hasAttribute('disabled');
-    list.replaceChildren();
+
+    for (const prev of this.#stamped) prev.remove();
+    this.#stamped = [];
 
     for (const opt of this.#options) {
       const child = document.createElement(tag);
+      child.setAttribute('slot', 'options');
       child.setAttribute('value', String(opt.value));
       if (opt.label != null) child.setAttribute('data-label', String(opt.label));
       if (opt.description != null) {
@@ -111,7 +145,8 @@ export class SherpaSelectGroup extends SherpaElement {
       if (opt.disabled || disabled) child.setAttribute('disabled', '');
       // Radios need a shared name so native single-selection groups them.
       if (!this.#multiple) child.setAttribute('name', this.#name);
-      list.appendChild(child);
+      this.appendChild(child);
+      this.#stamped.push(child);
     }
   }
 

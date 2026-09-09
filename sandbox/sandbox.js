@@ -8,14 +8,13 @@
 
 import '/dist/index.js';
 
-// ── Component manifest (the 47 src/components dirs) ─────────────────────────
+// ── Component manifest (the 53 src/components dirs) ─────────────────────────
 const COMPONENTS = [
   'sherpa-accordion', 'sherpa-app-header', 'sherpa-barchart', 'sherpa-breadcrumbs', 'sherpa-button',
   'sherpa-calendar', 'sherpa-callout', 'sherpa-chart-legend', 'sherpa-chat-message',
-  'sherpa-code-block', 'sherpa-container', 'sherpa-container-footer', 'sherpa-container-header',
+  'sherpa-chip', 'sherpa-code-block', 'sherpa-container', 'sherpa-container-footer', 'sherpa-container-header',
   'sherpa-data-grid', 'sherpa-dialog', 'sherpa-donut-chart', 'sherpa-empty-state', 'sherpa-file-upload',
-  // NOTE: sherpa-grid-cell has a src dir but is not registered by /dist/index.js
-  // and ships no template, so it is intentionally omitted from the picker.
+  'sherpa-grid-cell',
   'sherpa-gauge-chart', 'sherpa-input-text', 'sherpa-key-value-list',
   'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',
   'sherpa-metric', 'sherpa-nav', 'sherpa-nav-item', 'sherpa-nav-section',
@@ -351,13 +350,13 @@ function buildControl(prop) {
   } else if (prop.type === 'boolean') {
     const sw = document.createElement('sherpa-switch');
     customElements.whenDefined('sherpa-switch').then(() => {
-      sw.dataset.state = currentValueOf(prop) ? 'on' : 'off';
+      sw.toggleAttribute('checked', !!currentValueOf(prop));
     });
     sw.addEventListener('change', (e) => {
-      const on = e.detail ? e.detail.checked : sw.dataset.state === 'on';
+      const on = e.detail && 'checked' in e.detail ? e.detail.checked : sw.checked;
       setAttr(prop, on);
     });
-    refreshFromEl = () => { sw.dataset.state = currentValueOf(prop) ? 'on' : 'off'; };
+    refreshFromEl = () => { sw.toggleAttribute('checked', !!currentValueOf(prop)); };
     row.appendChild(sw);
   } else {
     // string / native text → sherpa-input-text (debounced)

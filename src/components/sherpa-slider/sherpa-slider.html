@@ -20,7 +20,7 @@
 -->
 <template id="default">
   <div class="head">
-    <span class="label" part="label"></span>
+    <label class="label" part="label" for="slider-range"></label>
   </div>
 
   <div class="slider-row">
@@ -28,7 +28,7 @@
       <div class="track" part="track">
         <div class="fill" part="fill"></div>
       </div>
-      <input class="range" type="range" part="range" />
+      <input class="range" id="slider-range" type="range" part="range" />
     </div>
 
     <input class="value-input" part="value" type="number"

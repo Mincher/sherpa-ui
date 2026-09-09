@@ -1,19 +1,31 @@
 <!--
   sherpa-select-group — a labelled group of checkbox or radio options.
 
-  Composes sherpa-select-checkbox / sherpa-select-radio children, instantiated
-  from populate([{ value, label, description? }]). data-multiple → checkboxes;
-  default → radios grouped by a shared name. The children ARE design-system
-  components (composition), not raw structural DOM — so they're created by tag.
+  Composes sherpa-select-checkbox / sherpa-select-radio children. Options arrive
+  two ways: declaratively via the `options` slot (author writes the children in
+  light DOM), or programmatically via populate([{ value, label, description? }])
+  which stamps the same children into light DOM so they project through the slot.
+  data-multiple → checkboxes; default → radios grouped by a shared name. The
+  children ARE design-system components (composition), not raw structural DOM.
+
+  A divider rule sits under the legend (mirrors the Figma "head" bottom stroke).
+  A validation line sits below the options; it is shown by CSS when data-error
+  (or data-status) is present, and reads its text from data-error.
 
   Public API:
     data-label        group heading (hidden when empty)
     data-description  helper line under the heading
     data-multiple     present → checkboxes (multi-select); absent → radios
+    data-error        validation message; present → validation row shown
+    data-status       status cascade re-inks heading + validation (critical/…)
     disabled          disable every option
     value             property: string[] when multiple, else string | null
 
-  Fires: change — detail: { value }
+  Slots:
+    options           (data-accepts: control) checkbox/radio option rows
+
+  Fires:
+    change — the selection changed. detail: { value }
 -->
 <template id="default">
   <fieldset class="group" part="group">
@@ -21,6 +33,10 @@
       <span class="label" part="label"></span>
       <span class="description" part="description"></span>
     </legend>
-    <div class="options" part="options" role="group"></div>
+    <hr class="divider" part="divider" aria-hidden="true" />
+    <div class="options" part="options" role="group">
+      <slot name="options" data-accepts="control"></slot>
+    </div>
+    <p class="validation" part="validation" role="alert"></p>
   </fieldset>
 </template>

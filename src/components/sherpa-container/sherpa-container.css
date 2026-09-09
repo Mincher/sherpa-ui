@@ -7,12 +7,10 @@
  * JS never touches visibility here.
  *
  * Colour model (Figma): the whole card fills a single --_surface custom property.
- * That resolves, in order of precedence, to (1) a data-viz categorical hue when a
- * [data-color-set] is set — the "colour set" override, since colour-sets are no
- * longer a projected token collection they map onto the shared categorical ramp;
- * (2) the look-tier status surface (--_status-surface) under a [data-status]
- * ancestor; (3) the neutral Style surface. Borders follow the same cascade. No
- * accent bars. Geometry binds the shared Structure vars.
+ * That resolves, in order of precedence, to (1) the look-tier status surface
+ * (--_status-surface) under a [data-status] ancestor; (2) the neutral Style
+ * surface. Borders follow the same cascade. No accent bars. Geometry binds the
+ * shared Structure vars.
  */
 
 :host {
@@ -23,28 +21,17 @@
 
   /* One surface token the box + regions consume; colour-set / status re-point it. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #0c0b11);
 
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_shadow: none;
   box-shadow: var(--_shadow);
 }
-
-/* ── Colour set: a categorical hue tints the whole surface ─────────────
-   colour-sets aren't a projected collection anymore, so named sets alias onto
-   the shared data-viz categorical ramp (the system's canonical hue set). A
-   neutral / absent set is a passthrough — the white Style surface shows. */
-:host([data-color-set="violet"])  { --_surface: var(--sherpa-categorical-2, #c046ff); }
-:host([data-color-set="teal"])    { --_surface: var(--sherpa-categorical-3, #00b2a0); }
-:host([data-color-set="blue"])    { --_surface: var(--sherpa-categorical-4, #2e5cff); }
-:host([data-color-set="green"])   { --_surface: var(--sherpa-categorical-5, #1fa971); }
-:host([data-color-set="amber"])   { --_surface: var(--sherpa-categorical-6, #f5a623); }
-:host([data-color-set="red"])     { --_surface: var(--sherpa-categorical-7, #e5484d); }
 
 /* ── Variant: fill stretches to its parent; fit hugs its content ───── */
 :host,
@@ -65,7 +52,7 @@
 /* ── Padding scale — bound to the scoped container-space vars ──────── */
 :host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
 :host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
-:host([data-padding="lg"]) { --_pad: var(--sherpa-display-space-lg, 20px); }
+:host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
 
 /* ── Regions ───────────────────────────────────────────────────────── */
 .header,
@@ -83,11 +70,11 @@
    same status-aware border as the card. */
 :host([data-has-header]) .header {
   display: block;
-  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
 
 /* ── State overlay — one region, driven by data-loading + slot presence ─
@@ -109,7 +96,7 @@
   border-radius: inherit;
 }
 .state > slot { display: none; }
-.state-text { color: var(--sherpa-theme-content-body-1, #404047); font-size: var(--sherpa-font-size-body-base, 14px); }
+.state-text { color: var(--sherpa-theme-content-body-1, #35353D); font-size: var(--sherpa-font-size-body-base, 14px); }
 
 /* data-loading is the ratified boolean-verb loading state. empty / error are
    slot-driven (D6): data-has-empty / data-has-error come from the base class's
@@ -124,10 +111,9 @@
 .spinner {
   inline-size: 20px;
   block-size: 20px;
-  border: 2px solid var(--sherpa-style-border-base, #c0c0cc);
+  border: 2px solid var(--sherpa-style-border-base, #E8E8F6);
   border-block-start-color: var(--sherpa-theme-content-active-base, #8500cc);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }
 @keyframes sherpa-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

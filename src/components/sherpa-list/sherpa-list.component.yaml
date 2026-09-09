@@ -51,23 +51,23 @@ props:
       keep a single current row.
   - $type: prop
     name: data-variant
-    type: enum
+    type: string
     kind: style
-    values:
-      - default
-      - bordered
-      - divided
-    description: default | bordered | divided
+    default: — dividers between rows
+    description: "| bordered | plain (no dividers)"
 states:
   - $type: state
     name: bordered
     selector: ":host([data-variant=\"bordered\"])"
   - $type: state
-    name: divided
-    selector: ":host([data-variant=\"divided\"])"
+    name: plain
+    selector: ":host([data-variant=\"plain\"])"
   - $type: state
     name: empty-visible
     selector: ":host([data-empty-visible])"
+  - $type: state
+    name: not-plain
+    selector: ":host(:not([data-variant=\"plain\"]))"
 tokens:
   empty.padding: "{sherpa.theme-padding-lg}"
   empty.color: "{sherpa.theme-content-body-1}"

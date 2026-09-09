@@ -5,6 +5,19 @@
  * click a chip it toggles on or off, and the toolbar fires quick-filter-change
  * with the ids of every chip that's currently on. There's a slot for your own
  * extra buttons — the old add/edit/save-view features are left out on purpose.
+ *
+ * FIGMA DIVERGENCE (intentional): Figma "Filter Toolbar" (node 150:3688) is a
+ * fuller toolbar — it bakes in a leading view chip / Switch, divider-separated
+ * preset chips, and a trailing action cluster (Add, AI filter, undo, refresh,
+ * favourite/star, Save-view split menu, overflow ⋮), plus view-scope events
+ * (view-menu-open / view-change / view-save / view-favorite / data-refresh /
+ * ai-filter-request). This component is a deliberately SIMPLER 3-zone slot bar:
+ * the action cluster and save-view controls are DELEGATED to slotted content
+ * (the `actions` and `view` slots), not built in, and those extra events are
+ * the host's responsibility, not fired here. Do not expand to match Figma
+ * without a deliberate decision. Recorded in the component's .thin.yaml
+ * `_divergence` block; the .component.yaml is generated so the prose lives here.
+ * @fires quick-filter-change — the active filter set changes. bubbles + composed. detail: { active: string[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';

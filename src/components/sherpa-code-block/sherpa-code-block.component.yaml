@@ -44,7 +44,16 @@ anatomy:
         - el: code
           class: code
           part: code
-          slot: ""
+          children:
+            - el: span
+              class: gutter
+              part: gutter
+              attrs:
+                aria-hidden: "true"
+            - el: span
+              class: code-text
+              part: code-text
+              slot: ""
 props:
   - $type: prop
     name: data-code
@@ -55,11 +64,21 @@ props:
     name: data-language
     type: string
     kind: content
-    description: a short language label shown in the header (e.g. "ts")
+    description: a short language label shown in the header (e.g. "bash")
+  - $type: prop
+    name: data-line-numbers
+    type: string
+    kind: content
+    description: >-
+      boolean — render a line-number gutter beside the code. Numbers derive from the code's line
+      count; CSS-gated.
 states:
   - $type: state
     name: copied
     selector: ":host([data-copied])"
+  - $type: state
+    name: line-numbers
+    selector: ":host([data-line-numbers])"
   - $type: state
     name: focus-visible
     selector: .copy:focus-visible
@@ -79,10 +98,12 @@ tokens:
   header.gap: "{sherpa.display-space-sm}"
   header.min-block-size: "{sherpa.display-size-xl}"
   header.padding: "{sherpa.display-space-2xs}"
+  header.background: "{sherpa.style-surface-base}"
   header.border-block-end: "{sherpa.style-border-width}"
   language.font-family: "{sherpa.font-family-mono}"
-  language.font-size: "{sherpa.font-size-body-small}"
-  language.font-weight: "{sherpa.font-weight-semibold}"
+  language.font-size: "{sherpa.font-size-body-base}"
+  language.font-weight: "{sherpa.font-weight-regular}"
+  language.letter-spacing: "{sherpa.theme-content-letter-spacing-base}"
   language.color: "{sherpa.theme-content-body-1}"
   copy.gap: "{sherpa.structure-space-gap}"
   copy.padding: "{sherpa.structure-space-padding}"
@@ -98,6 +119,8 @@ tokens:
   code.font-family: "{sherpa.font-family-mono}"
   code.font-size: "{sherpa.font-size-body-base}"
   code.color: "{sherpa.style-content-base}"
+  gutter.padding-inline-end: "{sherpa.display-space-sm}"
+  gutter.color: "{sherpa.theme-content-body-3}"
 $extensions:
   sherpa:
     figmaName: Code Block

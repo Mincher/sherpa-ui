@@ -13,13 +13,13 @@ $name: sherpa-donut-chart
 $description: a donut / pie for part-to-whole data.
 element:
   $type: element
-  tag: div
+  tag: figure
   provides: []
 templates:
   - default
 anatomy:
   root:
-    el: div
+    el: figure
     class: layout
     part: layout
     children:
@@ -29,6 +29,9 @@ anatomy:
           - el: div
             class: ring
             part: ring
+            attrs:
+              role: img
+              aria-label: Donut chart
           - el: div
             class: centre
             children:

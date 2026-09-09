@@ -1,36 +1,17 @@
 <!--
-  sherpa-nav-section — a labelled group of nav items for a settings-style panel.
+  sherpa-nav-section — a section-label divider for a navigation rail.
 
-  Populate with populate([{ label, items: [{ id, label, icon? }] }]). Groups and
-  items are stamped from cloning prototypes (<template class="…">, no id — the
-  base parser ignores them). The active item is marked by data-active-id on the
-  host. Clicking an item fires item-select with the item's id.
+  A tiny row: a short SECTION label followed by a horizontal rule that fills the
+  remaining width. Used to group items inside a nav. On a collapsed rail the
+  label is hidden (data-collapsed) so only the rule remains.
 
   Public API:
-    data-heading    optional panel heading text
-    data-active-id  id of the currently active item
+    data-label      the section label text (rendered verbatim — author its case)
+    data-collapsed  present on a collapsed rail — hides the label, keeps the rule
 
-  Fires: item-select — detail: { id }
+  Fires: (none)
 -->
 <template id="default">
-  <nav class="panel" part="panel" aria-label="Section navigation">
-    <h2 class="heading" part="heading"></h2>
-    <div class="groups" part="groups"></div>
-  </nav>
-
-  <template class="group-tpl">
-    <section class="group">
-      <h3 class="group-label" part="group-label"></h3>
-      <ul class="group-list" role="list"></ul>
-    </section>
-  </template>
-
-  <template class="item-tpl">
-    <li class="item-row" role="listitem">
-      <button class="item" type="button" part="item">
-        <span class="item-icon" aria-hidden="true"></span>
-        <span class="item-label"></span>
-      </button>
-    </li>
-  </template>
+  <span class="label" part="label"></span>
+  <span class="rule" part="rule" aria-hidden="true"></span>
 </template>

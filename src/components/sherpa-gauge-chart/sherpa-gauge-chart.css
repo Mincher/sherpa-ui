@@ -2,12 +2,13 @@
  * sherpa-gauge-chart.css — a half-circle gauge.
  *
  * The visible top-half arc is a full circle clipped to its top half. The track is
- * a neutral ring; the fill is a conic-gradient whose coloured sweep is bounded by
- * --_fill-pct (0–50% of the circle = 0–100% of the visible half), set by JS. The
- * needle rotates by --_angle. The fill colour routes through the look-tier
- * cascade: a [data-status] on the host (or an ancestor) emits --_status-surface-
- * strong, which --_fill consumes; with no status it falls back to the Saturated
- * accent (#3b4ccd). No per-status blocks — one routing rule covers them all.
+ * a neutral ring. Over it sits the fill:
+ *   - No zones: one conic sweep bounded by --_fill-pct (0–50% of the circle =
+ *     0–100% of the visible half), coloured by --_fill (status → Saturated accent).
+ *   - Zones: JS composes a full conic-gradient value into --_zones (contiguous
+ *     threshold bands, e.g. success/warning/urgent/critical) and CSS paints it.
+ * The needle rotates by --_angle. The centre value + caption + scale are text.
+ * No per-status blocks — the single-colour route relies on the look-tier cascade.
  */
 
 /* Typed JS→CSS bridges: TS writes --_fill-pct (sweep) and --_angle (needle). Typing
@@ -39,10 +40,17 @@
   --_angle: -90deg;
 }
 
+/* Figure semantics without a layout box: children stay direct flex items of
+ * the host, so the centred column layout is unchanged. */
+.chart-figure {
+  display: contents;
+  margin: 0;
+}
+
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
 
   &:empty { display: none; }
 }
@@ -64,15 +72,22 @@
   /* punch the centre out into a ring */
   mask: radial-gradient(circle, transparent calc(50% - var(--_ring)), #000 calc(50% - var(--_ring) + 0.5px));
 }
-.track { background: var(--sherpa-style-border-base, #d5d5d5); }
+/* Figma track binds a legacy _old_border/base token (Figma-side drift); the nearest
+ * live token matching its value is theme-border-default-2 (#b3b3c3). */
+.track { background: var(--sherpa-theme-border-default-2, #b3b3c3); }
 
-/* Fill: conic sweep from the left (start of the visible half), 0–50% of the circle. */
+/* Fill: single conic sweep from the left (start of the visible half), 0–50% of the
+ * circle. When zones are supplied, JS overrides --_zones with a full multi-stop
+ * conic-gradient and the host gains [data-zones]. */
 .fill {
   background: conic-gradient(
     from 270deg,
     var(--_fill) 0 var(--_fill-pct),
     transparent var(--_fill-pct) 100%
   );
+}
+:host([data-zones]) .fill {
+  background: var(--_zones);
 }
 
 /* ── Needle ──────────────────────────────────────────────────────── */
@@ -89,12 +104,28 @@
   inset-inline-start: 0;
   inline-size: 2px;
   block-size: calc(var(--_size) / 2 - var(--_ring) / 2);
-  background: var(--sherpa-theme-content-body-base, #18191a);
+  background: var(--sherpa-theme-content-body-2, #B3B3C3);
   transform-origin: bottom center;
   transform: rotate(var(--_angle));
   transition: transform 300ms ease;
-
-  @media (prefers-reduced-motion: reduce) { transition: none; }
+}
+/* Hub cap sits at the needle pivot, matching Figma (dark disc + light core). */
+.hub-cap {
+  position: absolute;
+  inset-block-end: -4px;
+  inset-inline-start: 50%;
+  inline-size: 8px;
+  block-size: 8px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: var(--sherpa-theme-content-body-1, #35353D);
+}
+.hub-cap::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: var(--sherpa-style-surface-base, #ffffff);
 }
 
 /* ── Centre value ────────────────────────────────────────────────── */
@@ -107,7 +138,7 @@
 .value {
   font-size: var(--sherpa-font-size-heading-h1, 24px);
   font-weight: var(--sherpa-font-weight-bold, 700);
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   font-variant-numeric: tabular-nums;
 }
 
@@ -116,6 +147,18 @@
   display: flex;
   justify-content: space-between;
   inline-size: var(--_size);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #404047);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
+
+/* ── Caption ─────────────────────────────────────────────────────── */
+/* Hidden by default; shown when data-caption is set OR the caption slot is filled
+ * (SherpaElement mirrors slot presence to data-has-caption on the host). */
+.caption {
+  display: none;
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  text-align: center;
+}
+:host([data-caption]) .caption,
+:host([data-has-caption]) .caption { display: block; }

@@ -3,16 +3,20 @@
  *
  * Same card look as sherpa-dialog (one --_surface / --_border pair, status
  * cascade, elevation), but positioned as a right-hand floating panel and with
- * NO ::backdrop (non-modal, opened via show()). Header / footer collapse when
- * empty; the header also appears when a data-heading is set. Visibility is
- * CSS-only — JS never toggles display.
+ * NO ::backdrop (non-modal, opened via show()).
+ *
+ * Matches the Figma "Overlay Panel" header chrome: a lead icon + link-style
+ * title + a description/metadata row, then a trailing toolbar of collapse /
+ * expand / external / close icon-buttons. Each toolbar button is CSS-toggled off
+ * a data-* flag; JS only wires the events. Collapsed hides the body + footer.
+ * All visibility is CSS-only — JS never toggles display.
  */
 
 :host {
   display: contents;
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
@@ -20,49 +24,151 @@
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  inline-size: min(92vw, 22rem);
+  inline-size: min(92vw, 30rem);
   max-block-size: 85vh;
   padding: 0;
   overflow: auto;
 
   /* Float to the top-right of the viewport (non-modal → page stays live). */
   position: fixed;
-  inset-block-start: var(--sherpa-theme-gap-lg, 16px);
-  inset-inline-end: var(--sherpa-theme-gap-lg, 16px);
+  inset-block-start: var(--sherpa-theme-gap-lg, 12px);
+  inset-inline-end: var(--sherpa-theme-gap-lg, 12px);
   inset-inline-start: auto;
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #0c0b11);
   box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
-
-  /* No backdrop — a non-modal panel must leave the page behind interactive. */
-  &::backdrop { background: transparent; }
 }
 
-/* ── Regions ───────────────────────────────────────────────────────── */
-.header,
-.footer {
+/* No backdrop — a non-modal panel must leave the page behind interactive. */
+.root::backdrop { background: transparent; }
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.header {
+  flex-shrink: 0;
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  padding: var(--sherpa-theme-padding-md, 8px) var(--_pad);
+}
+
+.icon {
   display: none;
-  padding: var(--_pad);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }
+:host([data-icon]) .icon,
+:host([data-has-icon]) .icon { display: inline-flex; }
+
+.labels {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  overflow: hidden;
+}
+
+.title {
+  display: none;
+  color: var(--_status-text, var(--sherpa-theme-content-link-1, #2b34b4));
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: 1.3;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+:host([data-title]) .title { display: block; }
+
+.description {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: 1.45;
+}
+:host([data-has-description]) .description { display: flex; }
+
+/* ── Toolbar (icon-glyph action buttons) ───────────────────────────────── */
+.toolbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  margin-inline-start: auto;
+}
+
+.collapse,
+.expand,
+.external,
+.close {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  cursor: pointer;
+  transition: background-color 100ms ease;
+}
+.collapse:hover,
+.expand:hover,
+.external:hover,
+.close:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+.collapse:focus-visible,
+.expand:focus-visible,
+.external:focus-visible,
+.close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+}
+
+:host([data-collapsible]) .collapse { display: inline-flex; }
+:host([data-expandable]) .expand { display: inline-flex; }
+:host([data-external]) .external { display: inline-flex; }
+:host([data-dismissible]) .close { display: inline-flex; }
+
+/* Collapsed rotates the toggle chevron. */
+.collapse-glyph { transition: transform 120ms ease; }
+:host([data-collapsed]) .collapse-glyph { transform: rotate(180deg); }
+
+/* ── Body + footer ─────────────────────────────────────────────────────── */
 .body {
   padding: var(--_pad);
   flex: 1 1 auto;
   min-block-size: 0;
 }
 
-:host([data-has-header]) .header,
-:host([data-heading]) .header {
-  display: block;
-  border-block-end: var(--sherpa-style-border-width, 1px) solid var(--_border);
+.footer {
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  padding: var(--sherpa-theme-padding-md, 8px) var(--_pad);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }
-:host([data-has-footer]) .footer {
-  display: block;
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
-}
+:host([data-has-footer]) .footer { display: flex; }
 
-.heading-text {
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
+/* Collapsed → only the header shows (body + footer fold away). */
+:host([data-collapsed]) .body,
+:host([data-collapsed][data-has-footer]) .footer { display: none; }

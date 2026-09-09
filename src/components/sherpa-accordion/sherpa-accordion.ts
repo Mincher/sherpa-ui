@@ -10,9 +10,10 @@
  * composed, so app code wouldn't otherwise see it).
  *
  * @element sherpa-accordion
- * @attr {string}  data-heading — the summary label (a slotted [slot=heading] overrides it)
- * @attr {boolean} open         — native disclosure state (read/write; drives [open] visuals)
- * @attr {enum}    data-status  — status colour cascade (critical | warning | success | info | urgent)
+ * @attr {string}  data-heading     — the summary title (a slotted [slot=heading] overrides it)
+ * @attr {string}  data-description — optional secondary line under the title (a slotted [slot=description] overrides it)
+ * @attr {boolean} open             — native disclosure state (read/write; drives [open] visuals)
+ * @attr {enum}    data-status      — status colour cascade (critical | warning | success | info | urgent)
  *
  * @fires toggle — every open/close. bubbles + composed. detail: { open: boolean }
  *
@@ -23,7 +24,7 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaAccordion extends SherpaElement {
   static override css = new URL('./sherpa-accordion.css', import.meta.url);
   static override html = new URL('./sherpa-accordion.html', import.meta.url);
-  static override observed = ['data-heading', 'open'];
+  static override observed = ['data-heading', 'data-description', 'open'];
 
   #details(): HTMLDetailsElement | null {
     return this.$<HTMLDetailsElement>('.root');
@@ -35,12 +36,14 @@ export class SherpaAccordion extends SherpaElement {
     // Adopt any pre-set host state onto the real control.
     if (this.hasAttribute('open')) details.open = true;
     this.#syncHeading();
+    this.#syncDescription();
     // Re-dispatch the native toggle as a composed component event.
     details.addEventListener('toggle', this.#onToggle);
   }
 
   override onChange(name: string): void {
     if (name === 'data-heading') this.#syncHeading();
+    else if (name === 'data-description') this.#syncDescription();
     else if (name === 'open') {
       const details = this.#details();
       if (details) details.open = this.hasAttribute('open');
@@ -64,6 +67,12 @@ export class SherpaAccordion extends SherpaElement {
   #syncHeading(): void {
     const label = this.$('.heading-text');
     if (label) label.textContent = this.dataset.heading ?? '';
+  }
+
+  /** Write data-description into the secondary line (skipped when a description slot is used). */
+  #syncDescription(): void {
+    const label = this.$('.description-text');
+    if (label) label.textContent = this.dataset.description ?? '';
   }
 
   #onToggle = (): void => {

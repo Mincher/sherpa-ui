@@ -1,26 +1,40 @@
 <!--
-  sherpa-gauge-chart — a half-circle gauge for a single 0–100 value.
+  sherpa-gauge-chart — a half-circle gauge for a single value on a 0–100 scale.
 
-  The fill arc is a conic-gradient whose sweep is driven by a --_fill-pct custom
-  property the JS sets from data-value (a JS→CSS-var geometry bridge — CSS owns the
-  drawing). A needle rotates over the arc. data-status colours the fill.
+  The fill arc is a conic-gradient. With no zones it is one sweep driven by a
+  --_fill-pct custom property JS sets from data-value (a JS→CSS-var geometry
+  bridge — CSS owns the drawing); data-status colours it. With data-zones it
+  becomes contiguous coloured threshold bands (e.g. green/amber/red). A needle
+  rotates over the arc, the centre shows the value, and a caption sits beneath.
 
   Public API:
-    data-value   0–100 (drives the fill sweep + needle angle)
-    data-label   centre value label (defaults to the value)
-    data-status  critical | warning | success | info  (fill colour)
+    data-value    number on the scale (drives the fill sweep + needle angle)
+    data-label    centre value label (defaults to the value)
+    data-zones    threshold bands — "0-50:success,50-80:warning,80-100:critical"
+                  (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours
+                  are status names (success|warning|urgent|critical|info) or any
+                  CSS colour. Omit for the single-colour sweep.
+    data-caption  caption text shown below the arc (e.g. "30GB of 60GB used")
+    data-status   critical | warning | success | info  (single-colour fill)
     data-min / data-max   scale bounds shown beneath (default 0 / 100)
+
+  Slots:
+    title    — heading above the gauge (data-accepts: text, inline)
+    caption  — rich caption below the gauge; overrides data-caption
+               (data-accepts: text, inline)
 
   Fires: nothing — display only.
 -->
 <template id="default">
+  <figure class="chart-figure" part="figure">
   <div class="chart-header" part="header">
     <span class="title"><slot name="title"></slot></span>
   </div>
-  <div class="gauge" part="gauge">
+  <div class="gauge" part="gauge" role="img" aria-label="Gauge chart">
     <div class="track" part="track"></div>
     <div class="fill" part="fill"></div>
     <div class="hub"><div class="needle" part="needle"></div></div>
+    <div class="hub-cap" part="hub"></div>
     <div class="centre">
       <span class="value" part="value"></span>
     </div>
@@ -29,4 +43,6 @@
     <span class="min"></span>
     <span class="max"></span>
   </div>
+  <figcaption class="caption" part="caption"><slot name="caption"></slot></figcaption>
+  </figure>
 </template>

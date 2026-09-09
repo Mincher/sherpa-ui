@@ -13,12 +13,12 @@
   min-inline-size: 0;
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b2b2bf));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #0c0b11);
 
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
@@ -31,12 +31,11 @@
 .header {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 8px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--_pad);
   cursor: pointer;
   list-style: none;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-style-content-base, #2e2e33);
+  color: var(--sherpa-style-content-base, #0c0b11);
   border-radius: inherit;
 
   /* Kill the native disclosure triangle across engines. */
@@ -49,23 +48,40 @@
   }
 }
 
-.heading {
+/* ── Titles block — heading + optional description, stacked ──────────── */
+.titles {
   flex: 1 1 auto;
   min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-theme-gap-sm, 4px);
 }
 
-/* ── Chevron — rotates when open ─────────────────────────────────────── */
+.heading {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
+
+/* Optional secondary line — hidden until a value or slotted content exists. */
+.description {
+  display: none;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+:host([data-description]) .description,
+:host([data-has-description]) .description {
+  display: block;
+}
+
+/* ── Chevron — trailing; rotates when open ───────────────────────────── */
 .chevron {
-  inline-size: 10px;
-  block-size: 10px;
+  inline-size: 10px; /* off-grid-ok */
+  block-size: 10px; /* off-grid-ok */
   border-inline-end: 2px solid currentColor;
   border-block-end: 2px solid currentColor;
   transform: rotate(-45deg);
   transition: transform 160ms ease;
   flex: 0 0 auto;
-  margin-inline-start: 2px;
-
-  @media (prefers-reduced-motion: reduce) { transition: none; }
+  margin-inline-end: 2px;
 }
 
 .root[open] .chevron {
@@ -75,5 +91,5 @@
 /* ── Body: shown only while open (the divider matches the card border) ── */
 .body {
   padding: var(--_pad);
-  border-block-start: var(--sherpa-style-border-width, 1px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
 }

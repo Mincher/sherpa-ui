@@ -13,60 +13,121 @@ $name: sherpa-pagination
 $description: page navigation.
 element:
   $type: element
-  tag: nav
-  attributes:
-    aria-label: Pagination
+  tag: div
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: nav
-      class: pager
-      part: pager
-      attrs:
-        aria-label: Pagination
+    - el: div
+      class: pagination
+      part: pagination
       children:
-        - el: button
-          class: btn prev
-          attrs:
-            data-action: prev
-            type: button
-            aria-label: Previous page
+        - el: div
+          class: results
+          part: results
           children:
+            - el: label
+              class: rows-label
+              attrs:
+                for: rows
+            - el: select
+              class: rows
+              part: rows
+              attrs:
+                id: rows
+        - el: nav
+          class: controls
+          part: controls
+          attrs:
+            aria-label: Pagination
+          children:
+            - el: button
+              class: btn first
+              attrs:
+                data-action: first
+                type: button
+                aria-label: First page
+              children:
+                - el: span
+                  class: chev chev-double-left
+                  attrs:
+                    aria-hidden: "true"
+            - el: button
+              class: btn prev
+              attrs:
+                data-action: prev
+                type: button
+                aria-label: Previous page
+              children:
+                - el: span
+                  class: chev chev-left
+                  attrs:
+                    aria-hidden: "true"
+            - el: input
+              class: page-input
+              part: page-input
+              attrs:
+                type: number
+                inputmode: numeric
+                min: "1"
+                step: "1"
+                aria-label: Page number
             - el: span
-              class: chev chev-left
+              class: total
+              part: total
               attrs:
                 aria-hidden: "true"
-        - el: span
-          class: numbers
-          part: numbers
-        - el: button
-          class: btn next
-          attrs:
-            data-action: next
-            type: button
-            aria-label: Next page
-          children:
-            - el: span
-              class: chev chev-right
+            - el: button
+              class: btn next
               attrs:
-                aria-hidden: "true"
+                data-action: next
+                type: button
+                aria-label: Next page
+              children:
+                - el: span
+                  class: chev chev-right
+                  attrs:
+                    aria-hidden: "true"
+            - el: button
+              class: btn last
+              attrs:
+                data-action: last
+                type: button
+                aria-label: Last page
+              children:
+                - el: span
+                  class: chev chev-double-right
+                  attrs:
+                    aria-hidden: "true"
     - el: template
-      class: num-tpl
+      class: rows-opt-tpl
       children:
-        - el: button
-          class: btn num
-          attrs:
-            data-action: page
-            type: button
+        - el: option
 props:
   - $type: prop
     name: data-current-page
     type: string
-    kind: content
+    kind: style
     default: "1"
     description: the active 1-based page
+  - $type: prop
+    name: data-page
+    type: string
+    kind: content
+    default: "1"
+    description: — current 1-based page
+  - $type: prop
+    name: data-page-size
+    type: string
+    kind: content
+    default: first option
+    description: — active rows-per-page value
+  - $type: prop
+    name: data-rows-options
+    type: string
+    kind: content
+    description: — comma list of rows-per-page choices, e.g. "10,25,50"
   - $type: prop
     name: data-total-pages
     type: string
@@ -75,12 +136,15 @@ props:
     description: — total page count
 states:
   - $type: state
+    name: disabled
+    selector: ":host([disabled])"
+  - $type: state
     name: focus-visible
-    selector: .btn:focus-visible
+    selector: .rows:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (page, totalPages). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (page, totalPages, pageSize). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: page-change
@@ -89,18 +153,31 @@ events:
     trigger:
       "on": click
       node: .pager
+  - $type: event
+    name: page-size-change
+    bubbles: true
+    composed: true
 tokens:
-  pager.gap: "{sherpa.structure-space-gap}"
-  numbers.gap: "{sherpa.structure-space-gap}"
+  results.gap: "{sherpa.display-space-xs}"
+  rows-label.color: "{sherpa.theme-content-body-base}"
+  controls.gap: "{sherpa.display-space-xs}"
+  total.color: "{sherpa.theme-content-body-base}"
+  rows.padding: "{sherpa.theme-padding-sm}"
+  rows.border-width: "{sherpa.style-border-width}"
+  rows.border-radius: "{sherpa.structure-rounding-top-left}"
+  rows.background: "{sherpa.style-surface-base}"
+  rows.color: "{sherpa.style-content-base}"
+  rows.font-size: "{sherpa.font-size-body-base}"
+  page-input.padding: "{sherpa.theme-padding-sm}"
+  page-input.border-width: "{sherpa.style-border-width}"
+  page-input.border-radius: "{sherpa.structure-rounding-top-left}"
+  page-input.background: "{sherpa.style-surface-base}"
+  page-input.color: "{sherpa.style-content-base}"
+  page-input.font-size: "{sherpa.font-size-body-base}"
   btn.padding-inline: "{sherpa.structure-space-padding}"
   btn.border-width: "{sherpa.style-border-width}"
   btn.border-radius: "{sherpa.structure-rounding-top-left}"
-  btn.font-size: "{sherpa.font-size-body-base}"
-  btn.font-weight: "{sherpa.font-weight-medium}"
   btn.color: "{sherpa.theme-content-body-base}"
-  gap.color: "{sherpa.theme-content-body-1}"
-  chev.border-right: "{sherpa.display-border-width-lg}"
-  chev.border-bottom: "{sherpa.display-border-width-lg}"
 $extensions:
   sherpa:
     figmaName: Pagination
@@ -115,4 +192,8 @@ $extensions:
       - name: totalPages
         type: number
         description: total page count (read/write)
+        access: read-write
+      - name: pageSize
+        type: number
+        description: rows per page (read/write)
         access: read-write

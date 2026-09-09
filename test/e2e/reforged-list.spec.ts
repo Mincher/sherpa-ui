@@ -40,10 +40,10 @@ test('populate stamps one sherpa-list-item per row from the prototype', async ({
     ]);
     await new Promise((res) => setTimeout(res, 20));
     const s = el.shadowRoot!;
-    const items = Array.from(s.querySelectorAll('.rows > sherpa-list-item'));
+    const items = Array.from(s.querySelectorAll('.body > .row-item > sherpa-list-item'));
     return {
       count: items.length,
-      titles: items.map((n) => n.getAttribute('data-heading')),
+      titles: items.map((n) => n.getAttribute('data-label')),
       prototypePresent: !!s.querySelector('template.row-tpl'),
       allInteractive: items.every((n) => n.hasAttribute('data-interactive')),
     };
@@ -63,9 +63,9 @@ test('re-populating replaces the previous rows', async ({ page }) => {
     await new Promise((res) => setTimeout(res, 20));
     el.populate([{ title: 'New' }]);
     await new Promise((res) => setTimeout(res, 20));
-    return Array.from(el.shadowRoot!.querySelectorAll('.rows > sherpa-list-item')).map((n) =>
-      n.getAttribute('data-heading'),
-    );
+    return Array.from(
+      el.shadowRoot!.querySelectorAll('.body > .row-item > sherpa-list-item'),
+    ).map((n) => n.getAttribute('data-label'));
   });
   expect(r).toEqual(['New']);
 });
@@ -78,7 +78,7 @@ test('clicking a stamped row keeps only that row current (single-current)', asyn
     el.populate([{ title: 'One' }, { title: 'Two' }, { title: 'Three' }]);
     await new Promise((res) => setTimeout(res, 20));
     const items = Array.from(
-      el.shadowRoot!.querySelectorAll<HTMLElement>('.rows > sherpa-list-item'),
+      el.shadowRoot!.querySelectorAll<HTMLElement>('.body > .row-item > sherpa-list-item'),
     );
     items[0]!.click();
     await new Promise((res) => setTimeout(res, 5));

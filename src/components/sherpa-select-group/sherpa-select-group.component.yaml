@@ -34,17 +34,36 @@ anatomy:
           - el: span
             class: description
             part: description
+      - el: hr
+        class: divider
+        part: divider
+        attrs:
+          aria-hidden: "true"
       - el: div
         class: options
         part: options
         attrs:
           role: group
+        children:
+          - slot: options
+            attrs:
+              data-accepts: control
+      - el: p
+        class: validation
+        part: validation
+        attrs:
+          role: alert
 props:
   - $type: prop
     name: data-description
     type: string
     kind: content
     description: helper line under the heading
+  - $type: prop
+    name: data-error
+    type: string
+    kind: content
+    description: validation message; present → validation row shown
   - $type: prop
     name: data-label
     type: string
@@ -55,6 +74,11 @@ props:
     type: string
     kind: content
     description: present → checkboxes (multi-select); absent → radios
+  - $type: prop
+    name: data-status
+    type: string
+    kind: style
+    description: status cascade re-inks heading + validation (critical/…)
   - $type: prop
     name: disabled
     type: boolean
@@ -69,8 +93,17 @@ props:
     description: "property: string[] when multiple, else string | null"
 states:
   - $type: state
+    name: label
+    selector: ":host([data-label])"
+  - $type: state
+    name: description
+    selector: ":host([data-description])"
+  - $type: state
     name: horizontal
     selector: ":host([data-orientation=\"horizontal\"])"
+  - $type: state
+    name: error
+    selector: ":host([data-error])"
   - $type: state
     name: status
     selector: ":host([data-status])"
@@ -90,14 +123,17 @@ events:
       "on": change
       node: .options
 tokens:
+  group.gap: "{sherpa.display-space-xs}"
   legend.gap: "{sherpa.display-space-2xs}"
-  legend.margin-block-end: "{sherpa.display-space-xs}"
   label.color: "{sherpa.theme-content-body-base}"
   label.font-size: "{sherpa.font-size-body-large}"
   label.font-weight: "{sherpa.font-weight-semibold}"
   description.color: "{sherpa.theme-content-body-1}"
   description.font-size: "{sherpa.font-size-body-base}"
+  divider.border-block-start: "{sherpa.border-width-sm}"
   options.gap: "{sherpa.display-space-xs}"
+  validation.color: "{sherpa.theme-content-body-1}"
+  validation.font-size: "{sherpa.font-size-body-small}"
 $extensions:
   sherpa:
     figmaName: Fieldset

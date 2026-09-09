@@ -6,8 +6,8 @@
  * data→CSS-variable bridge, not styling). CSS normalises each value to 0–100
  * with calc() and draws it: line variant renders an angled area + stroke via
  * clip-path on pseudo-elements; bar variant flattens each segment's top edge to
- * a column. Segment/point visibility is a [hidden] presence toggle set from the
- * data length — JS never sets display/width/colour here.
+ * a column. Segment/point visibility is driven by the host's data-len via
+ * :host([data-len="…"]) selectors — JS never sets display/width/colour here.
  */
 
 /* Typed JS→CSS bridges: TS writes the raw values (--_v0..7) plus the normalisation
@@ -31,12 +31,12 @@
   vertical-align: middle;
   inline-size: 100%;
   min-inline-size: 40px;
-  block-size: var(--sherpa-display-size-xl, 28px);
+  block-size: var(--sherpa-display-mode-size-xl, 28px);
 
   /* Trend colour — status cascade wins, else the primary accent. */
   /* Neutral grey line by default (Figma: status-border/default passthrough);
      a status context re-inks it. */
-  --_line: var(--_status-border, var(--sherpa-theme-border-default-2, #b2b2bf));
+  --_line: var(--_status-border, var(--sherpa-theme-border-default-2, #B3B3C3));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
@@ -44,7 +44,7 @@
   --_min: 0;
   --_range: 1;
   --_stroke: 1.5px;
-  --_point-size: var(--sherpa-display-space-xs, 8px);
+  --_point-size: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 .chart {
@@ -57,7 +57,7 @@
 }
 
 :host([data-variant="bar"]) .chart {
-  gap: var(--sherpa-display-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
 /* ── Shapes: one per adjacent value pair ───────────────────────────── */
@@ -124,7 +124,7 @@
   position: absolute;
   inline-size: var(--_point-size);
   block-size: var(--_point-size);
-  border-radius: var(--sherpa-display-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: currentColor;
   translate: calc(-1 * var(--_point-size) / 2) calc(-1 * var(--_point-size) / 2);
   opacity: 0;
@@ -135,13 +135,87 @@
   &[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 }
 
-:host(:hover) .point:not([hidden]) { opacity: 1; }
 :host([data-variant="bar"]) .point { display: none; }
 
-/* Data-presence collapse — JS toggles [hidden] from the value count. */
-.shape[hidden] { display: none; }
-.point[hidden] { display: none; }
+/* ── Data-presence collapse — CSS owns visibility from the host's data-len ──
+ * JS reflects the value count on the host as data-len; CSS reveals the live
+ * shapes (index < len-1) and points (index < len). Everything is hidden until
+ * data-len says otherwise, so an unfed sparkline draws nothing. */
+.shape,
+.point { display: none; }
 
-@media (prefers-reduced-motion: reduce) {
-  .point { transition: none; }
+:host([data-len="2"]) .shape[data-index="0"],
+:host([data-len="3"]) .shape[data-index="0"],
+:host([data-len="3"]) .shape[data-index="1"],
+:host([data-len="4"]) .shape[data-index="0"],
+:host([data-len="4"]) .shape[data-index="1"],
+:host([data-len="4"]) .shape[data-index="2"],
+:host([data-len="5"]) .shape[data-index="0"],
+:host([data-len="5"]) .shape[data-index="1"],
+:host([data-len="5"]) .shape[data-index="2"],
+:host([data-len="5"]) .shape[data-index="3"],
+:host([data-len="6"]) .shape[data-index="0"],
+:host([data-len="6"]) .shape[data-index="1"],
+:host([data-len="6"]) .shape[data-index="2"],
+:host([data-len="6"]) .shape[data-index="3"],
+:host([data-len="6"]) .shape[data-index="4"],
+:host([data-len="7"]) .shape[data-index="0"],
+:host([data-len="7"]) .shape[data-index="1"],
+:host([data-len="7"]) .shape[data-index="2"],
+:host([data-len="7"]) .shape[data-index="3"],
+:host([data-len="7"]) .shape[data-index="4"],
+:host([data-len="7"]) .shape[data-index="5"],
+:host([data-len="8"]) .shape[data-index="0"],
+:host([data-len="8"]) .shape[data-index="1"],
+:host([data-len="8"]) .shape[data-index="2"],
+:host([data-len="8"]) .shape[data-index="3"],
+:host([data-len="8"]) .shape[data-index="4"],
+:host([data-len="8"]) .shape[data-index="5"],
+:host([data-len="8"]) .shape[data-index="6"] {
+  display: block;
 }
+
+:host([data-len="1"]) .point[data-index="0"],
+:host([data-len="2"]) .point[data-index="0"],
+:host([data-len="2"]) .point[data-index="1"],
+:host([data-len="3"]) .point[data-index="0"],
+:host([data-len="3"]) .point[data-index="1"],
+:host([data-len="3"]) .point[data-index="2"],
+:host([data-len="4"]) .point[data-index="0"],
+:host([data-len="4"]) .point[data-index="1"],
+:host([data-len="4"]) .point[data-index="2"],
+:host([data-len="4"]) .point[data-index="3"],
+:host([data-len="5"]) .point[data-index="0"],
+:host([data-len="5"]) .point[data-index="1"],
+:host([data-len="5"]) .point[data-index="2"],
+:host([data-len="5"]) .point[data-index="3"],
+:host([data-len="5"]) .point[data-index="4"],
+:host([data-len="6"]) .point[data-index="0"],
+:host([data-len="6"]) .point[data-index="1"],
+:host([data-len="6"]) .point[data-index="2"],
+:host([data-len="6"]) .point[data-index="3"],
+:host([data-len="6"]) .point[data-index="4"],
+:host([data-len="6"]) .point[data-index="5"],
+:host([data-len="7"]) .point[data-index="0"],
+:host([data-len="7"]) .point[data-index="1"],
+:host([data-len="7"]) .point[data-index="2"],
+:host([data-len="7"]) .point[data-index="3"],
+:host([data-len="7"]) .point[data-index="4"],
+:host([data-len="7"]) .point[data-index="5"],
+:host([data-len="7"]) .point[data-index="6"],
+:host([data-len="8"]) .point[data-index="0"],
+:host([data-len="8"]) .point[data-index="1"],
+:host([data-len="8"]) .point[data-index="2"],
+:host([data-len="8"]) .point[data-index="3"],
+:host([data-len="8"]) .point[data-index="4"],
+:host([data-len="8"]) .point[data-index="5"],
+:host([data-len="8"]) .point[data-index="6"],
+:host([data-len="8"]) .point[data-index="7"] {
+  display: block;
+}
+
+/* Bar variant never shows points, regardless of length. */
+:host([data-variant="bar"]) .point { display: none; }
+
+/* Hover reveals the live points. */
+:host(:hover) .point { opacity: 1; }

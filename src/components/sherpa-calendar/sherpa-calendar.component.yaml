@@ -88,6 +88,29 @@ anatomy:
                   part: time
                   attrs:
                     type: time
+        - el: div
+          class: cal-footer
+          part: footer
+          children:
+            - el: button
+              class: cal-today
+              part: today
+              attrs:
+                type: button
+            - el: div
+              class: cal-actions
+              part: actions
+              children:
+                - el: button
+                  class: cal-cancel
+                  part: cancel
+                  attrs:
+                    type: button
+                - el: button
+                  class: cal-apply
+                  part: apply
+                  attrs:
+                    type: button
     - el: template
       class: cal-cell-tpl
       children:
@@ -182,6 +205,14 @@ events:
     name: range-select
     bubbles: true
     composed: true
+  - $type: event
+    name: calendar-cancel
+    bubbles: true
+    composed: true
+  - $type: event
+    name: calendar-apply
+    bubbles: true
+    composed: true
 tokens:
   cal.gap: "{sherpa.theme-gap-md}"
   cal.padding: "{sherpa.theme-padding-lg}"
@@ -220,6 +251,31 @@ tokens:
   cal-time.background: "{sherpa.style-surface-base}"
   cal-time.color: "{sherpa.style-content-base}"
   cal-time.font-size: "{sherpa.font-size-body-base}"
+  cal-footer.gap: "{sherpa.theme-gap-md}"
+  cal-footer.margin-block-start: "{sherpa.display-space-3xs}"
+  cal-footer.padding-block-start: "{sherpa.theme-gap-md}"
+  cal-footer.border-block-start: "{sherpa.style-border-width}"
+  cal-actions.gap: "{sherpa.display-space-xs}"
+  cal-today.font-size: "{sherpa.font-size-body-base}"
+  cal-today.font-weight: "{sherpa.font-weight-medium}"
+  cal-cancel.block-size: "{sherpa.structure-height}"
+  cal-cancel.padding-block: "{sherpa.display-space-3xs}"
+  cal-cancel.padding-inline: "{sherpa.theme-padding-lg}"
+  cal-cancel.border-width: "{sherpa.style-border-width}"
+  cal-cancel.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-cancel.background: "{sherpa.style-surface-base}"
+  cal-cancel.color: "{sherpa.style-content-base}"
+  cal-cancel.font-size: "{sherpa.font-size-body-base}"
+  cal-cancel.font-weight: "{sherpa.font-weight-medium}"
+  cal-apply.block-size: "{sherpa.structure-height}"
+  cal-apply.padding-block: "{sherpa.display-space-3xs}"
+  cal-apply.padding-inline: "{sherpa.theme-padding-lg}"
+  cal-apply.border-width: "{sherpa.style-border-width}"
+  cal-apply.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-apply.background: "{sherpa.style-surface-base}"
+  cal-apply.color: "{sherpa.style-content-base}"
+  cal-apply.font-size: "{sherpa.font-size-body-base}"
+  cal-apply.font-weight: "{sherpa.font-weight-medium}"
 $extensions:
   sherpa:
     figmaName: Calendar

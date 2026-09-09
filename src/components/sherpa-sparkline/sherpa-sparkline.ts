@@ -57,11 +57,11 @@ export class SherpaSparkline extends SherpaElement {
     const values = this.#parse().slice(-SLOTS);
     const count = values.length;
 
-    if (count === 0) {
-      this.$$('.shape').forEach((s) => s.toggleAttribute('hidden', true));
-      this.$$('.point').forEach((p) => p.toggleAttribute('hidden', true));
-      return;
-    }
+    // Data length reflected on the host; CSS owns which shapes/points show
+    // via :host([data-len="…"]) selectors.
+    this.dataset['len'] = String(count);
+
+    if (count === 0) return;
 
     const min = Math.min(...values);
     const max = Math.max(...values);
@@ -74,17 +74,6 @@ export class SherpaSparkline extends SherpaElement {
       if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));
       else this.style.removeProperty(`--_v${i}`);
     }
-
-    // Presence toggles: a segment is live when both its endpoints have data.
-    const segments = Math.max(count - 1, 0);
-    this.$$('.shape').forEach((shape) => {
-      const idx = Number(shape.dataset['index']);
-      shape.toggleAttribute('hidden', idx >= segments);
-    });
-    this.$$('.point').forEach((point) => {
-      const idx = Number(point.dataset['index']);
-      point.toggleAttribute('hidden', idx >= count);
-    });
   }
 }
 

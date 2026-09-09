@@ -13,50 +13,69 @@ $name: sherpa-gauge-chart
 $description: a half-circle gauge for a single 0–100 value.
 element:
   $type: element
-  tag: div
+  tag: figure
   provides: []
 templates:
   - default
 anatomy:
-  roots:
-    - el: div
-      class: chart-header
-      part: header
-      children:
-        - el: span
-          class: title
-          slot: title
-    - el: div
-      class: gauge
-      part: gauge
-      children:
-        - el: div
-          class: track
-          part: track
-        - el: div
-          class: fill
-          part: fill
-        - el: div
-          class: hub
-          children:
-            - el: div
-              class: needle
-              part: needle
-        - el: div
-          class: centre
-          children:
-            - el: span
-              class: value
-              part: value
-    - el: div
-      class: scale
-      part: scale
-      children:
-        - el: span
-          class: min
-        - el: span
-          class: max
+  root:
+    el: figure
+    class: chart-figure
+    part: figure
+    children:
+      - el: div
+        class: chart-header
+        part: header
+        children:
+          - el: span
+            class: title
+            slot: title
+      - el: div
+        class: gauge
+        part: gauge
+        attrs:
+          role: img
+          aria-label: Gauge chart
+        children:
+          - el: div
+            class: track
+            part: track
+          - el: div
+            class: fill
+            part: fill
+          - el: div
+            class: hub
+            children:
+              - el: div
+                class: needle
+                part: needle
+          - el: div
+            class: hub-cap
+            part: hub
+          - el: div
+            class: centre
+            children:
+              - el: span
+                class: value
+                part: value
+      - el: div
+        class: scale
+        part: scale
+        children:
+          - el: span
+            class: min
+          - el: span
+            class: max
+      - el: figcaption
+        class: caption
+        part: caption
+        slot: caption
 props:
+  - $type: prop
+    name: data-caption
+    type: string
+    kind: content
+    description: caption text shown below the arc (e.g. "30GB of 60GB used")
   - $type: prop
     name: data-label
     type: string
@@ -83,12 +102,30 @@ props:
       - warning
       - success
       - info
-    description: critical | warning | success | info  (fill colour)
+    description: critical | warning | success | info  (single-colour fill)
   - $type: prop
     name: data-value
     type: string
     kind: content
-    description: 0–100 (drives the fill sweep + needle angle)
+    description: number on the scale (drives the fill sweep + needle angle)
+  - $type: prop
+    name: data-zones
+    type: string
+    kind: content
+    description: >-
+      threshold bands — "0-50:success,50-80:warning,80-100:critical" (compact) OR a JSON array
+      [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info)
+      or any CSS colour. Omit for the single-colour sweep.
+states:
+  - $type: state
+    name: zones
+    selector: ":host([data-zones])"
+  - $type: state
+    name: caption
+    selector: ":host([data-caption])"
+  - $type: state
+    name: has-caption
+    selector: ":host([data-has-caption])"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -104,11 +141,14 @@ tokens:
   title.color: "{sherpa.theme-content-body-base}"
   track.background: "{sherpa.style-border-base}"
   needle.background: "{sherpa.theme-content-body-base}"
+  hub-cap.background: "{sherpa.theme-content-body-base}"
   value.font-size: "{sherpa.font-size-heading-h1}"
   value.font-weight: "{sherpa.font-weight-bold}"
   value.color: "{sherpa.theme-content-body-base}"
   scale.font-size: "{sherpa.font-size-body-small}"
   scale.color: "{sherpa.theme-content-body-1}"
+  caption.font-size: "{sherpa.font-size-body-small}"
+  caption.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:
     figmaName: Gauge Chart

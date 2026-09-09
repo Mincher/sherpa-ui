@@ -65,9 +65,18 @@ test('data-href renders the row as a link', async ({ page }) => {
     el.setAttribute('data-href', '/docs');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    return { href: el.shadowRoot!.querySelector('.row')!.getAttribute('href') };
+    const s = el.shadowRoot!;
+    const link = s.querySelector('.row-link') as HTMLAnchorElement;
+    const button = s.querySelector('.row-button') as HTMLElement;
+    return {
+      href: link.getAttribute('href'),
+      linkVisible: getComputedStyle(link).display !== 'none',
+      buttonVisible: getComputedStyle(button).display !== 'none',
+    };
   });
-  expect(r.href).toBe('/docs');
+  expect(r.href).toBe('/docs'); // the <a class="row-link"> carries the href
+  expect(r.linkVisible).toBe(true); // data-href → the link is the active row
+  expect(r.buttonVisible).toBe(false); // the plain <button> row is hidden
 });
 
 test('current setter reflects to data-current and styles the row', async ({ page }) => {

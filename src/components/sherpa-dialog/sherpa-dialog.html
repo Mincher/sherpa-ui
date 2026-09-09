@@ -13,7 +13,10 @@
     data-status   — status colour cascade (critical | warning | success | info | urgent)
 
   Slots:
-    header    — header region (reflects data-has-header)
+    header    — header region (reflects data-has-header). data-heading renders a
+                PLAIN label; for the Figma dialog header (icon + title + description +
+                close), COMPOSE a <sherpa-container-header> into this slot — the dialog
+                intentionally does not build that chrome itself.
     (default) — the dialog body
     footer    — footer region (reflects data-has-footer)
 

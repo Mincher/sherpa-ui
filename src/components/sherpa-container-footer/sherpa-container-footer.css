@@ -8,7 +8,8 @@
  * Colour model (Figma): the footer row fills its status surface via the
  * [data-status] cascade — background: var(--_status-surface, transparent). With
  * no ancestor status it is transparent over the container surface. Geometry
- * binds the container-space vars.
+ * binds the container-space vars. A top divider separates the action bar from
+ * the container body (Figma action-bar: strokeTop border/width/sm, style-border/base).
  */
 
 :host {
@@ -21,8 +22,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
-  gap: var(--sherpa-theme-gap-md, 8px);
-  padding: var(--sherpa-theme-padding-lg, 16px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-style-border-base, #E8E8F6);
 }
 
 /* ── Alignment ────────────────────────────────────────────────────────── */
