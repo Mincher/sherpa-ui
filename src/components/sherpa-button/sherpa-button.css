@@ -189,8 +189,10 @@
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  /* Figma 'inactive' mode: dark readable ink (#35353d) on the grey inactive
+     surface (#b3b3c3) — NOT the same grey as the surface (that hid the label). */
+  color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .icon { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+:host([disabled]) .icon { color: var(--sherpa-theme-content-body-1, #35353d); }
