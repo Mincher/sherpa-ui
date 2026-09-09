@@ -148,7 +148,7 @@
   margin: 0;
   font-size: var(--sherpa-font-size-heading-h2, 20px);
   font-weight: var(--sherpa-font-weight-bold, 700);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -34,7 +34,7 @@
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -46,7 +46,7 @@
 .pane-heading {
   margin: 0;
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-small, 12px);

@@ -26,6 +26,20 @@
   gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 
+/* The native picker is proxied by the .browse button — keep it in the a11y tree
+   but visually gone (a bare "Choose Files" control must never render). */
+.file-input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .label {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -45,7 +59,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-xl, 24px) var(--sherpa-display-mode-space-lg, 20px);
+  padding: var(--sherpa-display-mode-space-lg, 20px);
   border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;

@@ -124,9 +124,17 @@
   cursor: pointer;
   transition: background-color 80ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
+  /* Visible hover: the subtle neutral band (matches the header fill). A fully
+     transparent hover reads as no feedback at all. */
+  &:hover { background: var(--sherpa-theme-surface-default-1, #e8e8f6); }
   &:not(:last-child) .cell {
     border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  }
+
+  /* Selected row (its select box is checked) — a subtle accent tint so the
+     selection is visible. Accent transparent = accent @ ~30%. */
+  &:has(.row-select:checked) {
+    background: var(--sherpa-theme-surface-accent-transparent, #3b4ccd4d);
   }
 }
 
