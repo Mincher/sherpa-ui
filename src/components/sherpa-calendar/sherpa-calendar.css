@@ -164,16 +164,16 @@
    band cells drop their corner radius and bleed across the 2px grid gap with a
    left/right box-shadow so the fill reads as one continuous strip. */
 .cal-cell[data-in-range] {
-  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
+  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
   color: var(--sherpa-theme-content-body-base, #0C0B11);
   border-radius: 0;
   border-color: transparent;
   box-shadow:
-    calc(-1 * var(--sherpa-display-mode-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A),
-    var(--sherpa-display-mode-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
+    calc(-1 * var(--sherpa-display-mode-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D),
+    var(--sherpa-display-mode-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
 }
 .cal-cell[data-in-range]:hover {
-  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD1A);
+  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
   color: var(--sherpa-theme-content-body-base, #0C0B11);
 }
 

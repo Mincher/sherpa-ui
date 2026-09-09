@@ -65,7 +65,7 @@
 
 .value {
   color: var(--sherpa-theme-content-body-1, #35353D);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
 
   &:empty { display: none; }
 }

@@ -49,7 +49,7 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
   expect(r.value).toBe('$1.2M');
   expect(r.delta).toBe('+12.5%'); // derived from deltaPercent
   expect(r.trend).toBe('up');
-  expect(r.deltaColor).toBe('rgb(0, 57, 29)'); // theme-content-success-base #00391d
+  expect(r.deltaColor).toBe('rgb(0, 122, 69)'); // theme-content-success-1 #007A45 (readable up-trend ink)
 });
 
 test('a down trend colours the delta critical', async ({ page }) => {
@@ -69,7 +69,7 @@ test('a down trend colours the delta critical', async ({ page }) => {
   });
   expect(r.trend).toBe('down');
   expect(r.delta).toBe('-4%');
-  expect(r.color).toBe('rgb(112, 17, 0)'); // theme-content-critical-base #701100
+  expect(r.color).toBe('rgb(183, 34, 0)'); // theme-content-critical-1 #B72200 (readable down-trend ink)
   expect(r.upArrow).toBe('none');
   expect(r.downArrow).not.toBe('none'); // down arrow revealed
 });
