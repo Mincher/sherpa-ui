@@ -37,6 +37,7 @@ const VIEW_RE = /^[a-z0-9-]+$/;
 app.use('/dist', express.static(join(ROOT, 'dist')));           // built components + tokens.css
 app.use('/server', express.static(join(ROOT, 'server')));       // shared parser (browser sandbox imports it too)
 app.use('/examples', express.static(join(ROOT, 'examples')));   // example page CSS/JS assets if any
+app.use('/views', express.static(join(ROOT, 'examples', 'views'))); // SPA view modules (index.html imports ./views/<v>.js)
 
 // ── template source #1: derived default component usage ───────────────────────
 app.get('/template/component/:name', async (req, res) => {
@@ -62,18 +63,24 @@ app.get('/template/view/:view', async (req, res) => {
   }
 });
 
-// ── the example page shell for a view ──────────────────────────────────────────
-// Serves the example .html document verbatim (its <head> + module bootstrap);
-// the page then fetches /template/view/<view> and injects it into itself.
-app.get(['/', '/:view'], async (req, res) => {
-  const view = String(req.params.view ?? 'dashboard').replace(/\.html$/, '');
-  if (!VIEWS.includes(view)) return res.status(404).type('text').send('unknown view');
+// ── the single-page app shell ───────────────────────────────────────────────
+// One document (examples/index.html) owns the app-shell + nav + header. Its
+// router reads ?view=<view>, fetches /template/view/<view> and hot-swaps the
+// content — no per-view HTML documents, no full reloads.
+app.get('/', async (_req, res) => {
   try {
-    const page = await readFile(join(ROOT, 'examples', `${view}.html`), 'utf8');
+    const page = await readFile(join(ROOT, 'examples', 'index.html'), 'utf8');
     res.type('html').send(page);
   } catch {
-    res.status(404).type('text').send('unknown view');
+    res.status(500).type('text').send('missing examples/index.html');
   }
+});
+
+// Legacy per-view URLs (/records, /records.html) → redirect into the SPA.
+app.get('/:view', (req, res) => {
+  const view = String(req.params.view).replace(/\.html$/, '');
+  if (!VIEWS.includes(view)) return res.status(404).type('text').send('unknown view');
+  res.redirect(302, `/?view=${view}`);
 });
 
 // A tiny index that lists the views (uses the html helper, kept from the old server).

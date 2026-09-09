@@ -1,33 +1,26 @@
-<!-- Bespoke per-view markup for the "records" example.
+<!-- Content-only markup for the "records" view.
      Served by the template server (GET /template/view/records) and injected into
-     the example page shell. The page's own module script builds the data and
-     populates the grid / toolbar / dialog and wires events after injection. -->
-<sherpa-app-shell>
-  <!-- Slot our own nav + header so the app can populate() them directly. -->
-  <sherpa-nav slot="nav" data-active-id="view-records"></sherpa-nav>
-  <sherpa-app-header slot="header" data-heading="Customers" data-icon="&#128100;"></sherpa-app-header>
+     the app-shell's default (content) slot by the SPA router in index.html.
+     views/records.js builds the data and populates the grid / toolbar / dialog. -->
+<div class="view">
+  <sherpa-section-header data-heading="Customers">
+    <span slot="description">Manage customer accounts, plans and billing.</span>
+    <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
+      Add customer
+    </sherpa-button>
+  </sherpa-section-header>
 
-  <!-- The records view in the default (content) slot. -->
-  <div class="view">
-    <sherpa-section-header data-heading="Customers">
-      <span slot="description">Manage customer accounts, plans and billing.</span>
-      <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
-        Add customer
-      </sherpa-button>
-    </sherpa-section-header>
-
-    <div class="panel">
-      <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
-      <sherpa-pagination
-        id="pager"
-        data-page="1"
-        data-page-size="10"
-        data-total-pages="3"
-        data-rows-options="10,25,50"></sherpa-pagination>
-    </div>
+  <div class="panel">
+    <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
+    <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
+    <sherpa-pagination
+      id="pager"
+      data-page="1"
+      data-page-size="10"
+      data-total-pages="3"
+      data-rows-options="10,25,50"></sherpa-pagination>
   </div>
-</sherpa-app-shell>
+</div>
 
 <!-- Add / edit customer dialog. -->
 <sherpa-dialog id="dialog" data-heading="Add customer">

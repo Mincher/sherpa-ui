@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en" data-theme="sherpa" data-mode="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sherpa-UI — example app</title>
+
+  <!-- Design tokens (light DOM → inherit into every shadow root). -->
+  <link rel="stylesheet" href="../dist/styles/tokens/tokens.css" />
+
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+      color: var(--sherpa-theme-content-body-base, #0c0b11);
+      background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+    }
+
+    /* The single app-shell fills the viewport. */
+    #view-root, sherpa-app-shell { height: 100%; }
+
+    /* ── Shared surface card used by dashboard + records. ─────────── */
+    .panel {
+      background: var(--sherpa-theme-surface-default-base, #fff);
+      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
+      padding: var(--sherpa-display-mode-space-lg, 20px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-base, 16px);
+      min-width: 0;
+    }
+    .panel h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sherpa-theme-content-body-1, #35353d);
+    }
+
+    /* ── Dashboard view ───────────────────────────────────────────── */
+    .view {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-xl, 24px);
+      padding: var(--sherpa-display-mode-space-xl, 24px);
+      max-width: 1400px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--sherpa-display-mode-space-base, 16px);
+    }
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: var(--sherpa-display-mode-space-base, 16px);
+    }
+    sherpa-barchart, sherpa-line-chart { min-height: 220px; }
+    sherpa-donut-chart, sherpa-gauge-chart { min-height: 200px; }
+    .summary {
+      max-width: 1400px;
+      padding: 0 var(--sherpa-display-mode-space-xl, 24px) var(--sherpa-display-mode-space-xl, 24px);
+    }
+
+    /* ── Records view: dialog form + toast region. ────────────────── */
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-base, 12px);
+      min-width: 380px;
+    }
+    .dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--sherpa-display-mode-space-sm, 8px);
+    }
+    .toast-region {
+      position: fixed;
+      right: var(--sherpa-display-mode-space-lg, 16px);
+      bottom: var(--sherpa-display-mode-space-lg, 16px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-sm, 8px);
+      z-index: 1000;
+    }
+
+    /* ── Settings view ────────────────────────────────────────────── */
+    .settings {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--sherpa-display-mode-space-2xl, 32px) var(--sherpa-display-mode-space-xl, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-2xl, 32px);
+    }
+    .section {
+      background: var(--sherpa-theme-surface-default-base, #fff);
+      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      border-radius: var(--sherpa-display-mode-border-rounding-lg, 12px);
+      padding: var(--sherpa-display-mode-space-xl, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-lg, 16px);
+    }
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sherpa-display-mode-space-lg, 16px);
+    }
+    .switch-row .meta { display: flex; flex-direction: column; gap: 2px; }
+    .switch-row .meta strong { font-weight: 600; font-size: 14px; }
+    .switch-row .meta span {
+      font-size: 13px;
+      color: var(--sherpa-theme-content-body-1, #35353d);
+    }
+    .plan-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--sherpa-display-mode-space-md, 12px);
+    }
+
+    /* ── Chat view: scrolling thread over a pinned composer. ──────── */
+    .chat {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      height: 100%;
+      min-height: 0;
+      background: var(--sherpa-theme-surface-default-base, #fff);
+    }
+    .thread {
+      overflow-y: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sherpa-display-mode-space-lg, 16px);
+      padding: var(--sherpa-display-mode-space-2xl, 24px);
+      max-width: 920px;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .typing[hidden] { display: none; }
+    .composer-dock {
+      border-top: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      padding: var(--sherpa-display-mode-space-lg, 16px) var(--sherpa-display-mode-space-2xl, 24px);
+      background: var(--sherpa-theme-surface-default-base, #fff);
+    }
+    .composer-inner { max-width: 920px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <!-- ── The app-shell + nav + header live ONCE. Only the content swaps. ── -->
+  <sherpa-app-shell>
+    <sherpa-nav slot="nav"></sherpa-nav>
+
+    <sherpa-app-header slot="header" data-heading="Dashboard" data-notifications="4">
+      <!-- app-header.populate() stamps into these empty children by slot name. -->
+      <sherpa-breadcrumbs slot="breadcrumb"></sherpa-breadcrumbs>
+      <sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>
+    </sherpa-app-header>
+
+    <!-- The per-view content is fetched + injected here by the router. -->
+    <main id="view-root"></main>
+  </sherpa-app-shell>
+
+  <script type="module">
+    import '../dist/index.js';
+
+    // Sentinel to prove hot-swaps stay in the SAME document (never a full reload).
+    window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
+
+    const VIEWS = ['dashboard', 'records', 'settings', 'chat'];
+    const DEFAULT_VIEW = 'dashboard';
+
+    const viewRoot = document.getElementById('view-root');
+    const nav = document.querySelector('sherpa-app-shell sherpa-nav');
+
+    // ── Shared nav config: the "Views" section links the 4 views. ──────
+    const navConfig = {
+      product: { name: 'N-central', icon: '◉' },
+      quickItems: [
+        { id: 'overview', label: 'Dashboard', icon: '▦', href: '#overview' },
+        { id: 'search',   label: 'Global search', icon: '⌕', href: '#search' },
+      ],
+      sections: [
+        { label: 'Views', items: [
+          { id: 'view-dashboard', label: 'Dashboard', icon: '▦', href: '?view=dashboard' },
+          { id: 'view-records',   label: 'Records',   icon: '▤', href: '?view=records' },
+          { id: 'view-settings',  label: 'Settings',  icon: '⚙', href: '?view=settings' },
+          { id: 'view-chat',      label: 'Assistant', icon: '✳', href: '?view=chat' },
+        ] },
+        { label: 'Monitor', items: [
+          { id: 'endpoints', label: 'Endpoints', icon: '◻', href: '#endpoints', badge: '1284' },
+          { id: 'alerts',    label: 'Alerts',    icon: '⚠', href: '#alerts', badge: '37' },
+          { id: 'health',    label: 'Health',    icon: '♥', href: '#health' },
+        ] },
+        { label: 'Manage', items: [
+          { id: 'patches',    label: 'Patching',   icon: '⚙', href: '#patches' },
+          { id: 'backups',    label: 'Backups',    icon: '↻', href: '#backups' },
+          { id: 'automation', label: 'Automation', icon: '⚡', href: '#automation' },
+        ] },
+        { label: 'Admin', items: [
+          { id: 'reports', label: 'Reports',  icon: '▤', href: '#reports' },
+          { id: 'users',   label: 'Users',    icon: '○', href: '#users' },
+          { id: 'admin',   label: 'Settings', icon: '⚒', href: '#admin' },
+        ] },
+      ],
+    };
+
+    // Which nav id maps to which view, and back.
+    const idForView  = (v) => `view-${v}`;
+    const viewForId  = (id) => (id?.startsWith('view-') ? id.slice('view-'.length) : null);
+
+    // Read the current view from the URL (?view=<v>), defaulting to dashboard.
+    const viewFromURL = () => {
+      const v = new URL(location.href).searchParams.get('view');
+      return VIEWS.includes(v) ? v : DEFAULT_VIEW;
+    };
+
+    // Guard against races: only the newest load may commit.
+    let loadToken = 0;
+    let cleanup = null;   // teardown returned by the current view's init()
+
+    async function loadView(name) {
+      const token = ++loadToken;
+
+      // Tear down the previous view (e.g. chat's data-no-header).
+      if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
+
+      // Keep the nav active-state synced to the current view.
+      nav.dataset.activeId = idForView(name);
+
+      // 1) Fetch the bespoke content-only markup for the view.
+      const markup = await (await fetch(`/template/view/${name}`)).text();
+      if (token !== loadToken) return;   // a newer navigation superseded us
+
+      // 2) Inject into the app-shell content slot.
+      viewRoot.innerHTML = markup;
+
+      // 3) Wait for the shell chrome to define, then import + run the view module.
+      await customElements.whenDefined('sherpa-app-shell');
+      if (token !== loadToken) return;
+
+      const mod = await import(`./views/${name}.js`);
+      if (token !== loadToken) return;
+
+      cleanup = await mod.init(viewRoot);
+    }
+
+    // ── Populate the shared nav once. ──────────────────────────────────
+    await customElements.whenDefined('sherpa-nav');
+    nav.populate(navConfig);
+
+    // The Views nav rows render as real <a href="?view=…"> links (right-clickable,
+    // deep-linkable). Intercept the click so we swap in-page instead of a full
+    // reload — preventDefault must happen on the real click event, not on the
+    // synthetic nav-select. A modified click (new tab / middle) is left alone.
+    nav.addEventListener('click', (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const row = e.composedPath().find((n) => n.dataset && n.dataset.id?.startsWith('view-'));
+      if (!row) return;
+      const view = viewForId(row.dataset.id);
+      if (!VIEWS.includes(view)) return;
+      e.preventDefault();
+      if (view === viewFromURL() && viewRoot.children.length) return;
+      history.pushState({ view }, '', `?view=${view}`);
+      loadView(view);
+    });
+
+    // Back/forward → load without pushing.
+    window.addEventListener('popstate', () => loadView(viewFromURL()));
+
+    // First paint: load the view named in the URL.
+    loadView(viewFromURL());
+  </script>
+</body>
+</html>
