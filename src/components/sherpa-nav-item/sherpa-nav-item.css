@@ -167,7 +167,9 @@
   block-size: var(--sherpa-display-mode-size-md, 20px);
   justify-content: center;
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-active-base, #f4ebfd));
+  /* Strong active surface so the white glyph stays legible; a [data-status]
+     ancestor swaps in its own strong surface via --_status-surface-strong. */
+  background: var(--_status-surface-strong, var(--sherpa-theme-surface-active-2, #c046ff));
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -204,7 +206,7 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   padding-inline: var(--sherpa-display-mode-space-none, 0px);
-  background: var(--sherpa-theme-surface-success-3, #058142);
+  background: var(--sherpa-theme-surface-success-3, #007a45);
 }
 
 /* ── Hover / focus ─────────────────────────────────────────────────── */
@@ -229,11 +231,13 @@
 :host([disabled]) { pointer-events: none; }
 :host([disabled]) :is(.row, .promo) {
   cursor: not-allowed;
+  /* Dimmed ink on a LIGHT inactive surface — never surface-default-2, which
+     equals content-body-2 and would render the text invisible. */
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
 :host([disabled]) .badge {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 :host([disabled]) .expand {
@@ -277,8 +281,8 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--sherpa-theme-surface-active-base, #f4ebfd);
-  color: var(--sherpa-theme-content-active-base, #4d049f);
+  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  color: var(--sherpa-theme-content-active-base, #240036);
 }
 
 .promo-body {

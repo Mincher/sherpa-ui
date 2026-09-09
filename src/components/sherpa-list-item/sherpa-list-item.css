@@ -153,7 +153,7 @@
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 :host([data-current]) .title {
-  color: var(--sherpa-theme-content-active-base, #8500cc);
+  color: var(--sherpa-theme-content-active-base, #240036);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -161,7 +161,9 @@
 :host([disabled]) { pointer-events: none; }
 :host([disabled]) .row {
   cursor: not-allowed;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  /* Light inactive surface (never the mid-grey surface-default-2, which equals
+     the dimmed text colour and would hide the content). */
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
 :host([disabled]) :is(.title, .description, .leading) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
