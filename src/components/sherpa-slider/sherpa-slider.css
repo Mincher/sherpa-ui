@@ -170,7 +170,10 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-:host([disabled]) { --_accent: var(--sherpa-theme-content-body-2, #b3b3c3); }
+/* The rail is surface/default/+2 (#b3b3c3). content-body-2 is the SAME grey, so a
+   disabled fill/thumb would vanish into the rail. Use the darker inactive ink so the
+   filled portion + thumb still read (matches the disabled-checked tick treatment). */
+:host([disabled]) { --_accent: var(--sherpa-theme-content-body-1, #35353d); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 :host([disabled]) .track {
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);

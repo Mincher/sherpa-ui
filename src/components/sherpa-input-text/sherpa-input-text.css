@@ -32,9 +32,11 @@
   display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_border-focus: var(--sherpa-theme-border-accent-base, #3c5edd);
-  /* Error look routes through the status cascade; critical fallback resolves the ink. */
-  --_border-error: var(--_status-border, #bf2c09);
-  --_surface-error: var(--_status-surface-strong, #bf2c09);
+  /* Error look routes through the status cascade; critical fallback resolves the ink.
+     Fallback = the Figma error atom's bar fill (critical-color-4 #b72200), not a
+     hand-value #bf2c09 — a stale fallback surfaces whenever no data-status cascades. */
+  --_border-error: var(--_status-border, #b72200);
+  --_surface-error: var(--_status-surface-strong, #b72200);
   --_text-on-error: var(--_status-text-on-color, #ffffff);
 }
 
@@ -176,7 +178,12 @@ textarea.control {
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  /* The disabled row is surface/default/+2 (#b3b3c3); content-body-2 is the SAME
+     grey → the value/placeholder would vanish. Use the darker inactive ink. */
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+:host([disabled]) .control::placeholder {
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 

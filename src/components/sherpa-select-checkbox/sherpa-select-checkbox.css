@@ -151,9 +151,12 @@
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
+/* Disabled + checked/indeterminate: the box goes grey (surface-default-2 = #b3b3c3);
+   content-body-2 is the SAME grey → the tick/dash would vanish. Use the dark inactive
+   ink so the checked state still reads. */
 :host([disabled]) .control:checked::after,
 :host([disabled]) .control:indeterminate::after {
-  background-color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background-color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {

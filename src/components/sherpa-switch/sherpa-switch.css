@@ -133,6 +133,11 @@
 :host([disabled]) {
   pointer-events: none;
 }
-.track:has(.input:disabled) .label {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+/* Disabled: keep the ON/OFF label readable against the grey inactive track.
+   content-body-2 (#b3b3c3) equals the disabled track surface → invisible ON text;
+   use the darker inactive ink (content-body-1) so both ON and OFF stay legible. */
+.track:has(.input:disabled) .label,
+.track:has(.input:disabled) .input:checked ~ .label::after,
+.track:has(.input:disabled) .input:not(:checked) ~ .label::after {
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
