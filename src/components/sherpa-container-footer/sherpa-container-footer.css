@@ -24,8 +24,11 @@
   justify-content: flex-end; /* default: end-aligned */
   gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
+  /* Top divider is a lighter neutral than the container's outer border, matching
+     the family (Figma action-bar: strokeTop = border/default/+1 #e8e8f6). Status
+     tints it in Figma but the cascade exposes no tinted-border hook. */
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
+    var(--sherpa-theme-border-default-1, #e8e8f6);
 }
 
 /* ── Alignment ────────────────────────────────────────────────────────── */

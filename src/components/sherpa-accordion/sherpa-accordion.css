@@ -14,6 +14,9 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* Body divider is a lighter neutral than the outer border, matching the
+     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
 
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
@@ -91,5 +94,5 @@
 /* ── Body: shown only while open (the divider matches the card border) ── */
 .body {
   padding: var(--_pad);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }

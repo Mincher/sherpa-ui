@@ -22,6 +22,11 @@
   /* One surface token the box + regions consume; colour-set / status re-point it. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* Internal header/footer dividers are a lighter neutral than the outer box
+     border (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2
+     #b3b3c3). Status tints the divider in Figma (border/{status}/+2) but the
+     status cascade exposes no tinted-border hook, so the divider stays neutral. */
+  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
 
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
@@ -70,11 +75,11 @@
    same status-aware border as the card. */
 :host([data-has-header]) .header {
   display: block;
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
 /* ── State overlay — one region, driven by data-loading + slot presence ─

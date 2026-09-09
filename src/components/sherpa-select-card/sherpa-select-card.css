@@ -21,6 +21,9 @@
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  /* Internal dividers are a lighter neutral than the outer border, matching the
+     container family (Figma: divider = border/default/+1 #e8e8f6). */
+  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_radius: var(--sherpa-structure-rounding-top-left, 4px);
@@ -95,14 +98,14 @@
 
 /* When body has content and header shows, divide them. */
 :host(:is([data-has-header], [data-label], [data-description])) .body {
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 /* Footer divider (below the body); suppressed in horizontal orientation. */
 :host(:not([data-orientation="horizontal"])) .footer {
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 :host([data-orientation="horizontal"]) .footer {
-  border-inline-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-inline-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
 /* ── Header text ──────────────────────────────────────────────────── */
@@ -149,7 +152,10 @@
   background: var(--sherpa-theme-surface-default-2, #B3B3C3);
   border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
 }
+/* Disabled text stays a legible dark (Figma keeps content on the inactive card at
+   content/body/+1 #35353d). The previous content-body-2 (#b3b3c3) matched the
+   inactive surface exactly, rendering the label invisible. */
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-2, #B3B3C3);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }

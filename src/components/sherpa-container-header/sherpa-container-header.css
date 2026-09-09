@@ -125,7 +125,7 @@ slot[name="heading"] { display: contents; }
   cursor: pointer;
   transition: background-color 100ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
+  &:hover { background: color-mix(in oklab, var(--_status-surface, #ffffff) 92%, currentColor); }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
@@ -159,7 +159,7 @@ slot[name="heading"] { display: contents; }
 /* ── Panel variant ────────────────────────────────────────────────────── */
 /* Panel = link-style title, a right-aligned actions group, and the bottom
    metadata strip. It reuses the shared skeleton — only the look changes. */
-:host([data-variant="panel"]) .title { color: var(--sherpa-theme-content-link-base, #3c5edd); }
+:host([data-variant="panel"]) .title { color: var(--sherpa-theme-content-link-1, #2b34b4); }
 :host([data-variant="panel"]) .actions { margin-inline-start: auto; }
 
 /* ── Narrow: drop the description first ───────────────────────────────── */

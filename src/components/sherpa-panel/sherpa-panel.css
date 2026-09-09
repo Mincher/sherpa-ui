@@ -17,6 +17,9 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* Internal divider is a lighter neutral than the outer box border, matching the
+     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 
   background: var(--_surface);
@@ -48,11 +51,11 @@
 :host([data-has-header]) .header,
 :host([data-heading]) .header {
   display: block;
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 :host([data-has-footer]) .footer {
   display: block;
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
 .heading-text {
