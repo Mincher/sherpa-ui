@@ -7,8 +7,32 @@
  */
 import { SherpaElement } from './core/sherpa-element.js';
 
-/** The base reset each shadow root adopts. Tokens inherit from the light DOM. */
-SherpaElement.sharedStyles = [new URL('./core/sherpa-base.css', import.meta.url)];
+/**
+ * Font Awesome 6 (free) CDN. Icons use `fa-regular fa-<name>` classes.
+ * NOTE: true "Classic Light" (`fa-light`) is a Font Awesome Pro style — swap
+ * this URL for a Pro kit and the class prefix `fa-regular`→`fa-light` to get it.
+ * The `@font-face` is loaded into the document by installIcons(); the class rules
+ * (`.fa-*::before`) are adopted into every shadow root via sharedStyles below
+ * (a document <link> does NOT reach shadow roots; fonts do, class rules do not).
+ */
+const FA_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+
+/** The base reset + FA class rules each shadow root adopts. Tokens inherit from the light DOM. */
+SherpaElement.sharedStyles = [
+  new URL('./core/sherpa-base.css', import.meta.url),
+  new URL(FA_CDN),
+];
+
+/** Inject the Font Awesome stylesheet (its @font-face) into the document head, once. */
+let iconsInstalled = false;
+export function installIcons(): void {
+  if (iconsInstalled || typeof document === 'undefined') return;
+  iconsInstalled = true;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = FA_CDN;
+  document.head.appendChild(link);
+}
 
 /**
  * Inject the light-DOM token layer (primitives → aliases → themes) into the

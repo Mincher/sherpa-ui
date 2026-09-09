@@ -171,9 +171,18 @@ export abstract class SherpaElement extends HTMLElement {
 
   /** Build the adopted-stylesheet list: shared sheets first, then this component's CSS. */
   async #adoptStyles(Ctor: typeof SherpaElement): Promise<void> {
+    // Yield a microtask so top-level module init (e.g. index.ts setting
+    // SherpaElement.sharedStyles) has run before we read it — an element present
+    // in the initial HTML can upgrade before that assignment executes.
+    await Promise.resolve();
     const urls = [...Ctor.sharedStyles.map((u) => u.href)];
     if (Ctor.css) urls.push(Ctor.css.href); // includes the inlined scoped-token region
-    const sheets = await Promise.all(urls.map(loadSheet));
+    // Load per-sheet with isolation: a failed/slow shared sheet (e.g. a cross-origin
+    // CDN like Font Awesome) must NOT drop the others. Settle each, keep what loaded.
+    const results = await Promise.allSettled(urls.map(loadSheet));
+    const sheets = results
+      .filter((r): r is PromiseFulfilledResult<CSSStyleSheet> => r.status === 'fulfilled')
+      .map((r) => r.value);
     this.root.adoptedStyleSheets = sheets;
   }
 

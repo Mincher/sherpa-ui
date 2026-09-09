@@ -65,10 +65,23 @@ export class SherpaButton extends SherpaElement {
     this.#applyIcon('.icon-end', this.dataset['iconEnd']);
   }
 
-  /** Set the glyph value; CSS `:host([data-icon-*])` controls visibility. */
+  /**
+   * Apply a Font Awesome icon: data-icon-* is an FA class string (e.g.
+   * "fa-regular fa-floppy-disk"). Set it as CSS classes on the <i> (keeping its
+   * structural `icon icon-start|end` classes); CSS `:host([data-icon-*])` controls
+   * visibility. Legacy single-glyph text values (no "fa-" token) fall back to text.
+   */
   #applyIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
-    if (el) el.textContent = value ?? '';
+    if (!el) return;
+    const base = sel === '.icon-start' ? 'icon icon-start' : 'icon icon-end';
+    if (value && /\bfa-/.test(value)) {
+      el.className = `${base} ${value}`;
+      el.textContent = '';
+    } else {
+      el.className = base;
+      el.textContent = value ?? ''; // back-compat: a raw glyph char
+    }
   }
 
   #syncDisabled(): void {
