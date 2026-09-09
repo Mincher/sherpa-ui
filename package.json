@@ -42,8 +42,7 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "test:report": "playwright show-report",
-    "serve:app": "node server/index.mjs"
+    "test:report": "playwright show-report"
   },
   "bin": {
     "sherpa-mcp": "./mcp-server/index.js"
@@ -77,9 +76,5 @@
     "Firefox ESR",
     "not dead",
     "Safari >= 16"
-  ],
-  "dependencies": {
-    "express": "^5.2.1",
-    "htmx.org": "^2.0.10"
-  }
+  ]
 }
