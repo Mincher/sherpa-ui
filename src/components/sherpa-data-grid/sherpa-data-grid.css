@@ -41,12 +41,12 @@
 .select-all,
 .row-select {
   cursor: pointer;
-  accent-color: var(--sherpa-theme-border-accent-base, #3c5edd);
+  accent-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 .select-all:focus-visible,
 .row-select:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Filter row (opt-in) ───────────────────────────────────────────── */
@@ -74,7 +74,7 @@
 }
 .filter-input:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */
@@ -113,7 +113,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 

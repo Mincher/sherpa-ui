@@ -125,7 +125,7 @@
     outline: none;
     box-shadow:
       0 0 0 2px var(--sherpa-app-base, #ffffff),
-      0 0 0 4px var(--sherpa-theme-border-accent-base, #3c5edd);
+      0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 

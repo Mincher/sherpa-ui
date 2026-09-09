@@ -12,7 +12,7 @@
 
 :host {
   display: block;
-  --_accent: var(--sherpa-theme-border-accent-base, #3c5edd);
+  --_accent: var(--sherpa-theme-border-accent-2, #3b4ccd);
 
   /* cascade fallbacks so a bare (status-less) file chip still resolves */
   --_file-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
@@ -78,7 +78,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -160,7 +160,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -226,7 +226,7 @@
 /* Upload — primary (filled) button */
 .upload {
   border: none;
-  background: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  background: var(--sherpa-style-indicator-accent, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 
   &:hover { background: var(--sherpa-theme-surface-accent-hover, #2f4bc4); }
@@ -234,7 +234,7 @@
 .clear-all:focus-visible,
 .upload:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 :host([data-loading]) .upload,
 :host([disabled]) .clear-all,

@@ -215,7 +215,7 @@
 :host(:focus-visible) { outline: none; }
 :host(:focus-visible) .row,
 :host(:focus-visible) .promo {
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Current ───────────────────────────────────────────────────────── */
@@ -266,7 +266,7 @@
 :host([data-href]) .promo-link { display: flex; }
 :host([data-variant="promo"]:hover) .promo {
   background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
-  border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 .promo-icon {

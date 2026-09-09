@@ -31,7 +31,7 @@
 :host {
   display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_border-focus: var(--sherpa-theme-border-accent-base, #3c5edd);
+  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
   /* Error look routes through the status cascade; critical fallback resolves the ink.
      Fallback = the Figma error atom's bar fill (critical-color-4 #b72200), not a
      hand-value #bf2c09 — a stale fallback surfaces whenever no data-status cascades. */

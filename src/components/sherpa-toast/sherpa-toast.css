@@ -99,7 +99,7 @@
 }
 .action:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Close button ──────────────────────────────────────────────────── */
@@ -127,6 +127,6 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }

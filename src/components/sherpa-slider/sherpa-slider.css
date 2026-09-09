@@ -85,8 +85,8 @@
   &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   &:focus-visible {
     outline: none;
-    border-color: var(--sherpa-theme-border-accent-base, #3c5edd);
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 :host([data-show-value]) .value-input { display: block; }
@@ -162,10 +162,10 @@
 
   /* Focus ring — explicit box-shadow, never a silent --focus-ring(). */
   &:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
   &:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 

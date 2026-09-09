@@ -145,7 +145,7 @@
 .content-button:focus-visible {
   outline: none;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Current row ───────────────────────────────────────────────────── */

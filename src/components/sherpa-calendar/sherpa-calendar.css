@@ -9,7 +9,7 @@
 :host {
   display: inline-block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_accent: var(--sherpa-theme-surface-accent-base, #8AA3FF);
+  --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
@@ -68,7 +68,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -103,7 +103,7 @@
   font-family: inherit;
 
   &:hover { color: var(--_accent); }
-  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF); border-radius: var(--sherpa-display-mode-border-rounding-base, 4px); }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); border-radius: var(--sherpa-display-mode-border-rounding-base, 4px); }
 }
 
 .cal-weekdays span {
@@ -136,13 +136,13 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
 /* Today — a ring, not a fill (fill is reserved for the selection). */
 .cal-cell[data-today] {
-  border-color: var(--sherpa-theme-border-accent-base, #8AA3FF);
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
@@ -233,7 +233,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -268,7 +268,7 @@
   &:hover { text-decoration: underline; }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
     border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   }
 }
@@ -297,7 +297,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #8AA3FF);
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 

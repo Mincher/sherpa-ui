@@ -11,7 +11,7 @@
  *
  *   surface → var(--_status-surface, style-surface-base)
  *   border  → var(--_status-border,  style-border-base)
- *   accent  → theme-surface-accent-base   (selected ring)
+ *   accent  → theme-surface-accent-2      (selected ring — strong accent step)
  */
 
 :host {
@@ -24,7 +24,7 @@
   /* Internal dividers are a lighter neutral than the outer border, matching the
      container family (Figma: divider = border/default/+1 #e8e8f6). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
-  --_accent: var(--sherpa-theme-surface-accent-base, #3c5edd);
+  --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_radius: var(--sherpa-structure-rounding-top-left, 4px);
 }
