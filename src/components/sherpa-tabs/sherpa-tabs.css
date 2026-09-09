@@ -63,7 +63,7 @@
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
   &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #c0c0cc33);
+    background: var(--sherpa-theme-surface-default-transparent, #ffffff00);
     color: var(--sherpa-theme-content-body-base, #0c0b11);
   }
 

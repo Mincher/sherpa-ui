@@ -93,9 +93,9 @@
 :host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
 :host([disabled]) .value-input {
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 .track-area { flex: 1 1 auto; }
 
@@ -170,9 +170,9 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-:host([disabled]) { --_accent: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) { --_accent: var(--sherpa-theme-content-body-2, #b3b3c3); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 :host([disabled]) .track {
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }

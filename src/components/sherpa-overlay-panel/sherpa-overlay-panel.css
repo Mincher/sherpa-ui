@@ -134,7 +134,7 @@
 .collapse:hover,
 .expand:hover,
 .external:hover,
-.close:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+.close:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
 .collapse:focus-visible,
 .expand:focus-visible,
 .external:focus-visible,

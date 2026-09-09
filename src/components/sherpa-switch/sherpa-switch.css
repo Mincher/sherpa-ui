@@ -83,7 +83,7 @@
   &:has(.input:disabled) {
     cursor: not-allowed;
     background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-    border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+    border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   }
 }
 
@@ -134,5 +134,5 @@
   pointer-events: none;
 }
 .track:has(.input:disabled) .label {
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }

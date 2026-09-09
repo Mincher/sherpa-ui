@@ -100,10 +100,10 @@
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 
   &:hover:not(:disabled) {
-    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
   }
   &:active:not(:disabled) {
-    background: var(--sherpa-theme-surface-default-transparent, #ededf0);
+    background: var(--sherpa-theme-surface-default-transparent, #ffffff00);
   }
   &:focus-visible {
     outline: none;
@@ -115,7 +115,7 @@
 .btn:disabled {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 
 /* ── Chevron glyphs (pure CSS, no icon font) ──────────────────────────── */
@@ -154,7 +154,7 @@
 :host([disabled]) .rows,
 :host([disabled]) .page-input {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }

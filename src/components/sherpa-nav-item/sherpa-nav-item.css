@@ -229,16 +229,16 @@
 :host([disabled]) { pointer-events: none; }
 :host([disabled]) :is(.row, .promo) {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #c0c0cc);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 :host([disabled]) .badge {
-  background: var(--sherpa-theme-surface-default-2, #c0c0cc);
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 :host([disabled]) .expand {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 
 /* ── Promo (CTA) variant — activation target is a native <button> or <a href> ─ */

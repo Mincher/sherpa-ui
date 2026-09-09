@@ -38,7 +38,7 @@
   cursor: pointer;
   user-select: none;
   inline-size: 100%;
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* ── The control (native input, custom-drawn circle) ──────────────── */
@@ -76,7 +76,7 @@
 
   /* ── Hover / active ───────────────────────────────────────────────── */
   &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-1, #8d8d99);
+    border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
   }
   &:active:not(:disabled) {
     transform: scale(0.92);
@@ -116,19 +116,19 @@
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 :host([disabled]) .control:checked {
   background: var(--sherpa-style-surface-base, #ffffff);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host([disabled]) .control:checked::after {
-  background-color: var(--sherpa-theme-surface-default-2, #d5d5d5);
+  background-color: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 
 /* ── Validation — native :user-invalid, unchecked required ────────── */
@@ -139,5 +139,5 @@
 /* ── Status cascade — re-inks the description (box + label already
  *    read --_status-* through --_border / --_surface / --_status-text). ── */
 :host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }

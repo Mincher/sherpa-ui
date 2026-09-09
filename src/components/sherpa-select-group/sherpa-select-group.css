@@ -34,7 +34,7 @@
 .legend {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: 0;
 }
 .label {
@@ -93,8 +93,8 @@
 :host([data-status]) .validation { display: block; }
 
 /* ── Disabled — inactive tokens on the heading, children carry their own ── */
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }
-:host([disabled]) .description { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+:host([disabled]) .description { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Status cascade — re-inks the heading via inherited --_status-* ── */
 :host([data-status]) .label {

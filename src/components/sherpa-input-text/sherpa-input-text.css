@@ -171,14 +171,14 @@ textarea.control {
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
 :host([disabled]) .control-row {
   cursor: not-allowed;
-  background: var(--sherpa-theme-surface-default-2, #f2f2f2);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Minimal style — a bare inline field (label beside the control) ──── */
 /* Layout only: label + control on one row. The label and control keep the

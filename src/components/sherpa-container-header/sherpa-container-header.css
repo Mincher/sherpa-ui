@@ -125,7 +125,7 @@ slot[name="heading"] { display: contents; }
   cursor: pointer;
   transition: background-color 100ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-base, #3c5edd);

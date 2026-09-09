@@ -189,8 +189,8 @@
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
-  border-color: var(--sherpa-theme-border-default-2, #d5d5dc);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .icon { color: var(--sherpa-theme-content-body-2, #5c5c66); }
+:host([disabled]) .icon { color: var(--sherpa-theme-content-body-2, #b3b3c3); }

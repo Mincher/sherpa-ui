@@ -82,7 +82,7 @@
 .favorite:hover,
 .export:hover,
 .notif-btn:hover {
-  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+  background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 .back:focus-visible,

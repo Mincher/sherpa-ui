@@ -36,7 +36,7 @@
   cursor: pointer;
   user-select: none;
   inline-size: 100%;
-  color: var(--sherpa-theme-content-body-base, #18191a);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* ── The control (native input, custom-drawn box) ─────────────────── */
@@ -96,7 +96,7 @@
 
   /* ── Hover / active ───────────────────────────────────────────────── */
   &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-1, #8d8d99);
+    border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
   }
   @supports (color: color-mix(in oklab, red, blue)) {
     &:checked:hover:not(:disabled),
@@ -143,21 +143,21 @@
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 :host([disabled]) .control:checked,
 :host([disabled]) .control:indeterminate {
-  background: var(--sherpa-theme-surface-default-2, #d5d5d5);
-  border-color: var(--sherpa-theme-border-default-2, #8d8d99);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host([disabled]) .control:checked::after,
 :host([disabled]) .control:indeterminate::after {
-  background-color: var(--sherpa-theme-content-body-2, #404047);
+  background-color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 :host([disabled]) .label,
 :host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-2, #5c5c66);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 
 /* ── Validation — native :user-invalid, unchecked required ────────── */
@@ -169,5 +169,5 @@
    The checked fill already routes through --_status-surface (--_fill), so a
    status context tints it automatically — no extra rule needed here. */
 :host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #404047));
+  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }

@@ -124,7 +124,7 @@
   cursor: pointer;
   transition: background-color 80ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
   &:not(:last-child) .cell {
     border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   }

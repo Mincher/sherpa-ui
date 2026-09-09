@@ -59,7 +59,7 @@
   inline-size: var(--sherpa-display-mode-size-xs, 12px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
   flex-shrink: 0;
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
 }
 

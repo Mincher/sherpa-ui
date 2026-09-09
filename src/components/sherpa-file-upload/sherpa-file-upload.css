@@ -85,7 +85,7 @@
 /* ── Drag-over state ─────────────────────────────────────────────────── */
 :host([data-dragover]) .drop-zone {
   border-color: var(--_accent);
-  background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+  background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
 }
 
 /* ── File list ───────────────────────────────────────────────────────── */
@@ -155,7 +155,7 @@
   cursor: pointer;
 
   &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #f4f4f6);
+    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
     color: var(--sherpa-theme-surface-critical-4, #9b2509);
   }
   &:focus-visible {
@@ -221,7 +221,7 @@
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #f4f4f6); }
+  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
 }
 /* Upload — primary (filled) button */
 .upload {

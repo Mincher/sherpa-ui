@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 .view-zone { display: none; }
