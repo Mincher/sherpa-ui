@@ -11,7 +11,7 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   --_size: 180px;
   --_hole: 62%; /* inner radius as a fraction of the circle */
-  --_ring: conic-gradient(var(--sherpa-style-border-base, #E8E8F6) 0 100%);
+  --_ring: conic-gradient(var(--sherpa-style-border-base, #b3b3c3) 0 100%);
 }
 
 /* <figure> element — reset its default margin; layout is unchanged. */

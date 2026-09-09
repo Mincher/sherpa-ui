@@ -84,7 +84,7 @@
 
 /* Baseline under the bars. */
 .bars {
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #E8E8F6);
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .bar-label {

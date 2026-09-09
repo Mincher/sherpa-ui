@@ -21,12 +21,12 @@
 
   /* One surface token the box + regions consume; colour-set / status re-point it. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
 
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #35353d);
 
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_shadow: none;
@@ -111,7 +111,7 @@
 .spinner {
   inline-size: 20px;
   block-size: 20px;
-  border: 2px solid var(--sherpa-style-border-base, #E8E8F6);
+  border: 2px solid var(--sherpa-style-border-base, #b3b3c3);
   border-block-start-color: var(--sherpa-theme-content-active-base, #8500cc);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;

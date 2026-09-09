@@ -16,14 +16,14 @@
   block-size: 100%;
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #E8E8F6));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   /* Figma: panel is a square in-flow surface (border/rounding/none). */
   border-radius: var(--sherpa-display-mode-border-rounding-none, 0);
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #35353d);
 }
 
 .root {

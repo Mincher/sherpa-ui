@@ -85,7 +85,7 @@
   /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #E8E8F6);
+    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b3b3c3);
   }
 }
 

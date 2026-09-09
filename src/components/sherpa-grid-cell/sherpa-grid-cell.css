@@ -93,7 +93,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-style-content-secondary, #35353d);
+  color: var(--sherpa-style-content-secondary, #b3b3c3);
   cursor: pointer;
 
   &:focus-visible {
@@ -108,9 +108,9 @@
   border-inline: 4px solid transparent; /* off-grid-ok */
   border-block-start: 5px solid currentColor; /* off-grid-ok */
 }
-:host([data-sort-direction="asc"]) .sort { color: var(--sherpa-style-content-base, #0c0b11); }
+:host([data-sort-direction="asc"]) .sort { color: var(--sherpa-style-content-base, #35353d); }
 :host([data-sort-direction="asc"]) .sort-caret {
   border-block-start: 0;
   border-block-end: 5px solid currentColor; /* off-grid-ok */
 }
-:host([data-sort-direction="desc"]) .sort { color: var(--sherpa-style-content-base, #0c0b11); }
+:host([data-sort-direction="desc"]) .sort { color: var(--sherpa-style-content-base, #35353d); }

@@ -121,7 +121,7 @@ slot[name="heading"] { display: contents; }
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  color: var(--_status-text, var(--sherpa-style-content-base, #35353d));
   cursor: pointer;
   transition: background-color 100ms ease;
 

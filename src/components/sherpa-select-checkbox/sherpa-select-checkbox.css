@@ -26,7 +26,7 @@
   /* Checked indicator fill: the Saturated accent (style-indicator/accent) via the
      look-tier cascade. A status context re-tints it; default is the accent action. */
   --_fill: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
-  --_focus: var(--sherpa-style-border-base, #E8E8F6);
+  --_focus: var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .field {
@@ -112,7 +112,7 @@
   /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #E8E8F6);
+    box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b3b3c3);
   }
 }
 
