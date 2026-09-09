@@ -1,0 +1,75 @@
+/**
+ * sherpa-app-shell.css — the app/view frame grid.
+ *
+ * A CSS grid: nav rail (left, full height) | header (top of content) | content.
+ * `data-nav-collapsed` narrows the rail; `data-no-header` drops the header row and
+ * lets content span both rows. Layout is CSS-owned off the host data-* attrs.
+ *
+ * Figma has no nav-width token, so the rail width is a component-private --_nav-*
+ * pair (expand/collapse). Surfaces/borders bind the current theme tokens.
+ */
+
+:host {
+  /* nav rail width — private (no Figma token); collapse swaps the value. */
+  --_nav-width: 240px;
+  --_nav-width-collapsed: 56px;
+
+  display: block;
+  block-size: 100%;
+  min-block-size: 100vh;
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--_nav-width) 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'nav header'
+    'nav content';
+  block-size: 100%;
+  min-block-size: 100vh;
+}
+
+/* Nav rail — full height, right divider. */
+.nav {
+  grid-area: nav;
+  min-inline-size: 0;
+  overflow: hidden;
+  border-inline-end: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+}
+
+/* Header — top of the content column, bottom divider. */
+.header {
+  grid-area: header;
+  min-inline-size: 0;
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+
+/* Content — the scrolling view area, layout-grid padding applied for future content. */
+.content {
+  grid-area: content;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: auto;
+  padding: var(--sherpa-layout-grid-padding, 16px);
+}
+
+/* Collapsed nav rail. */
+:host([data-nav-collapsed]) .shell {
+  grid-template-columns: var(--_nav-width-collapsed) 1fr;
+}
+
+/* No header — content spans both rows; the header region collapses. */
+:host([data-no-header]) .shell {
+  grid-template-areas:
+    'nav content'
+    'nav content';
+}
+:host([data-no-header]) .header {
+  display: none;
+}
