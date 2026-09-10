@@ -33,10 +33,11 @@
   min-inline-size: 40px;
   block-size: var(--sherpa-display-mode-size-xl, 28px);
 
-  /* Trend colour — status cascade wins, else the primary accent. */
-  /* Neutral grey line by default (Figma: status-border/default passthrough);
-     a status context re-inks it. */
-  --_line: var(--_status-border, var(--sherpa-theme-border-default-2, #B3B3C3));
+  /* Trend colour. Figma binds the line to style-border/base +1 — the STRONG step of
+     the current status ramp (Will corrected this: under the Metric's Style=success pin
+     it resolves to #20c173, not a neutral grey). The status cascade supplies it; the
+     fallback is the same strong step for the default (neutral) mode. */
+  --_line: var(--_status-border-strong, var(--sherpa-style-border-base-1, #e8e8f6));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;

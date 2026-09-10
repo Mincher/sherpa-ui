@@ -19,10 +19,12 @@ test('clicking toggles data-current and fires quick-filter-click', async ({ page
     const fired: boolean[] = [];
     el.addEventListener('quick-filter-click', (e) => fired.push((e as CustomEvent).detail.active));
 
-    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip')!;
-    chip.click(); // on
+    // .chip is the shell (box + ring); .body is the toggle target, so the trailing
+    // menu caret can live inside the same pill without toggling the filter.
+    const body = el.shadowRoot!.querySelector<HTMLElement>('.body')!;
+    body.click(); // on
     const afterOn = el.hasAttribute('data-current');
-    chip.click(); // off
+    body.click(); // off
     const afterOff = el.hasAttribute('data-current');
 
     return { fired, afterOn, afterOff, label: el.shadowRoot!.querySelector('.label')!.textContent };

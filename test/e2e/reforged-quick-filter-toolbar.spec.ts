@@ -53,11 +53,12 @@ test('toggling a chip emits quick-filter-change with all active ids', async ({ p
     const events: string[][] = [];
     el.addEventListener('quick-filter-change', (e) => events.push((e as CustomEvent).detail.active));
 
-    // Click the inner chip button of each sherpa-quick-filter.
+    // Click each chip's toggle target (.body — .chip is the shell that also holds
+    // the menu caret).
     const chips = Array.from(el.shadowRoot!.querySelectorAll('.chip')) as HTMLElement[];
-    (chips[0]!.shadowRoot!.querySelector('.chip') as HTMLElement).click(); // A on
+    (chips[0]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // A on
     await new Promise((res) => setTimeout(res, 10));
-    (chips[1]!.shadowRoot!.querySelector('.chip') as HTMLElement).click(); // B on
+    (chips[1]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // B on
     await new Promise((res) => setTimeout(res, 10));
 
     return events;

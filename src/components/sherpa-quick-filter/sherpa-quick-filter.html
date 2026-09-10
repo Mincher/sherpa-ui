@@ -1,27 +1,58 @@
 <!--
   sherpa-quick-filter — a filter chip used in toolbars.
 
-  A pill that toggles an active/selected state on click. data-type styles the chip
-  (default neutral · ai brand-purple · populated has a value). An optional count
-  badge and a menu-trigger affordance.
+  Matches the Figma "Filter Chip (atom)" (154:3904). The chip is a 24-tall pill:
+
+      [ count ][ icon ] Label  ▾
+
+  The count INDICATOR leads (it is the first child of Figma's "Left" group, before
+  the icon — not a trailing badge) and it is pinned Style=DEFAULT, so it is a neutral
+  chip: white face, 0.5 grey ring, dark ink. The trailing caret is a Transparent icon
+  button that opens the value menu.
+
+  The menu is a real <sherpa-menu> in the light DOM, slotted into [slot=menu]. It uses
+  the native popover API, so it opens on top of everything with no JS positioning and
+  closes on Escape / outside click for free. Give it checkbox rows for a multi-select
+  field or radio rows for a single-select one:
+
+      <sherpa-quick-filter data-label="Region" data-menu>
+        <sherpa-menu slot="menu" data-heading="Region" data-select="multiple">
+          <label><input type="checkbox" value="emea" /> EMEA</label>
+          <label><input type="checkbox" value="apac" /> APAC</label>
+        </sherpa-menu>
+      </sherpa-quick-filter>
 
   Public API:
     data-type       default | ai | populated
     data-current    selected/on state (boolean)
     data-label      chip text (or use the default slot)
-    data-icon-start leading icon glyph (Figma "Icon" — a funnel by default)
+    data-icon-start leading icon — an FA class list (Figma default is a funnel)
     data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
-    data-count      badge number (shown when present)
-    data-menu       show a dropdown-trigger caret (boolean)
+    data-count      leading count chip (shown when present)
+    data-menu       show the caret that opens the slotted menu
 
-  Fires: quick-filter-click — detail: { active }
+  Slots:
+    (default)  the chip label
+    menu       a <sherpa-menu> of values for this field
+
+  Fires:
+    quick-filter-click  — the chip body is toggled. detail: { active }
+    quick-filter-change — the menu selection changed. detail: { values: string[] }
 -->
 <template id="default">
-  <button class="chip" part="chip" type="button">
-    <span class="indicator" part="indicator" aria-hidden="true"></span>
-    <span class="icon" part="icon" aria-hidden="true"></span>
-    <span class="label"><slot></slot></span>
-    <span class="count" part="count" aria-hidden="true"></span>
-    <span class="caret" part="caret" aria-hidden="true"></span>
-  </button>
+  <div class="chip" part="chip">
+    <button class="body" part="body" type="button">
+      <span class="indicator" part="indicator" aria-hidden="true"></span>
+      <span class="count" part="count" aria-hidden="true"></span>
+      <span class="icon" part="icon" aria-hidden="true"></span>
+      <span class="label" part="label"><slot></slot></span>
+    </button>
+
+    <button class="caret" part="caret" type="button" aria-haspopup="menu" aria-expanded="false"
+            aria-label="Choose values">
+      <i class="fa-regular fa-caret-down" aria-hidden="true"></i>
+    </button>
+
+    <span class="menu-slot"><slot name="menu"></slot></span>
+  </div>
 </template>

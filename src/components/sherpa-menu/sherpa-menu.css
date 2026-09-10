@@ -1,0 +1,126 @@
+/**
+ * sherpa-menu.css — a floating list of choices or actions.
+ *
+ * Data-matched to the Figma "Menu" (49:66174):
+ *   card     240 wide · padding/md 8 · gap space/3xs 2 · structure rounding 4
+ *            · style-surface/base fill · Elevation md (offset 2,2 blur 16 spread −8)
+ *   heading  content/body/+1 at content/size/xs 10 on line-height/xs 16, upper-case
+ *   row      36 tall (Menu List Item: padding space/xs 8 × padding/md 8, gap/md 8,
+ *            radius 4) in the Transparent look — no fill until hovered
+ *   label    content/body/base 14/20 medium · description content/body/+1 12/16
+ *
+ * The card is a native `popover`: the browser owns the top layer, Escape, the
+ * outside-click dismiss and focus. `position-anchor` pins it under its trigger
+ * where supported; everywhere else the plain `position: absolute` fallback applies.
+ */
+
+:host {
+  /* The host is a zero-box anchor — the real surface is the popover. */
+  display: contents;
+}
+
+.menu {
+  /* `popover` starts hidden; :popover-open opens it. */
+  position: absolute;
+  inset: auto;
+  margin: 0;
+  inline-size: 240px;
+  max-block-size: 60vh;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  padding: var(--sherpa-theme-padding-md, 8px);
+  border: 0;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  /* Elevation=md (Figma pins it on the Menu). */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-base, 2px)
+    var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px)
+    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-style-surface-shadow, #b2b2bf4d);
+}
+
+/* Anchor positioning where the engine has it: sit under the trigger, start-aligned.
+   Without it the popover falls back to the plain absolute position above. */
+@supports (anchor-name: --a) {
+  .menu {
+    position-anchor: var(--_anchor);
+    inset-block-start: anchor(bottom);
+    inset-inline-start: anchor(start);
+    margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
+    position-try-fallbacks: flip-block, flip-inline;
+  }
+}
+
+/* Heading — 10/16 regular, upper-case, content/body/+1. */
+.heading {
+  margin: 0;
+  padding-inline: var(--sherpa-theme-padding-md, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-xs, 10px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+  text-transform: uppercase;
+
+  &:empty { display: none; }
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
+}
+
+/* ── Rows ────────────────────────────────────────────────────────────────
+   Rows are slotted light-DOM controls (a <label> wrapping an input, or a
+   <button>), so ::slotted styles them. Figma Menu List Item in the Transparent
+   look: 36 tall, padding 8 × 8, gap 8, radius 4, no fill until hovered. */
+::slotted(:is(label, button)) {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-theme-padding-md, 8px);
+  border: 0;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  text-align: start;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+@supports (color: color-mix(in oklab, red, blue)) {
+  ::slotted(:is(label, button):hover) {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
+  }
+}
+::slotted(:is(label, button):focus-visible),
+::slotted(label:focus-within) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+::slotted(:is(label, button)[disabled]),
+::slotted(:is(label, button):disabled) {
+  cursor: not-allowed;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+/* A separator row between groups. */
+::slotted(hr) {
+  margin: var(--sherpa-display-mode-space-3xs, 2px) 0;
+  border: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-default-1, #e8e8f6);
+}

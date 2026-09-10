@@ -1,0 +1,41 @@
+<!--
+  sherpa-menu — a floating list of choices or actions.
+
+  Matches the Figma "Menu" (49:66174): a 240px card (padding 8, gap 2, radius 4,
+  Elevation md) with an optional 10/16 upper-case heading over 36-tall rows.
+
+  Native-first: the card IS a `popover`, so the browser puts it in the top layer,
+  closes it on Escape and on an outside click, and manages focus — no JS positioning
+  and no scroll-lock hacks. Anchor positioning attaches it to its trigger where the
+  browser supports it, with a plain absolute fallback everywhere else.
+
+  Rows are whatever you slot in, and they stay real form controls:
+
+    values  — <label><input type="checkbox|radio" value="…" /> Label</label>
+    actions — <button type="button" value="…">Label</button>
+
+  So a multi-select field is checkbox rows, a single-select field is radio rows, and
+  an action menu is buttons. Keyboard and screen-reader behaviour come free.
+
+  Public API:
+    data-heading  optional heading (rendered upper-case at 10/16)
+    data-select   multiple (default, checkbox rows) | single (radio rows)
+    data-anchor   the CSS anchor-name of the trigger, for anchor positioning
+    open          native-ish boolean: reflects/controls the popover
+
+  Slots:
+    (default) — the rows (labels with inputs, or buttons)
+
+  Fires:
+    menu-change — a value row changed. detail: { values: string[] }
+    menu-select — an action row was clicked. detail: { value, label }
+    menu-open / menu-close — detail: {}
+-->
+<template id="default">
+  <div class="menu" part="menu" popover="auto" role="menu">
+    <p class="heading" part="heading"></p>
+    <div class="rows" part="rows">
+      <slot></slot>
+    </div>
+  </div>
+</template>

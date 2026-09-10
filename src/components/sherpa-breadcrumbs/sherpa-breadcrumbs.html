@@ -4,7 +4,8 @@
   Renders a flat crumb list from populate([{ label, href? }]) by cloning the
   <template class="crumb-tpl"> prototype (no id → the base parser ignores it).
   The last crumb is the current page: no href, aria-current="page". Separators
-  are drawn purely in CSS (::before on every crumb after the first).
+  are drawn purely in CSS: a Font Awesome chevron-right ::before on every crumb
+  after the first (Figma uses a 12px chevron-right icon instance).
 
   Public API: (content-driven — no host data-* required)
 

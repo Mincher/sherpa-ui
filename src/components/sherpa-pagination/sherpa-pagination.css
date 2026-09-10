@@ -12,8 +12,11 @@
  * only stamps <option>s, clamps values, and reflects state; CSS owns every visual.
  */
 
+/* Figma Pagination (48:65826) FILLS its parent (primaryAxisSizingMode FIXED at the
+   container width) and pushes the two zones apart — so the host must be a full-width
+   flex row, not an inline-flex box that hugs its content. */
 :host {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sherpa-display-mode-space-base, 16px);

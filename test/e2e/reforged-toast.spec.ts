@@ -89,10 +89,14 @@ test('the close button fires toast-dismiss and removes the toast', async ({ page
     let dismissed = 0;
     el.addEventListener('toast-dismiss', () => dismissed++);
     el.shadowRoot!.querySelector<HTMLElement>('.close')!.click();
+    // The event fires straight away; the node leaves after the slide-out animation.
+    const leavingImmediately = el.hasAttribute('data-leaving');
+    await new Promise((res) => setTimeout(res, 300));
 
-    return { dismissed, connected: el.isConnected };
+    return { dismissed, leavingImmediately, connected: el.isConnected };
   });
   expect(r.dismissed).toBe(1);
+  expect(r.leavingImmediately).toBe(true); // animates out rather than vanishing
   expect(r.connected).toBe(false);
 });
 
@@ -108,10 +112,58 @@ test('auto-dismisses after data-duration and fires toast-dismiss', async ({ page
       el.addEventListener('toast-dismiss', () => resolve(true));
       setTimeout(() => resolve(false), 1000);
     });
+    // Give the slide-out animation time to finish before checking it is gone.
+    await new Promise((res) => setTimeout(res, 300));
     return { dismissed, connected: el.isConnected };
   });
   expect(r.dismissed).toBe(true);
   expect(r.connected).toBe(false);
+});
+
+test('the default life is five seconds', async ({ page }) => {
+  const duration = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-message', 'Default');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // Not yet dismissed a moment after appearing — the 5s timer is running.
+    await new Promise((res) => setTimeout(res, 120));
+    const stillHere = el.isConnected && !el.hasAttribute('data-leaving');
+    el.remove();
+    return stillHere;
+  });
+  expect(duration).toBe(true);
+});
+
+test('the static helpers stack toasts in the top-right corner', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mod = await import('/dist/components/sherpa-toast/sherpa-toast.js');
+    const SherpaToast = (mod as {
+      SherpaToast: { info(m: string, o?: { duration?: number }): HTMLElement };
+    }).SherpaToast;
+    const first = SherpaToast.info('One', { duration: 0 }) as HTMLElement & { rendered?: Promise<void> };
+    const second = SherpaToast.info('Two', { duration: 0 }) as HTMLElement & { rendered?: Promise<void> };
+    await first.rendered;
+    await second.rendered;
+    const stack = first.parentElement!;
+    const box = stack.getBoundingClientRect();
+    return {
+      sameStack: second.parentElement === stack,
+      stackClass: stack.className,
+      count: stack.children.length,
+      // Top-right: near the top, and its right edge near the viewport's.
+      nearTop: box.top < 40,
+      nearRight: window.innerWidth - box.right < 40,
+      // The pair stacks vertically rather than overlapping.
+      stacksDown: second.getBoundingClientRect().top > first.getBoundingClientRect().top,
+    };
+  });
+  expect(r.stackClass).toBe('sherpa-toast-stack');
+  expect(r.sameStack).toBe(true);
+  expect(r.count).toBe(2);
+  expect(r.nearTop).toBe(true);
+  expect(r.nearRight).toBe(true);
+  expect(r.stacksDown).toBe(true);
 });
 
 test('static helper creates, appends, and returns a toast', async ({ page }) => {
@@ -121,12 +173,16 @@ test('static helper creates, appends, and returns a toast', async ({ page }) => 
     const toast = SherpaToast.critical('Boom', { duration: 0 }) as HTMLElement & { rendered?: Promise<void> };
     await toast.rendered;
     return {
-      inBody: toast.parentElement === document.body,
+      // The helpers drop toasts into the shared top-right stack, which itself lives
+      // on <body> — so the toast is in the document, one level deeper than before.
+      inStack: toast.parentElement?.classList.contains('sherpa-toast-stack') === true,
+      stackOnBody: toast.parentElement?.parentElement === document.body,
       status: toast.getAttribute('data-status'),
       message: toast.shadowRoot!.querySelector('.heading')!.textContent,
     };
   });
-  expect(r.inBody).toBe(true);
+  expect(r.inStack).toBe(true);
+  expect(r.stackOnBody).toBe(true);
   expect(r.status).toBe('critical');
   expect(r.message).toBe('Boom');
 });

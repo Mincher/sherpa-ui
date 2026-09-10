@@ -81,6 +81,7 @@ export { SherpaSectionHeader } from './components/sherpa-section-header/sherpa-s
 export { SherpaEmptyState } from './components/sherpa-empty-state/sherpa-empty-state.js';
 export { SherpaProgressBar } from './components/sherpa-progress-bar/sherpa-progress-bar.js';
 export { SherpaTooltip } from './components/sherpa-tooltip/sherpa-tooltip.js';
+export { SherpaMenu } from './components/sherpa-menu/sherpa-menu.js';
 export { SherpaKeyValueList, type KeyValuePair } from './components/sherpa-key-value-list/sherpa-key-value-list.js';
 export { SherpaList } from './components/sherpa-list/sherpa-list.js';
 export { SherpaListItem } from './components/sherpa-list-item/sherpa-list-item.js';

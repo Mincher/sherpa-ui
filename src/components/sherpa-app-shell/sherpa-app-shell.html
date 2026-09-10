@@ -1,16 +1,21 @@
 <!--
   sherpa-app-shell — the boilerplate frame for an app or a view.
 
-  A three-region grid: a nav rail down the left, an app-header across the top of
-  the content, and a scrolling content area with the layout grid rules applied.
-  Matching the Figma App Shell, the nav and header are PRE-COMPOSED: a
-  <sherpa-nav> and a <sherpa-app-header> ship in place. Drop your view content in
-  the default slot; override the nav/header by slotting your own into the named
-  slots (which replace the defaults).
+  A nav rail OVERLAID down the left edge at full height, with the header + content
+  wrapper inset past it. Matching the Figma App Shell, the nav and header are
+  PRE-COMPOSED: a <sherpa-nav> and a <sherpa-app-header> ship in place. Drop your
+  view content in the default slot; override the nav/header by slotting your own
+  into the named slots (which replace the defaults).
+
+  The inset is the COLLAPSED rail width (40px) while the rail is collapsed or
+  hovered, so hovering reveals the rail OVER the content instead of reflowing the
+  page. It grows to the open width only when the rail is latched (pinned/settings).
+  The shell mirrors the rail's data-nav-state onto itself, so CSS can do that.
 
   Public API:
-    data-nav-collapsed   collapse the nav rail to icon width (boolean)
-    data-no-header       let the content span the full height (no header row) (boolean)
+    data-nav-state   collapsed (default) | hover | default | pinned | settings —
+                     mirrored from the rail; drives the content inset
+    data-no-header   let the content span the full height (no header row) (boolean)
 
   Slots:
     nav       replace the default <sherpa-nav>          (data-accepts: nav)
@@ -22,9 +27,11 @@
     <div class="region nav" part="nav">
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
-    <header class="region header" part="header">
-      <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
-    </header>
-    <main class="region content" part="content"><slot></slot></main>
+    <div class="frame" part="frame">
+      <header class="region header" part="header">
+        <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
+      </header>
+      <main class="region content" part="content"><slot></slot></main>
+    </div>
   </div>
 </template>

@@ -113,6 +113,9 @@
   block-size: var(--sherpa-switch-size-thumb, 16px);
   border-radius: var(--sherpa-switch-radius-thumb, 3px);
   background: var(--sherpa-theme-content-body-4, #ffffff);
+  /* OFF: hard against the start of the track (the ON rule pushes it with a margin). */
+  margin-inline-start: 0;
+  transition: margin-inline-start 120ms ease;
 }
 
 /* ── Label: ON / OFF text ─────────────────────────────────────────────────
@@ -120,7 +123,9 @@
    (simple), set by the projected token region above. ── */
 .label {
   display: var(--_has-label, inline-flex);
-  min-inline-size: 24px;
+  flex: 1 1 auto;
+  justify-content: center;
+  min-inline-size: var(--sherpa-display-mode-size-lg, 24px);
   text-align: center;
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
@@ -130,9 +135,14 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── ON state — slide knob to the end ──────────────────────────────────── */
+/* ── ON state — slide the knob to the end ──────────────────────────────────
+   Pushed with an auto margin, NOT `order`. Reordering only moves the knob past a
+   SIBLING, so in the `simple` style — where the ON/OFF label is display:none — there
+   was nothing to move past and the thumb never slid. An auto margin eats the free
+   space in the track, so it works with or without the label. */
 .input:checked ~ .knob {
-  order: 1; /* knob slides to the end */
+  margin-inline-start: auto;
+  transition: margin-inline-start 120ms ease;
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */

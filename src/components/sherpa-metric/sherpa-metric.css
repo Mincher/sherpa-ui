@@ -45,8 +45,9 @@
   &:empty { display: none; }
 }
 
-/* ── Card row: figures + sparkline. Resting fill = surface/default/+1; a
-   [data-status] ancestor overrides it with the status surface. ─────────── */
+/* ── Card row: figures + sparkline ───────────────────────────────────────
+   Will corrected the Figma card surface: it is style-surface/base (white), NOT the
+   surface/default/+1 tint. A [data-status] ancestor still overrides it. */
 .row {
   display: flex;
   align-items: center;
@@ -54,7 +55,7 @@
   min-inline-size: 0;
   padding: var(--sherpa-structure-space-padding, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
-  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
+  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--_status-border, transparent);
 }

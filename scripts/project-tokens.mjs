@@ -660,6 +660,9 @@ const STATUS_ROLE_MAP = {
   'style-surface/base +2': '_status-surface-strong',
   'style-surface/shadow': '_status-shadow',
   'style-border/base': '_status-border',
+  // The STRONG border step — a status-tinted rule/stroke (chart lines, tinted
+  // dividers). The neutral `_status-border` cannot express these.
+  'style-border/base +1': '_status-border-strong',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',
   'style-indicator/accent': '_status-icon',
@@ -696,6 +699,9 @@ const LOOK_ROLE_MAP = {
   'style-surface/base +2': '_status-surface-strong',
   'style-surface/shadow': '_status-shadow',
   'style-border/base': '_status-border',
+  // The STRONG border step — a status-tinted rule/stroke (chart lines, tinted
+  // dividers). The neutral `_status-border` cannot express these.
+  'style-border/base +1': '_status-border-strong',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',
   'style-indicator/accent': '_status-icon',
@@ -805,47 +811,57 @@ const shadowAliasLines = [
 // ════════════════════════════════════════════════════════════════════════════
 // .sherpa-view frame utility — copied verbatim (consumed by src/core/render-view.ts).
 // ════════════════════════════════════════════════════════════════════════════
+// The nav is an OVERLAY: absolutely positioned down the left edge at full height,
+// with the header/body inset by the COLLAPSED rail width only. Hovering the rail
+// then reveals it OVER the content instead of reflowing the page; the inset grows
+// only when the rail is latched open (pinned/settings). Widths are the Figma
+// Navigation nav-layout/width values (40 collapsed / 320 open) — mirrors
+// sherpa-app-shell.css, which does the same thing in the shadow DOM.
 const viewFrameBlock = `  .sherpa-view {
-    --sherpa-view-nav-width: 240px;
+    --sherpa-view-nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);
+    --sherpa-view-nav-open: 320px;
+    --sherpa-view-content-inset: var(--sherpa-view-nav-collapsed);
 
+    position: relative;
     display: grid;
-    grid-template-columns: var(--sherpa-view-nav-width) 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas:
-      'nav header'
-      'nav body';
+      'header'
+      'body';
     block-size: 100%;
     min-block-size: 100vh;
-    background: var(--sherpa-app-primary, #ffffff);
-    color: var(--sherpa-content-primary-base, #2e2e33);
+    padding-inline-start: var(--sherpa-view-content-inset);
+    background: var(--sherpa-display-mode-color-app-color-1, #e8e8f6);
+    color: var(--sherpa-theme-content-body-1, #35353d);
+    transition: padding-inline-start 160ms ease;
   }
-  .sherpa-view[data-nav-collapsed] {
-    --sherpa-view-nav-width: 56px;
+  /* Latched open (pinned/settings) → the content sits beside the full-width rail. */
+  .sherpa-view[data-nav-state='pinned'],
+  .sherpa-view[data-nav-state='settings'] {
+    --sherpa-view-content-inset: var(--sherpa-view-nav-open);
   }
   .sherpa-view > [data-region='nav'] {
-    grid-area: nav;
-    min-inline-size: 0;
-    border-inline-end: var(--sherpa-core-border-width-base, 1px) solid
-      var(--sherpa-border-primary, #d5d5d5);
-    background: var(--sherpa-surface-primary-base, #ffffff);
-    overflow: hidden;
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 2;
+    display: flex;
   }
   .sherpa-view > [data-region='header'] {
     grid-area: header;
-    border-block-end: var(--sherpa-core-border-width-base, 1px) solid
-      var(--sherpa-border-primary, #d5d5d5);
+    min-inline-size: 0;
   }
   .sherpa-view > [data-region='body'] {
     grid-area: body;
     min-block-size: 0;
     overflow: auto;
-    padding: var(--sherpa-core-space-lg, 20px);
+    padding: var(--sherpa-layout-grid-padding, 16px);
   }
   /* A view with no header region lets the body span both rows. */
   .sherpa-view:not(:has(> [data-region='header'])) {
     grid-template-areas:
-      'nav body'
-      'nav body';
+      'body'
+      'body';
   }`;
 
 // ════════════════════════════════════════════════════════════════════════════

@@ -15,15 +15,51 @@
  *   glyph   → var(--_status-icon, …)                              (strong status hue)
  */
 
+/* Toasts stack in the TOP-RIGHT corner. The host is the fixed positioner so a toast
+   appended anywhere (SherpaToast.success(…) drops it on <body>) always lands in the
+   same place. Each new toast pushes the previous ones down, because the shared
+   .sherpa-toast-stack container is a flex column — but a bare toast with no container
+   still positions itself, so the corner is guaranteed either way. */
 :host {
+  position: fixed;
+  inset-block-start: var(--sherpa-display-mode-space-base, 16px);
+  inset-inline-end: var(--sherpa-display-mode-space-base, 16px);
+  z-index: 1000;
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+
+  /* Slide in from off-screen right, then settle. Reversed on the way out. */
+  animation: sherpa-toast-in 180ms ease-out both;
 
   --_surface: var(--_status-surface-subtle, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--sherpa-style-border-base, #b3b3c3);
   --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
   --_badge: var(--_status-icon, var(--sherpa-style-indicator-accent, #3b4ccd));
   --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #b2b2bf4d));
+}
+
+/* Inside a stack the container owns the corner, so the toast goes back in flow. The
+   stack itself is pointer-events:none (it must never block the page), so each toast
+   turns interaction back on for its own box. */
+:host([data-stacked]) {
+  position: static;
+  inset: auto;
+  pointer-events: auto;
+}
+
+/* Leaving — JS sets data-leaving, waits for the animation, then removes the node. */
+:host([data-leaving]) {
+  animation: sherpa-toast-out 160ms ease-in both;
+  pointer-events: none;
+}
+
+@keyframes sherpa-toast-in {
+  from { opacity: 0; transform: translateX(calc(100% + var(--sherpa-display-mode-space-base, 16px))); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sherpa-toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(calc(100% + var(--sherpa-display-mode-space-base, 16px))); }
 }
 
 .toast {

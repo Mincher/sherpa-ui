@@ -1,15 +1,20 @@
 /**
  * sherpa-quick-filter — presentation.
  *
- * A toggleable filter chip. Inactive: neutral surface, grey border, muted ink.
- * Active/selected: fills the brand-tint surface with a brand border + brand ink.
- * The ai type carries the brand-purple accent even when inactive — the brand
- * accent is the strong brand ramp step (border-active-2 = #C046FF), NOT the
- * light brand-active surface. The count badge + menu caret are attribute-gated.
- * Pure data-* selectors; JS never styles.
+ * Data-matched to the Figma "Filter Chip (atom)" (154:3904):
+ *   chip       FIXED 24 tall · padding 0 × space/3xs 2 · radius 3 (Primitives 150,
+ *              kept on the 2px grid step) · 0.5 style-border/base ring · white face
+ *   "Left"     an inner group padded 0 × space/2xs 4 with gap 4 → 6px effective
+ *              inline padding: [count][icon] Label
+ *   count      the Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT — a
+ *              neutral chip (white face, grey ring, dark ink), NOT the active tint,
+ *              and it LEADS the row rather than trailing it
+ *   icon       a 14px Icon instance (content/size/base)
+ *   label      style-content/base at content/size/base 14 on line-height/base 20
+ *   caret      a Transparent icon button (Figma Menu button) with a caret-down glyph
  *
- *   accent  → var(--_status-border, theme-border-active-2)   (brand #C046FF)
- *   tint    → var(--sherpa-theme-surface-active-base)        (soft brand fill)
+ * The ai type carries the brand-purple accent even when inactive. The active look is
+ * the Style active mode: a brand-tint face, brand ring, deeper brand ink.
  */
 
 :host {
@@ -22,38 +27,50 @@
   --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
-/* Figma Filter Chip (atom): FIXED height 24, chip padding 0/space-3xs (2) around a
-   "Left" group padded 0/space-2xs (4) → 6px effective inline padding; gap 4; radius
-   Primitives border/radius/150 = 3 (off-grid primitive — kept on the 2px grid step);
-   stroke border/width/sm 0.5. Label content/size/base 14 on line-height/base 20. */
+/* The chip shell: the box, the ring and the fixed height live here so the body
+   button and the caret button sit inside one continuous pill. */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
-  padding: 0 calc(var(--sherpa-display-mode-space-3xs, 2px) + var(--sherpa-display-mode-space-2xs, 4px));
-  min-block-size: var(--sherpa-display-mode-size-lg, 24px);
+  gap: 0;
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  cursor: pointer;
   transition:
     background-color 100ms ease,
     border-color 100ms ease,
     color 100ms ease;
+}
 
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-theme-surface-default-base, #ffffff) 94%, currentColor); }
-  }
+/* The chip body is the toggle target; the Figma "Left" group's 4px padding + 4px gap
+   give the 6px effective inset. */
+.body {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  block-size: 100%;
+  padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  white-space: nowrap;
+  cursor: pointer;
 
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
+}
+
+@supports (color: color-mix(in oklab, red, blue)) {
+  .chip:hover { background: color-mix(in oklab, var(--sherpa-theme-surface-default-base, #ffffff) 94%, currentColor); }
 }
 
 /* AI type carries the brand accent even when inactive. */
@@ -82,6 +99,26 @@
   background: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
 }
 
+/* Count chip — Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT: a neutral
+   16-tall chip (white face, 0.5 grey ring, dark ink, radius sm), LEADING the label.
+   It is deliberately NOT the active tint — that was the bug. */
+.count { display: none; }
+:host([data-count]) .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+
 /* Leading icon — shown only with data-icon-start (Figma "Icon", a funnel default). */
 .icon { display: none; }
 :host([data-icon-start]) .icon {
@@ -95,34 +132,34 @@
   line-height: 1;
 }
 
-/* Count badge — Figma "Indicator (atom)/Type=count" pinned Style=active: height 16,
-   padding 0/space-3xs, radius sm, surface/active/base fill + border-active-2 ring,
-   active ink. Shown only when data-count is present (JS mirrors the number). */
-.count { display: none; }
-:host([data-count]) .count {
-  display: inline-flex;
+/* ── Menu caret — the Figma Menu button: a 24×24 Transparent icon button ──── */
+.caret {
+  display: none;
   align-items: center;
   justify-content: center;
-  min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_accent);
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--_active-surface);
-  color: var(--sherpa-theme-content-active-1, #8300b6);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-}
+  flex-shrink: 0;
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: transparent;
+  color: inherit;
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  line-height: 1;
+  cursor: pointer;
 
-/* Menu caret — shown only with data-menu. */
-.caret { display: none; }
-:host([data-menu]) .caret {
-  display: inline-block;
-  inline-size: 0;
-  block-size: 0;
-  border-inline: 4px solid transparent;
-  border-block-start: 5px solid currentColor;
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  }
+}
+:host([data-menu]) .caret { display: inline-flex; }
+
+/* The slotted menu is a popover in the top layer — the wrapper is a positioning
+   anchor only and must not affect the chip's own layout. */
+.menu-slot {
+  display: contents;
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */

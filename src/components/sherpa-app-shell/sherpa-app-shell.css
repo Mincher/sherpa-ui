@@ -1,20 +1,35 @@
 /**
- * sherpa-app-shell.css — the app/view frame grid.
+ * sherpa-app-shell.css — the app/view frame.
  *
- * A CSS grid: nav rail (left, full height) | header (top of content) | content.
- * `data-nav-collapsed` narrows the rail; `data-no-header` drops the header row and
- * lets content span both rows. Layout is CSS-owned off the host data-* attrs.
+ * The nav rail is an OVERLAY, not a grid column. It is absolutely positioned down
+ * the left edge at full height, and the header/content wrapper is inset by the
+ * COLLAPSED rail width only:
  *
- * Figma has no nav-width token, so the rail width is a component-private --_nav-*
- * pair (expand/collapse). Surfaces/borders bind the current theme tokens.
+ *     ┌──┬─────────────────────┐     margin-inline-start = 40 (collapsed width)
+ *     │▓▓│ header              │     always — even while the rail is open
+ *     │▓▓├─────────────────────┤
+ *     │▓▓│ content             │     so `hover` reveals the rail OVER the content
+ *     └──┴─────────────────────┘     instead of shoving the page sideways
+ *
+ * That is what makes expand/collapse and hover behave correctly: hovering the rail
+ * must not reflow the app. When the rail is LATCHED open (pinned or settings) the
+ * inset grows to the full width, because the user has chosen to keep it there and
+ * the content should sit beside it.
+ *
+ * Widths come from the Figma Navigation collection (nav-layout/width: 40 collapsed,
+ * 320 open) — the shell reads them, it does not invent its own.
  */
 
 :host {
-  /* nav rail width — private (no Figma token); collapse swaps the value. */
-  --_nav-width: 240px;
-  --_nav-width-collapsed: 56px;
+  /* Figma Navigation nav-layout/width — the two rail widths. */
+  --_nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);
+  --_nav-open: 320px;
+  /* How far the content is pushed. Defaults to the COLLAPSED width and only grows
+     when the rail is latched (see the [data-nav-state] rules below). */
+  --_content-inset: var(--_nav-collapsed);
 
   display: block;
+  position: relative; /* the positioning context for the rail overlay */
   block-size: 100%;
   min-block-size: 100vh;
   background: var(--sherpa-theme-surface-default-base, #ffffff);
@@ -22,35 +37,47 @@
 }
 
 .shell {
-  display: grid;
-  grid-template-columns: var(--_nav-width) 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    'nav header'
-    'nav content';
+  position: relative;
   block-size: 100%;
   min-block-size: 100vh;
 }
 
-/* Nav rail — full height, right divider. */
+/* ── Nav rail — the overlay ──────────────────────────────────────────────
+   Pinned to the left edge, full height, above the content. It sizes itself (the
+   rail owns nav-layout/width), so the shell only positions it. No border: the
+   Figma rail has none — its hover elevation is the separation. */
 .nav {
-  grid-area: nav;
-  min-inline-size: 0;
-  overflow: hidden;
-  border-inline-end: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  display: flex; /* let the slotted rail fill the height */
+}
+.nav ::slotted(*),
+.nav > sherpa-nav {
+  block-size: 100%;
 }
 
-/* Header — top of the content column, bottom divider. */
+/* ── Header + content wrapper — inset past the rail ─────────────────── */
+.frame {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'header'
+    'content';
+  block-size: 100%;
+  min-block-size: 100vh;
+  margin-inline-start: var(--_content-inset);
+  transition: margin-inline-start 160ms ease;
+}
+
+/* Header — top of the content column. No border (the Figma App Header has none). */
 .header {
   grid-area: header;
   min-inline-size: 0;
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* Content — the scrolling view area, layout-grid padding applied for future content. */
+/* Content — the scrolling view area. */
 .content {
   grid-area: content;
   min-inline-size: 0;
@@ -59,16 +86,21 @@
   padding: var(--sherpa-layout-grid-padding, 16px);
 }
 
-/* Collapsed nav rail. */
-:host([data-nav-collapsed]) .shell {
-  grid-template-columns: var(--_nav-width-collapsed) 1fr;
+/* ── The inset follows the rail's LATCHED state only ─────────────────────
+   collapsed / hover  → stay at the collapsed width (hover reveals over the top)
+   pinned / settings  → grow to the open width (the user latched it there)
+   The shell reads the rail's state from its own data-nav-state, which the app
+   mirrors from the rail (or sets directly). */
+:host([data-nav-state="pinned"]),
+:host([data-nav-state="settings"]) {
+  --_content-inset: var(--_nav-open);
 }
 
-/* No header — content spans both rows; the header region collapses. */
-:host([data-no-header]) .shell {
+/* No header — content spans the whole frame; the header region collapses. */
+:host([data-no-header]) .frame {
   grid-template-areas:
-    'nav content'
-    'nav content';
+    'content'
+    'content';
 }
 :host([data-no-header]) .header {
   display: none;

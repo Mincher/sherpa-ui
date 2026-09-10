@@ -1,12 +1,36 @@
 /**
- * sherpa-quick-filter — a filter chip you can toggle on and off.
+ * sherpa-quick-filter — a filter chip you can toggle, with an optional value menu.
  *
- * Clicking it flips it on or off and fires quick-filter-click. CSS handles the
- * look — the accent colour, the on-state tint, the count badge, the caret, and
- * the disabled look. JS only writes the label and count.
- * @fires quick-filter-click — the chip is toggled. bubbles + composed. detail: { active: boolean }
+ * Clicking the chip body flips it on or off and fires quick-filter-click. When
+ * data-menu is set, the trailing caret opens a slotted <sherpa-menu> of values for
+ * the field — checkbox rows for a multi-select field, radio rows for a single-select
+ * one. The menu is a native popover, so it needs no positioning code here.
+ *
+ * CSS owns the look: the neutral count chip that LEADS the label, the accent, the
+ * on-state tint, the caret and the disabled treatment. JS writes the label, the
+ * count and the icon, and relays the menu's selection.
+ *
+ * @element sherpa-quick-filter
+ * @attr {enum}    data-type       default | ai | populated
+ * @attr {boolean} data-current    the chip is on
+ * @attr {string}  data-label      chip text (or use the default slot)
+ * @attr {string}  data-icon-start leading icon — an FA class list
+ * @attr {boolean} data-indicator  show the leading status dot
+ * @attr {string}  data-count      leading count chip
+ * @attr {boolean} data-menu       show the caret that opens the slotted menu
+ *
+ * @slot (default) — the chip label
+ * @slot menu      — a <sherpa-menu> of values for this field
+ *
+ * @fires quick-filter-click  — the chip body is toggled. detail: { active: boolean }
+ * @fires quick-filter-change — the menu selection changed. detail: { values: string[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+
+interface MenuLike extends HTMLElement {
+  toggle?: (trigger?: HTMLElement) => void;
+  values?: string[];
+}
 
 export class SherpaQuickFilter extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter.css', import.meta.url);
@@ -15,7 +39,12 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onRender(): void {
     this.#syncText();
-    this.$('.chip')?.addEventListener('click', this.#onClick);
+    this.$('.body')?.addEventListener('click', this.#onClick);
+    this.$('.caret')?.addEventListener('click', this.#onCaret);
+    // The menu lives in the light DOM; its events bubble up through the host.
+    this.addEventListener('menu-change', this.#onMenuChange as EventListener);
+    this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
+    this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
   }
 
   override onChange(): void {
@@ -29,21 +58,58 @@ export class SherpaQuickFilter extends SherpaElement {
     this.toggleAttribute('data-current', v);
   }
 
+  /** The chip's slotted value menu, if it has one. */
+  get menu(): MenuLike | null {
+    return this.querySelector<MenuLike>('[slot="menu"]');
+  }
+
   #syncText(): void {
     const label = this.$('.label');
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
     const count = this.$('.count');
     if (count) count.textContent = this.dataset['count'] ?? '';
-    // Leading icon glyph; CSS `:host([data-icon-start])` controls its visibility.
+    // The leading icon is a Font Awesome class list; render it as an <i>, not text.
     const icon = this.$('.icon');
-    if (icon) icon.textContent = this.dataset['iconStart'] ?? '';
+    const glyph = this.dataset['iconStart'];
+    if (icon) {
+      if (glyph && /\bfa-/.test(glyph)) {
+        const i = document.createElement('i');
+        i.className = glyph;
+        i.setAttribute('aria-hidden', 'true');
+        icon.replaceChildren(i);
+      } else {
+        icon.textContent = glyph ?? '';
+      }
+    }
   }
 
   #onClick = (): void => {
     if (this.hasAttribute('disabled')) return;
     this.current = !this.current;
     this.emit('quick-filter-click', { active: this.current });
+  };
+
+  #onCaret = (event: Event): void => {
+    if (this.hasAttribute('disabled')) return;
+    event.stopPropagation(); // opening the menu must not toggle the chip
+    this.menu?.toggle?.(this.$<HTMLElement>('.caret') ?? undefined);
+  };
+
+  /** Mirror the menu's open state onto the caret for assistive tech. */
+  #onMenuToggle = (event: Event): void => {
+    const open = event.type === 'menu-open';
+    this.$('.caret')?.setAttribute('aria-expanded', String(open));
+  };
+
+  /** A menu selection sets the count chip and the on-state, then relays outward. */
+  #onMenuChange = (event: Event): void => {
+    const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+    if (values.length) this.dataset['count'] = String(values.length);
+    else delete this.dataset['count'];
+    this.current = values.length > 0;
+    this.#syncText();
+    this.emit('quick-filter-change', { values });
   };
 }
 

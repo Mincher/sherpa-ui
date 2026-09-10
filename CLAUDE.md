@@ -187,7 +187,7 @@ Setting `data-status="critical|warning|success|info|urgent"` on any ancestor emi
 background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
 ```
 
-Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` (+1 — the pale tint, e.g. the Toast card), `--_status-surface-strong` (+2), `--_status-shadow` (style-surface/shadow — status-tinted elevation colour), `--_status-border`, `--_status-text`, `--_status-text-on-color`, `--_status-icon`.
+Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` (+1 — the pale tint, e.g. the Toast card), `--_status-surface-strong` (+2), `--_status-shadow` (style-surface/shadow — status-tinted elevation colour), `--_status-border` (neutral in most modes), `--_status-border-strong` (style-border/base +1 — the status-tinted rule/stroke, e.g. a sparkline), `--_status-text`, `--_status-text-on-color`, `--_status-icon`.
 
 ### CSS `@function` library (`css/styles/tokens/sherpa-functions.css`)
 

@@ -45,6 +45,12 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
+/* Figma State=error (645:69690): the field and the validation bar are ONE snapped
+   stack — itemSpacing space/none, the field pinned snap-bottom-edge and the bar
+   snap-top-edge. So the bar must sit FLUSH against the field, with no 4px row gap.
+   The .message rule below removes its own corner radius on that shared edge. */
+.field:has(.message:not(:empty)) { gap: 0; }
+.field:has(.message:not(:empty)) > :is(.label, .description) { margin-block-end: var(--sherpa-theme-gap-sm, 4px); }
 
 /* Figma Input Text: label content/body/base 12/16 medium · description content/body/+2
    12/16 regular · uniform gap/sm (4) between every row — no extra margins. */
