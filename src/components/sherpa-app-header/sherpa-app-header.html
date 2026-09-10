@@ -20,7 +20,7 @@
 
   Public API:
     data-title          the view title (row 2)
-    data-icon           the view icon — an FA class list ("fa-regular fa-gauge")
+    data-icon           the view icon — an FA class list ("fa-solid fa-gauge")
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label (default "Ask N-zo")
@@ -52,7 +52,7 @@
       <div class="row-history" part="row-history">
         <div class="history" part="history">
           <button class="btn back" part="back" type="button" aria-label="Back">
-            <i class="fa-regular fa-arrow-left" aria-hidden="true"></i>
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
           </button>
           <slot name="breadcrumbs"></slot>
         </div>
@@ -61,41 +61,41 @@
           <slot name="actions"></slot>
 
           <button class="ai" part="ai" type="button">
-            <i class="fa-regular fa-wand-magic-sparkles" aria-hidden="true"></i>
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
             <span class="ai-label">Ask N-zo</span>
           </button>
 
           <span class="divider divider-ai" aria-hidden="true"></span>
 
           <button class="btn chat" part="chat" type="button" aria-label="Chat">
-            <i class="fa-regular fa-comment" aria-hidden="true"></i>
+            <i class="fa-solid fa-comment" aria-hidden="true"></i>
           </button>
           <button class="btn labs" part="labs" type="button" aria-label="Labs">
-            <i class="fa-regular fa-flask" aria-hidden="true"></i>
+            <i class="fa-solid fa-flask" aria-hidden="true"></i>
           </button>
           <button class="btn theme-toggle" part="theme-toggle" type="button" aria-label="Toggle theme">
-            <i class="fa-regular fa-moon" aria-hidden="true"></i>
+            <i class="fa-solid fa-moon" aria-hidden="true"></i>
           </button>
 
           <span class="divider divider-tools" aria-hidden="true"></span>
 
           <span class="notifications" part="notifications">
             <button class="btn notif-btn" part="notif-btn" type="button" aria-label="Notifications">
-              <i class="fa-regular fa-bell" aria-hidden="true"></i>
+              <i class="fa-solid fa-bell" aria-hidden="true"></i>
             </button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
           <button class="btn account" part="account" type="button" aria-label="Account">
-            <i class="fa-regular fa-circle-user" aria-hidden="true"></i>
+            <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
           </button>
           <button class="btn help" part="help" type="button" aria-label="Help">
-            <i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+            <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
           </button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
           <button class="btn menu" part="menu" type="button" aria-label="Menu">
-            <i class="fa-regular fa-bars" aria-hidden="true"></i>
+            <i class="fa-solid fa-bars" aria-hidden="true"></i>
           </button>
         </div>
       </div>
@@ -108,7 +108,7 @@
           <slot name="title"></slot>
           <button class="btn favorite" part="favorite" type="button"
                   aria-pressed="false" aria-label="Favourite this view">
-            <i class="fa-regular fa-star" aria-hidden="true"></i>
+            <i class="fa-solid fa-star" aria-hidden="true"></i>
           </button>
         </div>
 

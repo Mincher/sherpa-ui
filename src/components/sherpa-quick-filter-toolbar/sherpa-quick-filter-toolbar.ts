@@ -21,6 +21,15 @@
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
+// Chips with `options` stamp a <sherpa-menu>, so it must be defined.
+import '../sherpa-menu/sherpa-menu.js';
+
+/** One value a filter chip's menu can offer. */
+export interface QuickFilterOption {
+  value: string;
+  label: string;
+  selected?: boolean;
+}
 
 export interface QuickFilterDef {
   id: string;
@@ -28,6 +37,15 @@ export interface QuickFilterDef {
   type?: string;
   active?: boolean;
   count?: number;
+  /** A leading Font Awesome icon class list. */
+  icon?: string;
+  /**
+   * Values this chip filters by. Given options, the chip gets a caret and a
+   * <sherpa-menu> of rows: checkboxes when `select` is 'multiple' (the default),
+   * radios when it is 'single'.
+   */
+  options?: QuickFilterOption[];
+  select?: 'single' | 'multiple';
 }
 
 interface ChipEl extends HTMLElement {
@@ -73,8 +91,40 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (f.type) chip.setAttribute('data-type', f.type);
       if (f.active) chip.setAttribute('data-current', '');
       if (f.count != null) chip.setAttribute('data-count', String(f.count));
+      if (f.icon) chip.setAttribute('data-icon-start', f.icon);
+      if (f.options?.length) this.#addMenu(chip, f);
       list.appendChild(chip);
     }
+  }
+
+  /**
+   * Give a chip its value menu: a <sherpa-menu> of real checkbox/radio rows in the
+   * chip's light DOM. Cloned from the menu prototypes in the template, so no
+   * structural innerHTML is written.
+   */
+  #addMenu(chip: HTMLElement, def: QuickFilterDef): void {
+    const menuTpl = this.$<HTMLTemplateElement>('template.qf-menu-tpl');
+    const rowTpl = this.$<HTMLTemplateElement>('template.qf-row-tpl');
+    if (!menuTpl || !rowTpl) return;
+
+    const single = def.select === 'single';
+    const menu = menuTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    menu.setAttribute('data-heading', def.label);
+    menu.setAttribute('data-select', single ? 'single' : 'multiple');
+
+    for (const option of def.options ?? []) {
+      const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const input = row.querySelector('input')!;
+      input.type = single ? 'radio' : 'checkbox';
+      input.value = option.value;
+      if (single) input.name = `qf-${def.id}`;
+      input.checked = !!option.selected;
+      row.querySelector('.qf-row-label')!.textContent = option.label;
+      menu.appendChild(row);
+    }
+
+    chip.setAttribute('data-menu', '');
+    chip.appendChild(menu);
   }
 
   #onChipClick = (event: Event): void => {

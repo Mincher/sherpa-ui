@@ -45,10 +45,10 @@
     --sherpa-navigation-nav-container-header-label: Product name;
     --sherpa-navigation-nav-container-setting-button: default;
     --sherpa-navigation-nav-container-pin-button: default;
-    --sherpa-navigation-nav-shadow-blur: var(--sherpa-elevation-blur);
-    --sherpa-navigation-nav-shadow-offset-x: var(--sherpa-elevation-offset-x);
-    --sherpa-navigation-nav-shadow-offset-y: var(--sherpa-elevation-offset-y);
-    --sherpa-navigation-nav-shadow-spread: var(--sherpa-elevation-spread);
+    --sherpa-navigation-nav-shadow-blur: var(--sherpa-theme-elevation-blur-large);
+    --sherpa-navigation-nav-shadow-offset-x: var(--sherpa-theme-elevation-offset-x-large);
+    --sherpa-navigation-nav-shadow-offset-y: var(--sherpa-theme-elevation-offset-y-large);
+    --sherpa-navigation-nav-shadow-spread: var(--sherpa-theme-elevation-spread-large);
     --_is-visible: revert-layer;
     --_is-hidden: none;
     --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
@@ -228,10 +228,13 @@
   color: var(--sherpa-theme-content-active-1, #8300b6);
 }
 
-/* ── Quick zone — Figma "Slot - Quick Nav Items": padding 8, gap 8 ───────── */
+/* ── Quick zone — Figma "Slot - Quick Nav Items": padding 8, gap 8 ─────────
+   `align-items: stretch` keeps the search field and the quick rows at the rail's
+   full width; a column flex container otherwise shrink-wraps them to their content. */
 .quick-zone {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
@@ -271,17 +274,51 @@
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 
   &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
-  /* The native search clear affordance would break the 32px field. */
+  /* The native search clear affordance is replaced by .search-clear, which can be
+     styled and sized to the field (the native one cannot). */
   &::-webkit-search-cancel-button { appearance: none; }
 }
 
-/* Quick items (Home · Recent · Favorites) — gap 8, no extra padding (the zone owns it). */
+/* Clear button — an icon-only Transparent button at the trailing edge of the field,
+   shown only while the field has text. Figma's field is 32 tall with an 8px inset,
+   so the button matches the field height and keeps the glyph on the 14px icon step. */
+.search-clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
+  align-self: stretch;
+  padding: 0;
+  border: 0;
+  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
+  cursor: pointer;
+
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  }
+}
+:host([data-has-query]) .search-clear { display: inline-flex; }
+
+/* Quick items (Home · Recent · Favorites) — gap 8, no extra padding (the zone owns
+   it). `align-items: stretch` matters: without it the <li> rows shrink-wrap their
+   label and the rows stop short of the rail's width, unlike the section rows. */
 .quick {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 
   &:not(:has(*)) { display: none; }
@@ -342,8 +379,30 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-.nav-row { margin: 0; }
-.nav-row sherpa-nav-item { display: block; }
+/* Every row spans the rail — quick items and section items alike. */
+.nav-row { margin: 0; align-self: stretch; }
+.nav-row sherpa-nav-item { display: flex; }
+
+/* ── Search filtering ────────────────────────────────────────────────────
+   Typing in the search box narrows the rail: JS marks non-matching rows (and
+   sections that lost every row) with data-filtered-out; CSS does the hiding. The
+   matched text itself is highlighted with the CSS Custom Highlight API — see
+   ::highlight(sherpa-nav-match) in sherpa-base.css, which the document and every
+   shadow root share. */
+.nav-row[data-filtered-out],
+.section[data-filtered-out] {
+  display: none;
+}
+
+/* While searching, an empty result reads as an empty rail rather than a broken one. */
+.content:not(:has(.nav-row:not([data-filtered-out])))::after {
+  content: "No matches";
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+:host(:not([data-searching])) .content::after { content: none; }
 
 /* ── Footer (pinned) — no rule in Figma; collapses when empty ───────────── */
 .footer {

@@ -8,9 +8,9 @@
 import { SherpaElement } from './core/sherpa-element.js';
 
 /**
- * Font Awesome 6 (free) CDN. Icons use `fa-regular fa-<name>` classes.
+ * Font Awesome 6 (free) CDN. Icons use `fa-solid fa-<name>` classes.
  * NOTE: true "Classic Light" (`fa-light`) is a Font Awesome Pro style — swap
- * this URL for a Pro kit and the class prefix `fa-regular`→`fa-light` to get it.
+ * this URL for a Pro kit and the class prefix `fa-solid`→`fa-light` to get it.
  * The `@font-face` is loaded into the document by installIcons(); the class rules
  * (`.fa-*::before`) are adopted into every shadow root via sharedStyles below
  * (a document <link> does NOT reach shadow roots; fonts do, class rules do not).

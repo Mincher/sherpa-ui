@@ -47,4 +47,13 @@
   <template class="qf-tpl">
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>
   </template>
+
+  <!-- A chip's value menu, cloned when its definition carries `options`. Rows are
+       real form controls, so keyboard + screen-reader behaviour comes free. -->
+  <template class="qf-menu-tpl">
+    <sherpa-menu slot="menu"></sherpa-menu>
+  </template>
+  <template class="qf-row-tpl">
+    <label><input type="checkbox" /><span class="qf-row-label"></span></label>
+  </template>
 </template>

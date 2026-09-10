@@ -100,15 +100,30 @@ export async function init(root) {
     ],
   });
   header?.setAttribute('data-heading', 'Customers');
-  header?.setAttribute('data-icon', '\u{1F464}');
+  header?.setAttribute('data-icon', 'fa-solid fa-users');
 
-  /* Quick-filter chips — status segments with counts. */
+  /* Quick-filter chips — status segments with counts, plus two value pickers.
+     A chip with `options` shows a caret and opens a menu of real checkbox/radio
+     rows; a chip without them is a plain on/off toggle. */
   const countOf = (s) => customers.filter((c) => c.status === s).length;
+  const uniquePlans = [...new Set(customers.map((c) => c.plan))];
   qft.populate([
     { id: 'active',    label: 'Active',    type: 'data', count: countOf('active') },
     { id: 'trial',     label: 'Trial',     type: 'data', count: countOf('trial') },
     { id: 'suspended', label: 'Suspended', type: 'data', count: countOf('suspended') },
     { id: 'churned',   label: 'Churned',   type: 'data', count: countOf('churned') },
+    // MULTI-select: any number of plans.
+    { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
+      select: 'multiple',
+      options: uniquePlans.map((p) => ({ value: p.toLowerCase(), label: p })) },
+    // SINGLE-select: one owner at a time.
+    { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
+      select: 'single',
+      options: [
+        { value: 'any', label: 'Anyone', selected: true },
+        { value: 'me',  label: 'Assigned to me' },
+        { value: 'unassigned', label: 'Unassigned' },
+      ] },
   ]);
 
   /* Plan radio group in the dialog. */

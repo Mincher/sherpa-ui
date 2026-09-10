@@ -26,7 +26,7 @@ export async function init(root) {
     ],
   });
   header?.setAttribute('data-heading', 'Settings');
-  header?.setAttribute('data-icon', '⚙');
+  header?.setAttribute('data-icon', 'fa-solid fa-sliders');
 
   /* ── Populate the data-driven form controls ───────────────────── */
   const themeGroup = root.querySelector('#theme-group');

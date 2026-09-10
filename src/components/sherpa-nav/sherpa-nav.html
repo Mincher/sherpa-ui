@@ -46,22 +46,26 @@
       <!-- Navigation Header: 40×40 branding tile · product name · pin · settings -->
       <div class="brand" part="brand">
         <span class="brand-icon" part="brand-icon" aria-hidden="true">
-          <slot name="brand-icon"><i class="fa-regular fa-hexagon-nodes"></i></slot>
+          <slot name="brand-icon"><i class="fa-solid fa-cubes"></i></slot>
         </span>
         <span class="product" part="product"></span>
         <button class="hdr-btn pin" part="pin" type="button" aria-pressed="false" aria-label="Pin navigation">
-          <i class="fa-regular fa-thumbtack" aria-hidden="true"></i>
+          <i class="fa-solid fa-thumbtack" aria-hidden="true"></i>
         </button>
         <button class="hdr-btn settings" part="settings" type="button" aria-pressed="false" aria-label="Settings">
-          <i class="fa-regular fa-gear" aria-hidden="true"></i>
+          <i class="fa-solid fa-gear" aria-hidden="true"></i>
         </button>
       </div>
 
       <div class="quick-zone" part="quick-zone">
         <div class="search" part="search">
-          <i class="search-icon fa-regular fa-magnifying-glass" aria-hidden="true"></i>
+          <i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <input class="search-input" part="search-input" type="search"
                  placeholder="Search" aria-label="Search navigation" />
+          <!-- Shown only once the field has text (CSS-gated on data-has-query). -->
+          <button class="search-clear" part="search-clear" type="button" aria-label="Clear search">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
         </div>
 
         <ul class="quick" part="quick" role="list"></ul>

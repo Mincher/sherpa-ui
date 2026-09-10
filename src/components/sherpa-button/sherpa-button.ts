@@ -67,7 +67,7 @@ export class SherpaButton extends SherpaElement {
 
   /**
    * Apply a Font Awesome icon: data-icon-* is an FA class string (e.g.
-   * "fa-regular fa-floppy-disk"). Set it as CSS classes on the <i> (keeping its
+   * "fa-solid fa-floppy-disk"). Set it as CSS classes on the <i> (keeping its
    * structural `icon icon-start|end` classes); CSS `:host([data-icon-*])` controls
    * visibility. Legacy single-glyph text values (no "fa-" token) fall back to text.
    */

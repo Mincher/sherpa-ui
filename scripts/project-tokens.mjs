@@ -222,6 +222,48 @@ const isRef = (v) => typeof v === 'string' && v.startsWith('{') && v.endsWith('}
 /** Cross-library refs the dump can't resolve (only appear in non-primary modes we skip). */
 const isDeadRef = (v) => isRef(v) && v.includes('__library:');
 
+// ── cross-collection mode aliases ───────────────────────────────────────────
+// A Figma variable can alias a variable in a MODE-SWITCHED collection — e.g. the
+// Navigation `hover` mode sets nav-shadow/blur → {elevation.blur}. In Figma the
+// containing component also pins that collection's mode, so the alias resolves to
+// (say) Elevation=md. In CSS the alias becomes `var(--sherpa-elevation-blur)`, which
+// resolves against :root — where the collection sits in its PRIMARY mode. For
+// Elevation that primary mode is `passthrough`, i.e. all zeros, so the shadow
+// silently vanished.
+//
+// Fix: when a scoped collection's mode aliases one of these, redirect the var to the
+// target collection's own named mode (--sherpa-theme-elevation-blur-base for `md`),
+// which IS a plain :root value. Keyed by the alias root, with the mode of the
+// SCOPED collection choosing the target mode.
+const MODE_ALIAS_TARGETS = {
+  // {elevation.<prop>} → --sherpa-theme-elevation-<prop>-<step>
+  elevation: {
+    // Which Elevation mode a scoped mode implies. `hover` lifts a surface, and the
+    // Figma nav pins Elevation=lg on the rail.
+    modeMap: { hover: 'large', sm: 'small', md: 'base', lg: 'large', inset: 'sunken' },
+    rename: (prop, step) => `--${PREFIX}theme-elevation-${prop}-${step}`,
+    // The shadow COLOUR is not part of the elevation step ramp; it is the status
+    // shadow, so leave it pointing at the live var.
+    skip: new Set(['color']),
+  },
+};
+
+/**
+ * Resolve a cross-collection mode alias for one scoped mode, or null when the value
+ * needs no redirection.
+ */
+function modeAliasVar(value, scopedMode) {
+  if (!isRef(value)) return null;
+  const [root, ...rest] = value.slice(1, -1).split('.');
+  const spec = MODE_ALIAS_TARGETS[root];
+  if (!spec) return null;
+  const prop = rest.join('-');
+  if (spec.skip?.has(prop)) return null;
+  const step = spec.modeMap[scopedMode];
+  if (!step) return null;
+  return `var(${spec.rename(prop, step)})`;
+}
+
 /** literal → CSS value (px for dimensions, bare for unitless). */
 function literal(value, type) {
   if (typeof value === 'number') {
@@ -477,13 +519,17 @@ function buildScopedPartial(slug, comp, attr, leaves, renameMap) {
     } else {
       name = isBool ? flagName(leaf.path) : leaf.name;
     }
-    const encode = (val) => (isBool ? vis(val) : toCss(val, leaf.type));
-    const pv = encode(leaf.value);
+    // `mode` matters for cross-collection aliases: a value pointing into a
+    // mode-switched collection must resolve through THAT collection's mode
+    // (see MODE_ALIAS_TARGETS), not against :root's primary mode.
+    const encode = (val, mode) =>
+      isBool ? vis(val) : (modeAliasVar(val, mode) ?? toCss(val, leaf.type));
+    const pv = encode(leaf.value, primaryMode);
     if (pv == null) continue;
     rootVars.push(`  ${name}: ${pv};`);
     for (const [mode, mval] of Object.entries(leaf.modes)) {
       if (mode === primaryMode) continue;
-      const mv = encode(mval);
+      const mv = encode(mval, mode);
       if (mv == null) continue;
       (byMode[mode] ??= []).push(`  ${name}: ${mv};`);
     }

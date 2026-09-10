@@ -154,9 +154,15 @@
   <sherpa-app-shell>
     <sherpa-nav slot="nav"></sherpa-nav>
 
-    <sherpa-app-header slot="header" data-heading="Dashboard" data-notifications="4">
+    <!-- Every header action is opt-in, so a product shows only what it wires. -->
+    <sherpa-app-header slot="header"
+                       data-heading="Dashboard"
+                       data-icon="fa-solid fa-gauge-high"
+                       data-back data-ai data-chat data-labs data-theme-toggle
+                       data-account data-help data-menu data-favorite-action
+                       data-notifications="4">
       <!-- app-header.populate() stamps into these empty children by slot name. -->
-      <sherpa-breadcrumbs slot="breadcrumb"></sherpa-breadcrumbs>
+      <sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs>
       <sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
@@ -165,7 +171,12 @@
   </sherpa-app-shell>
 
   <script type="module">
-    import '../dist/index.js';
+    import { installIcons } from '../dist/index.js';
+
+    // Font Awesome must be in the DOCUMENT too, not just adopted into shadow roots:
+    // the class rules reach shadow DOM via sharedStyles, but the @font-face — and any
+    // light-DOM <i class="fa-…"> — need the stylesheet in <head>.
+    installIcons();
 
     // Sentinel to prove hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
@@ -177,33 +188,36 @@
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
 
     // ── Shared nav config: the "Views" section links the 4 views. ──────
+    // Icons are Font Awesome class lists (Sherpa's icon system) — never unicode
+    // glyphs, which render at the wrong size and weight.
+    // quickItems is left OUT so the rail shows its Figma default trio:
+    // Home · Recent · Favorites.
     const navConfig = {
-      product: { name: 'N-central', icon: '◉' },
-      quickItems: [
-        { id: 'overview', label: 'Dashboard', icon: '▦', href: '#overview' },
-        { id: 'search',   label: 'Global search', icon: '⌕', href: '#search' },
-      ],
+      product: { name: 'N-central', icon: 'fa-solid fa-cubes' },
       sections: [
         { label: 'Views', items: [
-          { id: 'view-dashboard', label: 'Dashboard', icon: '▦', href: '?view=dashboard' },
-          { id: 'view-records',   label: 'Records',   icon: '▤', href: '?view=records' },
-          { id: 'view-settings',  label: 'Settings',  icon: '⚙', href: '?view=settings' },
-          { id: 'view-chat',      label: 'Assistant', icon: '✳', href: '?view=chat' },
+          { id: 'view-dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge-high', href: '?view=dashboard' },
+          { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
+          { id: 'view-settings',  label: 'Settings',  icon: 'fa-solid fa-sliders',     href: '?view=settings' },
+          { id: 'view-chat',      label: 'Assistant', icon: 'fa-solid fa-comments',    href: '?view=chat' },
         ] },
         { label: 'Monitor', items: [
-          { id: 'endpoints', label: 'Endpoints', icon: '◻', href: '#endpoints', badge: '1284' },
-          { id: 'alerts',    label: 'Alerts',    icon: '⚠', href: '#alerts', badge: '37' },
-          { id: 'health',    label: 'Health',    icon: '♥', href: '#health' },
+          { id: 'endpoints', label: 'Endpoints', icon: 'fa-solid fa-desktop', href: '#endpoints', badge: '1284' },
+          { id: 'alerts',    label: 'Alerts',    icon: 'fa-solid fa-triangle-exclamation', href: '#alerts', badge: '37' },
+          { id: 'health',    label: 'Health',    icon: 'fa-solid fa-heart-pulse', href: '#health', indicator: true },
         ] },
         { label: 'Manage', items: [
-          { id: 'patches',    label: 'Patching',   icon: '⚙', href: '#patches' },
-          { id: 'backups',    label: 'Backups',    icon: '↻', href: '#backups' },
-          { id: 'automation', label: 'Automation', icon: '⚡', href: '#automation' },
+          { id: 'patches',    label: 'Patching',   icon: 'fa-solid fa-screwdriver-wrench', href: '#patches' },
+          // Nested rows show the Figma indent tiers (tier 2 = 32px, tier 3 = 48px).
+          { id: 'patch-approve', label: 'Approvals', href: '#patch-approve', tier: 2 },
+          { id: 'patch-history', label: 'History',   href: '#patch-history', tier: 2 },
+          { id: 'backups',    label: 'Backups',    icon: 'fa-solid fa-database', href: '#backups' },
+          { id: 'automation', label: 'Automation', icon: 'fa-solid fa-bolt', href: '#automation' },
         ] },
         { label: 'Admin', items: [
-          { id: 'reports', label: 'Reports',  icon: '▤', href: '#reports' },
-          { id: 'users',   label: 'Users',    icon: '○', href: '#users' },
-          { id: 'admin',   label: 'Settings', icon: '⚒', href: '#admin' },
+          { id: 'reports', label: 'Reports',  icon: 'fa-solid fa-chart-column', href: '#reports' },
+          { id: 'users',   label: 'Users',    icon: 'fa-solid fa-users', href: '#users' },
+          { id: 'admin',   label: 'Settings', icon: 'fa-solid fa-gear', href: '#admin' },
         ] },
       ],
     };

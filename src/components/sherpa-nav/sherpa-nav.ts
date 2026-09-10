@@ -63,9 +63,9 @@ export type NavState = 'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'
  * above the section list). Overridable via config.quickItems.
  */
 const DEFAULT_QUICK: NavEntry[] = [
-  { id: 'home', label: 'Home', icon: 'fa-regular fa-house' },
-  { id: 'recent', label: 'Recent', icon: 'fa-regular fa-clock-rotate-left' },
-  { id: 'favorites', label: 'Favorites', icon: 'fa-regular fa-star' },
+  { id: 'home', label: 'Home', icon: 'fa-solid fa-house' },
+  { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
+  { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
 ];
 
 /** Modes in which the rail is open (i.e. NOT the 40px icon rail). */
@@ -87,6 +87,7 @@ export class SherpaNav extends SherpaElement {
     // One delegated listener for every stamped item — rows come and go, this stays.
     this.$('.rail')?.addEventListener('item-click', this.#onItemClick as EventListener);
     this.$<HTMLInputElement>('.search-input')?.addEventListener('input', this.#onSearch);
+    this.$('.search-clear')?.addEventListener('click', this.#onSearchClear);
     this.$('.pin')?.addEventListener('click', this.#onPin);
     this.$('.settings')?.addEventListener('click', this.#onSettings);
 
@@ -180,7 +181,13 @@ export class SherpaNav extends SherpaElement {
   };
 
   #onPin = (): void => {
-    // Pin latches the rail open; un-pinning drops it back to the icon rail.
+    // Un-pinning from SETTINGS hands the rail back to hover — the pointer is still
+    // over it, so collapsing under the cursor would feel broken. Un-pinning from
+    // the pinned rail drops it back to the icon rail.
+    if (this.state === 'settings') {
+      this.#setState('hover');
+      return;
+    }
     this.#setState(this.state === 'pinned' ? 'collapsed' : 'pinned');
   };
 
@@ -295,8 +302,54 @@ export class SherpaNav extends SherpaElement {
 
   #onSearch = (event: Event): void => {
     const query = (event.target as HTMLInputElement).value;
+    // CSS shows the clear button off this flag.
+    this.toggleAttribute('data-has-query', query.length > 0);
+    this.#filter(query);
     this.emit('nav-search', { query });
   };
+
+  /** Clear the search box, restore every row, and hand focus back to the field. */
+  #onSearchClear = (): void => {
+    const input = this.$<HTMLInputElement>('.search-input');
+    if (input) input.value = '';
+    this.removeAttribute('data-has-query');
+    this.#filter('');
+    this.emit('nav-search', { query: '' });
+    input?.focus();
+  };
+
+  /* ── Search filtering + native highlighting ──────────────────────────
+     Typing narrows the rail to matching rows and highlights the matched text with
+     the CSS Custom Highlight API — a real Highlight of Ranges, styled by
+     ::highlight(sherpa-nav-match). No marker elements are injected, so the rows'
+     own DOM and their FA icons are untouched. */
+
+  #filter(rawQuery: string): void {
+    const query = rawQuery.trim().toLowerCase();
+
+    for (const row of this.$$<HTMLElement>('.nav-row')) {
+      const item = row.querySelector('sherpa-nav-item') as (HTMLElement & {
+        highlight?: (q: string | null) => void;
+      }) | null;
+      const label = item?.dataset['label'] ?? '';
+      const match = !query || label.toLowerCase().includes(query);
+      // CSS owns the hiding; JS only marks the row.
+      row.toggleAttribute('data-filtered-out', !match);
+      // Each row highlights its OWN label: a custom highlight is not painted for
+      // shadow text unless it is registered and styled inside that same tree.
+      item?.highlight?.(match ? query : null);
+    }
+
+    // A section with no surviving rows hides its label + rule too.
+    for (const section of this.$$<HTMLElement>('.section')) {
+      const rows = Array.from(section.querySelectorAll('.nav-row'));
+      const anyVisible = rows.some((r) => !(r as HTMLElement).hasAttribute('data-filtered-out'));
+      section.toggleAttribute('data-filtered-out', rows.length > 0 && !anyVisible);
+    }
+
+    this.toggleAttribute('data-searching', !!query);
+  }
+
 }
 
 customElements.define('sherpa-nav', SherpaNav);

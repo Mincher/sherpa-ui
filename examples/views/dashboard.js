@@ -15,10 +15,24 @@ export async function init(root) {
       { label: 'Monitoring', href: '#monitoring' },
       { label: 'Dashboard' },
     ],
+    // Chips with `options` get a caret and a value menu (a real popover of
+    // checkbox/radio rows). Without options a chip is a plain on/off toggle.
     filters: [
       { id: 'all',      label: 'All sites', active: true, count: 42 },
       { id: 'critical', label: 'Critical',  count: 3 },
       { id: 'offline',  label: 'Offline',   count: 8 },
+      // MULTI-select: pick any number of regions.
+      { id: 'region', label: 'Region', icon: 'fa-solid fa-globe', select: 'multiple', options: [
+        { value: 'emea', label: 'EMEA', selected: true },
+        { value: 'amer', label: 'Americas' },
+        { value: 'apac', label: 'APAC' },
+      ] },
+      // SINGLE-select: exactly one window at a time (radio rows).
+      { id: 'window', label: 'Time window', icon: 'fa-solid fa-clock', select: 'single', options: [
+        { value: '1h',  label: 'Last hour' },
+        { value: '24h', label: 'Last 24 hours', selected: true },
+        { value: '7d',  label: 'Last 7 days' },
+      ] },
     ],
   };
 

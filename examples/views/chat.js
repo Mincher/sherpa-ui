@@ -29,7 +29,7 @@ export async function init(root) {
     ],
   });
   header?.setAttribute('data-heading', 'Assistant');
-  header?.setAttribute('data-icon', '✨');
+  header?.setAttribute('data-icon', 'fa-solid fa-comments');
 
   // ── Chat wiring ───────────────────────────────────────────
   const thread = root.querySelector('#thread');

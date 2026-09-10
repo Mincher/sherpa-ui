@@ -217,6 +217,116 @@ test('the pin latches the rail open; settings switches mode and relabels the hea
   expect(r.settings.pressed).toBe('true');
 });
 
+test('typing in search filters the rows and marks the matched text', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({
+      product: { name: 'Sherpa' },
+      sections: [
+        { label: 'Views', items: [{ id: 'settings', label: 'Settings' }, { id: 'reports', label: 'Reports' }] },
+        { label: 'Admin', items: [{ id: 'users', label: 'Users' }] },
+      ],
+    });
+    await new Promise((res) => setTimeout(res, 20));
+    const s = nav.shadowRoot!;
+    const input = s.querySelector<HTMLInputElement>('.search-input')!;
+
+    const type = async (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((res) => setTimeout(res, 20));
+      const rows = Array.from(s.querySelectorAll('.content .nav-row'));
+      const visible = rows
+        .filter((row) => !(row as HTMLElement).hasAttribute('data-filtered-out'))
+        .map((row) => (row.querySelector('sherpa-nav-item') as HTMLElement).dataset['label']);
+      // The mark lands on BOTH row templates (button + link) — CSS shows whichever
+      // matches data-href — so de-duplicate by row rather than by geometry (the rail
+      // is collapsed here, so every label has zero width).
+      const marks = rows.flatMap((row) => {
+        const item = row.querySelector('sherpa-nav-item') as HTMLElement;
+        const texts = Array.from(item.shadowRoot!.querySelectorAll('mark.match')).map((m) => m.textContent);
+        return texts.length ? [texts[0]] : [];
+      });
+      const emptySections = Array.from(s.querySelectorAll('.section'))
+        .filter((sec) => (sec as HTMLElement).hasAttribute('data-filtered-out'))
+        .map((sec) => sec.querySelector('.section-label')!.textContent);
+      return { visible, marks, emptySections, searching: nav.hasAttribute('data-searching') };
+    };
+
+    const matched = await type('set');
+    const cleared = await type('');
+    return { matched, cleared };
+  });
+
+  // Only the matching row survives, and its matched letters are marked.
+  expect(r.matched.visible).toEqual(['Settings']);
+  expect(r.matched.marks).toEqual(['Set']);
+  expect(r.matched.searching).toBe(true);
+  // A section that lost every row hides its label + rule too.
+  expect(r.matched.emptySections).toEqual(['Admin']);
+
+  // Clearing restores every row and removes the marks.
+  expect(r.cleared.visible).toEqual(['Settings', 'Reports', 'Users']);
+  expect(r.cleared.marks).toEqual([]);
+  expect(r.cleared.searching).toBe(false);
+});
+
+test('the search clear button appears with text and resets the filter', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({
+      product: { name: 'Sherpa' },
+      sections: [{ label: 'Views', items: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }] }],
+    });
+    await new Promise((res) => setTimeout(res, 20));
+    const s = nav.shadowRoot!;
+    const input = s.querySelector<HTMLInputElement>('.search-input')!;
+    const clear = s.querySelector<HTMLElement>('.search-clear')!;
+    const shown = () => getComputedStyle(clear).display !== 'none';
+
+    const empty = shown();
+    input.value = 'alp';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((res) => setTimeout(res, 20));
+    const typed = shown();
+    const filtered = s.querySelectorAll('.content .nav-row:not([data-filtered-out])').length;
+
+    let searchEvents = 0;
+    nav.addEventListener('nav-search', () => searchEvents++);
+    clear.click();
+    await new Promise((res) => setTimeout(res, 20));
+    // NOTE: the button also calls input.focus() so typing continues in the field.
+    // That is not asserted here — a headless page with no user activation never
+    // moves focus off <body>, so neither activeElement nor a focus listener sees it.
+    return {
+      empty,
+      typed,
+      filtered,
+      afterClear: shown(),
+      value: input.value,
+      rows: s.querySelectorAll('.content .nav-row:not([data-filtered-out])').length,
+      searchEvents,
+    };
+  });
+  expect(r.empty).toBe(false); // hidden while the field is empty
+  expect(r.typed).toBe(true); // shown once it has text
+  expect(r.filtered).toBe(1); // "alp" → Alpha only
+  expect(r.afterClear).toBe(false); // hidden again after clearing
+  expect(r.value).toBe('');
+  expect(r.rows).toBe(2); // every row restored
+  expect(r.searchEvents).toBe(1); // clearing announces the empty query
+});
+
 test('the default quick items are Home · Recent · Favorites', async ({ page }) => {
   const labels = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {

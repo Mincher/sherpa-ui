@@ -38,10 +38,15 @@
  * shared Structure/Theme tokens; logical properties throughout.
  */
 
+/* Figma Navigation Item is ONE 24-tall row: icon · label · [tag] · [chevron], all
+   inside the row box. The host is that row, so it must never wrap — a badge or
+   chevron dropping to a second line was the visible bug. */
 :host {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 8px);
+  flex-wrap: nowrap;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
@@ -107,6 +112,17 @@
   text-overflow: ellipsis;
 }
 
+/* Search match — the visible fallback for the CSS Custom Highlight API, which
+   Chromium does not yet paint inside a shadow root (see highlight() in the TS).
+   The PALE accent step (accent/color 1) is a solid tint, so the hit reads clearly at
+   any row colour; the 30%-alpha transparent step washed out to nothing behind the
+   grey label text. Ink goes to the strong accent so the pair keeps contrast. */
+.label mark.match {
+  background: var(--sherpa-theme-surface-accent-base, #8aa3ff);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}
+
 /* Trailing chip — Figma: a Tag/Type=full at Structure xs pinned Style:Saturated=
    success — a 16px pill (rounding/xl), padding 2×4, 10/16 regular label, saturated
    success fill (#20c173) with white ink. A [data-status] ancestor re-tints it via
@@ -114,7 +130,7 @@
 .badge {
   display: none;
   align-items: center;
-  flex-shrink: 0;
+  flex: 0 0 auto; /* never grow, never shrink, never wrap */
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   justify-content: center;
@@ -153,9 +169,11 @@
 :host([data-expanded]) .expand-chevron { transform: rotate(180deg); }
 
 /* Indicator dot — Figma "Indicator (atom)/Type=dot" pinned Style=active: an 8px
-   disc, surface/active/base face with a 0.5px border-active-2 ring. */
+   disc, surface/active/base face with a 0.5px border-active-2 ring. It rides at the
+   END of the row (Figma puts it last, after the content group). */
 :host([data-status-dot]) .badge {
   display: inline-flex; /* the dot survives the collapsed rail — it is the signal */
+  align-self: center;
   min-inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
