@@ -111,6 +111,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const menu = menuTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
     menu.setAttribute('data-heading', def.label);
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
+    // A filter menu COMMITS on Apply. Filtering a table or chart is expensive and
+    // a partly-built selection is rarely a query anyone wants run, so the rows are
+    // a draft until Apply and Cancel discards them. The menu shows the footer and
+    // withholds menu-change until then; nothing else here has to change.
+    menu.setAttribute('data-commit', '');
 
     for (const option of def.options ?? []) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;

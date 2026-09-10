@@ -24,6 +24,7 @@
   an action menu is buttons. Keyboard and screen-reader behaviour come free.
 
   Public API:
+    data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-heading  optional heading (rendered upper-case at 10/16)
     data-select   multiple (default, checkbox rows) | single (radio rows)
     data-align    start (default) | end   which trigger edge the card lines up with
@@ -33,7 +34,10 @@
     (default) — the rows (labels with inputs, or buttons)
 
   Fires:
-    menu-change — a value row changed. detail: { values: string[] }
+    menu-change — the selection was COMMITTED. detail: { values: string[] }
+                  Without data-commit that is every row tick; with it, only Apply.
+    menu-apply  — Apply was clicked. detail: { values: string[] }
+    menu-cancel — Cancel was clicked; the values are already restored. detail: {}
     menu-select — an action row was clicked. detail: { value, label }
     menu-open / menu-close — detail: {}
 -->
@@ -42,6 +46,19 @@
     <p class="heading" part="heading"></p>
     <div class="rows" part="rows">
       <slot></slot>
+    </div>
+
+    <!--
+      Apply / Cancel footer, shown with data-commit. A committing menu holds its
+      row changes as DRAFT until Apply, so the chart or table behind it does not
+      re-query on every tick; Cancel restores the values the menu opened with.
+
+      Cancel is the DEFAULT look and Apply the saturated one, matching the Figma
+      footer convention (a cancel is not a transparent afterthought).
+    -->
+    <div class="footer" part="footer">
+      <sherpa-button class="cancel" part="cancel" data-size="sm">Cancel</sherpa-button>
+      <sherpa-button class="apply" part="apply" data-size="sm" data-look="saturated">Apply</sherpa-button>
     </div>
   </div>
 </template>

@@ -208,3 +208,120 @@ test('single-select rows share a radio name so only one can win', async ({ page 
   expect(r.names[0]).not.toBe('');
   expect(r.values).toEqual(['anyone']);
 });
+
+test('a committing menu defers changes to Apply, and Cancel discards them', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const menu = document.createElement('sherpa-menu') as MenuEl & {
+      hide(): void;
+    };
+    // data-commit is what adds the footer AND withholds menu-change until Apply.
+    menu.setAttribute('data-commit', '');
+    for (const v of ['a', 'b', 'c']) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = v;
+      label.append(input, document.createTextNode(v));
+      menu.appendChild(label);
+    }
+    root.appendChild(menu);
+    await menu.rendered;
+
+    const events: Array<[string, unknown]> = [];
+    for (const name of ['menu-change', 'menu-apply', 'menu-cancel']) {
+      menu.addEventListener(name, (e) => events.push([name, (e as CustomEvent).detail]));
+    }
+    const sr = menu.shadowRoot!;
+    const inputs = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
+    const footer = sr.querySelector('.footer')!;
+    const press = (sel: string): void => {
+      // The footer buttons are sherpa-buttons, so click their inner control.
+      const btn = sr.querySelector(sel)!;
+      (btn.shadowRoot?.querySelector('button') ?? (btn as HTMLElement)).click();
+    };
+
+    const footerShown = getComputedStyle(footer).display !== 'none';
+
+    // Open, tick one, and confirm NOTHING has been reported yet.
+    menu.show();
+    await new Promise((res) => setTimeout(res, 40));
+    inputs[0]!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    const draft = { events: events.length, ticked: inputs[0]!.checked, values: menu.values };
+
+    // Cancel restores the values the menu OPENED with.
+    press('.cancel');
+    await new Promise((res) => setTimeout(res, 60));
+    const cancelled = {
+      names: events.map(([n]) => n),
+      ticked: inputs[0]!.checked,
+      values: menu.values,
+    };
+
+    // Reopen, tick a different row, Apply.
+    menu.show();
+    await new Promise((res) => setTimeout(res, 40));
+    inputs[1]!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    press('.apply');
+    await new Promise((res) => setTimeout(res, 60));
+    const applied = {
+      names: events.map(([n]) => n),
+      values: menu.values,
+      lastChange: events.filter(([n]) => n === 'menu-change').pop()?.[1],
+    };
+    return { footerShown, draft, cancelled, applied };
+  });
+
+  expect(r.footerShown).toBe(true);
+
+  // The row IS ticked in the UI, but nothing downstream has heard about it —
+  // filtering a table on a half-built selection is rarely the query anyone wants.
+  expect(r.draft.ticked).toBe(true);
+  expect(r.draft.values).toEqual(['a']);
+  expect(r.draft.events).toBe(0);
+
+  // Cancel un-ticks it and reports only menu-cancel — never a menu-change.
+  expect(r.cancelled.ticked).toBe(false);
+  expect(r.cancelled.values).toEqual([]);
+  expect(r.cancelled.names).toEqual(['menu-cancel']);
+
+  // Apply reports BOTH: menu-apply for callers that care about the interaction,
+  // and menu-change for the ones that just want the committed selection.
+  expect(r.applied.names).toEqual(['menu-cancel', 'menu-apply', 'menu-change']);
+  expect(r.applied.values).toEqual(['b']);
+  expect(r.applied.lastChange).toEqual({ values: ['b'] });
+});
+
+test('a menu WITHOUT data-commit still commits on every tick', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const menu = document.createElement('sherpa-menu') as MenuEl;
+    for (const v of ['x', 'y']) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = v;
+      label.append(input, document.createTextNode(v));
+      menu.appendChild(label);
+    }
+    root.appendChild(menu);
+    await menu.rendered;
+
+    const changes: string[][] = [];
+    menu.addEventListener('menu-change', (e) => changes.push((e as CustomEvent).detail.values));
+    const footerShown =
+      getComputedStyle(menu.shadowRoot!.querySelector('.footer')!).display !== 'none';
+    menu.querySelector<HTMLInputElement>('input')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    return { footerShown, changes };
+  });
+
+  // No footer, and the tick commits straight away — the behaviour every menu had
+  // before, kept for action menus and anything that is cheap to react to.
+  expect(r.footerShown).toBe(false);
+  expect(r.changes).toEqual([['x']]);
+});

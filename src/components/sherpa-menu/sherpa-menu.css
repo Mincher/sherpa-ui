@@ -132,6 +132,21 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
+/* ── Apply / Cancel footer ───────────────────────────────────────────────
+   Only present on a committing menu (data-commit). Sits below the rows with its
+   own divider, buttons trailing — the Figma footer convention. */
+.footer {
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
+  padding-block-start: var(--sherpa-display-mode-space-xs, 8px);
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-default-1, #e8e8f6);
+}
+:host([data-commit]) .footer { display: flex; }
+
 /* A separator row between groups. */
 ::slotted(hr) {
   margin: var(--sherpa-display-mode-space-3xs, 2px) 0;

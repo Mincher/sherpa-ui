@@ -71,9 +71,10 @@ events:
     bubbles: true
     composed: true
 tokens:
-  bar.gap: "{sherpa.display-space-sm}"
-  bar.padding: "{sherpa.display-space-xs}"
-  chips.gap: "{sherpa.theme-gap-sm}"
+  bar.gap: "{sherpa.display-mode-space-xs}"
+  bar.padding: "{sherpa.display-mode-space-2xs}"
+  bar.border-block-end: "{sherpa.display-mode-border-width-base}"
+  chips.gap: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Filter Toolbar

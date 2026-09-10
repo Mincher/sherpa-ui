@@ -36,6 +36,21 @@ anatomy:
         class: rows
         part: rows
         slot: ""
+      - el: div
+        class: footer
+        part: footer
+        children:
+          - el: sherpa-button
+            class: cancel
+            part: cancel
+            attrs:
+              data-size: sm
+          - el: sherpa-button
+            class: apply
+            part: apply
+            attrs:
+              data-size: sm
+              data-look: saturated
 props:
   - $type: prop
     name: data-align
@@ -50,6 +65,11 @@ props:
     type: string
     kind: style
     description: the CSS anchor-name of the trigger, for anchor positioning
+  - $type: prop
+    name: data-commit
+    type: string
+    kind: style
+    description: show the Apply / Cancel footer and DEFER changes until Apply
   - $type: prop
     name: data-heading
     type: string
@@ -69,6 +89,9 @@ props:
     description: "native-ish boolean: reflects/controls the popover"
 states:
   - $type: state
+    name: commit
+    selector: ":host([data-commit])"
+  - $type: state
     name: focus-visible
     selector: ":focus-visible"
 capabilities:
@@ -78,6 +101,18 @@ capabilities:
 events:
   - $type: event
     name: menu-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: only
+    bubbles: true
+    composed: true
+  - $type: event
+    name: menu-apply
+    bubbles: true
+    composed: true
+  - $type: event
+    name: menu-cancel
     bubbles: true
     composed: true
   - $type: event
@@ -108,6 +143,10 @@ tokens:
   heading.font-weight: "{sherpa.font-weight-regular}"
   heading.line-height: "{sherpa.theme-content-line-height-xs}"
   rows.gap: "{sherpa.display-mode-space-3xs}"
+  footer.gap: "{sherpa.theme-gap-md}"
+  footer.margin-block-start: "{sherpa.display-mode-space-3xs}"
+  footer.padding-block-start: "{sherpa.display-mode-space-xs}"
+  footer.border-block-start: "{sherpa.display-mode-border-width-sm}"
 $extensions:
   sherpa:
     jsProps:

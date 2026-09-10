@@ -21,11 +21,15 @@
  * @attr {string}  data-heading  optional heading (upper-case 10/16)
  * @attr {enum}    data-select   multiple (default) | single
  * @attr {enum}    data-align    start (default) | end — which trigger edge to line up with
+ * @attr {boolean} data-commit   show the Apply/Cancel footer and DEFER changes
+ *                until Apply (without it, every row tick commits immediately)
  * @attr {boolean} open          reflects/controls the popover
  *
  * @slot (default) — the rows
  *
- * @fires menu-change — a value row changed. detail: { values: string[] }
+ * @fires menu-change — the selection was COMMITTED. detail: { values: string[] }
+ * @fires menu-apply  — Apply was clicked. detail: { values: string[] }
+ * @fires menu-cancel — Cancel was clicked; values already restored. detail: {}
  * @fires menu-select — an action row was clicked. detail: { value, label }
  * @fires menu-open   — detail: {}
  * @fires menu-close  — detail: {}
@@ -33,6 +37,9 @@
  * @prop {string[]} values — the checked row values (read/write)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The Apply/Cancel footer composes real buttons, so the menu must register them —
+// it cannot rely on the page having imported them.
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
@@ -44,6 +51,14 @@ export class SherpaMenu extends SherpaElement {
 
   /** The trigger of the currently-open menu — re-measured on scroll / resize. */
   #trigger: HTMLElement | null = null;
+  /**
+   * The values the menu opened with, for Cancel to restore.
+   *
+   * Captured on OPEN rather than on first change: a user who ticks, unticks and
+   * then cancels must land back where they started, not at the state after the
+   * first edit.
+   */
+  #baseline: string[] = [];
 
   #card(): HTMLElement | null {
     return this.$('.menu');
@@ -58,6 +73,9 @@ export class SherpaMenu extends SherpaElement {
     // Rows live in the light DOM, so listen on the host and let events bubble up.
     this.addEventListener('change', this.#onChange);
     this.addEventListener('click', this.#onClick);
+    // The footer is in the SHADOW root, so its clicks are listened for there.
+    this.$('.apply')?.addEventListener('click', this.#onApply);
+    this.$('.cancel')?.addEventListener('click', this.#onCancel);
   }
 
   override onChange(): void {
@@ -167,6 +185,9 @@ export class SherpaMenu extends SherpaElement {
     // While open, follow the trigger — a scroll or a resize moves it. `capture`
     // catches scrolls in any ancestor, which do not bubble.
     if (open) {
+      // Snapshot for Cancel. On OPEN, so a tick-untick-cancel round trip lands
+      // back at the original selection rather than at the first edit.
+      this.#baseline = this.values;
       window.addEventListener('scroll', this.#reposition, { capture: true, passive: true });
       window.addEventListener('resize', this.#reposition, { passive: true });
     } else {
@@ -189,7 +210,32 @@ export class SherpaMenu extends SherpaElement {
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
+    // A COMMITTING menu holds the change as a draft — the row is ticked in the UI,
+    // but nothing downstream hears about it until Apply. Otherwise every tick is a
+    // commit, which is the behaviour a menu without a footer has always had.
+    if (this.#commits) return;
     this.emit('menu-change', { values: this.values });
+  };
+
+  /** Whether this menu defers its changes to an Apply button. */
+  get #commits(): boolean {
+    return this.hasAttribute('data-commit');
+  }
+
+  #onApply = (): void => {
+    // The draft becomes the committed state, so a later Cancel cannot undo it.
+    this.#baseline = this.values;
+    this.emit('menu-apply', { values: this.values });
+    this.emit('menu-change', { values: this.values });
+    this.hide();
+  };
+
+  #onCancel = (): void => {
+    // Restore what the menu opened with, THEN report — a listener reading
+    // `values` in the handler must see the restored set, not the discarded one.
+    this.values = this.#baseline;
+    this.emit('menu-cancel', {});
+    this.hide();
   };
 
   #onClick = (event: Event): void => {
