@@ -82,8 +82,11 @@ tokens:
   root.border-width: "{sherpa.style-border-width}"
   root.border-radius: "{sherpa.structure-rounding-top-left}"
   root.color: "{sherpa.style-content-base}"
-  root.box-shadow: "{sherpa.shadow-lg}"
-  heading-text.font-weight: "{sherpa.font-weight-semibold}"
+  root.box-shadow: "{sherpa.theme-elevation-offset-x-large}"
+  heading-text.color: "{sherpa.theme-content-body-base}"
+  heading-text.font-size: "{sherpa.font-size-body-base}"
+  heading-text.font-weight: "{sherpa.font-weight-medium}"
+  heading-text.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Dialog

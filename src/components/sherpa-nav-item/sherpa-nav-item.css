@@ -140,11 +140,12 @@
 
 /* Search match — the visible fallback for the CSS Custom Highlight API, which
    Chromium does not yet paint inside a shadow root (see highlight() in the TS).
-   The PALE accent step (accent/color 1) is a solid tint, so the hit reads clearly at
-   any row colour; the 30%-alpha transparent step washed out to nothing behind the
-   grey label text. Ink goes to the strong accent so the pair keeps contrast. */
+   The TRANSPARENT ACTIVE purple (surface/active/transparent → brand at 30% alpha),
+   so the hit reads as the same "active" signal the current row uses, and the label
+   underneath still shows through. Ink stays the body colour: a translucent tint
+   does not need inverted text, and forcing one would fight the row's own state. */
 .label mark.match {
-  background: var(--sherpa-theme-surface-accent-base, #8aa3ff);
+  background: var(--sherpa-theme-surface-active-transparent, #c046ff4d);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }

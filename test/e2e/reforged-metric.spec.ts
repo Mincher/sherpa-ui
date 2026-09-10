@@ -136,3 +136,55 @@ test('no values → the sparkline region stays hidden', async ({ page }) => {
   expect(r.hasValuesAttr).toBe(false);
   expect(r.sparkHidden).toBe(true);
 });
+
+test('status is derived from the trend, and the card stays white with no border', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const build = async (data: unknown): Promise<Record<string, unknown>> => {
+      const el = document.createElement('sherpa-metric') as HTMLElement & {
+        rendered?: Promise<void>; populate(d: unknown): void;
+      };
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate(data);
+      await new Promise((res) => setTimeout(res, 20));
+      const row = el.shadowRoot!.querySelector('.row')!;
+      const rs = getComputedStyle(row);
+      return {
+        trend: el.getAttribute('data-trend'),
+        status: el.getAttribute('data-status'),
+        bg: rs.backgroundColor,
+        borderWidth: rs.borderTopWidth,
+        deltaColour: getComputedStyle(el.shadowRoot!.querySelector('.delta')!).color,
+      };
+    };
+    return {
+      up: await build({ name: 'A', value: '1', deltaPercent: 3.1, values: [1, 2, 3] }),
+      down: await build({ name: 'B', value: '2', deltaPercent: -12.5, values: [3, 2, 1] }),
+      flat: await build({ name: 'C', value: '3', deltaPercent: 0, values: [2, 2, 2] }),
+      none: await build({ name: 'D', value: '4', values: [1, 2, 3] }),
+    };
+  });
+
+  // Will's rule: status IS the trend. Success if positive, critical if negative,
+  // and NO status for a flat trend or a raw data point with no trend at all —
+  // "default" means the attribute is absent, since the --_status-* cascade only
+  // emits for a named status.
+  expect(r.up['trend']).toBe('up');
+  expect(r.up['status']).toBe('success');
+  expect(r.down['trend']).toBe('down');
+  expect(r.down['status']).toBe('critical');
+  expect(r.flat['trend']).toBe('flat');
+  expect(r.flat['status']).toBeNull();
+  expect(r.none['status']).toBeNull();
+
+  // The card binds Style::style-surface/base, which is WHITE in every status mode
+  // — the status shows in the INK and the sparkline stroke, not the surface. And
+  // Figma's card is STROKE NONE, so there is no border on any of them.
+  for (const [name, got] of Object.entries(r)) {
+    expect(got['bg'], `${name} background`).toBe('rgb(255, 255, 255)');
+    expect(got['borderWidth'], `${name} border`).toBe('0px');
+  }
+
+  // …but the delta ink DOES follow the status.
+  expect(r.up['deltaColour']).not.toBe(r.down['deltaColour']);
+});

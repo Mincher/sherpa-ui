@@ -40,24 +40,18 @@ export async function init(root) {
   const metrics = {
     'm-endpoints': {
       name: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
-      status: 'success',
       values: [1180, 1195, 1210, 1188, 1230, 1255, 1249, 1270, 1284],
     },
     'm-alerts': {
-      // Alerts falling is GOOD, but 37 open is still worth attention.
       name: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
-      status: 'warning',
       values: [61, 58, 54, 49, 52, 45, 41, 39, 37],
     },
     'm-uptime': {
       name: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
-      status: 'success',
       values: [98.4, 98.7, 98.5, 99.0, 98.9, 99.1, 99.0, 99.3, 99.2],
     },
     'm-patch': {
-      // 87% is climbing but not there yet — an informational reading.
       name: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
-      status: 'info',
       values: [74, 76, 79, 78, 81, 83, 84, 86, 87],
     },
   };
@@ -128,14 +122,11 @@ export async function init(root) {
   header?.setAttribute('data-notifications', '4');
 
   // Metric tiles.
+  // Status is NOT set here: the metric derives it from its own trend (up →
+  // success, down → critical, flat → none), so a hand-set status would duplicate
+  // what the data already says and the two could disagree.
   for (const [id, data] of Object.entries(metrics)) {
-    const tile = root.querySelector(`#${id}`);
-    // data-status drives the WHOLE tile through the --_status-* cascade: the
-    // surface, the delta ink and the embedded sparkline's stroke. Custom
-    // properties inherit across the shadow boundary, so setting it here is enough
-    // — the sparkline inside needs no wiring of its own.
-    if (data.status) tile?.setAttribute('data-status', data.status);
-    tile?.populate(data);
+    root.querySelector(`#${id}`)?.populate(data);
   }
 
   // Charts.

@@ -20,10 +20,15 @@
     #view-root, sherpa-app-shell { height: 100%; }
 
     /* ── Shared surface card used by dashboard + records. ─────────── */
+    /* A panel mirrors sherpa-container's own box, so the example does not invent
+       its own chrome: the SAME surface, the SAME 0.5px style-border/base ring and
+       the SAME structure rounding. It was a hardcoded `1px solid` at 16px radius
+       — double the token width and four times its radius. */
     .panel {
-      background: var(--sherpa-theme-surface-default-base, #fff);
-      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
-      border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
+      background: var(--sherpa-style-surface-base, #fff);
+      border: var(--sherpa-style-border-width, 0.5px) solid
+        var(--sherpa-style-border-base, #b3b3c3);
+      border-radius: var(--sherpa-structure-rounding-top-left, 4px);
       padding: var(--sherpa-display-mode-space-lg, 20px);
       display: flex;
       flex-direction: column;
@@ -37,6 +42,13 @@
     .panel > sherpa-container-header {
       margin: calc(-1 * var(--sherpa-display-mode-space-lg, 20px));
       margin-block-end: 0;
+    }
+
+    /* The pager carries its OWN Figma padding (8 × 12), so inside an already-inset
+       panel its controls sat 12px in from the grid's left edge. Pulling it out by
+       that 12px lines the two up without touching the component's own geometry. */
+    .panel > sherpa-pagination {
+      margin-inline: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
     }
 
     /* ── Views sit on the design system's LAYOUT GRID ─────────────────
@@ -97,10 +109,12 @@
       flex-direction: column;
       gap: var(--sherpa-display-mode-space-2xl, 32px);
     }
+    /* Same as .panel — the container's own box, not a hand-rolled one. */
     .section {
-      background: var(--sherpa-theme-surface-default-base, #fff);
-      border: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
-      border-radius: var(--sherpa-display-mode-border-rounding-lg, 12px);
+      background: var(--sherpa-style-surface-base, #fff);
+      border: var(--sherpa-style-border-width, 0.5px) solid
+        var(--sherpa-style-border-base, #b3b3c3);
+      border-radius: var(--sherpa-structure-rounding-top-left, 4px);
       padding: var(--sherpa-display-mode-space-xl, 24px);
       display: flex;
       flex-direction: column;
@@ -146,7 +160,10 @@
     }
     .typing[hidden] { display: none; }
     .composer-dock {
-      border-top: 1px solid var(--sherpa-theme-border-default-2, #b3b3c3);
+      /* The dock's rule is a DIVIDER, so it takes the lighter border/default/+1
+         at the 0.5px token width — same as sherpa-container's internal dividers. */
+      border-block-start: var(--sherpa-style-border-width, 0.5px) solid
+        var(--sherpa-theme-border-default-1, #e8e8f6);
       padding: var(--sherpa-display-mode-space-lg, 16px) var(--sherpa-display-mode-space-2xl, 24px);
       background: var(--sherpa-theme-surface-default-base, #fff);
     }

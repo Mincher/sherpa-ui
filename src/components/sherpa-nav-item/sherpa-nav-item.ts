@@ -224,9 +224,10 @@ export class SherpaNavItem extends SherpaElement {
     if (this.#highlightStyled || !this.shadowRoot) return;
     this.#highlightStyled = true;
     const sheet = new CSSStyleSheet();
-    // The pale accent tint — reads as a find-in-page hit, not a selection.
+    // The TRANSPARENT ACTIVE purple — the same tint as the <mark> fallback in the
+    // CSS, so whichever one the engine paints, the hit looks identical.
     sheet.replaceSync(
-      `::highlight(${name}){background-color:var(--sherpa-theme-surface-accent-transparent,#3b4ccd4d);` +
+      `::highlight(${name}){background-color:var(--sherpa-theme-surface-active-transparent,#c046ff4d);` +
         `color:var(--sherpa-theme-content-body-base,#0c0b11)}`,
     );
     this.shadowRoot.adoptedStyleSheets = [...this.shadowRoot.adoptedStyleSheets, sheet];

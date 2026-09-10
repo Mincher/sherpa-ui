@@ -160,7 +160,10 @@ export async function init(root) {
   // Dialog open/close + save → toast.
   root.querySelector('#add-btn').addEventListener('button-click', () => {
     dialog.dataset.heading = 'Add customer';
-    dialog.showModal();
+    // sherpa-dialog's method is show(), not the native showModal() — the
+    // component owns the modality and the `open` attribute. Calling showModal()
+    // threw "dialog.showModal is not a function" and the dialog never opened.
+    dialog.show();
   });
   root.querySelector('#cancel-btn').addEventListener('button-click', () => dialog.close());
 

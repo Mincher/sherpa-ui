@@ -22,7 +22,12 @@
 }
 
 .root {
-  display: flex;
+  /* A closed <dialog> is hidden by the UA with `display: none`. Setting `display`
+     unconditionally CLOBBERS that, so the dialog rendered in the page flow whether
+     it was open or not — visible before the button was clicked and still visible
+     after closing. The open layout has to be scoped to [open], exactly as the
+     popover menu's `:popover-open` rule is. */
+  display: none;
   flex-direction: column;
   min-inline-size: 0;
   max-inline-size: min(92vw, 32rem);
@@ -45,6 +50,11 @@
   &::backdrop {
     background: color-mix(in srgb, #101014 45%, transparent);
   }
+}
+
+/* Open — the UA sets [open] when showModal()/show() runs. */
+.root[open] {
+  display: flex;
 }
 
 /* ── Regions ─────────────────────────────────────────────────────────

@@ -11,6 +11,8 @@
  * @attr {string} data-value — the formatted value string
  * @attr {string} data-delta — the change text (e.g. "+12.5%")
  * @attr {enum}   data-trend — up | down | flat (colours the delta, shows the arrow)
+ * @attr {enum}   data-status — SET BY THE COMPONENT from the trend, not by the
+ *                caller: up → success, down → critical, flat/none → unset.
  *
  * @method populate(data: MetricData) — the single data path
  */
@@ -65,6 +67,7 @@ export class SherpaMetric extends SherpaElement {
 
     const trend = data.trend ?? this.#deriveTrend(data.deltaPercent);
     if (trend) this.dataset['trend'] = trend;
+    this.#applyStatus(trend);
 
     if (Array.isArray(data.values) && data.values.length > 0) {
       this.#fillSparkline(data.values);
@@ -84,6 +87,26 @@ export class SherpaMetric extends SherpaElement {
     set('.label', this.dataset['label'] ?? '');
     set('.value', this.dataset['value'] ?? '');
     set('.delta', this.dataset['delta'] ?? '');
+  }
+
+  /**
+   * STATUS IS TIED TO THE TREND (Will's rule), so the component sets it — a
+   * caller passing its own data-status would be duplicating something the data
+   * already says, and the two could disagree.
+   *
+   *   up    → success   (a rise is good news)
+   *   down  → critical  (a fall is bad news)
+   *   flat  → default   (nothing to report)
+   *   none  → default   (a raw data point with no relevant trend)
+   *
+   * "Default" means NO data-status at all, not data-status="default": the
+   * --_status-* cascade only emits for a named status, so removing the attribute
+   * is what returns the tile to its neutral surface and ink.
+   */
+  #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
+    const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;
+    if (status) this.dataset['status'] = status;
+    else delete this.dataset['status'];
   }
 
   #deriveTrend(deltaPercent?: number): 'up' | 'down' | 'flat' | null {

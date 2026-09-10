@@ -174,8 +174,10 @@ export class SherpaNav extends SherpaElement {
     const previous = this.state;
     if (previous === next) return;
     this.dataset['navState'] = next;
-    // Entering or leaving SETTINGS swaps which section list the rail shows.
+    // Entering or leaving SETTINGS swaps which section list the rail shows, AND
+    // whether the quick items are there at all — settings has none.
     if ((previous === 'settings') !== (next === 'settings')) {
+      this.#renderQuick();
       this.#renderSections();
       this.#applyActive();
     }
@@ -265,6 +267,10 @@ export class SherpaNav extends SherpaElement {
     const list = this.$('.quick');
     if (!list) return;
     list.replaceChildren();
+    // SETTINGS mode has no quick items. Home / Recent / Favorites are shortcuts
+    // into the PRODUCT tree, and settings is a different place — offering them
+    // there would jump the user out of the section they are configuring.
+    if (this.state === 'settings') return;
     const quick = this.#config.quickItems ?? DEFAULT_QUICK;
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
   }
