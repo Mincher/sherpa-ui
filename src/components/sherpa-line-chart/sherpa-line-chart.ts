@@ -11,8 +11,11 @@
  * axis stretched to data nobody can see.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { formatTick } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+/** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
+const DEFAULT_TICKS = 4;
 
 interface Series {
   name?: string;
@@ -27,7 +30,7 @@ interface LineData {
 export class SherpaLineChart extends SherpaElement {
   static override css = new URL('./sherpa-line-chart.css', import.meta.url);
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
-  static override observed = ['data-variant', 'data-min', 'data-max'];
+  static override observed = ['data-variant', 'data-min', 'data-max', 'data-ticks', 'data-axis-label', 'data-x-axis-label'];
 
   #labels: string[] = [];
   #series: Series[] = [];
@@ -92,6 +95,8 @@ export class SherpaLineChart extends SherpaElement {
     const max = Number.isFinite(explicitMax) ? explicitMax : Math.max(1, ...all);
     const span = max - min || 1;
 
+    this.#renderYAxis(min, max);
+
     // Grid: 4 horizontal lines.
     grid.replaceChildren();
     for (let i = 1; i < 4; i++) {
@@ -145,6 +150,40 @@ export class SherpaLineChart extends SherpaElement {
       const span = xtpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       span.textContent = label;
       xAxis.appendChild(span);
+    }
+
+    const xCaption = this.$('.axis-label-x');
+    if (xCaption) xCaption.textContent = this.dataset['xAxisLabel'] ?? '';
+  }
+
+  /**
+   * Stamp the y-axis values, top (max) to bottom (min).
+   *
+   * The span is min..max, NOT 0..max: a line chart's y-scale is derived from its
+   * own extent (see #render), so an axis running from 0 would label gridlines that
+   * are not where the lines actually sit. Descending because the highest value is
+   * at the TOP of the plot but the FIRST child in the column.
+   */
+  #renderYAxis(min: number, max: number): void {
+    const axis = this.$('.y-axis');
+    const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
+    const caption = this.$('.axis-label-y');
+    if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
+    if (!axis || !tpl) return;
+
+    const requested = Number(this.dataset['ticks']);
+    const steps = Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+    axis.replaceChildren();
+    // Written, not inferred: an absent data-ticks must not mean "no axis", and a
+    // data-ticks="0" must.
+    this.toggleAttribute('data-has-y-axis', steps > 0 && this.#series.length > 0);
+    if (steps <= 0 || !this.#series.length) return;
+
+    for (let i = steps; i >= 0; i--) {
+      const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      tick.querySelector('.y-value')!.textContent =
+        formatTick(min + ((max - min) * i) / steps);
+      axis.appendChild(tick);
     }
   }
 }

@@ -31,33 +31,55 @@ anatomy:
               class: title
               slot: title
         - el: div
-          class: plot
-          part: plot
-          attrs:
-            role: img
-            aria-label: Line chart
+          class: chart-body
           children:
-            - el: svg
-              class: svg
-              part: svg
-              attrs:
-                viewBox: 0 0 100 100
-                preserveAspectRatio: none
-                aria-hidden: "true"
-              children:
-                - el: g
-                  class: grid
-                - el: g
-                  class: series-layer
+            - el: span
+              class: axis-label axis-label-y
+              part: axis-label
             - el: div
-              class: x-axis
-              part: x-axis
+              class: y-axis
+              part: y-axis
+              attrs:
+                aria-hidden: "true"
+            - el: div
+              class: plot
+              part: plot
+              attrs:
+                role: img
+                aria-label: Line chart
+              children:
+                - el: svg
+                  class: svg
+                  part: svg
+                  attrs:
+                    viewBox: 0 0 100 100
+                    preserveAspectRatio: none
+                    aria-hidden: "true"
+                  children:
+                    - el: g
+                      class: grid
+                    - el: g
+                      class: series-layer
+                - el: div
+                  class: x-axis
+                  part: x-axis
+                - el: span
+                  class: axis-label axis-label-x
+                  part: x-axis-label
     - el: template
-      class: xlabel-tpl
+      class: ytick-tpl
       children:
         - el: span
-          class: x-label
+          class: y-tick
+          children:
+            - el: span
+              class: y-value
 props:
+  - $type: prop
+    name: data-axis-label
+    type: string
+    kind: content
+    description: y-axis caption (shown when set)
   - $type: prop
     name: data-label
     type: string
@@ -74,6 +96,12 @@ props:
     kind: content
     description: y-scale bounds (else derived)
   - $type: prop
+    name: data-ticks
+    type: string
+    kind: content
+    default: "4"
+    description: number of y gridlines/values
+  - $type: prop
     name: data-variant
     type: enum
     kind: content
@@ -81,7 +109,21 @@ props:
       - line
       - area
     description: line  | area
+  - $type: prop
+    name: data-x-axis-label
+    type: string
+    kind: content
+    description: x-axis caption (shown when set)
 states:
+  - $type: state
+    name: has-y-axis
+    selector: ":host([data-has-y-axis])"
+  - $type: state
+    name: axis-label
+    selector: ":host([data-axis-label])"
+  - $type: state
+    name: x-axis-label
+    selector: ":host([data-x-axis-label])"
   - $type: state
     name: not-area
     selector: ":host(:not([data-variant=\"area\"]))"
@@ -103,6 +145,18 @@ tokens:
   x-axis.margin-block-start: "{sherpa.display-mode-space-2xs}"
   x-axis.font-size: "{sherpa.font-size-body-small}"
   x-axis.color: "{sherpa.theme-content-body-1}"
+  chart-body.gap: "{sherpa.display-mode-space-2xs}"
+  y-axis.font-size: "{sherpa.font-size-body-base}"
+  y-axis.font-weight: "{sherpa.font-weight-regular}"
+  y-axis.line-height: "{sherpa.theme-content-line-height-base}"
+  y-axis.color: "{sherpa.theme-content-body-1}"
+  y-tick.padding-inline-end: "{sherpa.display-mode-space-2xs}"
+  y-tick.border-inline-end: "{sherpa.display-mode-border-width-sm}"
+  axis-label.color: "{sherpa.theme-content-body-1}"
+  axis-label.font-size: "{sherpa.font-size-body-base}"
+  axis-label.font-weight: "{sherpa.font-weight-regular}"
+  axis-label.line-height: "{sherpa.theme-content-line-height-base}"
+  axis-label-x.margin-block-start: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Data Field

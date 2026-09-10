@@ -31,30 +31,40 @@ anatomy:
               class: title
               slot: title
         - el: div
-          class: plot
-          part: plot
-          attrs:
-            role: img
-            aria-label: Bar chart
+          class: chart-body
           children:
+            - el: span
+              class: axis-label axis-label-y
+              part: axis-label
             - el: div
-              class: bars
-              part: bars
+              class: y-axis
+              part: y-axis
+              attrs:
+                aria-hidden: "true"
+            - el: div
+              class: plot
+              part: plot
+              attrs:
+                role: img
+                aria-label: Bar chart
+              children:
+                - el: div
+                  class: bars
+                  part: bars
     - el: template
-      class: bar-tpl
+      class: ytick-tpl
       children:
-        - el: button
-          class: bar-col
-          attrs:
-            type: button
+        - el: span
+          class: y-tick
           children:
             - el: span
-              class: bar
-              part: bar
-            - el: span
-              class: bar-label
-              part: bar-label
+              class: y-value
 props:
+  - $type: prop
+    name: data-axis-label
+    type: string
+    kind: content
+    description: y-axis caption (shown when set)
   - $type: prop
     name: data-label
     type: string
@@ -65,7 +75,19 @@ props:
     type: string
     kind: content
     description: explicit y-max (else derived from the data)
+  - $type: prop
+    name: data-ticks
+    type: string
+    kind: content
+    default: "4"
+    description: number of y gridlines/values
 states:
+  - $type: state
+    name: has-y-axis
+    selector: ":host([data-has-y-axis])"
+  - $type: state
+    name: axis-label
+    selector: ":host([data-axis-label])"
   - $type: state
     name: focus-visible
     selector: .bar-col:focus-visible
@@ -98,6 +120,17 @@ tokens:
   bar-label.margin-block-start: "{sherpa.display-mode-space-2xs}"
   bar-label.font-size: "{sherpa.font-size-body-small}"
   bar-label.color: "{sherpa.theme-content-body-1}"
+  chart-body.gap: "{sherpa.display-mode-space-2xs}"
+  y-axis.font-size: "{sherpa.font-size-body-base}"
+  y-axis.font-weight: "{sherpa.font-weight-regular}"
+  y-axis.line-height: "{sherpa.theme-content-line-height-base}"
+  y-axis.color: "{sherpa.theme-content-body-1}"
+  y-tick.padding-inline-end: "{sherpa.display-mode-space-2xs}"
+  y-tick.border-inline-end: "{sherpa.display-mode-border-width-sm}"
+  axis-label.color: "{sherpa.theme-content-body-1}"
+  axis-label.font-size: "{sherpa.font-size-body-base}"
+  axis-label.font-weight: "{sherpa.font-weight-regular}"
+  axis-label.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Data Field

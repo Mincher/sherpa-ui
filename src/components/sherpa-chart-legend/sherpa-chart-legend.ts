@@ -2,9 +2,14 @@
  * sherpa-chart-legend — the colour key beside a chart.
  *
  * Give it a list with populate([{ label, value?, colorIndex }]) and it draws one
- * row per item. JS tells each row which colour to use; CSS draws the swatch.
- * Clicking a row toggles it on or off and fires legend-item-click.
- * @fires legend-item-click — a legend row is clicked. bubbles + composed. detail: { index: number, label: string, active: boolean }
+ * entry per item in a three-column grid (swatch · category · value), matching the
+ * rebuilt Figma component. JS tells each entry which colour to use; CSS draws the
+ * swatch and the grid.
+ *
+ * Clicking an entry toggles it and fires legend-item-click. The legend does not
+ * know what it labels, so the PAGE joins them up — it listens for that event and
+ * calls the chart's setSeriesHidden / setSliceHidden.
+ * @fires legend-item-click — a legend entry is clicked. bubbles + composed. detail: { index: number, label: string, active: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -40,31 +45,35 @@ export class SherpaChartLegend extends SherpaElement {
 
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      row.dataset['index'] = String(i);
+      // The prototype's root IS the button now (it was an <li> wrapping one), so
+      // the clone is the whole entry.
+      const entry = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      entry.dataset['index'] = String(i);
       // Categorical hue by 1-based index (wraps at 11).
       const n = ((item.colorIndex ?? i + 1) - 1) % 11 + 1;
-      row.querySelector<HTMLElement>('.swatch')!.style.setProperty(
+      entry.querySelector<HTMLElement>('.swatch')!.style.setProperty(
         '--_hue',
         `var(--sherpa-data-viz-series-${n})`,
       );
-      row.querySelector('.label')!.textContent = item.label;
-      row.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
-      list.appendChild(row);
+      entry.querySelector('.label')!.textContent = item.label;
+      entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+      list.appendChild(entry);
     });
   }
 
   #onClick = (event: Event): void => {
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
-    if (raw == null) return;
-    // Toggle current state (default current → false → true).
-    const active = item!.dataset['current'] === 'false' ? 'true' : 'false';
-    item!.dataset['current'] = active;
+    if (raw == null || !item) return;
+    // aria-pressed is BOTH the accessible state and the CSS hook for the dimmed
+    // look — one source of truth, so they cannot disagree. (It replaced a
+    // data-current attribute that duplicated it.)
+    const active = item.getAttribute('aria-pressed') !== 'true';
+    item.setAttribute('aria-pressed', String(active));
     this.emit('legend-item-click', {
       index: Number(raw),
       label: this.#items[Number(raw)]?.label ?? '',
-      active: active === 'true',
+      active,
     });
   };
 }

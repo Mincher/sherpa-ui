@@ -16,7 +16,10 @@
 }
 
 :host {
-  display: inline-flex;
+  /* `flex`, not `inline-flex`. An inline box sizes to its content and cannot
+     shrink, so adding the fixed-width y-axis column pushed the plot past the
+     panel's edge instead of narrowing it. */
+  display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -39,6 +42,10 @@
 }
 
 .plot {
+  /* Takes whatever is left beside the y-axis column, and may shrink below its
+     content width — without min-inline-size: 0 a flex item refuses to. */
+  flex: 1 1 auto;
+  min-inline-size: 0;
   block-size: var(--_plot-height);
 }
 
@@ -111,3 +118,75 @@
   text-overflow: ellipsis;
   max-inline-size: 100%;
 }
+
+/* ── Axes ────────────────────────────────────────────────────────────────
+   Matches the Figma "Chart Axis" (Orientation=vertical): a column of value
+   labels, each with a 0.5px style-border/base tick rule on its trailing edge,
+   plus an optional rotated caption beside them.
+
+   The tick IS the label cell's own border, not a separate element. That is the
+   whole point: a tick drawn as a sibling has to be positioned to match its
+   label, and any change to the label's height silently breaks the alignment.
+   As a border it cannot drift.
+
+   Values read top-to-bottom (max first), because the y-axis is inverted relative
+   to the DOM's flow — the JS builds them in that order. */
+.chart-body {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  min-inline-size: 0;
+}
+
+.y-axis {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  /* Matches the plot exactly, so a value lines up with its own gridline. */
+  block-size: var(--_plot-height);
+  /* Figma axis text: content/size/base 14 on line-height/base 20, content/body/+1. */
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+/* Shown once the JS has stamped values (it sets data-has-y-axis then). A pure
+   :not([data-ticks="0"]) gate would always match, since the attribute is
+   optional — so the flag has to be written, not inferred. */
+:host([data-has-y-axis]) .y-axis { display: flex; }
+
+.y-tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* The Figma Marker is 8 wide; the rule is its trailing edge. */
+  padding-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  /* Zero height so `justify-content: space-between` places the label's CENTRE on
+     the gridline rather than its box. Without this the first and last values sit
+     half a line-height inside the plot. */
+  block-size: 0;
+  white-space: nowrap;
+}
+
+.y-value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The caption, rotated to run up the axis (Figma's vertical Axis label). */
+.axis-label {
+  display: none;
+  align-self: center;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  white-space: nowrap;
+}
+.axis-label-y {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+}
+:host([data-axis-label]) .axis-label-y { display: block; }

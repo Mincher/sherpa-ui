@@ -1,56 +1,73 @@
 /**
- * sherpa-chart-legend.css — legend rows with categorical swatches.
+ * sherpa-chart-legend.css — a GRID of swatch · category · value entries.
  *
- * The swatch colour comes from a --_hue custom property the JS sets per row from
- * the item's colorIndex (into var(--sherpa-categorical-N)). Orientation and the
- * current (toggled) state are pure data-* / attribute selectors.
+ * Data-matched to the rebuilt Figma "Chart Legend" (1098:37846):
+ *   frame    padding space/xs 8 all round, entries gap space/xs 8 apart
+ *   grid     3 columns · column gap space/xs 8 · row gap space/2xs 4
+ *   swatch   the "Legend Swatch" component (1098:37786): 12×12, radius 4, the
+ *            series hue at 60% with a solid 1px stroke in the same hue
+ *   text     content/size/xs 10 on line-height/xs 16, regular, content/body/base
+ *
+ * WHY A GRID. With one flex row per entry the value sits wherever its own label
+ * ends, so a legend of mixed label lengths has ragged values. Three shared grid
+ * tracks line the values up down the column — which is exactly what the Figma
+ * rebuild changed.
+ *
+ * Each entry stays ONE button (a single click target and tab stop) that inherits
+ * the parent's tracks via `display: grid` + `grid-column: 1 / -1` + subgrid.
+ * Splitting the cells into separate grid items would align them too, but would
+ * leave three tab stops per series.
+ *
+ * The swatch colour is a --_hue custom property the JS sets per entry from the
+ * item's colorIndex, into var(--sherpa-data-viz-series-N).
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
-/* Figma Chart Legend (430:43129): items gap/md 8 apart; padding/md 8 inline. */
 .legend {
-  list-style: none;
+  display: grid;
+  /* swatch (fixed) · category (flexible) · value (hugs its digits) */
+  grid-template-columns: auto 1fr auto;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  row-gap: var(--sherpa-display-mode-space-2xs, 4px);
   margin: 0;
-  padding: 0 var(--sherpa-theme-padding-md, 8px);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sherpa-theme-gap-md, 8px);
-}
-:host([data-orientation="vertical"]) .legend {
-  flex-direction: column;
-  gap: var(--sherpa-theme-gap-md, 8px);
+  padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
+/* Horizontal: entries flow ACROSS instead of stacking, so each one needs its own
+   three tracks rather than sharing the parent's column. */
+:host([data-orientation="horizontal"]) .legend {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  justify-content: start;
+  column-gap: var(--sherpa-display-mode-space-base, 16px);
+}
+
+/* ── Entry ───────────────────────────────────────────────────────────────
+   Spans all three tracks and adopts them with `subgrid`, so its cells land in the
+   PARENT's columns and every entry's value aligns. */
 .item {
-  margin: 0;
-
-  /* De-emphasised (toggled off) row — dims via inactive CONTENT ink, not opacity. */
-  &[data-current="false"] .row,
-  &[data-current="false"] .value {
-    color: var(--sherpa-theme-content-body-2, #B3B3C3);
-  }
-}
-
-/* Figma Legend Item (186:4667): swatch · label · value, gap 8, no padding; text
-   content/body/+1 14/20 regular. */
-.row {
-  display: inline-flex;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  margin: 0;
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
-  font: inherit;
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-family: inherit;
+  /* Figma: content/size/xs 10 on line-height/xs 16, regular. */
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+  text-align: start;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+  transition: color 100ms ease;
 
   &:focus-visible {
     outline: none;
@@ -58,22 +75,52 @@
   }
 }
 
-/* Swatch — 12×12, radius 4, the series hue at 60% with a 1px solid hue ring (Figma). */
+/* `subgrid` needs the entry to be a grid ITEM of the parent, which it is not when
+   the parent flows in columns — so a horizontal legend gives each entry its own
+   tracks instead. */
+:host([data-orientation="horizontal"]) .item {
+  grid-column: auto;
+  grid-template-columns: auto auto auto;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
+   also wash out the swatch's own translucency and compound in dark mode). */
+.item[aria-pressed="false"] {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
+.item[aria-pressed="false"] .swatch {
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: transparent;
+}
+
+/* Figma "Legend Swatch": 12×12, radius 4, hue at 60% + solid 1px hue stroke. */
 .swatch {
   inline-size: var(--sherpa-display-mode-size-xs, 12px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
-  flex-shrink: 0;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  /* Solid hue where color-mix is unavailable — the swatch must never vanish. */
   background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  box-sizing: border-box;
 }
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
-  .swatch { background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent); }
+  .swatch {
+    background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent);
+  }
 }
 
-.value {
-  color: var(--sherpa-theme-content-body-1, #35353D);
-  font-weight: var(--sherpa-font-weight-regular, 400);
+.label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  &:empty { display: none; }
+/* The value hugs its digits at the end of the row; an entry without one leaves the
+   track empty rather than collapsing it, so the other entries stay aligned. */
+.value {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
 }

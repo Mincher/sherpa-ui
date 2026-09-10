@@ -5,9 +5,17 @@
   cloning prototype. Each bar's height is a --_h custom property (its value as a
   percentage of the max) that CSS turns into the bar height. Colour is categorical.
 
+  The Y AXIS matches the Figma "Chart Axis" (Orientation=vertical): value labels
+  with a tick marker between each pair, drawn with a 0.5px style-border/base rule,
+  and an optional rotated axis label beside them. The ticks are the axis's own
+  right edge, so they line up with the plot without a second element to keep in
+  step. Axis text is content/size/base 14 on line-height/base 20, content/body/+1.
+
   Public API:
-    data-label   chart title
-    data-max     explicit y-max (else derived from the data)
+    data-label       chart title
+    data-max         explicit y-max (else derived from the data)
+    data-axis-label  y-axis caption (shown when set)
+    data-ticks       number of y gridlines/values (default 4)
 
   Fires: bar-click — detail: { index, label, value }
 -->
@@ -16,10 +24,22 @@
     <figcaption class="chart-header" part="header">
       <span class="title"><slot name="title"></slot></span>
     </figcaption>
-    <div class="plot" part="plot" role="img" aria-label="Bar chart">
-      <div class="bars" part="bars"></div>
+    <div class="chart-body">
+      <!-- Y axis: a caption plus the value/tick column, both CSS-gated. -->
+      <span class="axis-label axis-label-y" part="axis-label"></span>
+      <div class="y-axis" part="y-axis" aria-hidden="true"></div>
+
+      <div class="plot" part="plot" role="img" aria-label="Bar chart">
+        <div class="bars" part="bars"></div>
+      </div>
     </div>
   </figure>
+
+  <!-- One y value + its tick rule. The rule is the cell's own border, so the tick
+       cannot drift out of step with the label it belongs to. -->
+  <template class="ytick-tpl">
+    <span class="y-tick"><span class="y-value"></span></span>
+  </template>
 
   <template class="bar-tpl">
     <button class="bar-col" type="button">

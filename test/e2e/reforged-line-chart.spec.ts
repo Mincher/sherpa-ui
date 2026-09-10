@@ -134,3 +134,40 @@ test('setSeriesHidden removes a series and re-scales the axis to what is left', 
   expect(r.restored.hues).toEqual(r.both.hues);
   expect(r.restored.list).toEqual([]);
 });
+
+test('the y axis spans the data extent, not zero to max', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-line-chart') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    // Values well above zero: an axis running 0..1000 would label gridlines that
+    // are nowhere near where the line actually sits.
+    el.populate({ labels: ['a', 'b', 'c'], series: [[900, 1000, 950]] });
+    await new Promise((res) => setTimeout(res, 20));
+
+    const sr = el.shadowRoot!;
+    const ticks = Array.from(sr.querySelectorAll('.y-tick'));
+    const axis = sr.querySelector('.y-axis')!;
+    const plot = sr.querySelector('.plot')!;
+    return {
+      values: ticks.map((t) => t.querySelector('.y-value')!.textContent),
+      heightsMatch:
+        Math.abs(axis.getBoundingClientRect().height - plot.getBoundingClientRect().height) < 1,
+      // The plot must SHRINK to sit beside the axis rather than overflow — it was
+      // stuck at its intrinsic width until `flex: 1 1 auto; min-inline-size: 0`.
+      plotNarrowerThanHost:
+        plot.getBoundingClientRect().width < el.getBoundingClientRect().width,
+    };
+  });
+
+  // Math.min(0, …) floors the SCALE at 0 for the plot, but the axis labels the
+  // same window the lines are drawn in, so both agree.
+  expect(r.values).toHaveLength(5);
+  expect(r.values[0]).toBe('1K'); // the max, compacted
+  expect(r.values[r.values.length - 1]).toBe('0');
+  expect(r.heightsMatch).toBe(true);
+  expect(r.plotNarrowerThanHost).toBe(true);
+});

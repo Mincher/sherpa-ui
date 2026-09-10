@@ -13,7 +13,7 @@ $name: sherpa-chart-legend
 $description: a legend for charts.
 element:
   $type: element
-  tag: ul
+  tag: div
   attributes:
     role: list
   provides: []
@@ -21,7 +21,7 @@ templates:
   - default
 anatomy:
   roots:
-    - el: ul
+    - el: div
       class: legend
       part: legend
       attrs:
@@ -29,43 +29,40 @@ anatomy:
     - el: template
       class: item-tpl
       children:
-        - el: li
+        - el: button
           class: item
           attrs:
+            type: button
             role: listitem
+            aria-pressed: "true"
           children:
-            - el: button
-              class: row
+            - el: span
+              class: swatch
+              part: swatch
               attrs:
-                type: button
-              children:
-                - el: span
-                  class: swatch
-                  part: swatch
-                  attrs:
-                    aria-hidden: "true"
-                - el: span
-                  class: label
-                  part: label
-                - el: span
-                  class: value
-                  part: value
+                aria-hidden: "true"
+            - el: span
+              class: label
+              part: label
+            - el: span
+              class: value
+              part: value
 props:
   - $type: prop
     name: data-orientation
     type: enum
     kind: style
     values:
-      - horizontal
       - vertical
-    description: horizontal  | vertical
+      - horizontal
+    description: vertical  | horizontal vertical stacks the entries; horizontal flows them across.
 states:
   - $type: state
-    name: vertical
-    selector: ":host([data-orientation=\"vertical\"])"
+    name: horizontal
+    selector: ":host([data-orientation=\"horizontal\"])"
   - $type: state
     name: focus-visible
-    selector: .row:focus-visible
+    selector: .item:focus-visible
 events:
   - $type: event
     name: legend-item-click
@@ -78,18 +75,25 @@ events:
     name: label
     bubbles: true
     composed: true
+  - $type: event
+    name: active
+    bubbles: true
+    composed: true
 tokens:
-  legend.gap: "{sherpa.display-space-sm}"
-  row.gap: "{sherpa.structure-space-gap}"
-  row.padding: "{sherpa.display-space-3xs}"
-  row.border-radius: "{sherpa.display-border-rounding-base}"
-  row.color: "{sherpa.style-content-base}"
-  swatch.inline-size: "{sherpa.display-size-xs}"
-  swatch.block-size: "{sherpa.display-size-xs}"
-  swatch.border-radius: "{sherpa.display-border-rounding-sm}"
-  swatch.background: "{sherpa.categorical-1}"
-  value.color: "{sherpa.theme-content-body-1}"
-  value.font-weight: "{sherpa.font-weight-semibold}"
+  legend.column-gap: "{sherpa.display-mode-space-xs}"
+  legend.row-gap: "{sherpa.display-mode-space-2xs}"
+  legend.padding: "{sherpa.display-mode-space-xs}"
+  item.border-radius: "{sherpa.structure-rounding-top-left}"
+  item.color: "{sherpa.theme-content-body-base}"
+  item.font-size: "{sherpa.theme-content-size-xs}"
+  item.font-weight: "{sherpa.font-weight-regular}"
+  item.line-height: "{sherpa.theme-content-line-height-xs}"
+  swatch.inline-size: "{sherpa.display-mode-size-xs}"
+  swatch.block-size: "{sherpa.display-mode-size-xs}"
+  swatch.border-radius: "{sherpa.structure-rounding-top-left}"
+  swatch.border-width: "{sherpa.display-mode-border-width-base}"
+  swatch.border-color: "{sherpa.data-viz-series-1}"
+  swatch.background: "{sherpa.data-viz-series-1}"
 $extensions:
   sherpa:
     figmaName: Legend Item

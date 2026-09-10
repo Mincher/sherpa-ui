@@ -8,6 +8,10 @@
  * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { formatTick } from '../../core/format-tick.js';
+
+/** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
+const DEFAULT_TICKS = 4;
 
 export interface BarDatum {
   label: string;
@@ -18,7 +22,7 @@ export interface BarDatum {
 export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
-  static override observed = ['data-max'];
+  static override observed = ['data-max', 'data-ticks', 'data-axis-label'];
 
   #data: BarDatum[] = [];
 
@@ -47,6 +51,8 @@ export class SherpaBarchart extends SherpaElement {
       ? explicitMax
       : Math.max(1, ...this.#data.map((d) => d.value));
 
+    this.#renderYAxis(max);
+
     bars.replaceChildren();
     this.#data.forEach((d, i) => {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -58,6 +64,37 @@ export class SherpaBarchart extends SherpaElement {
       col.querySelector('.bar-label')!.textContent = d.label;
       bars.appendChild(col);
     });
+  }
+
+  /**
+   * Stamp the y-axis values, top (max) to bottom (0).
+   *
+   * Descending because the axis is inverted relative to the DOM's flow: the
+   * highest value is at the TOP of the plot but the FIRST child in the column.
+   * CSS spaces them with `justify-content: space-between` on a zero-height cell,
+   * so each label's centre lands on its own gridline.
+   */
+  #renderYAxis(max: number): void {
+    const axis = this.$('.y-axis');
+    const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
+    const caption = this.$('.axis-label-y');
+    if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
+    if (!axis || !tpl) return;
+
+    const requested = Number(this.dataset['ticks']);
+    const steps = Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+    axis.replaceChildren();
+    // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
+    // data-ticks="0" must, so the state has to be written rather than inferred.
+    this.toggleAttribute('data-has-y-axis', steps > 0 && this.#data.length > 0);
+    if (steps <= 0 || !this.#data.length) return;
+
+    // steps gridlines → steps + 1 boundaries (including 0 and max).
+    for (let i = steps; i >= 0; i--) {
+      const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      tick.querySelector('.y-value')!.textContent = formatTick((max * i) / steps);
+      axis.appendChild(tick);
+    }
   }
 
   #onClick = (event: Event): void => {

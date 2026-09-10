@@ -7,10 +7,18 @@
   stretches). Colour is categorical per series. data-variant=area fills under the
   line.
 
+  The Y AXIS matches the Figma "Chart Axis" (Orientation=vertical): value labels
+  with a tick marker between each pair, drawn with a 0.5px style-border/base rule.
+  The x labels already existed; an axis caption can now sit beside either.
+  Axis text is content/size/base 14 on line-height/base 20, content/body/+1.
+
   Public API:
-    data-label     chart title
-    data-variant   line (default) | area
+    data-label       chart title
+    data-variant     line (default) | area
     data-min / data-max   y-scale bounds (else derived)
+    data-axis-label  y-axis caption (shown when set)
+    data-x-axis-label  x-axis caption (shown when set)
+    data-ticks       number of y gridlines/values (default 4)
 
   Fires: nothing — display only.
 -->
@@ -19,14 +27,25 @@
     <figcaption class="chart-header" part="header">
       <span class="title"><slot name="title"></slot></span>
     </figcaption>
-    <div class="plot" part="plot" role="img" aria-label="Line chart">
-    <svg class="svg" part="svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <g class="grid"></g>
-      <g class="series-layer"></g>
-    </svg>
-    <div class="x-axis" part="x-axis"></div>
+    <div class="chart-body">
+      <span class="axis-label axis-label-y" part="axis-label"></span>
+      <div class="y-axis" part="y-axis" aria-hidden="true"></div>
+
+      <div class="plot" part="plot" role="img" aria-label="Line chart">
+        <svg class="svg" part="svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <g class="grid"></g>
+          <g class="series-layer"></g>
+        </svg>
+        <div class="x-axis" part="x-axis"></div>
+        <span class="axis-label axis-label-x" part="x-axis-label"></span>
+      </div>
     </div>
   </figure>
+
+  <!-- One y value + its tick rule (see the barchart for the same prototype). -->
+  <template class="ytick-tpl">
+    <span class="y-tick"><span class="y-value"></span></span>
+  </template>
 
   <!--
     Series <g>/<path>/<polyline> are built in the TS via createElementNS (SVG

@@ -1,26 +1,41 @@
 <!--
   sherpa-chart-legend — a legend for charts.
 
-  populate([{ label, value?, colorIndex }]) stamps legend rows (swatch + label +
-  optional value) from the cloning prototype. The swatch colour is a categorical
-  hue chosen by colorIndex. Clicking a row emits legend-item-click and toggles its
-  active state (CSS-driven).
+  Matches the rebuilt Figma "Chart Legend" (1098:37846), which is a GRID, not a
+  list of rows: three columns — swatch · category · value — with a 8px column gap
+  and a 4px row gap, inside a frame padded 8 all round.
+
+  A grid, not one flex row per entry, because that is what aligns the columns: with
+  per-row flex the value sits wherever its own label ends, so a legend of mixed
+  label lengths has ragged values. The grid gives every entry the same three
+  tracks, so the values line up down the column.
+
+  Each entry is still ONE button spanning the three tracks (`display: grid` with
+  `grid-column: 1 / -1` and its own subgrid), so the whole entry stays a single
+  click target and a single tab stop. Splitting the cells into separate grid items
+  would align them but leave three tab stops per series.
+
+  The swatch is the Figma "Legend Swatch" (1098:37786): 12×12, radius 4, the series
+  hue at 60% with a solid 1px stroke in the same hue.
+
+  populate([{ label, value?, colorIndex }]) stamps the entries from the cloning
+  prototype. Clicking one toggles it and emits legend-item-click, which the page
+  wires to the chart's setSeriesHidden / setSliceHidden.
 
   Public API:
-    data-orientation  horizontal (default) | vertical
+    data-orientation  vertical (default) | horizontal
+                      vertical stacks the entries; horizontal flows them across.
 
   Fires: legend-item-click — detail: { index, label, active }
 -->
 <template id="default">
-  <ul class="legend" part="legend"></ul>
+  <div class="legend" part="legend" role="list"></div>
 
   <template class="item-tpl">
-    <li class="item">
-      <button class="row" type="button">
-        <span class="swatch" part="swatch" aria-hidden="true"></span>
-        <span class="label" part="label"></span>
-        <span class="value" part="value"></span>
-      </button>
-    </li>
+    <button class="item" type="button" role="listitem" aria-pressed="true">
+      <span class="swatch" part="swatch" aria-hidden="true"></span>
+      <span class="label" part="label"></span>
+      <span class="value" part="value"></span>
+    </button>
   </template>
 </template>
