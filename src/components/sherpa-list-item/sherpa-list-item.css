@@ -49,8 +49,8 @@
   cursor: pointer;
 }
 .drag {
-  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
 }
 .expand {
   inline-size: var(--sherpa-structure-height, 32px);
@@ -99,7 +99,7 @@
   display: none;
   align-items: center;
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
-  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  font-size: var(--sherpa-theme-size-icon-2xs, 10px);
 }
 :host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }

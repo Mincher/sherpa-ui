@@ -61,3 +61,40 @@ test('the layer owns mode: data-mode="dark" re-points semantic tokens; component
   expect(r.dark).toBe('rgb(12, 11, 17)'); // #0c0b11 — dark app surface (re-pointed)
   expect(r.light).not.toBe(r.dark);
 });
+
+test('the icon scale IS the text scale — one step, one size', async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const cs = getComputedStyle(document.documentElement);
+    const px = (name: string): string => cs.getPropertyValue(name).trim();
+    return {
+      icon: {
+        '2xs': px('--sherpa-theme-size-icon-2xs'),
+        xs: px('--sherpa-theme-size-icon-xs'),
+        sm: px('--sherpa-theme-size-icon-sm'),
+        md: px('--sherpa-theme-size-icon-md'),
+      },
+      text: {
+        xs: px('--sherpa-theme-content-size-xs'),
+        base: px('--sherpa-theme-content-size-base'),
+        large: px('--sherpa-theme-content-size-large'),
+        h2: px('--sherpa-theme-content-size-h2'),
+      },
+    };
+  });
+
+  // Will's ruling, 2026-09-10: icons and text share ONE scale, so an icon is the
+  // same size as the text beside it. The icon steps alias the content/size/* vars,
+  // which alias the font scale — there is no separate icon ramp any more.
+  //
+  // Before this, size/icon/xs was 16 while content/size/base was 14, so every
+  // 14px label sat next to a 16px icon: one increment too big, everywhere.
+  expect(r.icon['xs']).toBe(r.text['base']); // 14
+  expect(r.icon['2xs']).toBe(r.text['xs']); // 10
+  expect(r.icon['sm']).toBe(r.text['large']); // 16
+  expect(r.icon['md']).toBe(r.text['h2']); // 20
+
+  // …and the concrete values, so a re-point in Figma that breaks the pairing is
+  // caught rather than silently agreeing with itself.
+  expect(r.icon['xs']).toBe('14px');
+  expect(r.icon['2xs']).toBe('10px');
+});

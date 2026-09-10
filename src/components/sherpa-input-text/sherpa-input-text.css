@@ -127,8 +127,8 @@ textarea.control {
   align-items: center;
   justify-content: center;
   /* Figma icon-leading/-trailing: size/icon/xs → 16. */
-  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
-  block-size: var(--sherpa-theme-size-icon-xs, 16px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .icon::before {

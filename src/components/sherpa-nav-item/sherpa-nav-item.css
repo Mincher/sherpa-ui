@@ -110,9 +110,9 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
-  block-size: var(--sherpa-theme-size-icon-xs, 16px);
-  font-size: var(--sherpa-theme-size-icon-xs, 16px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
   flex-shrink: 0;
 }
@@ -184,13 +184,13 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
-  block-size: var(--sherpa-theme-size-icon-xs, 16px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
   padding: var(--sherpa-display-mode-space-none, 0px);
   border: 0;
   background: none;
   color: inherit;
-  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  font-size: var(--sherpa-theme-size-icon-2xs, 10px);
   line-height: 1;
   cursor: pointer;
 }

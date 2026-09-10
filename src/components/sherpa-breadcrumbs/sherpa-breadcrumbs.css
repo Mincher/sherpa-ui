@@ -40,8 +40,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: "Font Awesome 6 Free";
   font-weight: 900;

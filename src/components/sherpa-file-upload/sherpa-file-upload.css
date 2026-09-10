@@ -136,8 +136,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  inline-size: var(--sherpa-theme-size-icon-xl, 32px);
-  block-size: var(--sherpa-theme-size-icon-xl, 32px);
+  inline-size: var(--sherpa-theme-size-icon-xl, 24px);
+  block-size: var(--sherpa-theme-size-icon-xl, 24px);
   margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); /* 8 + 4 = Figma gap 12 */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_file-border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);

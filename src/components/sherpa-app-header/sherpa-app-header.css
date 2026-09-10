@@ -197,9 +197,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
-  block-size: var(--sherpa-theme-size-icon-xs, 16px);
-  font-size: var(--sherpa-theme-size-icon-xs, 16px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
   color: var(--sherpa-theme-content-body-1, #35353d);
 }

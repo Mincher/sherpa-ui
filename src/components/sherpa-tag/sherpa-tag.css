@@ -52,8 +52,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
   color: inherit;
 }
 :host(:not([data-icon])) .icon { display: none; }
@@ -63,8 +63,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
   margin-inline-start: var(--sherpa-theme-gap-sm, 4px);
   padding: 0;
   border: none;

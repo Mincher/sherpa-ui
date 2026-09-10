@@ -206,9 +206,10 @@ test('the tag renders INSIDE the row box, inset by the row padding', async ({ pa
   expect(r.parent['inside']).toBe(true);
 
   // Figma: the row's padding-right is space/xs 8, so a tag with nothing after it
-  // sits 8px in. With the hasChildren chevron after it, 8 + 16 chevron + 8 gap.
+  // sits 8px in. With the hasChildren chevron after it, 8 + 14 chevron + 8 gap = 30
+  // — the chevron is 14 (size/icon/xs → content/size/base), matching the label.
   expect(r.link['trailingInset']).toBe(8);
-  expect(r.parent['trailingInset']).toBe(32);
+  expect(r.parent['trailingInset']).toBe(30);
 
   // Figma Tag/Type=full at Structure xs: 16 tall, rounding/xl 16 (a pill).
   expect(r.link['height']).toBe(16);

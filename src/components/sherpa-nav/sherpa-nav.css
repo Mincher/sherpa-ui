@@ -269,7 +269,7 @@
 .search-icon {
   flex-shrink: 0;
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-theme-size-icon-xs, 16px);
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
 }
 

@@ -635,7 +635,9 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
         .querySelector('sherpa-nav-item') as HTMLElement;
 
     const endpoints = item('Endpoints');
-    // Figma Icon on the Navigation Item: Theme size/icon/xs → 16 square.
+    // Figma Icon on the Navigation Item: Theme size/icon/xs. That var now aliases
+    // content/size/base → 14, because the icon scale and the text scale were
+    // unified: an icon is the SAME size as the text beside it (the label is 14/20).
     const openIconBox = (() => {
       const el = endpoints.shadowRoot!.querySelector<HTMLElement>(
         `${endpoints.getAttribute('data-href') ? '.nav-link' : '.nav-button'} .icon`,
@@ -674,9 +676,10 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
   expect(r.header.box).toBe('24x24');
   expect(r.header.glyph).toBe('12px');
 
-  // Theme size/icon/xs — the same 16px box in both rails.
-  expect(r.openIconBox).toBe('16x16');
-  expect(r.collapsed.iconBox).toBe('16x16');
+  // Theme size/icon/xs → content/size/base → 14. Same box in both rails, and the
+  // same 14px as the row's label — that pairing is the point of the unified scale.
+  expect(r.openIconBox).toBe('14x14');
+  expect(r.collapsed.iconBox).toBe('14x14');
 
   // An icon-only row is a square, so the glyph must sit dead centre. The row's
   // asymmetric 4/8 inset used to leave it 4px to the left.

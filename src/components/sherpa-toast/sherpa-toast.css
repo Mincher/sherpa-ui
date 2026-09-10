@@ -153,8 +153,8 @@
   align-items: center;
   justify-content: center;
   /* Figma close: cross glyph at size/icon/2xs → 12. */
-  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* centre on the heading line */
   padding: 0;
   border: none;

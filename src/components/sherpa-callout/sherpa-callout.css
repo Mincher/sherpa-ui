@@ -104,8 +104,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 24px);
-  block-size: var(--sherpa-theme-size-icon-md, 24px);
+  inline-size: var(--sherpa-theme-size-icon-md, 20px);
+  block-size: var(--sherpa-theme-size-icon-md, 20px);
   padding: 0;
   margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   border: none;

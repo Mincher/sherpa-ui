@@ -1369,12 +1369,12 @@
   --sherpa-theme-padding-none: var(--sherpa-display-mode-space-none);
   --sherpa-theme-padding-sm: var(--sherpa-display-mode-space-2xs);
   --sherpa-theme-padding-xs: var(--sherpa-display-mode-space-3xs);
-  --sherpa-theme-size-icon-2xs: var(--sherpa-display-mode-size-xs);
-  --sherpa-theme-size-icon-lg: var(--sherpa-display-mode-size-xl);
-  --sherpa-theme-size-icon-md: var(--sherpa-display-mode-size-lg);
-  --sherpa-theme-size-icon-sm: var(--sherpa-display-mode-size-md);
-  --sherpa-theme-size-icon-xl: var(--sherpa-display-mode-size-2xl);
-  --sherpa-theme-size-icon-xs: var(--sherpa-display-mode-size-sm);
+  --sherpa-theme-size-icon-2xs: var(--sherpa-theme-content-size-xs);
+  --sherpa-theme-size-icon-lg: var(--sherpa-theme-content-size-h1);
+  --sherpa-theme-size-icon-md: var(--sherpa-theme-content-size-h2);
+  --sherpa-theme-size-icon-sm: var(--sherpa-theme-content-size-large);
+  --sherpa-theme-size-icon-xl: var(--sherpa-theme-content-size-h1);
+  --sherpa-theme-size-icon-xs: var(--sherpa-theme-content-size-base);
   --sherpa-theme-surface-accent-1: var(--sherpa-display-mode-color-accent-color-2);
   --sherpa-theme-surface-accent-2: var(--sherpa-display-mode-color-accent-color-3);
   --sherpa-theme-surface-accent-3: var(--sherpa-display-mode-color-accent-color-4);
