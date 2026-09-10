@@ -268,6 +268,103 @@
   }
 }
 
+/* ── Group rows ─────────────────────────────────────────────────────
+   Figma Grid Cell `Type=group` (in the template at 926:35309): the cell spans
+   every column, is 32 tall with padding 4 and gap 8, and holds a selection
+   checkbox, a chevron toggle, then the group's value as its label.
+
+   FIGMA DIVERGENCE: that cell binds `Style::style-surface/dark`, which no longer
+   exists in the Style collection — a DANGLING reference (Style now holds
+   style-surface/{base, base +1, base +2, shadow}). Using `style-surface/base +2`,
+   the darkest default step, which is what "dark" resolved to. Flagged for the
+   Figma side to re-bind. */
+.group-row {
+  cursor: pointer;
+  background: var(--sherpa-style-surface-base-2, #d1d1e0);
+
+  &:hover { background: var(--sherpa-theme-surface-default-2, #d1d1e0); }
+}
+
+/* Two group rows in a row happen when the first is COLLAPSED, and with the same
+   fill they read as one tall band. A leading rule separates them. */
+.group-row + .group-row .group-cell {
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+}
+
+/* Stays a real table cell — its colspan is what keeps the group row as wide as the
+   rows below. Flexing the <td> itself drops it out of table layout and the colspan
+   stops reserving the columns. */
+.group-cell {
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  color: var(--sherpa-style-content-base, #0c0b11);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+}
+
+.group-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  /* Figma's group cell is 32 tall; 4px padding + a 20 line-height + the box gets
+     there, but a short label must not shrink the row below its neighbours. */
+  min-block-size: var(--sherpa-display-mode-size-lg, 24px);
+}
+
+/* The group's own selection box follows data-selectable, exactly as a row's does —
+   a grid without a selection column must not sprout one on its group rows. */
+.group-select { display: none; }
+:host([data-selectable]) .group-select { display: inline-block; }
+
+/* The chevron. A real <button>, so it is focusable and Enter/Space-activatable on
+   its own; CSS owns the rotation. Figma's toggle is a 16px icon button. */
+.group-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  cursor: pointer;
+  transition: rotate 120ms ease;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  }
+}
+/* Shut: the chevron points at the folded content instead of down into it. */
+.group-row[data-collapsed] .group-toggle { rotate: -90deg; }
+
+.group-label {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  white-space: nowrap;
+}
+
+/* The row count, as the same neutral count chip a filter chip uses. */
+.group-count {
+  flex-shrink: 0;
+  min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* A row in a folded group. JS writes the flag; CSS owns the hiding — the row is
+   never touched with a `display` write. */
+.row[data-hidden] { display: none; }
+
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {
   display: none;

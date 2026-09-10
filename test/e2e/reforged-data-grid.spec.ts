@@ -453,3 +453,98 @@ test('re-populating clears stale filters', async ({ page }) => {
   expect(r.afterRepopulate).toBe(2);
   expect(r.anyValueFlag).toBe(false);
 });
+
+test('data-group-field bunches the rows, hides that column, and folds', async ({ page }) => {
+  // Figma Grid Cell `Type=group` (template 926:35309): a full-width 32-tall row
+  // with a checkbox, a chevron toggle and the group's value as its label. The
+  // grouped column drops out — its value IS the heading now.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'team', header: 'Team' },
+      ],
+      rows: [
+        { name: 'Ana', team: 'Blue' },
+        { name: 'Bo', team: 'Red' },
+        { name: 'Cy', team: 'Blue' },
+      ],
+    });
+    el.dataset['groupField'] = 'team';
+    await new Promise((res) => setTimeout(res, 30));
+
+    const sr = el.shadowRoot!;
+    const read = () => ({
+      headers: Array.from(sr.querySelectorAll('.head-label')).map((h) => h.textContent),
+      groups: Array.from(sr.querySelectorAll('.group-row')).map((g) => ({
+        label: g.querySelector('.group-label')!.textContent,
+        count: g.querySelector('.group-count')!.textContent,
+        // +1 for the leading selection column, so the group row is exactly as
+        // wide as the rows below it.
+        colspan: g.querySelector<HTMLTableCellElement>('.group-cell')!.colSpan,
+      })),
+      // The grouped column's cells are gone too — one column, not two.
+      cellsPerRow: sr.querySelector('.row')!.children.length,
+      // Rows sharing a group value must be ADJACENT: that is what lets the render
+      // find each group in one pass over the sorted rows.
+      order: Array.from(sr.querySelectorAll('.row')).map((row) => row.children[1]!.textContent),
+      visible: Array.from(sr.querySelectorAll('.row')).filter(
+        (row) => getComputedStyle(row).display !== 'none',
+      ).length,
+    });
+    const grouped = read();
+
+    // Fold the first group shut.
+    const first = sr.querySelector<HTMLElement>('.group-row')!;
+    first.querySelector<HTMLElement>('.group-toggle')!.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const folded = {
+      ...read(),
+      collapsed: first.hasAttribute('data-collapsed'),
+      expanded: first.querySelector('.group-toggle')!.getAttribute('aria-expanded'),
+    };
+
+    // A re-render (here: a sort) must KEEP the fold — the flag lives on the
+    // component, not on the rows it just replaced.
+    el.dataset['sortField'] = 'name';
+    await new Promise((res) => setTimeout(res, 30));
+    const afterSort = { visible: read().visible, collapsed: sr.querySelector('.group-row')!.hasAttribute('data-collapsed') };
+
+    // Un-grouping brings the column straight back, with no re-populate.
+    delete el.dataset['groupField'];
+    await new Promise((res) => setTimeout(res, 30));
+    const ungrouped = { headers: read().headers, groups: read().groups.length };
+
+    return { grouped, folded, afterSort, ungrouped };
+  });
+
+  // The grouped column is gone from the header.
+  expect(r.grouped.headers).toEqual(['Name']);
+  expect(r.grouped.cellsPerRow).toBe(2); // select cell + the one remaining column
+  expect(r.grouped.groups).toEqual([
+    { label: 'Blue', count: '2', colspan: 2 },
+    { label: 'Red', count: '1', colspan: 2 },
+  ]);
+  expect(r.grouped.order).toEqual(['Ana', 'Cy', 'Bo']); // Blue rows adjacent
+  expect(r.grouped.visible).toBe(3);
+
+  // Folded: the group's rows are hidden by CSS off the row flag.
+  expect(r.folded.collapsed).toBe(true);
+  expect(r.folded.expanded).toBe('false');
+  expect(r.folded.visible).toBe(1); // only Red's single row
+
+  // The fold survives a re-render.
+  expect(r.afterSort.collapsed).toBe(true);
+  expect(r.afterSort.visible).toBe(1);
+
+  // Un-grouping restores the column without re-populating.
+  expect(r.ungrouped.headers).toEqual(['Name', 'Team']);
+  expect(r.ungrouped.groups).toBe(0);
+});

@@ -166,8 +166,19 @@ export class SherpaMenu extends SherpaElement {
     const vh = document.documentElement.clientHeight;
 
     // Below the trigger, unless there is no room and there IS room above.
+    const below = vh - t.bottom - gap * 2;
+    const above = t.top - gap * 2;
     let y = t.bottom + gap;
     if (y + c.height > vh && t.top - gap - c.height >= 0) y = t.top - gap - c.height;
+
+    // Cap the card to the room it actually has on the side it landed on, and let
+    // `.rows` scroll inside that. Without this a long list (a Sort menu offers two
+    // rows per column) ran off the bottom of the screen and took the Apply/Cancel
+    // footer with it — the CSS cap was a flat 60vh, which knows nothing about where
+    // the trigger sits. Flip to the roomier side when neither fits comfortably.
+    const room = Math.max(below, above);
+    if (c.height > below && above > below) y = Math.max(gap, t.top - gap - Math.min(c.height, above));
+    card.style.setProperty('--_max-h', `${Math.max(120, Math.round(room))}px`);
 
     // Line up with the trigger's start edge (or its end edge on data-align="end"),
     // then pull back inside the viewport if that overflows.

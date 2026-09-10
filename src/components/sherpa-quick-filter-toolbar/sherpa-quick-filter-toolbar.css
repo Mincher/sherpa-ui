@@ -38,6 +38,28 @@
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
+/* The Group / Sort chips, at the START of the bar and before the filter run.
+   Same zone-plus-divider idiom as the view zone above: Figma's Type=data content
+   slot opens with two menu chips, then a 1x16 Divider, then the filter chips.
+   Hidden until the JS writes the flag — with no organise chips there is nothing
+   to divide, and an empty zone would leave a stray rule floating in the bar. */
+.organise-zone { display: none; }
+:host([data-has-organise]) .organise-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* Never squashed by a long filter run — the whole point is that these two sit
+     at the start and stay reachable. */
+  flex: 0 0 auto;
+}
+/* The 1x16 divider rectangle after the organise chips. */
+:host([data-has-organise]) .organise-zone::after {
+  content: "";
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  background: var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

@@ -188,20 +188,15 @@ export class SherpaLineChart extends SherpaElement {
     if (steps <= 0 || !this.#series.length) return;
 
     // One label per division boundary at the SAME percentage its gridline uses.
-    let widest = 1;
     for (let i = 0; i <= steps; i++) {
       const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
-      const text = formatTick(min + ((max - min) * i) / steps);
-      widest = Math.max(widest, text.length);
-      tick.querySelector('.y-value')!.textContent = text;
+      tick.querySelector('.y-value')!.textContent = formatTick(min + ((max - min) * i) / steps);
       axis.appendChild(tick);
     }
-    // The labels are absolutely positioned, so they add NO width of their own and
-    // the axis track collapsed to zero — the numbers then overflowed the chart's
-    // left edge. Hand CSS the longest label's length so the axis reserves real
-    // width and COUNTS towards the chart's size.
-    this.style.setProperty('--_y-chars', String(widest));
+    // The axis width is FIXED in CSS and long labels truncate — nothing measured
+    // here. Sizing it from the data made the plot wiggle whenever a value crossed
+    // a digit boundary.
   }
 }
 

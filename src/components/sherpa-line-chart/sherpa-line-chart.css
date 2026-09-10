@@ -39,6 +39,14 @@
   /* Purely the drawing area now — the x labels moved OUT into their own grid row,
      which is what stops them shortening the canvas relative to the y-axis. */
   display: block;
+  /* THE HORIZONTAL AXIS LINE. A 2D chart has TWO axes, and this one was missing:
+     the y-axis got its rule from `.y-axis { border-inline-end }` but nothing drew
+     the baseline, so the x labels sat under empty space. It is the plot's own
+     bottom border — the same idiom the bar chart's `.bars` uses — so it spans
+     exactly the drawing area and meets the y-axis rule at the origin. */
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  box-sizing: border-box;
 }
 
 .svg {
@@ -132,21 +140,24 @@
      `align-self: start` + the same flex basis as the svg keeps them equal without
      either one hard-coding the other's height. */
   /* No block-size: the grid ROW gives it the plot's exact height. */
-  /* The labels inside are ABSOLUTE, so they contribute NOTHING to this box's
-     width — the `auto` grid track collapsed to 0 and every number hung outside
-     the chart's left edge. `--_y-chars` (the longest label's character count,
-     written by the JS) reserves the room, in `ch` so it tracks the font size.
-     This is why the axis now counts towards the chart's own width. */
-  inline-size: calc(var(--_y-chars, 3) * 1ch + var(--sherpa-display-mode-space-2xs, 4px));
+  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing to
+     this box — the `auto` grid track collapsed to 0 and every number hung outside
+     the chart's left edge. Sizing it from the data instead (the longest label's
+     length) fixed the overflow but made the axis WIGGLE: the plot got wider or
+     narrower whenever a value crossed a digit boundary. One fixed width, and a
+     label too long for it truncates. */
+  inline-size: var(--sherpa-display-mode-size-4xl, 48px);
   box-sizing: content-box;
-  /* Room for the tick rule beside the labels (Figma's 8-wide Marker). */
-  padding-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  /* Room for the tick rule beside the labels (Figma's 8-wide Marker). One grid
+     step up from 2xs: at 4px the numbers sat almost against the axis rule. */
+  padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
   border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
-  /* Figma axis text: content/size/base 14 on line-height/base 20, content/body/+1. */
-  font-size: var(--sherpa-font-size-body-base, 14px);
+  /* Axis text: SMALL 12/16, the same size the horizontal axis labels use — the
+     two axes are one scale, and 14 against 12 read as a mistake. */
+  font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 /* Written by the JS once it has stamped values — an absent data-ticks means
@@ -163,7 +174,12 @@
   inset-block-end: var(--_at, 0%);
   translate: 0 50%;
   text-align: end;
+  /* Truncate rather than widen: the axis width is fixed so the plot cannot move
+     as the values change. An ellipsis is the honest signal that a number is too
+     long for the axis. */
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .y-value {

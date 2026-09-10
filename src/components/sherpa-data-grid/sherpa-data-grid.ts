@@ -13,9 +13,16 @@
  * Both are CSS-gated — the columns/rows exist in the template always and only JS
  * behaviour (selection tracking, filter dispatch) lives here.
  *
+ * data-group-field GROUPS the rows by one column: rows are bunched by their value
+ * in that column and each bunch gets a collapsible group row on top (Figma Grid
+ * Cell Type=group) carrying that value as its label. The grouped column drops out
+ * of the header and the body — its value IS the heading, so repeating it in every
+ * row below would be noise.
+ *
  * @element sherpa-data-grid
  * @attr {enum}    data-sort-field      current sort column field
  * @attr {enum}    data-sort-direction  asc | desc
+ * @attr {enum}    data-group-field     group the rows by this column
  * @attr {boolean} data-selectable      show a leading checkbox column
  * @attr {boolean} data-filterable      show a secondary filter-input header row
  *
@@ -23,6 +30,7 @@
  * @fires row-click        — a row is clicked. bubbles + composed. detail: { index: number, row: object }
  * @fires selection-change — a selection checkbox toggles. bubbles + composed. detail: { selected: string[] }
  * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
+ * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -44,12 +52,20 @@ interface GridConfig {
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
   static override html = new URL('./sherpa-data-grid.html', import.meta.url);
-  static override observed = ['data-sort-field', 'data-sort-direction'];
+  static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
 
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
   /** Active per-column filter text, keyed by field. Empty entries are removed. */
   #filters = new Map<string, string>();
+  /**
+   * The group values the user has collapsed.
+   *
+   * Kept on the component rather than read back off the DOM, so a re-render (a
+   * sort, a filter keystroke) redraws the same groups still shut. Reading the flag
+   * off the old rows would lose it the moment the body is replaced.
+   */
+  #collapsed = new Set<string>();
 
   override onRender(): void {
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick);
@@ -101,7 +117,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
     headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
-    for (const col of this.#columns) {
+    for (const col of this.#shownColumns()) {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
       const sortable = col.sortable !== false;
@@ -122,7 +138,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Keep the fixed leading spacer <th>; rebuild only the dynamic filter cells.
     filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());
-    for (const col of this.#columns) {
+    for (const col of this.#shownColumns()) {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
       const label = col.header ?? col.field;
@@ -141,20 +157,56 @@ export class SherpaDataGrid extends SherpaElement {
     }
   }
 
+  /**
+   * The columns the table actually draws.
+   *
+   * The grouped column is dropped: its value is the group row's own heading, so
+   * repeating it in every row underneath adds a column of identical text. The
+   * `#columns` list is left intact, because un-grouping must bring the column
+   * straight back without the caller re-populating.
+   */
+  #shownColumns(): GridColumn[] {
+    const group = this.dataset['groupField'];
+    if (!group) return this.#columns;
+    return this.#columns.filter((c) => c.field !== group);
+  }
+
   #renderBody(): void {
     const body = this.$('.body');
     const rowTpl = this.$<HTMLTemplateElement>('template.row-tpl');
     const cellTpl = this.$<HTMLTemplateElement>('template.cell-tpl');
     if (!body || !rowTpl || !cellTpl) return;
 
+    const group = this.dataset['groupField'];
+    const columns = this.#shownColumns();
     body.replaceChildren();
+
     // Rows are FILTERED then SORTED, and the index written on each <tr> is the
     // index into THAT visible list — so row-click and selection-change keep
     // pointing at the record the user actually sees.
-    this.#visibleRows().forEach((record, i) => {
+    const rows = this.#visibleRows();
+    let lastGroup: string | null = null;
+
+    rows.forEach((record, i) => {
+      // A new value in the grouped column opens a new group row. The rows are
+      // already ordered by that column (see #sortRows), so one pass over them in
+      // order produces every group exactly once — no separate bucketing step that
+      // could disagree with the row order on screen.
+      if (group) {
+        const value = record[group];
+        const key = value == null ? '' : String(value);
+        if (key !== lastGroup) {
+          lastGroup = key;
+          body.appendChild(this.#groupRow(key, this.#groupSize(rows, group, key), columns.length));
+        }
+      }
+
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tr.dataset['index'] = String(i);
-      for (const col of this.#columns) {
+      // Which group this row belongs to, so CSS can hide it when that group's
+      // row is collapsed — the row itself never needs a `display` write.
+      if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
+      for (const col of columns) {
         const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         if (col.type) td.dataset['type'] = col.type;
         const value = record[col.field];
@@ -163,6 +215,38 @@ export class SherpaDataGrid extends SherpaElement {
       }
       body.appendChild(tr);
     });
+
+    // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
+    // groups the user had already folded shut.
+    if (group) this.#syncGroupVisibility();
+  }
+
+  /** How many visible rows share one group value. */
+  #groupSize(rows: GridRow[], field: string, key: string): number {
+    return rows.filter((r) => String(r[field] ?? '') === key).length;
+  }
+
+  /** One group heading row, spanning every drawn column. */
+  #groupRow(key: string, size: number, columnCount: number): HTMLElement {
+    const tpl = this.$<HTMLTemplateElement>('template.group-row-tpl')!;
+    const tr = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    tr.dataset['group'] = key;
+    const collapsed = this.#collapsed.has(key);
+    // CSS draws the chevron rotation and hides the group's rows off this flag.
+    tr.toggleAttribute('data-collapsed', collapsed);
+
+    const cell = tr.querySelector<HTMLTableCellElement>('.group-cell')!;
+    // +1 for the leading selection column, which exists in the template whether
+    // or not data-selectable reveals it — a colspan that ignored it would leave
+    // the group row one column short of the rows below.
+    cell.colSpan = columnCount + 1;
+    tr.querySelector('.group-label')!.textContent = key === '' ? '(none)' : key;
+    tr.querySelector('.group-count')!.textContent = String(size);
+
+    const toggle = tr.querySelector('.group-toggle')!;
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
+    return tr;
   }
 
   /**
@@ -196,18 +280,30 @@ export class SherpaDataGrid extends SherpaElement {
 
   #sortRows(rows: GridRow[]): GridRow[] {
     const field = this.dataset['sortField'];
-    if (!field) return rows;
+    const group = this.dataset['groupField'];
+    if (!field && !group) return rows;
     const dir = this.dataset['sortDirection'] === 'desc' ? -1 : 1;
-    // Sort the list PASSED IN, not this.#rows — otherwise a filtered list would
-    // be silently replaced by the full one and filtering would appear to do nothing.
-    return [...rows].sort((a, b) => {
-      const av = a[field];
-      const bv = b[field];
+
+    const compare = (a: GridRow, b: GridRow, key: string, direction: number): number => {
+      const av = a[key];
+      const bv = b[key];
       if (av == null) return 1;
       if (bv == null) return -1;
-      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
-      return String(av).localeCompare(String(bv)) * dir;
-    });
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * direction;
+      return String(av).localeCompare(String(bv)) * direction;
+    };
+
+    // Sort the list PASSED IN, not this.#rows — otherwise a filtered list would
+    // be silently replaced by the full one and filtering would appear to do nothing.
+    //
+    // The GROUP key sorts first. That is what lets #renderBody find each group in
+    // one pass: rows sharing a group value are guaranteed adjacent, so a change of
+    // value is exactly a group boundary. The sort column then orders rows WITHIN
+    // their group.
+    return [...rows].sort(
+      (a, b) =>
+        (group ? compare(a, b, group, 1) : 0) || (field ? compare(a, b, field, dir) : 0),
+    );
   }
 
   /* ── Interaction ────────────────────────────────────────────────── */
@@ -229,6 +325,17 @@ export class SherpaDataGrid extends SherpaElement {
   #onRowClick = (event: Event): void => {
     // A click on a selection checkbox is selection, not row activation.
     if ((event.target as HTMLElement).closest('.select-cell')) return;
+
+    // A group row is a heading, not a record: clicking it (anywhere, not just the
+    // chevron) folds its rows away. It has no data-index, so it could never have
+    // resolved to a record anyway.
+    const groupRow = (event.target as HTMLElement).closest<HTMLElement>('.group-row');
+    if (groupRow) {
+      if ((event.target as HTMLElement).closest('.group-select')) return;
+      this.#toggleGroup(groupRow);
+      return;
+    }
+
     const tr = (event.target as HTMLElement).closest<HTMLElement>('.row');
     const raw = tr?.dataset['index'];
     if (raw == null) return;
@@ -237,6 +344,42 @@ export class SherpaDataGrid extends SherpaElement {
     // so using the unfiltered one would hand back a different record.
     this.emit('row-click', { index, row: this.#visibleRows()[index] });
   };
+
+  /* ── Grouping ───────────────────────────────────────────────────── */
+
+  /**
+   * Fold one group open or shut.
+   *
+   * The flag goes on the group ROW and CSS hides the matching rows off it, so JS
+   * never writes `display`. The value is also remembered in `#collapsed`, because
+   * the next sort or filter keystroke replaces the whole body and the flag on the
+   * old rows would go with it.
+   */
+  #toggleGroup(groupRow: HTMLElement): void {
+    const key = groupRow.dataset['group'] ?? '';
+    const collapsed = !groupRow.hasAttribute('data-collapsed');
+    groupRow.toggleAttribute('data-collapsed', collapsed);
+    if (collapsed) this.#collapsed.add(key);
+    else this.#collapsed.delete(key);
+
+    const toggle = groupRow.querySelector('.group-toggle');
+    toggle?.setAttribute('aria-expanded', String(!collapsed));
+    toggle?.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
+
+    // CSS needs to know WHICH groups are shut to hide their rows, and a sibling
+    // selector cannot reach from a group row to the rows after it. So the set of
+    // shut groups is written on each row instead.
+    this.#syncGroupVisibility();
+    this.emit('group-toggle', { value: key, collapsed });
+  }
+
+  /** Mark every row whose group is collapsed; CSS hides them. */
+  #syncGroupVisibility(): void {
+    for (const row of this.$$<HTMLElement>('.row')) {
+      const key = row.dataset['group'];
+      row.toggleAttribute('data-hidden', key != null && this.#collapsed.has(key));
+    }
+  }
 
   /* ── Selection ──────────────────────────────────────────────────── */
 

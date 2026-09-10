@@ -22,8 +22,14 @@
   A populated filter shows a trailing clear button. CSS reveals it off the cell's
   data-has-value flag, so JS only writes state.
 
+  data-group-field names a column to GROUP by. Its rows are bunched by their value
+  in that column and each bunch gets a collapsible group row on top (Figma Grid Cell
+  Type=group) carrying that value as its label. The grouped column itself drops out
+  of the header and the rows — its value is the heading now.
+
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
+    data-group-field                         group rows by this column
     data-selectable                          show a leading checkbox column (select-all + per-row)
     data-filterable                          show a secondary header row of filter inputs
 
@@ -32,6 +38,7 @@
     row-click        — detail: { index, row }
     selection-change — detail: { selected: string[] }   (row indices as strings)
     filter-change    — detail: { field, value, filters, visible }
+    group-toggle     — detail: { value, collapsed }
 -->
 <template id="default">
   <table class="grid" part="grid">
@@ -86,6 +93,39 @@
     <tr class="row">
       <td class="select-cell">
         <input class="row-select" type="checkbox" aria-label="Select row" />
+      </td>
+    </tr>
+  </template>
+
+  <!--
+    A GROUP row — Figma Grid Cell `Type=group` (in the template at 926:35309). It
+    spans every column, is 32 tall with padding 4 and gap 8, and holds a selection
+    checkbox, a chevron toggle, then the group's value as its label.
+
+    The grouped column's own cells are DROPPED from the rows below (the value is
+    already the group's heading, so repeating it in every row is noise) and its
+    header goes with them.
+
+    The chevron is a real <button> with aria-expanded, so it is focusable and
+    Enter/Space-activatable for free; CSS rotates it and hides the group's rows
+    off the row's data-collapsed flag.
+  -->
+  <template class="group-row-tpl">
+    <tr class="group-row">
+      <!--
+        The <td> stays a real table cell so its colspan keeps reserving every
+        column; the flex row lives in an inner wrapper. Flexing the <td> itself
+        takes it out of table layout, and the colspan stops holding the width.
+      -->
+      <td class="group-cell">
+        <span class="group-inner">
+          <input class="group-select" type="checkbox" aria-label="Select group" />
+          <button class="group-toggle" type="button">
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+          </button>
+          <span class="group-label"></span>
+          <span class="group-count"></span>
+        </span>
       </td>
     </tr>
   </template>

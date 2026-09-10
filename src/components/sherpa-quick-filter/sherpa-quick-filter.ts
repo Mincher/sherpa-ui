@@ -114,7 +114,11 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A menu selection sets the count chip and the on-state, then relays outward. */
   #onMenuChange = (event: Event): void => {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
-    if (values.length) this.dataset['count'] = String(values.length);
+    // The count says "how many values are picked", so it only means anything on a
+    // MULTI-select chip. A single-select one can only ever read "1", which tells
+    // the user nothing and just adds a badge to every Group / Sort chip.
+    const single = this.menu?.getAttribute('data-select') === 'single';
+    if (values.length && !single) this.dataset['count'] = String(values.length);
     else delete this.dataset['count'];
     this.current = values.length > 0;
     this.#syncText();

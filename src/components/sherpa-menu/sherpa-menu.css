@@ -36,8 +36,14 @@
   inset-inline-start: var(--_x, 0px);
   margin: 0;
   inline-size: 240px;
-  max-block-size: 60vh;
-  overflow-y: auto;
+  /* --_max-h is the room actually left between the trigger and the viewport edge,
+     measured by #place(). A flat 60vh let a long list (a Sort menu offers two rows
+     per column) run off the bottom of the screen, taking the Apply/Cancel footer
+     with it. The fallback keeps a sane cap where the JS has not run. */
+  max-block-size: var(--_max-h, 60vh);
+  /* The CARD no longer scrolls — `.rows` does. Scrolling the card scrolled its
+     footer away, so Apply and Cancel became unreachable on a long menu. */
+  overflow: hidden;
 
   /* A closed popover is hidden by the UA with `display: none`. Because this rule
      sets `display` for the open layout, it must NOT clobber that — so the card is
@@ -86,10 +92,15 @@
   &:empty { display: none; }
 }
 
+/* The ROWS scroll, not the card — so the heading stays put at the top and the
+   Apply/Cancel footer stays put at the bottom however long the list is. `min-h: 0`
+   is what lets a flex child actually shrink below its content and scroll. */
 .rows {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-3xs, 2px);
+  min-block-size: 0;
+  overflow-y: auto;
 }
 
 /* ── Rows ────────────────────────────────────────────────────────────────

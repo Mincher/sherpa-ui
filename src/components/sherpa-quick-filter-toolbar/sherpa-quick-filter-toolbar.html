@@ -38,6 +38,18 @@
     <div class="view-zone" part="view-zone">
       <slot name="view"></slot>
     </div>
+
+    <!--
+      ORGANISE ZONE — the Group and Sort chips, at the START of the bar.
+
+      Figma's Filter Toolbar (Type=data) opens its content slot with TWO menu
+      chips, then a 1x16 Divider, then the filter chips. These are those two: they
+      change how the grid is ARRANGED, not which rows survive, so they are kept in
+      their own zone with its own divider rather than mixed into the filter run.
+      Same Filter Chip (atom) component either way — only the placement differs.
+    -->
+    <div class="organise-zone" part="organise"></div>
+
     <div class="chips" part="chips"></div>
     <div class="actions-zone" part="actions">
       <slot name="actions"></slot>
