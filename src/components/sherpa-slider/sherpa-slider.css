@@ -35,7 +35,8 @@
   /* Filled range + thumb take the accent indicator (Figma: style-indicator/accent
      → surface/accent/+2 = #3b4ccd). */
   --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
-  --_thumb: var(--sherpa-display-mode-size-md, 20px);
+  /* Figma handle: 16×16 ellipse, accent fill, 2px inside stroke style-border/base. */
+  --_thumb: var(--sherpa-display-mode-size-sm, 16px);
   --_rail: var(--sherpa-display-mode-space-2xs, 4px);
   --_pct: 0%;
 }
@@ -51,6 +52,7 @@
 .label {
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 
   &:empty { display: none; }
 }
@@ -148,16 +150,14 @@
     block-size: var(--_thumb);
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     background: var(--_accent);
-    border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
-    box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   }
   &::-moz-range-thumb {
     inline-size: var(--_thumb);
     block-size: var(--_thumb);
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     background: var(--_accent);
-    border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
-    box-shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08));
+    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   }
 
   /* Focus ring — explicit box-shadow, never a silent --focus-ring(). */

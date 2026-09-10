@@ -70,7 +70,7 @@ test('initial checked attribute drives the inner input', async ({ page }) => {
   expect(r).toBe(true);
 });
 
-test(':checked drives the visual — filled box + checkmark, no JS styling', async ({ page }) => {
+test(':checked drives the visual — inset accent indicator + checkmark, no JS styling', async ({ page }) => {
   // Measure each state on its own fresh element (avoids the same-node computed
   // -style caching quirk); the checked one starts checked via the attribute.
   const r = await page.evaluate(async () => {
@@ -82,17 +82,27 @@ test(':checked drives the visual — filled box + checkmark, no JS styling', asy
       const input = el.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
       return {
         bg: getComputedStyle(input).backgroundColor,
+        indicator: getComputedStyle(input, '::before').backgroundColor,
+        indicatorContent: getComputedStyle(input, '::before').content,
         mark: getComputedStyle(input, '::after').content,
       };
     };
     const off = await paint(false);
     const on = await paint(true);
-    return { unchecked: off.bg, checked: on.bg, markContent: on.mark };
+    return {
+      unchecked: off.bg,
+      uncheckedIndicator: off.indicatorContent,
+      checked: on.bg,
+      indicator: on.indicator,
+      markContent: on.mark,
+    };
   });
-  // Unchecked box is the white container surface; checked box is the primary fill.
+  // Figma Checkbox (Atom): the box KEEPS its white face in both states; checked adds
+  // a 10×10 inset indicator (::before) in the accent, with the white tick (::after) on it.
   expect(r.unchecked).toBe('rgb(255, 255, 255)');
-  expect(r.checked).toBe('rgb(59, 76, 205)'); // Saturated accent #3b4ccd (look-tier --_status-surface)
-  expect(r.checked).not.toBe(r.unchecked);
+  expect(r.uncheckedIndicator).toBe('none'); // no indicator when unchecked
+  expect(r.checked).toBe('rgb(255, 255, 255)');
+  expect(r.indicator).toBe('rgb(59, 76, 205)'); // style-indicator/accent #3b4ccd
   expect(r.markContent).not.toBe('none'); // ::after checkmark rendered
 });
 
@@ -108,11 +118,13 @@ test('indeterminate property drives input.indeterminate + the dash visual', asyn
 
     el.indeterminate = true;
     const bg = getComputedStyle(input).backgroundColor;
+    const indicator = getComputedStyle(input, '::before').backgroundColor;
     const dash = getComputedStyle(input, '::after').content;
-    return { indeterminate: input.indeterminate, bg, dash };
+    return { indeterminate: input.indeterminate, bg, indicator, dash };
   });
   expect(r.indeterminate).toBe(true);
-  expect(r.bg).toBe('rgb(59, 76, 205)'); // filled like checked — Saturated accent #3b4ccd
+  expect(r.bg).toBe('rgb(255, 255, 255)'); // box face stays white (Figma atom)
+  expect(r.indicator).toBe('rgb(59, 76, 205)'); // inset indicator like checked — accent #3b4ccd
   expect(r.dash).not.toBe('none'); // ::after dash rendered
 });
 

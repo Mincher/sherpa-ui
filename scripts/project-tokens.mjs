@@ -768,10 +768,14 @@ function densityBlock(slug, name) {
     // 'display-mode' since the 2026-09-09 re-export (was 'display'), so density
     // overrides must shadow --sherpa-display-mode-* (not the old --sherpa-display-*).
     const cssName = `--${PREFIX}${toIdent(['display-mode', ...rawPath.split('/')])}`;
+    // The extension cache stores bare values (no $type). The weight ramp must stay
+    // unitless — `400px` is an invalid font-weight and silently voids every
+    // `font-weight: var(--sherpa-…-weight-*)` under [data-density].
+    const type = /(^|\/)weight\//.test(rawPath) ? 'fontWeight' : 'dimension';
     const lv = byMode.light;
-    if (lv != null) lightLines.push(`    ${cssName}: ${literal(lv, 'dimension')};`);
+    if (lv != null) lightLines.push(`    ${cssName}: ${literal(lv, type)};`);
     if (byMode.dark != null && byMode.dark !== byMode.light)
-      darkLines.push(`      ${cssName}: ${literal(byMode.dark, 'dimension')};`);
+      darkLines.push(`      ${cssName}: ${literal(byMode.dark, type)};`);
   }
   return {
     light: `  [data-density="${name}"] {\n${lightLines.join('\n')}\n  }`,

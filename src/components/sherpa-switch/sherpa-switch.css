@@ -46,8 +46,11 @@
   display: inline-flex;
   vertical-align: middle;
 
-  /* One fill token the track consumes; ON re-points it to the success surface. */
+  /* One fill + one border token the track consumes; ON re-points both.
+     OFF (Figma Value=off, Style default): style-surface/base +2 · style-border/base.
+     ON  (Figma Value=on, Style:Saturated=success): surface #007a45 · border #20c173. */
   --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 /* ── Track: the <label> the whole control lives in ─────────────────────── */
@@ -56,17 +59,19 @@
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
   gap: var(--sherpa-theme-gap-sm, 4px);
-  inline-size: var(--sherpa-switch-size-width, 40px);
+  inline-size: var(--sherpa-switch-size-width, 48px);
   min-block-size: var(--sherpa-switch-size-height, 20px);
   padding: var(--sherpa-switch-size-padding, 2px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  /* Figma label: content/size/small 12 · content/weight/regular 400 · line-height/small 16. */
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   cursor: pointer;
-  transition: background-color 120ms ease;
+  transition: background-color 120ms ease, border-color 120ms ease;
 
   /* Focus ring lives on the track when the (hidden) input is keyboard-focused. */
   &:has(.input:focus-visible) {
@@ -77,6 +82,7 @@
   /* ── ON state — re-point the fill to the strong success surface ── */
   &:has(.input:checked) {
     --_fill: var(--sherpa-theme-surface-success-3, #007a45);
+    --_border: var(--sherpa-theme-border-success-2, #20c173);
   }
 
   /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */

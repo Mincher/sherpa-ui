@@ -46,15 +46,18 @@
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
 
+/* Figma Input Text: label content/body/base 12/16 medium · description content/body/+2
+   12/16 regular · uniform gap/sm (4) between every row — no extra margins. */
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  margin-bottom: var(--sherpa-theme-padding-xs, 2px);
 }
 .label:empty,
 .description:empty,
@@ -75,6 +78,9 @@
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
+/* Figma field: padding-right = padding/none — the 32×32 snapped action buttons sit
+   flush against the box edge. */
+:host([data-has-actions]) .control-row { padding-inline-end: 0; }
 
 /* The native control is borderless inside the row — the row owns the box. */
 .control {
@@ -87,7 +93,7 @@
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 .control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 .control:focus-visible { outline: none; }
@@ -114,8 +120,9 @@ textarea.control {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-md, 20px);
-  block-size: var(--sherpa-display-mode-size-md, 20px);
+  /* Figma icon-leading/-trailing: size/icon/xs → 16. */
+  inline-size: var(--sherpa-theme-size-icon-xs, 16px);
+  block-size: var(--sherpa-theme-size-icon-xs, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .icon::before {
@@ -135,15 +142,14 @@ textarea.control {
 }
 :host([data-has-actions]) .actions { display: inline-flex; }
 
-/* ── Validation — Figma's FILLED critical bar ─────────────────────────
-   Native :user-invalid, or an explicit data-error, tints the row border and
-   reveals a full-width red bar with light text directly under the control. The
-   colours borrow the status cascade so a data-status="critical" host and the
+/* ── Validation — Figma's FILLED critical bar (Input Field (atom) State=error) ──
+   Native :user-invalid, or an explicit data-error, reveals a full-width bar under
+   the control: Style:Saturated=critical surface (#b72200) with style-content/base
+   (#ffffff) 14/20 text, padding/xs 2 · padding/sm 4, snapped to the field (field
+   bottom corners 0 / bar top corners 0). The FIELD border stays neutral — Figma's
+   base Style critical mode keeps style-border/base at #b3b3c3; only the bar is red.
+   The colours borrow the status cascade so a data-status="critical" host and the
    browser's own invalid state paint the same critical ink. */
-.control-row:has(.control:user-invalid),
-:host([data-error]) .control-row {
-  border-color: var(--_border-error);
-}
 .control-row:has(.control:user-invalid):focus-within,
 :host([data-error]) .control-row:focus-within {
   box-shadow: 0 0 0 2px var(--_border-error);
@@ -154,16 +160,22 @@ textarea.control {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
   }
 }
+/* Snap the field to the bar when the bar is showing (Figma snap-bottom-edge pin). */
+.control-row:has(.control:user-invalid):has(~ .message:not(:empty)),
+:host([data-error]) .control-row:has(~ .message:not(:empty)) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
 
 /* The filled bar: hidden by default, shown when invalid / data-error and it holds text. */
 .message {
   display: none;
-  padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
-  border-radius: 0 0 var(--sherpa-structure-rounding-top-left, 4px) var(--sherpa-structure-rounding-top-left, 4px);
+  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
+  border-radius: 0 0 var(--sherpa-structure-rounding-bottom-right, 4px) var(--sherpa-structure-rounding-bottom-left, 4px);
   background: var(--_surface-error);
   color: var(--_text-on-error);
-  font-size: var(--sherpa-font-size-body-large, 16px);
-  line-height: 1.4;
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 .control-row:has(.control:user-invalid) ~ .message:not(:empty),
 :host([data-error]) .message:not(:empty) {
@@ -216,8 +228,8 @@ textarea.control {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
   }
 }
-.field-minimal .control:user-invalid {
-  border-color: var(--_border-error);
+.field-minimal .control:user-invalid:focus-visible {
+  box-shadow: 0 0 0 2px var(--_border-error);
 }
 /* Borderless — the control is a bare field (e.g. a grid column filter). */
 :host([data-borderless]) .field-minimal .control {
