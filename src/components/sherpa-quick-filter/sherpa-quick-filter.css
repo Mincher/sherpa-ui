@@ -22,11 +22,15 @@
   --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
+/* Figma Filter Chip (atom): FIXED height 24, chip padding 0/space-3xs (2) around a
+   "Left" group padded 0/space-2xs (4) → 6px effective inline padding; gap 4; radius
+   Primitives border/radius/150 = 3 (off-grid primitive — kept on the 2px grid step);
+   stroke border/width/sm 0.5. Label content/size/base 14 on line-height/base 20. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
-  padding: var(--sherpa-display-mode-space-3xs, 2px) var(--sherpa-display-mode-space-2xs, 4px);
+  padding: 0 calc(var(--sherpa-display-mode-space-3xs, 2px) + var(--sherpa-display-mode-space-2xs, 4px));
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
@@ -35,7 +39,7 @@
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: 1;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   cursor: pointer;
   transition:
     background-color 100ms ease,
@@ -60,12 +64,12 @@
 
 /* Active/selected → brand-tint fill + brand border, darker-purple ink.
    Figma Style: active binds the label to content-active-1 (#8300b6, a darker
-   brand step than the #c046ff border) — the text is deeper than the border. */
+   brand step than the #c046ff border) — the text is deeper than the border. The
+   weight binds Theme content/weight/regular and does NOT change with the mode. */
 :host([data-current]) .chip {
   background: var(--_active-surface);
   border-color: var(--_accent);
   color: var(--sherpa-theme-content-active-1, #8300b6);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 /* Leading status dot — shown only with data-indicator (Figma "Indicator (atom)"). */
@@ -84,13 +88,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-sm, 16px);
-  block-size: var(--sherpa-theme-size-icon-sm, 16px);
-  font-size: var(--sherpa-font-size-body-small, 12px);
+  /* Figma "Icon": width/height content/size/base → 14. */
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
 
-/* Count badge — shown only when data-count is present (JS mirrors the number). */
+/* Count badge — Figma "Indicator (atom)/Type=count" pinned Style=active: height 16,
+   padding 0/space-3xs, radius sm, surface/active/base fill + border-active-2 ring,
+   active ink. Shown only when data-count is present (JS mirrors the number). */
 .count { display: none; }
 :host([data-count]) .count {
   display: inline-flex;
@@ -99,12 +106,13 @@
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--_accent);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+  background: var(--_active-surface);
+  color: var(--sherpa-theme-content-active-1, #8300b6);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 
 /* Menu caret — shown only with data-menu. */

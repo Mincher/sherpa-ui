@@ -26,19 +26,24 @@
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
+/* Figma Tag/Type=full (Structure=xs): FIXED height 16 (Structure::height), padding
+   padding/xs 2 · padding/sm 4, gap 4, radius rounding/xl 16, stroke 0.5. Label is
+   content/size/xs 10 on line-height/xs 16 — the 16px line fills the 16px pill, so
+   block padding is 0 here (Figma's 2px is inside the fixed height). */
 .pill {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  padding: 0 var(--sherpa-theme-padding-sm, 4px);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
   background: var(--_surface);
   color: var(--_content);
   font-family: inherit;
-  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   white-space: nowrap;
 }
 

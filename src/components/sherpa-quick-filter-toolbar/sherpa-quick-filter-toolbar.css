@@ -13,19 +13,29 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
+/* Figma Filter Toolbar: padding space/2xs 4, gap space/xs 8, a 1px bottom rule
+   (border/default/+2, border/width/base). Zone dividers are 1×16 rectangles
+   (border/default/+2) sitting in the 8px gap — not full-height borders. */
 .bar {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-2xs, 4px);
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 .view-zone { display: none; }
 :host([data-has-view]) .view-zone {
   display: flex;
   align-items: center;
-  padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
-  border-inline-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+/* The 1×16 divider rectangle after the view chip. */
+:host([data-has-view]) .view-zone::after {
+  content: "";
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 .chips {

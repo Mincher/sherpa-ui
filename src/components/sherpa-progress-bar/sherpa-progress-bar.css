@@ -26,6 +26,7 @@
 .label {
   display: none;
   font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 :host([data-label]) .label { display: block; }

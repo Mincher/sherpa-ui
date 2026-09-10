@@ -6,10 +6,13 @@
  * :host(:focus-within) — no JS visibility, no JS positioning. data-placement picks
  * which side the bubble sits on with plain absolute positioning + a small offset.
  *
- * Figma binding model: the bubble fills content/primary/base (the dark neutral)
- * with text in content/title/on-color (white); the corner rounds border/rounding/base
- * and the tip pads space/2xs × space/xs. No elevation token is bound — the bubble
- * carries no shadow. A 12×6 pointer arrow (.arrow) in the same fill points from the
+ * Figma binding model (Tooltip (atom), data-extracted): the bubble fills
+ * style-content/base (#35353d) with white 12/16 regular text; the corner rounds
+ * border/rounding/base (4) and the tip pads space/2xs × space/xs with gap/md 8. The
+ * component pins Elevation=md → one bound drop shadow (offset 2,2 · blur 16 ·
+ * spread −8 · style-surface/shadow #b2b2bf4d), written here from the Theme
+ * elevation "base" tokens because a [data-elevation] pin is not inherited into the
+ * shadow root. A 12×6 pointer arrow (.arrow) in the same fill points from the
  * bubble back toward the trigger; its side flips with data-placement.
  */
 
@@ -42,8 +45,15 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  /* Elevation=md (Figma pin on the atom). */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-base, 2px)
+    var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px)
+    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-style-surface-shadow, #b2b2bf4d);
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */
   visibility: hidden;

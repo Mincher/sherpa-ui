@@ -16,10 +16,10 @@
      one place to re-point it. Accent blue, NOT the active purple. */
   --_arc: var(--sherpa-style-indicator-accent, #3b4ccd);
 
+  /* Figma Loading Spinner (atom): no padding on the component; gap space/sm 12. */
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
-  padding: var(--sherpa-display-mode-space-base, 16px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
@@ -27,6 +27,7 @@
 
 /* ── Panel: solid surface background for full-area loading ─────────────── */
 :host([data-panel]) {
+  padding: var(--sherpa-display-mode-space-base, 16px);
   background: var(--sherpa-style-surface-base, #ffffff);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
@@ -39,7 +40,7 @@
 
 /* ── Label ─────────────────────────────────────────────────────────────── */
 .label {
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
 /* ── Spinner: track ring + rotating arc ────────────────────────────────── */
