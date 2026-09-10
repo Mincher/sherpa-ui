@@ -301,33 +301,78 @@
     &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
   }
 
-  /* Each dot's own value and index — the anchor NAME too, which CSS cannot
-     derive per element. */
-  &[data-index="0"] { --_i: 0; --_v: var(--_v0); --_anchor: --spark-0; }
-  &[data-index="1"] { --_i: 1; --_v: var(--_v1); --_anchor: --spark-1; }
-  &[data-index="2"] { --_i: 2; --_v: var(--_v2); --_anchor: --spark-2; }
-  &[data-index="3"] { --_i: 3; --_v: var(--_v3); --_anchor: --spark-3; }
-  &[data-index="4"] { --_i: 4; --_v: var(--_v4); --_anchor: --spark-4; }
-  &[data-index="5"] { --_i: 5; --_v: var(--_v5); --_anchor: --spark-5; }
-  &[data-index="6"] { --_i: 6; --_v: var(--_v6); --_anchor: --spark-6; }
-  &[data-index="7"] { --_i: 7; --_v: var(--_v7); --_anchor: --spark-7; }
+  /* Each dot's own value and index. The anchor NAME is set below, on BOTH the dot
+     and its tip — CSS cannot derive a per-element name. */
+  &[data-index="0"] { --_i: 0; --_v: var(--_v0); }
+  &[data-index="1"] { --_i: 1; --_v: var(--_v1); }
+  &[data-index="2"] { --_i: 2; --_v: var(--_v2); }
+  &[data-index="3"] { --_i: 3; --_v: var(--_v3); }
+  &[data-index="4"] { --_i: 4; --_v: var(--_v4); }
+  &[data-index="5"] { --_i: 5; --_v: var(--_v5); }
+  &[data-index="6"] { --_i: 6; --_v: var(--_v6); }
+  &[data-index="7"] { --_i: 7; --_v: var(--_v7); }
 }
+
+/* The anchor NAME, on the dot AND on its tip. They are SIBLINGS now (an absolute
+   mark breaks anchor positioning for a nested fixed tip), so the name is the only
+   thing joining them. */
+:is(.hotspot, .chart-tip)[data-index="0"] { --_anchor: --spark-0; }
+:is(.hotspot, .chart-tip)[data-index="1"] { --_anchor: --spark-1; }
+:is(.hotspot, .chart-tip)[data-index="2"] { --_anchor: --spark-2; }
+:is(.hotspot, .chart-tip)[data-index="3"] { --_anchor: --spark-3; }
+:is(.hotspot, .chart-tip)[data-index="4"] { --_anchor: --spark-4; }
+:is(.hotspot, .chart-tip)[data-index="5"] { --_anchor: --spark-5; }
+:is(.hotspot, .chart-tip)[data-index="6"] { --_anchor: --spark-6; }
+:is(.hotspot, .chart-tip)[data-index="7"] { --_anchor: --spark-7; }
+
+/* Hovering a dot reveals ITS tip. They are adjacent siblings, so `+` reaches it —
+   the shared rule in core/sherpa-base.css already covers this pairing. */
 
 /* A dot beyond the data length has no point to sit on. Hidden by default and
    revealed per data-len, the same way the shapes and points already are — so an
-   unfed sparkline offers no phantom hover targets. */
+   unfed sparkline offers no phantom hover targets.
+
+   Selected by data-INDEX, not :nth-child. The dots and their tips now alternate
+   as siblings, so `:nth-child(-n + 2)` would match dot 0 and TIP 0 rather than
+   dots 0 and 1. */
 .hotspot { display: none; }
 
-:host([data-len="2"]) .hotspot:nth-child(-n + 2),
-:host([data-len="3"]) .hotspot:nth-child(-n + 3),
-:host([data-len="4"]) .hotspot:nth-child(-n + 4),
-:host([data-len="5"]) .hotspot:nth-child(-n + 5),
-:host([data-len="6"]) .hotspot:nth-child(-n + 6),
-:host([data-len="7"]) .hotspot:nth-child(-n + 7),
-:host([data-len="8"]) .hotspot:nth-child(-n + 8) {
+:host([data-len="2"]) .hotspot[data-index="0"],
+:host([data-len="2"]) .hotspot[data-index="1"],
+:host([data-len="3"]) .hotspot[data-index="0"],
+:host([data-len="3"]) .hotspot[data-index="1"],
+:host([data-len="3"]) .hotspot[data-index="2"],
+:host([data-len="4"]) .hotspot[data-index="0"],
+:host([data-len="4"]) .hotspot[data-index="1"],
+:host([data-len="4"]) .hotspot[data-index="2"],
+:host([data-len="4"]) .hotspot[data-index="3"],
+:host([data-len="5"]) .hotspot[data-index="0"],
+:host([data-len="5"]) .hotspot[data-index="1"],
+:host([data-len="5"]) .hotspot[data-index="2"],
+:host([data-len="5"]) .hotspot[data-index="3"],
+:host([data-len="5"]) .hotspot[data-index="4"],
+:host([data-len="6"]) .hotspot[data-index="0"],
+:host([data-len="6"]) .hotspot[data-index="1"],
+:host([data-len="6"]) .hotspot[data-index="2"],
+:host([data-len="6"]) .hotspot[data-index="3"],
+:host([data-len="6"]) .hotspot[data-index="4"],
+:host([data-len="6"]) .hotspot[data-index="5"],
+:host([data-len="7"]) .hotspot[data-index="0"],
+:host([data-len="7"]) .hotspot[data-index="1"],
+:host([data-len="7"]) .hotspot[data-index="2"],
+:host([data-len="7"]) .hotspot[data-index="3"],
+:host([data-len="7"]) .hotspot[data-index="4"],
+:host([data-len="7"]) .hotspot[data-index="5"],
+:host([data-len="7"]) .hotspot[data-index="6"],
+:host([data-len="8"]) .hotspot[data-index="0"],
+:host([data-len="8"]) .hotspot[data-index="1"],
+:host([data-len="8"]) .hotspot[data-index="2"],
+:host([data-len="8"]) .hotspot[data-index="3"],
+:host([data-len="8"]) .hotspot[data-index="4"],
+:host([data-len="8"]) .hotspot[data-index="5"],
+:host([data-len="8"]) .hotspot[data-index="6"],
+:host([data-len="8"]) .hotspot[data-index="7"] {
   display: block;
 }
 
-/* The BAR variant has no line to sit a dot on — its whole column is the mark, and
-   a floating dot over a bar reads as a second, wrong data point. */
 :host([data-variant="bar"]) .hotspots { display: none; }

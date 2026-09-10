@@ -78,8 +78,12 @@
   position: fixed;
   position-anchor: var(--_anchor);
   /* ABOVE the mark, centred on it. A tooltip FAVOURS above: that is where a
-     reader looks, and it never covers the rest of the series below. */
-  position-area: block-start;
+     reader looks, and it never covers the rest of the series below.
+     A RADIAL chart overrides --_area per tip, pushing each one OUTWARD along its
+     own marker's radius — see radialArea() in core/format-tick.ts. Markers on a
+     ring fan out, so outward tips diverge and can never overlap, which beats
+     measuring boxes and nudging the collisions. */
+  position-area: var(--_area, block-start);
   /* Fallbacks, tried in order, ONLY when the preferred area does not fit.
      `--tip-shift-*` keeps the tip ABOVE and slides it sideways to stay on screen,
      which is what a mark near a left or right edge needs — a tip that is merely
@@ -137,6 +141,29 @@
 .chart-mark:is(:hover, :focus-visible) .chart-tip {
   display: flex;
   opacity: 1;
+}
+
+/* HOVER THE CHART'S OWN VISUAL, GET ITS TOOLTIP.
+   A donut segment, a bar, a gauge band — the thing the reader is already pointing
+   at IS the target. There is no visible marker to find and no marker to aim at.
+
+   `:has()` on a wrapper, because an SVG segment is inside <svg> and therefore not
+   the tip's sibling — a `+` or `~` selector cannot reach across that. The chart
+   supplies the wrapper class; see each chart's own CSS.
+
+   Showing EVERY tip at once was tried and is worse: the donut's five tips covered
+   its own legend and the neighbouring panel, and a line chart showed sixteen with
+   twelve overlapping. One tip, on demand. */
+
+/* An invisible ANCHOR POINT. It exists only so the tip has something to anchor to
+   — an SVG element cannot be a CSS anchor in Chromium, so a zero-size HTML span is
+   placed at the visual's centre instead. Not a marker: nothing is drawn. */
+.chart-anchor-point {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  anchor-name: var(--_anchor);
+  pointer-events: none;
 }
 
 /* A mark that scrolled out of view must take its tip with it, rather than leave it

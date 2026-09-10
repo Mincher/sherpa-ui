@@ -36,3 +36,39 @@ export function tickPercent(index: number, steps: number): number {
   if (steps <= 0) return 0;
   return (index / steps) * 100;
 }
+
+/**
+ * The `position-area` on the OUTWARD side of a radial mark.
+ *
+ * A radial chart's markers fan out from a centre, so a tooltip pushed outward
+ * along the marker's own radius can never overlap its neighbours' — they diverge
+ * by construction. That is cheaper and steadier than measuring boxes and nudging
+ * the ones that collide.
+ *
+ * `position-area` offers a 3x3 grid of areas around an anchor. This maps an angle
+ * to whichever of the 8 outer cells faces away from the centre, so the tip sits on
+ * the far side of its marker with the marker between it and the ring.
+ *
+ * @param angleDeg measured CLOCKWISE from 12 o'clock, matching how both the donut
+ *   and the gauge already place their marks.
+ */
+export function radialArea(angleDeg: number): string {
+  // Normalise, then split the circle into 8 octants centred on the compass
+  // points: 0deg (up) must land squarely in `block-start`, not on a boundary,
+  // so the octant is offset by half its own width before flooring.
+  const deg = ((angleDeg % 360) + 360) % 360;
+  const octant = Math.floor(((deg + 22.5) % 360) / 45);
+  return RADIAL_AREAS[octant] ?? 'block-start';
+}
+
+/** Octant 0 is up, going clockwise. Indexed by radialArea(). */
+const RADIAL_AREAS = [
+  'block-start',                // 12 o'clock — straight up
+  'block-start inline-end',     // 1–2
+  'inline-end',                 // 3
+  'block-end inline-end',       // 4–5
+  'block-end',                  // 6 — straight down
+  'block-end inline-start',     // 7–8
+  'inline-start',               // 9
+  'block-start inline-start',   // 10–11
+] as const;

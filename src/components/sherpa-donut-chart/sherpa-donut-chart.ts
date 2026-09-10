@@ -36,7 +36,7 @@
  * @fires slice-click — a slice is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick } from '../../core/format-tick.js';
+import { formatTick, radialArea } from '../../core/format-tick.js';
 
 export interface DonutSlice {
   label: string;
@@ -199,9 +199,15 @@ export class SherpaDonutChart extends SherpaElement {
         const dot = frag.querySelector<HTMLElement>('.hotspot')!;
         const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
         dot.dataset['index'] = String(i);
+        // The tip carries the SAME index, so CSS can pair slice N with tip N —
+        // the slice is inside <svg> and cannot be reached by a sibling selector.
+        tip.dataset['index'] = String(i);
         // Measured from 12 o'clock, matching the arcs' own -90deg rotation.
-        dot.style.setProperty('--_angle', `${(acc + share / 2) * 360}deg`);
-        dot.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+        const mid = (acc + share / 2) * 360;
+        dot.style.setProperty('--_angle', `${mid}deg`);
+        // Push the tip OUTWARD along this slice's radius, so it clears the ring
+        // rather than sitting over the data it describes.
+        tip.style.setProperty('--_area', radialArea(mid));
         // The ANCHOR NAME. Without it the tip has no anchor at all: `position-area`
         // is then meaningless and the browser parks the tip wherever it likes —
         // which is why every donut tip appeared beside its dot instead of above.
@@ -210,7 +216,6 @@ export class SherpaDonutChart extends SherpaElement {
         tip.style.setProperty('--_anchor', `--donut-slice-${i}`);
         tip.querySelector('.chart-tip-label')!.textContent = slice.label;
         tip.querySelector('.chart-tip-value')!.textContent = formatTick(slice.value);
-        dot.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
         hotspots.append(dot, tip);
       }
 

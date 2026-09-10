@@ -120,7 +120,9 @@ export class SherpaSparkline extends SherpaElement {
    * (see .chart-tip in core/sherpa-base.css). Nothing here measures anything.
    */
   #applyTips(values: number[]): void {
-    const tips = this.$$<HTMLElement>('.hotspot .chart-tip-value');
+    // The tips are SIBLINGS of the dots now, not children, so they are selected
+    // in their own right and paired by index.
+    const tips = this.$$<HTMLElement>('.chart-tip .chart-tip-value');
     tips.forEach((tip, i) => {
       tip.textContent = i < values.length ? formatTick(values[i]!) : '';
     });

@@ -8,6 +8,7 @@
  * the plain single-colour sweep. The big number, caption and scale are text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { radialArea } from '../../core/format-tick.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -167,14 +168,34 @@ export class SherpaGaugeChart extends SherpaElement {
       // positioning for a fixed tip, and the dot must be absolute to sit on its
       // band.
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
+      const wedge = frag.querySelector<HTMLElement>('.hit-wedge')!;
       const dot = frag.querySelector<HTMLElement>('.hotspot')!;
       const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
+      // The index pairs the wedge with its tip; CSS cannot derive it.
+      wedge.dataset['index'] = String(i);
+      tip.dataset['index'] = String(i);
       dot.dataset['index'] = String(i);
+
+      // The hit wedge's own edges, plus six interior samples of its arc. The
+      // clip-path walks these to trace the band, so the target follows the
+      // coloured band rather than being a rectangle over it.
+      const from = -90 + zone.from * 180;
+      const to = -90 + zone.to * 180;
+      wedge.style.setProperty('--_from', `${from}deg`);
+      wedge.style.setProperty('--_to', `${to}deg`);
+      for (let k = 1; k <= 6; k++) {
+        wedge.style.setProperty(`--_a${k}`, `${from + ((to - from) * k) / 7}deg`);
+      }
       // The visible half runs -90deg (left) → +90deg (right), matching the
       // needle's own mapping, so a band's midpoint fraction lands on the same arc
       // the fill paints it on.
       const mid = (zone.from + zone.to) / 2;
-      dot.style.setProperty('--_dot-angle', `${-90 + mid * 180}deg`);
+      // -90deg (left) → +90deg (right) across the visible half.
+      const angle = -90 + mid * 180;
+      dot.style.setProperty('--_dot-angle', `${angle}deg`);
+      // Push the tip OUTWARD along this band's radius, so neighbouring zones'
+      // tips diverge instead of stacking on top of each other.
+      tip.style.setProperty('--_area', radialArea(angle));
       dot.style.setProperty('--_hue', zone.color);
       // The ANCHOR NAME. Without it the tip has no anchor, `position-area` is
       // meaningless and the browser parks the tip wherever it likes.
@@ -186,8 +207,8 @@ export class SherpaGaugeChart extends SherpaElement {
       const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
       tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
-      dot.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
-      host.append(dot, tip);
+      wedge.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
+      host.append(wedge, dot, tip);
     });
   }
 

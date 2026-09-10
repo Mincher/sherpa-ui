@@ -127,11 +127,11 @@ test('hovering a bar shows its tip ABOVE the bar, with a gap', async ({ page }) 
   expect(r.hasSize).toBe(true);
 });
 
-test('SVG charts anchor HTML dots, placed by CSS trig from one angle', async ({ page }) => {
-  // An SVG element CANNOT be a CSS anchor in Chromium: anchor-name is accepted,
-  // computes to the right value, and never resolves. So the donut's marks are HTML
-  // buttons that place themselves on the ring with cos()/sin() — the JS supplies
-  // only the mid-angle.
+test('a donut anchors its tips to invisible points, hovered from the SLICE', async ({ page }) => {
+  // NO VISIBLE MARKERS. The reader hovers the segment itself. The anchor points
+  // exist only because an SVG element cannot be a CSS anchor in Chromium
+  // (anchor-name computes to the right value and never resolves), so a zero-size
+  // HTML span is placed on the ring by cos()/sin() from the JS's one angle.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
       rendered?: Promise<void>;
@@ -154,8 +154,11 @@ test('SVG charts anchor HTML dots, placed by CSS trig from one angle', async ({ 
     const centre = { x: wrap.left + wrap.width / 2, y: wrap.top + wrap.height / 2 };
     return {
       count: dots.length,
-      // The dots are HTML, not SVG — that is the whole point.
-      tags: [...new Set(dots.map((d) => d.tagName))],
+      // Zero-size and undrawn — an anchor, not a marker.
+      sizes: dots.map((d) => {
+        const b = d.getBoundingClientRect();
+        return b.width === 0 && b.height === 0;
+      }),
       angles: dots.map((d) => d.style.getPropertyValue('--_dot-angle') || d.style.getPropertyValue('--_angle')),
       // Every dot sits at the OUTER radius — 50% of the box, so it HALF-HANGS
       // over the ring's edge. On the band's midline it read as a blemish on the
@@ -173,7 +176,8 @@ test('SVG charts anchor HTML dots, placed by CSS trig from one angle', async ({ 
   });
 
   expect(r.count).toBe(4);
-  expect(r.tags).toEqual(['BUTTON']);
+  // Nothing is drawn: each anchor is a zero-size span.
+  expect(r.sizes).toEqual([true, true, true, true]);
   expect(r.angles).toEqual(['45deg', '135deg', '225deg', '315deg']);
   // All four on the OUTER edge — proof the trig lands on the ring.
   expect(r.radii).toEqual([50, 50, 50, 50]);
@@ -252,7 +256,9 @@ test('sparkline dots space themselves across the box at the data heights', async
         const b = d.getBoundingClientRect();
         return Math.round(b.top + b.height / 2 - chart.top);
       }),
-      tips: shown.map((d) => d.querySelector('.chart-tip-value')!.textContent),
+      // The tip is the dot's next SIBLING, not its child — an absolutely-placed
+      // mark breaks anchor positioning for a fixed descendant.
+      tips: shown.map((d) => d.nextElementSibling!.textContent!.trim()),
     };
   });
 

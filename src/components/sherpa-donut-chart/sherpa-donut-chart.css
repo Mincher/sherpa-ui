@@ -137,22 +137,21 @@
   &:empty { display: none; }
 }
 
-/* ── Hover dots + tooltip anchors ────────────────────────────────────────────
- * One dot per slice, sitting on the middle of its own band. They are real HTML
- * buttons, NOT the SVG arcs: an SVG element cannot be a CSS anchor in Chromium
- * (anchor-name is accepted and silently never resolves — the tip lands in the
- * viewport corner).
+/* ── Tooltip anchors ────────────────────────────────────────────────────────
+ * NO VISIBLE MARKERS. The reader hovers the SEGMENT — the thing they are already
+ * pointing at — and its tooltip appears.
  *
- * Each dot places itself with CSS TRIG. The JS supplies one number per slice —
- * --_angle, the slice's mid-angle — and cos()/sin() turn that into an offset from
- * the ring's centre, in percentages of the (square) ring box. So the dots ride the
- * ring at any size with nothing measured in JS and no resize handler.
+ * These spans are zero-size ANCHOR POINTS, one per slice, placed on the ring by
+ * CSS trig. They exist only because an SVG element cannot be a CSS anchor in
+ * Chromium (anchor-name computes fine and never resolves), so the tip needs an
+ * HTML box at the right place to attach to. Nothing is drawn.
  *
- * --_ring-r is the OUTER radius, 50% of the box — NOT the band's midline. Sitting
- * a dot on the midline buried it inside the band, where it read as a blemish on
- * the colour; on the outer edge it HALF-HANGS over the ring and is unmistakably a
- * marker. Same radius for a pie: it has no hole, but its outer edge is the same
- * place. */
+ * The JS supplies ONE number per slice — its mid-angle — and cos()/sin() do the
+ * rest, so the anchors ride the ring at any size with nothing measured.
+ *
+ * --_ring-r is the OUTER radius, 50% of the box, so a tip pushed outward from
+ * there clears the ring entirely.
+ */
 .hotspots {
   position: absolute;
   inset: 0;
@@ -160,57 +159,32 @@
   --_ring-r: 50%;
 }
 
-/* The dot is ABSOLUTE, placed on its own mark. Its TIP is a SIBLING in the static
-   .hotspots layer, not a descendant: an absolutely-positioned ancestor breaks
-   anchor positioning for a `position: fixed` tip (proved in isolation — a tip in a
-   static layer places above its mark, the same tip inside an absolute box drops to
-   that box's corner). They find each other by anchor NAME. */
 .hotspot {
-  position: absolute;
-  /* Polar → cartesian, from the ring's centre. The JS angle is already measured
-     from 12 o'clock (it matches the arcs' own -90deg rotation), so cos drives the
+  /* Polar → cartesian, from the ring's centre. The JS angle is measured from
+     12 o'clock, matching the arcs' own -90deg rotation, so cos drives the
      VERTICAL offset and sin the horizontal. */
   inset-inline-start: calc(50% + sin(var(--_angle, 0deg)) * var(--_ring-r));
   inset-block-start: calc(50% - cos(var(--_angle, 0deg)) * var(--_ring-r));
-  translate: -50% -50%;
-  /* Sized by the dot, so the pair's box IS the hit area. */
-
-  /* Twice the visible dot, so the target is easy without pushing the tooltip away
-     from the mark it points at (the box is also the anchor). */
-  inline-size: var(--sherpa-display-mode-size-base, 16px);
-  block-size: var(--sherpa-display-mode-size-base, 16px);
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-  pointer-events: auto;
-
-  /* The visible dot, in the slice's own hue so it reads as part of that segment. */
-  &::after {
-    content: "";
-    position: absolute;
-    inset-block-start: 50%;
-    inset-inline-start: 50%;
-    inline-size: var(--sherpa-display-mode-space-xs, 8px);
-    block-size: var(--sherpa-display-mode-space-xs, 8px);
-    translate: -50% -50%;
-    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
-    opacity: 0;
-    transition: opacity 120ms ease;
-  }
-  &:is(:hover, :focus-visible)::after { opacity: 1; }
-
-  &:focus-visible {
-    outline: none;
-    &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
-  }
 }
 
-/* HOVERING THE CHART REVEALS EVERY MARKER — the sparkline's rule, applied here.
-   A marker you can only find by already being on it is no help: the reader has to
-   sweep the chart hunting for hit areas. Hovering anywhere on the visuals shows
-   them all at once, so the reader can SEE where the data points are and then aim
-   at the one they want. Hovering a marker still reveals only ITS tooltip. */
-:host(:hover) .hotspot::after,
-:host(:focus-within) .hotspot::after { opacity: 1; }
+/* Hovering a SLICE reveals its own tip.
+   `:has()` on the wrapper, because the slice is inside <svg> and so is not the
+   tip's sibling — a `+` or `~` selector cannot cross that boundary. The index
+   pairs them: slice N lights tip N. */
+.ring-wrap:has(.slice[data-index="0"]:hover) .chart-tip[data-index="0"],
+.ring-wrap:has(.slice[data-index="1"]:hover) .chart-tip[data-index="1"],
+.ring-wrap:has(.slice[data-index="2"]:hover) .chart-tip[data-index="2"],
+.ring-wrap:has(.slice[data-index="3"]:hover) .chart-tip[data-index="3"],
+.ring-wrap:has(.slice[data-index="4"]:hover) .chart-tip[data-index="4"],
+.ring-wrap:has(.slice[data-index="5"]:hover) .chart-tip[data-index="5"],
+.ring-wrap:has(.slice[data-index="6"]:hover) .chart-tip[data-index="6"],
+.ring-wrap:has(.slice[data-index="7"]:hover) .chart-tip[data-index="7"],
+.ring-wrap:has(.slice[data-index="8"]:hover) .chart-tip[data-index="8"],
+.ring-wrap:has(.slice[data-index="9"]:hover) .chart-tip[data-index="9"],
+.ring-wrap:has(.slice[data-index="10"]:hover) .chart-tip[data-index="10"] {
+  display: flex;
+  opacity: 1;
+}
+
+/* The slice is the hover target, so it must accept the pointer. */
+.slice { cursor: pointer; }
