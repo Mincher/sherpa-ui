@@ -86,18 +86,30 @@
    `font: inherit` was wrong here: the input is a <th> child, and the UA's <th>
    default is BOLD + centred, so the filter text rendered at weight 700. The shorthand
    inherited that instead of overriding it. Every part is now stated explicitly. */
-/* The field wraps the input and its clear button so the button sits INSIDE the
-   field's box, at its trailing edge, rather than beside it in the cell. */
+/* THE FIELD IS THE INPUT'S BOX.
+   The border, padding, radius and focus ring live here, NOT on the <input>, so the
+   clear button sits inside that box rather than beside it. With the box on the
+   <input> the button was a sibling of it and therefore outside its border — which
+   read as "next to the input", not "in it". The <input> itself becomes a bare text
+   layer that fills the remaining space. */
 .filter-field {
   display: flex;
   align-items: center;
   inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: transparent;
+  box-sizing: border-box;
 }
 
 .filter-input {
   flex: 1 1 auto;
   min-inline-size: 0;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  /* No padding, border or radius: the field owns them now. */
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-style: normal;
@@ -105,9 +117,9 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   text-align: start;
   color: var(--sherpa-style-content-base, #35353d);
-  background: transparent;
-  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+
+  /* The ring is drawn on the field, so the input must not draw its own. */
+  &:focus-visible { outline: none; }
 }
 /* Figma's placeholder `value` is content/body/+2 (#b3b3c3) — a grey hint, and still
    regular weight, so the inherited <th> bold must be beaten here too. */
@@ -163,8 +175,10 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host([data-no-matches]) .no-matches { display: block; }
-.filter-input:focus-visible {
-  outline: none;
+/* Focus lights the whole FIELD, because the field is the visible box now. Keyed on
+   :focus-within so it also fires for the clear button inside it, and so the ring
+   wraps both rather than drawing a second one around the button alone. */
+.filter-field:focus-within {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }

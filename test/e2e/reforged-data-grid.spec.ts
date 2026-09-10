@@ -300,11 +300,24 @@ test('a populated filter shows a clear button that empties only its own column',
     const populated = {
       clearShown: shown(clear('name')),
       flag: cell('name').hasAttribute('data-has-value'),
-      // It sits INSIDE the field, at its trailing edge — not out in the cell.
-      insideField: (() => {
+      // It sits INSIDE the input's box, at its trailing edge. The box (border,
+      // padding, radius, focus ring) is on `.filter-field`, not the <input>, which
+      // is what puts the button within the border rather than beside it.
+      insideBorder: (() => {
         const f = cell('name').querySelector('.filter-field')!.getBoundingClientRect();
         const c = clear('name').getBoundingClientRect();
-        return c.right <= f.right + 1 && c.left >= f.left;
+        return c.left >= f.left && c.right <= f.right && c.top >= f.top && c.bottom <= f.bottom;
+      })(),
+      // …and the text stops before it, so a long value cannot run underneath.
+      textStopsBeforeButton: (() => {
+        const i = cell('name').querySelector('.filter-input')!.getBoundingClientRect();
+        const c = clear('name').getBoundingClientRect();
+        return i.right <= c.left + 1;
+      })(),
+      // The <input> must carry no box of its own, or there would be two.
+      inputHasNoBox: (() => {
+        const cs = getComputedStyle(cell('name').querySelector('.filter-input')!);
+        return cs.borderTopWidth === '0px' && cs.paddingLeft === '0px';
       })(),
       rows: sr.querySelectorAll('.body .row').length,
     };
@@ -328,7 +341,9 @@ test('a populated filter shows a clear button that empties only its own column',
 
   expect(r.populated.clearShown).toBe(true);
   expect(r.populated.flag).toBe(true);
-  expect(r.populated.insideField).toBe(true);
+  expect(r.populated.insideBorder).toBe(true);
+  expect(r.populated.textStopsBeforeButton).toBe(true);
+  expect(r.populated.inputHasNoBox).toBe(true);
   expect(r.populated.rows).toBe(2); // name "ar" AND status "trial"
 
   // Clearing empties ITS field only; the status filter still applies, so the two
