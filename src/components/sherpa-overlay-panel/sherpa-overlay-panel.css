@@ -32,17 +32,27 @@
   padding: 0;
   overflow: auto;
 
-  /* Float to the top-right of the viewport (non-modal → page stays live). */
+  /* Docked to the right edge of the viewport (non-modal → page stays live).
+     Figma pins Structure: snap-right-edge → the right-hand corners are square. */
   position: fixed;
   inset-block-start: var(--sherpa-theme-gap-lg, 12px);
-  inset-inline-end: var(--sherpa-theme-gap-lg, 12px);
+  inset-inline-end: 0;
   inset-inline-start: auto;
 
   background: var(--_surface);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
   color: var(--sherpa-style-content-base, #35353d);
-  box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
+  /* Figma pins Elevation=lg (Theme elevation "large" tokens). */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-large, 4px)
+    var(--sherpa-theme-elevation-offset-y-large, 4px)
+    var(--sherpa-theme-elevation-blur-large, 24px)
+    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-style-surface-shadow, #b2b2bf4d);
 }
 
 /* No backdrop — a non-modal panel must leave the page behind interactive. */
@@ -54,11 +64,12 @@
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
+/* Figma Container Header/Variant=Panel: padding/md 8 all round, gap/sm 4. */
 .row {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-theme-gap-md, 8px);
-  padding: var(--sherpa-theme-padding-md, 8px) var(--_pad);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding: var(--sherpa-theme-padding-md, 8px);
 }
 
 .icon {
@@ -66,8 +77,9 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  /* Figma icon: content/size/base → 14. */
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
   margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }
@@ -79,40 +91,43 @@
   min-inline-size: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
   overflow: hidden;
 }
 
+/* Title: content/link/+1, 14/20 medium. */
 .title {
   display: none;
   color: var(--_status-text, var(--sherpa-theme-content-link-1, #2b34b4));
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  line-height: 1.3;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 :host([data-title]) .title { display: block; }
 
+/* Metadata row: blocks 12px apart, each 12/16 regular content/body/+1. */
 .description {
   display: none;
   align-items: center;
-  gap: var(--sherpa-theme-gap-md, 8px);
+  gap: var(--sherpa-theme-gap-lg, 12px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.45;
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host([data-has-description]) .description { display: flex; }
 
-/* ── Toolbar (icon-glyph action buttons) ───────────────────────────────── */
+/* ── Toolbar (icon-glyph action buttons) — Figma actions slot gap/sm 4; each
+   button is Button/Type=icon at Structure xs (16×16) in the Transparent look. ── */
 .toolbar {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
   margin-inline-start: auto;
 }
 
@@ -124,8 +139,8 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
-  block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
@@ -162,11 +177,12 @@
   min-block-size: 0;
 }
 
+/* Figma Container Footer/action-bar: padding 8×16, gap/sm 4, end-aligned. */
 .footer {
   display: none;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sherpa-theme-gap-md, 8px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px) var(--_pad);
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }

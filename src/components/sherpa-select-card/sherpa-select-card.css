@@ -59,9 +59,12 @@
   padding: var(--_pad);
   min-inline-size: 0;
 }
+/* Figma Select Card body: content/body/+1 14/20 regular, content padding/lg 16. */
 .body {
   flex: 1 1 auto;
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
 /* Header collapses when it has neither slotted content nor label/description. */
@@ -109,18 +112,19 @@
 }
 
 /* ── Header text ──────────────────────────────────────────────────── */
+/* Title/description follow the canonical header roles: 14/20 medium · 12/16 regular. */
 .label {
   color: var(--_content);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: 1.4;
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 
   &:empty { display: none; }
 }
 .description {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
   font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 
   &:empty { display: none; }
 }
@@ -139,7 +143,7 @@
 /* ── Focus-within — box-shadow ring, never a bare outline (WCAG 2.4.11) ── */
 :host(:focus-within) .card {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-style-border-base, #b3b3c3);
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 :host([data-selected]:focus-within) .card {
   box-shadow: inset 0 0 0 1px var(--_accent), 0 0 0 2px var(--_accent);

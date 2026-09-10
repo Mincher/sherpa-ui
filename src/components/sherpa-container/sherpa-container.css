@@ -36,6 +36,8 @@
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_shadow: none;
   box-shadow: var(--_shadow);
+  /* Elevation shadow colour (Figma Elevation collection → style-surface/shadow). */
+  --_shadow-color: var(--sherpa-style-surface-shadow, #b2b2bf4d);
 }
 
 /* ── Variant: fill stretches to its parent; fit hugs its content ───── */
@@ -49,21 +51,37 @@
   height: auto;
 }
 
-/* ── Elevation ─────────────────────────────────────────────────────── */
-:host([data-elevation="sm"]) { --_shadow: var(--sherpa-shadow-sm, 0 1px 2px rgba(16, 16, 20, 0.08)); }
-:host([data-elevation="md"]) { --_shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(16, 16, 20, 0.1)); }
-:host([data-elevation="lg"]) { --_shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14)); }
+/* ── Elevation — the Figma Elevation modes (sm/md/lg = small/base/large), written
+   from the Theme elevation tokens because the [data-elevation] cascade vars are
+   resolved at :root (zero) and cannot be re-pointed inside a shadow root. ── */
+:host([data-elevation="sm"]) {
+  --_shadow: var(--sherpa-theme-elevation-offset-x-small, 1px) var(--sherpa-theme-elevation-offset-y-small, 1px)
+    var(--sherpa-theme-elevation-blur-small, 8px) var(--sherpa-theme-elevation-spread-small, -4px) var(--_shadow-color);
+}
+:host([data-elevation="md"]) {
+  --_shadow: var(--sherpa-theme-elevation-offset-x-base, 2px) var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px) var(--sherpa-theme-elevation-spread-base, -8px) var(--_shadow-color);
+}
+:host([data-elevation="lg"]) {
+  --_shadow: var(--sherpa-theme-elevation-offset-x-large, 4px) var(--sherpa-theme-elevation-offset-y-large, 4px)
+    var(--sherpa-theme-elevation-blur-large, 24px) var(--sherpa-theme-elevation-spread-large, -12px) var(--_shadow-color);
+}
 
 /* ── Padding scale — bound to the scoped container-space vars ──────── */
 :host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
 :host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
 
-/* ── Regions ───────────────────────────────────────────────────────── */
+/* ── Regions ───────────────────────────────────────────────────────────
+   Figma Container = Container Header instance + content slot (padding/lg 16) +
+   Container Footer instance. The header/footer COMPONENTS own their padding
+   (8 / 8×16) and their 0.5px border/default/+1 divider, so the regions here are
+   bare wrappers. Plain (non-component) slotted content gets the same padding +
+   divider via ::slotted so a bare <div slot="header"> still reads as a header. */
 .header,
 .footer {
   display: none;
-  padding: var(--_pad);
+  padding: 0;
 }
 .body {
   padding: var(--_pad);
@@ -71,14 +89,18 @@
   min-height: 0;
 }
 
-/* header/footer appear only when their slot has content; the divider uses the
-   same status-aware border as the card. */
-:host([data-has-header]) .header {
+/* header/footer appear only when their slot has content. */
+:host([data-has-header]) .header { display: block; }
+:host([data-has-footer]) .footer { display: block; }
+
+.header ::slotted(:not(sherpa-container-header)) {
   display: block;
+  padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
-:host([data-has-footer]) .footer {
+.footer ::slotted(:not(sherpa-container-footer)) {
   display: block;
+  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
@@ -110,14 +132,15 @@
 :host([data-loading]) .state-loading { display: inline-flex; }
 :host([data-has-empty]) .state-empty { display: inline-flex; }
 :host([data-has-error]) .state-error { display: inline-flex; }
-:host([data-has-error]) .state-text { color: var(--sherpa-theme-content-critical-base, #bf2c09); }
+:host([data-has-error]) .state-text { color: var(--sherpa-theme-content-critical-1, #b72200); }
 
-/* Minimal spinner (the default loading content) */
+/* Minimal spinner (the default loading content) — mirrors sherpa-loader md:
+   surface/default/+2 track, style-indicator/accent arc. */
 .spinner {
-  inline-size: 20px;
-  block-size: 20px;
-  border: 2px solid var(--sherpa-style-border-base, #b3b3c3);
-  border-block-start-color: var(--sherpa-theme-content-active-base, #8500cc);
+  inline-size: var(--sherpa-display-mode-size-md, 20px);
+  block-size: var(--sherpa-display-mode-size-md, 20px);
+  border: 2px solid var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-block-start-color: var(--sherpa-style-indicator-accent, #3b4ccd);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }

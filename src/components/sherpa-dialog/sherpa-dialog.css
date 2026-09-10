@@ -34,18 +34,28 @@
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   color: var(--sherpa-style-content-base, #35353d);
-  box-shadow: var(--sherpa-shadow-lg, 0 12px 32px rgba(16, 16, 20, 0.14));
+  /* Figma pins Elevation=lg on the Dialog (Theme elevation "large" tokens). */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-large, 4px)
+    var(--sherpa-theme-elevation-offset-y-large, 4px)
+    var(--sherpa-theme-elevation-blur-large, 24px)
+    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-style-surface-shadow, #b2b2bf4d);
 
   &::backdrop {
     background: color-mix(in srgb, #101014 45%, transparent);
   }
 }
 
-/* ── Regions ───────────────────────────────────────────────────────── */
+/* ── Regions ─────────────────────────────────────────────────────────
+   Figma Dialog = Container Header (pad 8, own 0.5 divider) + content (pad 16) +
+   Container Footer (pad 8×16, own divider). Regions are bare wrappers; a composed
+   <sherpa-container-header>/<sherpa-container-footer> brings its own chrome, and
+   plain slotted content / the data-heading label get it here. */
 .header,
 .footer {
   display: none;
-  padding: var(--_pad);
+  padding: 0;
 }
 .body {
   padding: var(--_pad);
@@ -55,15 +65,28 @@
 
 /* Header shows when the slot has content OR a data-heading is set. */
 :host([data-has-header]) .header,
-:host([data-heading]) .header {
-  display: block;
+:host([data-heading]) .header { display: block; }
+:host([data-has-footer]) .footer { display: block; }
+
+:host([data-heading]:not([data-has-header])) .header {
+  padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
-:host([data-has-footer]) .footer {
+.header ::slotted(:not(sherpa-container-header)) {
   display: block;
+  padding: var(--sherpa-theme-padding-md, 8px);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+}
+.footer ::slotted(:not(sherpa-container-footer)) {
+  display: block;
+  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
+/* Figma header title: content/body/base 14/20 medium. */
 .heading-text {
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
