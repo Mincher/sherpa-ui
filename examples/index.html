@@ -37,23 +37,25 @@
       color: var(--sherpa-theme-content-body-1, #35353d);
     }
 
-    /* ── Dashboard view ───────────────────────────────────────────── */
+    /* ── Views sit on the design system's LAYOUT GRID ─────────────────
+       `.sherpa-grid` (from @layer layout in tokens.css) is the projected track
+       system: 4 columns on mobile, 8 from 768px, 12 from 1280px, with the
+       gutters, padding and max width that come with each breakpoint.
+
+       These views previously used `repeat(auto-fit, minmax(220px, 1fr))`, which
+       ignores all of that — the column count came from an arbitrary pixel
+       minimum rather than the grid, so nothing lined up between rows or between
+       views, and a Figma column span could not be expressed at all.
+
+       Children claim tracks with data-span, which the utility clamps to the
+       current breakpoint's column count, so a 6-span wraps on mobile rather
+       than overflowing. */
     .view {
       display: flex;
       flex-direction: column;
       gap: var(--sherpa-display-mode-space-xl, 24px);
-      padding: var(--sherpa-display-mode-space-xl, 24px);
-      max-width: 1400px;
-    }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: var(--sherpa-display-mode-space-base, 16px);
-    }
-    .charts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: var(--sherpa-display-mode-space-base, 16px);
+      /* The grid rows own their own padding and max width, so the view itself
+         only supplies the vertical rhythm between them. */
     }
     sherpa-barchart, sherpa-line-chart { min-height: 220px; }
     sherpa-donut-chart, sherpa-gauge-chart { min-height: 200px; }
@@ -85,10 +87,10 @@
     }
 
     /* ── Settings view ────────────────────────────────────────────── */
+    /* Settings is a single reading column ON the grid: 8 of 12 on desktop rather
+       than a hardcoded 760px, so its measure comes from the same track system as
+       every other view and it re-flows at the breakpoints for free. */
     .settings {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: var(--sherpa-display-mode-space-2xl, 32px) var(--sherpa-display-mode-space-xl, 24px);
       display: flex;
       flex-direction: column;
       gap: var(--sherpa-display-mode-space-2xl, 32px);

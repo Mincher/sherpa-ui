@@ -308,18 +308,34 @@ function leafName(path) {
   return `--${PREFIX}${toIdent(segs)}`;
 }
 
+/**
+ * Leaf paths whose Figma FLOAT is a COUNT, not a length.
+ *
+ * Figma exports every FLOAT as DTCG `dimension`, so a count arrives looking like a
+ * length and projects with `px`. That voids any declaration expecting a number —
+ * `repeat(4px, 1fr)` is invalid, so the layout grid rendered as nothing at all.
+ * Keep this list tight: a genuine length must NOT be listed, or it loses its unit.
+ */
+const COUNT_PATHS = /(^|\/)(columns|column-count|row-count)$/;
+
 /** Walk a collection subtree → structured leaves with modes + scopes (cycle-safe). */
 function* walkLeaves(node, path = [], seen = new WeakSet()) {
   if (!node || typeof node !== 'object' || seen.has(node)) return;
   seen.add(node);
   if ('$value' in node) {
     const ext = node.$extensions?.['figma-console-mcp'] ?? {};
+    const rawPath = path.join('/');
     yield {
       path,
       name: leafName(path),
-      rawPath: path.join('/'),
+      rawPath,
       value: node.$value,
-      type: node.$type,
+      // A Figma FLOAT is exported as $type 'dimension' whether it is a LENGTH or a
+      // COUNT, and a count must project UNITLESS or the declaration is void.
+      // `layout-grid/columns` is 4 / 8 / 12 columns, and projected as `4px` it made
+      // `grid-template-columns: repeat(var(...), 1fr)` invalid — the whole layout
+      // grid silently did nothing. Same shape as the `400px` font-weight bug.
+      type: COUNT_PATHS.test(rawPath) ? 'number' : node.$type,
       modes: ext.modes ?? {},
       primaryMode: ext.primaryMode,
       scopes: ext.scopes ?? [],
@@ -1039,9 +1055,89 @@ ${darkBlocks(layers.theme.rootDark)}
 ${textClassBlocks.join('\n\n')}
 }`;
 
-// layout — grid properties + the .sherpa-view app-shell utility.
+
+// ── layout: responsive breakpoint blocks + the .sherpa-grid utility ─────────
+//
+// The Layout collection's modes ARE the breakpoints (mobile primary, then tablet /
+// desktop / wide), and each mode re-points the grid's column count, max width and
+// gutters. None of that was being emitted: only the primary (mobile) values
+// reached :root, so the grid never responded to width at all.
+//
+// Emitted as `@media (min-width: <breakpoint>)` blocks in ascending order, because
+// a mode pin has no meaning in CSS on its own — a viewport mode IS a media query.
+const layoutBreakpointBlocks = (() => {
+  const leaves = [...walkLeaves(doc.layout ?? {}, ['layout'])];
+  const bp = leaves.find((l) => l.rawPath === 'layout/breakpoint');
+  if (!bp) return [];
+  // mode → its min-width, sorted ascending so later (wider) blocks win.
+  const modes = Object.entries(bp.modes)
+    .map(([mode, value]) => ({ mode, min: Number(toCss(value, 'dimension')?.replace('px', '')) }))
+    .filter((m) => Number.isFinite(m.min))
+    .sort((a, b) => a.min - b.min);
+
+  return modes.map(({ mode, min }) => {
+    const lines = [];
+    for (const leaf of leaves) {
+      // The breakpoint itself is the QUERY, not a value to emit inside it.
+      if (leaf.rawPath === 'layout/breakpoint') continue;
+      const raw = leaf.modes?.[mode];
+      if (raw === undefined) continue;
+      const v = toCss(raw, leaf.type);
+      if (v == null) continue;
+      lines.push(`      ${leaf.name}: ${v};`);
+    }
+    if (!lines.length) return null;
+    return `  /* ${mode} — the Layout collection's own mode, as its breakpoint. */\n` +
+      `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }`;
+  }).filter(Boolean);
+})();
+
+// The grid utility every view lays itself out on. Consumes the projected values,
+// so it re-flows at each breakpoint block above with no per-view media queries.
+const gridUtilityBlock = `  /* Layout grid — the track system views place their content on.
+     \`columns\` is a COUNT, so it must project unitless (see COUNT_PATHS); as
+     \`4px\` the repeat() was invalid and the whole grid silently did nothing. */
+  .sherpa-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
+    column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
+    row-gap: var(--sherpa-layout-grid-gap-vertical, 16px);
+    /* FILL the parent up to the breakpoint's max width, then centre.
+       An auto inline margin alone does NOT do this inside a flex column: the auto
+       margin overrides the default align-items stretch, so the grid shrink-wrapped
+       to its content (358px inside a 1368px view) and every track came out a few
+       pixels wide. The explicit width restores the stretch; max-inline-size still
+       caps it at the breakpoint's max. */
+    inline-size: 100%;
+    max-inline-size: var(--sherpa-layout-grid-max-width, 480px);
+    margin-inline: auto;
+    padding: var(--sherpa-layout-grid-padding, 16px);
+    box-sizing: border-box;
+  }
+  /* Full-bleed: fills its parent instead of centring on the max width. */
+  .sherpa-grid[data-bleed] {
+    max-inline-size: none;
+    margin-inline: 0;
+  }
+  /* Span helpers — a child claims N of the current breakpoint's columns, clamped
+     so a span wider than the grid wraps rather than overflowing it. */
+  .sherpa-grid > [data-span] {
+    grid-column: span min(var(--_span), var(--sherpa-layout-grid-columns, 4));
+  }
+  .sherpa-grid > [data-span='1']  { --_span: 1; }
+  .sherpa-grid > [data-span='2']  { --_span: 2; }
+  .sherpa-grid > [data-span='3']  { --_span: 3; }
+  .sherpa-grid > [data-span='4']  { --_span: 4; }
+  .sherpa-grid > [data-span='6']  { --_span: 6; }
+  .sherpa-grid > [data-span='8']  { --_span: 8; }
+  .sherpa-grid > [data-span='12'] { --_span: 12; }
+  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }`;
+
+// layout — grid properties + breakpoints + the .sherpa-grid / .sherpa-view utilities.
 const layoutLayer = `@layer layout {
 ${rootBlock(layers.layout.root)}
+${layoutBreakpointBlocks.length ? '\n' + layoutBreakpointBlocks.join('\n\n') + '\n' : ''}
+${gridUtilityBlock}
 
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
 ${viewFrameBlock}

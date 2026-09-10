@@ -98,3 +98,53 @@ test('the icon scale IS the text scale — one step, one size', async ({ page })
   expect(r.icon['xs']).toBe('14px');
   expect(r.icon['2xs']).toBe('10px');
 });
+
+test('the layout grid projects a unitless column COUNT that responds to width', async ({ page }) => {
+  const read = async (width: number): Promise<Record<string, string | number>> => {
+    await page.setViewportSize({ width, height: 800 });
+    return page.evaluate(() => {
+      const root = getComputedStyle(document.documentElement);
+      // A grid in the light DOM, so the projected @layer layout utility applies.
+      const box = document.createElement('div');
+      box.className = 'sherpa-grid';
+      const child = document.createElement('div');
+      child.setAttribute('data-span', '6');
+      box.appendChild(child);
+      document.getElementById('root')!.replaceChildren(box);
+      const cs = getComputedStyle(box);
+      const out = {
+        columns: root.getPropertyValue('--sherpa-layout-grid-columns').trim(),
+        maxWidth: root.getPropertyValue('--sherpa-layout-grid-max-width').trim(),
+        // The resolved track list. `repeat(4px, …)` is INVALID, so a px column
+        // count silently voided the whole declaration and left one implicit track.
+        tracks: cs.gridTemplateColumns.split(' ').length,
+        gap: cs.columnGap,
+      };
+      box.remove();
+      return out;
+    });
+  };
+
+  const mobile = await read(420);
+  const tablet = await read(900);
+  const desktop = await read(1440);
+
+  // Figma's Layout collection modes ARE the breakpoints. None of them projected
+  // before: only the primary (mobile) values reached :root, so the grid never
+  // responded to width at all.
+  expect(mobile['columns']).toBe('4');
+  expect(tablet['columns']).toBe('8');
+  expect(desktop['columns']).toBe('12');
+
+  // A COUNT must be unitless. As `4px` the repeat() was invalid and the grid
+  // collapsed to a single implicit track — the whole layout silently did nothing.
+  expect(mobile['columns']).not.toContain('px');
+  expect(mobile['tracks']).toBe(4);
+  expect(tablet['tracks']).toBe(8);
+  expect(desktop['tracks']).toBe(12);
+
+  // The max width tracks the breakpoint too.
+  expect(mobile['maxWidth']).toBe('480px');
+  expect(tablet['maxWidth']).toBe('768px');
+  expect(desktop['maxWidth']).toBe('1280px');
+});

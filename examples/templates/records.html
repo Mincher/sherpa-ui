@@ -3,22 +3,29 @@
      the app-shell's default (content) slot by the SPA router in index.html.
      views/records.js builds the data and populates the grid / toolbar / dialog. -->
 <div class="view">
-  <sherpa-section-header data-heading="Customers">
-    <span slot="description">Manage customer accounts, plans and billing.</span>
-    <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
-      Add customer
-    </sherpa-button>
-  </sherpa-section-header>
+  <!-- Heading and table both sit on the layout grid, so their left edges align
+       and the table picks up the breakpoint's padding and max width. -->
+  <div class="sherpa-grid">
+    <sherpa-section-header data-span="full" data-heading="Customers">
+      <span slot="description">Manage customer accounts, plans and billing.</span>
+      <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
+        Add customer
+      </sherpa-button>
+    </sherpa-section-header>
+  </div>
 
-  <div class="panel">
-    <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-    <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
-    <sherpa-pagination
-      id="pager"
-      data-page="1"
-      data-page-size="10"
-      data-total-pages="3"
-      data-rows-options="10,25,50"></sherpa-pagination>
+  <div class="sherpa-grid">
+    <!-- A data table always wants every column it can get. -->
+    <div class="panel" data-span="full">
+      <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
+      <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
+      <sherpa-pagination
+        id="pager"
+        data-page="1"
+        data-page-size="10"
+        data-total-pages="3"
+        data-rows-options="10,25,50"></sherpa-pagination>
+    </div>
   </div>
 </div>
 

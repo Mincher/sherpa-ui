@@ -1685,13 +1685,88 @@
 @layer layout {
   :root {
   --sherpa-layout-breakpoint: 375px;
-  --sherpa-layout-grid-columns: 4px;
+  --sherpa-layout-grid-columns: 4;
   --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
   --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
   --sherpa-layout-grid-max-width: 480px;
   --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
   --sherpa-layout-grid-row-height: var(--sherpa-display-mode-space-6xl);
   }
+
+  /* tablet — the Layout collection's own mode, as its breakpoint. */
+  @media (min-width: 768px) {
+    :root {
+      --sherpa-layout-grid-columns: 8;
+      --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-max-width: 768px;
+      --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-row-height: var(--sherpa-display-mode-space-6xl);
+    }
+  }
+
+  /* desktop — the Layout collection's own mode, as its breakpoint. */
+  @media (min-width: 1280px) {
+    :root {
+      --sherpa-layout-grid-columns: 12;
+      --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-max-width: 1280px;
+      --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-row-height: var(--sherpa-display-mode-space-6xl);
+    }
+  }
+
+  /* wide — the Layout collection's own mode, as its breakpoint. */
+  @media (min-width: 1920px) {
+    :root {
+      --sherpa-layout-grid-columns: 12;
+      --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-max-width: 1600px;
+      --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-row-height: var(--sherpa-display-mode-space-6xl);
+    }
+  }
+
+  /* Layout grid — the track system views place their content on.
+     `columns` is a COUNT, so it must project unitless (see COUNT_PATHS); as
+     `4px` the repeat() was invalid and the whole grid silently did nothing. */
+  .sherpa-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
+    column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
+    row-gap: var(--sherpa-layout-grid-gap-vertical, 16px);
+    /* FILL the parent up to the breakpoint's max width, then centre.
+       An auto inline margin alone does NOT do this inside a flex column: the auto
+       margin overrides the default align-items stretch, so the grid shrink-wrapped
+       to its content (358px inside a 1368px view) and every track came out a few
+       pixels wide. The explicit width restores the stretch; max-inline-size still
+       caps it at the breakpoint's max. */
+    inline-size: 100%;
+    max-inline-size: var(--sherpa-layout-grid-max-width, 480px);
+    margin-inline: auto;
+    padding: var(--sherpa-layout-grid-padding, 16px);
+    box-sizing: border-box;
+  }
+  /* Full-bleed: fills its parent instead of centring on the max width. */
+  .sherpa-grid[data-bleed] {
+    max-inline-size: none;
+    margin-inline: 0;
+  }
+  /* Span helpers — a child claims N of the current breakpoint's columns, clamped
+     so a span wider than the grid wraps rather than overflowing it. */
+  .sherpa-grid > [data-span] {
+    grid-column: span min(var(--_span), var(--sherpa-layout-grid-columns, 4));
+  }
+  .sherpa-grid > [data-span='1']  { --_span: 1; }
+  .sherpa-grid > [data-span='2']  { --_span: 2; }
+  .sherpa-grid > [data-span='3']  { --_span: 3; }
+  .sherpa-grid > [data-span='4']  { --_span: 4; }
+  .sherpa-grid > [data-span='6']  { --_span: 6; }
+  .sherpa-grid > [data-span='8']  { --_span: 8; }
+  .sherpa-grid > [data-span='12'] { --_span: 12; }
+  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
 
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
   .sherpa-view {
