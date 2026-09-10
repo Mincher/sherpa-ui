@@ -942,7 +942,7 @@
     "dark": 56
    },
    "space/snapped": {
-    "light": -1,
+    "light": -0.5,
     "dark": -0.5
    },
    "space/none": {
@@ -1604,7 +1604,7 @@
     "dark": 64
    },
    "space/snapped": {
-    "light": -1,
+    "light": -0.5,
     "dark": -0.5
    },
    "space/none": {

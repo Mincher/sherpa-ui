@@ -437,7 +437,7 @@
     --sherpa-display-mode-size-4xl: 40px;
     --sherpa-display-mode-size-5xl: 48px;
     --sherpa-display-mode-size-6xl: 56px;
-    --sherpa-display-mode-space-snapped: -1px;
+    --sherpa-display-mode-space-snapped: -0.5px;
     --sherpa-display-mode-space-none: 0px;
     --sherpa-display-mode-space-3xs: 2px;
     --sherpa-display-mode-space-2xs: 2px;
@@ -604,7 +604,7 @@
     --sherpa-display-mode-size-4xl: 56px;
     --sherpa-display-mode-size-5xl: 64px;
     --sherpa-display-mode-size-6xl: 64px;
-    --sherpa-display-mode-space-snapped: -1px;
+    --sherpa-display-mode-space-snapped: -0.5px;
     --sherpa-display-mode-space-none: 0px;
     --sherpa-display-mode-space-3xs: 4px;
     --sherpa-display-mode-space-2xs: 8px;
@@ -719,7 +719,6 @@
   /* Density dark re-points. */
   :root[data-mode="dark"] {
     [data-density="compact"] {
-      --sherpa-display-mode-space-snapped: -0.5px;
       --sherpa-display-mode-color-neutral-color-1: #0c0b11;
       --sherpa-display-mode-color-neutral-color-2: #15151d;
       --sherpa-display-mode-color-neutral-color-3: #494954;
@@ -809,7 +808,6 @@
       --sherpa-display-mode-color-app-color-1: #15151d;
     }
     [data-density="comfortable"] {
-      --sherpa-display-mode-space-snapped: -0.5px;
       --sherpa-display-mode-color-neutral-color-1: #0c0b11;
       --sherpa-display-mode-color-neutral-color-2: #15151d;
       --sherpa-display-mode-color-neutral-color-3: #494954;
@@ -902,7 +900,6 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-mode="light"]) {
       [data-density="compact"] {
-        --sherpa-display-mode-space-snapped: -0.5px;
         --sherpa-display-mode-color-neutral-color-1: #0c0b11;
         --sherpa-display-mode-color-neutral-color-2: #15151d;
         --sherpa-display-mode-color-neutral-color-3: #494954;
@@ -992,7 +989,6 @@
         --sherpa-display-mode-color-app-color-1: #15151d;
       }
       [data-density="comfortable"] {
-        --sherpa-display-mode-space-snapped: -0.5px;
         --sherpa-display-mode-color-neutral-color-1: #0c0b11;
         --sherpa-display-mode-color-neutral-color-2: #15151d;
         --sherpa-display-mode-color-neutral-color-3: #494954;
