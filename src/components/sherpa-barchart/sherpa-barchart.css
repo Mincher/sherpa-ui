@@ -42,11 +42,8 @@
 }
 
 .plot {
-  /* Takes whatever is left beside the y-axis column, and may shrink below its
-     content width — without min-inline-size: 0 a flex item refuses to. */
-  flex: 1 1 auto;
+  position: relative;
   min-inline-size: 0;
-  block-size: var(--_plot-height);
 }
 
 .bars {
@@ -67,6 +64,18 @@
   background: none;
   font: inherit;
   cursor: pointer;
+}
+
+/* The category-label row. It mirrors `.bars` EXACTLY — same flex, same gap, same
+   `flex: 1 1 0` children — so label N sits under bar N without either row knowing
+   about the other. (A `subgrid` would be neater, but the bars are a flex row: they
+   need `align-items: stretch` against the plot height, which grid tracks would
+   fight.) The labels being a SIBLING of the plot is the point: they are below the
+   baseline rule, and a long label can no longer steal height from the bars. */
+.x-axis-row {
+  display: flex;
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 /* The bar area fills the column above the label; the bar grows from its bottom.
@@ -108,8 +117,8 @@
 }
 
 .bar-label {
-  flex-shrink: 0;
-  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
+  flex: 1 1 0;
+  min-inline-size: 0;
   text-align: center;
   font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-theme-content-body-1, #35353D);
@@ -120,54 +129,96 @@
 }
 
 /* ── Axes ────────────────────────────────────────────────────────────────
-   Matches the Figma "Chart Axis" (Orientation=vertical): a column of value
-   labels, each with a 0.5px style-border/base tick rule on its trailing edge,
-   plus an optional rotated caption beside them.
+   Figma composes a chart as ONE GRID (documented on its Chart 2D page: "a Chart
+   Axis (value axis) + a row of Data Fields + a Chart Legend"), and the axis and
+   the gridlines are the SAME equal divisions of one height.
 
-   The tick IS the label cell's own border, not a separate element. That is the
-   whole point: a tick drawn as a sibling has to be positioned to match its
-   label, and any change to the label's height silently breaks the alignment.
-   As a border it cannot drift.
+   ONE SOURCE OF TRUTH for that: every tick label is positioned at the SAME
+   percentage its gridline is drawn at, by the same formula, on the same box.
+   The label is absolutely placed at `bottom: <pct>%` inside a box the exact
+   height of the plot, and translated up by half its own line so its centre — not
+   its top — sits on the line.
 
-   Values read top-to-bottom (max first), because the y-axis is inverted relative
-   to the DOM's flow — the JS builds them in that order. */
+   My earlier attempts stacked the labels in flex and hoped the two heights would
+   agree. `space-between` places N+1 BOUNDARIES against the plot's N−1 interior
+   gridlines, so they could never line up; and a flex sibling's height had to be
+   kept in step with the plot's by hand. Positioning both off one percentage
+   removes the chance of disagreement entirely. */
+/* THE CHART GRID — Figma's own structure, and the reason the axis lines up.
+   Column 1 the rotated caption, column 2 the value labels, column 3 the plot.
+   Row 1 is the drawing area; row 2 holds the category labels, which start at the
+   PLOT column so they cannot shorten the y-axis.
+
+   The y-axis and the plot are cells of the SAME ROW, so CSS makes them the same
+   height — there is nothing to keep in step by hand. */
 .chart-body {
-  display: flex;
-  align-items: stretch;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-rows: var(--_plot-height) auto;
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-inline-size: 0;
 }
+.axis-label-y { grid-area: 1 / 1; }
+.y-axis { grid-area: 1 / 2; }
+.plot { grid-area: 1 / 3; }
+.x-axis-row { grid-area: 2 / 3; }
+
+/* Gridlines — Figma's Data Field draws one per value division, behind the bars.
+   Positioned with the SAME tickPercent the axis labels use, so a line and its
+   label cannot drift. Drawn as a repeating gradient rather than N elements: the
+   division count is the only variable, and a gradient cannot fall out of step
+   with itself. */
+.gridlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to top,
+    var(--sherpa-style-border-base, #b3b3c3) 0,
+    var(--sherpa-style-border-base, #b3b3c3) var(--sherpa-display-mode-border-width-sm, 0.5px),
+    transparent var(--sherpa-display-mode-border-width-sm, 0.5px),
+    transparent calc(100% / var(--_bands, 4))
+  );
+}
+:host(:not([data-has-y-axis])) .gridlines { display: none; }
 
 .y-axis {
   display: none;
-  flex-direction: column;
-  justify-content: space-between;
+  position: relative;
   flex: 0 0 auto;
-  /* Matches the plot exactly, so a value lines up with its own gridline. */
+  /* EXACTLY the plot's height — the labels are placed as a percentage of it. */
   block-size: var(--_plot-height);
+  /* The labels inside are ABSOLUTE, so they contribute NOTHING to this box's
+     width — the `auto` grid track collapsed to 0 and every number hung outside
+     the chart's left edge. `--_y-chars` (the longest label's character count,
+     written by the JS) reserves the room, in `ch` so it tracks the font size.
+     This is why the axis now counts towards the chart's own width. */
+  inline-size: calc(var(--_y-chars, 3) * 1ch + var(--sherpa-display-mode-space-2xs, 4px));
+  /* Room for the tick rule beside the labels (Figma's 8-wide Marker). */
+  padding-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  box-sizing: content-box;
+  border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
   /* Figma axis text: content/size/base 14 on line-height/base 20, content/body/+1. */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-/* Shown once the JS has stamped values (it sets data-has-y-axis then). A pure
-   :not([data-ticks="0"]) gate would always match, since the attribute is
-   optional — so the flag has to be written, not inferred. */
-:host([data-has-y-axis]) .y-axis { display: flex; }
+/* Written by the JS once it has stamped values — an absent data-ticks means
+   "default 4" and data-ticks="0" means none, which no selector can tell apart. */
+:host([data-has-y-axis]) .y-axis { display: block; }
 
+/* Each label sits at its own --_at percentage, centred on that line.
+   Stretched across the axis box (start AND end pinned) and right-aligned, so a
+   short label like "0" still ends flush against the axis rule and a long one
+   cannot escape the reserved width. */
 .y-tick {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  /* The Figma Marker is 8 wide; the rule is its trailing edge. */
-  padding-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
-  border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-  /* Zero height so `justify-content: space-between` places the label's CENTRE on
-     the gridline rather than its box. Without this the first and last values sit
-     half a line-height inside the plot. */
-  block-size: 0;
+  position: absolute;
+  inset-inline: 0 0;
+  inset-block-end: var(--_at, 0%);
+  translate: 0 50%;
+  text-align: end;
   white-space: nowrap;
 }
 

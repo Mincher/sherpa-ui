@@ -160,14 +160,34 @@ test('the y axis spans the data extent, not zero to max', async ({ page }) => {
       // stuck at its intrinsic width until `flex: 1 1 auto; min-inline-size: 0`.
       plotNarrowerThanHost:
         plot.getBoundingClientRect().width < el.getBoundingClientRect().width,
+      // Each label's centre must sit on its own gridline — the misalignment the
+      // user reported twice. Measured, not inferred from a shared formula.
+      offsets: ticks.map((t) => {
+        const a = axis.getBoundingClientRect();
+        const b = t.getBoundingClientRect();
+        const at = parseFloat(getComputedStyle(t).getPropertyValue('--_at')) || 0;
+        return Math.abs(b.top + b.height / 2 - (a.bottom - (a.height * at) / 100)).toFixed(1);
+      }),
+      // The axis reserves real width, so its numbers stay inside the chart rather
+      // than hanging off its left edge (absolutely-placed labels add no width of
+      // their own, which collapsed the `auto` grid track to zero).
+      ticksInsideHost: ticks.every(
+        (t) => t.getBoundingClientRect().left >= el.getBoundingClientRect().left - 0.5,
+      ),
     };
   });
 
   // Math.min(0, …) floors the SCALE at 0 for the plot, but the axis labels the
   // same window the lines are drawn in, so both agree.
+  //
+  // Stamped 0 → max in DOM order: each label is absolutely placed at its own
+  // `--_at` percentage, so DOM order carries no visual meaning (the max still
+  // renders at the TOP). `offsets` is the check that guards what is on screen.
   expect(r.values).toHaveLength(5);
-  expect(r.values[0]).toBe('1K'); // the max, compacted
-  expect(r.values[r.values.length - 1]).toBe('0');
+  expect(r.values[0]).toBe('0');
+  expect(r.values[r.values.length - 1]).toBe('1K'); // the max, compacted
+  for (const off of r.offsets) expect(Number(off)).toBeLessThan(1);
+  expect(r.ticksInsideHost).toBe(true);
   expect(r.heightsMatch).toBe(true);
   expect(r.plotNarrowerThanHost).toBe(true);
 });

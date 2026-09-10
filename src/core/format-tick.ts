@@ -22,3 +22,17 @@ export function formatTick(value: number): string {
 function trim(value: number, places = 1): string {
   return String(Number(value.toFixed(places)));
 }
+
+/**
+ * Where the i-th of `steps` divisions sits, as a percentage UP from the plot's
+ * bottom edge.
+ *
+ * Both the axis label and its gridline are placed with THIS function, on the same
+ * box, so they cannot disagree. Two separate calculations is exactly how the
+ * previous versions drifted: the gridlines drew N−1 interior lines while the axis
+ * laid out N+1 flex boundaries.
+ */
+export function tickPercent(index: number, steps: number): number {
+  if (steps <= 0) return 0;
+  return (index / steps) * 100;
+}

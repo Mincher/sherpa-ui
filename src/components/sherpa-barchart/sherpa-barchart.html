@@ -30,8 +30,19 @@
       <div class="y-axis" part="y-axis" aria-hidden="true"></div>
 
       <div class="plot" part="plot" role="img" aria-label="Bar chart">
+        <!-- One rule per value division, behind the bars (Figma's Data Field
+             gridlines). A repeating gradient, so the line spacing and the axis
+             label spacing are both just the division count. -->
+        <div class="gridlines" part="gridlines" aria-hidden="true"></div>
         <div class="bars" part="bars"></div>
       </div>
+
+      <!-- The HORIZONTAL axis: category labels in their OWN grid row, BELOW the
+           baseline rule the plot ends on. They used to live inside .bar-col, which
+           put them above that rule (inside the drawing area) and let a long label
+           shrink the bars. As a sibling row they share the plot's column tracks
+           via `subgrid`, so label N is always exactly under bar N. -->
+      <div class="x-axis-row" part="x-axis" aria-hidden="true"></div>
     </div>
   </figure>
 
@@ -44,8 +55,12 @@
   <template class="bar-tpl">
     <button class="bar-col" type="button">
       <span class="bar" part="bar"></span>
-      <span class="bar-label" part="bar-label"></span>
     </button>
+  </template>
+
+  <!-- One category label, stamped into .x-axis-row alongside its bar. -->
+  <template class="xlabel-tpl">
+    <span class="bar-label" part="bar-label"></span>
   </template>
 </template>
 <!--

@@ -11,7 +11,7 @@
  * axis stretched to data nobody can see.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick } from '../../core/format-tick.js';
+import { formatTick, tickPercent } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
@@ -97,10 +97,13 @@ export class SherpaLineChart extends SherpaElement {
 
     this.#renderYAxis(min, max);
 
-    // Grid: 4 horizontal lines.
+    // Gridlines on the SAME divisions the axis labels, via tickPercent — the
+    // interior ones only, since 0% and 100% are the plot's own edges.
     grid.replaceChildren();
-    for (let i = 1; i < 4; i++) {
-      const y = (i / 4) * 100;
+    const bands = this.#tickSteps();
+    for (let i = 1; i < bands; i++) {
+      // The SVG's y runs downward, so a percentage UP from the bottom inverts.
+      const y = 100 - tickPercent(i, bands);
       const line = document.createElementNS(SVG_NS, 'line');
       line.setAttribute('x1', '0');
       line.setAttribute('x2', '100');
@@ -164,6 +167,12 @@ export class SherpaLineChart extends SherpaElement {
    * are not where the lines actually sit. Descending because the highest value is
    * at the TOP of the plot but the FIRST child in the column.
    */
+  /** The number of value divisions — shared by the axis and the gridlines. */
+  #tickSteps(): number {
+    const requested = Number(this.dataset['ticks']);
+    return Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+  }
+
   #renderYAxis(min: number, max: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
@@ -171,20 +180,28 @@ export class SherpaLineChart extends SherpaElement {
     if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
     if (!axis || !tpl) return;
 
-    const requested = Number(this.dataset['ticks']);
-    const steps = Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+    const steps = this.#tickSteps();
     axis.replaceChildren();
     // Written, not inferred: an absent data-ticks must not mean "no axis", and a
     // data-ticks="0" must.
     this.toggleAttribute('data-has-y-axis', steps > 0 && this.#series.length > 0);
     if (steps <= 0 || !this.#series.length) return;
 
-    for (let i = steps; i >= 0; i--) {
+    // One label per division boundary at the SAME percentage its gridline uses.
+    let widest = 1;
+    for (let i = 0; i <= steps; i++) {
       const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      tick.querySelector('.y-value')!.textContent =
-        formatTick(min + ((max - min) * i) / steps);
+      tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
+      const text = formatTick(min + ((max - min) * i) / steps);
+      widest = Math.max(widest, text.length);
+      tick.querySelector('.y-value')!.textContent = text;
       axis.appendChild(tick);
     }
+    // The labels are absolutely positioned, so they add NO width of their own and
+    // the axis track collapsed to zero — the numbers then overflowed the chart's
+    // left edge. Hand CSS the longest label's length so the axis reserves real
+    // width and COUNTS towards the chart's size.
+    this.style.setProperty('--_y-chars', String(widest));
   }
 }
 

@@ -8,7 +8,7 @@
  * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick } from '../../core/format-tick.js';
+import { formatTick, tickPercent } from '../../core/format-tick.js';
 
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
@@ -44,6 +44,8 @@ export class SherpaBarchart extends SherpaElement {
   #render(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
+    const xAxis = this.$('.x-axis-row');
+    const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
     const explicitMax = Number(this.dataset['max']);
@@ -54,6 +56,7 @@ export class SherpaBarchart extends SherpaElement {
     this.#renderYAxis(max);
 
     bars.replaceChildren();
+    xAxis?.replaceChildren();
     this.#data.forEach((d, i) => {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       col.dataset['index'] = String(i);
@@ -61,8 +64,15 @@ export class SherpaBarchart extends SherpaElement {
       const bar = col.querySelector<HTMLElement>('.bar')!;
       bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
       bar.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
-      col.querySelector('.bar-label')!.textContent = d.label;
       bars.appendChild(col);
+
+      // The category label is a SIBLING of the plot now, in the x-axis row, so it
+      // renders below the baseline rule instead of on top of the bars.
+      if (xAxis && xTpl) {
+        const label = xTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        label.textContent = d.label;
+        xAxis.appendChild(label);
+      }
     });
   }
 
@@ -87,14 +97,28 @@ export class SherpaBarchart extends SherpaElement {
     // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
     // data-ticks="0" must, so the state has to be written rather than inferred.
     this.toggleAttribute('data-has-y-axis', steps > 0 && this.#data.length > 0);
+    // The gridline gradient repeats every 1/bands of the plot, so the lines and
+    // the labels are both driven by this ONE number.
+    this.style.setProperty('--_bands', String(steps));
     if (steps <= 0 || !this.#data.length) return;
 
-    // steps gridlines → steps + 1 boundaries (including 0 and max).
-    for (let i = steps; i >= 0; i--) {
+    // One label per division boundary, each positioned at the SAME percentage its
+    // gridline is drawn at (tickPercent), so the two cannot drift apart.
+    let widest = 1;
+    for (let i = 0; i <= steps; i++) {
       const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      tick.querySelector('.y-value')!.textContent = formatTick((max * i) / steps);
+      tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
+      const text = formatTick((max * i) / steps);
+      widest = Math.max(widest, text.length);
+      tick.querySelector('.y-value')!.textContent = text;
       axis.appendChild(tick);
     }
+    // The labels are absolutely positioned, so they add NO width of their own and
+    // the axis track collapsed to zero — the numbers then overflowed the chart's
+    // left edge. Hand CSS the longest label's length so the axis reserves real
+    // width and COUNTS towards the chart's size. `ch` units keep it in step with
+    // the font, and tabular-nums makes every digit that same width.
+    this.style.setProperty('--_y-chars', String(widest));
   }
 
   #onClick = (event: Event): void => {
