@@ -327,6 +327,57 @@ test('the search clear button appears with text and resets the filter', async ({
   expect(r.searchEvents).toBe(1); // clearing announces the empty query
 });
 
+test('the settings button swaps the rail to its own section list', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({
+      product: { name: 'Sherpa' },
+      sections: [{ label: 'Views', items: [{ id: 'home', label: 'Dashboard' }] }],
+      settingsSections: [
+        { label: 'Account', items: [
+          { id: 'profile', label: 'Profile' },
+          { id: 'sessions', label: 'Sessions', tier: 2 },
+        ] },
+      ],
+    });
+    await new Promise((res) => setTimeout(res, 20));
+    const s = nav.shadowRoot!;
+    const read = () => ({
+      sections: Array.from(s.querySelectorAll('.section-label')).map((el) => el.textContent),
+      rows: Array.from(s.querySelectorAll<HTMLElement>('.content .nav-row sherpa-nav-item')).map((i) => ({
+        label: i.dataset['label'],
+        tier: i.dataset['tier'] ?? '1',
+      })),
+    });
+
+    const main = read();
+    (s.querySelector('.settings') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 20));
+    const settings = { ...read(), label: s.querySelector('.product')!.textContent };
+    // Leaving settings restores the product tree.
+    (s.querySelector('.settings') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 20));
+    return { main, settings, back: read() };
+  });
+
+  expect(r.main.sections).toEqual(['Views']);
+  expect(r.main.rows).toEqual([{ label: 'Dashboard', tier: '1' }]);
+  // Settings pages live behind the header button, not as a row in the product tree.
+  expect(r.settings.label).toBe('Settings');
+  expect(r.settings.sections).toEqual(['Account']);
+  expect(r.settings.rows).toEqual([
+    { label: 'Profile', tier: '1' },
+    { label: 'Sessions', tier: '2' }, // child rows carry the Figma indent tier
+  ]);
+  expect(r.back.sections).toEqual(['Views']);
+  expect(r.back.rows).toEqual([{ label: 'Dashboard', tier: '1' }]);
+});
+
 test('the default quick items are Home · Recent · Favorites', async ({ page }) => {
   const labels = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {

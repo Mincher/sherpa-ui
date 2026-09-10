@@ -53,6 +53,12 @@ export interface NavConfig {
   product?: { name?: string; icon?: string };
   quickItems?: NavEntry[];
   sections?: NavSection[];
+  /**
+   * The section list shown while the rail is in SETTINGS mode. The settings button
+   * swaps the whole rail over to these — settings pages are a different place, not a
+   * nav item in the product tree. Omit it and the settings mode keeps the main list.
+   */
+  settingsSections?: NavSection[];
 }
 
 /** The five Figma Navigation modes. */
@@ -143,8 +149,14 @@ export class SherpaNav extends SherpaElement {
      header buttons stay in step with the attribute. */
 
   #setState(next: NavState): void {
-    if (this.state === next) return;
+    const previous = this.state;
+    if (previous === next) return;
     this.dataset['navState'] = next;
+    // Entering or leaving SETTINGS swaps which section list the rail shows.
+    if ((previous === 'settings') !== (next === 'settings')) {
+      this.#renderSections();
+      this.#applyActive();
+    }
     this.emit('nav-state-change', { state: next });
   }
 
@@ -243,7 +255,13 @@ export class SherpaNav extends SherpaElement {
     // Clear previously-stamped sections (keep the <slot> for hand-authored content).
     for (const s of this.$$('.section')) s.remove();
 
-    for (const section of this.#config.sections ?? []) {
+    // SETTINGS mode shows its own list of settings pages, not the product tree.
+    const sections =
+      this.state === 'settings' && this.#config.settingsSections?.length
+        ? this.#config.settingsSections
+        : this.#config.sections;
+
+    for (const section of sections ?? []) {
       const el = sectionTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       el.querySelector('.section-label')!.textContent = section.label ?? '';
       const items = el.querySelector('.section-items')!;

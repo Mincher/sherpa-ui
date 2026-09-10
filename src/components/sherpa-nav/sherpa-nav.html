@@ -19,12 +19,17 @@
 
   populate(config):
     {
-      product?:    { name?, icon? },
-      quickItems?: NavEntry[],          // defaults to Home · Recent · Favorites
-      sections?:   [{ label?, items: NavEntry[] }],
+      product?:          { name?, icon? },
+      quickItems?:       NavEntry[],   // defaults to Home · Recent · Favorites
+      sections?:         [{ label?, items: NavEntry[] }],
+      settingsSections?: [{ label?, items: NavEntry[] }],  // shown in SETTINGS mode
     }
-  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier?, children? }.
+  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier? }.
   A plain array is still accepted and treated as one unlabelled section.
+
+  The settings button swaps the rail to settingsSections — settings pages live behind
+  that button, not as a nav item in the product tree. `tier: 2 | 3` indents a row to
+  the Figma indent tiers (8 / 32 / 48) so child items nest under their parent.
 
   Public API:
     data-nav-state  collapsed (default) | hover | default | pinned | settings
