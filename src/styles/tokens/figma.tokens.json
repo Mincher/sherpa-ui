@@ -5877,540 +5877,14 @@
     }
   },
   "navigation": {
-    "$extensions": {
-      "figma-console-mcp": {
-        "figmaCollectionId": "VariableCollectionId:31:937",
-        "originalName": "Navigation"
-      }
-    },
-    "hasSearchInput": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "BOOLEAN",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": false
-            },
-            "default": {
-              "literal": true
-            },
-            "hover": {
-              "literal": true
-            },
-            "pinned": {
-              "literal": true
-            },
-            "settings": {
-              "literal": true
-            }
-          },
-          "modes": {
-            "collapsed": false,
-            "hover": true,
-            "pinned": true,
-            "settings": true
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:32:61745"
-        }
-      },
-      "$type": "boolean",
-      "$value": true
-    },
-    "isExpanded": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "BOOLEAN",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": false
-            },
-            "default": {
-              "literal": true
-            },
-            "hover": {
-              "literal": true
-            },
-            "pinned": {
-              "literal": true
-            },
-            "settings": {
-              "literal": true
-            }
-          },
-          "modes": {
-            "collapsed": false,
-            "hover": true,
-            "pinned": true,
-            "settings": true
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:32:61742"
-        }
-      },
-      "$type": "boolean",
-      "$value": true
-    },
-    "isHiddenCollapsed": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "BOOLEAN",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": false
-            },
-            "default": {
-              "literal": true
-            },
-            "hover": {
-              "literal": true
-            },
-            "pinned": {
-              "literal": true
-            },
-            "settings": {
-              "literal": true
-            }
-          },
-          "modes": {
-            "collapsed": false,
-            "hover": true,
-            "pinned": true,
-            "settings": true
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:32:61743"
-        }
-      },
-      "$type": "boolean",
-      "$value": true
-    },
-    "isHiddenExpanded": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "BOOLEAN",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": true
-            },
-            "default": {
-              "literal": false
-            },
-            "hover": {
-              "literal": false
-            },
-            "pinned": {
-              "literal": false
-            },
-            "settings": {
-              "literal": false
-            }
-          },
-          "modes": {
-            "collapsed": true,
-            "hover": false,
-            "pinned": false,
-            "settings": false
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:32:61744"
-        }
-      },
-      "$type": "boolean",
-      "$value": false
-    },
-    "nav-container-header-label": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "STRING",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": "Product name"
-            },
-            "default": {
-              "literal": "Product name"
-            },
-            "hover": {
-              "literal": "Product name"
-            },
-            "pinned": {
-              "literal": "Product name"
-            },
-            "settings": {
-              "literal": "Settings"
-            }
-          },
-          "modes": {
-            "collapsed": "Product name",
-            "hover": "Product name",
-            "pinned": "Product name",
-            "settings": "Settings"
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:32:61746"
-        }
-      },
-      "$type": "string",
-      "$value": "Product name"
-    },
-    "nav-container-pin-button": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "STRING",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": "default"
-            },
-            "default": {
-              "literal": "active"
-            },
-            "hover": {
-              "literal": "default"
-            },
-            "pinned": {
-              "literal": "active"
-            },
-            "settings": {
-              "literal": "active"
-            }
-          },
-          "modes": {
-            "collapsed": "default",
-            "hover": "default",
-            "pinned": "active",
-            "settings": "active"
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:36:65275"
-        }
-      },
-      "$type": "string",
-      "$value": "active"
-    },
-    "nav-container-setting-button": {
-      "$description": "Design value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "STRING",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "collapsed": {
-              "literal": "default"
-            },
-            "default": {
-              "literal": "default"
-            },
-            "hover": {
-              "literal": "default"
-            },
-            "pinned": {
-              "literal": "default"
-            },
-            "settings": {
-              "literal": "active"
-            }
-          },
-          "modes": {
-            "collapsed": "default",
-            "hover": "default",
-            "pinned": "default",
-            "settings": "active"
-          },
-          "primaryMode": "default",
-          "variableId": "VariableID:36:65274"
-        }
-      },
-      "$type": "string",
-      "$value": "default"
-    },
-    "nav-layout": {
-      "padding": {
-        "$description": "Spacing (gap / padding / size).",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "reference": "{theme.padding.none}"
-              },
-              "default": {
-                "reference": "{theme.padding.md}"
-              },
-              "hover": {
-                "reference": "{theme.padding.md}"
-              },
-              "pinned": {
-                "reference": "{theme.padding.md}"
-              },
-              "settings": {
-                "reference": "{theme.padding.md}"
-              }
-            },
-            "modes": {
-              "collapsed": "{theme.padding.none}",
-              "hover": "{theme.padding.md}",
-              "pinned": "{theme.padding.md}",
-              "settings": "{theme.padding.md}"
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "GAP"
-            ],
-            "variableId": "VariableID:32:61736"
-          }
-        },
-        "$type": "dimension",
-        "$value": "{theme.padding.md}"
-      },
-      "width": {
-        "$description": "Spacing (gap / padding / size).",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "literal": 40
-              },
-              "default": {
-                "literal": 320
-              },
-              "hover": {
-                "literal": 320
-              },
-              "pinned": {
-                "literal": 320
-              },
-              "settings": {
-                "literal": 320
-              }
-            },
-            "modes": {
-              "collapsed": 40,
-              "hover": 320,
-              "pinned": 320,
-              "settings": 320
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "WIDTH_HEIGHT"
-            ],
-            "variableId": "VariableID:32:61735"
-          }
-        },
-        "$type": "dimension",
-        "$value": 320
-      }
-    },
-    "nav-shadow": {
-      "blur": {
-        "$description": "Design value.",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "literal": 0
-              },
-              "default": {
-                "literal": 0
-              },
-              "hover": {
-                "reference": "{elevation.blur}"
-              },
-              "pinned": {
-                "literal": 0
-              },
-              "settings": {
-                "literal": 0
-              }
-            },
-            "modes": {
-              "collapsed": 0,
-              "hover": "{elevation.blur}",
-              "pinned": 0,
-              "settings": 0
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "EFFECT_FLOAT"
-            ],
-            "variableId": "VariableID:942:44658"
-          }
-        },
-        "$type": "dimension",
-        "$value": 0
-      },
-      "offset-x": {
-        "$description": "Design value.",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "literal": 0
-              },
-              "default": {
-                "literal": 0
-              },
-              "hover": {
-                "reference": "{elevation.offset-x}"
-              },
-              "pinned": {
-                "literal": 0
-              },
-              "settings": {
-                "literal": 0
-              }
-            },
-            "modes": {
-              "collapsed": 0,
-              "hover": "{elevation.offset-x}",
-              "pinned": 0,
-              "settings": 0
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "EFFECT_FLOAT"
-            ],
-            "variableId": "VariableID:942:44661"
-          }
-        },
-        "$type": "dimension",
-        "$value": 0
-      },
-      "offset-y": {
-        "$description": "Design value.",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "literal": 0
-              },
-              "default": {
-                "literal": 0
-              },
-              "hover": {
-                "reference": "{elevation.offset-y}"
-              },
-              "pinned": {
-                "literal": 0
-              },
-              "settings": {
-                "literal": 0
-              }
-            },
-            "modes": {
-              "collapsed": 0,
-              "hover": "{elevation.offset-y}",
-              "pinned": 0,
-              "settings": 0
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "EFFECT_FLOAT"
-            ],
-            "variableId": "VariableID:942:44659"
-          }
-        },
-        "$type": "dimension",
-        "$value": 0
-      },
-      "spread": {
-        "$description": "Design value.",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:31:937",
-            "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "literal": 0
-              },
-              "default": {
-                "literal": 0
-              },
-              "hover": {
-                "reference": "{elevation.spread}"
-              },
-              "pinned": {
-                "literal": 0
-              },
-              "settings": {
-                "literal": 0
-              }
-            },
-            "modes": {
-              "collapsed": 0,
-              "hover": "{elevation.spread}",
-              "pinned": 0,
-              "settings": 0
-            },
-            "primaryMode": "default",
-            "scopes": [
-              "EFFECT_FLOAT"
-            ],
-            "variableId": "VariableID:942:44660"
-          }
-        },
-        "$type": "dimension",
-        "$value": 0
-      }
-    },
     "nav-surface": {
       "default": {
-        "$description": "Surface fill.",
+        "$value": "{style.style-surface.base}",
+        "$type": "color",
         "$extensions": {
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:31:937",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-            "lastSyncedValue": {
-              "collapsed": {
-                "reference": "{style.style-surface.base}"
-              },
-              "default": {
-                "reference": "{style.style-surface.base}"
-              },
-              "hover": {
-                "reference": "{style.style-surface.base}"
-              },
-              "pinned": {
-                "reference": "{style.style-surface.base}"
-              },
-              "settings": {
-                "reference": "{theme.surface.default.+1}"
-              }
-            },
             "modes": {
               "collapsed": "{style.style-surface.base}",
               "hover": "{style.style-surface.base}",
@@ -6421,12 +5895,293 @@
             "scopes": [
               "FRAME_FILL",
               "SHAPE_FILL"
-            ],
-            "variableId": "VariableID:32:61734"
+            ]
           }
-        },
-        "$type": "color",
-        "$value": "{style.style-surface.base}"
+        }
+      }
+    },
+    "nav-layout": {
+      "width": {
+        "$value": 320,
+        "$type": "dimension",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:31:937",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "collapsed": 40,
+              "hover": 320,
+              "pinned": 320,
+              "settings": 320
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "WIDTH_HEIGHT"
+            ]
+          }
+        }
+      }
+    },
+    "nav-container-header-label": {
+      "$value": "Product name",
+      "$type": "string",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "STRING",
+          "modes": {
+            "collapsed": "Product name",
+            "hover": "Product name",
+            "pinned": "Product name",
+            "settings": "Settings"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "TEXT_CONTENT"
+          ]
+        }
+      }
+    },
+    "nav-container-setting-button": {
+      "$value": "default",
+      "$type": "string",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "STRING",
+          "modes": {
+            "collapsed": "default",
+            "hover": "default",
+            "pinned": "default",
+            "settings": "active"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    },
+    "nav-container-pin-button": {
+      "$value": "active",
+      "$type": "string",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "STRING",
+          "modes": {
+            "collapsed": "default",
+            "hover": "default",
+            "pinned": "active",
+            "settings": "active"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    },
+    "nav-shadow": {
+      "blur": {
+        "$value": 0,
+        "$type": "dimension",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:31:937",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "collapsed": 0,
+              "hover": "{elevation.blur}",
+              "pinned": 0,
+              "settings": 0
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "offset-x": {
+        "$value": 0,
+        "$type": "dimension",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:31:937",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "collapsed": 0,
+              "hover": "{elevation.offset-x}",
+              "pinned": 0,
+              "settings": 0
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "offset-y": {
+        "$value": 0,
+        "$type": "dimension",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:31:937",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "collapsed": 0,
+              "hover": "{elevation.offset-y}",
+              "pinned": 0,
+              "settings": 0
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "spread": {
+        "$value": 0,
+        "$type": "dimension",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:31:937",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "collapsed": 0,
+              "hover": "{elevation.spread}",
+              "pinned": 0,
+              "settings": 0
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      }
+    },
+    "isVisible": {
+      "$value": true,
+      "$type": "boolean",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "BOOLEAN",
+          "modes": {
+            "collapsed": false,
+            "hover": true,
+            "pinned": true,
+            "settings": true
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    },
+    "isHidden": {
+      "$value": false,
+      "$type": "boolean",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "BOOLEAN",
+          "modes": {
+            "collapsed": true,
+            "hover": false,
+            "pinned": false,
+            "settings": false
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    },
+    "indent-tier-1": {
+      "$value": "{display-mode.space.xs}",
+      "$type": "dimension",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "FLOAT",
+          "modes": {
+            "collapsed": "{display-mode.space.2xs}",
+            "hover": "{display-mode.space.xs}",
+            "pinned": "{display-mode.space.xs}",
+            "settings": "{display-mode.space.xs}"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "GAP"
+          ]
+        }
+      }
+    },
+    "indent-tier-2": {
+      "$value": "{display-mode.space.2xl}",
+      "$type": "dimension",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "FLOAT",
+          "modes": {
+            "collapsed": "{display-mode.space.2xl}",
+            "hover": "{display-mode.space.2xl}",
+            "pinned": "{display-mode.space.2xl}",
+            "settings": "{display-mode.space.2xl}"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "GAP"
+          ]
+        }
+      }
+    },
+    "indent-tier-3": {
+      "$value": "{display-mode.space.4xl}",
+      "$type": "dimension",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "FLOAT",
+          "modes": {
+            "collapsed": "{display-mode.space.4xl}",
+            "hover": "{display-mode.space.4xl}",
+            "pinned": "{display-mode.space.4xl}",
+            "settings": "{display-mode.space.4xl}"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "GAP"
+          ]
+        }
+      }
+    },
+    "headerState": {
+      "$value": "default",
+      "$type": "string",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "STRING",
+          "modes": {
+            "collapsed": "default",
+            "hover": "default",
+            "pinned": "pinned",
+            "settings": "settings"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
       }
     }
   },

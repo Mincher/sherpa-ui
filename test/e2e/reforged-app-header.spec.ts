@@ -70,27 +70,41 @@ test('data-notifications shows a count badge; 0/unset hides it', async ({ page }
   expect(r.clearedAttr).toBe(false); // 0 removes the attribute → hidden again
 });
 
-test('back / export fire their events; favourite toggles and fires', async ({ page }) => {
+test('every header action fires its event; favourite toggles and fires', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-header') as WithRender;
+    // Each action is opt-in, so turn them all on for this test.
+    for (const flag of ['back', 'ai', 'chat', 'labs', 'theme-toggle', 'account', 'help', 'menu', 'favorite-action']) {
+      el.setAttribute(`data-${flag}`, '');
+    }
+    el.setAttribute('data-notifications', '3');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
 
+    // One event per Figma action button, in header order.
+    const actions: ReadonlyArray<readonly [string, string]> = [
+      ['.back', 'back-click'],
+      ['.ai', 'ai-click'],
+      ['.chat', 'chat-click'],
+      ['.labs', 'labs-click'],
+      ['.theme-toggle', 'theme-toggle'],
+      ['.notif-btn', 'notifications-open'],
+      ['.account', 'account-click'],
+      ['.help', 'help-click'],
+      ['.menu', 'menu-click'],
+    ];
     const seen: Record<string, unknown> = {};
-    el.addEventListener('back-click', () => (seen['back'] = true));
-    el.addEventListener('view-export', () => (seen['export'] = true));
+    for (const [, event] of actions) el.addEventListener(event, () => (seen[event] = true));
     el.addEventListener('favorite-toggle', (e) => (seen['fav'] = (e as CustomEvent).detail.favorite));
 
-    (s.querySelector('.back') as HTMLElement).click();
-    (s.querySelector('.export') as HTMLElement).click();
+    for (const [sel] of actions) (s.querySelector(sel) as HTMLElement).click();
     (s.querySelector('.favorite') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 0));
 
-    return { seen, favAttr: el.hasAttribute('data-favorite') };
+    return { seen, fired: actions.map(([, e]) => e), favAttr: el.hasAttribute('data-favorite') };
   });
-  expect(r.seen['back']).toBe(true);
-  expect(r.seen['export']).toBe(true);
+  for (const event of r.fired) expect(r.seen[event]).toBe(true);
   expect(r.seen['fav']).toBe(true); // first click favourites
   expect(r.favAttr).toBe(true);
 });

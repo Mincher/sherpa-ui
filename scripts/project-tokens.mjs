@@ -170,7 +170,9 @@ const ROUTING = {
   // Component-scoped collections. Emit each component's Figma collection into its
   // own partial; non-primary modes → :host([attr="mode"]).
   input: { target: { scoped: 'sherpa-input-text' }, attr: 'data-state' },
-  navigation: { target: { scoped: 'sherpa-nav-item' }, attr: 'data-nav-state' },
+  // The Navigation collection scopes the RAIL (width, surface, shadow, header state,
+  // indent tiers) — sherpa-nav. Items read the indent tiers off the rail by cascade.
+  navigation: { target: { scoped: 'sherpa-nav' }, attr: 'data-nav-state' },
   switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-style' },
 
   // Extension-only collections (no leaves in the dump) — consumed from the cache.

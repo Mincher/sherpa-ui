@@ -80,7 +80,9 @@ test('$state data binding populates from state and re-populates on write', async
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     await new Promise((res) => setTimeout(res, 20));
-    const before = el.shadowRoot!.querySelectorAll('.nav-row').length;
+    // Scope to .content — the nav rail also stamps its default quick items
+    // (Home · Recent · Favorites) into the header, which aren't state rows.
+    const before = el.shadowRoot!.querySelectorAll('.content .nav-row').length;
 
     state.set('/items', [
       { id: 'a', label: 'Alpha' },
@@ -88,7 +90,7 @@ test('$state data binding populates from state and re-populates on write', async
       { id: 'c', label: 'Gamma' },
     ]);
     await new Promise((res) => setTimeout(res, 20));
-    const after = el.shadowRoot!.querySelectorAll('.nav-row').length;
+    const after = el.shadowRoot!.querySelectorAll('.content .nav-row').length;
     return { before, after };
   });
   expect(r.before).toBe(1);

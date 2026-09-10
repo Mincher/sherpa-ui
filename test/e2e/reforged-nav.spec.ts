@@ -30,8 +30,10 @@ test('legacy array populate() renders items and marks the active one', async ({ 
       { id: 'settings', label: 'Settings' },
     ]);
     await new Promise((res) => setTimeout(res, 10));
-    const rows = nav.shadowRoot!.querySelectorAll('.nav-row sherpa-nav-item');
-    const activeRow = nav.shadowRoot!.querySelector('.nav-row sherpa-nav-item[data-current]') as HTMLElement | null;
+    // Scope to .content — the rail also carries the default quick items
+    // (Home · Recent · Favorites) in its header, which are not section rows.
+    const rows = nav.shadowRoot!.querySelectorAll('.content .nav-row sherpa-nav-item');
+    const activeRow = nav.shadowRoot!.querySelector('.content .nav-row sherpa-nav-item[data-current]') as HTMLElement | null;
     return { count: rows.length, activeLabel: activeRow?.dataset['label'] };
   });
   expect(r.count).toBe(3); // legacy array → one unlabelled section of 3
@@ -126,25 +128,108 @@ test('typing in search fires nav-search with the query', async ({ page }) => {
   expect(r.query).toBe('rep');
 });
 
-test('data-collapsed hides the product name, search and section labels', async ({ page }) => {
+test('the rail starts collapsed: 40px, no product name, search or section labels', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
     };
-    nav.setAttribute('data-collapsed', '');
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
-    nav.populate!({ product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: '⌂' }] }] });
+    nav.populate!({ product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'fa-regular fa-house' }] }] });
     await new Promise((res) => setTimeout(res, 10));
     const s = nav.shadowRoot!;
     return {
+      state: nav.dataset['navState'],
+      width: getComputedStyle(nav).getPropertyValue('--sherpa-navigation-nav-layout-width').trim(),
       product: getComputedStyle(s.querySelector('.product')!).display,
       search: getComputedStyle(s.querySelector('.search')!).display,
       sectionLabel: getComputedStyle(s.querySelector('.section-label')!).display,
     };
   });
+  // Figma Navigation collection: the rail's resting mode is `collapsed` at 40px.
+  expect(r.state).toBe('collapsed');
+  expect(r.width).toBe('40px');
   expect(r.product).toBe('none');
   expect(r.search).toBe('none');
   expect(r.sectionLabel).toBe('none');
+});
+
+test('pointer in opens the rail (hover); pointer out collapses it again', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & { rendered?: Promise<void> };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+
+    const states: string[] = [];
+    nav.addEventListener('nav-state-change', (e) => states.push((e as CustomEvent).detail.state));
+    // The rail ANIMATES its width, so assert the projected token (the design intent)
+    // rather than the mid-transition computed width.
+    const targetWidth = (): string =>
+      getComputedStyle(nav).getPropertyValue('--sherpa-navigation-nav-layout-width').trim();
+
+    nav.dispatchEvent(new PointerEvent('pointerenter'));
+    const open = targetWidth();
+    nav.dispatchEvent(new PointerEvent('pointerleave'));
+    const shut = targetWidth();
+    return { states, open, shut };
+  });
+  expect(r.states).toEqual(['hover', 'collapsed']);
+  expect(r.open).toBe('320px'); // nav-layout/width in every open mode
+  expect(r.shut).toBe('40px');
+});
+
+test('the pin latches the rail open; settings switches mode and relabels the header', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({ product: { name: 'Sherpa' } });
+    await new Promise((res) => setTimeout(res, 10));
+    const s = nav.shadowRoot!;
+
+    (s.querySelector('.pin') as HTMLElement).click();
+    // Latched: leaving with the pointer must NOT collapse it.
+    nav.dispatchEvent(new PointerEvent('pointerleave'));
+    const pinned = {
+      state: nav.dataset['navState'],
+      width: getComputedStyle(nav).getPropertyValue('--sherpa-navigation-nav-layout-width').trim(),
+      pressed: s.querySelector('.pin')!.getAttribute('aria-pressed'),
+    };
+
+    (s.querySelector('.settings') as HTMLElement).click();
+    const settings = {
+      state: nav.dataset['navState'],
+      label: s.querySelector('.product')!.textContent,
+      pressed: s.querySelector('.settings')!.getAttribute('aria-pressed'),
+    };
+    return { pinned, settings };
+  });
+  expect(r.pinned.state).toBe('pinned');
+  expect(r.pinned.width).toBe('320px'); // stays open through a pointer leave
+  expect(r.pinned.pressed).toBe('true');
+  // Figma nav-container-header-label: only the settings mode changes the label.
+  expect(r.settings.state).toBe('settings');
+  expect(r.settings.label).toBe('Settings');
+  expect(r.settings.pressed).toBe('true');
+});
+
+test('the default quick items are Home · Recent · Favorites', async ({ page }) => {
+  const labels = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({ product: { name: 'Sherpa' } });
+    await new Promise((res) => setTimeout(res, 10));
+    return Array.from(
+      nav.shadowRoot!.querySelectorAll<HTMLElement>('.quick sherpa-nav-item'),
+    ).map((el) => el.dataset['label']);
+  });
+  expect(labels).toEqual(['Home', 'Recent', 'Favorites']);
 });

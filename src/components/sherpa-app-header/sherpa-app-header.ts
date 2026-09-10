@@ -1,24 +1,47 @@
 /**
  * sherpa-app-header — the bar across the top of the app.
  *
- * It has two rows — history and actions on top, then the view title with a
- * quick-filter toolbar — sitting above a loading bar. CSS handles the layout,
- * badge, and loading animation. JS keeps the title, icon, and notification
- * count in sync, toggles the favourite star, and fires the header's events.
- * The back, favourite, and export buttons each fire an event. If you slot in
- * a sherpa-breadcrumbs, its clicks come back out as breadcrumb-click.
+ * Two rows over a loading bar, matching the Figma App Header (150:3690):
+ *   row 1  back + breadcrumbs  ‖  Ask N-zo · chat · labs · theme · notifications ·
+ *          account · help · menu (with 1×16 dividers between the groups)
+ *   row 2  view icon + title  ·  the embedded quick-filter toolbar
  *
- * populate({ breadcrumb?, filters? }) is a shortcut: give it breadcrumb and
- * filter data and it fills in a consumer-slotted sherpa-breadcrumbs /
- * sherpa-quick-filter-toolbar for you. Slot the empty host in the light DOM
- * (<sherpa-breadcrumbs slot="breadcrumb">, <sherpa-quick-filter-toolbar
- * slot="filters">) and populate() feeds it the data.
+ * CSS owns the layout, which buttons show, the badge and the loading animation.
+ * This file keeps the title / icon / count in sync, latches the favourite star,
+ * and fires one event per action.
  *
- * @fires back-click          — detail: {}
- * @fires favorite-toggle     — detail: { favorite }
- * @fires view-export         — detail: {}
- * @fires notifications-open  — detail: {}
- * @fires breadcrumb-click    — detail: { index, label, href }
+ * populate({ breadcrumb?, filters? }) is a shortcut: slot the empty hosts in the
+ * light DOM (<sherpa-breadcrumbs slot="breadcrumbs">, <sherpa-quick-filter-toolbar
+ * slot="filters">) and populate() feeds them their data.
+ *
+ * @element sherpa-app-header
+ * @attr {string}  data-heading       the view title (data-title is accepted too)
+ * @attr {string}  data-icon          view icon — an FA class list
+ * @attr {boolean} data-back          show the back button
+ * @attr {boolean} data-ai            show the "Ask N-zo" button
+ * @attr {string}  data-ai-label      its label (default "Ask N-zo")
+ * @attr {boolean} data-chat          show the chat button
+ * @attr {boolean} data-labs          show the labs button
+ * @attr {boolean} data-theme-toggle  show the light/dark button
+ * @attr {string}  data-notifications unread count — shows the bell + badge
+ * @attr {boolean} data-account       show the account button
+ * @attr {boolean} data-help          show the help button
+ * @attr {boolean} data-menu          show the overflow menu button
+ * @attr {boolean} data-favorite-action show the favourite star
+ * @attr {boolean} data-favorite      the view is favourited
+ * @attr {boolean} data-loading       run the loading bar
+ *
+ * @fires back-click         — detail: {}
+ * @fires favorite-toggle    — detail: { favorite }
+ * @fires ai-click           — detail: {}
+ * @fires chat-click         — detail: {}
+ * @fires labs-click         — detail: {}
+ * @fires theme-toggle       — detail: {}
+ * @fires notifications-open — detail: {}
+ * @fires account-click      — detail: {}
+ * @fires help-click         — detail: {}
+ * @fires menu-click         — detail: {}
+ * @fires breadcrumb-click   — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -32,29 +55,51 @@ interface AppHeaderConfig {
 
 interface Populatable extends HTMLElement { populate?: (d: unknown) => void; rendered?: Promise<void> }
 
+/** Every plain action button: its class → the event it fires. */
+const ACTIONS: ReadonlyArray<readonly [string, string]> = [
+  ['.back', 'back-click'],
+  ['.ai', 'ai-click'],
+  ['.chat', 'chat-click'],
+  ['.labs', 'labs-click'],
+  ['.theme-toggle', 'theme-toggle'],
+  ['.notif-btn', 'notifications-open'],
+  ['.account', 'account-click'],
+  ['.help', 'help-click'],
+  ['.menu', 'menu-click'],
+];
+
 export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);
   static override html = new URL('./sherpa-app-header.html', import.meta.url);
-  static override observed = ['data-heading', 'data-icon', 'data-notifications', 'data-favorite'];
+  static override observed = [
+    'data-heading',
+    'data-title',
+    'data-icon',
+    'data-ai-label',
+    'data-notifications',
+    'data-favorite',
+  ];
 
   override onRender(): void {
     this.#sync();
-    this.$('.back')?.addEventListener('click', this.#onBack);
+    // One listener per plain action — each just announces itself.
+    for (const [sel, event] of ACTIONS) {
+      this.$(sel)?.addEventListener('click', () => this.emit(event, {}));
+    }
+    // The star is the one button that also latches state.
     this.$('.favorite')?.addEventListener('click', this.#onFavorite);
-    this.$('.export')?.addEventListener('click', this.#onExport);
-    this.$('.notif-btn')?.addEventListener('click', this.#onNotifications);
     // Re-dispatch a slotted breadcrumbs' selection as our own header event.
-    this.$('.breadcrumb')?.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
+    this.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
   }
 
   override onChange(): void {
     this.#sync();
   }
 
-  /** populate({ breadcrumb, filters }) — stamp the composed children. */
+  /** populate({ breadcrumb, filters }) — feed the composed children. */
   protected override renderData(data: unknown): void {
     const cfg = (data ?? {}) as AppHeaderConfig;
-    if (Array.isArray(cfg.breadcrumb)) this.#stamp('breadcrumb', 'sherpa-breadcrumbs', cfg.breadcrumb);
+    if (Array.isArray(cfg.breadcrumb)) this.#stamp('breadcrumbs', 'sherpa-breadcrumbs', cfg.breadcrumb);
     if (Array.isArray(cfg.filters)) this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters);
   }
 
@@ -71,9 +116,24 @@ export class SherpaAppHeader extends SherpaElement {
 
   #sync(): void {
     const title = this.$('.title');
-    if (title) title.textContent = this.dataset['heading'] ?? '';
+    if (title) title.textContent = this.dataset['heading'] ?? this.dataset['title'] ?? '';
+
+    // The view icon is a Font Awesome class list; render it as an <i>, never as text.
     const icon = this.$('.view-icon');
-    if (icon) icon.textContent = this.dataset['icon'] ?? '';
+    const glyph = this.dataset['icon'];
+    if (icon) {
+      if (glyph && /\bfa-/.test(glyph)) {
+        const i = document.createElement('i');
+        i.className = glyph;
+        i.setAttribute('aria-hidden', 'true');
+        icon.replaceChildren(i);
+      } else {
+        icon.textContent = glyph ?? '';
+      }
+    }
+
+    const aiLabel = this.$('.ai-label');
+    if (aiLabel) aiLabel.textContent = this.dataset['aiLabel'] ?? 'Ask N-zo';
 
     // Notification count → badge text; CSS shows/hides via [data-notifications].
     const count = this.dataset['notifications'];
@@ -87,17 +147,11 @@ export class SherpaAppHeader extends SherpaElement {
 
   /* ── Events ─────────────────────────────────────────────────────── */
 
-  #onBack = (): void => { this.emit('back-click', {}); };
-
   #onFavorite = (): void => {
     const favorite = !this.hasAttribute('data-favorite');
     this.toggleAttribute('data-favorite', favorite);
     this.emit('favorite-toggle', { favorite });
   };
-
-  #onExport = (): void => { this.emit('view-export', {}); };
-
-  #onNotifications = (): void => { this.emit('notifications-open', {}); };
 
   #onBreadcrumb = (event: Event): void => {
     const { index, label, href } = (event as CustomEvent).detail ?? {};

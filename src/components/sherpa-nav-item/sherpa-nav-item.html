@@ -8,7 +8,10 @@
     • promo   — a larger CTA-style row: icon, heading, description
 
   Public API:
-    data-icon        leading icon glyph (text/emoji)
+    data-icon        leading icon — a Font Awesome class list ("fa-regular fa-house");
+                     any other value is rendered as a literal text glyph
+    data-tier        nesting depth 2 | 3 — indents the row to the Figma indent tier
+                     (tier 1 is the default, no attribute needed)
     data-label       row label text
     data-badge       trailing count/badge text
     data-status-dot  render the trailing chip as a small success/online dot
@@ -45,7 +48,7 @@
   </a>
   <span class="badge" part="badge"><slot name="trailing"></slot></span>
   <button class="expand" part="expand" type="button" aria-label="Expand">
-    <span class="expand-chevron" aria-hidden="true">&#x203A;</span>
+    <i class="expand-chevron fa-regular fa-chevron-down" aria-hidden="true"></i>
   </button>
 </template>
 
@@ -56,7 +59,7 @@
       <span class="promo-heading" part="heading"></span>
       <span class="promo-description" part="description"></span>
     </span>
-    <span class="promo-chevron" part="chevron" aria-hidden="true">&#x203A;</span>
+    <i class="promo-chevron fa-regular fa-chevron-right" part="chevron" aria-hidden="true"></i>
   </button>
   <a class="promo promo-link" part="row">
     <span class="promo-icon" part="icon" aria-hidden="true"></span>
@@ -64,6 +67,6 @@
       <span class="promo-heading" part="heading"></span>
       <span class="promo-description" part="description"></span>
     </span>
-    <span class="promo-chevron" part="chevron" aria-hidden="true">&#x203A;</span>
+    <i class="promo-chevron fa-regular fa-chevron-right" part="chevron" aria-hidden="true"></i>
   </a>
 </template>

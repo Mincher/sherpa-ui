@@ -85,7 +85,12 @@ export class SherpaNavItem extends SherpaElement {
     const setAll = (sel: string, text: string): void => {
       for (const el of this.$$(sel)) el.textContent = text;
     };
-    setAll(promo ? '.promo-icon' : '.icon', this.dataset['icon'] ?? '');
+    // Icons are Font Awesome class lists ("fa-regular fa-house"); anything else is
+    // treated as a literal glyph. Writing an FA class list as text would render the
+    // class names, which is why this can't go through setAll.
+    for (const el of this.$$(promo ? '.promo-icon' : '.icon')) {
+      this.#applyIcon(el, this.dataset['icon'] ?? '');
+    }
     setAll(promo ? '.promo-heading' : '.label', this.dataset['label'] ?? '');
 
     if (promo) {
@@ -109,6 +114,18 @@ export class SherpaNavItem extends SherpaElement {
     for (const el of this.$$(promo ? '.promo' : '.row')) {
       if (current) el.setAttribute('aria-current', 'page');
       else el.removeAttribute('aria-current');
+    }
+  }
+
+  /** Render an icon as FA classes on an <i> when it looks like one, else as text. */
+  #applyIcon(host: Element, value: string): void {
+    if (/\bfa-/.test(value)) {
+      const i = document.createElement('i');
+      i.className = value;
+      i.setAttribute('aria-hidden', 'true');
+      host.replaceChildren(i);
+    } else {
+      host.textContent = value;
     }
   }
 
