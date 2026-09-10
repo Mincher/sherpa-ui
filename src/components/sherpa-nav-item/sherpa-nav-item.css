@@ -124,8 +124,10 @@
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
+  /* Figma Item Name: content/size/base 14 · weight/light 300 · line-height/base 20. */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-light, 300);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   text-align: start;
   text-decoration: none;
   border: 0;
@@ -156,23 +158,23 @@
   text-overflow: ellipsis;
 }
 
-/* Trailing chip — a round status element: strong status ink fill, white glyph.
-   Falls back to the brand-active surface when no [data-status] ancestor. */
+/* Trailing chip — Figma: a Tag/Type=full at Structure xs pinned Style:Saturated=
+   success — a 16px pill (rounding/xl), padding 2×4, 10/16 regular label, saturated
+   success fill (#20c173) with white ink. A [data-status] ancestor re-tints it via
+   --_status-surface-strong. */
 .badge {
   display: none;
   align-items: center;
   flex-shrink: 0;
-  padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
-  min-inline-size: var(--sherpa-display-mode-size-md, 20px);
-  block-size: var(--sherpa-display-mode-size-md, 20px);
+  padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   justify-content: center;
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  /* Strong active surface so the white glyph stays legible; a [data-status]
-     ancestor swaps in its own strong surface via --_status-surface-strong. */
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-active-2, #c046ff));
+  border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
+  background: var(--_status-surface-strong, var(--sherpa-theme-surface-success-2, #20c173));
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
 }
 :host([data-badge]) .badge,
 :host([data-has-trailing]) .badge { display: inline-flex; }
@@ -200,19 +202,23 @@
 }
 :host([data-expanded]) .expand-chevron { transform: rotate(90deg); }
 
-/* Success / online dot — a small round marker pinned to the success ink. */
+/* Indicator dot — Figma "Indicator (atom)/Type=dot" pinned Style=active: an 8px
+   disc, surface/active/base face with a 0.5px border-active-2 ring. */
 :host([data-status-dot]) .badge {
   min-inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
-  padding-inline: var(--sherpa-display-mode-space-none, 0px);
-  background: var(--sherpa-theme-surface-success-3, #007a45);
+  padding: 0;
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-active-2, #c046ff);
 }
 
 /* ── Hover / focus ─────────────────────────────────────────────────── */
-:host(:hover) .row {
-  background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+@supports (color: color-mix(in oklab, red, blue)) {
+  :host(:hover) .row {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
+  }
 }
 :host(:focus-visible) { outline: none; }
 :host(:focus-visible) .row,
@@ -220,29 +226,28 @@
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
-/* ── Current ───────────────────────────────────────────────────────── */
+/* ── Current — Style active: surface/active/base + content-active ink. The label
+   weight binds Theme weight/light and does not change with the mode. ───────── */
 :host([data-current]) .row {
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
   color: var(--sherpa-theme-content-active-1, #8300b6);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
-/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+/* ── Disabled — Style inactive: surface #b3b3c3 with style-content/base → #35353d
+   ink (legible dark on the grey; never opacity). ──────────────────────────── */
 :host([disabled]) { pointer-events: none; }
 :host([disabled]) :is(.row, .promo) {
   cursor: not-allowed;
-  /* Dimmed ink on a LIGHT inactive surface — never surface-default-2, which
-     equals content-body-2 and would render the text invisible. */
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 :host([disabled]) .badge {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([disabled]) .expand {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
 /* ── Promo (CTA) variant — activation target is a native <button> or <a href> ─ */
@@ -269,8 +274,12 @@
 :host([data-href]) .promo-button { display: none; }
 :host([data-href]) .promo-link { display: flex; }
 :host([data-variant="promo"]:hover) .promo {
-  background: var(--sherpa-theme-surface-default-hover, #f4f4f6);
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  :host([data-variant="promo"]:hover) .promo {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
+  }
 }
 
 .promo-icon {

@@ -87,13 +87,18 @@ test('current setter reflects to data-current and styles the row', async ({ page
     await el.rendered;
     el.current = true;
     const on = el.hasAttribute('data-current');
-    const weight = getComputedStyle(el.shadowRoot!.querySelector('.row')!).fontWeight;
+    const cs = getComputedStyle(el.shadowRoot!.querySelector('.row')!);
+    const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight };
     el.current = false;
-    return { on, off: el.hasAttribute('data-current'), weight };
+    return { on, off: el.hasAttribute('data-current'), ...styled };
   });
   expect(r.on).toBe(true);
   expect(r.off).toBe(false);
-  expect(['600', '700']).toContain(r.weight); // current → heavier label
+  // Figma Style=active: surface/active/base face + content-active ink. The label
+  // weight binds Theme weight/light (300) and does NOT change with the mode.
+  expect(r.bg).toBe('rgb(242, 223, 255)'); // #f2dfff
+  expect(r.color).toBe('rgb(131, 0, 182)'); // #8300b6
+  expect(r.weight).toBe('300');
 });
 
 test('click fires item-click with the label and href', async ({ page }) => {

@@ -13,6 +13,7 @@
   inline-size: 100%;
 }
 
+/* Figma Primary Navigation (32:43161): nav-surface/default fill, Elevation=lg. */
 .rail {
   display: flex;
   flex-direction: column;
@@ -20,28 +21,35 @@
   min-block-size: 0;
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-large, 4px)
+    var(--sherpa-theme-elevation-offset-y-large, 4px)
+    var(--sherpa-theme-elevation-blur-large, 24px)
+    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-style-surface-shadow, #b2b2bf4d);
 }
 
-/* ── Header (fixed) ─────────────────────────────────────────────────── */
-/* Figma puts the rail's divider under the header (header-bottom), not on the
-   rail's inline edge. */
+/* ── Header (fixed) — Figma: padding 0 with 8 below, gap 8, NO visible rule
+   (the header stroke paint is unset). The Navigation Header row bleeds to the
+   edges so the 40×40 brand tile sits flush in the corner. ───────────────── */
 .header {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+  padding: 0 0 var(--sherpa-display-mode-space-xs, 8px);
   flex: 0 0 auto;
 }
 
+/* Navigation Header/State=Default: gap 12, padding-right 8, 40 tall. */
 .brand {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
+  padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
   min-block-size: var(--sherpa-display-mode-size-3xl, 40px);
 }
 
+/* Branding tile: 40×40, surface/active/+3 (#8300b6), bottom-right corner rounding/lg 8. */
 .brand-icon {
   display: inline-flex;
   align-items: center;
@@ -49,15 +57,20 @@
   inline-size: var(--sherpa-display-mode-size-3xl, 40px);
   block-size: var(--sherpa-display-mode-size-3xl, 40px);
   flex-shrink: 0;
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  border-end-end-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
+  background: var(--sherpa-theme-surface-active-3, #8300b6);
+  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  font-size: var(--sherpa-display-mode-size-lg, 24px);
 
   &:not(:has(*)):empty { display: none; }
 }
 
+/* Product name: content/body/+1, content/size/large 16 · line-height/large 24 · medium. */
 .product {
   flex: 1 1 auto;
   font-size: var(--sherpa-font-size-body-large, 16px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-large, 24px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   white-space: nowrap;
   overflow: hidden;
@@ -76,20 +89,28 @@
 }
 
 /* ── Search ─────────────────────────────────────────────────────────── */
+/* Figma Input Search (Input Field atom): 32 tall, padding-left 8, gap 8, 0.5px
+   style-border/base ring, structure-rounding 4. Sits inside the 8px-padded
+   "Quick Nav Items" frame. */
 .search {
   display: none;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding-inline: var(--sherpa-display-mode-space-sm, 12px);
+  margin-inline: var(--sherpa-display-mode-space-xs, 8px);
+  padding-inline-start: var(--sherpa-structure-space-padding, 8px);
   block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border: var(--sherpa-style-border-width, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 :host([data-searchable]) .search { display: flex; }
 
-.search-icon { flex-shrink: 0; opacity: 0.6; font-size: var(--sherpa-font-size-body-small, 12px); }
+.search-icon {
+  flex-shrink: 0;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-theme-size-icon-xs, 16px);
+}
 
 .search-input {
   flex: 1 1 auto;
@@ -105,24 +126,24 @@
 }
 
 /* ── Quick items ────────────────────────────────────────────────────── */
+/* Quick Nav Items frame: padding 8 (nav-layout/padding), gap structure-space/gap 8. */
 .quick {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--sherpa-display-mode-space-xs, 8px);
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 
   &:not(:has(*)) { display: none; }
 }
 
-/* ── Content (scrolling sections) ───────────────────────────────────── */
+/* ── Content (scrolling sections) — Figma content slot: padding 0 × 8, gap 8 ── */
 .content {
   flex: 1 1 auto;
   min-block-size: 0;
   overflow-y: auto;
-  padding: var(--sherpa-display-mode-space-xs, 8px);
-  padding-block-start: 0;
+  padding: 0 var(--sherpa-display-mode-space-xs, 8px);
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-xs, 8px);
@@ -131,16 +152,18 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
+/* Section label = the Figma Navigation Section row: padding 4 × 8, content/size/xs
+   10 on 16, regular weight, content/body/+1 (the text itself is upper-case). */
 .section-label {
   margin: 0;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   font-size: var(--sherpa-font-size-body-xs, 10px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
   color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:empty { display: none; }
@@ -152,7 +175,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 .nav-row { margin: 0; }

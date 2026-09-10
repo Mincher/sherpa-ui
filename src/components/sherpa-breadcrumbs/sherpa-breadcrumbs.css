@@ -33,21 +33,31 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Separator: every crumb except the first draws a leading chevron (matches Figma),
-   sized to the icon token. */
+/* Separator: every crumb except the first draws a leading chevron-right icon
+   (Figma: a 12×12 chevron-right instance, size/icon/2xs) — Font Awesome solid. */
 .crumb + .crumb::before {
-  content: "\203A"; /* › */
+  content: "\f054"; /* chevron-right */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  line-height: 1;
   user-select: none;
 }
 
+/* Crumbs: content/link/+1 12/16 regular; no extra block padding (16px line box). */
 .link {
   color: var(--sherpa-theme-content-link-1, #2b34b4);
   font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   text-decoration: none;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  padding: var(--sherpa-display-mode-space-3xs, 2px) 0;
+  padding: 0;
   cursor: pointer;
 
   /* An anchor with an href is an active crumb — underline on hover. */

@@ -86,13 +86,19 @@ test('separators are drawn via CSS ::before on crumbs after the first', async ({
     el.populate([{ label: 'A', href: '/a' }, { label: 'B', href: '/b' }, { label: 'C' }]);
     await new Promise((rr) => requestAnimationFrame(rr));
     const crumbs = Array.from(el.shadowRoot!.querySelectorAll('.crumb'));
-    const sep = (n: Element) => getComputedStyle(n, '::before').content;
+    const sep = (n: Element) => {
+      const cs = getComputedStyle(n, '::before');
+      return { content: cs.content, font: cs.fontFamily };
+    };
     return { first: sep(crumbs[0]!), second: sep(crumbs[1]!), third: sep(crumbs[2]!) };
   });
-  // First crumb: no separator; subsequent crumbs render a chevron "›" (matches Figma).
-  expect(r.first).toMatch(/none|""|normal/);
-  expect(r.second).toContain('›');
-  expect(r.third).toContain('›');
+  // First crumb: no separator; subsequent crumbs render the Font Awesome chevron-right
+  // glyph (U+F054) — Figma's 12×12 chevron-right instance.
+  const CHEVRON = '""';
+  expect(r.first.content).toMatch(/none|""|normal/);
+  expect(r.second.content).toBe(CHEVRON);
+  expect(r.third.content).toBe(CHEVRON);
+  expect(r.second.font).toContain('Font Awesome 6 Free');
 });
 
 test('clicking a crumb fires breadcrumb-select with index/label/href', async ({ page }) => {

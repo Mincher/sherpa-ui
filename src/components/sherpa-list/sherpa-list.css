@@ -35,11 +35,14 @@
   flex-direction: column;
 }
 
-/* ── Bordered — container surface fill + container border ───────────── */
-:host([data-variant="bordered"]) {
+/* ── Default = the Figma List (49:66025): a BORDERED, rounded surface (style-
+   surface/base fill, 0.5 style-border/base ring, structure-rounding 4) with 1px
+   border/default/+2 dividers between rows. `bordered` is kept as an alias; only
+   data-variant="plain" opts out of the box + dividers. ───────────────────── */
+:host(:not([data-variant="plain"])) {
   --_row-gap: 0;
 }
-:host([data-variant="bordered"]) .body {
+:host(:not([data-variant="plain"])) .body {
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border: var(--sherpa-style-border-width, 0.5px) solid
     var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
@@ -47,15 +50,10 @@
   overflow: hidden;
 }
 
-/* ── Divided — hairlines between adjacent rows (both fill modes) ──────
-   This is the DEFAULT look (matches Figma): dividers show unless the host
-   opts out with data-variant="plain". Bordered also shows dividers.        */
-:host(:not([data-variant="plain"])) {
-  --_row-gap: 0;
-}
+/* Dividers — Figma: 1px rectangles in border/default/+2 between adjacent rows. */
 :host(:not([data-variant="plain"])) .body > .row-item:not(:last-child),
 :host(:not([data-variant="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 

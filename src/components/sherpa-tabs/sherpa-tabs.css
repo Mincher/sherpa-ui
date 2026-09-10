@@ -19,11 +19,14 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
-/* ── Tab strip ─────────────────────────────────────────────────────────── */
+/* ── Tab strip — Figma Tab Group: ONE 0.5px border/default/+2 rule under the whole
+   strip; each Tab's own 2px bottom stroke is TRANSPARENT until active. ─────── */
 .strip {
   display: flex;
   align-items: stretch;
   justify-content: space-between;
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 .tabs {
@@ -51,8 +54,9 @@
   margin: 0;
   background: transparent;
   border: none;
-  border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+  /* Transparent look: style-border/base → #ffffff00 at rest (border/width/lg 2). */
+  border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
+  margin-block-end: calc(-1 * var(--sherpa-display-mode-border-width-sm, 0.5px)); /* sit on the strip rule */
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
