@@ -113,7 +113,21 @@ no-op** in this codebase (see the modern-CSS upgrade memory), so check why befor
 assuming it works — it may need the value in a typed `@property` to round rather
 than being dropped.
 
-### 4. Data grid: Add Customer does not add data
+### 4. App header — another design review pass
+
+**Will:** "still not to spec."
+
+No specifics given, so start by data-matching it against Figma rather than
+guessing: read the App Header node's own values (fills, padding, gaps, sizes,
+text bindings) and diff them against `sherpa-app-header.css` property by
+property. That method — Figma node DATA, not screenshots — is what found the
+systemic drift in the earlier visual-diff pass.
+
+Recent header work that may or may not be the issue: the bottom border was
+removed, and it was made sticky with an elevation drop shadow on scroll-under
+(CSS scroll-state). Check those first, then widen.
+
+### 5. Data grid: Add Customer does not add data
 
 Recorded in [BACKLOG.md](BACKLOG.md). A fix must cover five things: the whole
 record via `FormManager`, where the row lands against the active sort, whether an
