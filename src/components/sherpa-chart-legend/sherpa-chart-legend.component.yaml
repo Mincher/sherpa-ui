@@ -55,20 +55,7 @@ props:
     values:
       - vertical
       - horizontal
-    description: "vertical  | horizontal PLACEMENT follows the orientation, and the two are not interchangeable:"
-  - $type: prop
-    name: horizontal
-    type: string
-    description: >-
-      every entry on ONE row, Figma's 9-column variant → sits BELOW a chart, as a sibling after it.
-      A vertical legend under a chart wastes a column of height; a horizontal one beside it is too
-      wide to fit.
-  - $type: prop
-    name: vertical
-    type: string
-    description: >-
-      one entry per row, three shared tracks → sits BESIDE a chart (slot it into the chart's
-      [slot=legend]).
+    description: vertical  | horizontal
 states:
   - $type: state
     name: horizontal

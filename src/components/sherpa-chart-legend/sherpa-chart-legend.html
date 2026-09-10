@@ -22,16 +22,18 @@
   prototype. Clicking one toggles it and emits legend-item-click, which the page
   wires to the chart's setSeriesHidden / setSliceHidden.
 
+  PLACEMENT follows the orientation, and the two are not interchangeable. A
+  VERTICAL legend is one entry per row on three shared tracks, so it sits BESIDE a
+  chart — slot it into the chart's [slot=legend]. A HORIZONTAL one puts every entry
+  on ONE row (Figma's 9-column variant), so it sits BELOW a chart, as a sibling
+  after it. A vertical legend under a chart wastes a column of height; a horizontal
+  one beside it is too wide to fit.
+
+  Orientation is handled entirely in CSS, so the component observes no attributes:
+  changing data-orientation re-styles with no re-render.
+
   Public API:
     data-orientation  vertical (default) | horizontal
-
-  PLACEMENT follows the orientation, and the two are not interchangeable:
-    vertical    one entry per row, three shared tracks → sits BESIDE a chart
-                (slot it into the chart's [slot=legend]).
-    horizontal  every entry on ONE row, Figma's 9-column variant → sits BELOW a
-                chart, as a sibling after it. A vertical legend under a chart
-                wastes a column of height; a horizontal one beside it is too wide
-                to fit.
 
   Fires: legend-item-click — detail: { index, label, active }
 -->
