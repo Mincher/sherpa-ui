@@ -24,7 +24,14 @@
 
   Public API:
     data-orientation  vertical (default) | horizontal
-                      vertical stacks the entries; horizontal flows them across.
+
+  PLACEMENT follows the orientation, and the two are not interchangeable:
+    vertical    one entry per row, three shared tracks → sits BESIDE a chart
+                (slot it into the chart's [slot=legend]).
+    horizontal  every entry on ONE row, Figma's 9-column variant → sits BELOW a
+                chart, as a sibling after it. A vertical legend under a chart
+                wastes a column of height; a horizontal one beside it is too wide
+                to fit.
 
   Fires: legend-item-click — detail: { index, label, active }
 -->

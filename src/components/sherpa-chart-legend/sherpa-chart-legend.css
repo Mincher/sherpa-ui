@@ -29,21 +29,26 @@
 
 .legend {
   display: grid;
-  /* swatch (fixed) · category (flexible) · value (hugs its digits) */
-  grid-template-columns: auto 1fr auto;
+  /* swatch (fixed) · category · value — all THREE hug their content.
+     `1fr` on the category made the label track swallow the whole parent (1200px
+     for a 10-character label), so the legend could not sit beside a chart. Figma
+     sizes the Category cell to its text; the legend is content-width. */
+  grid-template-columns: auto auto auto;
+  justify-content: start;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
   row-gap: var(--sherpa-display-mode-space-2xs, 4px);
   margin: 0;
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Horizontal: entries flow ACROSS instead of stacking, so each one needs its own
-   three tracks rather than sharing the parent's column. */
+/* Horizontal: Figma's variant is ONE row of 9 columns — three cells per entry,
+   every entry in row 0 — so the entries flow across instead of stacking. The gap
+   stays space/xs 8: in a single row the entry separation IS the column gap, so a
+   wider one would space the swatch from its own label too. */
 :host([data-orientation="horizontal"]) .legend {
   grid-template-columns: none;
   grid-auto-flow: column;
   justify-content: start;
-  column-gap: var(--sherpa-display-mode-space-base, 16px);
 }
 
 /* ── Entry ───────────────────────────────────────────────────────────────

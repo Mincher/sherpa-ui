@@ -115,6 +115,7 @@ export async function init(root) {
     customElements.whenDefined('sherpa-gauge-chart'),
     customElements.whenDefined('sherpa-line-chart'),
     customElements.whenDefined('sherpa-chart-legend'),
+    customElements.whenDefined('sherpa-container-header'),
     customElements.whenDefined('sherpa-key-value-list'),
   ]);
 

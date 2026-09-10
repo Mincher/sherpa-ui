@@ -55,9 +55,15 @@
   min-inline-size: 0;
   padding: var(--sherpa-structure-space-padding, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
-  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  /* Figma binds the card to style-surface/base +1 — the PALE tint one step up
+     from the base, which is --_status-surface-subtle in the cascade. It was on
+     --_status-surface, and for `success` that resolves to surface/default/base:
+     plain WHITE, so the tile looked untinted whatever its status.
+     A 0.5px border in the same +1 family, so the card reads as a card on a white
+     panel even where its fill is nearly white (the default, unstatused case). */
+  background: var(--_status-surface-subtle, var(--sherpa-style-surface-base-1, #f0f0ff));
   border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
-    var(--_status-border, transparent);
+    var(--_status-border-strong, var(--sherpa-style-border-base-1, #e8e8f6));
 }
 
 .figures {

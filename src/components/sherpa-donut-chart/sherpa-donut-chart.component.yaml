@@ -104,6 +104,7 @@ events:
 tokens:
   layout.gap: "{sherpa.display-mode-space-lg}"
   slice.stroke: "{sherpa.data-viz-series-1}"
+  slice-outline.stroke: "{sherpa.data-viz-series-1}"
   value.font-size: "{sherpa.theme-content-size-h1}"
   value.font-weight: "{sherpa.font-weight-semibold}"
   value.line-height: "{sherpa.theme-content-line-height-h1}"

@@ -28,19 +28,19 @@
   <!-- Charts on the same grid: 4 of 12 on desktop (three across). -->
   <div class="sherpa-grid">
     <div class="panel" data-span="4">
-      <h3>Alerts by category</h3>
+      <sherpa-container-header data-heading="Alerts by category"></sherpa-container-header>
       <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
     </div>
 
     <div class="panel" data-span="4">
-      <h3>Endpoints by OS</h3>
+      <sherpa-container-header data-heading="Endpoints by OS"></sherpa-container-header>
       <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
         <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
       </sherpa-donut-chart>
     </div>
 
     <div class="panel" data-span="4">
-      <h3>Storage used</h3>
+      <sherpa-container-header data-heading="Storage used"></sherpa-container-header>
       <sherpa-gauge-chart
         id="gauge"
         data-min="0"
@@ -51,9 +51,11 @@
 
     <!-- A time series needs horizontal room, so it takes 8 of 12. -->
     <div class="panel" data-span="8">
-      <h3>Sessions vs. incidents</h3>
+      <sherpa-container-header data-heading="Sessions vs. incidents"></sherpa-container-header>
       <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
-      <sherpa-chart-legend id="line-legend"></sherpa-chart-legend>
+      <!-- Horizontal legends go BELOW their chart (vertical ones go beside it), so
+           this one is a sibling after the chart rather than a slotted child. -->
+      <sherpa-chart-legend id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
     </div>
   </div>
 
@@ -61,7 +63,7 @@
        OUTSIDE .view in its own wrapper, so it did not share the view's rhythm. -->
   <div class="sherpa-grid">
     <div class="panel" data-span="full">
-      <h3>Summary</h3>
+      <sherpa-container-header data-heading="Summary"></sherpa-container-header>
       <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
     </div>
   </div>

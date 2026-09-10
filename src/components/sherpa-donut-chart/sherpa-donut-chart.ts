@@ -11,6 +11,11 @@
  * conic-gradient (the earlier approach) could not: a gradient is one paint with no
  * per-slice element at all.
  *
+ * Figma gives each slice a translucent FILL and a solid 1px STROKE. One stroked
+ * circle carries a single paint, so each slice is TWO arcs on the same geometry:
+ * a wide translucent band (the fill) and a thin solid outline drawn over it. The
+ * outline is what makes a small slice legible against its neighbour.
+ *
  * DIVERGENCE: Figma's slices have a 2px cornerRadius. An SVG stroke has caps, not
  * corners, so that exact chamfer is not expressible here — `stroke-linecap: round`
  * looks like it should help but adds a HALF-STROKE dome at each end (7.5 of a
@@ -45,6 +50,8 @@ const CENTRE = BOX / 2;
 const GAP = 1;
 /** A slice never shrinks below this, so a 0.1% share is still visible. */
 const MIN_ARC = 0.5;
+/** The solid outline's width — Figma strokes each slice 1px on a 200px chart. */
+const OUTLINE = 0.5;
 
 export class SherpaDonutChart extends SherpaElement {
   static override css = new URL('./sherpa-donut-chart.css', import.meta.url);
@@ -154,8 +161,28 @@ export class SherpaDonutChart extends SherpaElement {
       const n = ((slice.colorIndex ?? i + 1) - 1) % 11 + 1;
       arc.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
-
       group.appendChild(arc);
+
+      // The solid outline: the SAME dash and rotation on the band's two edges, so
+      // it traces the slice's boundary. Figma strokes each slice 1px INSIDE, so
+      // the outline sits just within the band rather than straddling its edge.
+      for (const edge of [inner, outer]) {
+        if (edge <= 0) continue; // a pie has no inner edge to trace
+        const edgeRadius = edge === inner ? inner + OUTLINE / 2 : outer - OUTLINE / 2;
+        const line = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGCircleElement;
+        line.classList.add('slice-outline');
+        line.classList.remove('slice');
+        line.setAttribute('r', String(edgeRadius));
+        line.setAttribute('stroke-width', String(OUTLINE));
+        // Its own circumference, so the dash still covers exactly this slice.
+        const edgeCircumference = 2 * Math.PI * edgeRadius;
+        const edgeLength = Math.max(share * edgeCircumference - GAP, MIN_ARC);
+        line.setAttribute('stroke-dasharray', `${edgeLength} ${edgeCircumference}`);
+        line.setAttribute('transform', `rotate(${acc * 360 - 90} ${CENTRE} ${CENTRE})`);
+        line.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+        group.appendChild(line);
+      }
+
       acc += share;
     });
   }

@@ -89,6 +89,16 @@
   }
 }
 
+/* The solid outline tracing each slice's inner and outer edge — Figma strokes
+   every slice 1px in its own hue on top of the 60% fill. It is a SECOND arc on the
+   same geometry (see the TS), because one stroked circle carries one paint.
+   Not a pointer target: the fill band beneath it already is. */
+.slice-outline {
+  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  stroke-linecap: butt;
+  pointer-events: none;
+}
+
 /* A slice lifts to full strength on hover, so the pointer target is legible. */
 .slice:hover { opacity: 1; stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)); }
 .slice:focus-visible {
