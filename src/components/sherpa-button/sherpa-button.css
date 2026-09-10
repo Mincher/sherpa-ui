@@ -87,9 +87,11 @@
   /* DEFAULT appearance ("secondary"): neutral Style surface + a visible grey border
      + dark ink. When a look tier is active the cascade re-points --_status-* and the
      refinements below adjust the border. */
-  --_surface: var(--_status-surface, var(--sherpa-theme-surface-default-base, #ffffff));
-  --_content: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  /* Bound at the STYLE tier, exactly as Figma binds the Button (style-surface/base,
+     style-content/base, style-border/base) — status/look modes cascade at this tier. */
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
 }
 
 .trigger {
@@ -99,14 +101,15 @@
   gap: var(--sherpa-button-space-gap, 8px);
   inline-size: 100%;
   min-block-size: var(--sherpa-button-size-height, 32px);
-  padding-inline: var(--sherpa-button-space-padding, 12px);
+  padding-inline: var(--sherpa-button-space-padding, 8px);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   border-radius: inherit;
   margin: 0;
   font-family: inherit;
   font-size: var(--sherpa-button-font-size, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: 1;
+  /* Figma label: structure-font/weight → 400 Regular; structure-font/line-height → 20px. */
+  font-weight: var(--sherpa-structure-font-weight, 400);
+  line-height: var(--sherpa-button-font-line-height, 20px);
   color: var(--_content);
   background: var(--_surface);
   cursor: pointer;
@@ -161,8 +164,8 @@
 
 .icon {
   display: none;
-  inline-size: var(--sherpa-button-size-icon, 16px);
-  block-size: var(--sherpa-button-size-icon, 16px);
+  inline-size: var(--sherpa-button-size-icon, 14px);
+  block-size: var(--sherpa-button-size-icon, 14px);
   font-style: normal;
   line-height: 1;
   color: var(--_content);
