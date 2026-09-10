@@ -26,57 +26,50 @@
 /**
  * sherpa-nav-item — presentation.
  *
- * A horizontal row: leading icon → label → trailing badge/status dot. The host
- * is the interactive element; the inner anchor carries the layout. The current
- * row (data-current) takes the brand-active fill + active ink; disabled uses
- * inactive tokens (never opacity). A "promo" variant renders a larger CTA row.
+ * Data-matched to the Figma "Navigation Item" (32:43138):
+ *   row box   HOST · 24 tall (size/lg) · pad 0 × indent-tier / space/xs 8
+ *             · gap/md 8 · structure rounding 4 · style-surface/base face
+ *   Icon      16 square (size/icon/xs), OUTSIDE `content`
+ *   content   FILL + grow, gap 8, bound to Navigation::isVisible
+ *   Item Name content/size/base 14 on line-height/base 20, weight/LIGHT 300
+ *   Tag       Tag/Type=full at Structure xs, Style:Saturated=success — a 16-tall
+ *             pill (rounding/xl 16), pad 2×4, 10/16 regular, #20c173 face
+ *   chevron   16-square chevron-down Icon, last in `content` (hasChildren)
+ *   dot       Indicator (atom)/Type=dot pinned Style=active — 8px disc,
+ *             surface/active/base face + 0.5 border-active-2 ring, OUTSIDE `content`
  *
- * Colour: the active row fills surface-active-base with content-active-base ink;
- * hover fills surface-default-hover; the trailing chip is a round status element
- * filled by the look-tier cascade (--_status-surface-strong) with a white glyph,
- * and a success dot pins the strong success surface. Geometry chains to the
- * shared Structure/Theme tokens; logical properties throughout.
+ * WHY THE HOST IS THE BOX. Figma's row box contains the tag and the chevron. When
+ * the inner <button> was the box, the tag was its sibling and painted outside the
+ * row's background, radius and hover. The host owns the box; the inner controls are
+ * transparent and only carry their own hit area.
+ *
+ * WHAT COLLAPSES. `content` is the isVisible-bound node, so label + tag + chevron
+ * hide together with the rail; the leading icon and the dot are outside it and stay.
  */
 
-/* Figma Navigation Item is ONE 24-tall row: icon · label · [tag] · [chevron], all
-   inside the row box. The host is that row, so it must never wrap — a badge or
-   chevron dropping to a second line was the visible bug. */
+/* THE ROW BOX. Figma: 24 tall, gap/md 8, padding 0 × [indent-tier-N, space/xs 8],
+   structure rounding, never wrapping (a tag or chevron dropping to a second line
+   was a visible bug). */
 :host {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   gap: var(--sherpa-theme-gap-md, 8px);
   block-size: var(--sherpa-display-mode-size-lg, 24px);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-}
-
-/* ── Default row — the activation target is a native <button> or <a href> ───
-   Figma Navigation Item: 24 tall, gap/md 8, padding-right space/xs 8, padding-LEFT
-   = the rail's indent tier (8 / 32 / 48 for tiers 1–3, tightening to 4 when the rail
-   is collapsed). The tier vars come from the rail's projected Navigation region and
-   inherit through the shadow boundary. */
-.row {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-theme-gap-md, 8px);
+  /* Leading inset = the rail's indent tier (mode-switched); trailing = space/xs 8.
+     Both are overridable so the rail can square the row up when it is icon-only
+     in the 40px collapsed state — see the collapsed block in sherpa-nav.css. */
   padding-inline: var(--_indent, var(--sherpa-navigation-indent-tier-1, 8px))
-    var(--sherpa-display-mode-space-xs, 8px);
-  padding-block: 0;
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+    var(--_pad-end, var(--sherpa-display-mode-space-xs, 8px));
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: inherit;
-  /* Figma Item Name: content/size/base 14 · weight/light 300 · line-height/base 20. */
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  /* Figma Item Name: content/size/base 14 · weight/light 300 · line-height/base 20.
+     Set on the box so the label, the tag and both controls all inherit it. */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-light, 300);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  text-align: start;
-  text-decoration: none;
-  border: 0;
-  background: none;
-  cursor: pointer;
+  box-sizing: border-box;
   transition: background-color 100ms ease, color 100ms ease;
 }
 
@@ -84,12 +77,35 @@
 :host([data-tier="2"]) { --_indent: var(--sherpa-navigation-indent-tier-2, 32px); }
 :host([data-tier="3"]) { --_indent: var(--sherpa-navigation-indent-tier-3, 48px); }
 
-/* Show the <button> for a plain row, the <a href> for a real link. */
-.row-link { display: none; }
-:host([data-href]) .row-button { display: none; }
-:host([data-href]) .row-link { display: flex; }
+/* ── The navigate target — a native <button> or <a href> ──────────────────
+   Transparent and unpadded: the HOST is the box. This element exists only to be
+   the accessible, keyboard-reachable control, and to stretch across the row so
+   the whole row is clickable. */
+.nav {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  align-self: stretch;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
 
-/* Figma Icon: size/icon/xs → 16 square. */
+/* Show the <button> for a plain row, the <a href> for a real link. */
+.nav-link { display: none; }
+:host([data-href]) .nav-button { display: none; }
+:host([data-href]) .nav-link { display: flex; }
+
+/* Figma Icon: size/icon/xs → 16 square. OUTSIDE `content`, so it survives the
+   collapsed rail — in a 40px rail the icon IS the row. */
 .icon {
   display: none;
   align-items: center;
@@ -102,9 +118,19 @@
 }
 :host([data-icon]) .icon { display: inline-flex; }
 
-/* The label collapses with the rail (the rail's projected isVisible flag). */
+/* Figma `content` — the FILL group holding the label and the tag, and the node
+   bound to Navigation::isVisible. One flag hides the label AND the tag AND (via
+   the sibling rule further down) the chevron, exactly as the design does. */
+.content {
+  display: var(--_is-visible, flex);
+  align-items: center;
+  gap: var(--sherpa-theme-gap-md, 8px);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* Item Name — grows to fill, ellipsises rather than wrapping the row. */
 .label {
-  display: var(--_is-visible, block);
   flex: 1 1 auto;
   min-inline-size: 0;
   white-space: nowrap;
@@ -123,17 +149,18 @@
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
-/* Trailing chip — Figma: a Tag/Type=full at Structure xs pinned Style:Saturated=
-   success — a 16px pill (rounding/xl), padding 2×4, 10/16 regular label, saturated
-   success fill (#20c173) with white ink. A [data-status] ancestor re-tints it via
-   --_status-surface-strong. */
+/* Trailing Tag — Figma Tag/Type=full at Structure xs pinned Style:Saturated=success:
+   a 16-tall pill (rounding/xl 16), padding 2×4, 10/16 regular, saturated success
+   face (#20c173) with white ink. A [data-status] ancestor re-tints it through
+   --_status-surface-strong. It lives INSIDE `content`, so the row's own 8px
+   padding-right insets it and the row background sits behind it. */
 .badge {
   display: none;
   align-items: center;
+  justify-content: center;
   flex: 0 0 auto; /* never grow, never shrink, never wrap */
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
-  justify-content: center;
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
   background: var(--_status-surface-strong, var(--sherpa-theme-surface-success-2, #20c173));
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
@@ -141,82 +168,122 @@
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
 }
+/* The tag rides inside `content`, which the rail's isVisible flag hides — but
+   `content` is a flex box, so its own `display: none` is what removes the tag.
+   The tag ALSO needs the flag directly: `display` on a child is not inherited, and
+   a stale `inline-flex` here would keep a 40px collapsed row trying to fit a pill. */
 :host([data-badge]) .badge,
 :host([data-has-trailing]) .badge { display: var(--_is-visible, inline-flex); }
 
-/* Trailing expand chevron — shown for expandable/nested items. A caret that
-   rotates 90deg when the item is expanded. CSS owns visibility + rotation. */
+/* Trailing chevron — Figma's hasChildren Icon, a 16-square chevron-down that
+   rotates when the row is expanded. A sibling of `.nav` in the markup (an
+   interactive element may not nest inside another), so it needs the isVisible flag
+   applied directly rather than inheriting it from `content`. */
 .expand {
   display: none;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   inline-size: var(--sherpa-theme-size-icon-xs, 16px);
   block-size: var(--sherpa-theme-size-icon-xs, 16px);
   padding: var(--sherpa-display-mode-space-none, 0px);
   border: 0;
   background: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: inherit;
+  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  line-height: 1;
   cursor: pointer;
 }
 :host([data-expandable]) .expand { display: var(--_is-visible, inline-flex); }
 
-/* Figma uses a chevron-DOWN glyph on expandable rows, so expanding flips it. */
 .expand-chevron {
   display: inline-flex;
   transition: transform 100ms ease;
 }
+/* Figma ships the glyph pointing DOWN on a collapsed parent, so expanding flips it. */
 :host([data-expanded]) .expand-chevron { transform: rotate(180deg); }
 
-/* Indicator dot — Figma "Indicator (atom)/Type=dot" pinned Style=active: an 8px
-   disc, surface/active/base face with a 0.5px border-active-2 ring. It rides at the
-   END of the row (Figma puts it last, after the content group). */
-:host([data-status-dot]) .badge {
-  display: inline-flex; /* the dot survives the collapsed rail — it is the signal */
-  align-self: center;
-  min-inline-size: var(--sherpa-display-mode-size-2xs, 8px);
+/* Indicator (atom)/Type=dot pinned Style=active — an 8px disc, surface/active/base
+   face with a 0.5 border-active-2 ring. OUTSIDE `content` in Figma, so it survives
+   the collapsed rail: it is the signal that something needs attention. */
+.dot {
+  display: none;
+  flex: 0 0 auto;
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
-  padding: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-active-2, #c046ff);
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-active-2, #c046ff);
+}
+/* The dot sits OUTSIDE `content` in Figma, so it does NOT take the isVisible flag:
+   it is the one trailing element meant to survive the collapsed rail, because it is
+   the signal that the row needs attention.
+
+   It is `position: absolute` against the row box rather than a flex child, for one
+   reason: a 40px rail has no room for it in the flow (8 padding + 16 icon + 8 gap +
+   8 dot + 8 padding = 48), so in-flow it pushed itself past the rail's edge. Pinned
+   to the row's trailing edge it lands correctly in BOTH rails — beside the label in
+   the open rail, over the icon's corner in the collapsed one — with no second rule
+   and no attribute the rail does not already set. */
+:host([data-status-dot]) { position: relative; }
+:host([data-status-dot]) .dot {
+  display: inline-block;
+  position: absolute;
+  inset-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+  inset-block-start: 50%;
+  translate: 0 -50%;
 }
 
-/* ── Hover / focus ─────────────────────────────────────────────────── */
+/* ── Hover / focus — on the BOX, so the whole row lights up ────────────── */
 @supports (color: color-mix(in oklab, red, blue)) {
-  :host(:hover) .row {
+  :host(:hover) {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
 }
-:host(:focus-visible) { outline: none; }
-:host(:focus-visible) .row,
-:host(:focus-visible) .promo {
+/* The controls are transparent, so the focus ring goes on the box. Scoped to
+   :focus-within so either control (navigate or expand) lights the same row. */
+:host(:focus-within) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+.nav:focus-visible,
+.expand:focus-visible { outline: none; }
+:host([data-variant="promo"]:focus-within) { box-shadow: none; }
+:host(:focus-within) .promo {
   box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Current — Style active: surface/active/base + content-active ink. The label
-   weight binds Theme weight/light and does not change with the mode. ───────── */
-:host([data-current]) .row {
+   weight binds Theme weight/light and does NOT change with the mode. ───────── */
+:host([data-current]) {
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
   color: var(--sherpa-theme-content-active-1, #8300b6);
 }
 
 /* ── Disabled — Style inactive: surface #b3b3c3 with style-content/base → #35353d
    ink (legible dark on the grey; never opacity). ──────────────────────────── */
-:host([disabled]) { pointer-events: none; }
-:host([disabled]) :is(.row, .promo) {
-  cursor: not-allowed;
+:host([disabled]) {
+  pointer-events: none;
   color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
+:host([disabled]) :is(.nav, .expand, .promo) { cursor: not-allowed; }
 :host([disabled]) .badge {
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-:host([disabled]) .expand {
-  cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+
+/* ── The promo variant is its own bordered card, so the box rules above must not
+   apply to it: it owns its padding, height and radius. ───────────────────── */
+:host([data-variant="promo"]) {
+  block-size: auto;
+  padding-inline: 0;
+  border-radius: 0;
+  background: none;
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+  :host([data-variant="promo"]:hover) { background: none; }
 }
 
 /* ── Promo (CTA) variant — activation target is a native <button> or <a href> ─ */

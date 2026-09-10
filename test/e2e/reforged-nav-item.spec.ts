@@ -66,8 +66,8 @@ test('data-href renders the row as a link', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
-    const link = s.querySelector('.row-link') as HTMLAnchorElement;
-    const button = s.querySelector('.row-button') as HTMLElement;
+    const link = s.querySelector('.nav-link') as HTMLAnchorElement;
+    const button = s.querySelector('.nav-button') as HTMLElement;
     return {
       href: link.getAttribute('href'),
       linkVisible: getComputedStyle(link).display !== 'none',
@@ -87,7 +87,17 @@ test('current setter reflects to data-current and styles the row', async ({ page
     await el.rendered;
     el.current = true;
     const on = el.hasAttribute('data-current');
-    const cs = getComputedStyle(el.shadowRoot!.querySelector('.row')!);
+    // The row box transitions background-color over 100ms, so reading it in the
+    // same task catches the START of the animation (transparent), not the target.
+    // Wait for the transition to land rather than asserting a mid-flight value.
+    await new Promise<void>((resolve) => {
+      const done = (): void => resolve();
+      el.addEventListener('transitionend', done, { once: true });
+      setTimeout(done, 300);
+    });
+    // The HOST is the row box now (Figma's Navigation Item contains the tag and
+    // the chevron), so the active fill and ink live there, not on the inner control.
+    const cs = getComputedStyle(el);
     const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight };
     el.current = false;
     return { on, off: el.hasAttribute('data-current'), ...styled };
@@ -145,10 +155,62 @@ test('promo variant renders heading + description', async ({ page }) => {
     return {
       heading: s.querySelector('.promo-heading')?.textContent,
       description: s.querySelector('.promo-description')?.textContent,
-      hasDefaultRow: !!s.querySelector('.row'),
+      hasDefaultRow: !!s.querySelector('.nav'),
     };
   });
   expect(r.heading).toBe('Upgrade');
   expect(r.description).toBe('Unlock more');
   expect(r.hasDefaultRow).toBe(false); // promo template, not the default row
+});
+
+test('the tag renders INSIDE the row box, inset by the row padding', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const build = async (href: boolean, expandable: boolean): Promise<Record<string, unknown>> => {
+      const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
+      el.setAttribute('data-label', 'Endpoints');
+      el.setAttribute('data-icon', 'fa-solid fa-desktop');
+      el.setAttribute('data-badge', '1284');
+      if (href) el.setAttribute('data-href', '#e');
+      if (expandable) el.setAttribute('data-expandable', '');
+      // The row is a flex child of the rail in real use; give it a width here so
+      // the trailing inset is measurable.
+      el.style.inlineSize = '304px';
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+
+      const sr = el.shadowRoot!;
+      // The VISIBLE row's badge — both templates carry one and CSS shows one.
+      const badge = sr.querySelector<HTMLElement>(`${href ? '.nav-link' : '.nav-button'} .badge`)!;
+      const hostRect = el.getBoundingClientRect();
+      const badgeRect = badge.getBoundingClientRect();
+      return {
+        text: badge.textContent,
+        // Figma puts the Tag inside the row box, so it must be within its bounds.
+        inside: badgeRect.left >= hostRect.left && badgeRect.right <= hostRect.right,
+        trailingInset: Math.round(hostRect.right - badgeRect.right),
+        height: Math.round(badgeRect.height),
+        radius: getComputedStyle(badge).borderTopLeftRadius,
+      };
+    };
+    return { plain: await build(false, false), link: await build(true, false), parent: await build(true, true) };
+  });
+
+  // BOTH row templates must get the text. Writing only the first put it on the
+  // hidden <button> row, leaving a link row's visible badge empty.
+  expect(r.plain['text']).toBe('1284');
+  expect(r.link['text']).toBe('1284');
+
+  // Inside the box, not hanging off the end of it.
+  expect(r.plain['inside']).toBe(true);
+  expect(r.link['inside']).toBe(true);
+  expect(r.parent['inside']).toBe(true);
+
+  // Figma: the row's padding-right is space/xs 8, so a tag with nothing after it
+  // sits 8px in. With the hasChildren chevron after it, 8 + 16 chevron + 8 gap.
+  expect(r.link['trailingInset']).toBe(8);
+  expect(r.parent['trailingInset']).toBe(32);
+
+  // Figma Tag/Type=full at Structure xs: 16 tall, rounding/xl 16 (a pill).
+  expect(r.link['height']).toBe(16);
+  expect(r.link['radius']).toBe('16px');
 });

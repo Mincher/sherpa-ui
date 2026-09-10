@@ -1,55 +1,77 @@
 <!--
   sherpa-nav-item — a single navigation row.
 
-  For consumers building a custom nav by hand (the reforged sherpa-nav stamps
-  its own rows internally). The host IS the interactive row. Two templates:
+  Matches the Figma "Navigation Item" (32:43138). That component is ONE 24-tall
+  box, and the tag and chevron live INSIDE it, inside a `content` group — they are
+  not siblings hanging off the end of the row:
 
-    • default — leading icon, label, optional trailing badge/count slot
-    • promo   — a larger CTA-style row: icon, heading, description
+    Navigation Item        H · pad 0/8/0/8 · gap/md 8 · h 24 · radius 4
+    ├─ Icon                16×16                              hasIcon
+    ├─ content             H · gap 8 · FILL + grow 1           ← bound to isVisible
+    │   ├─ Item Name       14/20 weight/LIGHT 300 · grow 1     hasLabel
+    │   ├─ Tag             16-tall pill (rounding/xl 16)       hasTag
+    │   └─ Icon            16×16 chevron-down                  hasChildren
+    └─ Indicator (atom)    8×8 dot                             hasIndicator
+
+  THE HOST IS THE BOX. The padding, the height, the radius, the background and the
+  hover all live on :host, because the Figma row box has to contain the tag and the
+  chevron. Previously the inner <button> was the box and the tag was its sibling, so
+  the tag painted OUTSIDE the row's background and radius — the reported bug.
+
+  The activation target stays a native control, and an expandable row has TWO
+  controls (navigate + expand). Nesting one interactive element inside another is
+  invalid HTML and wrecks keyboard order, so they are SIBLINGS in the markup and
+  CSS lays them out as the single Figma row. `.nav` is the navigate target and
+  stretches; `.expand` is the chevron and hugs its 16px square at the end.
+
+  `content` is the node Figma binds to Navigation::isVisible, so the label, the tag
+  AND the chevron collapse together with the rail. The leading icon and the
+  indicator dot sit OUTSIDE `content`, so they survive the collapsed rail.
 
   Public API:
     data-icon        leading icon — a Font Awesome class list ("fa-solid fa-house");
-                     any other value is rendered as a literal text glyph
+                     any other value renders as a literal text glyph
     data-tier        nesting depth 2 | 3 — indents the row to the Figma indent tier
                      (tier 1 is the default, no attribute needed)
     data-label       row label text
-    data-badge       trailing count/badge text
-    data-status-dot  render the trailing chip as a small success/online dot
-    data-expandable  show a trailing expand chevron (for nested/expandable items)
-    data-expanded    expanded state — rotates the chevron (set by the click handler)
+    data-badge       the trailing Tag's text (Figma hasTag)
+    data-status-dot  render the trailing Indicator (atom) dot
+    data-expandable  the item has children — shows the chevron (Figma hasChildren)
+    data-expanded    expanded state — rotates the chevron
     data-description promo description (promo variant only)
     data-current     current item in the nav set
     data-href        render the row as a link
     data-variant     "promo" for the CTA row
     disabled         disabled state
 
-  The current row fills surface/interactive/active/base with content/active/base
-  ink (the brand accent). The trailing chip is a round status element filled by
-  the ancestor [data-status] cascade; a plain success dot pins the success ink.
-  Expandable items (data-expandable) show a trailing chevron caret; clicking it
-  fires item-expand and toggles data-expanded, which rotates the caret.
-
-  Fires: item-click — detail: { label, href }
-  Fires: item-expand — detail: { expanded } — fired when the expand chevron is clicked
--->
-<!--
-  The activation target is a native control: a <button> for a plain row, an
-  <a href> for a real link. Both live in the template; CSS shows the right one
-  off :host([data-href]). The trailing expand chevron is its own <button>.
+  Fires: item-click  — detail: { label, href }
+  Fires: item-expand — detail: { expanded } — the chevron was clicked
 -->
 <template id="default">
-  <button class="row row-button" part="row" type="button">
+  <button class="nav nav-button" part="row" type="button">
     <span class="icon" part="icon" aria-hidden="true"></span>
-    <span class="label" part="label"></span>
+    <span class="content" part="content">
+      <span class="label" part="label"></span>
+      <span class="badge" part="badge"><slot name="trailing"></slot></span>
+    </span>
   </button>
-  <a class="row row-link" part="row">
+
+  <a class="nav nav-link" part="row">
     <span class="icon" part="icon" aria-hidden="true"></span>
-    <span class="label" part="label"></span>
+    <span class="content" part="content">
+      <span class="label" part="label"></span>
+      <span class="badge" part="badge"><slot name="trailing"></slot></span>
+    </span>
   </a>
-  <span class="badge" part="badge"><slot name="trailing"></slot></span>
-  <button class="expand" part="expand" type="button" aria-label="Expand">
+
+  <!-- Figma's trailing chevron-down Icon, last child of `content`. A sibling here
+       because an expandable row needs its own control; CSS puts it in place. -->
+  <button class="expand" part="expand" type="button" aria-label="Expand" aria-expanded="false">
     <i class="expand-chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
   </button>
+
+  <!-- Indicator (atom)/Type=dot — outside `content`, so it survives collapse. -->
+  <span class="dot" part="dot" aria-hidden="true"></span>
 </template>
 
 <template id="promo">

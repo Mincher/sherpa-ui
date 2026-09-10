@@ -46,6 +46,8 @@ export class SherpaNavItem extends SherpaElement {
     'data-description',
     'data-href',
     'data-current',
+    'data-expandable',
+    'data-expanded',
   ];
 
   /** This row's custom-highlight name, assigned on first use. */
@@ -110,13 +112,16 @@ export class SherpaNavItem extends SherpaElement {
     if (promo) {
       setAll('.promo-description', this.dataset['description'] ?? '');
     } else {
-      const badge = this.$('.badge');
-      if (badge) badge.textContent = this.dataset['badge'] ?? '';
+      // BOTH rows carry a badge (the <button> row and the <a href> row; CSS shows
+      // one). `this.$('.badge')` returns only the FIRST, which is the hidden
+      // <button> row on a link item — so the visible badge stayed empty while a
+      // zero-width offscreen one held the text. Same trap as the label above.
+      setAll('.badge', this.dataset['badge'] ?? '');
     }
 
     // The <a href> row is a real link when data-href is set; CSS shows it in
     // place of the <button> row via :host([data-href]).
-    const link = this.$<HTMLAnchorElement>(promo ? '.promo-link' : '.row-link');
+    const link = this.$<HTMLAnchorElement>(promo ? '.promo-link' : '.nav-link');
     if (link) {
       const href = this.dataset['href'];
       if (href) link.setAttribute('href', href);
@@ -125,9 +130,18 @@ export class SherpaNavItem extends SherpaElement {
 
     // The current row carries aria-current="page" on its activation target.
     const current = this.hasAttribute('data-current');
-    for (const el of this.$$(promo ? '.promo' : '.row')) {
+    for (const el of this.$$(promo ? '.promo' : '.nav')) {
       if (current) el.setAttribute('aria-current', 'page');
       else el.removeAttribute('aria-current');
+    }
+
+    // The chevron is a real toggle button, so it must announce its own state and
+    // say WHAT it expands. CSS handles the rotation; this is the a11y half.
+    const expand = this.$('.expand');
+    if (expand) {
+      const open = this.hasAttribute('data-expanded');
+      expand.setAttribute('aria-expanded', String(open));
+      expand.setAttribute('aria-label', `${open ? 'Collapse' : 'Expand'} ${this.dataset['label'] ?? ''}`.trim());
     }
   }
 
@@ -254,10 +268,16 @@ export class SherpaNavItem extends SherpaElement {
 
   #onClick = (event: MouseEvent): void => {
     // A click on the trailing expand chevron toggles expansion, not navigation.
-    if (
-      this.hasAttribute('data-expandable') &&
-      (event.target as Element | null)?.closest('.expand')
-    ) {
+    //
+    // Read composedPath(), NOT event.target. This listener is on the HOST, so by
+    // the time the event arrives the target has been RETARGETED to the host itself
+    // — `event.target.closest('.expand')` then searches the host's light DOM, finds
+    // nothing, and every chevron click fell through to navigation instead.
+    const path = event.composedPath();
+    const onChevron = path.some(
+      (n) => n instanceof Element && n.classList.contains('expand'),
+    );
+    if (this.hasAttribute('data-expandable') && onChevron) {
       event.preventDefault();
       event.stopPropagation();
       this.#toggleExpand();

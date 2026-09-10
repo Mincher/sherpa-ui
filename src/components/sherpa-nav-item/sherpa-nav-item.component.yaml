@@ -13,71 +13,104 @@ $name: sherpa-nav-item
 $description: a single navigation row.
 element:
   $type: element
-  tag: a
+  tag: button
+  attributes:
+    type: button
   provides:
-    - navigation
+    - click
     - keyboard
     - focus
+    - disabled
 templates:
   - default
   - promo
 anatomy:
-  root:
-    el: a
-    class: row
-    part: row
-    children:
-      - el: span
-        class: icon
-        part: icon
-        attrs:
-          aria-hidden: "true"
-      - el: span
-        class: label
-        part: label
-      - el: span
-        class: badge
-        part: badge
-        slot: trailing
-      - el: button
-        class: expand
-        part: expand
-        attrs:
-          type: button
-          aria-hidden: "true"
-          tabindex: "-1"
-        children:
-          - el: span
-            class: expand-chevron
-            attrs:
-              aria-hidden: "true"
+  roots:
+    - el: button
+      class: nav nav-button
+      part: row
+      attrs:
+        type: button
+      children:
+        - el: span
+          class: icon
+          part: icon
+          attrs:
+            aria-hidden: "true"
+        - el: span
+          class: content
+          part: content
+          children:
+            - el: span
+              class: label
+              part: label
+            - el: span
+              class: badge
+              part: badge
+              slot: trailing
+    - el: a
+      class: nav nav-link
+      part: row
+      children:
+        - el: span
+          class: icon
+          part: icon
+          attrs:
+            aria-hidden: "true"
+        - el: span
+          class: content
+          part: content
+          children:
+            - el: span
+              class: label
+              part: label
+            - el: span
+              class: badge
+              part: badge
+              slot: trailing
+    - el: button
+      class: expand
+      part: expand
+      attrs:
+        type: button
+        aria-label: Expand
+        aria-expanded: "false"
+      children:
+        - el: i
+          class: expand-chevron fa-solid fa-chevron-down
+          attrs:
+            aria-hidden: "true"
+    - el: span
+      class: dot
+      part: dot
+      attrs:
+        aria-hidden: "true"
 props:
   - $type: prop
     name: data-badge
     type: string
     kind: visibility
-    description: trailing count/badge text
+    description: the trailing Tag's text (Figma hasTag)
   - $type: prop
     name: data-current
     type: string
-    kind: style
+    kind: content
     description: current item in the nav set
   - $type: prop
     name: data-description
     type: string
     kind: content
+    description: promo description (promo variant only)
   - $type: prop
     name: data-expandable
     type: string
-    kind: style
-    description: show a trailing expand chevron (for nested/expandable items)
+    kind: content
+    description: the item has children — shows the chevron (Figma hasChildren)
   - $type: prop
     name: data-expanded
     type: string
-    kind: style
-    description: >-
-      expanded state — rotates the chevron (set by the click handler) data-description promo
-      description (promo variant only)
+    kind: content
+    description: expanded state — rotates the chevron
   - $type: prop
     name: data-href
     type: string
@@ -87,7 +120,9 @@ props:
     name: data-icon
     type: string
     kind: visibility
-    description: leading icon glyph (text/emoji)
+    description: >-
+      leading icon — a Font Awesome class list ("fa-solid fa-house"); any other value renders as a
+      literal text glyph
   - $type: prop
     name: data-label
     type: string
@@ -97,7 +132,14 @@ props:
     name: data-status-dot
     type: string
     kind: style
-    description: render the trailing chip as a small success/online dot
+    description: render the trailing Indicator (atom) dot
+  - $type: prop
+    name: data-tier
+    type: string
+    kind: style
+    description: >-
+      nesting depth 2 | 3 — indents the row to the Figma indent tier (tier 1 is the default, no
+      attribute needed)
   - $type: prop
     name: data-variant
     type: string
@@ -108,13 +150,17 @@ props:
     type: boolean
     native: true
     default: false
-    description: >-
-      disabled state The current row fills surface/interactive/active/base with content/active/base
-      ink (the brand accent). The trailing chip is a round status element filled by the ancestor
-      [data-status] cascade; a plain success dot pins the success ink. Expandable items
-      (data-expandable) show a trailing chevron caret; clicking it fires item-expand and toggles
-      data-expanded, which rotates the caret.
+    description: disabled state
 states:
+  - $type: state
+    name: "2"
+    selector: ":host([data-tier=\"2\"])"
+  - $type: state
+    name: "3"
+    selector: ":host([data-tier=\"3\"])"
+  - $type: state
+    name: href
+    selector: ":host([data-href])"
   - $type: state
     name: icon
     selector: ":host([data-icon])"
@@ -137,11 +183,14 @@ states:
     name: current
     selector: ":host([data-current])"
   - $type: state
+    name: promo
+    selector: ":host([data-variant=\"promo\"])"
+  - $type: state
     name: disabled
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .nav:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -160,39 +209,43 @@ events:
     bubbles: true
     composed: true
 tokens:
-  row.gap: "{sherpa.structure-space-gap}"
-  row.padding: "{sherpa.theme-padding-xs}"
-  row.border-radius: "{sherpa.display-border-rounding-base}"
-  row.color: "{sherpa.style-content-base}"
-  row.font-size: "{sherpa.font-size-body-base}"
-  row.font-weight: "{sherpa.font-weight-medium}"
+  nav.gap: "{sherpa.theme-gap-md}"
   icon.inline-size: "{sherpa.theme-size-icon-xs}"
-  badge.padding-inline: "{sherpa.display-space-2xs}"
-  badge.min-inline-size: "{sherpa.display-size-md}"
-  badge.block-size: "{sherpa.display-size-md}"
-  badge.border-radius: "{sherpa.display-border-rounding-full}"
-  badge.background: "{sherpa.theme-surface-active-base}"
+  icon.block-size: "{sherpa.theme-size-icon-xs}"
+  icon.font-size: "{sherpa.theme-size-icon-xs}"
+  content.gap: "{sherpa.theme-gap-md}"
+  badge.padding: "{sherpa.theme-padding-xs}"
+  badge.block-size: "{sherpa.display-mode-size-sm}"
+  badge.border-radius: "{sherpa.display-mode-border-rounding-xl}"
+  badge.background: "{sherpa.theme-surface-success-2}"
   badge.color: "{sherpa.theme-content-body-base-fixed}"
-  badge.font-size: "{sherpa.font-size-body-small}"
-  badge.font-weight: "{sherpa.font-weight-semibold}"
+  badge.font-size: "{sherpa.theme-content-size-xs}"
+  badge.font-weight: "{sherpa.font-weight-regular}"
+  badge.line-height: "{sherpa.theme-content-line-height-xs}"
   expand.inline-size: "{sherpa.theme-size-icon-xs}"
   expand.block-size: "{sherpa.theme-size-icon-xs}"
-  expand.padding: "{sherpa.display-space-none}"
-  expand.color: "{sherpa.theme-content-body-1}"
+  expand.padding: "{sherpa.display-mode-space-none}"
+  expand.font-size: "{sherpa.theme-size-icon-2xs}"
+  dot.inline-size: "{sherpa.display-mode-size-2xs}"
+  dot.block-size: "{sherpa.display-mode-size-2xs}"
+  dot.border-radius: "{sherpa.display-mode-border-rounding-full}"
+  dot.background: "{sherpa.theme-surface-active-base}"
+  dot.border-width: "{sherpa.display-mode-border-width-sm}"
+  dot.border-color: "{sherpa.theme-border-active-2}"
   promo.gap: "{sherpa.structure-space-gap}"
   promo.padding: "{sherpa.theme-padding-sm}"
-  promo.border-radius: "{sherpa.display-border-rounding-base}"
+  promo.border-radius: "{sherpa.display-mode-border-rounding-base}"
   promo.border-width: "{sherpa.style-border-width}"
-  promo.border-color: "{sherpa.style-border-base}"
+  promo.border-color: "{sherpa.theme-border-default-2}"
   promo.background: "{sherpa.style-surface-base}"
-  promo.color: "{sherpa.style-content-base}"
-  promo-icon.inline-size: "{sherpa.display-size-lg}"
-  promo-icon.block-size: "{sherpa.display-size-lg}"
-  promo-icon.border-radius: "{sherpa.display-border-rounding-xl}"
+  promo.color: "{sherpa.theme-content-body-base}"
+  promo-icon.inline-size: "{sherpa.display-mode-size-lg}"
+  promo-icon.block-size: "{sherpa.display-mode-size-lg}"
+  promo-icon.border-radius: "{sherpa.display-mode-border-rounding-xl}"
   promo-icon.background: "{sherpa.theme-surface-active-base}"
   promo-icon.color: "{sherpa.theme-content-active-base}"
-  promo-body.gap: "{sherpa.display-space-none}"
-  promo-heading.color: "{sherpa.style-content-base}"
+  promo-body.gap: "{sherpa.display-mode-space-none}"
+  promo-heading.color: "{sherpa.theme-content-body-base}"
   promo-heading.font-size: "{sherpa.font-size-body-base}"
   promo-heading.font-weight: "{sherpa.font-weight-semibold}"
   promo-description.color: "{sherpa.theme-content-body-1}"

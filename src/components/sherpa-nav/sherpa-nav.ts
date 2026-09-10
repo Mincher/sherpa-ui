@@ -15,8 +15,12 @@
  *     quickItems?: NavEntry[],   // omitted → Home · Recent · Favorites
  *     sections?:   [{ label?, items: NavEntry[] }],
  *   }
- * where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier? }.
+ * where NavEntry = { id, label, icon?, href?, badge?, indicator?, children?, expanded? }.
  * You can also pass a plain list of items, and it's treated as one group.
+ *
+ * Nest with `children`. A parent gets the Figma hasChildren chevron and starts
+ * closed; its children indent to the next tier, carry NO icon (only top-level rows
+ * do), and are hidden entirely in the 40px collapsed rail.
  *
  * @element sherpa-nav
  * @attr {enum}    data-nav-state  collapsed (default) | hover | default | pinned | settings
@@ -32,13 +36,30 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export interface NavEntry {
   id: string;
   label: string;
+  /**
+   * Leading icon — a Font Awesome class list. EVERY top-level item has one; CHILD
+   * items do not (the design distinguishes a child by its indent, not by a second
+   * icon column). The rail drops an icon set on a child rather than rendering it.
+   */
   icon?: string;
   href?: string;
   badge?: string;
-  /** Show the leading status dot (Figma "Indicator (atom)"). */
+  /** Show the trailing indicator dot (Figma "Indicator (atom)"). */
   indicator?: boolean;
-  /** Nesting depth 1–3 → the Figma indent tiers (8 / 32 / 48). */
+  /**
+   * Nested items. A parent gets the Figma hasChildren chevron, and its children are
+   * stamped one tier deeper. Prefer this over setting `tier` by hand: the rail can
+   * then collapse the children with the parent and hide them in the 40px rail,
+   * which a flat list of hand-tiered rows cannot express.
+   */
+  children?: NavEntry[];
+  /**
+   * Nesting depth 1–3 → the Figma indent tiers (8 / 32 / 48). Derived from
+   * `children` nesting; set it directly only for a flat list you tier yourself.
+   */
   tier?: 1 | 2 | 3;
+  /** Start a parent expanded. Parents are collapsed by default. */
+  expanded?: boolean;
 }
 
 /** @deprecated Renamed to NavEntry (kept as an alias for existing imports). */
@@ -92,6 +113,7 @@ export class SherpaNav extends SherpaElement {
 
     // One delegated listener for every stamped item — rows come and go, this stays.
     this.$('.rail')?.addEventListener('item-click', this.#onItemClick as EventListener);
+    this.$('.rail')?.addEventListener('item-expand', this.#onItemExpand as EventListener);
     this.$<HTMLInputElement>('.search-input')?.addEventListener('input', this.#onSearch);
     this.$('.search-clear')?.addEventListener('click', this.#onSearchClear);
     this.$('.pin')?.addEventListener('click', this.#onPin);
@@ -244,7 +266,7 @@ export class SherpaNav extends SherpaElement {
     if (!list) return;
     list.replaceChildren();
     const quick = this.#config.quickItems ?? DEFAULT_QUICK;
-    for (const entry of quick) list.appendChild(this.#buildItem(entry));
+    for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
   }
 
   #renderSections(): void {
@@ -265,25 +287,55 @@ export class SherpaNav extends SherpaElement {
       const el = sectionTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       el.querySelector('.section-label')!.textContent = section.label ?? '';
       const items = el.querySelector('.section-items')!;
-      for (const entry of section.items ?? []) items.appendChild(this.#buildItem(entry));
+      for (const entry of section.items ?? []) {
+        for (const row of this.#buildRows(entry, 1)) items.appendChild(row);
+      }
       content.appendChild(el);
     }
+    // Parents start closed, so their children must start hidden.
+    this.#syncRowVisibility();
   }
 
-  /** Stamp one <li><sherpa-nav-item> row from an entry. */
-  #buildItem(entry: NavEntry): HTMLElement {
+  /**
+   * Stamp an entry and all of its descendants into a FLAT list of rows.
+   *
+   * Flat, not nested, because the Figma rail is one flat column of 24-tall rows and
+   * indentation alone conveys depth — there is no nested container to draw. Each row
+   * records `data-parent` and `data-depth` so the rail can hide a child when its
+   * parent is collapsed, and hide every child in the 40px rail.
+   */
+  #buildRows(entry: NavEntry, depth: 1 | 2 | 3, parentId?: string): HTMLElement[] {
     const tpl = this.$<HTMLTemplateElement>('template.item-tpl')!;
     const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
     row.dataset['id'] = entry.id;
+    row.dataset['depth'] = String(depth);
+    if (parentId) row.dataset['parent'] = parentId;
+
     const item = row.querySelector('sherpa-nav-item') as HTMLElement;
     item.dataset['label'] = entry.label;
-    if (entry.icon) item.dataset['icon'] = entry.icon;
+    // EVERY top-level item carries an icon; a CHILD never does — the design tells a
+    // child apart by its indent, so a second icon column would only add noise. An
+    // icon set on a child entry is deliberately dropped rather than honoured.
+    if (entry.icon && depth === 1) item.dataset['icon'] = entry.icon;
     if (entry.href) item.dataset['href'] = entry.href;
     if (entry.badge) item.dataset['badge'] = entry.badge;
     if (entry.indicator) item.dataset['statusDot'] = '';
-    // Nesting depth → the Figma indent tier the item's CSS reads.
-    if (entry.tier && entry.tier > 1) item.dataset['tier'] = String(entry.tier);
-    return row;
+    // Depth → the Figma indent tier the item's CSS reads (tier 1 needs no attr).
+    const tier = entry.tier ?? depth;
+    if (tier > 1) item.dataset['tier'] = String(tier);
+
+    const kids = entry.children ?? [];
+    const rows = [row];
+    if (!kids.length) return rows;
+
+    // A parent gets the Figma hasChildren chevron, and starts CLOSED unless asked.
+    item.dataset['expandable'] = '';
+    if (entry.expanded) item.dataset['expanded'] = '';
+    row.dataset['expanded'] = entry.expanded ? 'true' : 'false';
+
+    const childDepth = Math.min(depth + 1, 3) as 1 | 2 | 3;
+    for (const kid of kids) rows.push(...this.#buildRows(kid, childDepth, entry.id));
+    return rows;
   }
 
   /** Set an icon as FA classes when it looks like one, else as a text glyph. */
@@ -317,6 +369,49 @@ export class SherpaNav extends SherpaElement {
     this.setAttribute('data-active-id', id);
     this.emit('nav-select', { id });
   };
+
+  /** A parent row's chevron was toggled — record it, then re-derive visibility. */
+  #onItemExpand = (event: Event): void => {
+    const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
+    if (!row?.dataset['id']) return;
+    row.dataset['expanded'] = String(!!(event as CustomEvent).detail?.expanded);
+    this.#syncRowVisibility();
+  };
+
+  /**
+   * Decide which child rows are showing, and write `data-hidden` for CSS to act on.
+   *
+   * A row shows when EVERY ancestor above it is expanded. That is a walk up the
+   * data-parent chain, not something a selector can express: the children are flat
+   * siblings of their parent, so `:has()` could only tell that SOME sibling is shut
+   * and would hide unrelated branches. Deriving it here also means a closed
+   * grandparent correctly hides a grandchild whose own parent is open, with no
+   * cascade of extra state to keep in step.
+   */
+  #syncRowVisibility(): void {
+    const rows = this.$$<HTMLElement>('.nav-row');
+    // id → is that row expanded (absent = not a parent, so irrelevant)
+    const open = new Map<string, boolean>();
+    const parent = new Map<string, string>();
+    for (const row of rows) {
+      const id = row.dataset['id'];
+      if (!id) continue;
+      if (row.dataset['expanded'] !== undefined) open.set(id, row.dataset['expanded'] === 'true');
+      const p = row.dataset['parent'];
+      if (p) parent.set(id, p);
+    }
+
+    for (const row of rows) {
+      const id = row.dataset['id'];
+      if (!id) continue;
+      let hidden = false;
+      for (let p = parent.get(id); p !== undefined; p = parent.get(p)) {
+        if (open.get(p) === false) { hidden = true; break; }
+      }
+      if (hidden) row.dataset['hidden'] = '';
+      else delete row.dataset['hidden'];
+    }
+  }
 
   #onSearch = (event: Event): void => {
     const query = (event.target as HTMLInputElement).value;

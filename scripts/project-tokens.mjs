@@ -438,6 +438,7 @@ for (const slug of Object.keys(doc)) {
     // (structure): emit its primary values into its named layer so other components
     // can consume the geometry, then also emit the per-mode component partial.
     if (route.target.alsoGlobal && layers[route.target.alsoGlobal]) {
+      const L = layers[route.target.alsoGlobal];
       for (const leaf of leaves) {
         if (typeof leaf.value === 'boolean') continue;
         const v = toCss(leaf.value, leaf.type);
@@ -445,7 +446,34 @@ for (const slug of Object.keys(doc)) {
         // leaf.name already strips a redundant repeated collection segment
         // (structure/structure-rounding → --sherpa-structure-rounding-*) so the
         // global names match what [data-snap] and components consume.
-        layers[route.target.alsoGlobal].root.push(`  ${leaf.name}: ${v};`);
+        L.root.push(`  ${leaf.name}: ${v};`);
+      }
+
+      // …AND the collection's NON-PRIMARY modes, as `[data-size]` blocks.
+      //
+      // Without these the global layer only ever carried the PRIMARY mode, so a
+      // component Figma pins to `Structure=sm` (the nav header's 24px icon buttons,
+      // for one) had no way to reach the sm values — `--sherpa-structure-icon-size`
+      // resolved to the default 14 everywhere and every such icon was the wrong
+      // size. Same class of silent failure as the cross-collection mode aliases:
+      // a mode pin is a selector, and a selector only applies where it is written.
+      const modeNames = new Set();
+      for (const leaf of leaves) for (const m of Object.keys(leaf.modes ?? {})) modeNames.add(m);
+      for (const mode of modeNames) {
+        const lines = [];
+        for (const leaf of leaves) {
+          if (typeof leaf.value === 'boolean') continue;
+          const raw = leaf.modes?.[mode];
+          if (raw === undefined) continue;
+          const v = toCss(raw, leaf.type);
+          if (v == null) continue;
+          lines.push(`    ${leaf.name}: ${v};`);
+        }
+        if (!lines.length) continue;
+        L.modeBlocks.push(
+          `  /* ${route.target.alsoGlobal} — the ${mode} size mode ([data-size]). */\n` +
+            `  [data-size="${mode}"] {\n${lines.join('\n')}\n  }`,
+        );
       }
     }
     scopedPartials.push(
@@ -1022,7 +1050,7 @@ ${viewFrameBlock}
 // structure — bound sizes / content sizes / per-corner rounding + snap ([data-snap]).
 const structureLayer = `@layer structure {
 ${rootBlock(layers.structure.root)}
-
+${layers.structure.modeBlocks.length ? '\n' + joinBlocks(layers.structure.modeBlocks) + '\n' : ''}
   /* Snap — per-edge corner rounding ([data-snap]). */
 ${joinBlocks(snapBlocks)}
 }`;

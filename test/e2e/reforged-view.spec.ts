@@ -127,7 +127,7 @@ test('writes wiring: one element writes state, a bound consumer reacts', async (
     )!;
     const yItem = yRow.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
     await yItem.rendered;
-    (yItem.shadowRoot!.querySelector('.row') as HTMLElement).click();
+    (yItem.shadowRoot!.querySelector('.nav-button, .nav-link') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 20));
 
     const echo = el.querySelector('sherpa-tag')!;

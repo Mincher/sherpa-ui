@@ -196,19 +196,31 @@
    #c046ff ring and brand ink. Which one is active comes from the projected
    nav-container-{pin,setting}-button switch, applied by JS as data-pin/data-settings
    (a CSS custom property cannot drive a selector). */
+/* Figma pins these two Buttons to Structure=sm, so their box and glyph are the SM
+   mode's tokens: `height` → space/xl 24 and `icon-size` → content/size/small 12.
+   Reading `--sherpa-structure-*` bare gives the DEFAULT mode instead (32 and 14) —
+   that is what made these render at 32 — because a mode pin is a SELECTOR and the
+   projected `[data-size="sm"]` block lives in the light DOM, where it cannot match
+   an element inside this shadow root.
+   So the pin is applied here by re-pointing the two vars at the SAME primitives the
+   projected sm block uses. Keep this in step with the `[data-size="sm"]` block in
+   @layer structure of tokens.css if the sm mode is ever re-pointed in Figma. */
 .hdr-btn {
+  --_btn-box: var(--sherpa-display-mode-space-xl, 24px);
+  --_btn-glyph: var(--sherpa-theme-content-size-small, 12px);
+
   display: var(--_is-visible, inline-flex);
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  inline-size: var(--_btn-box);
+  block-size: var(--_btn-box);
   padding: 0;
   border: var(--sherpa-style-border-width, 0.5px) solid transparent;
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
   color: var(--sherpa-style-content-base, #35353d);
-  font-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  font-size: var(--_btn-glyph);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
@@ -383,6 +395,23 @@
 .nav-row { margin: 0; align-self: stretch; }
 .nav-row sherpa-nav-item { display: flex; }
 
+/* ── Child rows ──────────────────────────────────────────────────────────
+   Children are FLAT SIBLINGS of their parent: the rail is one column of 24-tall
+   rows and indentation alone conveys depth, so there is no nested container for
+   `display: none` to catch. A child row instead carries data-parent (whose subtree
+   it belongs to) and data-hidden (whether it should currently show).
+
+   data-hidden is written by the rail, not derived by a selector. A pure selector
+   cannot express "my own parent, several siblings up this flat list, is shut" —
+   :has() can only find that SOME sibling is shut, which would hide unrelated
+   branches. One boolean per row keeps the rule here trivially correct. */
+.nav-row[data-hidden] { display: none; }
+
+/* A child is ALWAYS hidden in the 40px rail. Every label is gone there, so an
+   indented row would be a blank 24px strip with no icon (children have none) and
+   no label; the parent's chevron is hidden too, so nothing could even reach it. */
+:host([data-nav-state="collapsed"]) .nav-row[data-parent] { display: none; }
+
 /* ── Search filtering ────────────────────────────────────────────────────
    Typing in the search box narrows the rail: JS marks non-matching rows (and
    sections that lost every row) with data-filtered-out; CSS does the hiding. The
@@ -414,12 +443,45 @@
 }
 
 /* ── Collapsed rail ──────────────────────────────────────────────────────
-   The label-bearing parts are already hidden by --_is-visible. Only the layout
-   needs adjusting: the 40px rail centres its icons and drops the side padding
-   (indent-tier-1 tightens to space/2xs in the collapsed mode). */
-:host([data-nav-state="collapsed"]) .quick-zone,
-:host([data-nav-state="collapsed"]) .content,
+   The label-bearing parts are already hidden by --_is-visible, so only the
+   horizontal rhythm needs work — and it does not fall out of the tokens on its own.
+
+   The arithmetic: the rail is 40 (nav-layout/width in the collapsed mode) and the
+   zone padding is space/xs 8 each side, leaving a 24-wide row. The row's own inset
+   is indent-tier-1, which the collapsed mode tightens to space/2xs 4, plus a
+   padding-right of space/xs 8 that is NOT mode-switched. So 4 + 16 icon + 8 = 28
+   in a 24 box: the icon overflowed and sat left of centre.
+
+   A row showing only its icon is a SQUARE, so its inset must be symmetric. Rather
+   than pick a new number, the row drops both insets and centres — the zone's 8px
+   padding is then the only inset, and 8 + 24 + 8 = 40 exactly. That also keeps a
+   24px icon-only row on the same 24px grid as an open row. */
 :host([data-nav-state="collapsed"]) .footer {
-  padding-inline: 0;
+  padding-block: var(--sherpa-display-mode-space-2xs, 4px);
 }
-:host([data-nav-state="collapsed"]) .footer { padding-block: var(--sherpa-display-mode-space-2xs, 4px); }
+
+/* The row is icon-only, so it centres its icon instead of insetting it.
+   `justify-content` has to reach the INNER control, not just the host: the host is
+   a flex row whose only visible child is `.nav`, and `.nav` is itself the flex row
+   holding the icon. Centring only the host left the icon flush to the start of a
+   full-width `.nav` — 4px off centre in the 40px rail. `part()` crosses the shadow
+   boundary to reach it without the rail needing to know the row's internals. */
+:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item {
+  --_indent: var(--sherpa-display-mode-space-none, 0px);
+  --_pad-end: var(--sherpa-display-mode-space-none, 0px);
+  justify-content: center;
+}
+:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(row) {
+  justify-content: center;
+}
+/* …and the indicator dot goes with the label. Figma keeps it OUTSIDE the row's
+   `content` group, so it does not take the isVisible flag — but Figma has no
+   collapsed-rail-with-indicator frame either, and a 24-wide icon-only row has
+   nowhere to put an 8px disc: pinned to the row's trailing edge it lands on top
+   of the icon. Hiding it is the honest reading; overlaying it as a corner badge
+   would be inventing geometry the design does not specify.
+   FLAG FOR WILL: if the collapsed rail should keep an attention signal, that needs
+   a Figma frame to build against. */
+:host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(dot) {
+  display: none;
+}

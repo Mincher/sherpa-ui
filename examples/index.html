@@ -200,24 +200,37 @@
           { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
           { id: 'view-chat',      label: 'Assistant', icon: 'fa-solid fa-comments',    href: '?view=chat' },
         ] },
-        // Nested rows use the Figma indent tiers: tier 1 = 8px (default, no attr),
-        // tier 2 = 32px, tier 3 = 48px. A parent row carries the icon; its children
-        // indent under it without one, exactly as the Figma nav does.
+        // Nested rows use `children`, so the rail owns the depth: a parent gets the
+        // Figma hasChildren chevron and starts CLOSED, its children indent to the
+        // next tier and carry NO icon (the indent is what marks them as children),
+        // and the whole subtree disappears in the 40px collapsed rail.
         { label: 'Monitor', items: [
-          { id: 'endpoints', label: 'Endpoints', icon: 'fa-solid fa-desktop', href: '#endpoints', badge: '1284' },
-          { id: 'endpoints-servers',   label: 'Servers',    href: '#endpoints-servers',   tier: 2 },
-          { id: 'endpoints-desktops',  label: 'Desktops',   href: '#endpoints-desktops',  tier: 2 },
-          { id: 'endpoints-laptops',   label: 'Laptops',    href: '#endpoints-laptops',   tier: 3 },
-          { id: 'alerts',    label: 'Alerts',    icon: 'fa-solid fa-triangle-exclamation', href: '#alerts', badge: '37' },
-          { id: 'alerts-open',    label: 'Open',      href: '#alerts-open',    tier: 2, badge: '12' },
-          { id: 'alerts-resolved', label: 'Resolved', href: '#alerts-resolved', tier: 2 },
-          { id: 'health',    label: 'Health',    icon: 'fa-solid fa-heart-pulse', href: '#health', indicator: true },
+          { id: 'endpoints', label: 'Endpoints', icon: 'fa-solid fa-desktop', href: '#endpoints', badge: '1284',
+            children: [
+              { id: 'endpoints-servers',  label: 'Servers',  href: '#endpoints-servers' },
+              { id: 'endpoints-desktops', label: 'Desktops', href: '#endpoints-desktops',
+                children: [
+                  { id: 'endpoints-laptops', label: 'Laptops', href: '#endpoints-laptops' },
+                ] },
+            ] },
+          { id: 'alerts', label: 'Alerts', icon: 'fa-solid fa-triangle-exclamation', href: '#alerts', badge: '37',
+            // One parent starts OPEN so the nesting is visible without a click.
+            expanded: true,
+            children: [
+              { id: 'alerts-open',     label: 'Open',     href: '#alerts-open', badge: '12' },
+              { id: 'alerts-resolved', label: 'Resolved', href: '#alerts-resolved' },
+            ] },
+          { id: 'health', label: 'Health', icon: 'fa-solid fa-heart-pulse', href: '#health', indicator: true },
         ] },
         { label: 'Manage', items: [
-          { id: 'patches',    label: 'Patching',   icon: 'fa-solid fa-screwdriver-wrench', href: '#patches' },
-          { id: 'patch-approve', label: 'Approvals', href: '#patch-approve', tier: 2 },
-          { id: 'patch-history', label: 'History',   href: '#patch-history', tier: 2 },
-          { id: 'patch-history-2024', label: '2024', href: '#patch-history-2024', tier: 3 },
+          { id: 'patches', label: 'Patching', icon: 'fa-solid fa-screwdriver-wrench', href: '#patches',
+            children: [
+              { id: 'patch-approve', label: 'Approvals', href: '#patch-approve' },
+              { id: 'patch-history', label: 'History',   href: '#patch-history',
+                children: [
+                  { id: 'patch-history-2024', label: '2024', href: '#patch-history-2024' },
+                ] },
+            ] },
           { id: 'backups',    label: 'Backups',    icon: 'fa-solid fa-database', href: '#backups' },
           { id: 'automation', label: 'Automation', icon: 'fa-solid fa-bolt', href: '#automation' },
         ] },
@@ -232,14 +245,18 @@
         { label: 'Account', items: [
           { id: 'view-settings',   label: 'Preferences',  icon: 'fa-solid fa-sliders', href: '?view=settings' },
           { id: 'set-profile',     label: 'Profile',      icon: 'fa-solid fa-id-badge', href: '#set-profile' },
-          { id: 'set-security',    label: 'Security',     icon: 'fa-solid fa-shield-halved', href: '#set-security' },
-          { id: 'set-sessions',    label: 'Sessions',     href: '#set-sessions', tier: 2 },
-          { id: 'set-api-keys',    label: 'API keys',     href: '#set-api-keys', tier: 2 },
+          { id: 'set-security',    label: 'Security',     icon: 'fa-solid fa-shield-halved', href: '#set-security',
+            children: [
+              { id: 'set-sessions', label: 'Sessions', href: '#set-sessions' },
+              { id: 'set-api-keys', label: 'API keys', href: '#set-api-keys' },
+            ] },
         ] },
         { label: 'Organisation', items: [
           { id: 'set-org',         label: 'Organisation', icon: 'fa-solid fa-building', href: '#set-org' },
-          { id: 'set-members',     label: 'Members',      icon: 'fa-solid fa-user-group', href: '#set-members', badge: '48' },
-          { id: 'set-roles',       label: 'Roles',        href: '#set-roles', tier: 2 },
+          { id: 'set-members',     label: 'Members',      icon: 'fa-solid fa-user-group', href: '#set-members', badge: '48',
+            children: [
+              { id: 'set-roles', label: 'Roles', href: '#set-roles' },
+            ] },
           { id: 'set-billing',     label: 'Billing',      icon: 'fa-solid fa-credit-card', href: '#set-billing' },
         ] },
         { label: 'Platform', items: [

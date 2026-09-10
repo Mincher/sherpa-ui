@@ -40,36 +40,72 @@ anatomy:
                 - el: span
                   class: brand-icon
                   part: brand-icon
-                  slot: brand-icon
                   attrs:
                     aria-hidden: "true"
+                  children:
+                    - slot: brand-icon
                 - el: span
                   class: product
                   part: product
-                - el: span
-                  class: brand-actions
-                  part: brand-actions
-                  slot: brand-actions
+                - el: button
+                  class: hdr-btn pin
+                  part: pin
+                  attrs:
+                    type: button
+                    aria-pressed: "false"
+                    aria-label: Pin navigation
+                  children:
+                    - el: i
+                      class: fa-solid fa-thumbtack
+                      attrs:
+                        aria-hidden: "true"
+                - el: button
+                  class: hdr-btn settings
+                  part: settings
+                  attrs:
+                    type: button
+                    aria-pressed: "false"
+                    aria-label: Settings
+                  children:
+                    - el: i
+                      class: fa-solid fa-gear
+                      attrs:
+                        aria-hidden: "true"
             - el: div
-              class: search
-              part: search
+              class: quick-zone
+              part: quick-zone
               children:
-                - el: span
-                  class: search-icon
+                - el: div
+                  class: search
+                  part: search
+                  children:
+                    - el: i
+                      class: search-icon fa-solid fa-magnifying-glass
+                      attrs:
+                        aria-hidden: "true"
+                    - el: input
+                      class: search-input
+                      part: search-input
+                      attrs:
+                        type: search
+                        placeholder: Search
+                        aria-label: Search navigation
+                    - el: button
+                      class: search-clear
+                      part: search-clear
+                      attrs:
+                        type: button
+                        aria-label: Clear search
+                      children:
+                        - el: i
+                          class: fa-solid fa-xmark
+                          attrs:
+                            aria-hidden: "true"
+                - el: ul
+                  class: quick
+                  part: quick
                   attrs:
-                    aria-hidden: "true"
-                - el: input
-                  class: search-input
-                  part: search-input
-                  attrs:
-                    type: search
-                    placeholder: Search
-                    aria-label: Search navigation
-            - el: ul
-              class: quick
-              part: quick
-              attrs:
-                role: list
+                    role: list
         - el: div
           class: content
           part: content
@@ -96,7 +132,7 @@ props:
     name: data-active-id
     type: string
     kind: content
-    description: — id of the currently active item
+    description: id of the current item
   - $type: prop
     name: data-collapsed
     type: string
@@ -104,17 +140,41 @@ props:
     default: false
     description: — icon-only rail (labels, search, section labels hidden)
   - $type: prop
+    name: data-nav-state
+    type: enum
+    kind: content
+    values:
+      - collapsed
+      - hover
+      - default
+      - pinned
+      - settings
+    description: collapsed  | hover | default | pinned | settings
+  - $type: prop
     name: data-searchable
     type: string
     kind: style
-    description: show the search field (auto-set when product/search config given)
+    description: show the search field (auto-set when a product is given)
 states:
   - $type: state
-    name: searchable
-    selector: ":host([data-searchable])"
+    name: has-query
+    selector: ":host([data-has-query])"
   - $type: state
     name: collapsed
-    selector: ":host([data-collapsed])"
+    selector: ":host([data-nav-state=\"collapsed\"])"
+  - $type: state
+    name: not-searchable
+    selector: ":host(:not([data-searchable]))"
+  - $type: state
+    name: not-searching
+    selector: ":host(:not([data-searching]))"
+  - $type: state
+    name: focus-visible
+    selector: .hdr-btn:focus-visible
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (state, pinned). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: nav-select
@@ -130,43 +190,73 @@ events:
     trigger:
       "on": input
       node: .search-input
+  - $type: event
+    name: nav-state-change
+    bubbles: true
+    composed: true
 tokens:
-  rail.background: "{sherpa.style-surface-base}"
-  rail.color: "{sherpa.style-content-base}"
-  rail.border-inline-end: "{sherpa.display-border-width-base}"
-  header.gap: "{sherpa.display-space-xs}"
-  header.padding: "{sherpa.display-space-sm}"
-  brand.gap: "{sherpa.display-space-sm}"
-  brand.min-block-size: "{sherpa.display-size-3xl}"
-  brand-icon.inline-size: "{sherpa.display-size-3xl}"
-  brand-icon.block-size: "{sherpa.display-size-3xl}"
-  brand-icon.font-size: "{sherpa.font-size-body-large}"
+  rail.background: "{sherpa.navigation-nav-surface-default}"
+  rail.color: "{sherpa.theme-content-body-base}"
+  rail.box-shadow: "{sherpa.navigation-nav-shadow-offset-x}"
+  header.gap: "{sherpa.display-mode-space-xs}"
+  header.padding-block-end: "{sherpa.display-mode-space-xs}"
+  brand.gap: "{sherpa.display-mode-space-sm}"
+  brand.padding-inline-end: "{sherpa.display-mode-space-xs}"
+  brand.min-block-size: "{sherpa.display-mode-size-3xl}"
+  brand-icon.inline-size: "{sherpa.display-mode-size-3xl}"
+  brand-icon.block-size: "{sherpa.display-mode-size-3xl}"
+  brand-icon.border-end-end-radius: "{sherpa.display-mode-border-rounding-lg}"
+  brand-icon.background: "{sherpa.theme-surface-active-3}"
+  brand-icon.color: "{sherpa.theme-content-body-base-fixed}"
+  brand-icon.font-size: "{sherpa.display-mode-size-lg}"
   product.font-size: "{sherpa.font-size-body-large}"
-  product.font-weight: "{sherpa.font-weight-semibold}"
-  product.color: "{sherpa.theme-content-body-base}"
-  brand-actions.gap: "{sherpa.display-space-2xs}"
-  search.gap: "{sherpa.display-space-xs}"
-  search.padding-inline: "{sherpa.display-space-sm}"
-  search.block-size: "{sherpa.display-size-2xl}"
-  search.border-radius: "{sherpa.display-border-rounding-base}"
-  search.border-width: "{sherpa.display-border-width-base}"
+  product.font-weight: "{sherpa.font-weight-medium}"
+  product.line-height: "{sherpa.theme-content-line-height-large}"
+  product.color: "{sherpa.theme-content-body-1}"
+  hdr-btn.--_btn-box: "{sherpa.display-mode-space-xl}"
+  hdr-btn.--_btn-glyph: "{sherpa.theme-content-size-small}"
+  hdr-btn.border-width: "{sherpa.style-border-width}"
+  hdr-btn.border-radius: "{sherpa.structure-rounding-top-left}"
+  hdr-btn.color: "{sherpa.style-content-base}"
+  quick-zone.gap: "{sherpa.display-mode-space-xs}"
+  quick-zone.padding: "{sherpa.display-mode-space-xs}"
+  search.gap: "{sherpa.display-mode-space-xs}"
+  search.padding-inline-start: "{sherpa.structure-space-padding}"
+  search.block-size: "{sherpa.display-mode-size-2xl}"
+  search.border-radius: "{sherpa.structure-rounding-top-left}"
+  search.border-width: "{sherpa.style-border-width}"
   search.border-color: "{sherpa.style-border-base}"
   search.background: "{sherpa.style-surface-base}"
-  search-icon.font-size: "{sherpa.font-size-body-small}"
+  search-icon.color: "{sherpa.theme-content-body-1}"
+  search-icon.font-size: "{sherpa.theme-size-icon-xs}"
   search-input.font-size: "{sherpa.font-size-body-base}"
-  search-input.color: "{sherpa.style-content-base}"
-  quick.gap: "{sherpa.display-space-3xs}"
-  content.padding: "{sherpa.display-space-sm}"
-  content.gap: "{sherpa.display-space-sm}"
-  section.gap: "{sherpa.display-space-3xs}"
-  section-label.padding: "{sherpa.display-space-2xs}"
+  search-input.line-height: "{sherpa.theme-content-line-height-base}"
+  search-input.color: "{sherpa.theme-content-body-base}"
+  search-clear.inline-size: "{sherpa.display-mode-size-2xl}"
+  search-clear.border-start-end-radius: "{sherpa.structure-rounding-top-right}"
+  search-clear.border-end-end-radius: "{sherpa.structure-rounding-bottom-right}"
+  search-clear.color: "{sherpa.theme-content-body-1}"
+  search-clear.font-size: "{sherpa.theme-content-size-base}"
+  quick.gap: "{sherpa.display-mode-space-xs}"
+  content.padding-inline: "{sherpa.display-mode-space-xs}"
+  content.gap: "{sherpa.display-mode-space-xs}"
+  section.gap: "{sherpa.display-mode-space-xs}"
+  section-label.gap: "{sherpa.display-mode-space-xs}"
+  section-label.padding: "{sherpa.display-mode-space-2xs}"
   section-label.font-size: "{sherpa.font-size-body-xs}"
-  section-label.font-weight: "{sherpa.font-weight-semibold}"
+  section-label.font-weight: "{sherpa.font-weight-regular}"
+  section-label.line-height: "{sherpa.theme-content-line-height-xs}"
   section-label.color: "{sherpa.theme-content-body-1}"
-  section-items.gap: "{sherpa.display-space-3xs}"
-  footer.padding: "{sherpa.display-space-sm}"
-  footer.border-block-start: "{sherpa.display-border-width-base}"
+  section-items.gap: "{sherpa.display-mode-space-xs}"
+  footer.padding: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Primary Navigation
     category: nav
+    jsProps:
+      - name: state
+        type: string
+        access: read-write
+      - name: pinned
+        type: string
+        access: read-write

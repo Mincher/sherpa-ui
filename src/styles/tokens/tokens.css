@@ -1757,6 +1757,81 @@
   --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
   }
 
+  /* structure — the 2xs size mode ([data-size]). */
+  [data-size="2xs"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-xs);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-sm);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-2xs);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-sm);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-sm);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-sm);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-sm);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-3xs);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-3xs);
+  }
+
+  /* structure — the lg size mode ([data-size]). */
+  [data-size="lg"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-2xl);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-large);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+  }
+
+  /* structure — the sm size mode ([data-size]). */
+  [data-size="sm"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-xl);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-small);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-base);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-xs);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
+  }
+
+  /* structure — the xl size mode ([data-size]). */
+  [data-size="xl"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-3xl);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-large);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-lg);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-lg);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-lg);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-lg);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+  }
+
+  /* structure — the xs size mode ([data-size]). */
+  [data-size="xs"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-base);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-xs);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xs);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-2xs);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-2xs);
+  }
+
   /* Snap — per-edge corner rounding ([data-snap]). */
   [data-snap="all"] {
     --sherpa-structure-rounding-top-left: 0px;

@@ -96,7 +96,7 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
     // Click the composed nav-item's inner row (event bubbles as item-click).
     const item = reports.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
     await item.rendered;
-    (item.shadowRoot!.querySelector('.row') as HTMLElement).click();
+    (item.shadowRoot!.querySelector('.nav-button, .nav-link') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 10));
 
     return { selected, activeId: nav.getAttribute('data-active-id') };
@@ -393,4 +393,293 @@ test('the default quick items are Home · Recent · Favorites', async ({ page })
     ).map((el) => el.dataset['label']);
   });
   expect(labels).toEqual(['Home', 'Recent', 'Favorites']);
+});
+
+/* ── Nesting: children, chevrons, icons and the collapsed rail ───────────── */
+
+/** A config with a two-deep branch, so tier 1, 2 and 3 are all exercised. */
+const NESTED = {
+  product: { name: 'Test' },
+  quickItems: [],
+  sections: [
+    {
+      label: 'Monitor',
+      items: [
+        {
+          id: 'endpoints',
+          label: 'Endpoints',
+          icon: 'fa-solid fa-desktop',
+          badge: '1284',
+          children: [
+            { id: 'servers', label: 'Servers' },
+            // A child that is itself a parent — its own child must stay hidden
+            // until BOTH it and its parent are open.
+            { id: 'desktops', label: 'Desktops', children: [{ id: 'laptops', label: 'Laptops' }] },
+          ],
+        },
+        { id: 'health', label: 'Health', icon: 'fa-solid fa-heart-pulse' },
+      ],
+    },
+  ],
+};
+
+test('children start hidden, indent one tier deeper, and carry no icon', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(c: unknown): void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate(config);
+    nav.setAttribute('data-nav-state', 'pinned');
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    const row = (label: string): HTMLElement =>
+      Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
+        (li) => li.querySelector('sherpa-nav-item')?.getAttribute('data-label') === label,
+      )!;
+    const item = (label: string): HTMLElement =>
+      row(label).querySelector('sherpa-nav-item') as HTMLElement;
+    const shown = (label: string): boolean => row(label).offsetParent !== null;
+    const iconShown = (label: string): boolean =>
+      getComputedStyle(item(label).shadowRoot!.querySelector('.icon')!).display !== 'none';
+    const chevronShown = (label: string): boolean =>
+      getComputedStyle(item(label).shadowRoot!.querySelector('.expand')!).display !== 'none';
+
+    return {
+      // Every row is stamped, flat, whether visible or not.
+      stamped: nav.shadowRoot!.querySelectorAll('.content .nav-row').length,
+      parentShown: shown('Endpoints'),
+      childShown: shown('Servers'),
+      grandchildShown: shown('Laptops'),
+      // Depth → the Figma indent tiers.
+      tiers: {
+        endpoints: item('Endpoints').getAttribute('data-tier'),
+        servers: item('Servers').getAttribute('data-tier'),
+        laptops: item('Laptops').getAttribute('data-tier'),
+      },
+      padding: {
+        endpoints: getComputedStyle(item('Endpoints')).paddingLeft,
+        servers: getComputedStyle(item('Servers')).paddingLeft,
+        laptops: getComputedStyle(item('Laptops')).paddingLeft,
+      },
+      // Only top-level rows carry an icon.
+      icons: { endpoints: iconShown('Endpoints'), servers: iconShown('Servers') },
+      // Only parents carry a chevron.
+      chevrons: {
+        endpoints: chevronShown('Endpoints'),
+        desktops: chevronShown('Desktops'),
+        health: chevronShown('Health'),
+      },
+    };
+  }, NESTED);
+
+  // Five rows exist: Endpoints, Servers, Desktops, Laptops, Health.
+  expect(r.stamped).toBe(5);
+  // A parent is closed by default, so nothing below it shows.
+  expect(r.parentShown).toBe(true);
+  expect(r.childShown).toBe(false);
+  expect(r.grandchildShown).toBe(false);
+  // Tier 1 needs no attribute; 2 and 3 are written.
+  expect(r.tiers.endpoints).toBeNull();
+  expect(r.tiers.servers).toBe('2');
+  expect(r.tiers.laptops).toBe('3');
+  // Figma Navigation indent-tier-1/2/3 = 8 / 32 / 48.
+  expect(r.padding.endpoints).toBe('8px');
+  expect(r.padding.servers).toBe('32px');
+  expect(r.padding.laptops).toBe('48px');
+  // "All nav items have an icon unless they are child items."
+  expect(r.icons.endpoints).toBe(true);
+  expect(r.icons.servers).toBe(false);
+  // The Figma hasChildren chevron, on parents only.
+  expect(r.chevrons.endpoints).toBe(true);
+  expect(r.chevrons.desktops).toBe(true);
+  expect(r.chevrons.health).toBe(false);
+});
+
+test('the chevron toggles a subtree without navigating, and a shut parent keeps its grandchildren hidden', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(c: unknown): void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate(config);
+    nav.setAttribute('data-nav-state', 'pinned');
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    const row = (label: string): HTMLElement =>
+      Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
+        (li) => li.querySelector('sherpa-nav-item')?.getAttribute('data-label') === label,
+      )!;
+    const shown = (label: string): boolean => row(label).offsetParent !== null;
+    const chevron = (label: string): HTMLElement =>
+      (row(label).querySelector('sherpa-nav-item') as HTMLElement)
+        .shadowRoot!.querySelector('.expand') as HTMLElement;
+
+    const selects: string[] = [];
+    nav.addEventListener('nav-select', (e) => selects.push((e as CustomEvent).detail.id));
+
+    chevron('Endpoints').click();
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const opened = { servers: shown('Servers'), desktops: shown('Desktops'), laptops: shown('Laptops') };
+
+    chevron('Desktops').click();
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const bothOpen = { laptops: shown('Laptops') };
+
+    // Shutting the GRANDPARENT must hide the grandchild, even though Desktops
+    // itself is still marked open. This is why visibility walks the whole
+    // ancestor chain rather than looking one level up.
+    chevron('Endpoints').click();
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const grandparentShut = { desktops: shown('Desktops'), laptops: shown('Laptops') };
+
+    return { opened, bothOpen, grandparentShut, selects };
+  }, NESTED);
+
+  expect(r.opened.servers).toBe(true);
+  expect(r.opened.desktops).toBe(true);
+  expect(r.opened.laptops).toBe(false); // Desktops is still shut
+  expect(r.bothOpen.laptops).toBe(true);
+  expect(r.grandparentShut.desktops).toBe(false);
+  expect(r.grandparentShut.laptops).toBe(false);
+  // A chevron click is not a navigation.
+  expect(r.selects).toEqual([]);
+});
+
+test('the collapsed rail hides every child row, tag and chevron', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(c: unknown): void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate(config);
+
+    const row = (label: string): HTMLElement =>
+      Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
+        (li) => li.querySelector('sherpa-nav-item')?.getAttribute('data-label') === label,
+      )!;
+    const item = (label: string): HTMLElement =>
+      row(label).querySelector('sherpa-nav-item') as HTMLElement;
+
+    // Open the parent FIRST, so the test proves collapsing hides an already-open
+    // subtree rather than relying on it being shut anyway.
+    nav.setAttribute('data-nav-state', 'pinned');
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    (item('Endpoints').shadowRoot!.querySelector('.expand') as HTMLElement).click();
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const openFirst = row('Servers').offsetParent !== null;
+
+    nav.setAttribute('data-nav-state', 'collapsed');
+    // The rail transitions inline-size over 160ms, so a short wait reads a
+    // mid-flight width (232px on the way down from 320). Wait for the transition.
+    await new Promise<void>((resolve) => {
+      const done = (): void => resolve();
+      nav.addEventListener('transitionend', done, { once: true });
+      setTimeout(done, 400);
+    });
+
+    const sr = item('Endpoints').shadowRoot!;
+    const vis = (sel: string): boolean => getComputedStyle(sr.querySelector(sel)!).display !== 'none';
+    const rows = Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.content .nav-row'));
+    return {
+      openFirst,
+      railWidth: Math.round(nav.getBoundingClientRect().width),
+      childrenShowing: rows.filter((li) => li.dataset['parent'] && li.offsetParent !== null).length,
+      // The icon survives — in a 40px rail the icon IS the row.
+      iconShown: vis('.icon'),
+      // The tag and chevron live in / with `content`, which the isVisible flag hides.
+      badgeShown: vis('.nav-link .badge') || vis('.nav-button .badge'),
+      chevronShown: vis('.expand'),
+    };
+  }, NESTED);
+
+  expect(r.openFirst).toBe(true);
+  expect(r.railWidth).toBe(40);
+  expect(r.childrenShowing).toBe(0);
+  expect(r.iconShown).toBe(true);
+  expect(r.badgeShown).toBe(false);
+  expect(r.chevronShown).toBe(false);
+});
+
+test('the collapsed rail centres its icons, and the header buttons use the Structure sm mode', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(c: unknown): void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate(config);
+    nav.setAttribute('data-nav-state', 'pinned');
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    const sr = nav.shadowRoot!;
+    // Figma pins the pin/settings Buttons to Structure=sm: height → space/xl 24,
+    // icon-size → content/size/small 12.
+    const pin = sr.querySelector<HTMLElement>('.pin')!;
+    const pinBox = pin.getBoundingClientRect();
+    const header = {
+      box: `${Math.round(pinBox.width)}x${Math.round(pinBox.height)}`,
+      glyph: getComputedStyle(pin).fontSize,
+    };
+
+    const item = (label: string): HTMLElement =>
+      Array.from(sr.querySelectorAll<HTMLElement>('.nav-row'))
+        .find((li) => li.querySelector('sherpa-nav-item')?.getAttribute('data-label') === label)!
+        .querySelector('sherpa-nav-item') as HTMLElement;
+
+    const endpoints = item('Endpoints');
+    // Figma Icon on the Navigation Item: Theme size/icon/xs → 16 square.
+    const openIconBox = (() => {
+      const el = endpoints.shadowRoot!.querySelector<HTMLElement>(
+        `${endpoints.getAttribute('data-href') ? '.nav-link' : '.nav-button'} .icon`,
+      )!;
+      const b = el.getBoundingClientRect();
+      return `${Math.round(b.width)}x${Math.round(b.height)}`;
+    })();
+
+    nav.setAttribute('data-nav-state', 'collapsed');
+    await new Promise<void>((resolve) => {
+      const done = (): void => resolve();
+      nav.addEventListener('transitionend', done, { once: true });
+      setTimeout(done, 400);
+    });
+
+    const iconEl = endpoints.shadowRoot!.querySelector<HTMLElement>(
+      `${endpoints.getAttribute('data-href') ? '.nav-link' : '.nav-button'} .icon`,
+    )!;
+    const navRect = nav.getBoundingClientRect();
+    const iconRect = iconEl.getBoundingClientRect();
+    return {
+      header,
+      openIconBox,
+      collapsed: {
+        railWidth: Math.round(navRect.width),
+        iconBox: `${Math.round(iconRect.width)}x${Math.round(iconRect.height)}`,
+        // 0 = the icon's centre is the rail's centre.
+        centreOffset: Math.round(
+          iconRect.left + iconRect.width / 2 - (navRect.left + navRect.width / 2),
+        ),
+      },
+    };
+  }, NESTED);
+
+  // Structure=sm, read from that mode's tokens rather than a look-alike constant.
+  expect(r.header.box).toBe('24x24');
+  expect(r.header.glyph).toBe('12px');
+
+  // Theme size/icon/xs — the same 16px box in both rails.
+  expect(r.openIconBox).toBe('16x16');
+  expect(r.collapsed.iconBox).toBe('16x16');
+
+  // An icon-only row is a square, so the glyph must sit dead centre. The row's
+  // asymmetric 4/8 inset used to leave it 4px to the left.
+  expect(r.collapsed.railWidth).toBe(40);
+  expect(r.collapsed.centreOffset).toBe(0);
 });
