@@ -164,3 +164,277 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
     expect(got['align'], `${name} align`).toBe('start');
   }
 });
+
+/* ── Column filters ──────────────────────────────────────────────────────── */
+
+/** A grid with two text columns and one numeric, so a mixed filter is exercised. */
+const FILTER_CONFIG = {
+  columns: [
+    { field: 'name', header: 'Name' },
+    { field: 'status', header: 'Status' },
+    { field: 'spend', header: 'Spend', type: 'number' },
+  ],
+  rows: [
+    { name: 'Marcus Reyes', status: 'trial', spend: 257 },
+    { name: 'Omar Haddad', status: 'trial', spend: 805 },
+    { name: 'Jane Okafor', status: 'active', spend: 120 },
+    { name: 'Nina Berg', status: 'active', spend: 668 },
+  ],
+};
+
+/**
+ * Install an in-page grid builder on `window`, so each test can build one without
+ * an `eval`'d string. Returns the element, already populated.
+ */
+interface GridEl extends HTMLElement {
+  rendered?: Promise<void>;
+  populate(config: unknown): void;
+}
+declare global {
+  interface Window {
+    __buildGrid(config: unknown): Promise<GridEl>;
+  }
+}
+
+async function installBuilder(page: import('@playwright/test').Page): Promise<void> {
+  await page.evaluate(() => {
+    window.__buildGrid = async (config: unknown) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const el = document.createElement('sherpa-data-grid') as GridEl;
+      el.setAttribute('data-filterable', '');
+      root.appendChild(el);
+      await el.rendered;
+      el.populate(config);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return el;
+    };
+  });
+}
+
+test('typing in a filter narrows rows to substring matches in THAT column', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const cell = (field: string): HTMLElement =>
+      sr.querySelector(`.filter-cell[data-field="${field}"]`) as HTMLElement;
+    const type = async (field: string, value: string): Promise<void> => {
+      const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await new Promise((res) => setTimeout(res, 20));
+    };
+    const names = (): (string | null)[] =>
+      Array.from(sr.querySelectorAll('.body .row')).map((row) => row.children[1]!.textContent);
+
+    const events: unknown[] = [];
+    el.addEventListener('filter-change', (e) => events.push((e as CustomEvent).detail));
+
+    await type('name', 'ar'); // substring, not prefix: Marcus AND Omar
+    const substring = names();
+
+    await type('name', 'MARCUS'); // case-insensitive
+    const insensitive = names();
+
+    await type('name', ''); // cleared → everything back
+    const cleared = names();
+
+    // A second column ANDs with the first.
+    await type('status', 'trial');
+    const oneFilter = names();
+    await type('name', 'omar');
+    const twoFilters = names();
+
+    // A numeric column filters on its stringified value.
+    await type('name', '');
+    await type('status', '');
+    await type('spend', '80');
+    const numeric = names();
+
+    return { substring, insensitive, cleared, oneFilter, twoFilters, numeric, events };
+  }, FILTER_CONFIG);
+
+  // Substring, so "ar" finds both "Marcus" and "Omar" — a table filter is a find,
+  // not a prefix match.
+  expect(r.substring).toEqual(['Marcus Reyes', 'Omar Haddad']);
+  expect(r.insensitive).toEqual(['Marcus Reyes']);
+  expect(r.cleared).toHaveLength(4);
+
+  // Several filters must ALL match.
+  expect(r.oneFilter).toEqual(['Marcus Reyes', 'Omar Haddad']);
+  expect(r.twoFilters).toEqual(['Omar Haddad']);
+
+  // Values are stringified, so a numeric column filters as readily as a text one.
+  expect(r.numeric).toEqual(['Omar Haddad']);
+
+  // The event still fires for callers driving a server-side query, and carries the
+  // whole filter set plus the resulting count.
+  const last = r.events[r.events.length - 1] as Record<string, unknown>;
+  expect(last['field']).toBe('spend');
+  expect(last['visible']).toBe(1);
+  expect(last['filters']).toEqual({ spend: '80' });
+});
+
+test('a populated filter shows a clear button that empties only its own column', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const cell = (field: string): HTMLElement =>
+      sr.querySelector(`.filter-cell[data-field="${field}"]`) as HTMLElement;
+    const clear = (field: string): HTMLElement =>
+      cell(field).querySelector('.filter-clear') as HTMLElement;
+    const shown = (el2: Element): boolean => getComputedStyle(el2).display !== 'none';
+    const type = async (field: string, value: string): Promise<void> => {
+      const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await new Promise((res) => setTimeout(res, 20));
+    };
+
+    const empty = { clearShown: shown(clear('name')), flag: cell('name').hasAttribute('data-has-value') };
+
+    await type('name', 'ar');
+    await type('status', 'trial');
+    const populated = {
+      clearShown: shown(clear('name')),
+      flag: cell('name').hasAttribute('data-has-value'),
+      // It sits INSIDE the field, at its trailing edge — not out in the cell.
+      insideField: (() => {
+        const f = cell('name').querySelector('.filter-field')!.getBoundingClientRect();
+        const c = clear('name').getBoundingClientRect();
+        return c.right <= f.right + 1 && c.left >= f.left;
+      })(),
+      rows: sr.querySelectorAll('.body .row').length,
+    };
+
+    clear('name').click();
+    await new Promise((res) => setTimeout(res, 20));
+    const afterClear = {
+      nameValue: cell('name').querySelector<HTMLInputElement>('.filter-input')!.value,
+      nameClearShown: shown(clear('name')),
+      // The OTHER column's filter must survive.
+      statusValue: cell('status').querySelector<HTMLInputElement>('.filter-input')!.value,
+      rows: sr.querySelectorAll('.body .row').length,
+    };
+
+    return { empty, populated, afterClear };
+  }, FILTER_CONFIG);
+
+  // Hidden until there is something to clear.
+  expect(r.empty.clearShown).toBe(false);
+  expect(r.empty.flag).toBe(false);
+
+  expect(r.populated.clearShown).toBe(true);
+  expect(r.populated.flag).toBe(true);
+  expect(r.populated.insideField).toBe(true);
+  expect(r.populated.rows).toBe(2); // name "ar" AND status "trial"
+
+  // Clearing empties ITS field only; the status filter still applies, so the two
+  // trial rows remain rather than all four.
+  expect(r.afterClear.nameValue).toBe('');
+  expect(r.afterClear.nameClearShown).toBe(false);
+  expect(r.afterClear.statusValue).toBe('trial');
+  expect(r.afterClear.rows).toBe(2);
+});
+
+test('a filter matching nothing keeps the filter row usable', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const input = sr.querySelector<HTMLInputElement>(
+      '.filter-cell[data-field="name"] .filter-input',
+    )!;
+    input.value = 'zzzzzz';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await new Promise((res) => setTimeout(res, 20));
+
+    const shown = (sel: string): boolean => {
+      const node = sr.querySelector(sel);
+      return !!node && getComputedStyle(node).display !== 'none';
+    };
+    return {
+      rows: sr.querySelectorAll('.body .row').length,
+      // data-empty would hide the whole <table> and take the input with it.
+      hostEmpty: el.hasAttribute('data-empty'),
+      hostNoMatches: el.hasAttribute('data-no-matches'),
+      tableShown: shown('.grid'),
+      filterRowShown: shown('.filter-row'),
+      noMatchesShown: shown('.no-matches'),
+      emptyShown: shown('.empty'),
+      // The field the user is typing in must still hold focus-worthy state.
+      inputValue: input.value,
+    };
+  }, FILTER_CONFIG);
+
+  expect(r.rows).toBe(0);
+  // The distinction that matters: no-matches is NOT empty.
+  expect(r.hostEmpty).toBe(false);
+  expect(r.hostNoMatches).toBe(true);
+  expect(r.tableShown).toBe(true);
+  expect(r.filterRowShown).toBe(true);
+  expect(r.noMatchesShown).toBe(true);
+  expect(r.emptyShown).toBe(false);
+  expect(r.inputValue).toBe('zzzzzz');
+});
+
+test('row-click resolves against the FILTERED list, not the full one', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const input = sr.querySelector<HTMLInputElement>(
+      '.filter-cell[data-field="status"] .filter-input',
+    )!;
+    input.value = 'active'; // leaves Jane (index 2) and Nina (index 3) of the full list
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await new Promise((res) => setTimeout(res, 20));
+
+    const clicks: unknown[] = [];
+    el.addEventListener('row-click', (e) => clicks.push((e as CustomEvent).detail));
+    // Click the FIRST visible row. Its data-index is 0, which in the UNFILTERED
+    // list would be Marcus — the wrong record.
+    (sr.querySelector('.body .row .cell') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 20));
+    return { clicks };
+  }, FILTER_CONFIG);
+
+  expect(r.clicks).toHaveLength(1);
+  const detail = r.clicks[0] as { index: number; row: Record<string, unknown> };
+  expect(detail.index).toBe(0);
+  expect(detail.row['name']).toBe('Jane Okafor');
+});
+
+test('re-populating clears stale filters', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const input = sr.querySelector<HTMLInputElement>(
+      '.filter-cell[data-field="name"] .filter-input',
+    )!;
+    input.value = 'marcus';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await new Promise((res) => setTimeout(res, 20));
+    const filtered = sr.querySelectorAll('.body .row').length;
+
+    // New data may not even have that column. Carrying the filter over would hide
+    // rows against a filter the user can no longer see.
+    el.populate({
+      columns: [{ field: 'other', header: 'Other' }],
+      rows: [{ other: 'x' }, { other: 'y' }],
+    });
+    await new Promise((res) => setTimeout(res, 20));
+    return {
+      filtered,
+      afterRepopulate: sr.querySelectorAll('.body .row').length,
+      anyValueFlag: !!sr.querySelector('.filter-cell[data-has-value]'),
+    };
+  }, FILTER_CONFIG);
+
+  expect(r.filtered).toBe(1);
+  expect(r.afterRepopulate).toBe(2);
+  expect(r.anyValueFlag).toBe(false);
+});

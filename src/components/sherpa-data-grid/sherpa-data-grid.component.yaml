@@ -61,6 +61,12 @@ anatomy:
       slot: empty
       attrs:
         role: status
+    - el: div
+      class: no-matches
+      part: no-matches
+      slot: no-matches
+      attrs:
+        role: status
     - el: template
       class: head-cell-tpl
       children:
@@ -112,6 +118,9 @@ states:
     name: filterable
     selector: ":host([data-filterable])"
   - $type: state
+    name: no-matches
+    selector: ":host([data-no-matches])"
+  - $type: state
     name: focus-visible
     selector: .select-all:focus-visible
 events:
@@ -146,6 +155,14 @@ events:
     name: value
     bubbles: true
     composed: true
+  - $type: event
+    name: filters
+    bubbles: true
+    composed: true
+  - $type: event
+    name: visible
+    bubbles: true
+    composed: true
 tokens:
   select-cell.inline-size: "{sherpa.display-mode-space-2xl}"
   select-cell.padding: "{sherpa.display-mode-space-2xs}"
@@ -166,6 +183,16 @@ tokens:
   filter-input.color: "{sherpa.style-content-base}"
   filter-input.border-width: "{sherpa.style-border-width}"
   filter-input.border-radius: "{sherpa.structure-rounding-top-left}"
+  filter-clear.inline-size: "{sherpa.theme-size-icon-xs}"
+  filter-clear.block-size: "{sherpa.theme-size-icon-xs}"
+  filter-clear.margin-inline-start: "{sherpa.display-mode-space-3xs}"
+  filter-clear.border-radius: "{sherpa.structure-rounding-top-left}"
+  filter-clear.color: "{sherpa.theme-content-body-1}"
+  filter-clear.font-size: "{sherpa.theme-content-size-small}"
+  no-matches.padding: "{sherpa.display-mode-space-xs}"
+  no-matches.color: "{sherpa.theme-content-body-1}"
+  no-matches.font-size: "{sherpa.font-size-body-small}"
+  no-matches.line-height: "{sherpa.theme-content-line-height-small}"
   head-cell.background: "{sherpa.theme-surface-default-1}"
   head-cell.border-block-end: "{sherpa.display-mode-border-width-sm}"
   head-btn.gap: "{sherpa.display-mode-space-2xs}"

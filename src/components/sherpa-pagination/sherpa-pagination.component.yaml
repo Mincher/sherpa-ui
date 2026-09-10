@@ -158,26 +158,31 @@ events:
     bubbles: true
     composed: true
 tokens:
-  results.gap: "{sherpa.display-space-xs}"
+  results.gap: "{sherpa.display-mode-space-xs}"
   rows-label.color: "{sherpa.theme-content-body-base}"
-  controls.gap: "{sherpa.display-space-xs}"
+  rows-label.font-size: "{sherpa.font-size-body-small}"
+  rows-label.line-height: "{sherpa.theme-content-line-height-small}"
+  page-input.margin-inline: "{sherpa.display-mode-space-xs}"
+  total.margin-inline-end: "{sherpa.display-mode-space-xs}"
   total.color: "{sherpa.theme-content-body-base}"
+  total.font-size: "{sherpa.font-size-body-small}"
+  total.line-height: "{sherpa.theme-content-line-height-small}"
   rows.padding: "{sherpa.theme-padding-sm}"
   rows.border-width: "{sherpa.style-border-width}"
   rows.border-radius: "{sherpa.structure-rounding-top-left}"
-  rows.background: "{sherpa.style-surface-base}"
-  rows.color: "{sherpa.style-content-base}"
+  rows.background: "{sherpa.theme-surface-default-base}"
+  rows.color: "{sherpa.theme-content-body-1}"
   rows.font-size: "{sherpa.font-size-body-base}"
   page-input.padding: "{sherpa.theme-padding-sm}"
   page-input.border-width: "{sherpa.style-border-width}"
   page-input.border-radius: "{sherpa.structure-rounding-top-left}"
-  page-input.background: "{sherpa.style-surface-base}"
-  page-input.color: "{sherpa.style-content-base}"
+  page-input.background: "{sherpa.theme-surface-default-base}"
+  page-input.color: "{sherpa.theme-content-body-1}"
   page-input.font-size: "{sherpa.font-size-body-base}"
   btn.padding-inline: "{sherpa.structure-space-padding}"
   btn.border-width: "{sherpa.style-border-width}"
   btn.border-radius: "{sherpa.structure-rounding-top-left}"
-  btn.color: "{sherpa.theme-content-body-base}"
+  btn.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:
     figmaName: Pagination

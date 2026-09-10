@@ -103,3 +103,40 @@ test('changing the rows-per-page select fires page-size-change', async ({ page }
   });
   expect(r.size).toBe(25);
 });
+
+test('the host is border-box, so padding does not push it wider than a sibling', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    // A fixed-width column, with a plain block and the pager as siblings. Both are
+    // 100% wide, so any box-model mismatch shows up as a width difference.
+    const col = document.createElement('div');
+    col.style.cssText = 'inline-size: 600px; display: flex; flex-direction: column;';
+    const ruler = document.createElement('div');
+    ruler.style.cssText = 'inline-size: 100%; block-size: 8px;';
+    const pager = document.createElement('sherpa-pagination') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    pager.setAttribute('data-page', '1');
+    pager.setAttribute('data-total-pages', '3');
+    col.append(ruler, pager);
+    root.appendChild(col);
+    await pager.rendered;
+
+    const cs = getComputedStyle(pager);
+    return {
+      boxSizing: cs.boxSizing,
+      padding: cs.paddingLeft,
+      rulerWidth: Math.round(ruler.getBoundingClientRect().width),
+      pagerWidth: Math.round(pager.getBoundingClientRect().width),
+    };
+  });
+
+  // `*` inside a shadow root does NOT match :host, so the base reset has to set
+  // this on :host explicitly. Without it the pager's 12px side padding rendered
+  // OUTSIDE its 100% width and it sat 24px wider than the grid above it.
+  expect(r.boxSizing).toBe('border-box');
+  expect(r.padding).not.toBe('0px'); // the padding that would have overflowed
+  expect(r.pagerWidth).toBe(r.rulerWidth);
+  expect(r.pagerWidth).toBe(600);
+});

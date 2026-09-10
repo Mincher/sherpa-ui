@@ -12,6 +12,16 @@
   are both opt-in and CSS-gated — the columns/rows exist in the template always and
   CSS reveals them off the host attribute.
 
+  Typing in a filter input narrows the visible rows to those whose value in THAT
+  column contains the typed text, case-insensitively. Several columns filter
+  together (every active filter must match). The grid does this itself — it holds
+  the row records, so making the caller re-populate on every keystroke would be
+  slower and would lose the caller's own sort/selection state. filter-change still
+  fires for callers that want to drive a server-side query instead.
+
+  A populated filter shows a trailing clear button. CSS reveals it off the cell's
+  data-has-value flag, so JS only writes state.
+
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
     data-selectable                          show a leading checkbox column (select-all + per-row)
@@ -21,7 +31,7 @@
     sort-change      — detail: { field, direction }
     row-click        — detail: { index, row }
     selection-change — detail: { selected: string[] }   (row indices as strings)
-    filter-change    — detail: { field, value }
+    filter-change    — detail: { field, value, filters, visible }
 -->
 <template id="default">
   <table class="grid" part="grid">
@@ -41,6 +51,12 @@
     <slot name="empty">No rows to display.</slot>
   </div>
 
+  <!-- Shown when a column filter matches nothing. Distinct from `empty`, which is
+       for a grid with no data at all and which hides the whole table. -->
+  <div class="no-matches" part="no-matches" role="status">
+    <slot name="no-matches">No rows match the current filters.</slot>
+  </div>
+
   <template class="head-cell-tpl">
     <th class="head-cell" scope="col">
       <button class="head-btn" type="button">
@@ -50,9 +66,19 @@
     </th>
   </template>
 
+  <!--
+    A filter cell wraps its input so a trailing clear button can sit inside the
+    field's box. The button exists in the template from the start; CSS reveals it
+    off the cell's data-has-value flag, which the input handler writes.
+  -->
   <template class="filter-cell-tpl">
     <th class="filter-cell" scope="col">
-      <input class="filter-input" type="text" />
+      <span class="filter-field">
+        <input class="filter-input" type="text" />
+        <button class="filter-clear" type="button">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </span>
     </th>
   </template>
 

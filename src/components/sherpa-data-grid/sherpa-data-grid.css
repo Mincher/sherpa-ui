@@ -86,8 +86,17 @@
    `font: inherit` was wrong here: the input is a <th> child, and the UA's <th>
    default is BOLD + centred, so the filter text rendered at weight 700. The shorthand
    inherited that instead of overriding it. Every part is now stated explicitly. */
-.filter-input {
+/* The field wraps the input and its clear button so the button sits INSIDE the
+   field's box, at its trailing edge, rather than beside it in the cell. */
+.filter-field {
+  display: flex;
+  align-items: center;
   inline-size: 100%;
+}
+
+.filter-input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -107,6 +116,53 @@
   font-weight: var(--sherpa-font-weight-regular, 400);
   font-style: normal;
 }
+
+/* ── Clear button ────────────────────────────────────────────────────────
+   An icon-only Transparent button at the trailing edge of the field, shown only
+   once the field has text (the cell's data-has-value flag, written by JS). Same
+   shape as the nav search's clear button, at the filter row's smaller scale: a
+   16px square carrying a 14px glyph, on the unified icon/text scale. */
+.filter-clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  margin-inline-start: var(--sherpa-display-mode-space-3xs, 2px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: 1;
+  cursor: pointer;
+
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover {
+      background: color-mix(in oklab, var(--sherpa-theme-surface-default-1, #e8e8f6) 88%, currentColor);
+    }
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  }
+}
+.filter-cell[data-has-value] .filter-clear { display: inline-flex; }
+
+/* ── No matches ──────────────────────────────────────────────────────────
+   A filter that hides every row keeps the header AND the filter row up — the user
+   is mid-keystroke in one of those inputs, so hiding the table (data-empty) would
+   pull the field out from under them. The message goes below instead. */
+.no-matches {
+  display: none;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+:host([data-no-matches]) .no-matches { display: block; }
 .filter-input:focus-visible {
   outline: none;
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);

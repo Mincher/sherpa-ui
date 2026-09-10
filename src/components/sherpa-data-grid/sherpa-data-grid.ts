@@ -48,6 +48,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
+  /** Active per-column filter text, keyed by field. Empty entries are removed. */
+  #filters = new Map<string, string>();
 
   override onRender(): void {
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick);
@@ -55,8 +57,9 @@ export class SherpaDataGrid extends SherpaElement {
     // Selection: select-all in the header, per-row boxes delegated on the body.
     this.$('.select-all')?.addEventListener('change', this.#onSelectAll);
     this.$('.body')?.addEventListener('change', this.#onRowSelect);
-    // Filter: delegate input from the secondary header row.
+    // Filter: delegate both the typing and the clear button from the filter row.
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
+    this.$('.filter-row')?.addEventListener('click', this.#onFilterClick);
     if (this.#columns.length) this.#render();
   }
 
@@ -69,6 +72,9 @@ export class SherpaDataGrid extends SherpaElement {
     const cfg = (data ?? {}) as Partial<GridConfig>;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
+    // Fresh data means the old filters may name columns that no longer exist, and
+    // silently hiding rows against an invisible filter would look like data loss.
+    this.#filters.clear();
     this.#render();
   }
 
@@ -119,8 +125,18 @@ export class SherpaDataGrid extends SherpaElement {
     for (const col of this.#columns) {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
+      const label = col.header ?? col.field;
       const input = th.querySelector<HTMLInputElement>('.filter-input')!;
-      input.placeholder = `Filter ${col.header ?? col.field}`;
+      input.placeholder = `Filter ${label}`;
+      // The input has no visible <label>, and the placeholder disappears once the
+      // user types — so the accessible name has to be an attribute.
+      input.setAttribute('aria-label', `Filter ${label}`);
+      th.querySelector('.filter-clear')!.setAttribute('aria-label', `Clear ${label} filter`);
+      // A rebuilt row starts empty, so any previous filter for this column is gone.
+      if (this.#filters.has(col.field)) {
+        input.value = this.#filters.get(col.field) ?? '';
+        th.toggleAttribute('data-has-value', true);
+      }
       filterRow.appendChild(th);
     }
   }
@@ -132,7 +148,10 @@ export class SherpaDataGrid extends SherpaElement {
     if (!body || !rowTpl || !cellTpl) return;
 
     body.replaceChildren();
-    this.#sortedRows().forEach((record, i) => {
+    // Rows are FILTERED then SORTED, and the index written on each <tr> is the
+    // index into THAT visible list — so row-click and selection-change keep
+    // pointing at the record the user actually sees.
+    this.#visibleRows().forEach((record, i) => {
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tr.dataset['index'] = String(i);
       for (const col of this.#columns) {
@@ -146,12 +165,42 @@ export class SherpaDataGrid extends SherpaElement {
     });
   }
 
-  /** Rows sorted by the active sort field/direction (a stable copy). */
-  #sortedRows(): GridRow[] {
+  /**
+   * The rows actually on screen: filtered, then sorted.
+   *
+   * Every consumer that maps a row INDEX back to a record must use this — a
+   * `<tr>`'s data-index is its position in THIS list, so resolving against the
+   * unfiltered rows would return a different record once a filter is active.
+   */
+  #visibleRows(): GridRow[] {
+    return this.#sortRows(this.#filteredRows());
+  }
+
+  /**
+   * Rows matching EVERY active column filter, case-insensitively, by substring.
+   *
+   * Substring rather than prefix because a table filter is a "find" — typing
+   * "example" should find an address that merely contains it. Values are
+   * stringified first so a numeric column filters as readily as a text one.
+   */
+  #filteredRows(): GridRow[] {
+    if (!this.#filters.size) return this.#rows;
+    return this.#rows.filter((record) =>
+      [...this.#filters].every(([field, needle]) => {
+        const value = record[field];
+        if (value == null) return false;
+        return String(value).toLowerCase().includes(needle);
+      }),
+    );
+  }
+
+  #sortRows(rows: GridRow[]): GridRow[] {
     const field = this.dataset['sortField'];
-    if (!field) return this.#rows;
+    if (!field) return rows;
     const dir = this.dataset['sortDirection'] === 'desc' ? -1 : 1;
-    return [...this.#rows].sort((a, b) => {
+    // Sort the list PASSED IN, not this.#rows — otherwise a filtered list would
+    // be silently replaced by the full one and filtering would appear to do nothing.
+    return [...rows].sort((a, b) => {
       const av = a[field];
       const bv = b[field];
       if (av == null) return 1;
@@ -184,7 +233,9 @@ export class SherpaDataGrid extends SherpaElement {
     const raw = tr?.dataset['index'];
     if (raw == null) return;
     const index = Number(raw);
-    this.emit('row-click', { index, row: this.#sortedRows()[index] });
+    // Resolve against the VISIBLE list — data-index is a position in that list,
+    // so using the unfiltered one would hand back a different record.
+    this.emit('row-click', { index, row: this.#visibleRows()[index] });
   };
 
   /* ── Selection ──────────────────────────────────────────────────── */
@@ -227,10 +278,61 @@ export class SherpaDataGrid extends SherpaElement {
   #onFilterInput = (event: Event): void => {
     const input = event.target as HTMLElement;
     if (!input.classList.contains('filter-input')) return;
-    const field = input.closest<HTMLElement>('.filter-cell')?.dataset['field'];
-    if (!field) return;
-    this.emit('filter-change', { field, value: (input as HTMLInputElement).value });
+    this.#applyFilter(input as HTMLInputElement);
   };
+
+  /** The trailing clear button: empty its own field, re-filter, restore focus. */
+  #onFilterClick = (event: Event): void => {
+    const button = (event.target as HTMLElement).closest('.filter-clear');
+    if (!button) return;
+    const cell = button.closest<HTMLElement>('.filter-cell');
+    const input = cell?.querySelector<HTMLInputElement>('.filter-input');
+    if (!input) return;
+    input.value = '';
+    this.#applyFilter(input);
+    // Clearing is a step in typing, so hand the caret straight back.
+    input.focus();
+  };
+
+  /**
+   * Record one column's filter text and redraw the body.
+   *
+   * The needle is lower-cased ONCE here rather than per row in the match loop —
+   * with a few hundred rows and a keystroke per character that matters.
+   */
+  #applyFilter(input: HTMLInputElement): void {
+    const cell = input.closest<HTMLElement>('.filter-cell');
+    const field = cell?.dataset['field'];
+    if (!field) return;
+
+    const value = input.value;
+    const needle = value.trim().toLowerCase();
+    if (needle) this.#filters.set(field, needle);
+    else this.#filters.delete(field);
+
+    // CSS shows the clear button off this flag — JS never touches `display`.
+    cell?.toggleAttribute('data-has-value', value.length > 0);
+
+    this.#renderBody();
+    // "No matches" is NOT data-empty: that hides the whole <table>, which would
+    // take the filter input the user is typing in with it. A separate flag lets CSS
+    // keep the header and filter row up and show the message under them.
+    const visible = this.#visibleRows().length;
+    this.toggleAttribute('data-no-matches', visible === 0 && this.#rows.length > 0);
+    // Rows were re-stamped unchecked, so the select-all must not look checked.
+    const selectAll = this.$<HTMLInputElement>('.select-all');
+    if (selectAll) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    }
+
+    this.emit('filter-change', {
+      field,
+      value,
+      filters: Object.fromEntries(this.#filters),
+      visible,
+    });
+  }
 }
 
 customElements.define('sherpa-data-grid', SherpaDataGrid);

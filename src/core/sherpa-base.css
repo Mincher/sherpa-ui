@@ -14,6 +14,14 @@
 }
 
 :host {
+  /* The `*` rule above does NOT match :host — a shadow root's host is outside the
+     tree that `*` selects. So without this line every component box was
+     content-box while all of its internals were border-box, and any host with
+     padding overflowed its own declared width. sherpa-pagination did exactly
+     that: `inline-size: 100%` plus its 12px side padding rendered 24px wider
+     than the grid above it. */
+  box-sizing: border-box;
+
   /* Inheritable typographic ground — tokens resolve from the light DOM. */
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-core-fonts-scale-lg, 16px);
