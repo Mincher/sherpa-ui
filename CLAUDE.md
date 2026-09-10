@@ -4,6 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Read these first
+
+This file holds the RULES. The handover docs hold the *why* — the traps, the
+rulings, and the reasons behind decisions that look odd. Several are silent
+failures that have each cost hours.
+
+| Doc | Read it when |
+|---|---|
+| [docs/HANDOVER.md](docs/HANDOVER.md) | **Always, before your first change.** Traps (anchor positioning, tables, shadow DOM, SVG), the working method, where the interesting code is |
+| [docs/HANDOVER-BACKLOG.md](docs/HANDOVER-BACKLOG.md) | Picking up work — what is queued and what "done" means |
+| [docs/HANDOVER-FIGMA.md](docs/HANDOVER-FIGMA.md) | Touching tokens or reading Figma — how to read values RELIABLY (extension overrides read back empty) |
+
+Active branch is `sherpa-reforged`. **Never push** — commit freely, pushing is
+Will's call.
+
+---
+
 ## Commands
 
 ```bash

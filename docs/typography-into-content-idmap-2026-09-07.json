@@ -1,0 +1,62 @@
+{
+  "_note": "old Typography var+mode -> new flat Theme content/* var. Used for step-3 node rebinding.",
+  "families_already_in_theme": {
+    "content/font/body": "VariableID:1009:33830",
+    "content/font/hero": "VariableID:1009:33831",
+    "content/font/monospaced": "VariableID:1009:33832"
+  },
+  "old_typo_var_by_prop": {
+    "family": "VariableID:932:36265",
+    "paragraph-spacing": "VariableID:769:339429",
+    "size": "VariableID:949:35673",
+    "line-height": "VariableID:949:35674",
+    "letter-spacing": "VariableID:949:35685",
+    "weight/light": "VariableID:949:35675",
+    "weight/regular": "VariableID:949:35676",
+    "weight/medium": "VariableID:949:35677",
+    "weight/semibold": "VariableID:949:35678",
+    "weight/bold": "VariableID:949:35679",
+    "weight/black": "VariableID:949:35680"
+  },
+  "typo_mode_name_by_id": {
+    "949:18": "base", "949:0": "h1", "949:3": "h2", "949:6": "h3",
+    "949:9": "h4", "949:12": "h5", "949:15": "large", "949:21": "small", "949:24": "xs"
+  },
+  "new_content_vars": {
+    "content/size/base": "VariableID:1011:33835",
+    "content/size/h1": "VariableID:1011:33836",
+    "content/size/h2": "VariableID:1011:33837",
+    "content/size/h3": "VariableID:1011:33838",
+    "content/size/h4": "VariableID:1011:33839",
+    "content/size/h5": "VariableID:1011:33840",
+    "content/size/large": "VariableID:1011:33841",
+    "content/size/small": "VariableID:1011:33842",
+    "content/size/xs": "VariableID:1011:33843",
+    "content/line-height/base": "VariableID:1011:33844",
+    "content/line-height/h1": "VariableID:1011:33845",
+    "content/line-height/h2": "VariableID:1011:33846",
+    "content/line-height/h3": "VariableID:1011:33847",
+    "content/line-height/h4": "VariableID:1011:33848",
+    "content/line-height/h5": "VariableID:1011:33849",
+    "content/line-height/large": "VariableID:1011:33850",
+    "content/line-height/small": "VariableID:1011:33851",
+    "content/line-height/xs": "VariableID:1011:33852",
+    "content/letter-spacing/base": "VariableID:1011:33853",
+    "content/letter-spacing/h1": "VariableID:1011:33854",
+    "content/letter-spacing/h2": "VariableID:1011:33855",
+    "content/letter-spacing/h3": "VariableID:1011:33856",
+    "content/letter-spacing/h4": "VariableID:1011:33857",
+    "content/letter-spacing/h5": "VariableID:1011:33858",
+    "content/letter-spacing/large": "VariableID:1011:33859",
+    "content/letter-spacing/small": "VariableID:1011:33860",
+    "content/letter-spacing/xs": "VariableID:1011:33861",
+    "content/weight/light": "VariableID:1011:33862",
+    "content/weight/regular": "VariableID:1011:33863",
+    "content/weight/medium": "VariableID:1011:33864",
+    "content/weight/semibold": "VariableID:1011:33865",
+    "content/weight/bold": "VariableID:1011:33866",
+    "content/weight/black": "VariableID:1011:33867",
+    "content/paragraph-spacing": "VariableID:1011:33868"
+  },
+  "rebind_rule": "A node that binds old size var + pins Typo mode M -> bind content/size/<M>. Same for line-height/letter-spacing. weight/* var binds map 1:1 (no mode). family bind -> content/font/body (hero->hero, mono->monospaced). Mode-pins on Typography/Hero/Mono get dropped after rebind."
+}

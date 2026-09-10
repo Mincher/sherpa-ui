@@ -1,0 +1,48 @@
+{
+  "_note": "Backup before moving Typography/Hero/Mono into Theme content/* group. 2026-09-07.",
+  "VariableCollectionId:769:339388": {
+    "name": "Typography",
+    "key": "f6b750fe433127163aee6c3c94b121c39e99732d",
+    "defaultModeId": "949:18",
+    "modes": [
+      {"name": "base", "modeId": "949:18"},
+      {"name": "h1", "modeId": "949:0"},
+      {"name": "h2", "modeId": "949:3"},
+      {"name": "h3", "modeId": "949:6"},
+      {"name": "h4", "modeId": "949:9"},
+      {"name": "h5", "modeId": "949:12"},
+      {"name": "large", "modeId": "949:15"},
+      {"name": "small", "modeId": "949:21"},
+      {"name": "xs", "modeId": "949:24"}
+    ],
+    "vars": [
+      {"id": "VariableID:932:36265", "name": "family", "type": "STRING", "scopes": ["FONT_FAMILY"], "aliasByMode_uniform": "VariableID:1009:33830"},
+      {"id": "VariableID:769:339429", "name": "paragraph-spacing", "type": "FLOAT", "scopes": ["PARAGRAPH_SPACING"], "aliasByMode_uniform": "VariableID:6:484"},
+      {"id": "VariableID:949:35673", "name": "size", "type": "FLOAT", "scopes": ["WIDTH_HEIGHT", "FONT_SIZE"], "aliasByMode": {"h1": "6:490", "h2": "6:489", "h3": "6:488", "h4": "6:487", "h5": "6:486", "large": "6:488", "base": "6:487", "small": "6:486", "xs": "6:485"}},
+      {"id": "VariableID:949:35674", "name": "line-height", "type": "FLOAT", "scopes": ["LINE_HEIGHT"], "aliasByMode": {"h1": "6:493", "h2": "6:491", "h3": "6:490", "h4": "6:489", "h5": "6:488", "large": "6:490", "base": "6:489", "small": "6:488", "xs": "6:488"}},
+      {"id": "VariableID:949:35675", "name": "weight/light", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2927"},
+      {"id": "VariableID:949:35676", "name": "weight/regular", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2928"},
+      {"id": "VariableID:949:35677", "name": "weight/medium", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2929"},
+      {"id": "VariableID:949:35678", "name": "weight/semibold", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2930"},
+      {"id": "VariableID:949:35679", "name": "weight/bold", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2931"},
+      {"id": "VariableID:949:35680", "name": "weight/black", "type": "FLOAT", "scopes": ["FONT_WEIGHT"], "aliasByMode_uniform": "VariableID:81:2932"},
+      {"id": "VariableID:949:35685", "name": "letter-spacing", "type": "FLOAT", "scopes": ["LETTER_SPACING"], "valueByMode": {"headings_h1_h5": -0.2, "large_base_small_xs": 0}}
+    ]
+  },
+  "Hero": {
+    "id": "VariableCollectionId:932:36266",
+    "key": "21c9f8953ad128f7ef2fa64c08c99d25ac156a86",
+    "note": "extends Typography; same 11 var ids; modes parent to Typography modes; family alias 1009:33830 (Inter)"
+  },
+  "Mono": {
+    "id": "VariableCollectionId:932:36267",
+    "key": "b98e3c1605111f738f5d5563c4e0d748195a2b14",
+    "note": "extends Typography; same 11 var ids; modes parent to Typography modes; family override → JetBrains Mono on Mono's own mode ids"
+  },
+  "primitives_referenced": {
+    "fonts_scale": {"6:485": "xs step", "6:486": "step", "6:487": "base 14", "6:488": "16", "6:489": "20", "6:490": "24", "6:491": "lh", "6:493": "lh"},
+    "fonts_weight": {"81:2927": "300 light", "81:2928": "400 regular", "81:2929": "500 medium", "81:2930": "600 semibold", "81:2931": "700 bold", "81:2932": "900 black"},
+    "family_alias": "1009:33830",
+    "paragraph_spacing": "6:484"
+  }
+}
