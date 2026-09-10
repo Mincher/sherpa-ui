@@ -36,6 +36,7 @@
  * @fires slice-click — a slice is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { formatTick } from '../../core/format-tick.js';
 
 export interface DonutSlice {
   label: string;
@@ -111,7 +112,10 @@ export class SherpaDonutChart extends SherpaElement {
     const tpl = this.$<HTMLTemplateElement>('template.slice-tpl');
     if (!group || !tpl) return;
 
+    const hotspots = this.$('.hotspots');
+    const hotTpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
     group.replaceChildren();
+    hotspots?.replaceChildren();
 
     // Figma: innerRadius 0.7 of the radius, so the band is the outer 30%. A `pie`
     // fills to the centre instead. The stroked-circle trick puts the stroke on the
@@ -181,6 +185,21 @@ export class SherpaDonutChart extends SherpaElement {
         line.setAttribute('transform', `rotate(${acc * 360 - 90} ${CENTRE} ${CENTRE})`);
         line.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
         group.appendChild(line);
+      }
+
+      // The hover dot + its tooltip. The ONLY number JS gives CSS is the slice's
+      // MID-ANGLE — cos()/sin() in the CSS turn that into a position on the ring,
+      // so the dot follows the ring at any size with nothing measured here.
+      if (hotspots && hotTpl) {
+        const dot = hotTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        dot.dataset['index'] = String(i);
+        // Measured from 12 o'clock, matching the arcs' own -90deg rotation.
+        dot.style.setProperty('--_angle', `${(acc + share / 2) * 360}deg`);
+        dot.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+        dot.querySelector('.chart-tip-label')!.textContent = slice.label;
+        dot.querySelector('.chart-tip-value')!.textContent = formatTick(slice.value);
+        dot.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
+        hotspots.appendChild(dot);
       }
 
       acc += share;

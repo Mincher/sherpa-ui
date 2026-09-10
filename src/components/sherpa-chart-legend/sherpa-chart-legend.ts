@@ -16,9 +16,25 @@
  * An item's swatch is a categorical hue by `colorIndex`, or a STATUS colour when
  * it carries `status` — a threshold's colour means healthy/warning/critical, not
  * "the third series".
- * @fires legend-item-click — a legend entry is clicked. bubbles + composed. detail: { index: number, label: string, active: boolean }
+ *
+ * A legend draws at most six rows. Past that the tail is rolled into a single
+ * "Other" row whose value is the sum of the rest, so the numbers still add up to
+ * the whole. Prefer `detail.indices` over `detail.index` when toggling a chart —
+ * the "Other" row stands for several series.
+ *
+ * @fires legend-item-click — a legend entry is clicked. bubbles + composed. detail: { index: number, indices: number[], label: string, active: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+
+/**
+ * The most rows a legend will ever draw.
+ *
+ * Beyond six a legend stops being a key — nobody matches the eleventh shade of
+ * purple to its label, and beside a chart it grows taller than the chart. The
+ * sixth row is an "Other" total covering everything past the fifth, so the values
+ * still add up to the whole.
+ */
+const MAX_ITEMS = 6;
 
 export interface LegendItem {
   label: string;
@@ -42,6 +58,10 @@ export class SherpaChartLegend extends SherpaElement {
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 
   #items: LegendItem[] = [];
+  /** Whether the tail was rolled into an "Other" row (see #cap). */
+  #rolledUp = false;
+  /** How many entries the CALLER passed in, before any capping. */
+  #sourceCount = 0;
 
   override onRender(): void {
     this.$('.legend')?.addEventListener('click', this.#onClick);
@@ -50,8 +70,47 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** populate([{ label, value?, colorIndex }]) — the legend entries. */
   protected override renderData(data: unknown): void {
-    this.#items = Array.isArray(data) ? (data as LegendItem[]) : [];
+    this.#items = this.#cap(Array.isArray(data) ? (data as LegendItem[]) : []);
     this.#render();
+  }
+
+  /**
+   * Cap the legend at MAX_ITEMS, rolling the tail into a single "Other" row.
+   *
+   * A legend with a dozen rows stops being a key: nobody matches the 11th shade of
+   * purple to its label, and beside a chart it grows taller than the chart itself.
+   * Five named categories plus an "Other" total keeps the shape readable and still
+   * accounts for every value — the numbers add up to the same whole.
+   *
+   * The roll-up only happens when it BUYS something: with exactly MAX_ITEMS + 1
+   * entries, "Other" would stand for one category, so the sixth is left named.
+   */
+  #cap(items: LegendItem[]): LegendItem[] {
+    this.#sourceCount = items.length;
+    this.#rolledUp = items.length > MAX_ITEMS;
+    if (items.length <= MAX_ITEMS) return items;
+
+    const kept = items.slice(0, MAX_ITEMS - 1);
+    const rest = items.slice(MAX_ITEMS - 1);
+    // Only numeric values can be summed; a legend of labels with no values gets an
+    // "Other" row with no value rather than a meaningless 0.
+    const numeric = rest
+      .map((i) => (typeof i.value === 'number' ? i.value : Number(i.value)))
+      .filter((n) => Number.isFinite(n));
+    const total = numeric.length === rest.length
+      ? numeric.reduce((sum, n) => sum + n, 0)
+      : undefined;
+
+    return [
+      ...kept,
+      {
+        label: 'Other',
+        // The next hue after the named ones, so "Other" does not reuse a colour
+        // that already means something.
+        colorIndex: MAX_ITEMS,
+        ...(total != null ? { value: total } : {}),
+      },
+    ];
   }
 
   #render(): void {
@@ -103,10 +162,20 @@ export class SherpaChartLegend extends SherpaElement {
     // data-current attribute that duplicated it.)
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
+    const index = Number(raw);
     this.emit('legend-item-click', {
-      index: Number(raw),
-      label: this.#items[Number(raw)]?.label ?? '',
+      index,
+      label: this.#items[index]?.label ?? '',
       active,
+      // The indices this row stands for in the data the CALLER passed in.
+      //
+      // Normally that is just [index]. But a capped legend's last row is an
+      // "Other" roll-up covering every category past the fifth, so toggling it
+      // must hide ALL of them — `index` alone would hide one series and leave the
+      // rest drawn under a row that says they are off.
+      indices: this.#rolledUp && index === this.#items.length - 1
+        ? Array.from({ length: this.#sourceCount - index }, (_, k) => index + k)
+        : [index],
     });
   };
 }

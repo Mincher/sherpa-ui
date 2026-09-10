@@ -44,11 +44,11 @@
 
   &:focus-within {
     border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
   @supports (color: color-mix(in oklab, red, blue)) {
     &:focus-within {
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--sherpa-theme-border-accent-2, #3b4ccd) 28%, transparent);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sherpa-theme-border-accent-2, #3b4ccd) 28%, transparent);
     }
   }
 }
@@ -118,7 +118,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 .lead-btn .glyph {
@@ -152,7 +152,7 @@
   &:active { background: var(--sherpa-theme-surface-accent-4, #1e189c); }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 .send-glyph { font-size: var(--sherpa-theme-content-size-base, 14px); line-height: 1; }

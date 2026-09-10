@@ -246,13 +246,13 @@
    :focus-within so either control (navigate or expand) lights the same row. */
 :host(:focus-within) {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 .nav:focus-visible,
 .expand:focus-visible { outline: none; }
 :host([data-variant="promo"]:focus-within) { box-shadow: none; }
 :host(:focus-within) .promo {
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Current — Style active: surface/active/base + content-active ink. The label

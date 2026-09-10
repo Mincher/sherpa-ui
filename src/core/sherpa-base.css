@@ -51,3 +51,96 @@
     outline: 1px solid Highlight;
   }
 }
+
+/* ── Chart mark tooltips ─────────────────────────────────────────────────────
+ * A hover tooltip for a chart MARK — a bar, a donut segment, a sparkline or line
+ * dot, a gauge band. Every 2D and radial chart uses these rules so the five behave
+ * identically; this sheet is adopted into every shadow root, so a chart only has
+ * to stamp the markup.
+ *
+ * NO JAVASCRIPT POSITIONING. Modern CSS does the whole job:
+ *
+ *   anchor-name / position-anchor  tie the tip to its own mark
+ *   position-area                  put it on a preferred side
+ *   position-try-fallbacks         let the browser FLIP it to another side when
+ *                                  the preferred one would fall off screen
+ *   popover                        the browser's top layer, so the tip is never
+ *                                  clipped by the chart's own overflow
+ *
+ * Anchor positioning cannot cross a SHADOW BOUNDARY — that is why the menu had to
+ * be measured in JS. Here the mark and its tip are in the SAME shadow root, which
+ * is exactly the case anchors do handle, so the declarative form works.
+ *
+ * Each mark writes `--_anchor: --chart-mark-<n>` and its tip the same name; that is
+ * the only value the JS supplies, because an anchor name cannot be derived in CSS.
+ */
+.chart-tip {
+  position: fixed;
+  position-anchor: var(--_anchor);
+  /* ABOVE the mark by default, centred on it. */
+  position-area: block-start;
+  /* …but flip to below, then to either side, when there is no room. The browser
+     picks the first fallback that fits — this is the "based on available space"
+     behaviour, and it re-evaluates on scroll and resize for free. */
+  position-try-fallbacks: flip-block, flip-inline, block-end, inline-end, inline-start;
+  /* Whitespace between the tip and its mark, on whichever side it lands. */
+  margin: var(--sherpa-display-mode-space-2xs, 4px);
+
+  inline-size: max-content;
+  max-inline-size: 16rem;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  /* Flex, so the label and value are separated by a real gap token rather than by
+     whitespace in the template (which the DOM would collapse away). */
+  gap: var(--sherpa-theme-gap-md, 8px);
+  align-items: baseline;
+  border: 0;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  /* Same fill/ink/type as sherpa-tooltip's bubble — one tooltip look system-wide. */
+  background: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-theme-content-body-4, #ffffff);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  /* Elevation=md, the tooltip atom's pin. */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-base, 2px)
+    var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px)
+    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-style-surface-shadow, #15151e80);
+  /* The tip must never eat the hover it depends on. */
+  pointer-events: none;
+
+  /* Hidden until its mark is hovered. `display: none` (not opacity) so it takes no
+     layout and is unreadable to assistive tech while shut — and because a popover
+     the UA has not opened is display:none anyway, this is the same state. */
+  display: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+/* Shown while the mark is hovered or keyboard-focused. Keyboard too: a chart mark
+   is a real <button>, so tabbing to it must reveal the same value a pointer does. */
+.chart-mark:is(:hover, :focus-visible) + .chart-tip,
+.chart-mark:is(:hover, :focus-visible) .chart-tip {
+  display: flex;
+  opacity: 1;
+}
+
+/* A mark that scrolled out of view must take its tip with it, rather than leave it
+   floating over whatever is now in that place. */
+@supports (position-visibility: anchors-visible) {
+  .chart-tip { position-visibility: anchors-visible; }
+}
+
+/* The tip's value, set apart from its label. */
+.chart-tip-value {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The mark itself only has to declare its anchor name and stay a hover target. */
+.chart-mark {
+  anchor-name: var(--_anchor);
+}

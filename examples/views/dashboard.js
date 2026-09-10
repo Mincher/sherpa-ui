@@ -159,14 +159,17 @@ export async function init(root) {
   // Hiding RE-RENDERS the chart (rather than just dimming the row) because both
   // charts derive their scale from the visible data — the line's y-axis and the
   // donut's shares would otherwise be computed from series nobody can see.
+  // `indices`, not `index`: a legend caps at six rows and rolls the tail into an
+  // "Other" row, so one row can stand for several series. Toggling by index alone
+  // would hide one of them and leave the rest drawn under a row that says off.
   $('#donut-legend')?.addEventListener('legend-item-click', (e) => {
-    $('#donut')?.setSliceHidden(e.detail.index, !e.detail.active);
+    for (const i of e.detail.indices) $('#donut')?.setSliceHidden(i, !e.detail.active);
   });
   $('#line-legend')?.addEventListener('legend-item-click', (e) => {
-    $('#line')?.setSeriesHidden(e.detail.index, !e.detail.active);
+    for (const i of e.detail.indices) $('#line')?.setSeriesHidden(i, !e.detail.active);
   });
   $('#bar-legend')?.addEventListener('legend-item-click', (e) => {
-    $('#bar')?.setBarHidden(e.detail.index, !e.detail.active);
+    for (const i of e.detail.indices) $('#bar')?.setBarHidden(i, !e.detail.active);
   });
   // The gauge legend is a KEY, not a filter: its rows name thresholds, and there
   // is nothing to hide — a gauge shows one value, and dropping a zone would

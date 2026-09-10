@@ -200,11 +200,14 @@ Loaded in both `css/styles/index.css` (light DOM) and `SherpaElement.sharedStyle
 | `--shadow-sm/md/lg/sunken(--tint)` | box-shadow value | Elevation — degrades to no shadow |
 | `--focus-ring(--color?)` | `2px solid <color>` | **Do not use for keyboard focus indicators** — silent failure = invisible focus ring (WCAG 2.4.11) |
 
-For focus rings, always use the explicit fallback pattern:
+For focus rings, always use the explicit fallback pattern — and an INSET ring, so
+the stroke is drawn INSIDE the component's own box rather than bleeding over its
+neighbours (an outer ring on a snapped control pair, a table cell or a tight
+toolbar overlaps whatever sits beside it):
 ```css
 :host(:focus-visible) {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
 }
 ```
 
@@ -267,7 +270,7 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 | `:host:not(…)` chained form | `:host(:not(…))` functional form |
 | `&` nesting inside `:host {}` | Standalone `:host(…)` rules |
 | `light-dark()` in component CSS | Theme files own mode; components are mode-agnostic |
-| `outline: --focus-ring()` for focus indicators | `outline: none; box-shadow: 0 0 0 2px var(…, #hex)` |
+| `outline: --focus-ring()` for focus indicators | `outline: none; box-shadow: inset 0 0 0 2px var(…, #hex)` |
 | Odd px (`3px`, `11px`) for spacing/size/radius | On-grid step (8/4/2px) or the token's real value |
 
 ---

@@ -84,6 +84,15 @@
   min-block-size: 0;
   overflow: auto;
   padding: var(--sherpa-layout-grid-padding, 16px);
+  /* NOTHING in the content area may sit above the nav rail.
+     `isolation: isolate` makes this a stacking context, so every z-index inside
+     it — including a data grid's sticky header, which needs to beat its own rows
+     — is resolved WITHIN this box and then the whole box is stacked as one, below
+     the rail's z-index: 2. Without it a sticky header's z-index competed directly
+     with the rail's and painted over the hovered navigation. */
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
 }
 
 /* ── The inset follows the rail's LATCHED state only ─────────────────────

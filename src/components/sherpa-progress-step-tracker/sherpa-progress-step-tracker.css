@@ -49,7 +49,7 @@
 
   &:focus-visible { outline: none; }
   &:focus-visible .marker {
-    box-shadow: 0 0 0 2px var(--_accent);
+    box-shadow: inset 0 0 0 2px var(--_accent);
   }
 }
 

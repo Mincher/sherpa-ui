@@ -80,7 +80,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 /* The header group hugs the card's top corners (the card clips them). */
@@ -163,7 +163,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -260,7 +260,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
@@ -295,7 +295,7 @@
   &:hover { text-decoration: underline; }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
     border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   }
 }
@@ -324,7 +324,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 

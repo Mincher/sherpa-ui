@@ -107,11 +107,11 @@
 /* Focus lives on the row so the whole box (icons + actions) is ringed. */
 .control-row:focus-within {
   border-color: var(--_border-focus);
-  box-shadow: 0 0 0 2px var(--_border-focus);
+  box-shadow: inset 0 0 0 2px var(--_border-focus);
 }
 @supports (color: color-mix(in oklab, red, blue)) {
   .control-row:focus-within {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
   }
 }
 
@@ -158,12 +158,12 @@ textarea.control {
    browser's own invalid state paint the same critical ink. */
 .control-row:has(.control:user-invalid):focus-within,
 :host([data-error]) .control-row:focus-within {
-  box-shadow: 0 0 0 2px var(--_border-error);
+  box-shadow: inset 0 0 0 2px var(--_border-error);
 }
 @supports (color: color-mix(in oklab, red, blue)) {
   .control-row:has(.control:user-invalid):focus-within,
   :host([data-error]) .control-row:focus-within {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
   }
 }
 /* Snap the field to the bar when the bar is showing (Figma snap-bottom-edge pin). */
@@ -227,15 +227,15 @@ textarea.control {
 }
 .field-minimal .control:focus-visible {
   border-color: var(--_border-focus);
-  box-shadow: 0 0 0 2px var(--_border-focus);
+  box-shadow: inset 0 0 0 2px var(--_border-focus);
 }
 @supports (color: color-mix(in oklab, red, blue)) {
   .field-minimal .control:focus-visible {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
   }
 }
 .field-minimal .control:user-invalid:focus-visible {
-  box-shadow: 0 0 0 2px var(--_border-error);
+  box-shadow: inset 0 0 0 2px var(--_border-error);
 }
 /* Borderless — the control is a bare field (e.g. a grid column filter). */
 :host([data-borderless]) .field-minimal .control {

@@ -100,6 +100,13 @@ export class SherpaBarchart extends SherpaElement {
       const bar = col.querySelector<HTMLElement>('.bar')!;
       bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
       bar.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+
+      // The hover tooltip. The only thing JS supplies is the anchor NAME — CSS
+      // cannot derive a per-mark `anchor-name`, and everything else about the
+      // tip's placement is declarative (see .chart-tip in core/sherpa-base.css).
+      col.style.setProperty('--_anchor', `--bar-mark-${i}`);
+      col.querySelector('.chart-tip-label')!.textContent = d.label;
+      col.querySelector('.chart-tip-value')!.textContent = formatTick(d.value);
       bars.appendChild(col);
 
       // The category label is a SIBLING of the plot now, in the x-axis row, so it

@@ -101,7 +101,7 @@
 .select-all:focus-visible,
 .row-select:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Filter row (opt-in) ───────────────────────────────────────────── */
@@ -109,15 +109,49 @@
 .filter-row { display: none; }
 :host([data-filterable]) .filter-row { display: table-row; }
 
+/* Figma Grid Cell `Type=filter`: same as the header — fill base +1, padding 4
+   BLOCK / 0 INLINE, and side dividers instead of left/right borders. */
 .filter-cell {
-  padding: var(--sherpa-display-mode-space-2xs, 4px);
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  position: relative;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 .filter-spacer {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
 }
+
+/* ── Header / filter side dividers ──────────────────────────────────────────
+ * Will replaced the header cell's left and right BORDERS with a short divider on
+ * each side: 12 tall rather than the full cell height, so the columns are marked
+ * without drawing a full grid of boxes. A border cannot be shortened, so these are
+ * pseudo-elements, centred vertically.
+ *
+ * A REGULAR cell has none — that is the whole point of the change, and it is why
+ * this rule names the two header types rather than every cell. */
+:is(.head-cell, .filter-cell)::before,
+:is(.head-cell, .filter-cell)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  inline-size: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  block-size: var(--sherpa-display-mode-size-xs, 12px);
+  background: var(--sherpa-style-border-base, #b3b3c3);
+}
+:is(.head-cell, .filter-cell)::before { inset-inline-start: 0; }
+:is(.head-cell, .filter-cell)::after { inset-inline-end: 0; }
+/* No LEADING divider on the first drawn column. It would sit either on the grid's
+   own outer frame (two hairlines 0.5px apart read as one thick smudge) or right
+   beside the selection column's edge. A column's divider marks its START, so the
+   first column needs none — the frame already marks it. */
+.head-row > :first-child::before,
+.filter-row > :first-child::before,
+:host([data-selectable]) .head-row > :nth-child(2)::before,
+:host([data-selectable]) .filter-row > :nth-child(2)::before { content: none; }
 /* Figma Grid Cell/Type=filter holds an Input Field (atom) pinned Style: TRANSPARENT
    — no fill and no ring, so the field reads as bare text on the header band until it
    is focused. Its `value` text is content/size/base 14 on line-height/base 20 at
@@ -197,7 +231,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 .filter-cell[data-has-value] .filter-clear { display: inline-flex; }
@@ -219,15 +253,27 @@
    wraps both rather than drawing a second one around the button alone. */
 .filter-field:focus-within {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */
+/* Figma Grid Cell `Type=header` (926:34253, re-read after Will's tweaks):
+   fill style-surface/base +1, padding 4 BLOCK and 0 INLINE, gap 4, and strokes on
+   the top and bottom edges ONLY — the left/right borders are gone, replaced by a
+   12px-tall DIVIDER on each side (see .head-cell::before / ::after).
+
+   FIGMA-SIDE FLAG: those Divider rectangles have width bound to `scale/0` and NO
+   fill, so they are invisible on the canvas. Drawn here at border-width/sm in
+   style-border/base, which is what every other hairline in the grid uses. */
 .head-cell {
-  padding: 0;
+  position: relative;
+  /* 0 INLINE: the dividers mark the column edges now, so the label runs to the
+     cell's own boundary and the gap between columns is the divider, not padding. */
+  padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
   text-align: start;
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  border-block: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
@@ -273,24 +319,60 @@
 .sort-icon { inline-size: 0; block-size: 0; }
 
 /* ── Body ──────────────────────────────────────────────────────────── */
+/* ── Row states ─────────────────────────────────────────────────────────────
+ * THREE states, in this order of precedence:
+ *
+ *   Unselected  the default surface (the cell's own fill)
+ *   Focused     the LAST row clicked — a TRANSPARENT base +1 tint
+ *   Selected    its checkbox is on — the ACTIVE surface
+ *
+ * Selected beats focused: clicking the box is a deliberate act on that record,
+ * where focus is just "where I last was".
+ *
+ * The tints are TRANSPARENT on purpose, so a row keeps the zebra/hover context
+ * underneath instead of being repainted opaque — which is also why `.cell` must
+ * not carry its own opaque fill (see the note there).
+ *
+ * FIGMA-SIDE FLAG: there is no `--sherpa-theme-*` alias for the neutral
+ * TRANSPARENT +1 step, so the focused tint reaches for the display-mode var
+ * directly. That var is mode-aware (it re-points in dark), so the behaviour is
+ * right; the missing semantic alias is the gap. */
 .row {
   cursor: pointer;
   transition: background-color 80ms ease;
+  /* The UNSELECTED state: Figma Grid Cell Type=cell's own fill. On the row rather
+     than the cell so the state tints below can layer over it. */
+  background: var(--sherpa-style-surface-base, #ffffff);
 
-  /* Visible hover: the subtle neutral band (matches the header fill). A fully
-     transparent hover reads as no feedback at all. */
-  &:hover { background: var(--sherpa-theme-surface-default-1, #e8e8f6); }
   &:not(:last-child) .cell {
-    border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+    border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+      var(--sherpa-style-border-base, #b3b3c3);
   }
 
-  /* Selected row (its select box is checked) — a subtle accent tint so the
-     selection is visible. Accent transparent = accent @ ~30%. */
+  /* Hover — the same transparent tint as focus, so pointing at a row previews
+     what clicking it will mark. */
+  &:hover {
+    background: var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33);
+  }
+
+  /* FOCUSED: the last row clicked. A transparent base +1 tint. */
+  &[data-focused] {
+    background: var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33);
+  }
+
+  /* SELECTED: the checkbox is on. The ACTIVE surface — the brand tint the design
+     system uses for "chosen", not the accent one this had before. Transparent so
+     the row's own dividers stay visible through it. */
   &:has(.row-select:checked) {
-    background: var(--sherpa-theme-surface-accent-transparent, #3b4ccd4d);
+    background: var(--sherpa-theme-surface-active-transparent, #c046ff4d);
   }
 }
 
+/* Figma Grid Cell `Type=cell`: fill style-surface/BASE (white, unlike the header's
+   +1), padding 4 all round, gap 4, strokes top and bottom only. A regular cell has
+   NO side dividers — only header and filter cells do.
+   The fill is on the ROW, not here: an opaque cell fill painted OVER the row's
+   focused / selected tint, so neither state showed. */
 .cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   white-space: nowrap;
@@ -376,7 +458,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
     border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   }
 }

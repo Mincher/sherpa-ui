@@ -52,9 +52,23 @@
     <span class="y-tick"><span class="y-value"></span></span>
   </template>
 
+  <!--
+    One bar, plus its hover tooltip.
+
+    The tip is a CHILD of the bar's <button>, not a sibling: the button is the
+    hover target AND the anchor, and nesting means one `:hover` selector covers
+    both without the tip needing to know its own index. Placement is entirely
+    declarative — see the .chart-tip rules in core/sherpa-base.css, which use
+    anchor positioning and position-try-fallbacks to flip the tip to whichever
+    side has room. No JS measures anything.
+  -->
   <template class="bar-tpl">
-    <button class="bar-col" type="button">
+    <button class="bar-col chart-mark" type="button">
       <span class="bar" part="bar"></span>
+      <span class="chart-tip" part="tip" role="tooltip">
+        <span class="chart-tip-label"></span>
+        <span class="chart-tip-value"></span>
+      </span>
     </button>
   </template>
 

@@ -112,7 +112,7 @@
 .bar-col:hover .bar { filter: brightness(1.08); }
 .bar-col:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 

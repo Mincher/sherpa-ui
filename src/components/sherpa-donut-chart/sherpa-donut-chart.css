@@ -136,3 +136,66 @@
 
   &:empty { display: none; }
 }
+
+/* ── Hover dots + tooltip anchors ────────────────────────────────────────────
+ * One dot per slice, sitting on the middle of its own band. They are real HTML
+ * buttons, NOT the SVG arcs: an SVG element cannot be a CSS anchor in Chromium
+ * (anchor-name is accepted and silently never resolves — the tip lands in the
+ * viewport corner).
+ *
+ * Each dot places itself with CSS TRIG. The JS supplies one number per slice —
+ * --_angle, the slice's mid-angle — and cos()/sin() turn that into an offset from
+ * the ring's centre, in percentages of the (square) ring box. So the dots ride the
+ * ring at any size with nothing measured in JS and no resize handler.
+ *
+ * --_ring-r is the band's MID radius as a percentage: the viewBox is 100x100, and
+ * the band runs from 70% to 100% of the radius, so its midline sits at 42.5% of
+ * the box (0.85 x the 50% radius). A `pie` has no hole, so its midline is at 25%. */
+.hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --_ring-r: 42.5%;
+}
+:host([data-variant="pie"]) .hotspots { --_ring-r: 25%; }
+
+.hotspot {
+  position: absolute;
+  /* Polar → cartesian, from the ring's centre. The JS angle is already measured
+     from 12 o'clock (it matches the arcs' own -90deg rotation), so cos drives the
+     VERTICAL offset and sin the horizontal. */
+  inset-inline-start: calc(50% + sin(var(--_angle, 0deg)) * var(--_ring-r));
+  inset-block-start: calc(50% - cos(var(--_angle, 0deg)) * var(--_ring-r));
+  translate: -50% -50%;
+
+  /* Twice the visible dot, so the target is easy without pushing the tooltip away
+     from the mark it points at (the box is also the anchor). */
+  inline-size: var(--sherpa-display-mode-size-base, 16px);
+  block-size: var(--sherpa-display-mode-size-base, 16px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+
+  /* The visible dot, in the slice's own hue so it reads as part of that segment. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--sherpa-display-mode-space-xs, 8px);
+    block-size: var(--sherpa-display-mode-space-xs, 8px);
+    translate: -50% -50%;
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  &:is(:hover, :focus-visible)::after { opacity: 1; }
+
+  &:focus-visible {
+    outline: none;
+    &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
+  }
+}

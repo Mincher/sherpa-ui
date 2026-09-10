@@ -29,6 +29,20 @@
            aria-label="Donut chart" preserveAspectRatio="xMidYMid meet">
         <g class="slices"></g>
       </svg>
+      <!--
+        HOVER DOTS — one per slice, and the tooltip ANCHORS.
+
+        HTML buttons, not the SVG arcs themselves: an SVG element cannot be a CSS
+        anchor in Chromium (anchor-name is accepted and silently never resolves, so
+        the tip lands in the viewport corner).
+
+        Each dot places itself on its slice's MID-ANGLE with CSS trig — the JS
+        supplies only the angle, and `cos()` / `sin()` do the geometry in
+        percentages of the ring box. So the dots follow the ring at any size with
+        nothing measured in JS.
+      -->
+      <div class="hotspots" part="hotspots"></div>
+
       <div class="centre">
         <span class="value" part="value"></span>
         <span class="sub" part="sub"></span>
@@ -48,5 +62,16 @@
   -->
   <template class="slice-tpl">
     <svg><circle class="slice" cx="50" cy="50" fill="none" /></svg>
+  </template>
+
+  <!-- One slice's hover dot + tooltip. JS sets --_angle (the slice's mid-angle)
+       and the text; CSS trig puts the dot on the ring. -->
+  <template class="hotspot-tpl">
+    <button class="hotspot chart-mark" type="button">
+      <span class="chart-tip" role="tooltip">
+        <span class="chart-tip-label"></span>
+        <span class="chart-tip-value"></span>
+      </span>
+    </button>
   </template>
 </template>

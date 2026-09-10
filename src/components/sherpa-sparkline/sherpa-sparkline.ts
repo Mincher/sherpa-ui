@@ -12,6 +12,7 @@
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { formatTick } from '../../core/format-tick.js';
 
 /** Fixed point slots (0..SLOTS-1); SLOTS-1 segments between them. */
 const SLOTS = 8;
@@ -99,10 +100,30 @@ export class SherpaSparkline extends SherpaElement {
     // JS→CSS-var bridge (geometry, not style): raw values + normalisation range.
     this.style.setProperty('--_min', String(paddedMin));
     this.style.setProperty('--_range', String(range));
+    // The point COUNT, which CSS cannot count for itself. The hover dots space
+    // themselves across the box with `--_i / (--_len - 1)`, so this one number is
+    // all they need — no per-dot x position from JS.
+    this.style.setProperty('--_len', String(count));
     for (let i = 0; i < SLOTS; i++) {
       if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));
       else this.style.removeProperty(`--_v${i}`);
     }
+
+    this.#applyTips(values);
+  }
+
+  /**
+   * Fill each hover dot's tooltip with its own value.
+   *
+   * Only the TEXT — the dots position themselves in CSS off the same --_vN bridge
+   * the line uses, and their tooltips place themselves with anchor positioning
+   * (see .chart-tip in core/sherpa-base.css). Nothing here measures anything.
+   */
+  #applyTips(values: number[]): void {
+    const tips = this.$$<HTMLElement>('.hotspot .chart-tip-value');
+    tips.forEach((tip, i) => {
+      tip.textContent = i < values.length ? formatTick(values[i]!) : '';
+    });
   }
 }
 

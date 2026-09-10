@@ -43,5 +43,45 @@
       <span class="point" data-role="start" data-index="6"></span>
       <span class="point" data-role="end" data-index="7"></span>
     </div>
+
+    <!--
+      HOVER DOTS — one per data point, and the tooltip ANCHORS.
+
+      They are real HTML divs, not SVG: an SVG element cannot be a CSS anchor in
+      Chromium (anchor-name is accepted and then never resolves — the tip drops to
+      the viewport corner). As HTML they position themselves from the SAME
+      --_vN / --_min / --_range bridge the shapes use, in percentages of the
+      chart's own box, so calc() keeps them correct at any size with no JS
+      measuring and no re-layout on resize.
+
+      Each dot carries its own tooltip; the .chart-tip rules in
+      core/sherpa-base.css handle the flip-to-fit placement.
+    -->
+    <div class="hotspots" part="hotspots" aria-hidden="true">
+      <button class="hotspot chart-mark" type="button" data-index="0" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="1" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="2" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="3" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="4" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="5" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="6" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+      <button class="hotspot chart-mark" type="button" data-index="7" tabindex="-1">
+        <span class="chart-tip" role="tooltip"><span class="chart-tip-value"></span></span>
+      </button>
+    </div>
   </div>
 </template>

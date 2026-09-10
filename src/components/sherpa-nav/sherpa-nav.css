@@ -230,7 +230,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 /* Active (latched) header button — Style active. */
@@ -316,7 +316,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 :host([data-has-query]) .search-clear { display: inline-flex; }

@@ -66,6 +66,24 @@ export class SherpaDataGrid extends SherpaElement {
    * off the old rows would lose it the moment the body is replaced.
    */
   #collapsed = new Set<string>();
+  /**
+   * The selected RECORDS, held by object identity.
+   *
+   * Not by row index and not read back off the checkboxes: every re-render
+   * (a sort, a filter keystroke, a quick-filter toggle) replaces the whole body,
+   * so DOM-held selection vanished and an index would point at a different record
+   * once the order changed. A record reference survives both.
+   */
+  #selected = new Set<GridRow>();
+  /**
+   * The last row CLICKED — the "focused" state.
+   *
+   * Held as the record, like the selection, so it survives a re-render. It is not
+   * DOM focus: clicking a row's text does not focus anything focusable, and the
+   * design calls for the last-clicked row to stay marked while the user works
+   * elsewhere.
+   */
+  #focused: GridRow | null = null;
 
   override onRender(): void {
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick);
@@ -91,6 +109,10 @@ export class SherpaDataGrid extends SherpaElement {
     // Fresh data means the old filters may name columns that no longer exist, and
     // silently hiding rows against an invisible filter would look like data loss.
     this.#filters.clear();
+    // New records are new objects, so nothing selected or focused can still be
+    // present.
+    this.#selected.clear();
+    this.#focused = null;
     this.#render();
   }
 
@@ -100,12 +122,13 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleAttribute('data-empty', this.#rows.length === 0);
     this.#renderHead();
     this.#renderBody();
-    // Fresh rows stamp unchecked — clear the header select-all to match.
-    const selectAll = this.$<HTMLInputElement>('.select-all');
-    if (selectAll) {
-      selectAll.checked = false;
-      selectAll.indeterminate = false;
-    }
+    // The select-all is DERIVED from what is selected, not reset. Clearing it here
+    // (as this used to) threw the user's selection away on every sort, filter
+    // keystroke and quick-filter toggle.
+    this.#syncSelectAll();
+    this.#syncGroupSelects();
+    // The focused row survives a sort / filter too — it is a record, not a position.
+    this.#syncFocused();
   }
 
   #renderHead(): void {
@@ -203,6 +226,11 @@ export class SherpaDataGrid extends SherpaElement {
 
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tr.dataset['index'] = String(i);
+      // Restore this record's own selection. The body is replaced wholesale on
+      // every render, so the tick has to come from #selected rather than survive
+      // in the DOM.
+      const box = tr.querySelector<HTMLInputElement>('.row-select');
+      if (box) box.checked = this.#selected.has(record);
       // Which group this row belongs to, so CSS can hide it when that group's
       // row is collapsed — the row itself never needs a `display` write.
       if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
@@ -359,8 +387,22 @@ export class SherpaDataGrid extends SherpaElement {
     const index = Number(raw);
     // Resolve against the VISIBLE list — data-index is a position in that list,
     // so using the unfiltered one would hand back a different record.
-    this.emit('row-click', { index, row: this.#visibleRows()[index] });
+    const record = this.#visibleRows()[index];
+    // FOCUSED: the last row clicked. CSS paints the tint off the flag; the record
+    // is remembered so the next re-render can re-apply it.
+    this.#focused = record ?? null;
+    this.#syncFocused();
+    this.emit('row-click', { index, row: record });
   };
+
+  /** Mark the focused row; CSS owns the tint. */
+  #syncFocused(): void {
+    const rows = this.#visibleRows();
+    for (const tr of this.$$<HTMLElement>('.row')) {
+      const i = Number(tr.dataset['index']);
+      tr.toggleAttribute('data-focused', !!this.#focused && rows[i] === this.#focused);
+    }
+  }
 
   /* ── Grouping ───────────────────────────────────────────────────── */
 
@@ -403,6 +445,12 @@ export class SherpaDataGrid extends SherpaElement {
   /** Header select-all: set every row checkbox to match, then broadcast. */
   #onSelectAll = (event: Event): void => {
     const checked = (event.target as HTMLInputElement).checked;
+    // Only the VISIBLE rows: a select-all cannot reach records a filter is hiding,
+    // and it must not silently deselect them either.
+    for (const record of this.#visibleRows()) {
+      if (checked) this.#selected.add(record);
+      else this.#selected.delete(record);
+    }
     this.$$<HTMLInputElement>('.row-select').forEach((box) => (box.checked = checked));
     // Every group is now wholly in or wholly out, so its own box must say so.
     this.#syncGroupSelects();
@@ -421,11 +469,24 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     if (!target.classList.contains('row-select')) return;
+    // Record the choice against the RECORD, so it survives the next re-render.
+    const record = this.#recordFor(target);
+    if (record) {
+      if ((target as HTMLInputElement).checked) this.#selected.add(record);
+      else this.#selected.delete(record);
+    }
     this.#syncSelectAll();
     // A row's own box may have completed or broken its group's set.
     this.#syncGroupSelects();
     this.#emitSelection();
   };
+
+  /** The record a row control belongs to, resolved through the VISIBLE list. */
+  #recordFor(el: HTMLElement): GridRow | undefined {
+    const raw = el.closest<HTMLElement>('.row')?.dataset['index'];
+    if (raw == null) return undefined;
+    return this.#visibleRows()[Number(raw)];
+  }
 
   /** Set every row in one group to match its group checkbox, then broadcast. */
   #selectGroup(box: HTMLInputElement): void {
@@ -435,6 +496,10 @@ export class SherpaDataGrid extends SherpaElement {
       if (row.dataset['group'] !== key) continue;
       const rowBox = row.querySelector<HTMLInputElement>('.row-select');
       if (rowBox) rowBox.checked = box.checked;
+      const record = this.#recordFor(row);
+      if (!record) continue;
+      if (box.checked) this.#selected.add(record);
+      else this.#selected.delete(record);
     }
     this.#syncSelectAll();
     this.#emitSelection();
@@ -476,7 +541,22 @@ export class SherpaDataGrid extends SherpaElement {
       .filter((box) => box.checked)
       .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
       .filter((id) => id !== '');
-    this.emit('selection-change', { selected });
+    // `records` is the durable answer: a row index is a position in the CURRENTLY
+    // VISIBLE list, so it changes meaning the moment a sort or filter does, and it
+    // cannot describe a selected record a filter is hiding.
+    this.emit('selection-change', { selected, records: this.selectedRecords });
+  }
+
+  /**
+   * The selected RECORDS, including any a filter is currently hiding.
+   *
+   * Selection is a choice about records, not about rows on screen — filtering
+   * changes what is visible, not what is chosen.
+   */
+  get selectedRecords(): GridRow[] {
+    // Returned in the caller's original row order, so the list is stable rather
+    // than in whatever order the boxes happened to be ticked.
+    return this.#rows.filter((r) => this.#selected.has(r));
   }
 
   /* ── Column filters ─────────────────────────────────────────────── */
@@ -525,12 +605,11 @@ export class SherpaDataGrid extends SherpaElement {
     // keep the header and filter row up and show the message under them.
     const visible = this.#visibleRows().length;
     this.toggleAttribute('data-no-matches', visible === 0 && this.#rows.length > 0);
-    // Rows were re-stamped unchecked, so the select-all must not look checked.
-    const selectAll = this.$<HTMLInputElement>('.select-all');
-    if (selectAll) {
-      selectAll.checked = false;
-      selectAll.indeterminate = false;
-    }
+    // DERIVE the select-all from what is still selected. It used to be reset here,
+    // which threw the user's selection away on every keystroke — a filter changes
+    // which records are VISIBLE, not which are chosen.
+    this.#syncSelectAll();
+    this.#syncGroupSelects();
 
     this.emit('filter-change', {
       field,
