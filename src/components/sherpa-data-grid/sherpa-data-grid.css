@@ -40,29 +40,63 @@
 
 .grid {
   inline-size: 100%;
-  border-collapse: collapse;
+  /* SEPARATE, not collapse — and this is a correctness fix, not a preference.
+     In the COLLAPSED border model the browser paints cell backgrounds and borders
+     in a fixed table order that IGNORES z-index on cells, so scrolling rows drew
+     straight over the sticky header no matter how it was stacked. Proved it: the
+     same markup with `separate` paints correctly with nothing else changed.
+     `border-spacing: 0` keeps the cells flush, so the grid looks identical. */
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 /* The header floats above the scrolling rows.
-   The CELLS stick, not the <thead>: a sticky <thead> is not honoured by every
-   engine, and per-cell is the portable form. The label row pins at 0 and the
-   filter row one label-row height below it, via --_head-h (written by the JS,
-   which is the only place the rendered height is known), so the filter inputs
-   land directly UNDER the labels instead of on top of them. */
-.head-row > * {
+   The WHOLE <thead> sticks as one block, not each row's cells separately.
+
+   Per-cell was the portable form, but it needs a SECOND offset for the filter row
+   (the label row's height) — and a sticky offset is measured from the scrollport,
+   so that offset applied at scroll 0 too. The filter cells were pushed 37px down
+   from the moment the grid rendered, leaving a phantom empty band between the two
+   header rows. Sticking the <thead> keeps its two rows in normal flow relative to
+   each other, so they cannot separate, and Chromium honours it. */
+.head {
   position: sticky;
   inset-block-start: 0;
-  z-index: 2;
-  /* A sticky cell needs its OWN opaque fill — the rows scroll underneath, and a
-     transparent header would show the data through it. */
+  /* Higher than the rows below, so they scroll UNDER the header. */
+  z-index: 3;
+  /* An OPAQUE fill on the section itself, not only on the cells.
+     The two header rows meet at a fractional boundary (37.0 and 39.0 tall inside
+     a 76.0 section, on a fractional device pixel), and a sub-pixel seam between
+     two flush cell boxes let the scrolling row show through as a thin band of its
+     own text. Painting the section behind them means any seam still shows header
+     colour. */
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
+/* …and on the ROWS too. A `background` on a <thead> is not painted in every
+   engine's table model, so the rows repeat it as the reliable layer. */
+.head-row,
+.filter-row {
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+}
+/* Each header CELL sticks too, at the same offset, and carries its own opaque
+   fill.
+   Both halves are needed. A `background` on a sticky <thead> or <tr> is not
+   painted for a table section, so without a fill on the cells the rows showed
+   through. And a z-index on the <thead> does not lift its CELLS out of the
+   table's own stacking order — so the cells must be positioned in their own
+   right to sit above the rows. */
+.head-row > *,
 .filter-row > * {
   position: sticky;
-  inset-block-start: var(--_head-h, 0px);
-  z-index: 2;
+  z-index: 3;
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
+/* NO per-row offset. Both rows pin at the <thead>'s own sticky position, so they
+   stay in normal flow relative to each other.
+   Giving the filter row its own `inset-block-start` (the label row's measured
+   height) was the earlier bug: a sticky offset is measured from the SCROLLPORT,
+   so it applied at scroll 0 too and pushed the filter cells 37px down, leaving a
+   phantom empty band between the two header rows. */
 :host([data-empty]) .grid { display: none; }
 
 /* Neutralise the UA's <th> defaults ONCE, at the source.
@@ -131,23 +165,24 @@
  * pseudo-elements, centred vertically.
  *
  * A REGULAR cell has none — that is the whole point of the change, and it is why
- * this rule names the two header types rather than every cell. */
-:is(.head-cell, .filter-cell)::before,
-:is(.head-cell, .filter-cell)::after {
+ * this rule names the two header types rather than every cell.
+ *
+ * ONE divider, on the LEADING edge only. A pair put two hairlines back to back at
+ * every column boundary, which read as one thick smudge; a single leading rule
+ * marks the same boundary once. */
+:is(.head-cell, .filter-cell)::before {
   content: "";
   position: absolute;
   inset-block-start: 50%;
+  inset-inline-start: 0;
   translate: 0 -50%;
   inline-size: var(--sherpa-display-mode-border-width-sm, 0.5px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-:is(.head-cell, .filter-cell)::before { inset-inline-start: 0; }
-:is(.head-cell, .filter-cell)::after { inset-inline-end: 0; }
-/* No LEADING divider on the first drawn column. It would sit either on the grid's
-   own outer frame (two hairlines 0.5px apart read as one thick smudge) or right
-   beside the selection column's edge. A column's divider marks its START, so the
-   first column needs none — the frame already marks it. */
+/* No divider on the first drawn column: it would sit on the grid's own outer
+   frame, or right beside the selection column's edge. A divider marks a boundary
+   BETWEEN columns, and the first column's leading edge is the frame. */
 .head-row > :first-child::before,
 .filter-row > :first-child::before,
 :host([data-selectable]) .head-row > :nth-child(2)::before,
@@ -349,15 +384,16 @@
       var(--sherpa-style-border-base, #b3b3c3);
   }
 
-  /* Hover — the same transparent tint as focus, so pointing at a row previews
-     what clicking it will mark. */
+  /* Hover — the transparent +1 tint: a light preview of what clicking will mark,
+     deliberately one step lighter than the focused state it previews. */
   &:hover {
     background: var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33);
   }
 
-  /* FOCUSED: the last row clicked. A transparent base +1 tint. */
+  /* FOCUSED: the last row clicked. The transparent +2 step — +1 was 20% alpha and
+     read as almost nothing against white, so the last-clicked row was invisible. */
   &[data-focused] {
-    background: var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33);
+    background: var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d);
   }
 
   /* SELECTED: the checkbox is on. The ACTIVE surface — the brand tint the design
@@ -365,6 +401,21 @@
      the row's own dividers stay visible through it. */
   &:has(.row-select:checked) {
     background: var(--sherpa-theme-surface-active-transparent, #c046ff4d);
+  }
+}
+
+/* SELECTED **AND** FOCUSED — the last-clicked row that is also ticked.
+   Both states are true, so both must show: the focus grey is LAYERED over the
+   active tint with color-mix rather than one replacing the other. Picking a
+   winner lost real information — a user could not tell the ticked row they were
+   working in from the other ticked rows. */
+@supports (color: color-mix(in srgb, red, blue)) {
+  .row[data-focused]:has(.row-select:checked) {
+    background: color-mix(
+      in srgb,
+      var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d),
+      var(--sherpa-theme-surface-active-transparent, #c046ff4d)
+    );
   }
 }
 

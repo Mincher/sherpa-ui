@@ -247,24 +247,13 @@ export class SherpaDataGrid extends SherpaElement {
     // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
     // groups the user had already folded shut.
     if (group) this.#syncGroupVisibility();
-    this.#syncStickyOffset();
   }
 
-  /**
-   * Tell CSS how tall the label row is, so the sticky filter row pins directly
-   * beneath it.
-   *
-   * The rendered height is only knowable here — it depends on the font, the
-   * density mode and the content, none of which CSS can hand to a second
-   * `inset-block-start`. Without it both header rows pinned at 0 and the filter
-   * inputs sat ON TOP of the labels.
-   */
-  #syncStickyOffset(): void {
-    const head = this.$<HTMLElement>('.head-row');
-    if (!head) return;
-    const h = head.getBoundingClientRect().height;
-    if (h > 0) this.style.setProperty('--_head-h', `${Math.round(h)}px`);
-  }
+  // No sticky-offset measurement. The WHOLE <thead> sticks as one block now, so
+  // its two rows stay in normal flow relative to each other and nothing has to
+  // know the label row's height. Measuring it and offsetting the filter row was
+  // the bug: a sticky offset is measured from the SCROLLPORT, so it applied at
+  // scroll 0 too and left a phantom empty band between the two header rows.
 
   /** How many visible rows share one group value. */
   #groupSize(rows: GridRow[], field: string, key: string): number {

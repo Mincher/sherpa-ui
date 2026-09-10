@@ -70,8 +70,6 @@ export class SherpaChartLegend extends SherpaElement {
   #items: LegendItem[] = [];
   /** Whether the tail was rolled into an "Other" row (see #cap). */
   #rolledUp = false;
-  /** How many entries the CALLER passed in, before any capping. */
-  #sourceCount = 0;
   /**
    * The categories folded into the "Other" row, with their ORIGINAL indices.
    *
@@ -105,7 +103,6 @@ export class SherpaChartLegend extends SherpaElement {
    * entries, "Other" would stand for one category, so the sixth is left named.
    */
   #cap(items: LegendItem[]): LegendItem[] {
-    this.#sourceCount = items.length;
     this.#rolledUp = items.length > MAX_ITEMS;
     if (items.length <= MAX_ITEMS) {
       this.#rolled = [];
@@ -229,6 +226,11 @@ export class SherpaChartLegend extends SherpaElement {
       const values = (event.detail?.values ?? []) as string[];
       const on = new Set(values.map(Number));
       this.#rolledActive = on;
+      // Ticking anything in the breakdown of a SUSPENDED group means the reader
+      // wants it back — otherwise Apply would record a set that nothing displays.
+      // An empty set leaves the row off, which is the same statement.
+      const row = wrapper.querySelector('.rollup-toggle');
+      row?.setAttribute('aria-pressed', String(on.size > 0));
       // Report the FOLDED categories as they now stand: every rolled-up index,
       // each with whether it survived the edit. A chart can apply the whole set in
       // one pass rather than diffing.
@@ -252,6 +254,17 @@ export class SherpaChartLegend extends SherpaElement {
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
     const index = Number(raw);
+    const isRollup = this.#rolledUp && index === this.#items.length - 1;
+
+    // The "Other" row's own toggle SUSPENDS its whole group.
+    //
+    // Its breakdown checkboxes must follow it — leaving them ticked under a row
+    // that says "off" is a lie. But the per-item choices are NOT cleared: they
+    // live in #rolledActive, so switching the row back on restores exactly the
+    // set the reader last applied rather than turning everything on. Same
+    // suspend-but-remember rule the Sort chip and the value-filter chips use.
+    if (isRollup) this.#syncBreakdownBoxes(active);
+
     this.emit('legend-item-click', {
       index,
       label: this.#items[index]?.label ?? '',
@@ -262,11 +275,31 @@ export class SherpaChartLegend extends SherpaElement {
       // "Other" roll-up covering every category past the fifth, so toggling it
       // must hide ALL of them — `index` alone would hide one series and leave the
       // rest drawn under a row that says they are off.
-      indices: this.#rolledUp && index === this.#items.length - 1
-        ? Array.from({ length: this.#sourceCount - index }, (_, k) => index + k)
+      //
+      // When the row comes back ON it reports only the categories the reader had
+      // left active, not every folded one — restoring the group must not silently
+      // un-hide something they switched off in the breakdown.
+      indices: isRollup
+        ? (active
+            ? [...this.#rolledActive].sort((a, b) => a - b)
+            : this.#rolled.map((r) => r.index))
         : [index],
     });
   };
+
+  /**
+   * Tick or untick the breakdown's checkboxes to match the "Other" row's state.
+   *
+   * Suspended → every box off. Restored → back to the remembered set. The
+   * remembered set (#rolledActive) is never touched here, which is what makes the
+   * round trip lossless.
+   */
+  #syncBreakdownBoxes(active: boolean): void {
+    for (const box of this.$$<HTMLInputElement>('.rollup-menu input')) {
+      box.checked = active && this.#rolledActive.has(Number(box.value));
+    }
+  }
+
 }
 
 customElements.define('sherpa-chart-legend', SherpaChartLegend);
