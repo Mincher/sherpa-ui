@@ -48,8 +48,15 @@ test('populate() sets the --_v / --_min / --_range custom properties', async ({ 
   expect(r.v1).toBe('25');
   expect(r.v2).toBe('15');
   expect(r.v3).toBe('30');
-  expect(r.min).toBe('10'); // min of the series
-  expect(r.range).toBe('20'); // 30 - 10
+  // --_min / --_range are the PADDED normalisation window, not the raw extent.
+  // Normalising to exactly min..max pinned the lowest point at 0% — flat on the
+  // bottom edge — so the area fill had nothing to fill beneath it. The window is
+  // padded by 15% of the spread at each end: spread 20 → pad 3 → min 10-3 = 7,
+  // range 20+6 = 26.
+  expect(r.min).toBe('7');
+  expect(r.range).toBe('26');
+  // …which puts the lowest value comfortably off the floor.
+  expect(((10 - 7) / 26) * 100).toBeCloseTo(11.5, 1);
   expect(r.v4).toBe(''); // unused slot cleared
   expect(r.valuesAttr).toBe('[10,25,15,30]'); // serialised to the source of truth
 });
@@ -100,8 +107,10 @@ test('data-variant="bar" renders and normalises the same value bridge', async ({
   });
   expect(r.variant).toBe('bar');
   expect(r.v0).toBe('1');
-  expect(r.min).toBe('1');
-  expect(r.range).toBe('3'); // 4 - 1
+  // The same padded window as the line variant: spread 3 → pad 0.45 → min 0.55,
+  // range 3.9. Bars share the value bridge; only the shape differs.
+  expect(Number(r.min)).toBeCloseTo(0.55, 2);
+  expect(Number(r.range)).toBeCloseTo(3.9, 2);
 });
 
 test('empty values leave every shape/point hidden', async ({ page }) => {

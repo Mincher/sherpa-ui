@@ -46,7 +46,7 @@ export class SherpaChartLegend extends SherpaElement {
       const n = ((item.colorIndex ?? i + 1) - 1) % 11 + 1;
       row.querySelector<HTMLElement>('.swatch')!.style.setProperty(
         '--_hue',
-        `var(--sherpa-categorical-${n})`,
+        `var(--sherpa-data-viz-series-${n})`,
       );
       row.querySelector('.label')!.textContent = item.label;
       row.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';

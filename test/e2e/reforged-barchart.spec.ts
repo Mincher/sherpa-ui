@@ -55,3 +55,46 @@ test('clicking a bar fires bar-click with the datum', async ({ page }) => {
   });
   expect(r).toEqual({ index: 1, label: 'B', value: 20 });
 });
+
+test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-barchart') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { label: 'A', value: 5, colorIndex: 1 },
+      { label: 'B', value: 3, colorIndex: 2 },
+    ]);
+    await new Promise((res) => setTimeout(res, 20));
+
+    const bars = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.bar'));
+    return bars.map((bar) => {
+      const s = getComputedStyle(bar);
+      return {
+        // The var the TS writes must actually RESOLVE. `--sherpa-categorical-N`
+        // never existed, so it resolved to nothing and the fill fell back to the
+        // property's initial value — black bars.
+        hue: s.getPropertyValue('--_hue').trim(),
+        background: s.backgroundColor,
+        borderColor: s.borderTopColor,
+        borderWidth: s.borderTopWidth,
+      };
+    });
+  });
+
+  expect(r).toHaveLength(2);
+
+  // Figma Data Field: each Bar is the series hue at 60% with a solid 1px stroke in
+  // the SAME hue, so overlapping marks stay readable and a thin bar still shows.
+  const [a, b] = r as Array<Record<string, string>>;
+  expect(a!['hue']).toBe('#7b1ce6'); // data-viz series 1
+  expect(b!['hue']).toBe('#c046ff'); // data-viz series 2
+  expect(a!['borderColor']).toBe('rgb(123, 28, 230)');
+  expect(a!['borderWidth']).toBe('1px');
+  // A translucent fill: 60% alpha, and NOT the initial black.
+  expect(a!['background']).not.toBe('rgb(0, 0, 0)');
+  expect(a!['background']).toMatch(/0\.6\)/);
+});

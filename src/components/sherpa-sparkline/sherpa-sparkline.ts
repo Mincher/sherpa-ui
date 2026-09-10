@@ -15,6 +15,14 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 
 /** Fixed point slots (0..SLOTS-1); SLOTS-1 segments between them. */
 const SLOTS = 8;
+/**
+ * Vertical padding as a fraction of the data's own spread.
+ *
+ * 0.15 keeps the lowest point ~13% off the floor and the peak the same off the
+ * top, which is enough for the area fill to read as a filled shape rather than a
+ * line resting on the bottom edge, without flattening the trend itself.
+ */
+const PAD_FRACTION = 0.15;
 
 export class SherpaSparkline extends SherpaElement {
   static override css = new URL('./sherpa-sparkline.css', import.meta.url);
@@ -65,10 +73,22 @@ export class SherpaSparkline extends SherpaElement {
 
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const range = max - min || 1;
+    const spread = max - min || 1;
+
+    // HEADROOM below the lowest point.
+    //
+    // Normalising to exactly min..max puts the lowest value at 0% — flat against
+    // the bottom edge — so the area fill had nothing to fill under it and the
+    // trend read as a line clipped at the floor rather than a filled shape.
+    // Padding the range by a fraction of the spread lifts the minimum off the
+    // floor, so every point has fill beneath it. Padded at BOTH ends so the peak
+    // keeps the same clearance from the top and the shape stays centred.
+    const pad = spread * PAD_FRACTION;
+    const paddedMin = min - pad;
+    const range = spread + pad * 2;
 
     // JS→CSS-var bridge (geometry, not style): raw values + normalisation range.
-    this.style.setProperty('--_min', String(min));
+    this.style.setProperty('--_min', String(paddedMin));
     this.style.setProperty('--_range', String(range));
     for (let i = 0; i < SLOTS; i++) {
       if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));

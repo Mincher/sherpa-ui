@@ -85,6 +85,10 @@ states:
   - $type: state
     name: not-area
     selector: ":host(:not([data-variant=\"area\"]))"
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (hiddenSeries). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: nothing
@@ -94,9 +98,9 @@ tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
   title.color: "{sherpa.theme-content-body-base}"
-  line.stroke: "{sherpa.categorical-1}"
-  area.fill: "{sherpa.categorical-1}"
-  x-axis.margin-block-start: "{sherpa.display-space-2xs}"
+  line.stroke: "{sherpa.data-viz-series-1}"
+  area.fill: "{sherpa.data-viz-series-1}"
+  x-axis.margin-block-start: "{sherpa.display-mode-space-2xs}"
   x-axis.font-size: "{sherpa.font-size-body-small}"
   x-axis.color: "{sherpa.theme-content-body-1}"
 $extensions:
@@ -108,3 +112,7 @@ $extensions:
         values:
           - vertical
           - horizontal
+    jsProps:
+      - name: hiddenSeries
+        type: string
+        access: read

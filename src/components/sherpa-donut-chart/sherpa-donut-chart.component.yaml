@@ -18,30 +18,46 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: figure
-    class: layout
-    part: layout
-    children:
-      - el: div
-        class: ring-wrap
-        children:
-          - el: div
-            class: ring
-            part: ring
-            attrs:
-              role: img
-              aria-label: Donut chart
-          - el: div
-            class: centre
-            children:
-              - el: span
-                class: value
-                part: value
-              - el: span
-                class: sub
-                part: sub
-      - slot: legend
+  roots:
+    - el: figure
+      class: layout
+      part: layout
+      children:
+        - el: div
+          class: ring-wrap
+          children:
+            - el: svg
+              class: ring
+              part: ring
+              attrs:
+                viewBox: 0 0 100 100
+                role: img
+                aria-label: Donut chart
+                preserveAspectRatio: xMidYMid meet
+              children:
+                - el: g
+                  class: slices
+            - el: div
+              class: centre
+              children:
+                - el: span
+                  class: value
+                  part: value
+                - el: span
+                  class: sub
+                  part: sub
+        - slot: legend
+    - el: template
+      class: slice-tpl
+      children:
+        - el: svg
+          children:
+            - el: circle
+              class: slice
+              attrs:
+                cx: "50"
+                cy: "50"
+                fill: none
 props:
   - $type: prop
     name: data-label
@@ -56,30 +72,45 @@ props:
   - $type: prop
     name: data-variant
     type: enum
-    kind: style
+    kind: content
     values:
       - donut
       - pie
-    description: donut  | pie   (pie removes the centre hole)
+    description: donut  | pie   (pie fills to the centre, no hole)
 states:
   - $type: state
     name: pie
     selector: ":host([data-variant=\"pie\"])"
+  - $type: state
+    name: focus-visible
+    selector: .slice:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (slices). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (slices, hiddenSlices). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: nothing
+    name: slice-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: label
+    bubbles: true
+    composed: true
+  - $type: event
+    name: value
     bubbles: true
     composed: true
 tokens:
-  layout.gap: "{sherpa.display-space-lg}"
-  value.font-size: "{sherpa.font-size-heading-h1}"
-  value.font-weight: "{sherpa.font-weight-bold}"
-  value.color: "{sherpa.theme-content-body-base}"
-  sub.font-size: "{sherpa.font-size-body-small}"
+  layout.gap: "{sherpa.display-mode-space-lg}"
+  slice.stroke: "{sherpa.data-viz-series-1}"
+  value.font-size: "{sherpa.theme-content-size-h1}"
+  value.font-weight: "{sherpa.font-weight-semibold}"
+  value.line-height: "{sherpa.theme-content-line-height-h1}"
+  value.letter-spacing: "{sherpa.theme-content-letter-spacing-h1}"
+  value.color: "{sherpa.theme-content-body-1}"
+  sub.font-size: "{sherpa.font-size-body-xs}"
+  sub.line-height: "{sherpa.theme-content-line-height-xs}"
   sub.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:
@@ -87,5 +118,8 @@ $extensions:
     category: chart
     jsProps:
       - name: slices
+        type: string
+        access: read
+      - name: hiddenSlices
         type: string
         access: read

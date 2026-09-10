@@ -62,7 +62,10 @@
   cursor: pointer;
 }
 
-/* The bar area fills the column above the label; the bar grows from its bottom. */
+/* The bar area fills the column above the label; the bar grows from its bottom.
+   Figma Data Field: every mark is a TRANSLUCENT fill with a SOLID 1px stroke in the
+   same series hue — that is what lets overlapping marks stay readable and keeps a
+   thin bar visible when its fill is only a few pixels wide. */
 .bar {
   align-self: center;
   inline-size: 100%;
@@ -71,8 +74,18 @@
   block-size: var(--_h, 0%);
   min-block-size: 2px;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px) var(--sherpa-display-mode-border-rounding-sm, 2px) 0 0;
-  background: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  /* Solid hue where color-mix is unavailable, so the bar never disappears. */
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  box-sizing: border-box;
   transition: filter 100ms ease, block-size 300ms ease;
+}
+@supports (color: color-mix(in srgb, red, transparent)) {
+  .bar {
+    /* Figma uses the hue at 60% (the `99` alpha suffix on every mark's fill). */
+    background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent);
+  }
 }
 
 .bar-col:hover .bar { filter: brightness(1.08); }

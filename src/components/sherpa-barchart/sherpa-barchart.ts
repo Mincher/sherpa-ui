@@ -54,7 +54,7 @@ export class SherpaBarchart extends SherpaElement {
       const n = ((d.colorIndex ?? i + 1) - 1) % 11 + 1;
       const bar = col.querySelector<HTMLElement>('.bar')!;
       bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
-      bar.style.setProperty('--_hue', `var(--sherpa-categorical-${n})`);
+      bar.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
       col.querySelector('.bar-label')!.textContent = d.label;
       bars.appendChild(col);
     });

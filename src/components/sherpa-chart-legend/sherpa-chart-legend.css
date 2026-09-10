@@ -64,11 +64,11 @@
   block-size: var(--sherpa-display-mode-size-xs, 12px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
-  background: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
 }
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
-  .swatch { background: color-mix(in srgb, var(--_hue, var(--sherpa-categorical-1, #7b1ce6)) 60%, transparent); }
+  .swatch { background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent); }
 }
 
 .value {

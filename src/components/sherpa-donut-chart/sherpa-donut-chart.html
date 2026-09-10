@@ -1,24 +1,34 @@
 <!--
   sherpa-donut-chart — a donut / pie for part-to-whole data.
 
-  The ring is a single conic-gradient built by JS from populate([{ label, value }]):
-  each slice becomes a categorical-coloured band spanning its share of the circle.
-  JS sets the gradient as one --_ring custom property; CSS draws the ring (a circle
-  masked to a donut). A centre label sits in the hole.
+  Matches the Figma "Donut Chart" (200×200), which draws each slice as its own arc:
+  five ELLIPSE nodes with arcData.innerRadius 0.7 (a hole at 70% of the radius),
+  cornerRadius 2 and a 1px INSIDE stroke, each filled with its series hue at 60%.
+
+  So the ring is SVG, one <path> per slice, not a conic-gradient. A gradient draws
+  hard-edged bands and cannot round a band's ends, so the design's 2px rounding was
+  unreachable that way — and a gradient has no per-slice element to stroke or to
+  hover either. Slices are stamped from the .slice-tpl cloning prototype.
+
+  The viewBox is a fixed 0 0 100 100 with the arcs drawn as a stroked circle, so the
+  ring scales with the element while staying perfectly circular.
 
   Public API:
-    data-variant   donut (default) | pie   (pie removes the centre hole)
+    data-variant   donut (default) | pie   (pie fills to the centre, no hole)
     data-label     centre big text
     data-sublabel  centre small text
 
   Slots: legend — an optional legend beside the ring.
 
-  Fires: nothing — display only (compose with sherpa-chart-legend).
+  Fires: slice-click — a slice is clicked. detail: { index, label, value }
 -->
 <template id="default">
   <figure class="layout" part="layout">
     <div class="ring-wrap">
-      <div class="ring" part="ring" role="img" aria-label="Donut chart"></div>
+      <svg class="ring" part="ring" viewBox="0 0 100 100" role="img"
+           aria-label="Donut chart" preserveAspectRatio="xMidYMid meet">
+        <g class="slices"></g>
+      </svg>
       <div class="centre">
         <span class="value" part="value"></span>
         <span class="sub" part="sub"></span>
@@ -26,4 +36,17 @@
     </div>
     <slot name="legend"></slot>
   </figure>
+
+  <!--
+    One arc per slice. JS sets the dash geometry, the rotation and the hue.
+
+    The prototype is WRAPPED IN AN <svg>. Without that wrapper the HTML parser
+    reads `<circle>` as unknown HTML and builds an HTMLUnknownElement in the XHTML
+    namespace: it clones and appends without error, reports the right attributes,
+    and paints absolutely nothing. Inside an <svg> the parser switches to the SVG
+    namespace, so the clone is a real SVGCircleElement.
+  -->
+  <template class="slice-tpl">
+    <svg><circle class="slice" cx="50" cy="50" fill="none" /></svg>
+  </template>
 </template>

@@ -1,45 +1,99 @@
 /**
  * sherpa-donut-chart.css — a donut/pie ring.
  *
- * The ring is a conic-gradient JS composes from the slice shares (--_ring). A
- * radial mask punches the centre hole (donut); data-variant="pie" removes it.
- * The centre label sits in the hole. Everything drawable is CSS.
+ * The ring is SVG: one stroked-circle arc per slice, whose dash exposes only that
+ * slice's span (see the .slice block, and the TS for the geometry). That is what
+ * carries the Figma 2px rounding, which a conic-gradient — the earlier approach —
+ * could not: a gradient draws hard-edged bands with no per-slice element to round,
+ * stroke or hit-test. The centre label is a sibling, sitting in the hole.
  */
 
 :host {
-  display: inline-block;
+  /* `block`, not `inline-block`: an inline-block hugs its content and never
+     yields to a narrow parent, so the ring could not shrink even with a ratio. */
+  display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  --_size: 200px; /* Figma Donut Chart: 200×200 */
-  --_hole: 62%; /* inner radius as a fraction of the circle */
-  --_ring: conic-gradient(var(--sherpa-style-border-base, #b3b3c3) 0 100%);
+  --_size: 200px; /* Figma Donut Chart: 200×200 — the MAXIMUM, not a fixed size */
+  /* The hole is no longer a CSS mask. Figma's slices carry
+     arcData.innerRadius = 0.7 (a hole at 70% of the radius), and the TS derives
+     the arc radius and stroke width from that, because they also depend on the
+     donut/pie variant. The old `--_hole: 62%` fed a radial-gradient mask, whose
+     percentages are fractions of the DIAMETER — so it was really a 124%-of-radius
+     hole, which is why the ring rendered far too thin. */
 }
 
 /* <figure> element — reset its default margin; layout is unchanged. */
 .layout {
-  display: inline-flex;
+  /* `flex`, not `inline-flex`, for the same reason as the host. */
+  display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-lg, 20px);
   margin: 0;
+  min-inline-size: 0;
 }
 
+/* The ring must stay CIRCULAR at any size.
+   `--_size` was a fixed 200px, so the donut could not scale with its container at
+   all — and any attempt to size it by width alone would have produced an ellipse,
+   because the height came from a separate declaration. `aspect-ratio: 1` ties the
+   two together, so one dimension is enough and the circle can never distort.
+
+   It shrinks to fit a narrow container but never grows past the Figma 200, so a
+   wide panel does not blow the donut up out of proportion to its own labels. */
 .ring-wrap {
   position: relative;
-  inline-size: var(--_size);
-  block-size: var(--_size);
+  inline-size: min(100%, var(--_size));
+  max-inline-size: var(--_size);
+  aspect-ratio: 1;
+  /* No block-size: the ratio derives it. Declaring both would let them disagree. */
+  flex: 0 1 auto;
 }
 .ring {
+  display: block;
   inline-size: 100%;
   block-size: 100%;
-  border-radius: 50%;
-  background: var(--_ring);
-  /* mask clips the ring into a donut; the centre label is a SIBLING, unaffected */
-  mask: radial-gradient(circle, transparent var(--_hole), #000 calc(var(--_hole) + 0.5px));
+  overflow: visible;
 }
-:host([data-variant="pie"]) {
-  --_hole: 0%;
+
+/* ── Slices ──────────────────────────────────────────────────────────────
+   Each slice is a STROKED CIRCLE whose dash exposes only its own span. That is
+   what carries the Figma 2px rounding: `stroke-linecap: round` rounds the visible
+   ends of a dash, so the arc geometry and its rounded caps come from one
+   primitive. The band's thickness and radius are set by the TS, because they
+   depend on the donut/pie variant.
+
+   Figma fills each slice with its hue at 60% and strokes it 1px solid in the same
+   hue. Here the whole band IS the stroke, so it takes the 60% tint; a second solid
+   1px edge is not drawable on the same stroke, and at this scale it would read as
+   noise rather than definition. Hover lifts the slice to the full hue instead,
+   which is the same information the outline was giving. */
+.slice {
+  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  /* BUTT caps.
+     `round` adds a half-stroke semicircle at EACH end — 7.5 units on a 15-unit
+     band — so a small slice ballooned into a blob and overlapped its neighbours.
+     Figma's cornerRadius is 2px on a 200px chart (1 unit here): a small chamfer on
+     the arc's four CORNERS, which an SVG stroke cannot express at all — a stroke
+     has caps, not corners.
+     DIVERGENCE, recorded in the component def: the arc ends are square. Slices are
+     separated by a 1-unit gap instead (set by the TS), which is the readability
+     the rounding was providing. Drawing each arc as a real filled <path> with
+     rounded corners would match exactly, at the cost of hand-written arc maths. */
+  stroke-linecap: butt;
+  transition: opacity 100ms ease;
+  cursor: pointer;
 }
-:host([data-variant="pie"]) .ring {
-  mask: none;
+@supports (color: color-mix(in srgb, red, transparent)) {
+  .slice {
+    stroke: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent);
+  }
+}
+
+/* A slice lifts to full strength on hover, so the pointer target is legible. */
+.slice:hover { opacity: 1; stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)); }
+.slice:focus-visible {
+  outline: none;
+  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
 }
 
 .centre {

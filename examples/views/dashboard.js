@@ -40,18 +40,24 @@ export async function init(root) {
   const metrics = {
     'm-endpoints': {
       name: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
+      status: 'success',
       values: [1180, 1195, 1210, 1188, 1230, 1255, 1249, 1270, 1284],
     },
     'm-alerts': {
+      // Alerts falling is GOOD, but 37 open is still worth attention.
       name: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
+      status: 'warning',
       values: [61, 58, 54, 49, 52, 45, 41, 39, 37],
     },
     'm-uptime': {
       name: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
+      status: 'success',
       values: [98.4, 98.7, 98.5, 99.0, 98.9, 99.1, 99.0, 99.3, 99.2],
     },
     'm-patch': {
+      // 87% is climbing but not there yet — an informational reading.
       name: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
+      status: 'info',
       values: [74, 76, 79, 78, 81, 83, 84, 86, 87],
     },
   };
@@ -122,7 +128,13 @@ export async function init(root) {
 
   // Metric tiles.
   for (const [id, data] of Object.entries(metrics)) {
-    root.querySelector(`#${id}`)?.populate(data);
+    const tile = root.querySelector(`#${id}`);
+    // data-status drives the WHOLE tile through the --_status-* cascade: the
+    // surface, the delta ink and the embedded sparkline's stroke. Custom
+    // properties inherit across the shadow boundary, so setting it here is enough
+    // — the sparkline inside needs no wiring of its own.
+    if (data.status) tile?.setAttribute('data-status', data.status);
+    tile?.populate(data);
   }
 
   // Charts.
@@ -135,6 +147,19 @@ export async function init(root) {
   $('#line')?.populate(lineData);
   $('#line-legend')?.populate(lineLegend);
   $('#kv')?.populate(summary);
+
+  // ── Legends toggle their chart ──────────────────────────────────────
+  // A legend does not know what it labels, so the page joins them up: the legend
+  // reports which row was toggled, and the chart is told to hide that series.
+  // Hiding RE-RENDERS the chart (rather than just dimming the row) because both
+  // charts derive their scale from the visible data — the line's y-axis and the
+  // donut's shares would otherwise be computed from series nobody can see.
+  $('#donut-legend')?.addEventListener('legend-item-click', (e) => {
+    $('#donut')?.setSliceHidden(e.detail.index, !e.detail.active);
+  });
+  $('#line-legend')?.addEventListener('legend-item-click', (e) => {
+    $('#line')?.setSeriesHidden(e.detail.index, !e.detail.active);
+  });
 
   // ── A little interactivity so the demo is live. ─────────────────────
   // Bar clicks log to the console (bar-click is the barchart's event).

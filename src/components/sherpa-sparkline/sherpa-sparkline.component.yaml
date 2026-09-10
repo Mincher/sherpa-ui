@@ -149,13 +149,37 @@ states:
   - $type: state
     name: bar
     selector: ":host([data-variant=\"bar\"])"
+  - $type: state
+    name: "2"
+    selector: ":host([data-len=\"2\"])"
+  - $type: state
+    name: "3"
+    selector: ":host([data-len=\"3\"])"
+  - $type: state
+    name: "4"
+    selector: ":host([data-len=\"4\"])"
+  - $type: state
+    name: "5"
+    selector: ":host([data-len=\"5\"])"
+  - $type: state
+    name: "6"
+    selector: ":host([data-len=\"6\"])"
+  - $type: state
+    name: "7"
+    selector: ":host([data-len=\"7\"])"
+  - $type: state
+    name: "8"
+    selector: ":host([data-len=\"8\"])"
+  - $type: state
+    name: "1"
+    selector: ":host([data-len=\"1\"])"
 events:
   - $type: event
     name: nothing
     bubbles: true
     composed: true
 tokens:
-  point.border-radius: "{sherpa.display-border-rounding-full}"
+  point.border-radius: "{sherpa.display-mode-border-rounding-full}"
 $extensions:
   sherpa:
     figmaName: Data Field
