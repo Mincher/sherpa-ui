@@ -219,6 +219,23 @@ export class SherpaDataGrid extends SherpaElement {
     // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
     // groups the user had already folded shut.
     if (group) this.#syncGroupVisibility();
+    this.#syncStickyOffset();
+  }
+
+  /**
+   * Tell CSS how tall the label row is, so the sticky filter row pins directly
+   * beneath it.
+   *
+   * The rendered height is only knowable here — it depends on the font, the
+   * density mode and the content, none of which CSS can hand to a second
+   * `inset-block-start`. Without it both header rows pinned at 0 and the filter
+   * inputs sat ON TOP of the labels.
+   */
+  #syncStickyOffset(): void {
+    const head = this.$<HTMLElement>('.head-row');
+    if (!head) return;
+    const h = head.getBoundingClientRect().height;
+    if (h > 0) this.style.setProperty('--_head-h', `${Math.round(h)}px`);
   }
 
   /** How many visible rows share one group value. */
@@ -387,15 +404,61 @@ export class SherpaDataGrid extends SherpaElement {
   #onSelectAll = (event: Event): void => {
     const checked = (event.target as HTMLInputElement).checked;
     this.$$<HTMLInputElement>('.row-select').forEach((box) => (box.checked = checked));
+    // Every group is now wholly in or wholly out, so its own box must say so.
+    this.#syncGroupSelects();
     this.#emitSelection();
   };
 
   /** A single row checkbox toggled: reconcile the select-all state, broadcast. */
   #onRowSelect = (event: Event): void => {
-    if (!(event.target as HTMLElement).classList.contains('row-select')) return;
+    const target = event.target as HTMLElement;
+
+    // A GROUP checkbox selects (or clears) every row in that group — the group row
+    // is a heading for those rows, so its box is their select-all.
+    if (target.classList.contains('group-select')) {
+      this.#selectGroup(target as HTMLInputElement);
+      return;
+    }
+
+    if (!target.classList.contains('row-select')) return;
     this.#syncSelectAll();
+    // A row's own box may have completed or broken its group's set.
+    this.#syncGroupSelects();
     this.#emitSelection();
   };
+
+  /** Set every row in one group to match its group checkbox, then broadcast. */
+  #selectGroup(box: HTMLInputElement): void {
+    const key = box.closest<HTMLElement>('.group-row')?.dataset['group'];
+    if (key == null) return;
+    for (const row of this.$$<HTMLElement>('.row')) {
+      if (row.dataset['group'] !== key) continue;
+      const rowBox = row.querySelector<HTMLInputElement>('.row-select');
+      if (rowBox) rowBox.checked = box.checked;
+    }
+    this.#syncSelectAll();
+    this.#emitSelection();
+  }
+
+  /**
+   * Reflect all/none/indeterminate on each group checkbox.
+   *
+   * A group's box has to answer for its rows, so ticking rows one by one must fill
+   * it in — otherwise the box and the rows it heads would disagree.
+   */
+  #syncGroupSelects(): void {
+    for (const groupRow of this.$$<HTMLElement>('.group-row')) {
+      const key = groupRow.dataset['group'];
+      const box = groupRow.querySelector<HTMLInputElement>('.group-select');
+      if (!box || key == null) continue;
+      const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['group'] === key);
+      const checked = rows.filter(
+        (r) => r.querySelector<HTMLInputElement>('.row-select')?.checked,
+      ).length;
+      box.checked = checked > 0 && checked === rows.length;
+      box.indeterminate = checked > 0 && checked < rows.length;
+    }
+  }
 
   /** Reflect all/none/indeterminate on the header select-all box. */
   #syncSelectAll(): void {

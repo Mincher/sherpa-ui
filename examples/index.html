@@ -44,6 +44,31 @@
       margin-block-end: 0;
     }
 
+    /* A panel sized in LAYOUT GRID ROWS. The grid's row height is a projected
+       layout token (--sherpa-layout-grid-row-height, 64px at desktop), so a panel
+       spanning N rows is N of those plus the vertical gutters between them.
+
+       This is what stops the data-grid panel growing with its row count: the panel
+       is a fixed height and the grid SCROLLS inside it, so the pager stays put and
+       "rows per page = 50" no longer pushes the page metres long. */
+    .panel[data-rows] {
+      block-size: calc(
+        var(--_rows, 6) * var(--sherpa-layout-grid-row-height, 64px)
+        + (var(--_rows, 6) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)
+      );
+    }
+    .panel[data-rows="4"] { --_rows: 4; }
+    .panel[data-rows="6"] { --_rows: 6; }
+    .panel[data-rows="8"] { --_rows: 8; }
+    /* The grid is the only part that may grow; everything else in the panel keeps
+       its natural height. `min-height: 0` is what lets it shrink below its content
+       so its own scroll box takes over. */
+    .panel[data-rows] > sherpa-data-grid {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .panel[data-rows] > :not(sherpa-data-grid) { flex: 0 0 auto; }
+
     /* The pager fills the panel and carries its own Figma padding (8 × 12), so its
        controls sit 12px in from the grid's edges — which is the design. */
 

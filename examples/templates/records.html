@@ -15,8 +15,10 @@
   </div>
 
   <div class="sherpa-grid">
-    <!-- A data table always wants every column it can get. -->
-    <div class="panel" data-span="full">
+    <!-- A data table always wants every column it can get. `data-rows="8"` fixes
+         the panel at 8 layout-grid rows tall, so the grid SCROLLS inside it rather
+         than the panel growing with the row count and pushing the pager away. -->
+    <div class="panel" data-span="full" data-rows="8">
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
       <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
       <sherpa-pagination

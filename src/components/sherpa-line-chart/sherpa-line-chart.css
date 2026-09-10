@@ -145,8 +145,9 @@
      the chart's left edge. Sizing it from the data instead (the longest label's
      length) fixed the overflow but made the axis WIGGLE: the plot got wider or
      narrower whenever a value crossed a digit boundary. One fixed width, and a
-     label too long for it truncates. */
-  inline-size: var(--sherpa-display-mode-size-4xl, 48px);
+     label too long for it truncates. HALVED from 4xl 48 to lg 24 — 48 ate too
+     much of the plot and pushed every bar label into an ellipsis. */
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
   box-sizing: content-box;
   /* Room for the tick rule beside the labels (Figma's 8-wide Marker). One grid
      step up from 2xs: at 4px the numbers sat almost against the axis rule. */

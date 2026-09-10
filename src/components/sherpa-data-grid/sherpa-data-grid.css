@@ -11,18 +11,57 @@
    style-border/base stroke — there is no rounded card around the table, so the grid
    has square corners and a hairline frame. */
 :host {
-  display: block;
+  /* A FLEX COLUMN, not a block. The grid must be able to take a height from its
+     container and SCROLL inside it, rather than growing with the row count and
+     pushing the pager off the page. A block host cannot pass a height down to
+     the scroll box. */
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius: 0;
+  /* The table scrolls, so the host must not clip it away. `auto` here would give
+     a second scrollbar; the table's own box owns the scrolling. */
   overflow: hidden;
+}
+
+/* The scroll box — a wrapper DIV, not the <table>. Giving a table `display: block`
+   to make it scrollable takes it out of table layout and its columns stop lining
+   up. `min-block-size: 0` is what lets a flex child shrink below its content;
+   without it the table wins and the host grows to fit every row, which is exactly
+   what the fixed-height container is meant to stop. */
+.scroller {
+  min-block-size: 0;
+  overflow: auto;
 }
 
 .grid {
   inline-size: 100%;
   border-collapse: collapse;
+}
+
+/* The header floats above the scrolling rows.
+   The CELLS stick, not the <thead>: a sticky <thead> is not honoured by every
+   engine, and per-cell is the portable form. The label row pins at 0 and the
+   filter row one label-row height below it, via --_head-h (written by the JS,
+   which is the only place the rendered height is known), so the filter inputs
+   land directly UNDER the labels instead of on top of them. */
+.head-row > * {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+  /* A sticky cell needs its OWN opaque fill — the rows scroll underneath, and a
+     transparent header would show the data through it. */
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+}
+.filter-row > * {
+  position: sticky;
+  inset-block-start: var(--_head-h, 0px);
+  z-index: 2;
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
 :host([data-empty]) .grid { display: none; }
 
@@ -273,16 +312,17 @@
    every column, is 32 tall with padding 4 and gap 8, and holds a selection
    checkbox, a chevron toggle, then the group's value as its label.
 
-   FIGMA DIVERGENCE: that cell binds `Style::style-surface/dark`, which no longer
-   exists in the Style collection — a DANGLING reference (Style now holds
-   style-surface/{base, base +1, base +2, shadow}). Using `style-surface/base +2`,
-   the darkest default step, which is what "dark" resolved to. Flagged for the
-   Figma side to re-bind. */
+   The cell binds `Style::style-surface/dark`, which is not one of the four
+   style-surface vars projected into tokens.css (base / +1 / +2 / shadow) — it
+   lives outside the base Style collection. Probed what it actually PAINTS on the
+   design (#e8e8f6) and it is exactly `style-surface/base +1`, so that is the
+   token. (`base +2` is #b3b3c3 — visibly darker than the design, which is what
+   the first attempt used.) */
 .group-row {
   cursor: pointer;
-  background: var(--sherpa-style-surface-base-2, #d1d1e0);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
 
-  &:hover { background: var(--sherpa-theme-surface-default-2, #d1d1e0); }
+  &:hover { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 }
 
 /* Two group rows in a row happen when the first is COLLAPSED, and with the same

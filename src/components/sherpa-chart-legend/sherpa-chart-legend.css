@@ -80,6 +80,12 @@
   }
 }
 
+/* A READ-ONLY legend is a key, not a filter. A gauge's rows name thresholds and
+   there is nothing to hide, so they must not offer a click they will not honour.
+   The JS drops the button semantics too (see #render), so keyboard and pointer
+   agree — styling alone would leave a focusable control that does nothing. */
+:host([data-readonly]) .item { cursor: default; }
+
 /* `subgrid` needs the entry to be a grid ITEM of the parent, which it is not when
    the parent flows in columns — so a horizontal legend gives each entry its own
    tracks instead. */
@@ -110,6 +116,16 @@
   background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
   box-sizing: border-box;
 }
+/* A STATUS swatch — a gauge's bands are THRESHOLDS, not a data series, so their
+   key must come from the status ramp rather than the categorical wheel. Setting
+   data-status on the entry lights the status cascade; re-pointing --_hue at
+   --_status-border-strong means every rule below (the border, the 60% fill, the
+   no-color-mix fallback) keeps working unchanged. It is the same token a
+   sparkline's stroke uses, so a zone's key and its band agree. */
+.item[data-status] .swatch {
+  --_hue: var(--_status-border-strong, var(--sherpa-style-border-base, #b3b3c3));
+}
+
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
   .swatch {
     background: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent);

@@ -177,3 +177,70 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
   // A group/sort pick never reports itself as a filter change.
   expect(r.events).toEqual(['sort', 'group', 'sort', 'sort', 'sort', 'filter']);
 });
+
+test('a value-menu chip toggles OFF without clearing its picks', async ({ page }) => {
+  // ON = filter this field by the picked values. OFF = ignore this field, but KEEP
+  // the picks — the same "temporary disable" the Sort chip has. `values` reports
+  // what is APPLIED; `pickedValues` reports what is REMEMBERED.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      values: Record<string, string[]>;
+      pickedValues: Record<string, string[]>;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'plan', label: 'Plan', select: 'multiple',
+        options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] },
+    ]);
+    await new Promise((res) => setTimeout(res, 30));
+
+    const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="plan"]')!;
+    const menu = chip.querySelector('sherpa-menu')!;
+    const boxes = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
+
+    // Tick two values and Apply.
+    for (const b of [boxes[0]!, boxes[1]!]) {
+      b.checked = true;
+      b.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 40));
+
+    const snap = () => ({
+      on: chip.hasAttribute('data-current'),
+      values: el.values,
+      picked: el.pickedValues,
+      ticked: Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked')).map((i) => i.value),
+    });
+    const applied = snap();
+
+    // Toggle OFF from the chip body.
+    (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 40));
+    const off = snap();
+
+    // …and back ON.
+    (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 40));
+    const back = snap();
+
+    return { applied, off, back };
+  });
+
+  expect(r.applied.on).toBe(true);
+  expect(r.applied.values).toEqual({ plan: ['pro', 'free'] });
+
+  // OFF: nothing is applied, but the picks survive — in `pickedValues` AND as
+  // still-ticked rows in the menu, so re-enabling needs no re-picking.
+  expect(r.off.on).toBe(false);
+  expect(r.off.values).toEqual({});
+  expect(r.off.picked).toEqual({ plan: ['pro', 'free'] });
+  expect(r.off.ticked).toEqual(['pro', 'free']);
+
+  // Back ON restores exactly the same constraint.
+  expect(r.back.on).toBe(true);
+  expect(r.back.values).toEqual({ plan: ['pro', 'free'] });
+});

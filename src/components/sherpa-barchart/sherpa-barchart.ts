@@ -5,6 +5,10 @@
  * per item and hands two numbers to CSS: the bar's height (as a percent of the
  * tallest) and its colour. CSS grows each bar up from the baseline. Clicking a
  * bar fires bar-click.
+ *
+ * `setBarHidden(index, hidden)` drops a bar so a chart legend can toggle it. The
+ * y-max then comes from what is left, so the remaining bars use the full height.
+ *
  * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -25,6 +29,8 @@ export class SherpaBarchart extends SherpaElement {
   static override observed = ['data-max', 'data-ticks', 'data-axis-label'];
 
   #data: BarDatum[] = [];
+  /** Bars a chart legend has switched off. */
+  #hidden = new Set<number>();
 
   override onRender(): void {
     this.$('.bars')?.addEventListener('click', this.#onClick);
@@ -38,7 +44,28 @@ export class SherpaBarchart extends SherpaElement {
   /** populate([{ label, value, colorIndex? }]) — the bars. */
   protected override renderData(data: unknown): void {
     this.#data = Array.isArray(data) ? (data as BarDatum[]) : [];
+    // Fresh data means the old indices point at different bars, so a stale hide
+    // would silently drop the wrong category.
+    this.#hidden.clear();
     this.#render();
+  }
+
+  /**
+   * Hide or show one bar, so a chart legend can toggle it.
+   *
+   * Hiding RE-SCALES the chart: the y-max comes from the visible bars, so leaving
+   * a hidden category in the maximum would squash everything that is left against
+   * a ceiling nobody can see.
+   */
+  setBarHidden(index: number, hidden = true): void {
+    if (hidden) this.#hidden.add(index);
+    else this.#hidden.delete(index);
+    this.#render();
+  }
+
+  /** The indices currently hidden, ascending. */
+  get hiddenBars(): number[] {
+    return [...this.#hidden].sort((a, b) => a - b);
   }
 
   #render(): void {
@@ -48,17 +75,26 @@ export class SherpaBarchart extends SherpaElement {
     const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
+    // Bars a legend has switched off are dropped entirely, and the scale comes
+    // from what is LEFT — keeping a hidden category in the max would squash
+    // everything visible against a ceiling nobody can see.
+    const shown = this.#data
+      .map((d, i) => ({ d, i }))
+      .filter(({ i }) => !this.#hidden.has(i));
+
     const explicitMax = Number(this.dataset['max']);
     const max = Number.isFinite(explicitMax) && explicitMax > 0
       ? explicitMax
-      : Math.max(1, ...this.#data.map((d) => d.value));
+      : Math.max(1, ...shown.map(({ d }) => d.value));
 
-    this.#renderYAxis(max);
+    this.#renderYAxis(max, shown.length);
 
     bars.replaceChildren();
     xAxis?.replaceChildren();
-    this.#data.forEach((d, i) => {
+    for (const { d, i } of shown) {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // The ORIGINAL index, so bar-click still names the datum the caller gave us
+      // even when earlier categories are hidden.
       col.dataset['index'] = String(i);
       const n = ((d.colorIndex ?? i + 1) - 1) % 11 + 1;
       const bar = col.querySelector<HTMLElement>('.bar')!;
@@ -73,7 +109,7 @@ export class SherpaBarchart extends SherpaElement {
         label.textContent = d.label;
         xAxis.appendChild(label);
       }
-    });
+    }
   }
 
   /**
@@ -84,7 +120,7 @@ export class SherpaBarchart extends SherpaElement {
    * CSS spaces them with `justify-content: space-between` on a zero-height cell,
    * so each label's centre lands on its own gridline.
    */
-  #renderYAxis(max: number): void {
+  #renderYAxis(max: number, shownCount: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
     const caption = this.$('.axis-label-y');
@@ -96,11 +132,13 @@ export class SherpaBarchart extends SherpaElement {
     axis.replaceChildren();
     // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
     // data-ticks="0" must, so the state has to be written rather than inferred.
-    this.toggleAttribute('data-has-y-axis', steps > 0 && this.#data.length > 0);
+    // Counted from the SHOWN bars: hiding every category via the legend must
+    // take the axis with them, not leave a scale labelling nothing.
+    this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
     // The gridline gradient repeats every 1/bands of the plot, so the lines and
     // the labels are both driven by this ONE number.
     this.style.setProperty('--_bands', String(steps));
-    if (steps <= 0 || !this.#data.length) return;
+    if (steps <= 0 || shownCount <= 0) return;
 
     // One label per division boundary, each positioned at the SAME percentage its
     // gridline is drawn at (tickPercent), so the two cannot drift apart.

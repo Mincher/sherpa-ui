@@ -135,7 +135,20 @@ export async function init(root) {
   $('#donut-legend')?.populate(
     donutData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex })),
   );
+  // Every chart gets a legend: a colour is only readable if the reader can name
+  // it. The bar chart's legend names its categories…
+  $('#bar-legend')?.populate(
+    barData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex })),
+  );
   $('#gauge')?.populate(70);
+  // …and the gauge's names its THRESHOLD ZONES, which are what its bands mean.
+  // The colour indices are deliberately absent: a zone's colour is a STATUS
+  // (success / warning / critical), not a categorical series hue.
+  $('#gauge-legend')?.populate([
+    { label: 'Healthy (0–60%)', status: 'success' },
+    { label: 'Warning (60–85%)', status: 'warning' },
+    { label: 'Critical (85–100%)', status: 'critical' },
+  ]);
   $('#line')?.populate(lineData);
   $('#line-legend')?.populate(lineLegend);
   $('#kv')?.populate(summary);
@@ -152,6 +165,12 @@ export async function init(root) {
   $('#line-legend')?.addEventListener('legend-item-click', (e) => {
     $('#line')?.setSeriesHidden(e.detail.index, !e.detail.active);
   });
+  $('#bar-legend')?.addEventListener('legend-item-click', (e) => {
+    $('#bar')?.setBarHidden(e.detail.index, !e.detail.active);
+  });
+  // The gauge legend is a KEY, not a filter: its rows name thresholds, and there
+  // is nothing to hide — a gauge shows one value, and dropping a zone would
+  // change what the reading means rather than what is displayed.
 
   // ── A little interactivity so the demo is live. ─────────────────────
   // Bar clicks log to the console (bar-click is the barchart's event).

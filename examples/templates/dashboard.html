@@ -30,6 +30,10 @@
     <div class="panel" data-span="4">
       <sherpa-container-header data-heading="Alerts by category"></sherpa-container-header>
       <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
+      <!-- Every chart carries a legend: a categorical series is only readable if
+           the reader can name the colours. Horizontal, so it sits BELOW the chart
+           (vertical legends go beside one). -->
+      <sherpa-chart-legend id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
     </div>
 
     <div class="panel" data-span="4">
@@ -47,6 +51,10 @@
         data-max="100"
         data-caption="4.2 TB of 6 TB used"
         data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
+      <!-- The gauge's legend names its ZONES rather than a data series — the
+           bands are meaningless without the thresholds they stand for. READ-ONLY:
+           a gauge shows one value, so there is no series to toggle off. -->
+      <sherpa-chart-legend id="gauge-legend" data-orientation="horizontal" data-readonly></sherpa-chart-legend>
     </div>
 
     <!-- A time series needs horizontal room, so it takes 8 of 12. -->

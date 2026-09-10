@@ -41,6 +41,14 @@
     group-toggle     — detail: { value, collapsed }
 -->
 <template id="default">
+  <!--
+    The scroll box. A <table> cannot be the scroll container itself — giving it
+    `display: block` to make it scrollable takes it out of table layout and its
+    columns stop lining up. So the table keeps `display: table` and this wrapper
+    owns the overflow, which is also what lets `position: sticky` on the <thead>
+    pin against a real scrolling ancestor.
+  -->
+  <div class="scroller" part="scroller">
   <table class="grid" part="grid">
     <thead class="head" part="head">
       <tr class="head-row">
@@ -54,6 +62,7 @@
     </thead>
     <tbody class="body" part="body"></tbody>
   </table>
+  </div>
   <div class="empty" part="empty" role="status">
     <slot name="empty">No rows to display.</slot>
   </div>

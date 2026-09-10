@@ -27,7 +27,11 @@
  * Suspended keeps the chosen column — it turns the sort off temporarily rather
  * than clearing it. The column itself is chosen from the chip's menu.
  *
- * @fires quick-filter-change — the active filter set changes. bubbles + composed. detail: { active: string[], values: Record<string, string[]> }
+ * A value-MENU chip is a two-state toggle too: ON filters by the picked values,
+ * OFF ignores that field WITHOUT clearing the picks. `values` reports what is
+ * applied; `pickedValues` reports what is remembered.
+ *
+ * @fires quick-filter-change — the active filter set changes. bubbles + composed. detail: { active: string[], values: Record<string, string[]>, picked: Record<string, string[]> }
  * @fires group-change — the group column changed. bubbles + composed. detail: { field: string | null }
  * @fires sort-change — the sort column or direction changed. bubbles + composed. detail: { field: string | null, direction: 'asc' | 'desc' }
  */
@@ -117,25 +121,57 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * What each value-MENU chip has selected, keyed by chip id.
+   * The LIVE value constraints, keyed by chip id.
    *
-   * Only chips that are ON and hold at least one pick appear, so a host can
-   * iterate the object and know every entry is a live constraint. A single-select
-   * chip still reports an array — one shape for both, so a caller does not have to
-   * branch on the chip's select mode.
+   * A value-menu chip is a two-state toggle: ON means "filter this field by the
+   * picked values", OFF means "ignore this field". Turning it off does NOT clear
+   * the picks — they are still in the menu, ready to come back — so this getter
+   * reports only chips that are ON. A caller can therefore iterate the object and
+   * know every entry is something to filter by, with no on/off check of its own.
+   *
+   * Use `pickedValues` to read a suspended chip's remembered picks.
+   *
+   * A single-select chip still reports an array — one shape for both, so a caller
+   * does not have to branch on the chip's select mode.
    */
   get values(): Record<string, string[]> {
     const out: Record<string, string[]> = {};
     for (const chip of this.#chips()) {
       if (!chip.hasAttribute('data-menu')) continue;
+      // OFF = this field is not being filtered. The picks survive; they are just
+      // not applied.
+      if (!chip.hasAttribute('data-current')) continue;
       const id = chip.dataset['id'];
       if (!id) continue;
-      const picked = Array.from(
-        chip.querySelectorAll<HTMLInputElement>('input:checked'),
-      ).map((i) => i.value);
+      const picked = this.#chipPicks(chip);
       if (picked.length) out[id] = picked;
     }
     return out;
+  }
+
+  /**
+   * Every menu chip's picks, on or OFF.
+   *
+   * The counterpart to `values`: this is what the chip REMEMBERS, which is what a
+   * "restore my view" feature needs, whereas `values` is what is being applied.
+   */
+  get pickedValues(): Record<string, string[]> {
+    const out: Record<string, string[]> = {};
+    for (const chip of this.#chips()) {
+      if (!chip.hasAttribute('data-menu')) continue;
+      const id = chip.dataset['id'];
+      if (!id) continue;
+      const picked = this.#chipPicks(chip);
+      if (picked.length) out[id] = picked;
+    }
+    return out;
+  }
+
+  /** The values ticked in one chip's menu. */
+  #chipPicks(chip: HTMLElement): string[] {
+    return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked')).map(
+      (i) => i.value,
+    );
   }
 
   #chips(): ChipEl[] {
@@ -232,7 +268,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * emptied the grid.
    */
   #emitChange(): void {
-    this.emit('quick-filter-change', { active: this.active, values: this.values });
+    this.emit('quick-filter-change', {
+      active: this.active,
+      // What is APPLIED — only the chips that are ON.
+      values: this.values,
+      // What is REMEMBERED — including chips toggled off, whose picks survive.
+      picked: this.pickedValues,
+    });
   }
 
   /**

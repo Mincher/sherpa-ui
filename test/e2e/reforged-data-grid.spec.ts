@@ -548,3 +548,80 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
   expect(r.ungrouped.headers).toEqual(['Name', 'Team']);
   expect(r.ungrouped.groups).toBe(0);
 });
+
+test('a group checkbox selects every row in that group', async ({ page }) => {
+  // The group row is a heading for its rows, so its box is their select-all.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' }],
+      rows: [
+        { name: 'Ana', team: 'Blue' },
+        { name: 'Bo', team: 'Red' },
+        { name: 'Cy', team: 'Blue' },
+      ],
+    });
+    el.dataset['groupField'] = 'team';
+    await new Promise((res) => setTimeout(res, 30));
+
+    const sr = el.shadowRoot!;
+    let emitted: string[] = [];
+    el.addEventListener('selection-change', (e) => {
+      emitted = (e as CustomEvent).detail.selected;
+    });
+
+    const rowsIn = (key: string) =>
+      Array.from(sr.querySelectorAll<HTMLElement>('.row')).filter((r) => r.dataset['group'] === key);
+    const checkedIn = (key: string) =>
+      rowsIn(key).filter((r) => r.querySelector<HTMLInputElement>('.row-select')!.checked).length;
+
+    // Tick the Blue group's box.
+    const blueBox = sr.querySelector<HTMLInputElement>('.group-row[data-group="Blue"] .group-select')!;
+    blueBox.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const selected = {
+      blue: checkedIn('Blue'),
+      blueTotal: rowsIn('Blue').length,
+      // Only THAT group — a group box is not a select-all for the table.
+      red: checkedIn('Red'),
+      emitted: emitted.length,
+    };
+
+    // Untick one Blue row: the group box must go INDETERMINATE, not stay checked.
+    rowsIn('Blue')[0]!.querySelector<HTMLInputElement>('.row-select')!.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const partial = { checked: blueBox.checked, indeterminate: blueBox.indeterminate };
+
+    // Click the INDETERMINATE box: the browser resolves it to CHECKED (that is
+    // native checkbox behaviour, not something to fight), so the group fills back
+    // up. A second click then clears it.
+    blueBox.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const refilled = { blue: checkedIn('Blue'), emitted: emitted.length };
+    blueBox.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const cleared = { blue: checkedIn('Blue'), emitted: emitted.length };
+
+    // The header select-all fills every group box in.
+    sr.querySelector<HTMLInputElement>('.select-all')!.click();
+    await new Promise((res) => setTimeout(res, 30));
+    const all = {
+      groups: Array.from(sr.querySelectorAll<HTMLInputElement>('.group-select')).map((b) => b.checked),
+    };
+
+    return { selected, partial, refilled, cleared, all };
+  });
+
+  expect(r.selected).toEqual({ blue: 2, blueTotal: 2, red: 0, emitted: 2 });
+  // A part-selected group reads as indeterminate, so the box never lies about its rows.
+  expect(r.partial).toEqual({ checked: false, indeterminate: true });
+  expect(r.refilled).toEqual({ blue: 2, emitted: 2 });
+  expect(r.cleared).toEqual({ blue: 0, emitted: 0 });
+  expect(r.all.groups).toEqual([true, true]);
+});
