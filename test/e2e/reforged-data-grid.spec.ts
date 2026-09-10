@@ -625,3 +625,50 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
   expect(r.cleared).toEqual({ blue: 0, emitted: 0 });
   expect(r.all.groups).toEqual([true, true]);
 });
+
+test('data-toolbar reveals an actions bar above the grid, with slotted actions', async ({ page }) => {
+  // Page-level actions belong WITH the data they act on, not in the page heading.
+  // The bar is a real sherpa-toolbar whose two zones are passed through as slots.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    const button = document.createElement('button');
+    button.slot = 'actions-trailing';
+    button.textContent = 'Add';
+    el.appendChild(button);
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({ columns: [{ field: 'a', header: 'A' }], rows: [{ a: '1' }] });
+    await new Promise((res) => setTimeout(res, 30));
+
+    const sr = el.shadowRoot!;
+    const bar = sr.querySelector<HTMLElement>('.actions-bar')!;
+    const read = () => ({
+      display: getComputedStyle(bar).display,
+      // The bar must sit ABOVE the grid's own header row.
+      aboveHeader:
+        bar.getBoundingClientRect().bottom
+          <= sr.querySelector('.head-row')!.getBoundingClientRect().top + 1,
+      // …and the slotted control must land in the toolbar's trailing zone, not
+      // float loose in the light DOM.
+      slotted:
+        button.assignedSlot?.name === 'actions-trailing'
+        && button.assignedSlot?.getRootNode() === sr,
+    });
+
+    // Hidden until asked for: the bar exists in the template always and CSS
+    // reveals it, so JS never touches `display`.
+    const off = read();
+    el.setAttribute('data-toolbar', '');
+    await new Promise((res) => setTimeout(res, 20));
+    const on = read();
+    return { off, on };
+  });
+
+  expect(r.off.display).toBe('none');
+  expect(r.on.display).toBe('block');
+  expect(r.on.aboveHeader).toBe(true);
+  expect(r.on.slotted).toBe(true);
+});

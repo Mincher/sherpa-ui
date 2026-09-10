@@ -121,9 +121,15 @@
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
   grid-template-rows: var(--_plot-height) auto;
-  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* NO column gap. The axis LINE is the y-axis box's trailing border, so it marks
+     the plot's own left edge — a gap there floated the line away from the data it
+     bounds. The breathing room belongs on the other side of that line, between
+     the labels and the rule, which is .y-axis's padding-inline-end. */
+  column-gap: 0;
   min-inline-size: 0;
 }
+/* …except the rotated caption, which needs clearing from the numbers. */
+.axis-label-y { margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); }
 .axis-label-y { grid-area: 1 / 1; }
 .y-axis { grid-area: 1 / 2; }
 .plot { grid-area: 1 / 3; }
@@ -149,9 +155,11 @@
      much of the plot and pushed every bar label into an ellipsis. */
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   box-sizing: content-box;
-  /* Room for the tick rule beside the labels (Figma's 8-wide Marker). One grid
-     step up from 2xs: at 4px the numbers sat almost against the axis rule. */
-  padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
+  /* Room between the LABELS and the axis rule (Figma's 8-wide Marker). `sm` 12,
+     not `xs` 8: at 8 the numbers still crowded the line. This is the gap that
+     matters — the one on the far side of the rule was removed, because it pushed
+     the line away from the plot it bounds. */
+  padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
   border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
   /* Axis text: SMALL 12/16, the same size the horizontal axis labels use — the

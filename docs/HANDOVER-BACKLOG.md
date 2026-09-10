@@ -79,20 +79,21 @@ Shape agreed:
 - The existing components stay usable standalone — the grid imports and composes
   them, it does not absorb their code.
 
-**TWO toolbars, stacked.** Will: the grid takes an OPTIONAL `sherpa-toolbar`
-ABOVE its quick-filter toolbar, and that upper bar is where page-level actions
-live. In the records example the **Add customer** button moves there, out of the
-section header:
+**The ACTIONS toolbar is already DONE** — `data-toolbar` on the grid reveals a
+real `sherpa-toolbar` above its header, with `actions-leading` /
+`actions-trailing` slots. The records example's **Add customer** button lives
+there now, out of the section header. What remains is folding in the QUICK-FILTER
+toolbar and the PAGER:
 
 ```
-┌ sherpa-toolbar          (optional — actions: Add customer, …) ┐
-├ sherpa-quick-filter-toolbar   (Group · Sort │ filter chips)   ┤
+┌ sherpa-toolbar              (DONE — data-toolbar)             ┐
+├ sherpa-quick-filter-toolbar (still a sibling in the page)     ┤
 ├ the grid itself                                               ┤
-└ sherpa-pagination                                             ┘
+└ sherpa-pagination           (still a sibling in the page)     ┘
 ```
 
-So the gating is per bar — an `actions` toolbar and a `filters` toolbar are
-separately optional, since plenty of grids want filters without page actions.
+Gating stays per bar: plenty of grids want filters with no page actions, or the
+reverse.
 
 Not started. This is a real rebuild; expect the examples' `records.js` wiring to
 shrink a lot.

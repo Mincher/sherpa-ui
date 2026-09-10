@@ -6,11 +6,11 @@
   <!-- Heading and table both sit on the layout grid, so their left edges align
        and the table picks up the breakpoint's padding and max width. -->
   <div class="sherpa-grid">
+    <!-- No actions here: page actions for the grid live in the GRID's own
+         toolbar now, so they sit with the data they act on rather than at the
+         top of the page. -->
     <sherpa-section-header data-span="full" data-heading="Customers">
       <span slot="description">Manage customer accounts, plans and billing.</span>
-      <sherpa-button slot="actions" id="add-btn" data-look="saturated" data-icon-start="&#43;">
-        Add customer
-      </sherpa-button>
     </sherpa-section-header>
   </div>
 
@@ -20,7 +20,15 @@
          than the panel growing with the row count and pushing the pager away. -->
     <div class="panel" data-span="full" data-rows="8">
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
+      <!-- data-toolbar reveals the grid's own ACTIONS bar, above everything.
+           Add customer lives there: it acts on this grid's data, so it belongs
+           with the grid rather than in the page heading. -->
+      <sherpa-data-grid id="grid" data-toolbar data-selectable data-filterable>
+        <sherpa-button slot="actions-trailing" id="add-btn"
+                       data-look="saturated" data-icon-start="&#43;">
+          Add customer
+        </sherpa-button>
+      </sherpa-data-grid>
       <sherpa-pagination
         id="pager"
         data-page="1"

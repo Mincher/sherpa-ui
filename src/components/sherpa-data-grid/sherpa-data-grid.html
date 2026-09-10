@@ -27,11 +27,20 @@
   Type=group) carrying that value as its label. The grouped column itself drops out
   of the header and the rows — its value is the heading now.
 
+  data-toolbar adds an optional ACTIONS toolbar above the grid, for page-level
+  actions (Add, Export, an overflow menu). It is a real sherpa-toolbar; its two
+  zones are exposed as the actions-leading / actions-trailing slots.
+
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
     data-group-field                         group rows by this column
     data-selectable                          show a leading checkbox column (select-all + per-row)
     data-filterable                          show a secondary header row of filter inputs
+    data-toolbar                             show the actions toolbar above the grid
+
+  Slots:
+    actions-leading   — page actions that grow to fill (a primary CTA, search)
+    actions-trailing  — page actions that hug the end (icon buttons, overflow)
 
   Fires:
     sort-change      — detail: { field, direction }
@@ -41,6 +50,24 @@
     group-toggle     — detail: { value, collapsed }
 -->
 <template id="default">
+  <!--
+    The ACTIONS toolbar — optional, above everything, gated by data-toolbar.
+
+    Page-level actions live here: Add, Export, an overflow menu. It is a separate
+    bar from the quick-filter toolbar below it because the two answer different
+    questions — "what can I DO to this data" versus "which of it am I looking at"
+    — and plenty of grids want filters with no page actions at all, so each is
+    independently optional.
+
+    It is a real sherpa-toolbar, whose two zones (leading grows, trailing hugs)
+    are passed straight through as slots. The grid does not invent chrome; it
+    composes the toolbar it already has.
+  -->
+  <sherpa-toolbar class="actions-bar" part="actions-bar">
+    <slot name="actions-leading" slot="leading"></slot>
+    <slot name="actions-trailing" slot="trailing"></slot>
+  </sherpa-toolbar>
+
   <!--
     The scroll box. A <table> cannot be the scroll container itself — giving it
     `display: block` to make it scrollable takes it out of table layout and its

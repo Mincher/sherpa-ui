@@ -13,6 +13,12 @@
  * Both are CSS-gated — the columns/rows exist in the template always and only JS
  * behaviour (selection tracking, filter dispatch) lives here.
  *
+ * data-toolbar adds an optional ACTIONS toolbar above the grid, for page-level
+ * actions (Add, Export, an overflow menu). It is a real sherpa-toolbar; its two
+ * zones are exposed as the actions-leading / actions-trailing slots. Separate
+ * from the quick-filter toolbar on purpose: the two answer different questions,
+ * and plenty of grids want filters with no page actions.
+ *
  * data-group-field GROUPS the rows by one column: rows are bunched by their value
  * in that column and each bunch gets a collapsible group row on top (Figma Grid
  * Cell Type=group) carrying that value as its label. The grouped column drops out
@@ -25,6 +31,10 @@
  * @attr {enum}    data-group-field     group the rows by this column
  * @attr {boolean} data-selectable      show a leading checkbox column
  * @attr {boolean} data-filterable      show a secondary filter-input header row
+ * @attr {boolean} data-toolbar         show the actions toolbar above the grid
+ *
+ * @slot actions-leading  — page actions that grow to fill (a primary CTA, search)
+ * @slot actions-trailing — page actions that hug the end (icon buttons, overflow)
  *
  * @fires sort-change      — a sortable header is clicked. bubbles + composed. detail: { field: string, direction: 'asc' | 'desc' }
  * @fires row-click        — a row is clicked. bubbles + composed. detail: { index: number, row: object }
@@ -33,6 +43,9 @@
  * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The optional actions toolbar is a real sherpa-toolbar, so the grid must
+// register it — it cannot rely on the page having imported it.
+import '../sherpa-toolbar/sherpa-toolbar.js';
 
 export interface GridColumn {
   field: string;

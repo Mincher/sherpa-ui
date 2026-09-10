@@ -28,6 +28,20 @@
   overflow: hidden;
 }
 
+/* ── The actions toolbar (opt-in) ───────────────────────────────────────────
+ * Page-level actions above the grid, gated by data-toolbar. Hidden by default:
+ * the bar exists in the template always and CSS reveals it, so JS never touches
+ * `display`.
+ *
+ * `flex: 0 0 auto` because the host is a flex column whose SCROLLER is the only
+ * part allowed to grow — without it the toolbar would share the height the rows
+ * need. */
+.actions-bar { display: none; }
+:host([data-toolbar]) .actions-bar {
+  display: block;
+  flex: 0 0 auto;
+}
+
 /* The scroll box — a wrapper DIV, not the <table>. Giving a table `display: block`
    to make it scrollable takes it out of table layout and its columns stop lining
    up. `min-block-size: 0` is what lets a flex child shrink below its content;
