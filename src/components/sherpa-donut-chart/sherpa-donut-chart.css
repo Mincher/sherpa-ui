@@ -206,3 +206,11 @@
     &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
   }
 }
+
+/* HOVERING THE CHART REVEALS EVERY MARKER — the sparkline's rule, applied here.
+   A marker you can only find by already being on it is no help: the reader has to
+   sweep the chart hunting for hit areas. Hovering anywhere on the visuals shows
+   them all at once, so the reader can SEE where the data points are and then aim
+   at the one they want. Hovering a marker still reveals only ITS tooltip. */
+:host(:hover) .hotspot::after,
+:host(:focus-within) .hotspot::after { opacity: 1; }
