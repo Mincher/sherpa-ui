@@ -15,11 +15,11 @@
       },
       "style-border/base": {
         "default": "#ffffff00",
-        "info": "#b3b3c3",
-        "critical": "#b3b3c3",
-        "warning": "#b3b3c3",
-        "urgent": "#b3b3c3",
-        "success": "#b3b3c3",
+        "info": "#ffffff00",
+        "critical": "#ffffff00",
+        "warning": "#ffffff00",
+        "urgent": "#ffffff00",
+        "success": "#ffffff00",
         "active": "#c046ff",
         "inactive": "#b3b3c3"
       },
@@ -145,7 +145,7 @@
         "critical": "#b72200",
         "warning": "#ffc44c",
         "urgent": "#ff7300",
-        "success": "#b3b3c3",
+        "success": "#20c173",
         "active": "#c046ff",
         "inactive": "#b3b3c3"
       },
