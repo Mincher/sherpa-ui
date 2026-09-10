@@ -171,6 +171,12 @@ export async function init(root) {
   $('#bar-legend')?.addEventListener('legend-item-click', (e) => {
     for (const i of e.detail.indices) $('#bar')?.setBarHidden(i, !e.detail.active);
   });
+  // The "Other" row's breakdown menu: apply the edited set in one pass. The
+  // legend reports BOTH lists, so there is nothing to diff here.
+  $('#bar-legend')?.addEventListener('legend-breakdown-change', (e) => {
+    for (const i of e.detail.active) $('#bar')?.setBarHidden(i, false);
+    for (const i of e.detail.hidden) $('#bar')?.setBarHidden(i, true);
+  });
   // The gauge legend is a KEY, not a filter: its rows name thresholds, and there
   // is nothing to hide — a gauge shows one value, and dropping a zone would
   // change what the reading means rather than what is displayed.

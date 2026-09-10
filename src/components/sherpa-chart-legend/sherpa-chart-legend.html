@@ -47,4 +47,40 @@
       <span class="value" part="value"></span>
     </button>
   </template>
+
+  <!--
+    The "OTHER" entry — the roll-up row, which needs a second control.
+
+    It cannot reuse .item-tpl: that prototype IS a <button>, and a menu button
+    nested inside a button is invalid HTML (the browser un-nests it and the inner
+    control stops working). So the roll-up row is a WRAPPER holding two siblings:
+    the toggle button (identical to a normal entry) and an xsmall icon button that
+    opens the breakdown menu.
+
+    The menu lists the rolled-up categories as CHECKBOX rows with an Apply/Cancel
+    footer, so the reader can tick several without the menu closing after each
+    click. sherpa-menu already does exactly that with data-commit.
+  -->
+  <template class="rollup-tpl">
+    <span class="rollup" role="listitem">
+      <button class="item rollup-toggle" type="button" aria-pressed="true">
+        <span class="swatch" part="swatch" aria-hidden="true"></span>
+        <span class="label" part="label"></span>
+        <span class="value" part="value"></span>
+      </button>
+      <sherpa-button
+        class="rollup-menu-btn"
+        data-size="xs"
+        data-type="icon"
+        data-icon-start="fa-solid fa-ellipsis"
+        aria-haspopup="menu"
+        aria-expanded="false"></sherpa-button>
+      <sherpa-menu class="rollup-menu" data-heading="Breakdown" data-commit></sherpa-menu>
+    </span>
+  </template>
+
+  <!-- One rolled-up category, as a real checkbox row in the breakdown menu. -->
+  <template class="rollup-row-tpl">
+    <label><input type="checkbox" /><span class="rollup-row-label"></span></label>
+  </template>
 </template>

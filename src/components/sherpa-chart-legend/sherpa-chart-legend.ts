@@ -22,9 +22,19 @@
  * the whole. Prefer `detail.indices` over `detail.index` when toggling a chart —
  * the "Other" row stands for several series.
  *
+ * That roll-up row also carries an xsmall menu button opening an ITEMISED
+ * breakdown of the folded categories: checkbox rows with an Apply/Cancel footer,
+ * so several can be edited without the menu closing after each click. Applying
+ * fires legend-breakdown-change with the categories that are now on and off.
+ *
  * @fires legend-item-click — a legend entry is clicked. bubbles + composed. detail: { index: number, indices: number[], label: string, active: boolean }
+ * @fires legend-breakdown-change — the "Other" breakdown was applied. bubbles + composed. detail: { active: number[], hidden: number[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The roll-up row composes a real button + a committing menu, so the legend must
+// register them — it cannot rely on the page having imported them.
+import '../sherpa-button/sherpa-button.js';
+import '../sherpa-menu/sherpa-menu.js';
 
 /**
  * The most rows a legend will ever draw.
@@ -62,6 +72,15 @@ export class SherpaChartLegend extends SherpaElement {
   #rolledUp = false;
   /** How many entries the CALLER passed in, before any capping. */
   #sourceCount = 0;
+  /**
+   * The categories folded into the "Other" row, with their ORIGINAL indices.
+   *
+   * Kept so the roll-up's breakdown menu can itemise them and report which ones
+   * the reader ticked — the row itself only knows a total.
+   */
+  #rolled: Array<{ index: number; item: LegendItem }> = [];
+  /** Which rolled-up categories are currently ON. Indices into the SOURCE list. */
+  #rolledActive = new Set<number>();
 
   override onRender(): void {
     this.$('.legend')?.addEventListener('click', this.#onClick);
@@ -88,10 +107,18 @@ export class SherpaChartLegend extends SherpaElement {
   #cap(items: LegendItem[]): LegendItem[] {
     this.#sourceCount = items.length;
     this.#rolledUp = items.length > MAX_ITEMS;
-    if (items.length <= MAX_ITEMS) return items;
+    if (items.length <= MAX_ITEMS) {
+      this.#rolled = [];
+      this.#rolledActive.clear();
+      return items;
+    }
 
     const kept = items.slice(0, MAX_ITEMS - 1);
     const rest = items.slice(MAX_ITEMS - 1);
+    // Remember the folded categories AND their original indices, so the breakdown
+    // menu can itemise them and name the right series back to the chart.
+    this.#rolled = rest.map((item, k) => ({ index: MAX_ITEMS - 1 + k, item }));
+    this.#rolledActive = new Set(this.#rolled.map((r) => r.index));
     // Only numeric values can be summed; a legend of labels with no values gets an
     // "Other" row with no value rather than a meaningless 0.
     const numeric = rest
@@ -121,9 +148,20 @@ export class SherpaChartLegend extends SherpaElement {
     const readonly = this.hasAttribute('data-readonly');
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      // The prototype's root IS the button now (it was an <li> wrapping one), so
-      // the clone is the whole entry.
-      const entry = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // The LAST row of a capped legend is the "Other" roll-up, which needs a
+      // second control beside its toggle — so it comes from its own prototype (a
+      // wrapper, not a bare button: a menu button nested inside a button is
+      // invalid HTML and the browser un-nests it).
+      const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
+      const proto = isRollup
+        ? this.$<HTMLTemplateElement>('template.rollup-tpl')
+        : tpl;
+      const wrapper = proto!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // In a roll-up the toggle is a CHILD of the wrapper; otherwise it IS the
+      // wrapper. Everything below writes to the button, so resolve it once.
+      const entry = isRollup
+        ? wrapper.querySelector<HTMLElement>('.rollup-toggle')!
+        : wrapper;
       entry.dataset['index'] = String(i);
       const swatch = entry.querySelector<HTMLElement>('.swatch')!;
       if (item.status) {
@@ -146,8 +184,59 @@ export class SherpaChartLegend extends SherpaElement {
         entry.setAttribute('tabindex', '-1');
         entry.removeAttribute('aria-pressed');
       }
-      list.appendChild(entry);
+      if (isRollup) this.#buildBreakdown(wrapper);
+      list.appendChild(wrapper);
     });
+  }
+
+  /**
+   * Fill the roll-up row's breakdown menu with one CHECKBOX row per folded
+   * category, and wire its Apply.
+   *
+   * Checkboxes plus `data-commit` are the point: the reader ticks several
+   * categories and the menu stays open until Apply, rather than closing after
+   * every click. sherpa-menu already holds the rows as a draft and restores them
+   * on Cancel, so nothing here has to manage that.
+   */
+  #buildBreakdown(wrapper: HTMLElement): void {
+    const menu = wrapper.querySelector<HTMLElement & {
+      toggle?: (t?: HTMLElement) => void;
+    }>('.rollup-menu');
+    const button = wrapper.querySelector<HTMLElement>('.rollup-menu-btn');
+    const rowTpl = this.$<HTMLTemplateElement>('template.rollup-row-tpl');
+    if (!menu || !button || !rowTpl) return;
+
+    for (const { index, item } of this.#rolled) {
+      const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const input = row.querySelector('input')!;
+      // The value is the SOURCE index, so Apply can name the right series back to
+      // the chart without a second lookup.
+      input.value = String(index);
+      input.checked = this.#rolledActive.has(index);
+      row.querySelector('.rollup-row-label')!.textContent = item.label;
+      menu.appendChild(row);
+    }
+
+    button.addEventListener('click', (event) => {
+      // The button is a sibling of the toggle, so its click must not also toggle
+      // the row it sits in.
+      event.stopPropagation();
+      menu.toggle?.(button);
+    });
+    menu.addEventListener('menu-open', () => button.setAttribute('aria-expanded', 'true'));
+    menu.addEventListener('menu-close', () => button.setAttribute('aria-expanded', 'false'));
+    menu.addEventListener('menu-apply', ((event: CustomEvent) => {
+      const values = (event.detail?.values ?? []) as string[];
+      const on = new Set(values.map(Number));
+      this.#rolledActive = on;
+      // Report the FOLDED categories as they now stand: every rolled-up index,
+      // each with whether it survived the edit. A chart can apply the whole set in
+      // one pass rather than diffing.
+      this.emit('legend-breakdown-change', {
+        active: [...on].sort((a, b) => a - b),
+        hidden: this.#rolled.map((r) => r.index).filter((i) => !on.has(i)),
+      });
+    }) as EventListener);
   }
 
   #onClick = (event: Event): void => {

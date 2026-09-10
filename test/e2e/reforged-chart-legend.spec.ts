@@ -223,3 +223,91 @@ test('entries share three grid tracks, so labels and values align', async ({ pag
   expect(new Set(r.labelLefts).size).toBe(1);
   expect(new Set(r.valueRights).size).toBe(1);
 });
+
+test('the Other row carries a breakdown menu that commits on Apply', async ({ page }) => {
+  // The roll-up row needs a SECOND control, so it cannot reuse the entry
+  // prototype — that is a <button>, and a menu button nested inside a button is
+  // invalid HTML. The row is a wrapper holding two siblings.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    // Nine categories → five named + Other covering indices 5..8.
+    el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
+    await new Promise((res) => setTimeout(res, 40));
+
+    const sr = el.shadowRoot!;
+    const rollup = sr.querySelector<HTMLElement>('.rollup')!;
+    const toggle = rollup.querySelector<HTMLElement>('.rollup-toggle')!;
+    const button = rollup.querySelector<HTMLElement>('.rollup-menu-btn')!;
+    const menu = rollup.querySelector<HTMLElement & { toggle?: (t?: HTMLElement) => void }>(
+      '.rollup-menu',
+    )!;
+
+    const structure = {
+      // The toggle is a real button; the menu control is its SIBLING, not a child.
+      toggleTag: toggle.tagName,
+      buttonIsSibling: button.parentElement === rollup,
+      buttonNotInToggle: !toggle.contains(button),
+      size: button.getAttribute('data-size'),
+      // The menu DEFERS: rows are a draft until Apply, so several can be ticked
+      // without it closing after each click.
+      commits: menu.hasAttribute('data-commit'),
+      // One CHECKBOX row per folded category, each valued by its SOURCE index.
+      rows: Array.from(menu.querySelectorAll<HTMLInputElement>('input')).map((i) => ({
+        type: i.type,
+        value: i.value,
+        checked: i.checked,
+      })),
+      labels: Array.from(menu.querySelectorAll('.rollup-row-label')).map((l) => l.textContent),
+    };
+
+    // Untick two, and confirm the menu is STILL open — the whole point of the
+    // committing footer.
+    const boxes = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
+    menu.toggle?.(button);
+    await new Promise((res) => setTimeout(res, 60));
+    const openedBy = button.getAttribute('aria-expanded');
+    for (const b of [boxes[0]!, boxes[2]!]) {
+      b.checked = false;
+      b.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    const stillOpen = menu.shadowRoot!.querySelector('.menu')!.matches(':popover-open');
+
+    let detail: { active: number[]; hidden: number[] } | null = null;
+    el.addEventListener('legend-breakdown-change', (e) => {
+      detail = (e as CustomEvent).detail;
+    });
+    (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 60));
+
+    return { structure, openedBy, stillOpen, detail };
+  });
+
+  expect(r.structure.toggleTag).toBe('BUTTON');
+  expect(r.structure.buttonIsSibling).toBe(true);
+  expect(r.structure.buttonNotInToggle).toBe(true);
+  expect(r.structure.size).toBe('xs');
+  expect(r.structure.commits).toBe(true);
+
+  // Three folded categories, all on to begin with, valued by SOURCE index so a
+  // chart can be told which series to hide without a second lookup.
+  expect(r.structure.labels).toEqual(['C5', 'C6', 'C7', 'C8']);
+  expect(r.structure.rows).toEqual([
+    { type: 'checkbox', value: '5', checked: true },
+    { type: 'checkbox', value: '6', checked: true },
+    { type: 'checkbox', value: '7', checked: true },
+    { type: 'checkbox', value: '8', checked: true },
+  ]);
+
+  expect(r.openedBy).toBe('true');
+  // Ticking does NOT close it — that is what data-commit buys.
+  expect(r.stillOpen).toBe(true);
+
+  // Apply reports BOTH lists, so a chart applies the edit in one pass.
+  expect(r.detail?.active).toEqual([6, 8]);
+  expect(r.detail?.hidden).toEqual([5, 7]);
+});

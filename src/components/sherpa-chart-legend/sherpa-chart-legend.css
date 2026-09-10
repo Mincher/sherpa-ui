@@ -42,13 +42,22 @@
 }
 
 /* Horizontal: Figma's variant is ONE row of 9 columns — three cells per entry,
-   every entry in row 0 — so the entries flow across instead of stacking. The gap
-   stays space/xs 8: in a single row the entry separation IS the column gap, so a
-   wider one would space the swatch from its own label too. */
+   every entry in row 0 — so the entries flow across instead of stacking.
+
+   FLEX WITH WRAP, not `grid-auto-flow: column`. That kept everything on one row
+   at any width, so six entries in a 4-of-12 panel crushed every label to a single
+   letter ("D 42", "C 31"). Wrapping keeps the labels readable and only costs a
+   second line when the panel is genuinely too narrow — which is the honest
+   trade. Figma's single row is what it looks like WHEN IT FITS.
+
+   The gap stays space/xs 8: the entry separation IS the gap here, so a wider one
+   would space a swatch from its own label too. */
 :host([data-orientation="horizontal"]) .legend {
-  grid-template-columns: none;
-  grid-auto-flow: column;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: start;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* ── Entry ───────────────────────────────────────────────────────────────
@@ -87,12 +96,14 @@
 :host([data-readonly]) .item { cursor: default; }
 
 /* `subgrid` needs the entry to be a grid ITEM of the parent, which it is not when
-   the parent flows in columns — so a horizontal legend gives each entry its own
-   tracks instead. */
+   the parent is a flex row — so a horizontal legend gives each entry its own
+   tracks instead. `flex: 0 0 auto` is what stops flex SHRINKING an entry: without
+   it every label was squeezed to one letter before the row would wrap. */
 :host([data-orientation="horizontal"]) .item {
   grid-column: auto;
   grid-template-columns: auto auto auto;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  flex: 0 0 auto;
 }
 
 /* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
@@ -154,4 +165,52 @@
 .value {
   text-align: end;
   font-variant-numeric: tabular-nums;
+}
+
+/* ── The "Other" roll-up row ────────────────────────────────────────────────
+ * The capped legend's last row carries a second control: an xsmall icon button
+ * that opens an itemised breakdown of the folded categories.
+ *
+ * It is a WRAPPER, not a button, because a menu button nested inside a button is
+ * invalid HTML — the browser un-nests it and the inner control stops working. So
+ * the toggle and the menu button are siblings.
+ *
+ * The wrapper takes the parent's tracks (`grid-column: 1 / -1` + subgrid) exactly
+ * as a plain entry does, then adds a FOURTH implicit column for the button, so the
+ * swatch / label / value still line up with every row above. */
+.rollup {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+/* The toggle spans the three real tracks; the button lands in the implicit one
+   after them. `subgrid` gives the wrapper exactly three, so the button is placed
+   past the end rather than fighting the value for its cell. */
+.rollup-toggle {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/* A HORIZONTAL legend flows in columns, so `subgrid` has no parent tracks to
+   adopt — same reason a plain entry gets its own tracks there. */
+:host([data-orientation="horizontal"]) .rollup {
+  grid-column: auto;
+  display: flex;
+  align-items: center;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* Never shrunk — see the .item note above. */
+  flex: 0 0 auto;
+}
+:host([data-orientation="horizontal"]) .rollup-toggle {
+  grid-column: auto;
+  grid-template-columns: auto auto auto;
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* The breakdown button sits after the value, and hugs. */
+.rollup-menu-btn {
+  justify-self: start;
+  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
