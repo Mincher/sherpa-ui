@@ -13,15 +13,18 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
-/* Figma Filter Toolbar: padding space/2xs 4, gap space/xs 8, a 1px bottom rule
-   (border/default/+2, border/width/base). Zone dividers are 1×16 rectangles
-   (border/default/+2) sitting in the 8px gap — not full-height borders. */
+/* Figma Filter Toolbar: padding space/2xs 4, gap space/xs 8. Zone dividers are
+   1×16 rectangles (border/default/+2) sitting in the 8px gap — not full-height
+   borders.
+
+   NO BOTTOM RULE. It was drawn here and it is not wanted: the bar sits directly
+   above a grid that already has its own hairline frame, so the two stacked and
+   read as one thick grey line under the chips. */
 .bar {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-2xs, 4px);
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 .view-zone { display: none; }

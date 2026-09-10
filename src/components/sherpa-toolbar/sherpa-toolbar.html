@@ -1,17 +1,18 @@
 <!--
   sherpa-toolbar — a horizontal control strip.
 
-  Two zones: leading (grows to fill) and trailing (hugs). Each zone is a named
-  slot; the base class reflects data-has-{slot} on the host so empty zones
-  collapse (pure CSS). No data logic.
+  Two zones, per the Figma Toolbar page: leading HUGS and holds the primary
+  action; trailing GROWS with its content pushed to the end (an item count, a
+  search field). Each zone is a named slot; the base class reflects
+  data-has-{slot} on the host so empty zones collapse (pure CSS). No data logic.
 
   Public API:
     data-variant   plain (default) | bordered (adds a bottom rule)
     data-density   comfortable (default) | compact (tighter block padding)
 
   Slots:
-    leading   — leading zone (title, primary CTA, search — grows to fill)
-    trailing  — trailing zone (icon buttons, overflow menu — hugs)
+    leading   — the primary action / actions cluster (hugs, sits at the start)
+    trailing  — item count, search, overflow (grows; content pushed to the end)
 
   Fires: nothing — it's a layout surface; consumers wire their own controls.
 -->

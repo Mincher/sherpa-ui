@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-test('the nav rail is a full-height overlay; header + content are its siblings', async ({ page }) => {
+test('the nav rail is a full-height overlay; the header is sticky inside the scroller', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
     el.innerHTML =
@@ -36,9 +36,21 @@ test('the nav rail is a full-height overlay; header + content are its siblings',
       // Pinned to the left edge and the full height of the shell.
       atLeftEdge: Math.abs(navBox.left - shellBox.left) < 1,
       fullHeight: Math.abs(navBox.height - shellBox.height) < 1,
-      // The header/content wrapper is a two-row grid (header over content).
       frameDisplay: getComputedStyle(q('.frame')).display,
+      // ONE row: the header lives INSIDE the scrolling content now, so there is no
+      // header row to reserve. It had to move there to be sticky at all — as a
+      // grid row ABOVE the scroller it never moved, so `scroll-state(stuck: top)`
+      // could never fire and it never got its drop shadow.
       frameRows: getComputedStyle(q('.frame')).gridTemplateRows.split(' ').length,
+      headerInsideScroller: !!q('.content .header'),
+      headerSticky: getComputedStyle(q('.header')).position,
+      // The header is its own scroll-state container: such a container styles its
+      // DESCENDANTS, so it must BE the sticky element rather than the scroller.
+      headerIsScrollState: getComputedStyle(q('.header')).containerType,
+      // The view's inset moved off .content, so the sticky header bleeds full
+      // width while the content below it stays on the layout grid.
+      contentPadding: getComputedStyle(q('.content')).paddingTop,
+      viewPadding: getComputedStyle(q('.view')).paddingTop,
     };
   });
   expect(r.shell).toBe(true);
@@ -48,9 +60,16 @@ test('the nav rail is a full-height overlay; header + content are its siblings',
   expect(r.contentSlot).toBe(true);
   expect(r.navPosition).toBe('absolute'); // an overlay, not a grid column
   expect(r.atLeftEdge).toBe(true);
+  expect(r.headerInsideScroller).toBe(true);
+  expect(r.headerSticky).toBe('sticky');
+  expect(r.headerIsScrollState).toContain('scroll-state');
+  expect(r.contentPadding).toBe('0px');
+  expect(r.viewPadding).not.toBe('0px');
   expect(r.fullHeight).toBe(true);
   expect(r.frameDisplay).toBe('grid');
-  expect(r.frameRows).toBe(2);
+  // ONE row, not two. The header moved INSIDE the scrolling content, so the frame
+  // no longer reserves a row for it.
+  expect(r.frameRows).toBe(1);
 });
 
 test('the content inset holds at the collapsed width until the rail is latched open', async ({ page }) => {

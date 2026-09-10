@@ -112,6 +112,7 @@ export async function init(root) {
     customElements.whenDefined('sherpa-app-header'),
     customElements.whenDefined('sherpa-data-grid'),
     customElements.whenDefined('sherpa-quick-filter-toolbar'),
+    customElements.whenDefined('sherpa-toolbar'),
     customElements.whenDefined('sherpa-pagination'),
     customElements.whenDefined('sherpa-dialog'),
     customElements.whenDefined('sherpa-select-group'),

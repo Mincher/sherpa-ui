@@ -1,8 +1,9 @@
 /**
  * sherpa-toolbar.css — a horizontal control strip.
  *
- * A single flex row: leading / trailing zones. Leading grows (flex:1) and hugs
- * to nothing when empty; trailing is shrink-proof. Zones collapse when their
+ * A single flex row: leading / trailing zones. Per the Figma Toolbar page,
+ * LEADING hugs and holds the primary action, and TRAILING grows with its content
+ * pushed to the end (the item count, a search field). Zones collapse when their
  * slot is empty (data-has-{slot}, reflected by the base class). Pure data-* CSS —
  * JS never touches visibility.
  *
@@ -50,11 +51,21 @@
   gap: var(--_gap);
 }
 
-.trailing { flex-shrink: 0; }
+/* THE ZONES ARE THE OTHER WAY ROUND from what this used to say.
+   Re-read from the Figma Toolbar page: `leading` is HUG and holds the PRIMARY
+   ACTION ("Primary action", "Actions"); `trailing` is FILL with MAX alignment and
+   holds the item count and the search field. So the growing zone is the TRAILING
+   one, which is what pushes its own content to the end while the primary action
+   stays at the start.
 
-.leading {
+   It was inverted here, which put a primary action on the RIGHT. */
+.leading { flex: 0 0 auto; }
+
+.trailing {
   flex: 1 1 0;
   min-inline-size: 0;
+  /* MAX in Figma: the count / search sit at the far end of the growing zone. */
+  justify-content: flex-end;
 }
 
 /* Collapse empty zones (base class reflects data-has-{slot} on the host). */

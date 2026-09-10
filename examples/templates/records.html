@@ -19,16 +19,17 @@
          the panel at 8 layout-grid rows tall, so the grid SCROLLS inside it rather
          than the panel growing with the row count and pushing the pager away. -->
     <div class="panel" data-span="full" data-rows="8">
-      <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <!-- data-toolbar reveals the grid's own ACTIONS bar, above everything.
-           Add customer lives there: it acts on this grid's data, so it belongs
-           with the grid rather than in the page heading. -->
-      <sherpa-data-grid id="grid" data-toolbar data-selectable data-filterable>
-        <sherpa-button slot="actions-trailing" id="add-btn"
+      <!-- The ACTIONS toolbar, ABOVE the quick-filter toolbar. Page-level actions
+           on this grid's data live here — Add customer moved out of the section
+           header, so it sits with the data it acts on. -->
+      <sherpa-toolbar id="grid-actions">
+        <sherpa-button slot="leading" id="add-btn"
                        data-look="saturated" data-icon-start="&#43;">
           Add customer
         </sherpa-button>
-      </sherpa-data-grid>
+      </sherpa-toolbar>
+      <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
+      <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
       <sherpa-pagination
         id="pager"
         data-page="1"

@@ -17,9 +17,45 @@
 
 :host {
   display: block;
-  container: sherpa-app-header / inline-size;
+  /* TWO container types on one element: `inline-size` for the layout queries
+     further down, and `scroll-state` so the header can ask whether it is
+     currently STUCK. One `container-type` cannot do both, so they are combined. */
+  container-name: sherpa-app-header;
+  container-type: inline-size scroll-state;
+
+  /* STICKY, so the content scrolls under it. The header has no border — the
+     separation is its ELEVATION, which only appears once something is actually
+     underneath (see the scroll-state query below). */
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
+  /* Animated so the shadow fades in as the reader starts scrolling rather than
+     snapping on. */
+  transition: box-shadow 150ms ease;
+}
+
+/* The positioning context for the loading-bar overlay, so it can sit on the
+   header's bottom edge without taking any height. */
+.bar { position: relative; }
+
+/* THE DROP SHADOW, only while content is scrolled under.
+   `scroll-state(stuck: top)` is true exactly when a sticky element has left its
+   natural position — which is precisely "there is content underneath me now". No
+   scroll listener, no JS, and it un-sets itself on the way back up.
+
+   Elevation=md, the same tokens every other floating surface uses. */
+@container scroll-state(stuck: top) {
+  :host {
+    box-shadow:
+      var(--sherpa-theme-elevation-offset-x-base, 2px)
+      var(--sherpa-theme-elevation-offset-y-base, 2px)
+      var(--sherpa-theme-elevation-blur-base, 16px)
+      var(--sherpa-theme-elevation-spread-base, -8px)
+      var(--sherpa-style-surface-shadow, #15151e80);
+  }
 }
 
 .bar {
@@ -239,11 +275,23 @@
 }
 .filters ::slotted(*) { inline-size: 100%; }
 
-/* ── Loading bar ────────────────────────────────────────────────────── */
+/* ── Loading bar ──────────────────────────────────────────────────────
+ * An OPTIONAL overlay. It NEVER adds vertical height, loading or not: it sits
+ * INSIDE the header, absolutely placed on its bottom edge.
+ *
+ * In the flow it reserved 2px whether or not it was running, and 2px of empty
+ * strip against the content below reads exactly like a grey bottom rule. That is
+ * the "border" Will reported three times — the header has no border, it had a
+ * bar taking up space. */
 .loading-bar {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
   block-size: var(--sherpa-display-mode-border-width-lg, 2px);
   background: transparent;
   overflow: hidden;
+  /* It sits over the header's own content, so it must not eat clicks. */
+  pointer-events: none;
 }
 .loading-fill {
   display: block;
@@ -252,7 +300,9 @@
   background: var(--sherpa-theme-surface-active-2, #c046ff);
   transform: translateX(-100%);
 }
-:host(:not([data-loading])) .loading-bar { visibility: hidden; }
+/* Absent entirely unless loading. Absolute placement already means it costs no
+   height, so this is simply "not there when there is nothing to report". */
+:host(:not([data-loading])) .loading-bar { display: none; }
 :host([data-loading]) .loading-fill {
   animation: sherpa-app-header-loading 1.4s ease-in-out infinite;
 }

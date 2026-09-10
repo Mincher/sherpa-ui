@@ -27,11 +27,25 @@
     <div class="region nav" part="nav">
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
+    <!--
+      The header sits INSIDE the scrolling region, as its sticky first child.
+
+      It used to be a grid ROW above the scroller, which meant it never moved and
+      so could never be "stuck" — `position: sticky` and a
+      `scroll-state(stuck: top)` query both did nothing. In here it really does
+      stick, and the query fires, which is what gives it a drop shadow the moment
+      content passes underneath. No scroll listener.
+
+      The view's own padding moved onto .view for the same reason: the header must
+      bleed the full width while the content below it stays inset.
+    -->
     <div class="frame" part="frame">
-      <header class="region header" part="header">
-        <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
-      </header>
-      <main class="region content" part="content"><slot></slot></main>
+      <main class="region content" part="content">
+        <header class="header" part="header">
+          <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
+        </header>
+        <div class="view"><slot></slot></div>
+      </main>
     </div>
   </div>
 </template>

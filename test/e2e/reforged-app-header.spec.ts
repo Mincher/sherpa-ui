@@ -115,14 +115,29 @@ test('data-loading reveals the loading bar', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const bar = el.shadowRoot!.querySelector('.loading-bar') as HTMLElement;
-    const before = getComputedStyle(bar).visibility;
+    const read = () => ({
+      display: getComputedStyle(bar).display,
+      position: getComputedStyle(bar).position,
+      // It must never add height to the header, loading or not.
+      headerHeight: Math.round(el.getBoundingClientRect().height),
+    });
+    const before = read();
     el.setAttribute('data-loading', '');
-    await new Promise((res) => setTimeout(res, 0));
-    const after = getComputedStyle(bar).visibility;
+    await new Promise((res) => setTimeout(res, 20));
+    const after = read();
     return { before, after };
   });
-  expect(r.before).toBe('hidden');
-  expect(r.after).toBe('visible');
+
+  // ABSENT, not merely invisible. `visibility: hidden` (what this used to assert)
+  // still reserved the bar's 2px at the header's bottom edge — and a 2px strip of
+  // empty space against the content below reads exactly like a grey bottom rule.
+  expect(r.before.display).toBe('none');
+  expect(r.after.display).toBe('block');
+
+  // …and when it IS showing it is an OVERLAY on the header's bottom edge, so it
+  // costs no height either way. The header must be the same size both times.
+  expect(r.after.position).toBe('absolute');
+  expect(r.after.headerHeight).toBe(r.before.headerHeight);
 });
 
 test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches breadcrumb-click', async ({ page }) => {

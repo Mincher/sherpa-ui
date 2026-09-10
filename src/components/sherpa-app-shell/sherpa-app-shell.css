@@ -59,31 +59,62 @@
 }
 
 /* ── Header + content wrapper — inset past the rail ─────────────────── */
+/* One column now: the header lives INSIDE the scroller, so there is no header row
+   to reserve. */
 .frame {
   display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    'header'
-    'content';
+  grid-template-rows: 1fr;
   block-size: 100%;
   min-block-size: 100vh;
   margin-inline-start: var(--_content-inset);
   transition: margin-inline-start 160ms ease;
 }
 
-/* Header — top of the content column. No border (the Figma App Header has none). */
+/* Header — STICKY at the top of the scrolling region, and its own `scroll-state`
+   container so it can tell whether content is passing underneath.
+
+   The container must be the STICKY ELEMENT ITSELF: a scroll-state container
+   styles its DESCENDANTS, not itself, and a query on the scroller styling a
+   sibling does nothing at all. Verified both shapes in isolation — only this one
+   fires. It is also why the header had to move in here: as a grid row ABOVE the
+   scroller it never moved, so it could never be stuck.
+
+   No border — the Figma App Header has none. The separation is the ELEVATION
+   below, which appears only once there is something to separate from. */
 .header {
-  grid-area: header;
+  position: sticky;
+  inset-block-start: 0;
+  container-type: scroll-state;
   min-inline-size: 0;
+  /* Above the scrolling content, below the nav rail (z-index: 2). */
+  z-index: 1;
+  /* Opaque, or the content shows through as it slides underneath. */
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* THE DROP SHADOW, only while content is scrolled under.
+   `stuck: top` is true exactly when a sticky element has left its natural
+   position — precisely "there is content underneath me now". It un-sets itself on
+   the way back up, with no JS. Elevation=md, the tokens every floating surface
+   uses. */
+@container scroll-state(stuck: top) {
+  .header ::slotted(*) {
+    box-shadow:
+      var(--sherpa-theme-elevation-offset-x-base, 2px)
+      var(--sherpa-theme-elevation-offset-y-base, 2px)
+      var(--sherpa-theme-elevation-blur-base, 16px)
+      var(--sherpa-theme-elevation-spread-base, -8px)
+      var(--sherpa-style-surface-shadow, #15151e80);
+  }
 }
 
 /* Content — the scrolling view area. */
 .content {
-  grid-area: content;
   min-inline-size: 0;
   min-block-size: 0;
   overflow: auto;
-  padding: var(--sherpa-layout-grid-padding, 16px);
+  /* NO padding here — it moved to .view. The header is a child of this box now
+     and must bleed the full width, which padding here would inset. */
   /* NOTHING in the content area may sit above the nav rail.
      `isolation: isolate` makes this a stacking context, so every z-index inside
      it — including a data grid's sticky header, which needs to beat its own rows
@@ -105,12 +136,14 @@
   --_content-inset: var(--_nav-open);
 }
 
-/* No header — content spans the whole frame; the header region collapses. */
-:host([data-no-header]) .frame {
-  grid-template-areas:
-    'content'
-    'content';
+/* The view's own inset. On .view rather than on .content, so the sticky header
+   above it spans the full width while the content stays on the layout grid. */
+.view {
+  padding: var(--sherpa-layout-grid-padding, 16px);
+  min-inline-size: 0;
 }
+
+/* No header — the content spans the whole frame. */
 :host([data-no-header]) .header {
   display: none;
 }
