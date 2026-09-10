@@ -1833,7 +1833,9 @@
   /* Status cascade — an ancestor [data-status] emits --_status-* to shadow roots. */
   [data-status="info"] {
     --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-info-base);
     --_status-surface-strong: var(--sherpa-theme-surface-info-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-info-color-3);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-info-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1842,7 +1844,9 @@
 
   [data-status="critical"] {
     --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-critical-base);
     --_status-surface-strong: var(--sherpa-theme-surface-critical-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-critical-color-3);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-critical-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1851,7 +1855,9 @@
 
   [data-status="warning"] {
     --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-warning-base);
     --_status-surface-strong: var(--sherpa-theme-surface-warning-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-warning-color-3);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-body-base);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1860,7 +1866,9 @@
 
   [data-status="urgent"] {
     --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-urgent-base);
     --_status-surface-strong: var(--sherpa-theme-surface-urgent-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-urgent-color-3);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-urgent-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1869,7 +1877,9 @@
 
   [data-status="success"] {
     --_status-surface: var(--sherpa-theme-surface-default-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-success-base);
     --_status-surface-strong: var(--sherpa-theme-surface-success-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-success-color-3);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-success-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1878,7 +1888,9 @@
 
   [data-status="active"] {
     --_status-surface: var(--sherpa-theme-surface-active-base);
+    --_status-surface-subtle: var(--sherpa-theme-surface-active-base);
     --_status-surface-strong: var(--sherpa-theme-surface-active-1);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-brand-color-3);
     --_status-border: var(--sherpa-theme-border-active-2);
     --_status-text: var(--sherpa-theme-content-active-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
@@ -1887,7 +1899,9 @@
 
   [data-status="inactive"] {
     --_status-surface: var(--sherpa-theme-surface-default-2);
+    --_status-surface-subtle: var(--sherpa-theme-surface-default-2);
     --_status-surface-strong: var(--sherpa-theme-surface-default-2);
+    --_status-shadow: var(--sherpa-display-mode-color-transparent-neutral-color-1);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-body-1);
     --_status-text-on-color: var(--sherpa-theme-content-body-1);
@@ -1897,7 +1911,9 @@
   /* Look tiers — [data-look] re-points the status cascade per status mode. */
   [data-look="transparent"] {
     --_status-surface: #ffffff00;
+    --_status-surface-subtle: #ffffff;
     --_status-surface-strong: #e8e8f6;
+    --_status-shadow: #ffffff00;
     --_status-border: #ffffff00;
     --_status-text: #35353d;
     --_status-text-on-color: #ffffff;
@@ -1906,7 +1922,9 @@
 
   [data-look="transparent"][data-status="info"] {
     --_status-surface: #008bba4d;
+    --_status-surface-subtle: #d4f0ff;
     --_status-surface-strong: #6fd1ff;
+    --_status-shadow: #d4f0ff1a;
     --_status-border: #ffffff00;
     --_status-text: #006c91;
     --_status-text-on-color: #ffffff;
@@ -1915,7 +1933,9 @@
 
   [data-look="transparent"][data-status="critical"] {
     --_status-surface: #fc4e2d4d;
+    --_status-surface-subtle: #ffdad1;
     --_status-surface-strong: #ff856d;
+    --_status-shadow: #ffdad11a;
     --_status-border: #ffffff00;
     --_status-text: #701100;
     --_status-text-on-color: #ffffff;
@@ -1924,7 +1944,9 @@
 
   [data-look="transparent"][data-status="warning"] {
     --_status-surface: #ffc44c4d;
+    --_status-surface-subtle: #fff4e1;
     --_status-surface-strong: #ffdda0;
+    --_status-shadow: #fff4e11a;
     --_status-border: #ffffff00;
     --_status-text: #a27500;
     --_status-text-on-color: #ffffff;
@@ -1933,7 +1955,9 @@
 
   [data-look="transparent"][data-status="urgent"] {
     --_status-surface: #ff73004d;
+    --_status-surface-subtle: #ffe6da;
     --_status-surface-strong: #ff955b;
+    --_status-shadow: #ffe6da1a;
     --_status-border: #ffffff00;
     --_status-text: #a24600;
     --_status-text-on-color: #ffffff;
@@ -1942,7 +1966,9 @@
 
   [data-look="transparent"][data-status="success"] {
     --_status-surface: #20c1734d;
+    --_status-surface-subtle: #bbffd2;
     --_status-surface-strong: #56e796;
+    --_status-shadow: #bbffd21a;
     --_status-border: #ffffff00;
     --_status-text: #007a45;
     --_status-text-on-color: #ffffff;
@@ -1951,7 +1977,9 @@
 
   [data-look="transparent"][data-status="active"] {
     --_status-surface: #c046ff4d;
+    --_status-surface-subtle: #f2dfff;
     --_status-surface-strong: #d89cff;
+    --_status-shadow: #d89cff1a;
     --_status-border: #c046ff;
     --_status-text: #8300b6;
     --_status-text-on-color: #ffffff;
@@ -1960,7 +1988,9 @@
 
   [data-look="transparent"][data-status="inactive"] {
     --_status-surface: #b3b3c3;
+    --_status-surface-subtle: #b3b3c3;
     --_status-surface-strong: #b3b3c3;
+    --_status-shadow: #ffffff00;
     --_status-border: #b3b3c3;
     --_status-text: #35353d;
     --_status-text-on-color: #35353d;
@@ -1969,7 +1999,9 @@
 
   [data-look="saturated"] {
     --_status-surface: #3b4ccd;
+    --_status-surface-subtle: #2b34b4;
     --_status-surface-strong: #1e189c;
+    --_status-shadow: #3b4ccd4d;
     --_status-border: #3b4ccd;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -1978,7 +2010,9 @@
 
   [data-look="saturated"][data-status="info"] {
     --_status-surface: #006c91;
+    --_status-surface-subtle: #006c91;
     --_status-surface-strong: #003246;
+    --_status-shadow: #008bba4d;
     --_status-border: #006c91;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -1987,7 +2021,9 @@
 
   [data-look="saturated"][data-status="critical"] {
     --_status-surface: #b72200;
+    --_status-surface-subtle: #b72200;
     --_status-surface-strong: #701100;
+    --_status-shadow: #fc4e2d4d;
     --_status-border: #b72200;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -1996,7 +2032,9 @@
 
   [data-look="saturated"][data-status="warning"] {
     --_status-surface: #ffc44c;
+    --_status-surface-subtle: #a27500;
     --_status-surface-strong: #473100;
+    --_status-shadow: #ffc44c4d;
     --_status-border: #ffc44c;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -2005,7 +2043,9 @@
 
   [data-look="saturated"][data-status="urgent"] {
     --_status-surface: #ff7300;
+    --_status-surface-subtle: #a24600;
     --_status-surface-strong: #4e1e00;
+    --_status-shadow: #ff73004d;
     --_status-border: #ff7300;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -2014,7 +2054,9 @@
 
   [data-look="saturated"][data-status="success"] {
     --_status-surface: #20c173;
+    --_status-surface-subtle: #007a45;
     --_status-surface-strong: #00391d;
+    --_status-shadow: #20c1734d;
     --_status-border: #20c173;
     --_status-text: #ffffff;
     --_status-text-on-color: #0c0b11;
@@ -2023,7 +2065,9 @@
 
   [data-look="saturated"][data-status="active"] {
     --_status-surface: #f2dfff;
+    --_status-surface-subtle: #f2dfff;
     --_status-surface-strong: #d89cff;
+    --_status-shadow: #c046ff4d;
     --_status-border: #c046ff;
     --_status-text: #8300b6;
     --_status-text-on-color: #ffffff;
@@ -2032,7 +2076,9 @@
 
   [data-look="saturated"][data-status="inactive"] {
     --_status-surface: #b3b3c3;
+    --_status-surface-subtle: #b3b3c3;
     --_status-surface-strong: #b3b3c3;
+    --_status-shadow: #ffffff00;
     --_status-border: #b3b3c3;
     --_status-text: #35353d;
     --_status-text-on-color: #35353d;

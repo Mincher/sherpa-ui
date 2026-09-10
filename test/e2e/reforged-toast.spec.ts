@@ -31,7 +31,7 @@ test('renders the message and reflects the status', async ({ page }) => {
   expect(r.status).toBe('success');
 });
 
-test('the card stays NEUTRAL under a status; the icon badge carries the hue (Figma model)', async ({ page }) => {
+test('the card fills the PALE status tint; the icon glyph carries the strong hue (Figma model)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-status', 'critical');
@@ -41,10 +41,16 @@ test('the card stays NEUTRAL under a status; the icon badge carries the hue (Fig
     await el.rendered;
     const card = getComputedStyle(el.shadowRoot!.querySelector('.toast')!);
     const badge = getComputedStyle(el.shadowRoot!.querySelector('.icon')!);
-    return { card: card.backgroundColor, badge: badge.backgroundColor };
+    const heading = getComputedStyle(el.shadowRoot!.querySelector('.heading')!);
+    return { card: card.backgroundColor, badge: badge.color, heading: heading.color };
   });
-  expect(r.card).toBe('rgb(255, 255, 255)'); // neutral white card
-  expect(r.badge).not.toBe('rgb(255, 255, 255)'); // badge carries the status hue
+  // Figma Toast 27:750: fill = style-surface/base +1 (critical → #ffdad1) via the
+  // --_status-surface-subtle cascade; heading = style-content/secondary (#35353d,
+  // status-independent); the 14px glyph carries the strong status hue.
+  expect(r.card).toBe('rgb(255, 218, 209)');
+  expect(r.heading).toBe('rgb(53, 53, 61)');
+  expect(r.badge).not.toBe('rgb(255, 255, 255)');
+  expect(r.badge).not.toBe('rgb(53, 53, 61)');
 });
 
 test('data-value and data-action reveal the detail line and action link', async ({ page }) => {

@@ -23,14 +23,18 @@
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
+/* Figma Prompt Composer (228:6617): padding 12 / 12 / 8 / 12, gap space/xs 8, 1px
+   border/default/+2 ring (border/width/base), radius Primitives 150 = 3 (kept on
+   the 4px structure step). */
 .form {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-sm, 12px) var(--sherpa-display-mode-space-sm, 12px)
+    var(--sherpa-display-mode-space-xs, 8px);
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-radius:
     var(--sherpa-structure-rounding-top-left, 4px)
     var(--sherpa-structure-rounding-top-right, 4px)
@@ -61,7 +65,7 @@
   overflow-y: auto;
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.45;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:focus { outline: none; }
@@ -88,16 +92,17 @@
 }
 :host([data-has-extras]) .extras { display: flex; }
 
-/* Default leading buttons — subtle icon buttons */
+/* Default leading buttons — Figma: Button/Type=icon at Structure sm (24×24, radius
+   4) in the Transparent look. */
 .lead-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-structure-height, 32px);
-  block-size: var(--sherpa-structure-height, 32px);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
   cursor: pointer;
@@ -117,22 +122,23 @@
   }
 }
 .lead-btn .glyph {
-  inline-size: var(--sherpa-display-mode-size-md, 20px);
-  block-size: var(--sherpa-display-mode-size-md, 20px);
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
 /* Hide the two default leading buttons when opted out */
 :host([data-no-leading-actions]) .lead-btn { display: none; }
 
-/* ── Send button — accent primary action ────────────────────────────── */
+/* ── Send button — accent primary action (Will's ruling: accent blue). Geometry
+   follows the Figma send: Button/Type=icon at Structure sm → 24×24, radius 4. ── */
 .send {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-structure-height, 32px);
-  block-size: var(--sherpa-structure-height, 32px);
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
   border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   /* Strong accent disc so the white glyph stays legible. surface-accent-base
      resolves to the PALE accent (#8aa3ff) — too light under a white glyph — so the
      send binds the strong step (surface-accent/+2 = #3b4ccd). */
@@ -149,7 +155,7 @@
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
-.send-glyph { font-size: var(--sherpa-font-size-body-large, 16px); line-height: 1; }
+.send-glyph { font-size: var(--sherpa-theme-content-size-base, 14px); line-height: 1; }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
 :host([disabled]) .form {

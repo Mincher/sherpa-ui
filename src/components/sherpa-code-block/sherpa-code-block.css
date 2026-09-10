@@ -26,15 +26,17 @@
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
+/* Figma header: padding 8 / 8 / 8 / 12 (space/xs, left space/sm), 1px bottom rule
+   in border/default/+2 (border/width/base). */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sherpa-display-mode-space-sm, 12px);
-  min-block-size: var(--sherpa-display-mode-size-xl, 28px);
-  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-xs, 8px)
+    var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 .language {
@@ -47,22 +49,27 @@
   &:empty { display: none; }
 }
 
-/* ── Copy button ────────────────────────────────────────────────────── */
+/* ── Copy button — Figma: Button/Type=icon (32×32, Structure default) in the
+   Transparent look: no fill, no ring, radius 4, a 14px glyph. ─────────────── */
 .copy {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 2px);
-  padding: var(--sherpa-structure-space-padding, 2px) var(--sherpa-display-mode-space-xs, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  justify-content: center;
+  inline-size: var(--sherpa-structure-height, 32px);
+  block-size: var(--sherpa-structure-height, 32px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
   cursor: pointer;
 
-  &:hover { background: var(--sherpa-theme-surface-default-hover, #f2f2f2); }
-  &:active { background: var(--sherpa-theme-surface-default-down, #e3e3e3); }
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
+    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
+  }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
@@ -70,9 +77,9 @@
 }
 
 /* Confirmation swap — CSS owns the state, JS only flips data-copied. */
-.copied-label { display: none; color: var(--sherpa-theme-surface-success-3, #007a45); }
+.copied-label { display: none; color: var(--sherpa-theme-content-success-1, #007a45); }
 :host([data-copied]) .copy-label { display: none; }
-:host([data-copied]) .copied-label { display: inline; }
+:host([data-copied]) .copied-label { display: inline-block; }
 
 /* ── Code ───────────────────────────────────────────────────────────── */
 .pre {
@@ -85,7 +92,7 @@
   display: block;
   font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.5;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: pre;
   tab-size: 2;
   color: var(--sherpa-theme-content-body-1, #35353D);

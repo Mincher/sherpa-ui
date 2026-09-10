@@ -31,10 +31,11 @@
   --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
+/* Figma Chat Message: avatar (14, content/size/base) + bubble, gap space/xs 8. */
 .message {
   display: grid;
-  grid-template-columns: var(--sherpa-display-mode-size-lg, 24px) minmax(0, 1fr);
-  gap: var(--sherpa-display-mode-space-xs, 4px);
+  grid-template-columns: var(--sherpa-theme-content-size-base, 14px) minmax(0, 1fr);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   align-items: start;
   max-inline-size: 100%;
 }
@@ -42,45 +43,48 @@
 .stack {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-inline-size: 0;
 }
 
-/* ── Avatar ──────────────────────────────────────────────────────────── */
+/* ── Avatar — Figma: a 14px Icon instance, no disc behind it ─────────── */
 .avatar {
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  /* Fixed accent disc (not the status cascade, which an ancestor data-status would
-     blow out to a light surface, hiding the white glyph). */
-  background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  margin-block-start: var(--sherpa-display-mode-space-xs, 8px); /* sits on the meta line */
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
   overflow: hidden;
 }
-/* Default glyph: a small filled dot; a slotted avatar hides it via the slot. */
+/* Default glyph: a Font Awesome robot for the assistant; a slotted avatar replaces it. */
 .avatar-glyph {
-  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: currentColor;
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-style: normal;
+
+  &::before { content: "\f544"; } /* robot */
 }
 
-/* ── Meta row (author + time) ────────────────────────────────────────── */
+/* ── Meta row (name + time) — INSIDE the bubble: gap space/xs 8, name 12/16
+   regular content/body/+1, timestamp content/size/xs 10 on 16. ──────────── */
 .meta {
   display: none;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   align-items: baseline;
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-.author { font-weight: var(--sherpa-font-weight-medium, 500); }
-.time { color: var(--sherpa-theme-content-body-1, #35353d); }
+.author { flex: 1 1 auto; min-inline-size: 0; font-weight: var(--sherpa-font-weight-regular, 400); }
+.time {
+  color: inherit;
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+}
 
 :host([data-name]) .meta,
 :host([data-author]) .meta,
@@ -90,8 +94,13 @@
 :host(:not([data-timestamp]):not([data-time])) .time { display: none; }
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
+/* Figma bubble: padding space/xs 8 × space/sm 12, gap 4 (meta → message), radius
+   structure-rounding 4, message 14/20. */
 .bubble {
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-sm, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   background: var(--_surface);
   color: var(--_ink);
   border-radius:
@@ -99,10 +108,12 @@
     var(--sherpa-structure-rounding-top-right, 4px)
     var(--sherpa-structure-rounding-bottom-right, 4px)
     var(--sherpa-structure-rounding-bottom-left, 4px);
-  line-height: 1.45;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   word-wrap: break-word;
   overflow-wrap: anywhere;
 }
+/* On the accent user bubble the meta row takes the fixed light ink too. */
+:host([data-type="user"]) .meta { color: var(--_ink); }
 /* A slotted body replaces the data-content text node. */
 :host([data-has-content]) .content { display: none; }
 

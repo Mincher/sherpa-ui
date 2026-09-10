@@ -8,6 +8,8 @@
 
 :host {
   display: block;
+  /* Figma Progress Steps (67:2252): the row carries space/xs 8 padding. */
+  padding: var(--sherpa-display-mode-space-xs, 8px);
   /* Strong accent (surface-accent/+2 = #3b4ccd) for done/active steps. The -base
      step resolves to the pale #8aa3ff, which would put a white check on a light disc
      (done) and give a washed-out active ring — both low-contrast. */
@@ -64,6 +66,7 @@
   color: var(--_idle);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 .number { display: block; }
 .check { display: none; }

@@ -28,7 +28,9 @@ test('data-status tints the ICON BADGE, not the box (Figma model)', async ({ pag
       const icon = el.shadowRoot!.querySelector('.icon')!;
       return {
         box: getComputedStyle(box).backgroundColor,
-        badge: getComputedStyle(icon).backgroundColor,
+        // The 14px status glyph carries the hue as its COLOUR (Figma: a status icon
+        // in style-indicator/accent — no chip behind it).
+        badge: getComputedStyle(icon).color,
       };
     };
     return {
@@ -42,13 +44,13 @@ test('data-status tints the ICON BADGE, not the box (Figma model)', async ({ pag
   for (const v of [r.info, r.success, r.warning, r.critical]) {
     expect(v.box).toBe('rgb(255, 255, 255)');
   }
-  // … while the icon BADGE carries a distinct status hue per status.
+  // … while the icon glyph carries a distinct status hue per status.
   const badges = [r.info.badge, r.success.badge, r.warning.badge, r.critical.badge];
   expect(new Set(badges).size).toBe(4);
   for (const b of badges) expect(b).not.toBe('rgba(0, 0, 0, 0)');
 });
 
-test('the box surface + border stay NEUTRAL under a status (Figma model)', async ({ page }) => {
+test('the box surface stays NEUTRAL under a status; the only stroke is the 2px leading edge (Figma model)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-callout') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-status', 'critical');
@@ -57,12 +59,20 @@ test('the box surface + border stay NEUTRAL under a status (Figma model)', async
     await el.rendered;
     const box = el.shadowRoot!.querySelector('.box')!;
     const cs = getComputedStyle(box);
-    return { surface: cs.backgroundColor, border: cs.borderTopColor };
+    return {
+      surface: cs.backgroundColor,
+      topWidth: cs.borderTopWidth,
+      leadWidth: cs.borderLeftWidth,
+      leadColor: cs.borderLeftColor,
+    };
   });
-  // Verified against live Figma (Callout top fill = style-surface/base = white in
-  // every status; the status hue lives only on the icon badge).
-  expect(r.surface).toBe('rgb(255, 255, 255)'); // style-surface-base (neutral white)
-  expect(r.border).toBe('rgb(179, 179, 195)'); // style-border-base (neutral #b3b3c3)
+  // Verified against live Figma (Callout 27:733): fill = style-surface/base (white in
+  // every status); the ONLY stroke is a 2px leading edge (border/width/lg) bound to
+  // style-border/base, which stays neutral in the base Style modes.
+  expect(r.surface).toBe('rgb(255, 255, 255)');
+  expect(r.topWidth).toBe('0px');
+  expect(r.leadWidth).toBe('2px');
+  expect(r.leadColor).toBe('rgb(179, 179, 195)'); // style-border-base (neutral #b3b3c3)
 });
 
 test('data-heading renders into the title node; absent title hides it', async ({ page }) => {

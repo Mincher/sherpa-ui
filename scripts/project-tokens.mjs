@@ -654,7 +654,9 @@ categoricalLines.sort(
 const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success', 'active', 'inactive'];
 const STATUS_ROLE_MAP = {
   'style-surface/base': '_status-surface',
+  'style-surface/base +1': '_status-surface-subtle',
   'style-surface/base +2': '_status-surface-strong',
+  'style-surface/shadow': '_status-shadow',
   'style-border/base': '_status-border',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',
@@ -688,7 +690,9 @@ for (const mode of STATUS_MODES) {
 // literal hex from the cache (extension overrides don't serialise as refs).
 const LOOK_ROLE_MAP = {
   'style-surface/base': '_status-surface',
+  'style-surface/base +1': '_status-surface-subtle',
   'style-surface/base +2': '_status-surface-strong',
+  'style-surface/shadow': '_status-shadow',
   'style-border/base': '_status-border',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',

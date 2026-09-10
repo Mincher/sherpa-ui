@@ -1,29 +1,29 @@
 /**
  * sherpa-toast — presentation.
  *
- * Per Figma the CARD is NEUTRAL (white surface, grey border, dark ink) in every
- * status — the status hue is carried ONLY by the round icon badge (same model as
- * sherpa-callout). A content column holds heading + optional value + optional
- * action link; a close button sits trailing. Geometry chains to Structure/Theme.
+ * Figma Toast (27:750, data-extracted; pinned Style=success, Elevation=md): the
+ * CARD fills the PALE status tint — style-surface/base +1 (success → #bbffd2) — with
+ * the neutral 0.5 style-border/base ring and an Elevation=md shadow whose colour is
+ * the STATUS shadow (style-surface/shadow → #20c1734d). Heading = style-content/
+ * secondary (#35353d, status-independent) 14/20 semibold; value = style-content/base
+ * (status ink) 12/16; action = content/link/+1 12/16 regular; a 14px status glyph
+ * leads and a 12px close icon trails. Geometry chains to Structure/Theme.
  *
- *   card    → style-surface-base / style-border-base   (neutral, status-independent)
- *   content → var(--_status-text, style-content-base)   (status-hued ink)
- *   badge   → var(--_status-icon, theme-surface-info-3) (strong status hue)
+ *   card    → var(--_status-surface-subtle, style-surface-base)  (pale status tint)
+ *   shadow  → var(--_status-shadow, style-surface-shadow)         (status-tinted)
+ *   value   → var(--_status-text, style-content-base)             (status ink)
+ *   glyph   → var(--_status-icon, …)                              (strong status hue)
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Card surface + border stay neutral in every status. The status hue lives on
-     the INK and the BADGE, mirroring Figma: heading + value fill = style-content/base
-     re-points per status (→ --_status-text cascade); the badge carries the strong
-     --_status-icon hue so its white glyph keeps contrast. (Same model as callout,
-     verified against Figma 27:750, 2026-09-09.) */
-  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_surface: var(--_status-surface-subtle, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--sherpa-style-border-base, #b3b3c3);
   --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
-  --_badge: var(--_status-icon, var(--sherpa-theme-surface-info-3, #006c91));
+  --_badge: var(--_status-icon, var(--sherpa-style-indicator-accent, #3b4ccd));
+  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #b2b2bf4d));
 }
 
 .toast {
@@ -37,30 +37,36 @@
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: var(--_surface);
   color: var(--_content);
-  box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(26, 26, 32, 0.16));
+  /* Elevation=md (Theme elevation "base" tokens) in the status shadow colour. */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-base, 2px)
+    var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px)
+    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--_shadow-color);
 }
 
-/* ── Status icon badge — a round chip in the strong status colour ────── */
+/* ── Status icon — a 14px Apex status glyph in the status hue (FA solid). ── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 24px);
-  block-size: var(--sherpa-theme-size-icon-md, 24px);
-  border-radius: 50%;
-  background: var(--_badge);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-bold, 700);
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px); /* centre on the 20px heading line */
+  color: var(--_badge);
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
-:host([data-status="info"])     .icon::after { content: "i"; }
-:host([data-status="success"])  .icon::after { content: "\2713"; }
-:host([data-status="warning"])  .icon::after { content: "!"; }
-:host([data-status="critical"]) .icon::after { content: "!"; }
-:host([data-status="urgent"])   .icon::after { content: "!"; }
-:host(:not([data-status]))      .icon::after { content: "i"; }
+:host([data-status="info"])     .icon::after { content: "\f05a"; } /* circle-info */
+:host([data-status="success"])  .icon::after { content: "\f058"; } /* circle-check */
+:host([data-status="warning"])  .icon::after { content: "\f06a"; } /* circle-exclamation */
+:host([data-status="critical"]) .icon::after { content: "\f06a"; }
+:host([data-status="urgent"])   .icon::after { content: "\f071"; } /* triangle-exclamation */
+:host(:not([data-status]))      .icon::after { content: "\f05a"; }
 
 /* ── Content column ────────────────────────────────────────────────── */
 .content {
@@ -70,31 +76,33 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
+/* Heading binds style-content/secondary → #35353d in every status (not the status ink). */
 .heading {
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-/* Value detail — only with data-value. */
+/* Value detail — only with data-value; carries the status ink. */
 .value { display: none; }
 :host([data-value]) .value {
   display: block;
   color: var(--_content);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: 1.4;
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-/* Action link — only with data-action. */
+/* Action link — only with data-action: content/link/+1 12/16 regular. */
 .action { display: none; }
 :host([data-action]) .action {
   display: inline-block;
   align-self: flex-start;
-  margin-block-start: var(--sherpa-theme-gap-sm, 4px);
   padding: 0;
   border: none;
   background: transparent;
   color: var(--sherpa-theme-content-link-1, #2b34b4);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   cursor: pointer;
 }
 .action:focus-visible {
@@ -108,15 +116,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-md, 20px);
-  block-size: var(--sherpa-display-mode-size-md, 20px);
-  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
+  /* Figma close: cross glyph at size/icon/2xs → 12. */
+  inline-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  block-size: var(--sherpa-theme-size-icon-2xs, 12px);
+  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* centre on the heading line */
   padding: 0;
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease;

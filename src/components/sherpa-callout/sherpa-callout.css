@@ -31,48 +31,47 @@
   --_badge: var(--_status-icon, var(--sherpa-theme-surface-info-3, #006c91));
 }
 
+/* Figma Callout (27:733): padding/lg 16, column gap space/xs 8, row gap 4; the ONLY
+   stroke is a 2px LEADING edge (border/width/lg) — no surrounding hairline. Radius
+   rounding/sm 2. */
 .box {
   display: flex;
   align-items: flex-start;
-  gap: var(--sherpa-theme-gap-lg, 12px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-lg, 16px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  /* Figma: a thicker leading edge (border/width/lg). Its colour is the neutral
-     status border (--_status-border resolves to the neutral default border in every
-     status, matching Figma's style-border/base), so this reads as a heavier rule,
-     not a coloured stripe. */
+  border: 0;
+  /* The leading edge binds style-border/base — neutral in the base Style modes. */
   border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid
     var(--_status-border, var(--_border));
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   color: var(--_content);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.45;
 }
 
-/* ── Status icon badge — a round chip in the strong status colour ────── */
+/* ── Status icon — Figma: a 14px Apex status glyph (content/size/base) in the
+   status hue. Rendered with the Font Awesome solid glyphs (no chip behind it). ── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 24px);
-  block-size: var(--sherpa-theme-size-icon-md, 24px);
-  border-radius: 50%;
-  background: var(--_badge);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-bold, 700);
+  inline-size: var(--sherpa-theme-content-size-base, 14px);
+  block-size: var(--sherpa-theme-content-size-base, 14px);
+  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px); /* centre on the 20px heading line */
+  color: var(--_badge);
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   font-style: normal;
   line-height: 1;
 }
-/* Text glyph per status — no icon font, pure CSS content. */
-:host([data-status="info"])     .icon::after { content: "i"; }
-:host([data-status="success"])  .icon::after { content: "\2713"; } /* ✓ */
-:host([data-status="warning"])  .icon::after { content: "!"; }
-:host([data-status="critical"]) .icon::after { content: "!"; }
-:host([data-status="urgent"])   .icon::after { content: "!"; }
-:host(:not([data-status]))      .icon::after { content: "i"; }
+:host([data-status="info"])     .icon::after { content: "\f05a"; } /* circle-info */
+:host([data-status="success"])  .icon::after { content: "\f058"; } /* circle-check */
+:host([data-status="warning"])  .icon::after { content: "\f06a"; } /* circle-exclamation */
+:host([data-status="critical"]) .icon::after { content: "\f06a"; }
+:host([data-status="urgent"])   .icon::after { content: "\f071"; } /* triangle-exclamation */
+:host(:not([data-status]))      .icon::after { content: "\f05a"; }
 
 /* ── Content ─────────────────────────────────────────────────────────── */
 .content {
@@ -83,17 +82,19 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
+/* Heading 14/20 semibold · body 12/16 regular (Figma). */
 .title {
   color: var(--_content);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1.35;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 :host(:not([data-heading])) .title { display: none; }
 
 .message {
   color: var(--_content);
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host(:not([data-has-content])) .message { display: none; }
 
