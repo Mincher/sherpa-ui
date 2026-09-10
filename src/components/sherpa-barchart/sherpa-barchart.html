@@ -64,7 +64,14 @@
   -->
   <template class="bar-tpl">
     <button class="bar-col chart-mark" type="button">
-      <span class="bar" part="bar"></span>
+      <!--
+        The BAR is the anchor, not the column. A .bar-col is the full plot height
+        (179px on a 180px plot), so anchoring to it put the tip above the COLUMN —
+        far from a short bar, and flipped below whenever the plot sat near the top
+        of the viewport. Anchoring to the bar itself puts the tip just above the
+        value it describes.
+      -->
+      <span class="bar chart-anchor" part="bar"></span>
       <span class="chart-tip" part="tip" role="tooltip">
         <span class="chart-tip-label"></span>
         <span class="chart-tip-value"></span>

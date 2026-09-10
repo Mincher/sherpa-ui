@@ -77,12 +77,18 @@
 .chart-tip {
   position: fixed;
   position-anchor: var(--_anchor);
-  /* ABOVE the mark by default, centred on it. */
+  /* ABOVE the mark, centred on it. A tooltip FAVOURS above: that is where a
+     reader looks, and it never covers the rest of the series below. */
   position-area: block-start;
-  /* …but flip to below, then to either side, when there is no room. The browser
-     picks the first fallback that fits — this is the "based on available space"
-     behaviour, and it re-evaluates on scroll and resize for free. */
-  position-try-fallbacks: flip-block, flip-inline, block-end, inline-end, inline-start;
+  /* Fallbacks, in the order the browser should try them. The SIDES come before
+     below, so a mark near the top of the viewport gets a tip beside it rather than
+     one flipped underneath — flipping below hides the very marks the reader is
+     comparing against. Below is the last resort. The browser picks the first that
+     fits and re-evaluates on scroll and resize for free. */
+  position-try-fallbacks:
+    block-start span-inline-end, block-start span-inline-start,
+    inline-end, inline-start,
+    block-end;
   /* Whitespace between the tip and its mark, on whichever side it lands. */
   margin: var(--sherpa-display-mode-space-2xs, 4px);
 
@@ -140,7 +146,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The mark itself only has to declare its anchor name and stay a hover target. */
-.chart-mark {
-  anchor-name: var(--_anchor);
-}
+/* The mark declares the anchor name and is the hover target.
+   A chart may name a CHILD as the anchor instead (`.chart-anchor`), when the
+   hover target is deliberately bigger than the thing being described — a bar
+   chart's column is the full plot height, so anchoring the tip to the column put
+   it far above a short bar. The hover still comes from .chart-mark either way. */
+.chart-mark { anchor-name: var(--_anchor); }
+.chart-mark:has(> .chart-anchor) { anchor-name: none; }
+.chart-anchor { anchor-name: var(--_anchor); }

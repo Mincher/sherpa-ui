@@ -14,6 +14,11 @@ interface Zone {
   from: number;
   to: number;
   color: string;
+  /** The band's bounds on the RAW scale, for its hover tooltip's label. */
+  rawFrom: number;
+  rawTo: number;
+  /** The colour NAME as written (a status name, or a raw CSS colour). */
+  name: string;
 }
 
 /** Status name → the token used for the single-colour route, with a hex fallback. */
@@ -68,6 +73,7 @@ export class SherpaGaugeChart extends SherpaElement {
     } else {
       this.style.removeProperty('--_zones');
     }
+    this.#renderHotspots(zones);
 
     const value = this.$('.value');
     if (value) value.textContent = this.dataset['label'] ?? String(raw);
@@ -124,10 +130,59 @@ export class SherpaGaugeChart extends SherpaElement {
     let cursor = min;
     for (const band of raw) {
       const from = band.from ?? cursor;
-      out.push({ from: clamp(from), to: clamp(band.to), color: this.#zoneColour(band.color) });
+      out.push({
+        from: clamp(from),
+        to: clamp(band.to),
+        color: this.#zoneColour(band.color),
+        // Kept alongside the fractions: the tooltip names the band on the scale
+        // the reader sees ("60–85"), not as a 0–1 fraction of it.
+        rawFrom: from,
+        rawTo: band.to,
+        name: band.color,
+      });
       cursor = band.to;
     }
     return out;
+  }
+
+  /**
+   * Stamp one hover dot per zone, on its band's mid-angle.
+   *
+   * The ONLY numbers JS gives CSS are the angle and the colour — cos()/sin() in
+   * the CSS turn the angle into a position on the ring, so the dots follow the
+   * gauge at any size with nothing measured here.
+   *
+   * The fill is a conic-gradient, so there is no per-band element these could have
+   * been attached to instead.
+   */
+  #renderHotspots(zones: Zone[]): void {
+    const host = this.$('.hotspots');
+    const tpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
+    if (!host || !tpl) return;
+
+    host.replaceChildren();
+    zones.forEach((zone, i) => {
+      const dot = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      dot.dataset['index'] = String(i);
+      // The visible half runs -90deg (left) → +90deg (right), matching the
+      // needle's own mapping, so a band's midpoint fraction lands on the same arc
+      // the fill paints it on.
+      const mid = (zone.from + zone.to) / 2;
+      dot.style.setProperty('--_dot-angle', `${-90 + mid * 180}deg`);
+      dot.style.setProperty('--_hue', zone.color);
+      // A status band is named by its status; a raw CSS colour has no name worth
+      // showing, so that row falls back to the range alone.
+      const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
+      dot.querySelector('.chart-tip-label')!.textContent = label;
+      dot.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
+      dot.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
+      host.appendChild(dot);
+    });
+  }
+
+  /** A status name, title-cased for display ("warning" → "Warning"). */
+  #zoneLabel(name: string): string {
+    return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   /** Map a zone colour token/name to a CSS colour. Status names route to tokens. */

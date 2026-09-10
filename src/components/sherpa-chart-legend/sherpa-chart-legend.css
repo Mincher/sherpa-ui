@@ -117,14 +117,24 @@
   box-sizing: border-box;
 }
 /* A STATUS swatch — a gauge's bands are THRESHOLDS, not a data series, so their
-   key must come from the status ramp rather than the categorical wheel. Setting
-   data-status on the entry lights the status cascade; re-pointing --_hue at
-   --_status-border-strong means every rule below (the border, the 60% fill, the
-   no-color-mix fallback) keeps working unchanged. It is the same token a
-   sparkline's stroke uses, so a zone's key and its band agree. */
-.item[data-status] .swatch {
-  --_hue: var(--_status-border-strong, var(--sherpa-style-border-base, #b3b3c3));
-}
+   key must come from the status ramp rather than the categorical wheel.
+   Re-pointing --_hue means every rule below (the border, the 60% fill, the
+   no-color-mix fallback) keeps working unchanged.
+
+   NAMED PER STATUS, not via --_status-border-strong. The status cascade's
+   `[data-status]` blocks live in tokens.css, which is LIGHT-DOM ONLY: a custom
+   property inherits across a shadow boundary but a SELECTOR does not, so a
+   data-status set on an element INSIDE this shadow root never matched and every
+   swatch fell back to neutral grey. The tokens themselves are theme vars, which do
+   inherit in, so they can be named directly.
+
+   These are the same `border-<status>-2` tokens --_status-border-strong resolves
+   to, so a zone's key and its band agree. */
+.item[data-status="success"] .swatch { --_hue: var(--sherpa-theme-border-success-2, #20c173); }
+.item[data-status="warning"] .swatch { --_hue: var(--sherpa-theme-border-warning-2, #ffc44c); }
+.item[data-status="critical"] .swatch { --_hue: var(--sherpa-theme-border-critical-2, #dd2c01); }
+.item[data-status="urgent"] .swatch { --_hue: var(--sherpa-theme-border-urgent-2, #ff7300); }
+.item[data-status="info"] .swatch { --_hue: var(--sherpa-theme-border-info-2, #008bba); }
 
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
   .swatch {
