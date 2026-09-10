@@ -9,7 +9,7 @@
 :host {
   display: inline-block;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  --_size: 180px;
+  --_size: 200px; /* Figma Donut Chart: 200×200 */
   --_hole: 62%; /* inner radius as a fraction of the circle */
   --_ring: conic-gradient(var(--sherpa-style-border-base, #b3b3c3) 0 100%);
 }
@@ -54,9 +54,12 @@
 }
 :host([data-variant="pie"]) .centre { display: none; }
 
+/* Centre: value content/size/h1 24 on 32 semibold (−0.2 tracking); sub 10/16 regular. */
 .value {
-  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  font-size: var(--sherpa-theme-content-size-h1, 24px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
+  line-height: var(--sherpa-theme-content-line-height-h1, 32px);
+  letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-variant-numeric: tabular-nums;
 
@@ -64,6 +67,7 @@
 }
 .sub {
   font-size: var(--sherpa-font-size-body-xs, 10px);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:empty { display: none; }

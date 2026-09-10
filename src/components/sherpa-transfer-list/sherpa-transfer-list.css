@@ -43,6 +43,8 @@
   background: var(--_surface);
   overflow: hidden;
 }
+/* Figma pane header: padding 8×12, neutral color 2 fill, 1px bottom rule, title
+   content/body/+1 12/16 REGULAR. */
 .pane-heading {
   margin: 0;
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
@@ -50,12 +52,14 @@
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
+/* Figma rows frame: no padding — the Menu List Items (pad 8) sit flush. */
 .pane-list {
   list-style: none;
   margin: 0;
-  padding: var(--sherpa-structure-space-padding, 8px);
+  padding: 0;
   flex: 1;
   overflow: auto;
   min-block-size: 0;

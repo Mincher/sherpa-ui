@@ -14,28 +14,27 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
+/* Figma Grid Cell (926:34253): FIXED 32 tall, padding space/2xs 4, gap 8, a 0.5px
+   style-border/base stroke on ALL sides, label style-content/base 14/20 REGULAR in
+   every type. Header / group / filter fill the neutral band (#e8e8f6). */
 .cell {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-sm, 4px);
   min-block-size: var(--sherpa-structure-height, 32px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid
+  border: var(--sherpa-style-border-width, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* Header + filter sit on the header band (a stronger neutral fill), header is bold. */
+/* Header / filter / group sit on the neutral band. The label weight does NOT change
+   (Figma binds content/weight/regular in every type). */
 :host([data-type="header"]) .cell,
-:host([data-type="filter"]) .cell {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-}
-:host([data-type="header"]) .content {
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-}
+:host([data-type="filter"]) .cell,
 :host([data-type="group"]) .cell {
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
 .content {
@@ -58,10 +57,12 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  inline-size: var(--sherpa-theme-size-icon-sm, 20px);
-  block-size: var(--sherpa-theme-size-icon-sm, 20px);
+  /* Figma toggle: Button/Type=icon at Structure xs → 16×16, Transparent look. */
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: none;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -92,8 +93,10 @@
   block-size: var(--sherpa-theme-size-icon-xs, 16px);
   padding: 0;
   border: none;
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
-  color: var(--sherpa-style-content-secondary, #b3b3c3);
+  /* Figma sort/menu: Transparent icon buttons in style-content/base ink. */
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
 
   &:focus-visible {

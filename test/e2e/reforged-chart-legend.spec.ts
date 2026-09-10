@@ -27,15 +27,19 @@ test('renders a row per item with label + value and categorical swatches', async
       count: rows.length,
       firstLabel: rows[0]!.querySelector('.label')!.textContent,
       firstValue: rows[0]!.querySelector('.value')!.textContent,
-      swatch1: getComputedStyle(rows[0]!.querySelector('.swatch')!).backgroundColor,
-      swatch5: getComputedStyle(rows[1]!.querySelector('.swatch')!).backgroundColor,
+      // Figma Legend Item swatch: the series hue as a SOLID 1px ring, with a 60%
+      // tint of the same hue as the fill.
+      ring1: getComputedStyle(rows[0]!.querySelector('.swatch')!).borderTopColor,
+      ring5: getComputedStyle(rows[1]!.querySelector('.swatch')!).borderTopColor,
+      fill1: getComputedStyle(rows[0]!.querySelector('.swatch')!).backgroundColor,
     };
   });
   expect(r.count).toBe(2);
   expect(r.firstLabel).toBe('Revenue');
   expect(r.firstValue).toBe('48k');
-  expect(r.swatch1).toBe('rgb(123, 28, 230)'); // categorical-1 #7b1ce6
-  expect(r.swatch5).toBe('rgb(65, 65, 239)'); // categorical-5 #4141ef
+  expect(r.ring1).toBe('rgb(123, 28, 230)'); // categorical-1 #7b1ce6
+  expect(r.ring5).toBe('rgb(65, 65, 239)'); // categorical-5 #4141ef
+  expect(r.fill1).toContain('0.6'); // the 60% tint (color-mix → color(srgb … / 0.6))
 });
 
 test('clicking a row fires legend-item-click and toggles current', async ({ page }) => {

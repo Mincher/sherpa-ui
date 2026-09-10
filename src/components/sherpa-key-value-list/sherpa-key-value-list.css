@@ -24,9 +24,11 @@
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
+/* Figma Key Value Pair: key content/body/+1 14/20 medium; value 14/20 regular. */
 .key {
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-weight: var(--sherpa-font-weight-medium, 500);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
 /* The value sits inside a subtle grey rounded pill that hugs its content
@@ -39,6 +41,7 @@
   align-items: center;
   padding-inline: var(--sherpa-theme-padding-sm, 4px);
   color: var(--sherpa-theme-content-body-1, #35353D);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }

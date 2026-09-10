@@ -21,7 +21,10 @@
   /* Figma toolbar is a transparent bare strip — a [data-status] ancestor can
      still fill it via the cascade; the resting bar is transparent. */
   background: var(--_status-surface, transparent);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Figma toolbar text ("1,234 items"): content/body/base 12/16 regular. */
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 
 :host([data-density="compact"]) { --_py: var(--sherpa-display-mode-space-3xs, 2px); }

@@ -16,6 +16,9 @@
  * status ramp inks.
  */
 
+/* Figma Metric (61:263): the LABEL sits ABOVE the card (gap space/xs 8); the CARD
+   is a rounding/lg (8) surface/default/+1 tile with structure-space/padding 8 and
+   gap 8 holding value + trend and the sparkline slot. */
 :host {
   display: flex;
   flex-direction: column;
@@ -24,21 +27,16 @@
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 
-  /* Resting tile takes a subtle surface (Figma card = surface/default/+1); a
-   * [data-status] ancestor overrides it with the status surface. */
-  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
-    var(--_status-border, transparent);
-
   /* Delta colour — neutral until a trend is set. */
   --_delta: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
 }
 
-/* ── Label ─────────────────────────────────────────────────────────── */
+/* ── Label — content/body/+1 12/16 regular, outside the card ─────────── */
 .label {
   margin: 0;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
   white-space: nowrap;
   overflow: hidden;
@@ -47,37 +45,45 @@
   &:empty { display: none; }
 }
 
-/* ── Row: figures + sparkline ──────────────────────────────────────── */
+/* ── Card row: figures + sparkline. Resting fill = surface/default/+1; a
+   [data-status] ancestor overrides it with the status surface. ─────────── */
 .row {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-base, 16px);
+  gap: var(--sherpa-structure-space-gap, 8px);
   min-inline-size: 0;
+  padding: var(--sherpa-structure-space-padding, 8px);
+  border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
+  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--_status-border, transparent);
 }
 
 .figures {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-structure-space-gap, 8px);
   min-inline-size: 0;
 }
 
-/* ── Value ─────────────────────────────────────────────────────────── */
+/* ── Value — content/size/h1 24 on line-height/h1 32, semibold, hero font, −0.2 tracking ── */
 .value {
   margin: 0;
-  font-family: inherit; /* body font, not mono — Figma's value is bold display text */
-  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  font-family: inherit; /* content/font/hero resolves to Inter — same family as body */
+  font-size: var(--sherpa-theme-content-size-h1, 24px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  line-height: 1.1;
+  line-height: var(--sherpa-theme-content-line-height-h1, 32px);
+  letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0C0B11));
 }
 
-/* ── Trend + delta ─────────────────────────────────────────────────── */
+/* ── Trend + delta — 12px arrow + 12/16 status-ink delta, gap 4 ───────── */
 .trend {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--_delta);
 }
 .delta:empty { display: none; }

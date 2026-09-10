@@ -6,19 +6,28 @@
  * data-* / disabled attributes JS stamps on each cell — JS never styles.
  */
 
+/* Figma Calendar (268:14601, data-extracted): a 1px border/default/+2 card (radius
+   primitive 3 → 4 step) on surface/default/base; the HEADER is a snapped segmented
+   control — [prev 32 ▏month label (fill) ▕ next 32] all in the DEFAULT button look
+   (white, 0.5 style-border/base ring, label 14/20 regular); the day grid sits in an
+   8px-padded content frame. Day states are the Calendar Button atoms: default =
+   transparent · today = Transparent:info tint (#008bba4d) · in-range = Style:active
+   tint (#f2dfff, square corners). Selection ends take the strong active step. */
 :host {
   display: inline-block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
+  --_accent: var(--sherpa-theme-surface-active-2, #c046ff);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  --_today: var(--sherpa-theme-surface-info-transparent, #008bba4d);
+  --_range: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
 .cal {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-theme-gap-md, 8px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
   inline-size: fit-content;
-  padding: var(--sherpa-theme-padding-lg, 16px);
+  padding: 0;
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius:
@@ -27,23 +36,27 @@
     var(--sherpa-structure-rounding-bottom-right, 4px)
     var(--sherpa-structure-rounding-bottom-left, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  box-shadow: var(--sherpa-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+  overflow: hidden;
 }
 
-/* ── Header ─────────────────────────────────────────────────────────── */
+/* ── Header — a snapped button group: prev | month | next (gap 0) ───────── */
 .cal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  gap: 0;
 }
 
 .cal-label {
   flex: 1 1 auto;
+  block-size: var(--sherpa-structure-height, 32px);
   text-align: center;
-  font-size: var(--sherpa-font-size-body-large, 16px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  color: var(--sherpa-style-content-base, #35353D);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+  border-inline: 0; /* snap-all-edges: the outer buttons carry the side strokes */
 }
 
 .cal-nav {
@@ -53,39 +66,46 @@
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
   padding: 0;
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
-  font-size: var(--sherpa-font-size-heading-h2, 20px);
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: 0;
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #35353D);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
 
-  &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
-    color: var(--sherpa-theme-content-body-base, #0C0B11);
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
   }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
+/* The header group hugs the card's top corners (the card clips them). */
+.cal-header .cal-nav:first-child { border-inline-end: 0; }
+.cal-header .cal-nav:last-child { border-inline-start: 0; }
 
-/* ── Weekday row + day grid share the 7-column track ────────────────── */
+/* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
+   8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */
 .cal-weekdays,
 .cal-days {
   display: grid;
   grid-template-columns: repeat(7, var(--sherpa-display-mode-size-2xl, 32px));
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding-inline: var(--sherpa-theme-padding-md, 8px);
 }
+.cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
+.cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
 /* Month / year grids are wider cells in fewer columns. */
 .cal-months,
 .cal-years {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding: var(--sherpa-theme-padding-md, 8px);
 }
 
 /* ── Layout visibility (day | month | year) ─────────────────────────── */
@@ -98,20 +118,26 @@
 
 .cal-label {
   cursor: pointer;
-  border: none;
-  background: transparent;
+  background: var(--sherpa-style-surface-base, #ffffff);
   font-family: inherit;
 
-  &:hover { color: var(--_accent); }
-  &:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); border-radius: var(--sherpa-display-mode-border-rounding-base, 4px); }
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
+  }
+  &:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
 }
 
+/* Weekday captions are Calendar Buttons too: 14/20 regular content/body/+1. */
 .cal-weekdays span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
   text-align: center;
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-1, #35353D);
-  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
 /* ── Day cells ──────────────────────────────────────────────────────── */
@@ -127,12 +153,13 @@
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
-  &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
-    color: var(--sherpa-theme-content-body-base, #0C0B11);
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
   }
   &:focus-visible {
     outline: none;
@@ -140,18 +167,18 @@
   }
 }
 
-/* Today — a ring, not a fill (fill is reserved for the selection). */
+/* Today — Figma Calendar Button/State=today: the Transparent:info surface tint
+   (style-surface/base → #008bba4d), no ring, regular weight, dark ink. */
 .cal-cell[data-today] {
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  background: var(--_today);
+  border-color: transparent;
 }
 
-/* Selected — accent fill, wins over hover / today. */
+/* Selected — the strong active step with fixed light ink; wins over hover / today. */
 .cal-cell[data-selected] {
   background: var(--_accent);
   border-color: var(--_accent);
   color: var(--_accent-on);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 .cal-cell[data-selected]:hover {
   background: var(--_accent);
@@ -159,22 +186,22 @@
 }
 
 /* ── Range band (data-type="range") ─────────────────────────────────────
-   Days between the two ends get a subtle accent-tinted band; the ends keep the
-   solid accent fill (via [data-selected] above) plus a data-range-end cap. The
-   band cells drop their corner radius and bleed across the 2px grid gap with a
-   left/right box-shadow so the fill reads as one continuous strip. */
+   Figma Calendar Button/State=selected-range: Style=active surface (#f2dfff) with
+   snap-all-edges (square corners) and the dark content/body/+1 ink. The band cells
+   bleed across the 4px grid gap with a left/right box-shadow so the fill reads as
+   one continuous strip; the ends keep the solid fill (via [data-selected]). */
 .cal-cell[data-in-range] {
-  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
-  color: var(--sherpa-theme-content-body-base, #0C0B11);
+  background: var(--_range);
+  color: var(--sherpa-theme-content-body-1, #35353D);
   border-radius: 0;
   border-color: transparent;
   box-shadow:
-    calc(-1 * var(--sherpa-display-mode-space-3xs, 2px)) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D),
-    var(--sherpa-display-mode-space-3xs, 2px) 0 0 0 var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
+    calc(-1 * var(--sherpa-theme-gap-sm, 4px)) 0 0 0 var(--_range),
+    var(--sherpa-theme-gap-sm, 4px) 0 0 0 var(--_range);
 }
 .cal-cell[data-in-range]:hover {
-  background: var(--sherpa-theme-surface-accent-transparent, #3B4CCD4D);
-  color: var(--sherpa-theme-content-body-base, #0C0B11);
+  background: var(--_range);
+  color: var(--sherpa-theme-content-body-1, #35353D);
 }
 
 /* Blank spacer cells — no chrome, no interaction. */

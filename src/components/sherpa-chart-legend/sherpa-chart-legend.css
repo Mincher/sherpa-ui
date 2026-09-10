@@ -12,17 +12,18 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
+/* Figma Chart Legend (430:43129): items gap/md 8 apart; padding/md 8 inline. */
 .legend {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--sherpa-theme-padding-md, 8px);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
+  gap: var(--sherpa-theme-gap-md, 8px);
 }
 :host([data-orientation="vertical"]) .legend {
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-theme-gap-md, 8px);
 }
 
 .item {
@@ -35,32 +36,39 @@
   }
 }
 
+/* Figma Legend Item (186:4667): swatch · label · value, gap 8, no padding; text
+   content/body/+1 14/20 regular. */
 .row {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-structure-space-gap, 8px);
-  padding: var(--sherpa-display-mode-space-3xs, 2px) var(--sherpa-display-mode-space-2xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: 0;
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
   font: inherit;
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease;
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
+/* Swatch — 12×12, radius 4, the series hue at 60% with a 1px solid hue ring (Figma). */
 .swatch {
   inline-size: var(--sherpa-display-mode-size-xs, 12px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
   background: var(--_hue, var(--sherpa-categorical-1, #7b1ce6));
+}
+@supports (color: color-mix(in srgb, red 60%, transparent)) {
+  .swatch { background: color-mix(in srgb, var(--_hue, var(--sherpa-categorical-1, #7b1ce6)) 60%, transparent); }
 }
 
 .value {

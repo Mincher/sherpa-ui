@@ -54,10 +54,13 @@
 }
 
 /* ── Drop zone ───────────────────────────────────────────────────────── */
+/* Figma drop-zone (66:2200): a ROW — 14px upload glyph + prompt 14/20 — padding
+   space/lg 20, gap 8, radius 4, 1px border-active-2 ring, transparent fill. */
 .drop-zone {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-lg, 20px);
   border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff);
@@ -77,7 +80,8 @@
 }
 
 .drop-icon {
-  font-size: var(--sherpa-font-size-heading-h1, 24px);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
   color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .browse {
@@ -114,18 +118,33 @@
   &:empty { display: none; }
 }
 
+/* Figma File Item (67:2237): a bare 38px row — NO fill, stroke or padding. A 32×32
+   icon box (1px border/default/+2 ring, radius 4) leads with gap 12; name/status
+   stack with gap 2; a 32×32 default-look dismiss button trails (gap 8). Status
+   cascade re-inks the text; the row itself carries no chrome. */
 .file-item {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
-  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_file-border);
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--_file-surface);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: 0;
   color: var(--_file-text);
   font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-.file-icon { color: var(--sherpa-theme-content-body-1, #35353D); flex-shrink: 0; }
+.file-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--sherpa-theme-size-icon-xl, 32px);
+  block-size: var(--sherpa-theme-size-icon-xl, 32px);
+  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); /* 8 + 4 = Figma gap 12 */
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_file-border);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  color: var(--sherpa-theme-content-body-1, #35353D);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
+}
 .file-body {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -133,7 +152,7 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
-.file-line { display: flex; align-items: baseline; gap: var(--sherpa-display-mode-space-xs, 8px); }
+.file-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sherpa-display-mode-space-xs, 8px); }
 .file-name {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -145,14 +164,17 @@
 .file-size {
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   flex-shrink: 0;
 }
 .file-status {
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);
 
   &:empty { display: none; }
 }
+/* Dismiss — Figma: Button/Type=icon in the DEFAULT look (white, 0.5 grey ring, radius 4). */
 .file-remove {
   flex-shrink: 0;
   display: inline-flex;
@@ -160,17 +182,16 @@
   justify-content: center;
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: transparent;
+  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353D);
-  font-size: var(--sherpa-font-size-body-large, 16px);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
 
-  &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
-    color: var(--sherpa-theme-surface-critical-4, #9b2509);
+  @supports (color: color-mix(in oklab, red, blue)) {
+    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
   }
   &:focus-visible {
     outline: none;
@@ -189,26 +210,28 @@
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #B3B3C3); }
 
 /* ── Details (max size + allowed types) ──────────────────────────────── */
+/* Figma details: two 12/16 lines, gap 0. */
 .details {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  gap: 0;
 
   &:not(:has(.max-size:not(:empty))):not(:has(.allowed-types:not(:empty))) { display: none; }
 }
 .max-size,
 .allowed-types {
   font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .max-size:empty,
 .allowed-types:empty { display: none; }
 
-/* ── Actions row (clear-all + upload) ────────────────────────────────── */
+/* ── Actions row (remove-all ◂ space-between ▸ upload), gap 16 (Figma) ─── */
 .actions {
   display: none;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: var(--sherpa-display-mode-space-base, 16px);
 }
 /* The actions row appears once at least one file is present. */
