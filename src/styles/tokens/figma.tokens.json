@@ -5250,17 +5250,17 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:6:363",
             "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.984Z",
+            "lastSyncedAt": "2026-09-10T11:13:47.463Z",
             "lastSyncedValue": {
               "dark": {
-                "literal": -1
+                "literal": -0.5
               },
               "light": {
-                "literal": -1
+                "literal": -0.5
               }
             },
             "modes": {
-              "dark": -1
+              "dark": -0.5
             },
             "primaryMode": "light",
             "scopes": [
@@ -5271,7 +5271,7 @@
           }
         },
         "$type": "dimension",
-        "$value": -1
+        "$value": -0.5
       },
       "xl": {
         "$description": "Spacing (gap / padding / size).",

@@ -287,9 +287,16 @@ function parsePublicApi(comment) {
     // A new entry starts with an attr name (data-* or a bare native attr) followed
     // by 2+ spaces OR an em-dash/hyphen separator OR end-of-line. Anything else
     // (a `| value` wrap, a prose continuation) folds into the previous entry.
+    //
+    // A `data-*` name gets ONE space too. The 2-space rule assumes the author is
+    // padding a description column, but a name long enough to fill that column
+    // leaves only a single space — `data-icon-start` did, so it folded into the
+    // `data-label` line above it and vanished from the props list entirely.
+    // A `data-` prefix is unambiguous enough to start an entry on its own.
     const trimmed = raw.trim();
     const nameHead = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)(\s{2,}|\s*[—-]\s|\s*$)/;
-    const looksEntry = nameHead.test(trimmed);
+    const dataHead = /^(data-[\w-]+(?:\s*\/\s*data-[\w-]+)*)\s+\S/;
+    const looksEntry = nameHead.test(trimmed) || dataHead.test(trimmed);
     if (!looksEntry && entries.length) { entries[entries.length - 1] += ' ' + trimmed; continue; }
     entries.push(trimmed);
   }
@@ -298,6 +305,14 @@ function parsePublicApi(comment) {
     // split name(s) column from the description column: 2+ spaces, an em-dash, or
     // a single-space before "native"/"—".
     let mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s{2,}(.*)$/.exec(entry);
+    // A long `data-*` name leaves only ONE space before its description — split on
+    // that too, matching the single-space entry rule above.
+    //
+    // This MUST come before the dash rule below. `[\w-]*` is greedy but the regex
+    // engine backtracks to let `[—-]` match, so `data-icon-start leading icon`
+    // split at the hyphen and yielded the name `data-icon`. Consuming the whole
+    // hyphenated name first removes the chance to backtrack into it.
+    if (!mm) mm = /^(data-[\w-]+(?:\s*\/\s*data-[\w-]+)*)\s+(.*)$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s*[—-]\s*(.*)$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*)\s*$/.exec(entry) ? [entry, entry.trim(), ''] : null;
     if (!mm) continue;

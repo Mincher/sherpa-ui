@@ -1,14 +1,23 @@
 /**
  * sherpa-quick-filter — a filter chip you can toggle, with an optional value menu.
  *
- * Clicking the chip body flips it on or off and fires quick-filter-click. When
- * data-menu is set, the trailing caret opens a slotted <sherpa-menu> of values for
- * the field — checkbox rows for a multi-select field, radio rows for a single-select
- * one. The menu is a native popover, so it needs no positioning code here.
+ * Clicking the chip body flips it on or off and fires quick-filter-click.
+ *
+ * `data-menu` is the code form of Figma's `State` variant axis on "Filter Chip
+ * (atom)" (154:3904): absent = State=simple (one box), present = State=menu (the
+ * chip and a caret button SNAPPED into one 24-tall unit via the Structure
+ * snap-right-edge / snap-left-edge extensions). It stays a boolean rather than a
+ * `data-state` enum because the second value is the only difference and a boolean
+ * reads better at the call site.
+ *
+ * The caret opens a slotted <sherpa-menu> of values for the field — checkbox rows
+ * for a multi-select field, radio rows for a single-select one. The menu is a
+ * native popover; it measures its own placement off the caret we hand it, because
+ * a CSS anchor name cannot cross the shadow boundary between them.
  *
  * CSS owns the look: the neutral count chip that LEADS the label, the accent, the
- * on-state tint, the caret and the disabled treatment. JS writes the label, the
- * count and the icon, and relays the menu's selection.
+ * on-state tint, the snapped corners and the disabled treatment. JS writes the
+ * label, the count and the icon, and relays the menu's selection.
  *
  * @element sherpa-quick-filter
  * @attr {enum}    data-type       default | ai | populated
@@ -17,7 +26,7 @@
  * @attr {string}  data-icon-start leading icon — an FA class list
  * @attr {boolean} data-indicator  show the leading status dot
  * @attr {string}  data-count      leading count chip
- * @attr {boolean} data-menu       show the caret that opens the slotted menu
+ * @attr {boolean} data-menu       Figma State=menu — snap on the caret button
  *
  * @slot (default) — the chip label
  * @slot menu      — a <sherpa-menu> of values for this field

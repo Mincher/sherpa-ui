@@ -1,20 +1,32 @@
 /**
  * sherpa-quick-filter — presentation.
  *
- * Data-matched to the Figma "Filter Chip (atom)" (154:3904):
- *   chip       FIXED 24 tall · padding 0 × space/3xs 2 · radius 3 (Primitives 150,
- *              kept on the 2px grid step) · 0.5 style-border/base ring · white face
- *   "Left"     an inner group padded 0 × space/2xs 4 with gap 4 → 6px effective
- *              inline padding: [count][icon] Label
- *   count      the Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT — a
- *              neutral chip (white face, grey ring, dark ink), NOT the active tint,
- *              and it LEADS the row rather than trailing it
- *   icon       a 14px Icon instance (content/size/base)
- *   label      style-content/base at content/size/base 14 on line-height/base 20
- *   caret      a Transparent icon button (Figma Menu button) with a caret-down glyph
+ * Data-matched to the Figma "Filter Chip (atom)" (154:3904), which now has an
+ * explicit `State` variant axis of `simple` | `menu`.
  *
- * The ai type carries the brand-purple accent even when inactive. The active look is
- * the Style active mode: a brand-tint face, brand ring, deeper brand ink.
+ * State=simple — ONE box, 63×24 hug/fill:
+ *   padding 0 × space/2xs 4 · gap space/2xs 4 · all four corners bound to
+ *   Structure `structure-rounding/*` in the DEFAULT mode → 4 · 0.5
+ *   `border/width/sm` style-border/base ring · style-surface/base face
+ *   children: [count][icon] Label
+ *
+ * State=menu — TWO boxes SNAPPED into one 87×24 unit:
+ *   the wrapper has NO fill and NO ring of its own; it only sets the gap to
+ *   `space/snapped` (−0.5px) so the two rings overlap into a single hairline.
+ *   "Left"  = the simple chip, pinned Structure ext `snap-right-edge` / default
+ *             → rounding 4/0/0/4. Its own 0.5 ring and white face.
+ *   "Button"= a Button/Type=icon, pinned Structure ext `snap-left-edge` / SM and
+ *             Style=default → rounding 0/4/4/0, height 24, padding 8, icon 12,
+ *             its own 0.5 ring and white face. NOT transparent — it is a
+ *             bordered button snapped to the chip.
+ *
+ *   count    Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT — neutral
+ *            (white face, grey ring, dark ink), and it LEADS the row
+ *   icon     a 14px Icon instance (content/size/base)
+ *   label    style-content/base at content/size/base 14 on line-height/base 20
+ *
+ * The ai type carries the brand-purple accent even when inactive. The active look
+ * is the Style active mode: a brand-tint face, brand ring, deeper brand ink.
  */
 
 :host {
@@ -27,54 +39,77 @@
   --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
-/* The chip shell: the box, the ring and the fixed height live here so the body
-   button and the caret button sit inside one continuous pill. */
+/* The chip shell is a SNAP WRAPPER, not a box. In Figma State=menu the wrapper
+   carries no fill and no stroke — only the negative `space/snapped` gap that laps
+   the two children's rings over each other. In State=simple there is only one
+   child, so the gap never applies and the wrapper stays invisible either way. */
 .chip {
   display: inline-flex;
-  align-items: center;
-  gap: 0;
+  align-items: stretch;
+  /* Figma pins the whole chip to a FIXED 24 tall. */
   block-size: var(--sherpa-display-mode-size-lg, 24px);
-  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  transition:
-    background-color 100ms ease,
-    border-color 100ms ease,
-    color 100ms ease;
 }
 
-/* The chip body is the toggle target; the Figma "Left" group's 4px padding + 4px gap
-   give the 6px effective inset. */
+/* The snap itself. Figma's `space/snapped` is a NEGATIVE gap (−0.5px), and CSS
+   `gap` cannot be negative — Chromium silently computes it back to `normal`, so
+   the two 0.5px rings sat side by side as a 1px double line. A negative inline
+   margin on the second box is the CSS way to say the same thing: it pulls the
+   caret left by exactly one ring width so the two rings become one hairline. */
+:host([data-menu]) .caret {
+  display: inline-flex;
+  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+}
+
+/* ── The chip body — Figma "Left", the whole box in State=simple ──────────
+   Its own face, ring and rounding. In State=menu the right corners snap flat
+   (Structure ext snap-right-edge), which is the [data-menu] rule below. */
 .body {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   block-size: 100%;
   padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
-  border: 0;
-  background: transparent;
-  color: inherit;
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: nowrap;
   cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
 
   &:focus-visible {
+    /* Raise the focused half above its snapped neighbour so the ring is whole. */
+    position: relative;
+    z-index: 1;
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
+/* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */
+:host([data-menu]) .body {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
 @supports (color: color-mix(in oklab, red, blue)) {
-  .chip:hover { background: color-mix(in oklab, var(--sherpa-theme-surface-default-base, #ffffff) 94%, currentColor); }
+  .body:hover,
+  .caret:hover {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 94%, currentColor);
+  }
 }
 
 /* AI type carries the brand accent even when inactive. */
-:host([data-type="ai"]) .chip {
+:host([data-type="ai"]) :is(.body, .caret) {
   color: var(--_accent);
   border-color: var(--_accent);
 }
@@ -82,8 +117,9 @@
 /* Active/selected → brand-tint fill + brand border, darker-purple ink.
    Figma Style: active binds the label to content-active-1 (#8300b6, a darker
    brand step than the #c046ff border) — the text is deeper than the border. The
-   weight binds Theme content/weight/regular and does NOT change with the mode. */
-:host([data-current]) .chip {
+   weight binds Theme content/weight/regular and does NOT change with the mode.
+   Both halves recolour, because Style is pinned on the whole chip. */
+:host([data-current]) :is(.body, .caret) {
   background: var(--_active-surface);
   border-color: var(--_accent);
   color: var(--sherpa-theme-content-active-1, #8300b6);
@@ -132,29 +168,46 @@
   line-height: 1;
 }
 
-/* ── Menu caret — the Figma Menu button: a 24×24 Transparent icon button ──── */
+/* ── Menu caret — Figma "Button/Type=icon" snapped to the chip's right ────────
+   Structure ext `snap-left-edge` at the SM mode: 24 square (Structure height=sm
+   → space/xl 24), padding 8, radius 0/4/4/0, icon-size 12. Style=default, so it
+   is a BORDERED white button, NOT a transparent one — it reads as the other half
+   of the same control. It only exists in State=menu. */
 .caret {
   display: none;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  block-size: 100%;
+  /* Figma padding 8 all round on a 24 box with a 12 glyph — the glyph is centred
+     and the box is fixed, so the padding is what sizes the hit area, not layout. */
   padding: 0;
-  border: 0;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: transparent;
-  color: inherit;
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Structure `icon-size` in the SM mode → content/size/small 12. */
+  font-size: var(--sherpa-theme-content-size-small, 12px);
   line-height: 1;
   cursor: pointer;
+  box-sizing: border-box;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
 
   &:focus-visible {
+    position: relative;
+    z-index: 1;
     outline: none;
     box-shadow: 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
-:host([data-menu]) .caret { display: inline-flex; }
 
 /* The slotted menu is a popover in the top layer — the wrapper is a positioning
    anchor only and must not affect the chip's own layout. */
@@ -163,7 +216,7 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-:host([disabled]) .chip {
+:host([disabled]) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
   /* Figma inactive keeps the label dark ink (#35353d); only the surface greys.

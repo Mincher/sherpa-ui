@@ -10,8 +10,16 @@
  *   label    content/body/base 14/20 medium · description content/body/+1 12/16
  *
  * The card is a native `popover`: the browser owns the top layer, Escape, the
- * outside-click dismiss and focus. `position-anchor` pins it under its trigger
- * where supported; everywhere else the plain `position: absolute` fallback applies.
+ * outside-click dismiss and focus.
+ *
+ * POSITIONING — why this is NOT CSS anchor positioning.
+ * `anchor-name` is resolved inside ONE tree. The trigger (a chip's caret button)
+ * lives in the chip's shadow root while this card lives in the menu's own shadow
+ * root, so `position-anchor` can never see the name and the card collapses to the
+ * viewport corner. Proven in Chromium: same-tree anchors land on the trigger,
+ * cross-tree anchors land at the bottom-right. So the placement comes from the
+ * trigger's measured rect, written by JS into --_x / --_y as viewport
+ * coordinates, which is exactly what `position: fixed` wants.
  */
 
 :host {
@@ -20,8 +28,12 @@
 }
 
 .menu {
-  position: absolute;
+  /* Fixed, not absolute: --_x / --_y are viewport coordinates from the trigger's
+     own bounding rect, so no containing block or scroll offset can shift them. */
+  position: fixed;
   inset: auto;
+  inset-block-start: var(--_y, 0px);
+  inset-inline-start: var(--_x, 0px);
   margin: 0;
   inline-size: 240px;
   max-block-size: 60vh;
@@ -34,7 +46,10 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding: var(--sherpa-theme-padding-md, 8px);
-  border: 0;
+  /* The default 0.5px ring — the card is a surface on a surface, so it needs the
+     border to separate itself from what it floats over. */
+  border: var(--sherpa-style-border-width, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
@@ -53,17 +68,10 @@
   display: flex;
 }
 
-/* Anchor positioning where the engine has it: sit under the trigger, start-aligned.
-   Without it the popover falls back to the plain absolute position above. */
-@supports (anchor-name: --a) {
-  .menu {
-    position-anchor: var(--_anchor);
-    inset-block-start: anchor(bottom);
-    inset-inline-start: anchor(start);
-    margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
-    position-try-fallbacks: flip-block, flip-inline;
-  }
-}
+/* No `@supports (anchor-name)` block. See the positioning note at the top of this
+   file: a cross-shadow-tree anchor name is unreachable, so an anchor rule here
+   would silently win over the working --_x / --_y placement and put every menu in
+   the viewport corner. That was the bug. */
 
 /* Heading — 10/16 regular, upper-case, content/body/+1. */
 .heading {

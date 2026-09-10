@@ -1,19 +1,29 @@
 <!--
   sherpa-quick-filter — a filter chip used in toolbars.
 
-  Matches the Figma "Filter Chip (atom)" (154:3904). The chip is a 24-tall pill:
+  Matches the Figma "Filter Chip (atom)" (154:3904), whose `State` axis is
+  simple | menu. Both states are a FIXED 24 tall.
 
-      [ count ][ icon ] Label  ▾
+      State=simple   [ count ][ icon ] Label
+      State=menu     [ count ][ icon ] Label │ ▾
+
+  In State=menu the chip and the caret button are two separately-bordered boxes
+  SNAPPED together: a negative `space/snapped` gap (−0.5px) laps their 0.5px rings
+  into one hairline, and the Structure snap extensions flatten the corners that
+  meet (chip = snap-right-edge, button = snap-left-edge at the sm size). The caret
+  button is Style=default, so it keeps its own white face and ring — it is not a
+  transparent affordance floating inside the chip.
 
   The count INDICATOR leads (it is the first child of Figma's "Left" group, before
   the icon — not a trailing badge) and it is pinned Style=DEFAULT, so it is a neutral
-  chip: white face, 0.5 grey ring, dark ink. The trailing caret is a Transparent icon
-  button that opens the value menu.
+  chip: white face, 0.5 grey ring, dark ink.
 
   The menu is a real <sherpa-menu> in the light DOM, slotted into [slot=menu]. It uses
-  the native popover API, so it opens on top of everything with no JS positioning and
-  closes on Escape / outside click for free. Give it checkbox rows for a multi-select
-  field or radio rows for a single-select one:
+  the native popover API, so the browser owns the top layer, Escape and the
+  outside-click dismiss. Placement is measured off the caret, because the caret and
+  the popover sit in different shadow roots and a CSS anchor name cannot cross that
+  boundary. Give it checkbox rows for a multi-select field or radio rows for a
+  single-select one:
 
       <sherpa-quick-filter data-label="Region" data-menu>
         <sherpa-menu slot="menu" data-heading="Region" data-select="multiple">
@@ -29,7 +39,7 @@
     data-icon-start leading icon — an FA class list (Figma default is a funnel)
     data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
     data-count      leading count chip (shown when present)
-    data-menu       show the caret that opens the slotted menu
+    data-menu       Figma State=menu — snap on the caret button
 
   Slots:
     (default)  the chip label

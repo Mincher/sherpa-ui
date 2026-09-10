@@ -5,9 +5,15 @@
   Elevation md) with an optional 10/16 upper-case heading over 36-tall rows.
 
   Native-first: the card IS a `popover`, so the browser puts it in the top layer,
-  closes it on Escape and on an outside click, and manages focus — no JS positioning
-  and no scroll-lock hacks. Anchor positioning attaches it to its trigger where the
-  browser supports it, with a plain absolute fallback everywhere else.
+  closes it on Escape and on an outside click, and manages focus — no scroll-lock
+  hacks and no dismiss listeners.
+
+  Placement is the one part the browser cannot do here. CSS anchor positioning only
+  resolves an `anchor-name` inside ONE tree, and a trigger is always in a different
+  shadow root from this card, so `position-anchor` found nothing and every menu
+  rendered at the viewport corner. Instead show(trigger) measures the trigger and
+  writes viewport coordinates the `position: fixed` card consumes, flipping above or
+  clamping inward when an edge is in the way.
 
   Rows are whatever you slot in, and they stay real form controls:
 
@@ -20,7 +26,7 @@
   Public API:
     data-heading  optional heading (rendered upper-case at 10/16)
     data-select   multiple (default, checkbox rows) | single (radio rows)
-    data-anchor   the CSS anchor-name of the trigger, for anchor positioning
+    data-align    start (default) | end   which trigger edge the card lines up with
     open          native-ish boolean: reflects/controls the popover
 
   Slots:

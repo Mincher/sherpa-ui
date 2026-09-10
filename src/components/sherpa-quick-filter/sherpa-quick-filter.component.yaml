@@ -13,59 +13,79 @@ $name: sherpa-quick-filter
 $description: a toggleable filter chip for toolbars.
 element:
   $type: element
-  tag: button
-  attributes:
-    type: button
-  provides:
-    - click
-    - keyboard
-    - focus
-    - disabled
+  tag: div
+  provides: []
 templates:
   - default
 anatomy:
   root:
-    el: button
+    el: div
     class: chip
     part: chip
-    attrs:
-      type: button
     children:
-      - el: span
-        class: indicator
-        part: indicator
+      - el: button
+        class: body
+        part: body
         attrs:
-          aria-hidden: "true"
-      - el: span
-        class: icon
-        part: icon
-        attrs:
-          aria-hidden: "true"
-      - el: span
-        class: label
-        slot: ""
-      - el: span
-        class: count
-        part: count
-        attrs:
-          aria-hidden: "true"
-      - el: span
+          type: button
+        children:
+          - el: span
+            class: indicator
+            part: indicator
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: count
+            part: count
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: icon
+            part: icon
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: label
+            part: label
+            slot: ""
+      - el: button
         class: caret
         part: caret
         attrs:
-          aria-hidden: "true"
+          type: button
+          aria-haspopup: menu
+          aria-expanded: "false"
+          aria-label: Choose values
+        children:
+          - el: i
+            class: fa-solid fa-caret-down
+            attrs:
+              aria-hidden: "true"
+      - el: span
+        class: menu-slot
+        slot: menu
 props:
   - $type: prop
     name: data-count
     type: string
     kind: visibility
-    description: badge number (shown when present)
+    description: leading count chip (shown when present)
   - $type: prop
     name: data-current
     type: boolean
     kind: style
     default: false
     description: selected/on state
+  - $type: prop
+    name: data-icon
+    type: string
+    kind: style
+    description: start leading icon — an FA class list (Figma default is a funnel)
+  - $type: prop
+    name: data-icon-start
+    type: string
+    kind: content
+    description: leading icon — an FA class list (Figma default is a funnel)
   - $type: prop
     name: data-indicator
     type: string
@@ -75,15 +95,13 @@ props:
     name: data-label
     type: string
     kind: content
-    description: >-
-      chip text (or use the default slot) data-icon-start leading icon glyph (Figma "Icon" — a
-      funnel by default)
+    description: chip text (or use the default slot)
   - $type: prop
     name: data-menu
-    type: boolean
+    type: string
     kind: style
     default: false
-    description: show a dropdown-trigger caret
+    description: Figma State=menu — snap on the caret button
   - $type: prop
     name: data-type
     type: enum
@@ -96,6 +114,9 @@ props:
     description: default | ai | populated
 states:
   - $type: state
+    name: menu
+    selector: ":host([data-menu])"
+  - $type: state
     name: ai
     selector: ":host([data-type=\"ai\"])"
   - $type: state
@@ -105,24 +126,21 @@ states:
     name: indicator
     selector: ":host([data-indicator])"
   - $type: state
-    name: icon-start
-    selector: ":host([data-icon-start])"
-  - $type: state
     name: count
     selector: ":host([data-count])"
   - $type: state
-    name: menu
-    selector: ":host([data-menu])"
+    name: icon-start
+    selector: ":host([data-icon-start])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: .chip:focus-visible
+    selector: .body:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (current). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current, menu). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: quick-filter-click
@@ -131,17 +149,30 @@ events:
     trigger:
       "on": click
       node: .chip
+  - $type: event
+    name: quick-filter-change
+    bubbles: true
+    composed: true
 tokens:
-  chip.gap: "{sherpa.display-space-2xs}"
-  chip.padding: "{sherpa.display-space-3xs}"
-  chip.min-block-size: "{sherpa.display-size-xl}"
-  chip.border-width: "{sherpa.style-border-width}"
-  chip.border-color: "{sherpa.style-border-base}"
-  chip.border-radius: "{sherpa.display-border-rounding-full}"
-  chip.background: "{sherpa.style-surface-base}"
-  chip.color: "{sherpa.theme-content-body-2}"
-  chip.font-size: "{sherpa.font-size-body-base}"
-  chip.font-weight: "{sherpa.font-weight-medium}"
+  chip.block-size: "{sherpa.display-mode-size-lg}"
+  body.gap: "{sherpa.display-mode-space-2xs}"
+  body.padding-inline: "{sherpa.display-mode-space-2xs}"
+  body.border-width: "{sherpa.display-mode-border-width-sm}"
+  body.border-color: "{sherpa.style-border-base}"
+  body.border-radius: "{sherpa.structure-rounding-top-left}"
+  body.background: "{sherpa.style-surface-base}"
+  body.color: "{sherpa.theme-content-body-1}"
+  body.font-size: "{sherpa.font-size-body-base}"
+  body.font-weight: "{sherpa.font-weight-regular}"
+  body.line-height: "{sherpa.theme-content-line-height-base}"
+  caret.inline-size: "{sherpa.display-mode-size-lg}"
+  caret.border-width: "{sherpa.display-mode-border-width-sm}"
+  caret.border-color: "{sherpa.style-border-base}"
+  caret.border-start-end-radius: "{sherpa.structure-rounding-top-right}"
+  caret.border-end-end-radius: "{sherpa.structure-rounding-bottom-right}"
+  caret.background: "{sherpa.style-surface-base}"
+  caret.color: "{sherpa.theme-content-body-1}"
+  caret.font-size: "{sherpa.theme-content-size-small}"
 $extensions:
   sherpa:
     figmaName: Filter Chip (atom)
@@ -159,3 +190,6 @@ $extensions:
       - name: current
         type: string
         access: read-write
+      - name: menu
+        type: string
+        access: read
