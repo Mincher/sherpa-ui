@@ -162,7 +162,13 @@ export class SherpaGaugeChart extends SherpaElement {
 
     host.replaceChildren();
     zones.forEach((zone, i) => {
-      const dot = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // BOTH children — the dot and its tip are SIBLINGS. The tip cannot be a
+      // descendant of the dot: an absolutely-positioned ancestor breaks anchor
+      // positioning for a fixed tip, and the dot must be absolute to sit on its
+      // band.
+      const frag = tpl.content.cloneNode(true) as DocumentFragment;
+      const dot = frag.querySelector<HTMLElement>('.hotspot')!;
+      const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
       dot.dataset['index'] = String(i);
       // The visible half runs -90deg (left) → +90deg (right), matching the
       // needle's own mapping, so a band's midpoint fraction lands on the same arc
@@ -170,13 +176,18 @@ export class SherpaGaugeChart extends SherpaElement {
       const mid = (zone.from + zone.to) / 2;
       dot.style.setProperty('--_dot-angle', `${-90 + mid * 180}deg`);
       dot.style.setProperty('--_hue', zone.color);
+      // The ANCHOR NAME. Without it the tip has no anchor, `position-area` is
+      // meaningless and the browser parks the tip wherever it likes.
+      // The anchor NAME on BOTH: the dot declares it, the tip points at it.
+      dot.style.setProperty('--_anchor', `--gauge-zone-${i}`);
+      tip.style.setProperty('--_anchor', `--gauge-zone-${i}`);
       // A status band is named by its status; a raw CSS colour has no name worth
       // showing, so that row falls back to the range alone.
       const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
-      dot.querySelector('.chart-tip-label')!.textContent = label;
-      dot.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
+      tip.querySelector('.chart-tip-label')!.textContent = label;
+      tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
       dot.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
-      host.appendChild(dot);
+      host.append(dot, tip);
     });
   }
 

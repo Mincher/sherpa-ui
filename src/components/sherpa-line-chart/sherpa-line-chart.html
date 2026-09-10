@@ -36,6 +36,20 @@
           <g class="grid"></g>
           <g class="series-layer"></g>
         </svg>
+        <!--
+          HOVER DOTS — one per data point, per series, and the tooltip anchors.
+
+          Real HTML buttons, NOT the SVG polyline's vertices: an SVG element
+          cannot be a CSS anchor in Chromium (anchor-name is accepted and silently
+          never resolves, so the tip lands in the viewport corner).
+
+          The TS already computes every point as an x/y PERCENTAGE of the plot for
+          the polyline, so a dot reuses those two numbers directly — one source of
+          truth for where a point sits, and it follows the plot at any size with
+          nothing measured and no resize handler.
+        -->
+        <div class="hotspots" part="hotspots"></div>
+
         <div class="x-axis" part="x-axis"></div>
         <span class="axis-label axis-label-x" part="x-axis-label"></span>
       </div>
@@ -54,5 +68,26 @@
   -->
   <template class="xlabel-tpl">
     <span class="x-label"></span>
+  </template>
+
+  <!-- One data point's hover dot + tooltip. The JS sets --_x / --_y (percentages
+       of the plot, the same pair the polyline uses) and the text. -->
+  <!--
+    TWO SIBLINGS, cloned together — a dot and its tip.
+
+    The tip must NOT be inside the dot, and not inside a positioned wrapper
+    either. An `position: absolute` ancestor breaks anchor positioning for a
+    `position: fixed` tip: proved it in isolation, where a tip inside a static
+    layer places above its mark correctly while the same tip inside an absolute
+    box drops to that box's own corner. The dot has to be absolute to sit on its
+    data point, so the tip lives OUTSIDE it, in the static .hotspots layer, and
+    finds it by anchor name. `.chart-mark:hover + .chart-tip` pairs them.
+  -->
+  <template class="hotspot-tpl">
+    <button class="hotspot chart-mark" type="button" tabindex="-1"></button>
+    <span class="chart-tip" role="tooltip">
+      <span class="chart-tip-label"></span>
+      <span class="chart-tip-value"></span>
+    </span>
   </template>
 </template>

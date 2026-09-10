@@ -69,12 +69,22 @@
 
   <!-- One zone's hover dot + tooltip. JS sets --_angle (the band's mid-angle),
        --_hue (its own colour) and the text; CSS trig puts the dot on the ring. -->
+  <!--
+    TWO SIBLINGS, cloned together — a dot and its tip.
+
+    The tip must NOT be inside the dot, and not inside a positioned wrapper
+    either. An `position: absolute` ancestor breaks anchor positioning for a
+    `position: fixed` tip: proved it in isolation, where a tip inside a static
+    layer places above its mark correctly while the same tip inside an absolute
+    box drops to that box's own corner. The dot has to be absolute to sit on its
+    data point, so the tip lives OUTSIDE it, in the static .hotspots layer, and
+    finds it by anchor name. `.chart-mark:hover + .chart-tip` pairs them.
+  -->
   <template class="hotspot-tpl">
-    <button class="hotspot chart-mark" type="button">
-      <span class="chart-tip" role="tooltip">
-        <span class="chart-tip-label"></span>
-        <span class="chart-tip-value"></span>
-      </span>
-    </button>
+    <button class="hotspot chart-mark" type="button"></button>
+    <span class="chart-tip" role="tooltip">
+      <span class="chart-tip-label"></span>
+      <span class="chart-tip-value"></span>
+    </span>
   </template>
 </template>

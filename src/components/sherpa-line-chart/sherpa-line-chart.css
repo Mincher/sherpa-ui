@@ -209,3 +209,66 @@
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 :host([data-x-axis-label]) .axis-label-x { display: block; }
+
+/* ── Hover dots + tooltip anchors ────────────────────────────────────────────
+ * One dot per data point, per visible series. They are real HTML buttons, NOT the
+ * polyline's own vertices: an SVG element cannot be a CSS anchor in Chromium
+ * (anchor-name is accepted and silently never resolves — the tip lands in the
+ * viewport corner).
+ *
+ * Position comes straight from the TWO numbers the TS already computed for the
+ * polyline: each point's x and y as a PERCENTAGE of the plot. So the dots and the
+ * line cannot disagree about where a point is, and they follow the plot at any
+ * size with nothing measured and no resize handler.
+ *
+ * The layer covers the plot and is transparent to the pointer; only the dots take
+ * the hover. */
+.hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The dot is ABSOLUTE, placed on its own mark. Its TIP is a SIBLING in the static
+   .hotspots layer, not a descendant: an absolutely-positioned ancestor breaks
+   anchor positioning for a `position: fixed` tip (proved in isolation — a tip in a
+   static layer places above its mark, the same tip inside an absolute box drops to
+   that box's corner). They find each other by anchor NAME. */
+.hotspot {
+  position: absolute;
+  inset-inline-start: var(--_x, 0%);
+  inset-block-start: var(--_y, 0%);
+  /* Centre the dot ON the point rather than hanging off it. */
+  translate: -50% -50%;
+
+  /* Twice the visible dot: an easy target without pushing the tooltip away from
+     the mark it points at (the box is also the anchor). */
+  inline-size: var(--sherpa-display-mode-size-base, 16px);
+  block-size: var(--sherpa-display-mode-size-base, 16px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+
+  /* The visible dot, in its SERIES' hue so it reads as part of that line. */
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    inline-size: var(--sherpa-display-mode-space-xs, 8px);
+    block-size: var(--sherpa-display-mode-space-xs, 8px);
+    translate: -50% -50%;
+    border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  &:is(:hover, :focus-visible)::after { opacity: 1; }
+
+  &:focus-visible {
+    outline: none;
+    &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
+  }
+}

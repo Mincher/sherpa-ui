@@ -208,11 +208,17 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* The ring's MID-line: half the circle minus half the ring's thickness — the
-     same two numbers the mask uses to punch the centre out. */
-  --_ring-r: calc(var(--_size) / 2 - var(--_ring) / 2);
+  /* The OUTER radius, not the ring's midline. A dot on the midline sat buried
+     inside the band and read as a blemish on the colour; on the outer edge it
+     HALF-HANGS over the ring and is unmistakably a marker. */
+  --_ring-r: calc(var(--_size) / 2);
 }
 
+/* The dot is ABSOLUTE, placed on its own mark. Its TIP is a SIBLING in the static
+   .hotspots layer, not a descendant: an absolutely-positioned ancestor breaks
+   anchor positioning for a `position: fixed` tip (proved in isolation — a tip in a
+   static layer places above its mark, the same tip inside an absolute box drops to
+   that box's corner). They find each other by anchor NAME. */
 .hotspot {
   position: absolute;
   /* Polar → cartesian from the hub. --_dot-angle is measured from 12 o'clock to

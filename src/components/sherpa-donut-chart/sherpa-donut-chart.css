@@ -148,17 +148,23 @@
  * the ring's centre, in percentages of the (square) ring box. So the dots ride the
  * ring at any size with nothing measured in JS and no resize handler.
  *
- * --_ring-r is the band's MID radius as a percentage: the viewBox is 100x100, and
- * the band runs from 70% to 100% of the radius, so its midline sits at 42.5% of
- * the box (0.85 x the 50% radius). A `pie` has no hole, so its midline is at 25%. */
+ * --_ring-r is the OUTER radius, 50% of the box — NOT the band's midline. Sitting
+ * a dot on the midline buried it inside the band, where it read as a blemish on
+ * the colour; on the outer edge it HALF-HANGS over the ring and is unmistakably a
+ * marker. Same radius for a pie: it has no hole, but its outer edge is the same
+ * place. */
 .hotspots {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  --_ring-r: 42.5%;
+  --_ring-r: 50%;
 }
-:host([data-variant="pie"]) .hotspots { --_ring-r: 25%; }
 
+/* The dot is ABSOLUTE, placed on its own mark. Its TIP is a SIBLING in the static
+   .hotspots layer, not a descendant: an absolutely-positioned ancestor breaks
+   anchor positioning for a `position: fixed` tip (proved in isolation — a tip in a
+   static layer places above its mark, the same tip inside an absolute box drops to
+   that box's corner). They find each other by anchor NAME. */
 .hotspot {
   position: absolute;
   /* Polar → cartesian, from the ring's centre. The JS angle is already measured
@@ -167,6 +173,7 @@
   inset-inline-start: calc(50% + sin(var(--_angle, 0deg)) * var(--_ring-r));
   inset-block-start: calc(50% - cos(var(--_angle, 0deg)) * var(--_ring-r));
   translate: -50% -50%;
+  /* Sized by the dot, so the pair's box IS the hit area. */
 
   /* Twice the visible dot, so the target is easy without pushing the tooltip away
      from the mark it points at (the box is also the anchor). */

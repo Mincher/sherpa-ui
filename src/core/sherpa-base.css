@@ -80,13 +80,18 @@
   /* ABOVE the mark, centred on it. A tooltip FAVOURS above: that is where a
      reader looks, and it never covers the rest of the series below. */
   position-area: block-start;
-  /* Fallbacks, in the order the browser should try them. The SIDES come before
-     below, so a mark near the top of the viewport gets a tip beside it rather than
-     one flipped underneath — flipping below hides the very marks the reader is
-     comparing against. Below is the last resort. The browser picks the first that
-     fits and re-evaluates on scroll and resize for free. */
+  /* Fallbacks, tried in order, ONLY when the preferred area does not fit.
+     `--tip-shift-*` keeps the tip ABOVE and slides it sideways to stay on screen,
+     which is what a mark near a left or right edge needs — a tip that is merely
+     off-centre still reads as "above this mark". Only when there is no room above
+     at all does it go beside, then below as the last resort.
+
+     NOT `block-start span-inline-end` and friends: those are position-AREAS, and
+     the browser preferred one of them over the plain centred area on every dot
+     chart, so nothing ever rendered above. A span area is a different box, not a
+     nudge; @position-try with a margin shift is the nudge. */
   position-try-fallbacks:
-    block-start span-inline-end, block-start span-inline-start,
+    --tip-shift-end, --tip-shift-start,
     inline-end, inline-start,
     block-end;
   /* Whitespace between the tip and its mark, on whichever side it lands. */
@@ -144,6 +149,22 @@
 .chart-tip-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-variant-numeric: tabular-nums;
+}
+
+/* Stay ABOVE, slide sideways. Used as the first two fallbacks above: a mark near
+   a left or right edge gets a tip that is still over it, just no longer centred,
+   rather than one thrown to the side or underneath.
+   `align-self: end` keeps it in the block-start area; the inline self-alignment
+   is what shifts it. */
+@position-try --tip-shift-end {
+  position-area: block-start;
+  align-self: end;
+  justify-self: start;
+}
+@position-try --tip-shift-start {
+  position-area: block-start;
+  align-self: end;
+  justify-self: end;
 }
 
 /* The mark declares the anchor name and is the hover target.

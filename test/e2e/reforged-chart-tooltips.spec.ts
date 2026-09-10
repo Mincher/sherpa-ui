@@ -157,23 +157,28 @@ test('SVG charts anchor HTML dots, placed by CSS trig from one angle', async ({ 
       // The dots are HTML, not SVG — that is the whole point.
       tags: [...new Set(dots.map((d) => d.tagName))],
       angles: dots.map((d) => d.style.getPropertyValue('--_dot-angle') || d.style.getPropertyValue('--_angle')),
-      // Every dot sits at the BAND's mid-radius: 42.5% of the box (the band runs
-      // 70%–100% of the radius, so its midline is 0.85 × the 50% radius).
+      // Every dot sits at the OUTER radius — 50% of the box, so it HALF-HANGS
+      // over the ring's edge. On the band's midline it read as a blemish on the
+      // colour rather than a marker.
       radii: dots.map((d) => {
         const b = d.getBoundingClientRect();
         const r2 = Math.hypot(b.left + b.width / 2 - centre.x, b.top + b.height / 2 - centre.y);
         return Math.round((r2 / wrap.width) * 1000) / 10;
       }),
-      tips: dots.map((d) => d.querySelector('.chart-tip')!.textContent!.replace(/\s+/g, ' ').trim()),
+      // The tip is the dot's next SIBLING, not its child: an absolutely-placed
+      // ancestor breaks anchor positioning for a fixed tip.
+      tips: dots.map((d) => d.nextElementSibling!.textContent!.replace(/\s+/g, ' ').trim()),
+      tipIsSibling: dots.every((d) => d.nextElementSibling?.classList.contains('chart-tip')),
     };
   });
 
   expect(r.count).toBe(4);
   expect(r.tags).toEqual(['BUTTON']);
   expect(r.angles).toEqual(['45deg', '135deg', '225deg', '315deg']);
-  // All four on the band's midline — proof the trig lands on the ring.
-  expect(r.radii).toEqual([42.5, 42.5, 42.5, 42.5]);
+  // All four on the OUTER edge — proof the trig lands on the ring.
+  expect(r.radii).toEqual([50, 50, 50, 50]);
   expect(r.tips).toEqual(['A 25', 'B 25', 'C 25', 'D 25']);
+  expect(r.tipIsSibling).toBe(true);
 });
 
 test('gauge zone dots ride the ring and name their threshold', async ({ page }) => {
@@ -195,12 +200,14 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
     const hub = { x: box.left + box.width / 2, y: box.bottom };
     return {
       count: dots.length,
-      // 200px gauge, 16px ring → mid-radius 100 − 8 = 92.
+      // The OUTER radius on a 200px gauge = 100, so a dot half-hangs over the
+      // ring's edge instead of sitting buried in the band.
       radii: dots.map((d) => {
         const b = d.getBoundingClientRect();
         return Math.round(Math.hypot(b.left + b.width / 2 - hub.x, b.top + b.height / 2 - hub.y));
       }),
-      tips: dots.map((d) => d.querySelector('.chart-tip')!.textContent!.replace(/\s+/g, ' ').trim()),
+      // The tip is the dot's next SIBLING, not its child.
+      tips: dots.map((d) => d.nextElementSibling!.textContent!.replace(/\s+/g, ' ').trim()),
       // The dot wears its band's own colour, not a neutral grey.
       hues: dots.map((d) => d.style.getPropertyValue('--_hue')),
       // The overlay must sit OUTSIDE .gauge, whose overflow:hidden clipped the tips.
@@ -209,7 +216,7 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
   });
 
   expect(r.count).toBe(3);
-  expect(r.radii).toEqual([92, 92, 92]);
+  expect(r.radii).toEqual([100, 100, 100]);
   expect(r.tips).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
   for (const hue of r.hues) expect(hue).toContain('--sherpa-style-surface-');
   expect(r.outsideClip).toBe('gauge-wrap');

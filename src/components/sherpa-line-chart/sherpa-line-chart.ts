@@ -83,6 +83,8 @@ export class SherpaLineChart extends SherpaElement {
     const grid = this.$('.grid');
     const xAxis = this.$('.x-axis');
     const xtpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
+    const hotspots = this.$('.hotspots');
+    const dotTpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
     if (!layer || !grid || !xAxis || !xtpl) return;
 
     // The extent covers only the VISIBLE series, so hiding one re-scales the axis.
@@ -114,6 +116,7 @@ export class SherpaLineChart extends SherpaElement {
 
     // Series polylines + area paths.
     layer.replaceChildren();
+    hotspots?.replaceChildren();
     this.#series.forEach((s, si) => {
       // A hidden series draws nothing at all — no empty <g> to confuse a11y or
       // hit-testing. Its COLOUR INDEX is still derived from `si`, so unhiding it
@@ -145,6 +148,38 @@ export class SherpaLineChart extends SherpaElement {
 
       g.append(area, line);
       layer.appendChild(g);
+
+      // Hover dots — one per point on this series. They reuse the SAME x/y
+      // percentages the polyline was just drawn from, so a dot can never sit
+      // anywhere but on its own point. HTML rather than SVG, because an SVG
+      // element cannot be a CSS anchor (see .hotspot in the CSS).
+      if (hotspots && dotTpl) {
+        pts.forEach(([x, y], i) => {
+          // BOTH children — the dot and its tip are SIBLINGS. The tip cannot be a
+          // descendant of the dot: an absolutely-positioned ancestor breaks anchor
+          // positioning for a fixed tip, and the dot must be absolute to sit on
+          // its point.
+          const frag = dotTpl.content.cloneNode(true) as DocumentFragment;
+          const dot = frag.querySelector<HTMLElement>('.hotspot')!;
+          const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
+          dot.dataset['series'] = String(si);
+          dot.dataset['index'] = String(i);
+          dot.style.setProperty('--_x', `${x}%`);
+          dot.style.setProperty('--_y', `${y}%`);
+          dot.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+          // The anchor NAME on BOTH: the dot declares it, the tip points at it.
+          dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
+          tip.style.setProperty('--_anchor', `--line-${si}-${i}`);
+          // The series NAME plus the x label, so a multi-series chart says which
+          // line the reader is on — the value alone would be ambiguous.
+          const at = this.#labels[i];
+          const label = [s.name, at].filter(Boolean).join(' · ');
+          tip.querySelector('.chart-tip-label')!.textContent = label;
+          tip.querySelector('.chart-tip-value')!.textContent = formatTick(s.values[i]!);
+          dot.setAttribute('aria-label', `${label} ${s.values[i]}`.trim());
+          hotspots.append(dot, tip);
+        });
+      }
     });
 
     // X labels.

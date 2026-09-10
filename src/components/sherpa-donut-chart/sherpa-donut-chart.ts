@@ -191,15 +191,27 @@ export class SherpaDonutChart extends SherpaElement {
       // MID-ANGLE — cos()/sin() in the CSS turn that into a position on the ring,
       // so the dot follows the ring at any size with nothing measured here.
       if (hotspots && hotTpl) {
-        const dot = hotTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        // BOTH children — the dot and its tip are SIBLINGS, so the whole
+        // fragment is cloned. The tip cannot be a descendant of the dot: an
+        // absolutely-positioned ancestor breaks anchor positioning for a fixed
+        // tip, and the dot must be absolute to sit on its slice.
+        const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
+        const dot = frag.querySelector<HTMLElement>('.hotspot')!;
+        const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
         dot.dataset['index'] = String(i);
         // Measured from 12 o'clock, matching the arcs' own -90deg rotation.
         dot.style.setProperty('--_angle', `${(acc + share / 2) * 360}deg`);
         dot.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
-        dot.querySelector('.chart-tip-label')!.textContent = slice.label;
-        dot.querySelector('.chart-tip-value')!.textContent = formatTick(slice.value);
+        // The ANCHOR NAME. Without it the tip has no anchor at all: `position-area`
+        // is then meaningless and the browser parks the tip wherever it likes —
+        // which is why every donut tip appeared beside its dot instead of above.
+        // The anchor NAME goes on BOTH: the dot declares it, the tip points at it.
+        dot.style.setProperty('--_anchor', `--donut-slice-${i}`);
+        tip.style.setProperty('--_anchor', `--donut-slice-${i}`);
+        tip.querySelector('.chart-tip-label')!.textContent = slice.label;
+        tip.querySelector('.chart-tip-value')!.textContent = formatTick(slice.value);
         dot.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
-        hotspots.appendChild(dot);
+        hotspots.append(dot, tip);
       }
 
       acc += share;
