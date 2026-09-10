@@ -167,6 +167,8 @@ tokens:
   total.color: "{sherpa.theme-content-body-base}"
   total.font-size: "{sherpa.font-size-body-small}"
   total.line-height: "{sherpa.theme-content-line-height-small}"
+  pagination.gap: "{sherpa.display-mode-space-base}"
+  pagination.padding: "{sherpa.display-mode-space-xs}"
   rows.padding: "{sherpa.theme-padding-sm}"
   rows.border-width: "{sherpa.style-border-width}"
   rows.border-radius: "{sherpa.structure-rounding-top-left}"

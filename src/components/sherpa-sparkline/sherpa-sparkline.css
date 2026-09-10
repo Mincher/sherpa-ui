@@ -44,7 +44,8 @@
   --_v4: 0; --_v5: 0; --_v6: 0; --_v7: 0;
   --_min: 0;
   --_range: 1;
-  --_stroke: 1.5px;
+  /* Halved from 1.5: at a 28px sparkline height a 1.5px line read as a bar. */
+  --_stroke: 0.75px;
   --_point-size: var(--sherpa-display-mode-space-xs, 8px);
 }
 
@@ -94,8 +95,18 @@
       0% 100%
     );
   }
+  /* A GRADIENT from the status colour down to fully transparent, so the fill
+     fades out rather than sitting as a flat 24% wash. `transparent` is
+     transparent BLACK in some engines, which greys the mid-tones — an explicit
+     0%-alpha of the same hue keeps the ramp clean. */
   @supports (color: color-mix(in srgb, red, blue)) {
-    &::before { background: color-mix(in srgb, currentColor 24%, transparent); }
+    &::before {
+      background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, currentColor 45%, transparent),
+        color-mix(in srgb, currentColor 0%, transparent)
+      );
+    }
   }
 
   /* Stroke on the top edge. */

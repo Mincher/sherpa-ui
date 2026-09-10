@@ -13,20 +13,31 @@
  */
 
 /* Figma Pagination (48:65826) FILLS its parent (primaryAxisSizingMode FIXED at the
-   container width) and pushes the two zones apart — so the host must be a full-width
-   flex row, not an inline-flex box that hugs its content. */
+   container width) with SPACE_BETWEEN, so the rows-per-page group sits hard left
+   and every page control hard right.
+
+   The host is a plain full-width block; the ROW is `.pagination` inside it. The
+   flex rules used to be on :host only, so they applied to a box whose single child
+   was an unstyled `display: block` wrapper that hugged its content — the host
+   measured the full 1206px while everything inside bunched into 445px on the left.
+   That is why "make the pagination fill the grid width" kept measuring as fixed
+   while still looking wrong. */
 :host {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sherpa-display-mode-space-base, 16px);
-  /* Figma Pagination (48:65826): padding space/xs 8 × space/sm 12, zones 16 apart. */
-  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  display: block;
   inline-size: 100%;
+  /* The PADDING lives on .pagination, not here — putting it in both places double-
+     insets the row. */
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
+  /* Figma's Input Field (atom) in the pagination row measures 89 × 32. 89 is a
+     HUG-derived width (value + stepper), not a designed step, and it is off the
+     8px grid — so it is snapped to 88px, the step beside it, which no single
+     size token happens to name.
+     FIGMA FLAG for Will: that field is a hugging frame, so its width drifts with
+     its content; pinning it would make the row stable. */
+  --_field: 88px;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
@@ -62,6 +73,18 @@
   white-space: nowrap;
 }
 
+/* THE ROW. Rows-per-page hard left, page controls hard right. */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-display-mode-space-base, 16px);
+  inline-size: 100%;
+  /* Figma Pagination: padding space/xs 8 × space/sm 12. */
+  padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
+  box-sizing: border-box;
+}
+
 /* ── Native field look (select + number input) ───────────────────────── */
 .rows,
 .page-input {
@@ -89,12 +112,41 @@
   }
 }
 
+/* Figma's fixed Pagination gives BOTH fields the same 89×32 Input Field (atom)
+   box — the page field was 5ch (44px), so the two read as different controls. A
+   fixed width also stops the row reflowing as the page number gains a digit. */
 .page-input {
-  inline-size: 5ch;
+  inline-size: var(--_field);
   text-align: center;
 }
+.rows {
+  inline-size: var(--_field);
+}
 
-/* ── Nav buttons ──────────────────────────────────────────────────────── */
+/* ── Nav buttons ──────────────────────────────────────────────────────────
+   Figma SNAPS them into pairs — first+prev, next+last — using the Structure snap
+   extensions, so only the pair's OUTER corners are rounded and the two share one
+   hairline where they meet. Each button was rounded on all four corners, so the
+   pair read as two separate controls with a gap between them. */
+.controls .btn {
+  border-radius: 0;
+}
+/* The leading button of each pair keeps its left corners… */
+.btn.first,
+.btn.next {
+  border-start-start-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
+}
+/* …and the trailing button keeps its right ones. */
+.btn.prev,
+.btn.last {
+  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
+  /* The negative space/snapped gap laps the two rings into one hairline. CSS
+     `gap` cannot go negative, so it has to be a margin (see the filter chip). */
+  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

@@ -44,12 +44,8 @@
       margin-block-end: 0;
     }
 
-    /* The pager carries its OWN Figma padding (8 × 12), so inside an already-inset
-       panel its controls sat 12px in from the grid's left edge. Pulling it out by
-       that 12px lines the two up without touching the component's own geometry. */
-    .panel > sherpa-pagination {
-      margin-inline: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
-    }
+    /* The pager fills the panel and carries its own Figma padding (8 × 12), so its
+       controls sit 12px in from the grid's edges — which is the design. */
 
     /* ── Views sit on the design system's LAYOUT GRID ─────────────────
        `.sherpa-grid` (from @layer layout in tokens.css) is the projected track

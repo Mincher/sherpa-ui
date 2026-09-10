@@ -31,13 +31,17 @@
   --_delta: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
 }
 
-/* ── Label — content/body/+1 12/16 regular, outside the card ─────────── */
+/* ── Label — content/body/+1 12/16 regular, outside the card ───────────
+   NEUTRAL, not status ink: Figma binds it to Theme content/body/+1, and it sits
+   OUTSIDE the card, so it names the metric rather than reporting on it. Reading
+   --_status-text first turned every title green or red, which read as part of the
+   reading instead of its caption. The delta and the sparkline carry the status. */
 .label {
   margin: 0;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
+  color: var(--sherpa-theme-content-body-1, #35353d);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -107,7 +111,16 @@
   align-self: stretch;
 }
 :host([data-has-values]) .spark { display: flex; }
-.spark > sherpa-sparkline { flex: 1 1 auto; inline-size: 100%; }
+/* FILL the card's height, down to the bottom of the trend label beside it. The
+   sparkline's own :host sets a fixed 28px block-size (its standalone default), so
+   without this override the fill stopped level with the value and left a gap under
+   it. `align-self: stretch` on .spark only stretches the WRAPPER. */
+.spark > sherpa-sparkline {
+  flex: 1 1 auto;
+  inline-size: 100%;
+  block-size: auto;
+  align-self: stretch;
+}
 
 /* Drop the sparkline when the tile gets narrow. */
 @container sherpa-metric (max-width: 220px) {

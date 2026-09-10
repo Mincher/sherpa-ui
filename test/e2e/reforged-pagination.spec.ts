@@ -124,11 +124,19 @@ test('the host is border-box, so padding does not push it wider than a sibling',
     await pager.rendered;
 
     const cs = getComputedStyle(pager);
+    // The PADDING lives on the inner .pagination row, not the host — the host was
+    // carrying it AND the flex rules while the row inside was an unstyled block
+    // that hugged its content, so the zones never spread to the full width.
+    const row = pager.shadowRoot!.querySelector('.pagination')!;
+    const rs = getComputedStyle(row);
     return {
       boxSizing: cs.boxSizing,
-      padding: cs.paddingLeft,
+      rowBoxSizing: rs.boxSizing,
+      padding: rs.paddingLeft,
+      rowJustify: rs.justifyContent,
       rulerWidth: Math.round(ruler.getBoundingClientRect().width),
       pagerWidth: Math.round(pager.getBoundingClientRect().width),
+      rowWidth: Math.round(row.getBoundingClientRect().width),
     };
   });
 
@@ -136,7 +144,12 @@ test('the host is border-box, so padding does not push it wider than a sibling',
   // this on :host explicitly. Without it the pager's 12px side padding rendered
   // OUTSIDE its 100% width and it sat 24px wider than the grid above it.
   expect(r.boxSizing).toBe('border-box');
+  expect(r.rowBoxSizing).toBe('border-box');
   expect(r.padding).not.toBe('0px'); // the padding that would have overflowed
   expect(r.pagerWidth).toBe(r.rulerWidth);
   expect(r.pagerWidth).toBe(600);
+  // The ROW fills the host too — that is what puts rows-per-page hard left and the
+  // page controls hard right, rather than bunching them all on the left.
+  expect(r.rowWidth).toBe(600);
+  expect(r.rowJustify).toBe('space-between');
 });
