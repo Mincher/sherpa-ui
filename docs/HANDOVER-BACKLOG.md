@@ -6,32 +6,26 @@ See [HANDOVER.md](HANDOVER.md) for the traps and the working method.
 
 ---
 
-## Known regressions — fix these first
+## Known issue
 
-### The Sort chip has lost its tri-state toggle
+### The Sort chip is NOT linked to the grid's column-header sort
 
-**Reported by Will.** Two faults, probably one cause:
+Clicking a column header and picking a column in the Sort chip are still two
+separate pieces of state, so they can disagree.
 
-1. The chip body no longer cycles ascending → descending → suspended. It was
-   working and verified (`asc` → `desc` → off-with-column-kept → back to `desc`)
-   in commit `9f95c197`, so something since has broken it.
-2. It is **not linked to the data grid's column-header sort**. Clicking a column
-   header and picking a column in the chip are still two separate pieces of
-   state, so they can disagree.
+This is exactly what "bundle the toolbar into the grid" (below) is meant to
+solve — do not patch it separately. Let the bundling make the two states one by
+construction.
 
-Fault 2 is exactly what the "bundle the toolbar into the grid" item below is
-meant to solve — do not patch it twice. Fix the tri-state cycle first (it is a
-regression in `sherpa-quick-filter-toolbar`'s `#cycleSort` / `#onChipClick`
-path), then let the bundling make the two states one by construction.
+**The tri-state cycle itself is FIXED** (commit after `812436a2`). It was losing
+the cycle after one full lap: `desc → suspended` left the direction on `desc`, so
+the next "on" came back descending and the chip ping-ponged between descending and
+off forever, never returning to ascending. `desc → suspended` now rewinds the
+direction to `asc` while KEEPING the column, which is what makes "off" temporary
+rather than a reset.
 
-Start by re-reading `#cycleSort`. Its subtlety: **the chip flips its own
-`data-current` before emitting `quick-filter-click`**, so the cycle has to undo
-that flip first. Getting that wrong makes the chip appear stuck on ascending —
-every click flips it off and the "suspended → on" branch puts it straight back.
-There is a passing spec for the whole cycle in
-`test/e2e/reforged-quick-filter-toolbar.spec.ts` ("the leading Group / Sort chips
-organise the grid"); if it still passes while the browser misbehaves, the spec is
-driving the wrong element.
+The spec now runs SIX clicks (two full laps). Three only proved the first lap,
+which is why the bug shipped.
 
 ---
 
@@ -77,13 +71,28 @@ Shape agreed:
 </sherpa-data-grid>
 ```
 
-- The grid stamps its own toolbar and pager, gated by `data-toolbar` /
+- The grid stamps its own toolbars and pager, gated by `data-toolbar` /
   `data-paginated`.
 - The grid owns: sort, group, column filters, page, page size, selection.
 - Slots let a host add its own chips or action buttons.
 - One event out (`grid-change`) rather than the current five.
 - The existing components stay usable standalone — the grid imports and composes
   them, it does not absorb their code.
+
+**TWO toolbars, stacked.** Will: the grid takes an OPTIONAL `sherpa-toolbar`
+ABOVE its quick-filter toolbar, and that upper bar is where page-level actions
+live. In the records example the **Add customer** button moves there, out of the
+section header:
+
+```
+┌ sherpa-toolbar          (optional — actions: Add customer, …) ┐
+├ sherpa-quick-filter-toolbar   (Group · Sort │ filter chips)   ┤
+├ the grid itself                                               ┤
+└ sherpa-pagination                                             ┘
+```
+
+So the gating is per bar — an `actions` toolbar and a `filters` toolbar are
+separately optional, since plenty of grids want filters without page actions.
 
 Not started. This is a real rebuild; expect the examples' `records.js` wiring to
 shrink a lot.

@@ -301,8 +301,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.dataset['direction'] = 'desc';
       chip.toggleAttribute('data-current', true);
     } else {
-      // Descending → suspended. The column and the direction both stay put.
+      // Descending → SUSPENDED, and the direction resets to ascending so the
+      // next "on" starts the cycle again.
+      //
+      // This is what broke after one full cycle: leaving `desc` in place meant
+      // click 4 read desc→suspend and click 5 read suspend→on-at-desc, so the
+      // chip ping-ponged between descending and off and never returned to
+      // ascending. The COLUMN still survives — that is what makes "off"
+      // temporary rather than a reset — only the direction rewinds.
       chip.removeAttribute('data-current');
+      chip.dataset['direction'] = 'asc';
     }
 
     this.#syncSortLabel(chip);

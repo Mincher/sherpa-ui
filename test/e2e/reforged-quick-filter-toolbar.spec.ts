@@ -137,10 +137,13 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
     await pick(groupChip, 'team');
 
     // The TRI-STATE cycle runs off the chip BODY: asc → desc → suspended → asc.
+    // SIX clicks, not three — TWO full cycles. Three only proved the first lap,
+    // and the bug that shipped was that the SECOND lap never returned to
+    // ascending: it ping-ponged between descending and off forever.
     const cycle: Array<Record<string, unknown>> = [
       { step: 'picked', field: el.sortField, dir: el.sortDirection, suspended: el.sortSuspended },
     ];
-    for (const step of ['1', '2', '3']) {
+    for (const step of ['1', '2', '3', '4', '5', '6']) {
       (sortChip.shadowRoot!.querySelector('.body') as HTMLElement).click();
       await new Promise((res) => setTimeout(res, 40));
       cycle.push({ step, field: el.sortField, dir: el.sortDirection, suspended: el.sortSuspended });
@@ -161,13 +164,20 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
   expect(r.layout.sortRows).toBe(1);
   expect(r.layout.sortRadios).toBe('radio'); // one column at a time
 
-  // Ascending → descending → SUSPENDED (the column survives) → ascending again.
+  // Ascending → descending → SUSPENDED → ascending, twice round.
   expect(r.cycle[0]).toEqual({ step: 'picked', field: 'name', dir: 'asc', suspended: false });
   expect(r.cycle[1]).toEqual({ step: '1', field: 'name', dir: 'desc', suspended: false });
   // Suspended: sortField reads null so a host applies no sort, but the chip still
-  // remembers the column — this is a temporary disable, not a reset.
-  expect(r.cycle[2]).toEqual({ step: '2', field: null, dir: 'desc', suspended: true });
-  expect(r.cycle[3]).toEqual({ step: '3', field: 'name', dir: 'desc', suspended: false });
+  // remembers the COLUMN — this is a temporary disable, not a reset. The
+  // DIRECTION does rewind to ascending, so the next lap starts over rather than
+  // sticking on descending.
+  expect(r.cycle[2]).toEqual({ step: '2', field: null, dir: 'asc', suspended: true });
+  expect(r.cycle[3]).toEqual({ step: '3', field: 'name', dir: 'asc', suspended: false });
+  // …and the SECOND lap behaves identically. This is the assertion the shipped
+  // bug would have failed: it left the chip alternating desc / off.
+  expect(r.cycle[4]).toEqual({ step: '4', field: 'name', dir: 'desc', suspended: false });
+  expect(r.cycle[5]).toEqual({ step: '5', field: null, dir: 'asc', suspended: true });
+  expect(r.cycle[6]).toEqual({ step: '6', field: 'name', dir: 'asc', suspended: false });
 
   // Grouping and filtering stay in their own lanes.
   expect(r.filtering.group).toBe('team');
@@ -175,7 +185,11 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
   expect(r.filtering.values).toEqual({ plan: ['pro'] });
 
   // A group/sort pick never reports itself as a filter change.
-  expect(r.events).toEqual(['sort', 'group', 'sort', 'sort', 'sort', 'filter']);
+  expect(r.events).toEqual([
+    'sort', 'group',
+    'sort', 'sort', 'sort', 'sort', 'sort', 'sort',
+    'filter',
+  ]);
 });
 
 test('a value-menu chip toggles OFF without clearing its picks', async ({ page }) => {
