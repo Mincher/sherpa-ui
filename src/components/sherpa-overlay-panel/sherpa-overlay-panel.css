@@ -52,7 +52,7 @@
     var(--sherpa-theme-elevation-offset-y-large, 4px)
     var(--sherpa-theme-elevation-blur-large, 24px)
     var(--sherpa-theme-elevation-spread-large, -12px)
-    var(--sherpa-style-surface-shadow, #b2b2bf4d);
+    var(--sherpa-style-surface-shadow, #15151e80);
 }
 
 /* No backdrop — a non-modal panel must leave the page behind interactive. */

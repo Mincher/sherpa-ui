@@ -116,3 +116,51 @@ test('an empty rows array shows the empty state', async ({ page }) => {
   expect(shown.empty).toBe(true);
   expect(shown.visible).toBe(true);
 });
+
+test('every cell type uses the Figma label typography, not the UA <th> bold', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(config: unknown): void;
+    };
+    grid.setAttribute('data-filterable', '');
+    grid.setAttribute('data-selectable', '');
+    document.getElementById('root')!.appendChild(grid);
+    await grid.rendered;
+    grid.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'qty', header: 'Qty', type: 'number' },
+      ],
+      rows: [{ name: 'Alpha', qty: 3 }],
+    });
+    await new Promise((resolve) => setTimeout(resolve, 40));
+
+    const sr = grid.shadowRoot!;
+    const read = (sel: string): Record<string, string> => {
+      const el = sr.querySelector(sel);
+      if (!el) return { missing: sel };
+      const s = getComputedStyle(el);
+      return { weight: s.fontWeight, style: s.fontStyle, size: s.fontSize,
+               lh: s.lineHeight, align: s.textAlign };
+    };
+    return { headBtn: read('.head-btn'), filterInput: read('.filter-input'), cell: read('.body .row .cell') };
+  });
+
+  // Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
+  // to content/weight/regular 400 · content/size/base 14 · line-height/base 20,
+  // start-aligned and never italic. The header reads as a header because of its
+  // darker surface band, not a heavier weight.
+  //
+  // A <th> ships `font-weight: bold` + `text-align: center` from the UA stylesheet,
+  // and the filter input's `font: inherit` faithfully inherited that — so the
+  // secondary header rendered at 700 while the header button sat at a hand-set 600.
+  for (const [name, got] of Object.entries({ headBtn: r.headBtn, filterInput: r.filterInput, cell: r.cell })) {
+    expect(got['missing'], `${name} selector found`).toBeUndefined();
+    expect(got['weight'], `${name} weight`).toBe('400');
+    expect(got['style'], `${name} style`).toBe('normal');
+    expect(got['size'], `${name} size`).toBe('14px');
+    expect(got['lh'], `${name} line-height`).toBe('20px');
+    expect(got['align'], `${name} align`).toBe('start');
+  }
+});

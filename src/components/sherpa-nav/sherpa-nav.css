@@ -136,7 +136,7 @@
     var(--sherpa-navigation-nav-shadow-offset-y, 0px)
     var(--sherpa-navigation-nav-shadow-blur, 0px)
     var(--sherpa-navigation-nav-shadow-spread, 0px)
-    var(--sherpa-style-surface-shadow, #b2b2bf4d);
+    var(--sherpa-style-surface-shadow, #15151e80);
   transition: box-shadow 160ms ease, background-color 160ms ease;
 }
 

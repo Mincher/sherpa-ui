@@ -163,7 +163,7 @@
     "default": "#ffffff",
     "info": "#ffffff",
     "critical": "#ffffff",
-    "warning": "#ffffff",
+    "warning": "#0c0b11",
     "urgent": "#ffffff",
     "success": "#ffffff",
     "active": "#8300b6",
@@ -231,13 +231,13 @@
    },
    "style-surface/shadow": {
     "default": "#3b4ccd4d",
-    "info": "#008bba4d",
-    "critical": "#fc4e2d4d",
-    "warning": "#ffc44c4d",
-    "urgent": "#ff73004d",
-    "success": "#20c1734d",
-    "active": "#c046ff4d",
-    "inactive": "#ffffff00"
+    "info": "#00324680",
+    "critical": "#70110080",
+    "warning": "#47310080",
+    "urgent": "#4e1e0080",
+    "success": "#00391d80",
+    "active": "#8300b680",
+    "inactive": "#15151e80"
    },
    "style-border/base +1": {
     "default": "#e8e8f6",

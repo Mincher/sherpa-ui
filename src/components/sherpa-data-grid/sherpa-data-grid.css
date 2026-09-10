@@ -26,6 +26,19 @@
 }
 :host([data-empty]) .grid { display: none; }
 
+/* Neutralise the UA's <th> defaults ONCE, at the source.
+   A `<th>` ships `font-weight: bold` and `text-align: center` from the UA
+   stylesheet. Figma's Grid Cell binds every label — group, header, cell and filter
+   — to content/weight/REGULAR 400, start-aligned. Left alone, that bold leaked into
+   the header button AND into the filter input (whose `font: inherit` faithfully
+   inherited it), which is why the secondary header rendered heavy. Killing it here
+   means a descendant never has to fight the cascade to look normal. */
+.grid th {
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  font-style: normal;
+  text-align: start;
+}
+
 /* ── Selection column (opt-in) ─────────────────────────────────────── */
 /* The checkbox <th>/<td> exist in the template always; CSS reveals them. */
 .select-cell { display: none; }
@@ -68,17 +81,32 @@
 }
 /* Figma Grid Cell/Type=filter holds an Input Field (atom) pinned Style: TRANSPARENT
    — no fill and no ring, so the field reads as bare text on the header band until it
-   is focused. */
+   is focused. Its `value` text is content/size/base 14 on line-height/base 20 at
+   weight/REGULAR 400, not italic.
+   `font: inherit` was wrong here: the input is a <th> child, and the UA's <th>
+   default is BOLD + centred, so the filter text rendered at weight 700. The shorthand
+   inherited that instead of overriding it. Every part is now stated explicitly. */
 .filter-input {
   inline-size: 100%;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  font: inherit;
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-style: normal;
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  text-align: start;
   color: var(--sherpa-style-content-base, #35353d);
   background: transparent;
   border: var(--sherpa-style-border-width, 0.5px) solid transparent;
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
 }
-.filter-input::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+/* Figma's placeholder `value` is content/body/+2 (#b3b3c3) — a grey hint, and still
+   regular weight, so the inherited <th> bold must be beaten here too. */
+.filter-input::placeholder {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  font-style: normal;
+}
 .filter-input:focus-visible {
   outline: none;
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
@@ -113,8 +141,16 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   border: none;
   background: none;
-  font: inherit;
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  /* Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
+     to content/weight/REGULAR 400 on content/size/base 14 and line-height/base 20 —
+     the header is set apart by its darker surface band, not by a heavier weight.
+     This was semibold 600 by hand. Stated in full because `font: inherit` picks up
+     the UA's bold <th> default. */
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  font-style: normal;
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   text-align: start;
   cursor: pointer;
@@ -149,6 +185,10 @@
 .cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   white-space: nowrap;
+  /* Figma binds every Grid Cell label to line-height/base 20 — a 32-tall row with
+     4px padding needs exactly that. Unset, it fell back to `normal`, which the font
+     resolves near 17 and left the text sitting high in the row. */
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
 
   /* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
   &[data-type="number"] {
