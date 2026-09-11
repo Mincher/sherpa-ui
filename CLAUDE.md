@@ -24,12 +24,9 @@ Will's call.
 ## Commands
 
 ```bash
-# Build (clean → compile TS → copy HTML/CSS assets → generate tokens/patterns)
+# Build (clean → compile TS → transform + copy CSS/HTML assets into dist/)
 npm run build
-
-# TypeScript only (fast iteration)
-npm run build:ts
-npm run build:ts:watch
+npm run build:watch       # tsc --watch — TS only, no asset copy
 
 # Type check (no emit)
 npm run type-check
@@ -42,16 +39,21 @@ npm run lint:fix
 npm run lint:css
 npm run lint:css:strict
 
-# Tests
-npm test                  # build:ts then web-test-runner
-npm run test:watch
-npm run test:coverage
+# Format component CSS
+npm run format
+npm run format:check
 
-# Accessibility audit
-npm run test:a11y
+# Tests — Playwright. The webServer runs `npm run build`, so `npm test` builds
+# for you; there is no separate build step to remember.
+npm test
+npm run test:ui           # the Playwright UI runner
+npm run test:headed
+npm run test:report       # open the last HTML report
 
-# Pattern regeneration (run after changing pattern HTML)
-npm run patterns
+# Serve
+npm run sandbox           # build, then serve the repo on :4000 (sandbox/)
+npm run preview           # serve WITHOUT building — :4000
+npm run serve:examples    # express template server on :4200 (examples/)
 
 # MCP server
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor
@@ -66,7 +68,7 @@ npm run mcp               # stdio transport — connect from Claude Desktop / Cu
 - **Web Components** — Custom Elements + Shadow DOM + HTML Templates. No framework, no virtual DOM, zero runtime dependencies.
 - **TypeScript** strict mode, compiled to ES2022 ES modules (`dist/components/`).
 - **CSS** with design tokens sourced from Figma Variables.
-- **MCP server** (`mcp-server/`) — gives AI agents structured access to schemas, tokens, patterns, and architecture rules.
+- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the ontology, and the build rules. (There is no `patterns/` directory on this branch — `examples/` is the working reference instead.)
 
 ### Component anatomy (three source files + one generated def)
 
@@ -78,9 +80,12 @@ Every component lives in `src/components/sherpa-<name>/`. Three hand-written sou
 | `sherpa-<name>.css` | **All** presentation: variants, states, visibility, responsiveness, transitions |
 | `sherpa-<name>.html` | Shadow DOM template, slots, semantic structure |
 
-A fourth file, `sherpa-<name>.component.yaml`, is **generated** (by `scripts/*.mjs` from the
-source + Figma) and git-tracked — it is the component's thin def, consumed by the MCP and the
-spec/validate tooling. Never hand-edit it; regenerate it.
+A fourth file, `sherpa-<name>.component.yaml`, is **generated** — by
+`scripts/generate-component-spec.mjs` from the source + Figma — and git-tracked. It is
+the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
+validate tooling. Never hand-edit it; regenerate it. `scripts/resync-figma.mjs --check`
+reports drift between a spec and Figma. (`scripts/generate-defs.mjs` is RETIRED — it
+errors out and points at the current script.)
 
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 
@@ -122,7 +127,7 @@ Applies to **all** components, existing and new:
 - **Attributes:** `data-*` for the public API; native attributes (`disabled`, `name`, `value`, `hidden`, `required`, `readonly`) stay un-prefixed. Reuse the standard-name enums above verbatim — don't invent a synonym for an existing concept. Component-private state is `--_*` CSS custom properties, never a public `data-*`.
 - **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
 - **Standard data attrs for data components:** `data-sort-field`/`data-sort-direction` (`asc|desc`), `data-segment-field`/`data-segment-mode` — reuse across all chart/grid components.
-- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist (see `docs/SLOT-CONTRACTS.md`).
+- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist. There is no separate slot-contracts doc — read the `data-accepts` values in the component `.html` templates (16 components carry them).
 
 ### CSS owns all visibility
 
@@ -206,16 +211,14 @@ background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-d
 
 Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` (+1 — the pale tint, e.g. the Toast card), `--_status-surface-strong` (+2), `--_status-shadow` (style-surface/shadow — status-tinted elevation colour), `--_status-border` (neutral in most modes), `--_status-border-strong` (style-border/base +1 — the status-tinted rule/stroke, e.g. a sparkline), `--_status-text`, `--_status-text-on-color`, `--_status-icon`.
 
-### CSS `@function` library (`css/styles/tokens/sherpa-functions.css`)
+### No CSS `@function` library
 
-Loaded in both `css/styles/index.css` (light DOM) and `SherpaElement.sharedStyles` (every shadow root) — both are required. Functions are Chromium 139+ only; Safari/Firefox receive the property's initial value.
-
-| Function | Returns | Safe to use for |
-|----------|---------|-----------------|
-| `--transition-fast/base/slow(--prop)` | transition shorthand | Motion — degrades gracefully (no animation) |
-| `--alpha(--c, --pct)` | alpha-blended colour | Subtle surfaces — check if degradation is acceptable |
-| `--shadow-sm/md/lg/sunken(--tint)` | box-shadow value | Elevation — degrades to no shadow |
-| `--focus-ring(--color?)` | `2px solid <color>` | **Do not use for keyboard focus indicators** — silent failure = invisible focus ring (WCAG 2.4.11) |
+The reforged branch has **no** `@function` library — there is no `sherpa-functions.css`,
+and `SherpaElement.sharedStyles` is exactly `src/core/sherpa-base.css` + the Font
+Awesome CDN sheet (see `src/index.ts`). Write transitions, shadows and alpha blends
+longhand from tokens. A CSS `@function` fails SILENTLY where it is unsupported
+(the property falls back to its initial value), which is why focus rings never
+used one.
 
 For focus rings, always use the explicit fallback pattern — and an INSET ring, so
 the stroke is drawn INSIDE the component's own box rather than bleeding over its
@@ -238,17 +241,32 @@ Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed
 
 ### CRUD flows
 
-Flows are composed from existing components — there is no dedicated flow component. Three utility modules in `components/utilities/` orchestrate them:
+Flows are composed from existing components — there is no dedicated flow component,
+and no flow-manager utility module on this branch. A flow is wired by hand in the
+app: open a `sherpa-dialog` with `.show()` (NOT the native `showModal()` — the
+component owns modality and the `open` attribute), read the fields, then append a
+`sherpa-toast` for feedback.
 
-- `FlowManager` — dialog lifecycle, flow events (`flow-start`, `flow-progress`, `flow-complete`, `flow-cancel`, `flow-error`), toast feedback
-- `FormManager` — read/write/validate named form fields
-- `refreshDataset` — re-dispatch `datasetfiltered` after data mutations
-
-See `patterns/flows/add|edit|delete.html` for canonical HTML structure.
+`examples/views/records.js` is the working reference — the add-customer
+button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-23 tools + 250+ `sherpa://` resources + 4 guided prompts. Component schemas are parsed lazily from JSDoc; tokens scanned from `css/styles/`; patterns from `patterns/index.json`. Run with `npm run mcp`.
+**10 tools** across three modules, **4 `sherpa://` resource templates**, and
+**3 guided prompts**. Run with `npm run mcp` (stdio).
+
+| Module | Tools |
+|---|---|
+| `tools/discover.js` | `list_components`, `get_component`, `browse_ontology`, `explain_token` |
+| `tools/generate.js` | `scaffold_def`, `validate_def`, `compile_def`, `token_for` |
+| `tools/verify.js` | `audit_component`, `check_bindings` |
+
+Resources: `sherpa://def/{name}`, `sherpa://ontology/{id}`,
+`sherpa://component/{name}/{kind}`, `sherpa://rules`. Prompts:
+`generate_component`, `debug_component`, `review_component_usage`.
+
+The component contract it reads is `<name>.component.yaml`; tokens come from
+`src/styles/tokens/`.
 
 ### Disabled state
 
@@ -294,4 +312,7 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 
 ## Suppression budget
 
-TypeScript `@ts-expect-error` suppressions are tracked in `.fallowrc.json`. Run `npm run ts:check-regression` before committing to ensure the count hasn't increased.
+`src/` currently has **zero** `@ts-expect-error` suppressions — keep it that way.
+There is no `.fallowrc.json` and no `ts:check-regression` script on this branch;
+`npm run type-check` (strict, no emit) is the gate. If you genuinely need a
+suppression, say why in the comment above it.
