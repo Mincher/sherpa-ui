@@ -99,11 +99,16 @@ export class SherpaLineChart extends SherpaElement {
 
     this.#renderYAxis(min, max);
 
-    // Gridlines on the SAME divisions the axis labels, via tickPercent — the
-    // interior ones only, since 0% and 100% are the plot's own edges.
+    // Gridlines on the SAME divisions as the axis labels, via tickPercent.
+    //
+    // Runs to `bands` INCLUSIVE, so the topmost label gets a line. It used to
+    // stop at bands-1 on the reasoning that 0% and 100% are the plot's own
+    // edges — but only the BOTTOM edge is actually drawn (the x-axis rule), so
+    // the highest value was the one label on the axis with nothing beside it.
+    // i=0 stays excluded: that line would sit exactly under the x-axis rule.
     grid.replaceChildren();
     const bands = this.#tickSteps();
-    for (let i = 1; i < bands; i++) {
+    for (let i = 1; i <= bands; i++) {
       // The SVG's y runs downward, so a percentage UP from the bottom inverts.
       const y = 100 - tickPercent(i, bands);
       const line = document.createElementNS(SVG_NS, 'line');

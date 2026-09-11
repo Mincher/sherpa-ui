@@ -178,7 +178,20 @@
    Positioned with the SAME tickPercent the axis labels use, so a line and its
    label cannot drift. Drawn as a repeating gradient rather than N elements: the
    division count is the only variable, and a gradient cannot fall out of step
-   with itself. */
+   with itself.
+
+   A `to top` repeating gradient puts a line at the START of every band — 0%,
+   25%, 50%, 75% for four bands — and NOTHING at 100%, so the topmost axis value
+   was the one label on the axis with no line beside it. The gradient keeps
+   drawing all the interior lines; the top line is added as the box's own
+   block-start border, which lands exactly on 100%.
+
+   Resizing the gradient to make room was the wrong instinct — shrinking the box
+   shrinks the BAND too, so every interior line moved and the set no longer
+   matched the labels. The repeat has to keep the plot's full height; the last
+   line is a different KIND of thing (a boundary, not a repeat) and is drawn as
+   one. `box-sizing: content-box` keeps the border OUTSIDE the painted area, so
+   it cannot eat a half-pixel out of the gradient's height either. */
 .gridlines {
   position: absolute;
   inset: 0;
@@ -190,6 +203,10 @@
     transparent var(--sherpa-display-mode-border-width-sm, 0.5px),
     transparent calc(100% / var(--_bands, 4))
   );
+  /* The final line, at exactly 100% — the one the repeat cannot reach. */
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  box-sizing: content-box;
 }
 :host(:not([data-has-y-axis])) .gridlines { display: none; }
 
