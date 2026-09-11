@@ -84,20 +84,48 @@ mount them.
 
 ---
 
-## 3. Dashboard — CSS grid layout for container content
+## 3. CSS grid for the CONTENT AREA INSIDE a chart container
 
 **Will's words:** "We should use a simple CSS grid to layout content in containers
 on the Dashboard. A 2 column grid with a 60/40 ratio split. The chart should take
 up the 60%. For vertically stacked content, a 2 row grid with a 70/30 split. Again
 the chart takes the larger cell."
 
-- 2-column: `grid-template-columns: 3fr 2fr` (60/40), chart in the wide cell.
-- 2-row: `grid-template-rows: 7fr 3fr` (70/30), chart in the tall cell.
-- Applies to the containers on the **dashboard** view
-  (`examples/templates/dashboard.html`). Check whether this belongs in the example
-  or in a reusable layout utility — the layout layer already ships
-  `.sherpa-view` and the layout tokens have 0 consumers, so there may be a
-  home for it there rather than in one example.
+**Scope — read this carefully.** This is NOT the dashboard's own page layout. It
+is the content area *within* each container that holds a chart. Will confirmed
+this explicitly. The dashboard's grid of cards is not in scope.
+
+On `examples/templates/dashboard.html` every chart container holds a chart AND a
+legend, so the split is **chart vs legend inside one container**:
+
+| Container | Chart | Second item |
+|---|---|---|
+| Alerts by category | `sherpa-barchart` | `sherpa-chart-legend` horizontal |
+| Endpoints by OS | `sherpa-donut-chart` | legend, vertical, in its `legend` SLOT |
+| Storage used | `sherpa-gauge-chart` | `sherpa-chart-legend` horizontal |
+| Sessions vs. incidents | `sherpa-line-chart` | `sherpa-chart-legend` horizontal |
+
+So the rule maps onto the legend's orientation:
+
+- **Legend beside the chart** (vertical legend) → 2-column grid,
+  `grid-template-columns: 3fr 2fr` (60/40), chart in the wide cell.
+- **Legend below the chart** (horizontal legend) → 2-row grid,
+  `grid-template-rows: 7fr 3fr` (70/30), chart in the tall cell.
+
+Two things to check before writing it:
+
+1. **The donut already does this itself.** Its legend is a real slot
+   (`slot="legend"`), so `sherpa-donut-chart.css` owns that side-by-side layout
+   internally — see its `.layout` flex rule. Decide whether the donut keeps
+   owning it or is converted to the shared grid; do not end up with two
+   competing layouts on the same component.
+2. **Where the rule lives.** The other three legends are SIBLINGS of the chart
+   inside the container, not slotted into it, so their layout belongs to whatever
+   wraps them. Candidates: `sherpa-container`'s own content area (applies
+   everywhere, needs an opt-in attribute), or a layout utility class in the
+   `layout` cascade layer beside `.sherpa-view` — the layout tokens currently
+   have 0 consumers, so there may be a home for it there rather than in one
+   example file.
 
 ---
 
