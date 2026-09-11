@@ -61,9 +61,10 @@
       CSS-gated on SherpaElement's slot-presence flag, so a menu with nothing
       slotted here is unchanged.
     -->
-    <div class="header" part="header"><slot name="header"></slot></div>
-
-    <p class="heading" part="heading"></p>
+    <div class="header" part="header">
+      <p class="heading" part="heading"></p>
+      <slot name="header"></slot>
+    </div>
 
     <!--
       SEARCH — the Input Field (atom), composed, not hand-rolled.

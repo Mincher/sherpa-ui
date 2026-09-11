@@ -32,10 +32,11 @@ anatomy:
       - el: div
         class: header
         part: header
-        slot: header
-      - el: p
-        class: heading
-        part: heading
+        children:
+          - el: p
+            class: heading
+            part: heading
+          - slot: header
       - el: sherpa-input-text
         class: search
         part: search
@@ -124,6 +125,9 @@ props:
     description: "native-ish boolean: reflects/controls the popover"
 states:
   - $type: state
+    name: heading
+    selector: ":host([data-heading])"
+  - $type: state
     name: has-header
     selector: ":host([data-has-header])"
   - $type: state
@@ -179,8 +183,9 @@ events:
     bubbles: true
     composed: true
 tokens:
-  menu.gap: "{sherpa.display-mode-space-3xs}"
+  menu.gap: "{sherpa.display-mode-space-xs}"
   menu.padding: "{sherpa.theme-padding-md}"
+  menu.padding-block-end: "{sherpa.theme-padding-none}"
   menu.border-width: "{sherpa.style-border-width}"
   menu.border-color: "{sherpa.style-border-base}"
   menu.border-radius: "{sherpa.structure-rounding-top-left}"

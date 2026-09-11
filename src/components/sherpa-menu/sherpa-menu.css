@@ -61,8 +61,12 @@
      laid out only when the popover is actually open. */
   display: none;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  /* Re-read from the Menu node (49:66174) after Will's tweak: gap space/xs 8
+     (it was space/3xs 2) and padding 8/8/NONE/8 — no bottom padding, because the
+     footer's own 8 sits flush against the card's edge. */
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-md, 8px);
+  padding-block-end: var(--sherpa-theme-padding-none, 0px);
   /* The default 0.5px ring — the card is a surface on a surface, so it needs the
      border to separate itself from what it floats over. */
   border: var(--sherpa-style-border-width, 0.5px) solid
@@ -98,13 +102,20 @@
  *
  * Figma's Calendar header is a HORIZONTAL row: prev · label · next, where the
  * label stretches and the two steppers hug. */
+/* The header HOLDS the heading now (Will moved it inside), so it is shown when
+   either the heading has text OR something is slotted — not on the slot alone. */
 .header { display: none; }
+:host([data-heading]) .header,
 :host([data-has-header]) .header {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   flex: 0 0 auto;
 }
+/* The heading takes the free space so a slotted control sits at the trailing
+   edge beside it — and a header with ONLY a stepper still fills its row. */
+.header .heading { flex: 1 1 auto; }
+.header ::slotted(*) { flex: 1 1 auto; }
 
 /* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
    line-height/xs 16, regular, content/body/+1, textAlignHorizontal LEFT and
