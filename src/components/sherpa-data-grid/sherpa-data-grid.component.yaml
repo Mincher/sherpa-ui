@@ -17,44 +17,48 @@ $description: >-
   vertical stack of cells, so the grid stays flat.
 element:
   $type: element
-  tag: table
+  tag: div
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: table
-      class: grid
-      part: grid
+    - el: div
+      class: scroller
+      part: scroller
       children:
-        - el: thead
-          class: head
-          part: head
+        - el: table
+          class: grid
+          part: grid
           children:
-            - el: tr
-              class: head-row
+            - el: thead
+              class: head
+              part: head
               children:
-                - el: th
-                  class: select-cell select-head
-                  attrs:
-                    scope: col
+                - el: tr
+                  class: head-row
                   children:
-                    - el: input
-                      class: select-all
+                    - el: th
+                      class: select-cell select-head
                       attrs:
-                        type: checkbox
-                        aria-label: Select all rows
-            - el: tr
-              class: filter-row
-              children:
-                - el: th
-                  class: select-cell filter-spacer
-                  attrs:
-                    scope: col
-                    aria-hidden: "true"
-        - el: tbody
-          class: body
-          part: body
+                        scope: col
+                      children:
+                        - el: input
+                          class: select-all
+                          attrs:
+                            type: checkbox
+                            aria-label: Select all rows
+                - el: tr
+                  class: filter-row
+                  children:
+                    - el: th
+                      class: select-cell filter-spacer
+                      attrs:
+                        scope: col
+                        aria-hidden: "true"
+            - el: tbody
+              class: body
+              part: body
     - el: div
       class: empty
       part: empty
@@ -93,9 +97,14 @@ props:
     kind: style
     description: show a secondary header row of filter inputs
   - $type: prop
+    name: data-group-field
+    type: string
+    kind: content
+    description: group rows by this column
+  - $type: prop
     name: data-selectable
     type: string
-    kind: style
+    kind: content
     description: show a leading checkbox column (select-all + per-row)
   - $type: prop
     name: data-sort-direction
@@ -123,6 +132,10 @@ states:
   - $type: state
     name: focus-visible
     selector: .select-all:focus-visible
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (selectedRecords). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: sort-change
@@ -163,7 +176,18 @@ events:
     name: visible
     bubbles: true
     composed: true
+  - $type: event
+    name: group-toggle
+    bubbles: true
+    composed: true
+  - $type: event
+    name: collapsed
+    bubbles: true
+    composed: true
 tokens:
+  head.background: "{sherpa.theme-surface-default-1}"
+  head-row.background: "{sherpa.theme-surface-default-1}"
+  filter-row.background: "{sherpa.theme-surface-default-1}"
   select-cell.inline-size: "{sherpa.display-mode-space-2xl}"
   select-cell.padding: "{sherpa.display-mode-space-2xs}"
   select-head.background: "{sherpa.theme-surface-default-1}"
@@ -171,18 +195,18 @@ tokens:
   select-all.accent-color: "{sherpa.theme-border-accent-2}"
   row-select.accent-color: "{sherpa.theme-border-accent-2}"
   filter-cell.padding: "{sherpa.display-mode-space-2xs}"
-  filter-cell.background: "{sherpa.theme-surface-default-1}"
+  filter-cell.background: "{sherpa.style-surface-base-1}"
   filter-cell.border-block-end: "{sherpa.display-mode-border-width-sm}"
-  filter-spacer.background: "{sherpa.theme-surface-default-1}"
+  filter-spacer.background: "{sherpa.style-surface-base-1}"
   filter-spacer.border-block-end: "{sherpa.display-mode-border-width-sm}"
-  filter-input.padding: "{sherpa.display-mode-space-2xs}"
+  filter-field.padding: "{sherpa.display-mode-space-2xs}"
+  filter-field.border-width: "{sherpa.style-border-width}"
+  filter-field.border-radius: "{sherpa.structure-rounding-top-left}"
   filter-input.font-family: "{sherpa.font-family-body}"
   filter-input.font-size: "{sherpa.font-size-body-base}"
   filter-input.font-weight: "{sherpa.font-weight-regular}"
   filter-input.line-height: "{sherpa.theme-content-line-height-base}"
   filter-input.color: "{sherpa.style-content-base}"
-  filter-input.border-width: "{sherpa.style-border-width}"
-  filter-input.border-radius: "{sherpa.structure-rounding-top-left}"
   filter-clear.inline-size: "{sherpa.theme-size-icon-xs}"
   filter-clear.block-size: "{sherpa.theme-size-icon-xs}"
   filter-clear.margin-inline-start: "{sherpa.display-mode-space-3xs}"
@@ -193,7 +217,8 @@ tokens:
   no-matches.color: "{sherpa.theme-content-body-1}"
   no-matches.font-size: "{sherpa.font-size-body-small}"
   no-matches.line-height: "{sherpa.theme-content-line-height-small}"
-  head-cell.background: "{sherpa.theme-surface-default-1}"
+  head-cell.padding: "{sherpa.display-mode-space-2xs}"
+  head-cell.background: "{sherpa.style-surface-base-1}"
   head-cell.border-block-end: "{sherpa.display-mode-border-width-sm}"
   head-btn.gap: "{sherpa.display-mode-space-2xs}"
   head-btn.padding: "{sherpa.display-mode-space-2xs}"
@@ -202,8 +227,27 @@ tokens:
   head-btn.font-weight: "{sherpa.font-weight-regular}"
   head-btn.line-height: "{sherpa.theme-content-line-height-base}"
   head-btn.color: "{sherpa.theme-content-body-1}"
+  group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
+  row.background: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
   cell.line-height: "{sherpa.theme-content-line-height-base}"
+  group-row.background: "{sherpa.style-surface-base-1}"
+  group-cell.padding: "{sherpa.display-mode-space-2xs}"
+  group-cell.border-block-end: "{sherpa.display-mode-border-width-sm}"
+  group-cell.color: "{sherpa.style-content-base}"
+  group-cell.line-height: "{sherpa.theme-content-line-height-base}"
+  group-inner.gap: "{sherpa.theme-gap-md}"
+  group-inner.min-block-size: "{sherpa.display-mode-size-lg}"
+  group-toggle.inline-size: "{sherpa.display-mode-size-sm}"
+  group-toggle.block-size: "{sherpa.display-mode-size-sm}"
+  group-toggle.font-size: "{sherpa.font-size-body-small}"
+  group-label.font-weight: "{sherpa.font-weight-semibold}"
+  group-count.min-inline-size: "{sherpa.display-mode-size-sm}"
+  group-count.padding-inline: "{sherpa.display-mode-space-3xs}"
+  group-count.border-radius: "{sherpa.display-mode-border-rounding-sm}"
+  group-count.background: "{sherpa.theme-surface-default-base}"
+  group-count.color: "{sherpa.theme-content-body-1}"
+  group-count.font-size: "{sherpa.font-size-body-small}"
   empty.padding: "{sherpa.display-mode-space-2xl}"
   empty.color: "{sherpa.theme-content-body-1}"
 $extensions:
@@ -227,3 +271,7 @@ $extensions:
         designed architecture (flat pinned columns). Reconcile later: either enrich the code to the
         column model, or scope the Figma component to match. Public API (data-sort-field/direction,
         grid-sort-change, row-click) is preserved on both sides.
+    jsProps:
+      - name: selectedRecords
+        type: string
+        access: read

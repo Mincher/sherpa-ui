@@ -626,3 +626,50 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
   expect(r.all.groups).toEqual([true, true]);
 });
 
+
+test('a numeric column right-aligns its HEADER with its digits', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    grid.setAttribute('data-filterable', '');
+    document.getElementById('root')!.appendChild(grid);
+    await grid.rendered;
+    grid.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'seats', header: 'Seats', type: 'number' },
+      ],
+      rows: [{ name: 'Acme', seats: 42 }],
+    });
+    await new Promise((res) => setTimeout(res, 40));
+
+    const sr = grid.shadowRoot!;
+    const pick = (field: string) => {
+      const th = sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
+      const td = sr.querySelector(`.cell[data-type], .row .cell`) as HTMLElement;
+      return {
+        type: th.dataset['type'] ?? null,
+        header: getComputedStyle(th.querySelector('.head-btn')!).justifyContent,
+        filter: getComputedStyle(
+          sr.querySelector(`.filter-cell[data-field="${field}"] .filter-input`)!,
+        ).textAlign,
+      };
+    };
+    const cell = sr.querySelector('.cell[data-type="number"]') as HTMLElement;
+    return { name: pick('name'), seats: pick('seats'), cellAlign: getComputedStyle(cell).textAlign };
+  });
+
+  // The cells were already right-aligned; the HEADER was not, so a column of
+  // digits sat under a left-aligned heading and read as a different column.
+  expect(r.cellAlign).toBe('end');
+  expect(r.seats.type).toBe('number');
+  expect(r.seats.header).toBe('flex-end');
+  // …and the filter input above them agrees, for the same reason.
+  expect(r.seats.filter).toBe('end');
+
+  // A text column is untouched.
+  expect(r.name.type).toBe(null);
+  expect(r.name.header).not.toBe('flex-end');
+});

@@ -325,3 +325,65 @@ test('a menu WITHOUT data-commit still commits on every tick', async ({ page }) 
   expect(r.footerShown).toBe(false);
   expect(r.changes).toEqual([['x']]);
 });
+
+test('data-search filters the rows without disturbing what is ticked', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void> };
+    menu.setAttribute('data-search', '');
+    menu.setAttribute('data-heading', 'Region');
+    for (const label of ['Windows 11', 'Windows 10', 'macOS', 'Linux']) {
+      const row = document.createElement('label');
+      row.innerHTML = `<input type="checkbox" value="${label}" /><span>${label}</span>`;
+      menu.appendChild(row);
+    }
+    document.getElementById('root')!.appendChild(menu);
+    await menu.rendered;
+
+    const rows = () =>
+      [...menu.children].filter((n) => !(n as HTMLElement).hasAttribute('data-filtered-out'))
+        .map((n) => n.textContent!.trim());
+    const input = menu.shadowRoot!.querySelector('.search-input') as HTMLInputElement;
+    const type = async (v: string) => {
+      input.value = v;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((res) => setTimeout(res, 30));
+    };
+
+    // Tick one BEFORE searching, to prove a filter never disturbs the draft.
+    (menu.querySelector('input[value="macOS"]') as HTMLInputElement).click();
+
+    const all = rows();
+    await type('win');
+    const matched = rows();
+    await type('zzz');
+    const none = { rows: rows(), flag: menu.hasAttribute('data-no-matches') };
+    await type('');
+    const cleared = rows();
+
+    return {
+      all,
+      matched,
+      none,
+      cleared,
+      stillTicked: (menu.querySelector('input[value="macOS"]') as HTMLInputElement).checked,
+    };
+  });
+
+  expect(r.all).toHaveLength(4);
+
+  // SUBSTRING, case-insensitively — a menu search is a "find", so "win" reaches
+  // both Windows rows and nothing else.
+  expect(r.matched).toEqual(['Windows 11', 'Windows 10']);
+
+  // Nothing found says so, rather than collapsing to an empty box that reads as
+  // broken. The flag is only set while SEARCHING, so a menu with no rows at all
+  // is still just empty.
+  expect(r.none.rows).toEqual([]);
+  expect(r.none.flag).toBe(true);
+
+  // Clearing restores every row…
+  expect(r.cleared).toHaveLength(4);
+  // …and a row hidden by a search kept what was ticked on it. That is what makes
+  // searching safe inside a committing menu: narrow, tick, clear, tick, Apply once.
+  expect(r.stillTicked).toBe(true);
+});

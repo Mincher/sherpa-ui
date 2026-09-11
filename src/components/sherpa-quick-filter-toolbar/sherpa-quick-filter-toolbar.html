@@ -154,4 +154,21 @@
   <template class="qf-row-tpl">
     <label><input type="checkbox" /><span class="qf-row-label"></span></label>
   </template>
+
+  <!--
+    "Remove filter" — an ACTION row, so a <button>, not a label+input. The menu
+    treats the two differently on purpose: a value row is part of the draft that
+    Apply commits, where an action fires immediately. Removing a filter is not a
+    value you might change your mind about before applying; it is the thing you
+    came to do.
+
+    It sits at the END, after the values, because it is destructive and should
+    not be the first thing a thumb lands on.
+  -->
+  <template class="qf-remove-tpl">
+    <button type="button" class="qf-remove" value="remove">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      <span>Remove filter</span>
+    </button>
+  </template>
 </template>

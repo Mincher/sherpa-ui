@@ -123,6 +123,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The organise chips carry MENUS, so their selection arrives as the chip's
     // own quick-filter-change (relayed from <sherpa-menu>), not as a body click.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
+    // Action rows (the "Remove filter" button) report separately from value rows.
+    this.addEventListener('menu-select', this.#onMenuSelect);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
@@ -255,6 +257,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // a draft until Apply and Cancel discards them. The menu shows the footer and
     // withholds menu-change until then; nothing else here has to change.
     menu.setAttribute('data-commit', '');
+    // EVERY value menu gets a search. A filter's values are the user's own data
+    // — regions, owners, plans — so the list is as long as their data is, and
+    // scrolling a hundred owners to find one is the case this exists for.
+    menu.setAttribute('data-search', '');
 
     for (const option of def.options ?? []) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -267,9 +273,52 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu.appendChild(row);
     }
 
+    // A REMOVE row on the filter chips only. Not on the organise chips (Group and
+    // Sort are fixed parts of the bar, not filters a user put there) and not on
+    // the Add chip itself, whose menu IS the list of things to add.
+    if (chip.classList.contains('chip')) {
+      const removeTpl = this.$<HTMLTemplateElement>('template.qf-remove-tpl');
+      if (removeTpl) menu.appendChild(removeTpl.content.firstElementChild!.cloneNode(true));
+    }
+
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
   }
+
+  /**
+   * A "Remove filter" row was clicked — take that chip off the bar.
+   *
+   * The menu fires `menu-select` for ACTION rows (buttons), separately from the
+   * `menu-change` its value rows commit on Apply, so a remove never has to be
+   * told apart from a value pick.
+   */
+  #onMenuSelect = (event: Event): void => {
+    if ((event as CustomEvent).detail?.value !== 'remove') return;
+    // composedPath, not `event.target`. menu-select is composed and re-emitted
+    // from the menu's own host, so by the time it reaches this listener the
+    // target has RETARGETED to the toolbar itself — `target.closest('.chip')`
+    // finds nothing. The path still holds the chip (the menu is slotted into it):
+    //
+    //   sherpa-menu › slot › span › div.chip › #shadow › sherpa-quick-filter.chip › …
+    //
+    // Matched on the TAG, not on `.chip`: the quick-filter's own shadow root
+    // contains a <div class="chip"> too, and it comes FIRST on the path — so
+    // matching the class found that inner div, which carries no data-id, and
+    // every remove silently bailed.
+    const chip = event
+      .composedPath()
+      .find(
+        (n): n is HTMLElement =>
+          n instanceof HTMLElement && n.localName === 'sherpa-quick-filter',
+      );
+    const id = chip?.dataset['id'];
+    if (!id) return;
+    event.stopImmediatePropagation();
+    // Shut the menu first: it is about to be removed from the DOM with its chip,
+    // and a popover destroyed while open leaves the top layer confused.
+    (chip.querySelector('sherpa-menu') as HTMLElement & { hide?: () => void })?.hide?.();
+    this.#removeFilter(id);
+  };
 
   #onChipClick = (event: Event): void => {
     // quick-filter-click is composed → find the originating chip on the path.
@@ -425,21 +474,52 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#addMenu(add, {
       id: 'add',
       label: 'Add filter',
-      select: 'single',
+      // MULTI-select: adding filters is a batch job — a user setting up a view
+      // wants three of them, and a single-select menu made that three separate
+      // open-pick-apply rounds.
+      select: 'multiple',
       options: this.#available.map((f) => ({ value: f.id, label: f.label })),
     });
+    // A long field list is what a search is for.
+    add.querySelector('sherpa-menu')?.toggleAttribute('data-search', true);
   }
 
-  /** Move one available filter onto the bar. */
-  #addFilter(id: string): void {
-    const i = this.#available.findIndex((f) => f.id === id);
-    if (i < 0) return;
-    const [def] = this.#available.splice(i, 1);
-    // ON on arrival: a filter you just chose should be doing something.
-    this.#filters = [...this.#filters, { ...def!, active: true }];
+  /** Move the chosen available filters onto the bar. */
+  #addFilters(ids: string[]): void {
+    const added: QuickFilterDef[] = [];
+    for (const id of ids) {
+      const i = this.#available.findIndex((f) => f.id === id);
+      if (i < 0) continue;
+      const [def] = this.#available.splice(i, 1);
+      // ON on arrival: a filter you just chose should be doing something.
+      added.push({ ...def!, active: true });
+    }
+    if (!added.length) return;
+    this.#filters = [...this.#filters, ...added];
     this.#render();
     this.#renderAvailable();
-    this.emit('filter-add', { id, filter: def });
+    // ONE event for the batch, not one per filter — a host re-queries once.
+    this.emit('filter-add', { ids: added.map((f) => f.id), filters: added });
+    this.#emitChange();
+  }
+
+  /**
+   * Take one filter back OFF the bar.
+   *
+   * It returns to the Add menu rather than vanishing: a user who removes a chip
+   * by mistake, or narrows a view and then widens it again, should find it where
+   * they got it. Its picked values are dropped — the chip comes back clean,
+   * because "remove" means remove, not "hide and remember".
+   */
+  #removeFilter(id: string): void {
+    const i = this.#filters.findIndex((f) => f.id === id);
+    if (i < 0) return;
+    const [def] = this.#filters.splice(i, 1);
+    const { active: _active, ...clean } = def!;
+    this.#available = [...this.#available, clean as QuickFilterDef];
+    this.#render();
+    this.#renderAvailable();
+    this.emit('filter-remove', { id, filter: clean });
     this.#emitChange();
   }
 
@@ -707,11 +787,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       );
       if (addChip) {
         event.stopImmediatePropagation();
-        const picked = addChip.querySelector<HTMLInputElement>('input:checked');
+        const picked = [...addChip.querySelectorAll<HTMLInputElement>('input:checked')];
         // The Add chip never shows itself as "on" — it is a trigger, and its
         // menu is a list of things to do, not a state it holds.
         addChip.removeAttribute('data-current');
-        if (picked) this.#addFilter(picked.value);
+        if (picked.length) this.#addFilters(picked.map((i) => i.value));
         return;
       }
 

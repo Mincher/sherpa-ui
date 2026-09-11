@@ -170,3 +170,24 @@
   --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
   --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
 }
+
+
+/* ── "Remove filter" menu row ────────────────────────────────────────
+ * The row itself is styled by sherpa-menu's own ::slotted rule, like every other
+ * action row. Only its INK differs: removing a filter is destructive, and the
+ * critical content token is how the system says so everywhere else.
+ *
+ * It lives in the chip's LIGHT DOM (the menu's rows are slotted), so it is
+ * styled from here rather than from inside the menu — which is also why a plain
+ * descendant selector reaches it. */
+.chip .qf-remove {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  inline-size: 100%;
+  color: var(--sherpa-theme-content-critical-1, #b72200);
+}
+.chip .qf-remove i {
+  flex: 0 0 auto;
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+}

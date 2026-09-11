@@ -403,6 +403,17 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
     const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement & {
       shadowRoot: ShadowRoot;
     };
+    // WAIT OUT THE FADE, do not guess at it. The button transitions its
+    // background, border and colour over 120ms, so a fixed wait samples the
+    // middle of the animation under parallel load and reads an in-between
+    // colour — rgb(255, 254, 255) instead of white, which looks like the toggle
+    // failing to reverse rather than a test reading too early.
+    const settled = async () => {
+      const trigger = star.shadowRoot.querySelector('.trigger') as HTMLElement;
+      await Promise.all(
+        trigger.getAnimations().map((a) => a.finished.catch(() => undefined)),
+      );
+    };
     const read = () => {
       const t = getComputedStyle(star.shadowRoot.querySelector('.trigger')!);
       return {
@@ -412,9 +423,10 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
         ink: getComputedStyle(star.shadowRoot.querySelector('i')!).color,
       };
     };
+    await settled();
     const off = read();
     (star.shadowRoot.querySelector('button') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 120));
+    await settled();
     const on = read();
 
     // READ WHILE IT IS ON. These properties only exist in the favourited state,
@@ -435,7 +447,7 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
     };
 
     (star.shadowRoot.querySelector('button') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 120));
+    await settled();
 
     return { off, on, backOff: read(), expected };
   }, MOUNT);
@@ -649,7 +661,7 @@ test('the Add chip puts an available filter on the bar and drops it from its men
 
     const before = { chips: chips(), offered: offered() };
 
-    // Pick one and commit it, exactly as the caret's menu does.
+    // MULTI-select: pick one and commit it, exactly as the caret's menu does.
     ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === 'health')!.click();
     await new Promise((res) => setTimeout(res, 40));
     const menu = add.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
@@ -680,4 +692,74 @@ test('the Add chip puts an available filter on the bar and drops it from its men
   // The Add control never shows itself as "on" — it is a trigger, and its menu is
   // a list of things to do, not a state it holds.
   expect(r.addStuckOn).toBe(false);
+});
+
+test('the Add menu is multi-select and searchable; a chip can be removed', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar()) as HTMLElement & {
+      populate?: (d: unknown) => void;
+      available?: (d: unknown) => void;
+    };
+    el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    el.available!([
+      { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
+      { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
+      { id: 'tickets', label: 'Tickets', options: [{ value: '1', label: '1' }] },
+    ]);
+    await new Promise((res) => setTimeout(res, 60));
+
+    const sr = el.shadowRoot!;
+    const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
+    const add = sr.querySelector('.add-chip') as HTMLElement;
+    const addMenu = add.querySelector('sherpa-menu') as HTMLElement;
+    const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
+    const apply = async (host: HTMLElement) => {
+      const menu = host.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+      (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
+      await new Promise((res) => setTimeout(res, 120));
+    };
+
+    const menuShape = {
+      select: addMenu.getAttribute('data-select'),
+      inputType: (add.querySelector('input') as HTMLInputElement).type,
+      addSearch: addMenu.hasAttribute('data-search'),
+      // Every VALUE menu gets one too — a filter's values are the user's own data.
+      chipSearch: (sr.querySelector('.chip[data-id="plan"] sherpa-menu') as HTMLElement).hasAttribute('data-search'),
+    };
+
+    // Add TWO in one visit — the point of multi-select.
+    for (const v of ['health', 'seats']) {
+      ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === v)!.click();
+    }
+    await apply(add);
+    const afterAdd = { chips: chips(), offered: offered() };
+
+    // …then take one back off through its own menu's "Remove filter" row.
+    const health = sr.querySelector('.chip[data-id="health"]') as HTMLElement;
+    const removeRow = health.querySelector('.qf-remove') as HTMLElement;
+    const removeLabel = removeRow.textContent!.trim();
+    removeRow.click();
+    await new Promise((res) => setTimeout(res, 200));
+
+    return { menuShape, afterAdd, removeLabel, afterRemove: { chips: chips(), offered: offered() } };
+  }, MOUNT);
+
+  // MULTI-select: checkbox rows, and a search for a long field list.
+  expect(r.menuShape.select).toBe('multiple');
+  expect(r.menuShape.inputType).toBe('checkbox');
+  expect(r.menuShape.addSearch).toBe(true);
+  expect(r.menuShape.chipSearch).toBe(true);
+
+  // Two added in ONE visit, both gone from the menu.
+  expect(r.afterAdd.chips).toEqual(['plan', 'health', 'seats']);
+  expect(r.afterAdd.offered).toEqual(['tickets']);
+
+  // REMOVE puts it back where it came from: a user who removes a chip by mistake
+  // should find it where they got it. Its picks are dropped — "remove" means
+  // remove, not "hide and remember".
+  expect(r.removeLabel).toBe('Remove filter');
+  expect(r.afterRemove.chips).toEqual(['plan', 'seats']);
+  expect(r.afterRemove.offered).toEqual(['tickets', 'health']);
 });

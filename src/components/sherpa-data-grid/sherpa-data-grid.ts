@@ -199,6 +199,10 @@ export class SherpaDataGrid extends SherpaElement {
     this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
+      // The header carries its column's TYPE too, so a numeric column's label can
+      // align with the digits under it. A right-aligned column of numbers under a
+      // left-aligned heading reads as two different columns.
+      if (col.type) th.dataset['type'] = col.type;
       // The FIRST drawn column is frozen. Marked here rather than selected in CSS
       // with nth-child, because the position shifts by one when data-selectable
       // is absent and #shownColumns() can drop the grouped column.
@@ -224,6 +228,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
+      if (col.type) th.dataset['type'] = col.type;
       if (i === 0) this.#markPinned(th, true);
       const label = col.header ?? col.field;
       const input = th.querySelector<HTMLInputElement>('.filter-input')!;

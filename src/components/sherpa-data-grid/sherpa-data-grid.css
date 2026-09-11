@@ -359,6 +359,19 @@
   }
 }
 
+/* A NUMERIC column aligns its header with its digits.
+   The cells are right-aligned (see .cell[data-type="number"]), so a left-aligned
+   heading over them read as belonging to a different column. The sort caret
+   travels with the label, so the two stay together at whichever edge. */
+.head-cell[data-type="number"] .head-btn {
+  justify-content: flex-end;
+  text-align: end;
+}
+/* …and so does its filter input, for the same reason. */
+.filter-cell[data-type="number"] .filter-input {
+  text-align: end;
+}
+
 .sort-icon { inline-size: 0; block-size: 0; }
 
 

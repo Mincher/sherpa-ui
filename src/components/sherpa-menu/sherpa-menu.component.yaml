@@ -33,6 +33,27 @@ anatomy:
         class: heading
         part: heading
       - el: div
+        class: search
+        part: search
+        children:
+          - el: i
+            class: search-icon fa-solid fa-magnifying-glass
+            attrs:
+              aria-hidden: "true"
+          - el: input
+            class: search-input
+            part: search-input
+            attrs:
+              type: search
+              placeholder: Search
+              autocomplete: "off"
+              spellcheck: "false"
+      - el: p
+        class: no-matches
+        part: no-matches
+        attrs:
+          role: status
+      - el: div
         class: rows
         part: rows
         slot: ""
@@ -76,6 +97,11 @@ props:
     kind: content
     description: optional heading (rendered upper-case at 10/16)
   - $type: prop
+    name: data-search
+    type: string
+    kind: content
+    description: show a search input under the heading that filters the rows
+  - $type: prop
     name: data-select
     type: enum
     kind: style
@@ -89,11 +115,17 @@ props:
     description: "native-ish boolean: reflects/controls the popover"
 states:
   - $type: state
+    name: search
+    selector: ":host([data-search])"
+  - $type: state
+    name: no-matches
+    selector: ":host([data-no-matches])"
+  - $type: state
     name: commit
     selector: ":host([data-commit])"
   - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .search-input:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -142,6 +174,11 @@ tokens:
   heading.font-size: "{sherpa.font-size-body-xs}"
   heading.font-weight: "{sherpa.font-weight-regular}"
   heading.line-height: "{sherpa.theme-content-line-height-xs}"
+  search-icon.color: "{sherpa.theme-content-body-2}"
+  search-icon.font-size: "{sherpa.theme-content-size-small}"
+  search-input.font-size: "{sherpa.theme-content-size-small}"
+  search-input.line-height: "{sherpa.theme-content-line-height-base}"
+  search-input.color: "{sherpa.style-content-base}"
   rows.gap: "{sherpa.display-mode-space-3xs}"
   footer.gap: "{sherpa.theme-gap-md}"
   footer.margin-block-start: "{sherpa.display-mode-space-3xs}"

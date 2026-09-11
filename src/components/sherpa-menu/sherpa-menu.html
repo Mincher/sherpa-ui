@@ -26,6 +26,7 @@
   Public API:
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-heading  optional heading (rendered upper-case at 10/16)
+    data-search   show a search input under the heading that filters the rows
     data-select   multiple (default, checkbox rows) | single (radio rows)
     data-align    start (default) | end   which trigger edge the card lines up with
     open          native-ish boolean: reflects/controls the popover
@@ -44,6 +45,28 @@
 <template id="default">
   <div class="menu" part="menu" popover="auto" role="menu">
     <p class="heading" part="heading"></p>
+
+    <!--
+      SEARCH — a bare input directly under the heading, revealed by data-search.
+
+      No label and no description: the placeholder and its position under the
+      heading say what it is, and a menu this size cannot spare a line to repeat
+      it. `aria-label` carries the name for a screen reader instead.
+
+      It filters the ROWS it has, so it never re-queries and never disturbs what
+      is already ticked — a row hidden by a search keeps its state and comes back
+      with it. `type="search"` gets the platform's own clear affordance free.
+    -->
+    <div class="search" part="search">
+      <i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input class="search-input" part="search-input" type="search"
+             placeholder="Search" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <!-- Shown when a search matches no row. Without it the card collapses to an
+         empty box and reads as broken rather than as "nothing found". -->
+    <p class="no-matches" part="no-matches" role="status">No matches</p>
+
     <div class="rows" part="rows">
       <slot></slot>
     </div>

@@ -93,11 +93,13 @@ export async function init(root) {
   let page = 1;
   let pageSize = 10;
 
-  /* Which grid column each value-menu chip constrains. A chip's id names the
-     COLUMN, and its menu holds the values — matching the ids against `row.status`
-     (as this used to) meant a Plan pick matched nothing and emptied the grid.
-     `owner` now has a real column, so it filters rather than sitting inert. */
-  const valueChipColumn = { plan: 'plan', owner: 'owner', region: 'region', tier: 'tier' };
+  /* A chip's id IS its column. It used to be looked up in a hardcoded map of the
+     four chips the bar happened to start with — so a filter ADDED through the Add
+     control (seats, health, open tickets) was not in the map and did nothing at
+     all. The chips are built from the column list, so the id is the field name by
+     construction; matching on the column set instead means any chip works, added
+     or not. */
+  const columnFields = new Set(columns.map((c) => c.field));
 
   const applyFilter = (rows) => {
     let out = activeFilters.length
@@ -105,11 +107,10 @@ export async function init(root) {
       : rows;
     // Each menu chip narrows by its own column: a row must match ONE of the
     // picked values (OR within a chip), and every active chip (AND across chips).
-    for (const [id, picked] of Object.entries(filterValues)) {
-      const field = valueChipColumn[id];
-      // `owner` has no column in this demo's data, so it is deliberately inert
-      // rather than silently filtering everything away.
-      if (!field || !picked.length) continue;
+    for (const [field, picked] of Object.entries(filterValues)) {
+      // A chip whose id names no column is deliberately inert rather than
+      // silently filtering everything away.
+      if (!columnFields.has(field) || !picked.length) continue;
       const wanted = new Set(picked.map((v) => String(v).toLowerCase()));
       out = out.filter((r) => wanted.has(String(r[field]).toLowerCase()));
     }

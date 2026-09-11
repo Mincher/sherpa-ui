@@ -44,7 +44,7 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
-  static override observed = ['data-heading', 'data-align', 'open'];
+  static override observed = ['data-heading', 'data-align', 'data-search', 'open'];
 
   /** The gap between the trigger and the card (Figma space/2xs). */
   static readonly OFFSET = 4;
@@ -76,6 +76,40 @@ export class SherpaMenu extends SherpaElement {
     // The footer is in the SHADOW root, so its clicks are listened for there.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
+    // The search field is in the SHADOW root too.
+    this.$('.search-input')?.addEventListener('input', this.#onSearch);
+  }
+
+  /**
+   * Narrow the rows to those whose text contains what was typed.
+   *
+   * SUBSTRING, case-insensitively, on the row's own text — a menu search is a
+   * "find", so typing "ows" should still reach "Windows". Matching from the
+   * start would make a long label unreachable by its distinctive part.
+   *
+   * It filters the rows it ALREADY HAS: no re-query, and a row hidden by a
+   * search keeps whatever is ticked on it and comes back with it. That is what
+   * makes searching safe inside a committing menu — you can narrow, tick,
+   * clear the search, tick again, and Apply once.
+   */
+  #onSearch = (): void => {
+    const input = this.$<HTMLInputElement>('.search-input');
+    const q = (input?.value ?? '').trim().toLowerCase();
+    let shown = 0;
+    for (const row of this.#rows()) {
+      const hit = !q || (row.textContent ?? '').toLowerCase().includes(q);
+      // JS writes the flag; CSS owns the hiding.
+      row.toggleAttribute('data-filtered-out', !hit);
+      if (hit) shown += 1;
+    }
+    // Only while SEARCHING: an empty menu with no query is empty because the
+    // caller passed no rows, which is a different thing from "nothing found".
+    this.toggleAttribute('data-no-matches', !!q && shown === 0);
+  };
+
+  /** Every slotted row, whatever kind it is (label rows and action buttons). */
+  #rows(): HTMLElement[] {
+    return [...this.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
   }
 
   override onChange(): void {
