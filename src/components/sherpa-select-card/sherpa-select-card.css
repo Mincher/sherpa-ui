@@ -20,7 +20,7 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   /* Internal dividers are a lighter neutral than the outer border, matching the
      container family (Figma: divider = border/default/+1 #e8e8f6). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);

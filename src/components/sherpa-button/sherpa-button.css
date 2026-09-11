@@ -32,7 +32,7 @@
 
   :host([data-size="sm"]) {
     --sherpa-button-size-height: var(--sherpa-display-mode-space-xl);
-    --sherpa-button-size-icon: var(--sherpa-theme-content-size-small);
+    --sherpa-button-size-icon: var(--sherpa-theme-content-size-base);
     --sherpa-button-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-base);
     --sherpa-button-space-gap: var(--sherpa-display-mode-space-xs);
@@ -90,7 +90,7 @@
   /* Bound at the STYLE tier, exactly as Figma binds the Button (style-surface/base,
      style-content/base, style-border/base) — status/look modes cascade at this tier. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
 }
 

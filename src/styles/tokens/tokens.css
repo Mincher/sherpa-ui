@@ -1865,7 +1865,7 @@
   /* structure — the sm size mode ([data-size]). */
   [data-size="sm"] {
     --sherpa-structure-height: var(--sherpa-display-mode-space-xl);
-    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-small);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-base);
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-base);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
@@ -1960,9 +1960,9 @@
   --sherpa-style-border-base: var(--sherpa-theme-border-default-2);
   --sherpa-style-border-base-1: var(--sherpa-theme-border-default-1);
   --sherpa-style-border-width: var(--sherpa-display-mode-border-width-sm);
-  --sherpa-style-content-base: var(--sherpa-theme-content-body-1);
+  --sherpa-style-content-base: var(--sherpa-theme-content-body-base);
   --sherpa-style-content-inverse: var(--sherpa-theme-content-body-4);
-  --sherpa-style-content-secondary: var(--sherpa-theme-content-body-2);
+  --sherpa-style-content-secondary: var(--sherpa-theme-content-body-1);
   --sherpa-style-content-tertiary: var(--sherpa-theme-content-body-3);
   --sherpa-style-indicator-accent: var(--sherpa-theme-surface-accent-2);
   --sherpa-style-surface-base: var(--sherpa-theme-surface-default-base);

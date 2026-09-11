@@ -22,7 +22,7 @@
   border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
   /* Figma pins Structure: snap-all-edges → square corners (stacks flush). */
   border-radius: 0;
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
 
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
@@ -40,7 +40,7 @@
   padding: var(--sherpa-theme-padding-md, 8px);
   cursor: pointer;
   list-style: none;
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   border-radius: inherit;
 
   /* Kill the native disclosure triangle across engines. */

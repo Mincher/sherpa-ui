@@ -224,7 +224,7 @@
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   text-align: start;
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
 
   /* The ring is drawn on the field, so the input must not draw its own. */
   &:focus-visible { outline: none; }

@@ -45,7 +45,7 @@
   border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
   border-start-end-radius: 0;
   border-end-end-radius: 0;
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg (Theme elevation "large" tokens). */
   box-shadow:
     var(--sherpa-theme-elevation-offset-x-large, 4px)
@@ -145,7 +145,7 @@
   border: none;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--_status-text, var(--sherpa-style-content-base, #35353d));
+  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   cursor: pointer;
   transition: background-color 100ms ease;
 }

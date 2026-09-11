@@ -10901,7 +10901,7 @@
         "figma-console-mcp": {
           "collectionId": "VariableCollectionId:13:2622",
           "figmaResolvedType": "FLOAT",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+          "lastSyncedAt": "2026-09-11T08:33:00.000Z",
           "lastSyncedValue": {
             "2xs": {
               "reference": "{theme.content.size.xs}"
@@ -10913,7 +10913,7 @@
               "reference": "{theme.content.size.large}"
             },
             "sm": {
-              "reference": "{theme.content.size.small}"
+              "reference": "{theme.content.size.base}"
             },
             "xl": {
               "reference": "{theme.content.size.large}"
@@ -10925,7 +10925,7 @@
           "modes": {
             "2xs": "{theme.content.size.xs}",
             "lg": "{theme.content.size.large}",
-            "sm": "{theme.content.size.small}",
+            "sm": "{theme.content.size.base}",
             "xl": "{theme.content.size.large}",
             "xs": "{theme.content.size.xs}"
           },
@@ -11541,7 +11541,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:18:187",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+            "lastSyncedAt": "2026-09-11T10:40:00.000Z",
             "lastSyncedValue": {
               "active": {
                 "reference": "{theme.content.active.+1}"
@@ -11550,7 +11550,7 @@
                 "reference": "{theme.content.critical.+1}"
               },
               "default": {
-                "reference": "{theme.content.body.+1}"
+                "reference": "{theme.content.body.base}"
               },
               "inactive": {
                 "reference": "{theme.content.body.+1}"
@@ -11582,7 +11582,7 @@
           }
         },
         "$type": "color",
-        "$value": "{theme.content.body.+1}"
+        "$value": "{theme.content.body.base}"
       },
       "inverse": {
         "$extensions": {
@@ -11637,7 +11637,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:18:187",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+            "lastSyncedAt": "2026-09-11T10:40:00.000Z",
             "lastSyncedValue": {
               "active": {
                 "reference": "{theme.content.body.+1}"
@@ -11646,7 +11646,7 @@
                 "reference": "{theme.content.body.+1}"
               },
               "default": {
-                "reference": "{theme.content.body.+2}"
+                "reference": "{theme.content.body.+1}"
               },
               "inactive": {
                 "reference": "{theme.content.body.+1}"
@@ -11678,7 +11678,7 @@
           }
         },
         "$type": "color",
-        "$value": "{theme.content.body.+2}"
+        "$value": "{theme.content.body.+1}"
       },
       "tertiary": {
         "$extensions": {
