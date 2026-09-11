@@ -48,7 +48,7 @@
 
   /* One fill + one border token the track consumes; ON re-points both.
      OFF (Figma Value=off, Style default): style-surface/base +2 · style-border/base.
-     ON  (Figma Value=on, Style:Saturated=success): surface #007a45 · border #20c173. */
+     ON  (Figma Value=on, Style:Saturated=success): surface #00ad62 · border #36de8c. */
   --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
@@ -81,8 +81,8 @@
 
   /* ── ON state — re-point the fill to the strong success surface ── */
   &:has(.input:checked) {
-    --_fill: var(--sherpa-theme-surface-success-3, #007a45);
-    --_border: var(--sherpa-theme-border-success-2, #20c173);
+    --_fill: var(--sherpa-theme-surface-success-3, #00ad62);
+    --_border: var(--sherpa-theme-border-success-2, #36de8c);
   }
 
   /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */

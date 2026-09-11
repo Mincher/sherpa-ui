@@ -111,7 +111,7 @@
   border: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   /* Same fill/ink/type as sherpa-tooltip's bubble — one tooltip look system-wide. */
-  background: var(--sherpa-style-content-base, #35353d);
+  background: var(--sherpa-style-content-base, #0c0b11);
   color: var(--sherpa-theme-content-body-4, #ffffff);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);

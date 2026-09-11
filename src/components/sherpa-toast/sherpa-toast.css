@@ -2,9 +2,9 @@
  * sherpa-toast — presentation.
  *
  * Figma Toast (27:750, data-extracted; pinned Style=success, Elevation=md): the
- * CARD fills the PALE status tint — style-surface/base +1 (success → #bbffd2) — with
+ * CARD fills the PALE status tint — style-surface/base +1 (success → #f0fff5) — with
  * the neutral 0.5 style-border/base ring and an Elevation=md shadow whose colour is
- * the STATUS shadow (style-surface/shadow → #20c1734d). Heading = style-content/
+ * the STATUS shadow (style-surface/shadow → #36de8c4d). Heading = style-content/
  * secondary (#35353d, status-independent) 14/20 semibold; value = style-content/base
  * (status ink) 12/16; action = content/link/+1 12/16 regular; a 14px status glyph
  * leads and a 12px close icon trails. Geometry chains to Structure/Theme.

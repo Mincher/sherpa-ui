@@ -96,7 +96,7 @@ test('the on state paints the success fill', async ({ page }) => {
     };
     return { off: await paint(false), on: await paint(true) };
   });
-  expect(r.on).toBe('rgb(0, 122, 69)'); // ON → theme-surface-success-3 (#007A45, strong green)
+  expect(r.on).toBe('rgb(0, 173, 98)'); // ON → theme-surface-success-3 (#00AD62, strong green)
   expect(r.off).not.toBe(r.on);
 });
 

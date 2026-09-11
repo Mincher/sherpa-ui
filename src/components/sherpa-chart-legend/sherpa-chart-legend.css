@@ -141,7 +141,7 @@
 
    These are the same `border-<status>-2` tokens --_status-border-strong resolves
    to, so a zone's key and its band agree. */
-.item[data-status="success"] .swatch { --_hue: var(--sherpa-theme-border-success-2, #20c173); }
+.item[data-status="success"] .swatch { --_hue: var(--sherpa-theme-border-success-2, #36de8c); }
 .item[data-status="warning"] .swatch { --_hue: var(--sherpa-theme-border-warning-2, #ffc44c); }
 .item[data-status="critical"] .swatch { --_hue: var(--sherpa-theme-border-critical-2, #dd2c01); }
 .item[data-status="urgent"] .swatch { --_hue: var(--sherpa-theme-border-urgent-2, #ff7300); }

@@ -49,7 +49,7 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
   expect(r.value).toBe('$1.2M');
   expect(r.delta).toBe('+12.5%'); // derived from deltaPercent
   expect(r.trend).toBe('up');
-  expect(r.deltaColor).toBe('rgb(0, 122, 69)'); // theme-content-success-1 #007A45 (readable up-trend ink)
+  expect(r.deltaColor).toBe('rgb(0, 173, 98)'); // theme-content-success-1 #00AD62 (readable up-trend ink)
 });
 
 test('a down trend colours the delta critical', async ({ page }) => {

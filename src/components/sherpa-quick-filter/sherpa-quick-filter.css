@@ -151,7 +151,7 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #07526f));
+  background: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #003246));
 }
 
 /* Count chip — Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT: a neutral

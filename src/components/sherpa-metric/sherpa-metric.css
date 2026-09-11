@@ -98,7 +98,7 @@
 
 .arrow { display: none; font-size: var(--sherpa-font-size-body-small, 12px); line-height: 1; }
 /* Trend ink: success/critical CONTENT tokens (ink, not surface) per the Figma model. */
-:host([data-trend="up"])   { --_delta: var(--sherpa-theme-content-success-1, #007A45); }
+:host([data-trend="up"])   { --_delta: var(--sherpa-theme-content-success-1, #00ad62); }
 :host([data-trend="down"]) { --_delta: var(--sherpa-theme-content-critical-1, #B72200); }
 :host([data-trend="up"])   .arrow-up   { display: inline-flex; }
 :host([data-trend="down"]) .arrow-down { display: inline-flex; }

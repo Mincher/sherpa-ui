@@ -30,13 +30,25 @@ interface Zone {
   name: string;
 }
 
-/** Status name → the token used for the single-colour route, with a hex fallback. */
+/**
+ * Status name → the band's colour.
+ *
+ * The `-2` step is the SATURATED middle of each status ramp — the one a chart
+ * mark wants. `base` and `-1` are the pale tints a card fills with, and `-3`/`-4`
+ * are the dark inks for text on them.
+ *
+ * These used to read `--sherpa-style-surface-<status>-strong`, which does not
+ * exist: `style-surface/*` is status-MODED (one `[data-status]` pin re-points the
+ * whole set) and has no per-status names, so all five silently fell through to
+ * their hardcoded hex. A gauge paints several statuses at once, so the moded
+ * token could not serve it anyway — it has to name each ramp directly.
+ */
 const STATUS_COLOUR: Record<string, string> = {
-  success: 'var(--sherpa-style-surface-success-strong, #20c173)',
-  warning: 'var(--sherpa-style-surface-warning-strong, #ffc44c)',
-  urgent: 'var(--sherpa-style-surface-urgent-strong, #ff7300)',
-  critical: 'var(--sherpa-style-surface-critical-strong, #fc4e2d)',
-  info: 'var(--sherpa-style-surface-info-strong, #3b4ccd)',
+  success: 'var(--sherpa-theme-surface-success-2, #36de8c)',
+  warning: 'var(--sherpa-theme-surface-warning-2, #ffc44c)',
+  urgent: 'var(--sherpa-theme-surface-urgent-2, #ff7300)',
+  critical: 'var(--sherpa-theme-surface-critical-2, #dd2c01)',
+  info: 'var(--sherpa-theme-surface-info-2, #008bba)',
 };
 
 /**

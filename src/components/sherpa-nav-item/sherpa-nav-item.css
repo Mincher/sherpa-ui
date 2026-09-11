@@ -33,7 +33,7 @@
  *   content   FILL + grow, gap 8, bound to Navigation::isVisible
  *   Item Name content/size/base 14 on line-height/base 20, weight/LIGHT 300
  *   Tag       Tag/Type=full at Structure xs, Style:Saturated=success — a 16-tall
- *             pill (rounding/xl 16), pad 2×4, 10/16 regular, #20c173 face
+ *             pill (rounding/xl 16), pad 2×4, 10/16 regular, #36de8c face
  *   chevron   16-square chevron-down Icon, last in `content` (hasChildren)
  *   dot       Indicator (atom)/Type=dot pinned Style=active — 8px disc,
  *             surface/active/base face + 0.5 border-active-2 ring, OUTSIDE `content`
@@ -152,7 +152,7 @@
 
 /* Trailing Tag — Figma Tag/Type=full at Structure xs pinned Style:Saturated=success:
    a 16-tall pill (rounding/xl 16), padding 2×4, 10/16 regular, saturated success
-   face (#20c173) with white ink. A [data-status] ancestor re-tints it through
+   face (#36de8c) with white ink. A [data-status] ancestor re-tints it through
    --_status-surface-strong. It lives INSIDE `content`, so the row's own 8px
    padding-right insets it and the row background sits behind it. */
 .badge {
@@ -163,7 +163,7 @@
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-success-2, #20c173));
+  background: var(--_status-surface-strong, var(--sherpa-theme-surface-success-2, #36de8c));
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-theme-content-size-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);

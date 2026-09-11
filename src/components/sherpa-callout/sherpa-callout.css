@@ -5,7 +5,7 @@
  * NEUTRAL — white surface, neutral border — in every status (style-surface/base and
  * style-border/base do not re-point per status). The status hue lives on the INK and
  * the BADGE: Figma's style-content/base re-points per status (info=#006c91,
- * critical=#b72200, success=#007a45 …), mirrored here by the --_status-text cascade;
+ * critical=#b72200, success=#00ad62 …), mirrored here by the --_status-text cascade;
  * the badge carries the strong --_status-icon hue so its white glyph keeps contrast.
  * (Verified against Figma 27:733 Variant Reference, 2026-09-09.) Geometry chains to
  * the shared Structure/Theme tokens.

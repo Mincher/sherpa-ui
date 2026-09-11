@@ -19,19 +19,19 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
+            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
             "lastSyncedValue": {
               "categorical": {
                 "reference": "{theme.data-viz.categorical.color 1}"
               },
               "divergent/blue-green-pink": {
-                "reference": "{theme.data-viz.divergent.blue green -> pink.color 1}"
+                "reference": "{primitives.color.basic.blue-green.500}"
               },
               "divergent/purple-yellow": {
-                "reference": "{theme.data-viz.divergent.purple -> yellow.color 1}"
+                "reference": "{primitives.color.basic.purple.500}"
               },
               "divergent/turquoise-razamatazz": {
-                "reference": "{theme.data-viz.divergent.turquoise -> razamatazz.color 1}"
+                "reference": "{primitives.color.extended.turquoise.500}"
               },
               "sequential/blue": {
                 "reference": "{theme.data-viz.sequential.blue.color 1}"
@@ -68,9 +68,9 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 1}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 1}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 1}",
+              "divergent/blue-green-pink": "{primitives.color.basic.blue-green.500}",
+              "divergent/purple-yellow": "{primitives.color.basic.purple.500}",
+              "divergent/turquoise-razamatazz": "{primitives.color.extended.turquoise.500}",
               "sequential/blue": "{theme.data-viz.sequential.blue.color 1}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 1}",
               "sequential/green": "{theme.data-viz.sequential.green.color 1}",
@@ -100,7 +100,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
+            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
             "lastSyncedValue": {
               "categorical": {
                 "reference": "{theme.data-viz.categorical.color 2}"
@@ -108,9 +108,7 @@
               "divergent/blue-green-pink": {
                 "reference": "{__library:VariableID:7:951}"
               },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:940}"
-              },
+              "divergent/purple-yellow": "#422772",
               "divergent/turquoise-razamatazz": {
                 "reference": "{__library:VariableID:7:962}"
               },
@@ -150,7 +148,7 @@
             },
             "modes": {
               "divergent/blue-green-pink": "{__library:VariableID:7:951}",
-              "divergent/purple-yellow": "{__library:VariableID:7:940}",
+              "divergent/purple-yellow": "#422772",
               "divergent/turquoise-razamatazz": "{__library:VariableID:7:962}",
               "sequential/blue": "{theme.data-viz.sequential.blue.color 2}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 2}",
@@ -181,7 +179,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
+            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
             "lastSyncedValue": {
               "categorical": {
                 "reference": "{theme.data-viz.categorical.color 3}"
@@ -189,9 +187,7 @@
               "divergent/blue-green-pink": {
                 "reference": "{__library:VariableID:7:952}"
               },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:941}"
-              },
+              "divergent/purple-yellow": "#503287",
               "divergent/turquoise-razamatazz": {
                 "reference": "{__library:VariableID:7:963}"
               },
@@ -231,7 +227,7 @@
             },
             "modes": {
               "divergent/blue-green-pink": "{__library:VariableID:7:952}",
-              "divergent/purple-yellow": "{__library:VariableID:7:941}",
+              "divergent/purple-yellow": "#503287",
               "divergent/turquoise-razamatazz": "{__library:VariableID:7:963}",
               "sequential/blue": "{theme.data-viz.sequential.blue.color 3}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 3}",
@@ -829,19 +825,19 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
+            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
             "lastSyncedValue": {
               "categorical": {
                 "reference": "{theme.data-viz.categorical.color 11}"
               },
               "divergent/blue-green-pink": {
-                "reference": "{theme.data-viz.divergent.blue green -> pink.color 2}"
+                "reference": "{primitives.color.basic.pink.500}"
               },
               "divergent/purple-yellow": {
-                "reference": "{theme.data-viz.divergent.purple -> yellow.color 2}"
+                "reference": "{primitives.color.extended.warm-yellow.500}"
               },
               "divergent/turquoise-razamatazz": {
-                "reference": "{theme.data-viz.divergent.turquoise -> razamatazz.color 2}"
+                "reference": "{primitives.color.extended.razamatazz.500}"
               },
               "sequential/blue": {
                 "reference": "{theme.data-viz.sequential.blue.color 11}"
@@ -878,9 +874,9 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 2}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 2}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 2}",
+              "divergent/blue-green-pink": "{primitives.color.basic.pink.500}",
+              "divergent/purple-yellow": "{primitives.color.extended.warm-yellow.500}",
+              "divergent/turquoise-razamatazz": "{primitives.color.extended.razamatazz.500}",
               "sequential/blue": "{theme.data-viz.sequential.blue.color 11}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 11}",
               "sequential/green": "{theme.data-viz.sequential.green.color 11}",
@@ -3291,7 +3287,7 @@
                 }
               },
               "modes": {
-                "dark": "#001C0C1A"
+                "dark": "#0052221A"
               },
               "primaryMode": "light",
               "scopes": [
@@ -3301,7 +3297,7 @@
             }
           },
           "$type": "color",
-          "$value": "#BBFFD21A"
+          "$value": "#F0FFF51A"
         },
         "color 2": {
           "$extensions": {
@@ -3318,7 +3314,7 @@
                 }
               },
               "modes": {
-                "dark": "#00593033"
+                "dark": "#008A4B33"
               },
               "primaryMode": "light",
               "scopes": [
@@ -3328,7 +3324,7 @@
             }
           },
           "$type": "color",
-          "$value": "#56E79633"
+          "$value": "#82EDB133"
         },
         "color 3": {
           "$extensions": {
@@ -3345,7 +3341,7 @@
                 }
               },
               "modes": {
-                "dark": "#007A454D"
+                "dark": "#00AD624D"
               },
               "primaryMode": "light",
               "scopes": [
@@ -3355,7 +3351,7 @@
             }
           },
           "$type": "color",
-          "$value": "#20C1734D"
+          "$value": "#36DE8C4D"
         },
         "color 4": {
           "$extensions": {
@@ -3372,7 +3368,7 @@
                 }
               },
               "modes": {
-                "dark": "#009D5A66"
+                "dark": "#00D17866"
               },
               "primaryMode": "light",
               "scopes": [
@@ -3382,7 +3378,7 @@
             }
           },
           "$type": "color",
-          "$value": "#007A4566"
+          "$value": "#00AD6266"
         },
         "color 5": {
           "$extensions": {
@@ -3399,7 +3395,7 @@
                 }
               },
               "modes": {
-                "dark": "#20C17380"
+                "dark": "#36DE8C80"
               },
               "primaryMode": "light",
               "scopes": [
@@ -3409,7 +3405,7 @@
             }
           },
           "$type": "color",
-          "$value": "#00391D80"
+          "$value": "#006B3780"
         }
       },
       "tones": {
@@ -7027,18 +7023,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.979Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#BBFFD2"
-                  }
+                  "value": "#f0fff5"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:195"
               }
             },
             "$type": "color",
-            "$value": "#BBFFD2"
+            "$value": "#f0fff5"
           },
           "200": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7046,18 +7040,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#6CFAA8"
-                  }
+                  "value": "#9cfcc5"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:196"
               }
             },
             "$type": "color",
-            "$value": "#6CFAA8"
+            "$value": "#9cfcc5"
           },
           "300": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7065,18 +7057,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#56E796"
-                  }
+                  "value": "#82edb1"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:197"
               }
             },
             "$type": "color",
-            "$value": "#56E796"
+            "$value": "#82edb1"
           },
           "400": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7084,18 +7074,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#3FD484"
-                  }
+                  "value": "#69dd9f"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:198"
               }
             },
             "$type": "color",
-            "$value": "#3FD484"
+            "$value": "#69dd9f"
           },
           "500": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7103,18 +7091,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#20C173"
-                  }
+                  "value": "#36de8c"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:199"
               }
             },
             "$type": "color",
-            "$value": "#20C173"
+            "$value": "#36de8c"
           },
           "600": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7122,18 +7108,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#009D5A"
-                  }
+                  "value": "#00d178"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:200"
               }
             },
             "$type": "color",
-            "$value": "#009D5A"
+            "$value": "#00d178"
           },
           "700": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7141,18 +7125,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#007A45"
-                  }
+                  "value": "#00ad62"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:203"
               }
             },
             "$type": "color",
-            "$value": "#007A45"
+            "$value": "#00ad62"
           },
           "800": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7160,18 +7142,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#005930"
-                  }
+                  "value": "#008a4b"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:204"
               }
             },
             "$type": "color",
-            "$value": "#005930"
+            "$value": "#008a4b"
           },
           "900": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7179,18 +7159,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#00391D"
-                  }
+                  "value": "#006b37"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:205"
               }
             },
             "$type": "color",
-            "$value": "#00391D"
+            "$value": "#006b37"
           },
           "1000": {
             "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -7198,18 +7176,16 @@
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
                 "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.980Z",
+                "lastSyncedAt": "2026-09-11T09:38:53.686Z",
                 "lastSyncedValue": {
-                  "value": {
-                    "literal": "#001C0C"
-                  }
+                  "value": "#005222"
                 },
                 "primaryMode": "value",
                 "variableId": "VariableID:5:206"
               }
             },
             "$type": "color",
-            "$value": "#001C0C"
+            "$value": "#005222"
           }
         },
         "greyscale": {
@@ -11436,7 +11412,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:18:187",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
             "lastSyncedValue": {
               "active": {
                 "reference": "{theme.border.active.+2}"
@@ -11454,7 +11430,7 @@
                 "reference": "{theme.border.info.+2}"
               },
               "success": {
-                "reference": "{theme.border.success.+2}"
+                "reference": "{theme.border.success.+3}"
               },
               "urgent": {
                 "reference": "{theme.border.urgent.+2}"
@@ -11468,7 +11444,7 @@
               "critical": "{theme.border.critical.+2}",
               "inactive": "{theme.border.default.+2}",
               "info": "{theme.border.info.+2}",
-              "success": "{theme.border.success.+2}",
+              "success": "{theme.border.success.+3}",
               "urgent": "{theme.border.urgent.+2}",
               "warning": "{theme.border.warning.+2}"
             },

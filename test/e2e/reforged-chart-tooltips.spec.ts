@@ -222,7 +222,12 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
   expect(r.count).toBe(3);
   expect(r.radii).toEqual([100, 100, 100]);
   expect(r.tips).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
-  for (const hue of r.hues) expect(hue).toContain('--sherpa-style-surface-');
+  // Each dot names its own status ramp directly. NOT `--sherpa-style-surface-*`:
+  // that set is status-MODED (one [data-status] pin re-points the whole set) and
+  // has no per-status names, so a gauge painting several statuses at once cannot
+  // use it. The old assertion passed only because the nonexistent token fell
+  // through to its hardcoded hex.
+  for (const hue of r.hues) expect(hue).toMatch(/--sherpa-theme-surface-\w+-2/);
   expect(r.outsideClip).toBe('gauge-wrap');
 });
 

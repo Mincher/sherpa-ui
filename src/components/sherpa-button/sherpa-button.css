@@ -126,8 +126,14 @@
 
   &:focus-visible {
     outline: none;
+    /* A 2px gap ring in the SURFACE colour, then the accent ring — so the accent
+       reads against the button's own fill rather than touching it.
+       The gap used to name `--sherpa-app-base`, which has never existed in
+       tokens.css, so it always fell through to a literal #ffffff and drew a
+       white halo in dark mode. style-surface/base is the real page/card face and
+       re-points with the display mode. */
     box-shadow:
-      0 0 0 2px var(--sherpa-app-base, #ffffff),
+      0 0 0 2px var(--sherpa-style-surface-base, #ffffff),
       0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }

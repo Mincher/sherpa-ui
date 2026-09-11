@@ -77,7 +77,7 @@
 }
 
 /* Confirmation swap — CSS owns the state, JS only flips data-copied. */
-.copied-label { display: none; color: var(--sherpa-theme-content-success-1, #007a45); }
+.copied-label { display: none; color: var(--sherpa-theme-content-success-1, #00ad62); }
 :host([data-copied]) .copy-label { display: none; }
 :host([data-copied]) .copied-label { display: inline-block; }
 

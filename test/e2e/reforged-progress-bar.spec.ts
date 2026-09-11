@@ -94,8 +94,8 @@ test('data-status colours the fill (via the --_fill custom property)', async ({ 
     };
     return { base: await read(), success: await read('success') };
   });
-  // success → the strong success status surface #56e796 (success-color-2)
-  expect(r.success.toLowerCase()).toContain('56e796');
+  // success → the strong success status surface #82edb1 (success-color-2)
+  expect(r.success.toLowerCase()).toContain('82edb1');
   expect(r.base).not.toBe(r.success);
 });
 
