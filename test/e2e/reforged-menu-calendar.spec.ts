@@ -242,3 +242,60 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
     expect(shape.clear.look).toBeNull();
   }
 });
+
+test('a cell fills its grid track in every view — nothing clips it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<sherpa-calendar data-value="2026-08-15"></sherpa-calendar>';
+    const cal = root.firstElementChild as HTMLElement & {
+      rendered?: Promise<void>; shadowRoot: ShadowRoot; dataset: DOMStringMap;
+    };
+    await cal.rendered;
+
+    const out: Record<string, unknown> = {};
+    for (const [view, sel] of [['day', '.cal-days'], ['month', '.cal-months'], ['year', '.cal-years']] as const) {
+      cal.dataset['view'] = view;
+      await new Promise((res) => setTimeout(res, 40));
+      const grid = cal.shadowRoot.querySelector(sel) as HTMLElement;
+      const cells = [...grid.querySelectorAll('sherpa-calendar-cell')] as (HTMLElement & { shadowRoot: ShadowRoot })[];
+      const c = cells[Math.floor(cells.length / 2)]!;
+      const host = c.getBoundingClientRect();
+      const btn = (c.shadowRoot.querySelector('.cell') as HTMLElement).getBoundingClientRect();
+      const content = (c.shadowRoot.querySelector('.content') as HTMLElement).getBoundingClientRect();
+      const track = getComputedStyle(grid).gridTemplateColumns.split(' ')[0]!;
+      out[view] = {
+        trackW: Math.round(parseFloat(track) * 10) / 10,
+        hostW: Math.round(host.width * 10) / 10, hostH: Math.round(host.height * 10) / 10,
+        btnW: Math.round(btn.width * 10) / 10, btnH: Math.round(btn.height * 10) / 10,
+        contentW: Math.round(content.width * 10) / 10, contentH: Math.round(content.height * 10) / 10,
+      };
+    }
+    return out as Record<string, {
+      trackW: number; hostW: number; hostH: number;
+      btnW: number; btnH: number; contentW: number; contentH: number;
+    }>;
+  });
+
+  for (const [view, m] of Object.entries(r)) {
+    // The cell FILLS its track. The calendar used to redraw the cell on the
+    // host with a `border: 0.5px solid transparent`, which took 1px off each
+    // side — every cell painted 2px narrower than its track, and the content
+    // box sat clipped inside it.
+    expect(m.hostW, `${view}: host fills its track`).toBe(m.trackW);
+    expect(m.btnW, `${view}: button fills its host`).toBe(m.hostW);
+    expect(m.contentW, `${view}: content fills its button`).toBe(m.hostW);
+
+    // …and vertically. Figma's Grid frame (962:6062) is 7 x 7 tracks ALL at
+    // FLEX 1, so a cell is exactly its row. The month and year cells were
+    // pinned to a hardcoded 40px block-size — a number in no token and in no
+    // node — inside a 40px row holding a 32px cell: 4px dead above and below.
+    expect(m.hostH, `${view}: row height`).toBe(32);
+    expect(m.btnH, `${view}: button fills its row`).toBe(32);
+    expect(m.contentH, `${view}: content fills its row`).toBe(32);
+  }
+
+  // A day is the node's own 32 wide; a month/year cell is wider because three
+  // columns share the same width seven days do.
+  expect(r['day']!.trackW).toBe(32);
+  expect(r['month']!.trackW).toBeGreaterThan(32);
+});

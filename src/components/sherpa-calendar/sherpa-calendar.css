@@ -11,15 +11,17 @@
    control — [prev 32 ▏month label (fill) ▕ next 32] all in the DEFAULT button look
    (white, 0.5 style-border/base ring, label 14/20 regular); the day grid sits in an
    8px-padded content frame. Day states are the Calendar Button atoms: default =
-   transparent · today = Transparent:info tint (#008bba4d) · in-range = Style:active
-   tint (#f2dfff, square corners). Selection ends take the strong active step. */
+   transparent. The per-day states — today, selected, and the three range steps —
+   belong to <sherpa-calendar-cell>, which is Figma's own Calendar Cell node. */
 :host {
   display: inline-block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_accent: var(--sherpa-theme-surface-active-2, #c046ff);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  --_today: var(--sherpa-theme-surface-info-transparent, #008bba4d);
-  --_range: var(--sherpa-theme-surface-active-base, #f2dfff);
+  /* --_today and --_range are GONE with the cell block that read them:
+     <sherpa-calendar-cell> carries those two fills itself, straight off the
+     node. --_accent stays — this component's own footer still paints with it
+     when it is not embedded in a menu. */
 }
 
 .cal {
@@ -100,22 +102,43 @@
 
 /* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
    8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */
+/* ── The grids — every track 1fr ─────────────────────────────────────────
+ *
+ * Read from the Calendar's Grid frame (962:6062): 7 columns and 7 rows, every
+ * one of them FLEX 1, with colGap 0 and rowGap 2. Will set them all to 1fr
+ * precisely so one grid serves the day, month and year views without three sets
+ * of track sizes to keep in step.
+ *
+ * The columns were `repeat(7, 32px)` and the month/year cells were pinned to a
+ * hardcoded 40px block-size — a number in no token and in no Figma node, which
+ * left 4px of dead space above and below every month and year cell. A 1fr track
+ * takes its height from the row, and the cell fills the track. */
 .cal-weekdays,
 .cal-days {
   display: grid;
-  grid-template-columns: repeat(7, var(--sherpa-display-mode-size-2xl, 32px));
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  /* 1fr tracks with a 32px FLOOR. Figma's Grid frame is 224 wide for 7 cells of
+     32, so the tracks are 1fr THERE because the frame is already the right
+     width — a bare 1fr in code let the grid shrink to whatever box it landed
+     in and squeezed each day to 29. `minmax` keeps Will's 1fr behaviour (the
+     tracks still share any extra evenly) without letting a cell go under the
+     size the node says it is. */
+  grid-template-columns: repeat(7, minmax(var(--sherpa-display-mode-size-2xl, 32px), 1fr));
+  grid-auto-rows: var(--sherpa-display-mode-size-2xl, 32px);
+  column-gap: 0;
+  row-gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
 }
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
-/* Month / year grids are wider cells in fewer columns. */
+/* Month / year: the same 1fr tracks in three columns rather than seven. */
 .cal-months,
 .cal-years {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  grid-auto-rows: var(--sherpa-display-mode-size-2xl, 32px);
+  column-gap: 0;
+  row-gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding: var(--sherpa-theme-padding-md, 8px);
 }
 
@@ -141,88 +164,23 @@
 }
 
 /* ── Day cells ──────────────────────────────────────────────────────── */
+/* ── The cells ───────────────────────────────────────────────────────────
+ *
+ * There is NOTHING here about how a cell looks. <sherpa-calendar-cell> is
+ * Figma's own "Calendar Cell" component and owns its box, its three states and
+ * its text; this file owns only WHICH day each one is and where it sits.
+ *
+ * A ~80-line block used to redraw all of that on the host — its own border,
+ * fill, hover, today, selected and range states — left behind when the cell
+ * became a component. It was not merely dead: its `border: 0.5px solid
+ * transparent` took 1px off each side, so every cell painted 2px narrower than
+ * its own grid track and the content box sat clipped inside it.
+ *
+ * The cell stretches to fill its track, which is what makes one rule serve the
+ * day, month and year grids at their three different track sizes. */
 .cal-cell {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: 0;
-  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
-}
-
-/* Today — Figma Calendar Button/State=today: the Transparent:info surface tint
-   (style-surface/base → #008bba4d), no ring, regular weight, dark ink. */
-.cal-cell[data-today] {
-  background: var(--_today);
-  border-color: transparent;
-}
-
-/* Selected — the strong active step with fixed light ink; wins over hover / today. */
-.cal-cell[data-selected] {
-  background: var(--_accent);
-  border-color: var(--_accent);
-  color: var(--_accent-on);
-}
-.cal-cell[data-selected]:hover {
-  background: var(--_accent);
-  color: var(--_accent-on);
-}
-
-/* ── Range band (data-type="range") ─────────────────────────────────────
-   Figma Calendar Button/State=selected-range: Style=active surface (#f2dfff) with
-   snap-all-edges (square corners) and the dark content/body/+1 ink. The band cells
-   bleed across the 4px grid gap with a left/right box-shadow so the fill reads as
-   one continuous strip; the ends keep the solid fill (via [data-selected]). */
-.cal-cell[data-in-range] {
-  background: var(--_range);
-  color: var(--sherpa-theme-content-body-1, #35353D);
-  border-radius: 0;
-  border-color: transparent;
-  box-shadow:
-    calc(-1 * var(--sherpa-theme-gap-sm, 4px)) 0 0 0 var(--_range),
-    var(--sherpa-theme-gap-sm, 4px) 0 0 0 var(--_range);
-}
-.cal-cell[data-in-range]:hover {
-  background: var(--_range);
-  color: var(--sherpa-theme-content-body-1, #35353D);
-}
-
-/* Blank spacer cells — no chrome, no interaction. */
-.cal-cell[data-blank] {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Out-of-range days — inactive tokens, never opacity. */
-.cal-cell[disabled]:not([data-blank]) {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #B3B3C3);
-  background: transparent;
-}
-
-/* Month / year cells fill their (wider) column and are a bit taller. */
-.cal-months .cal-cell,
-.cal-years .cal-cell {
   inline-size: 100%;
-  block-size: var(--sherpa-display-mode-size-3xl, 40px);
+  block-size: 100%;
 }
 
 /* ── Time row (data-has-time) — CSS owns visibility ─────────────────────── */

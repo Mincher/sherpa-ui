@@ -240,7 +240,7 @@ states:
     selector: ":host(:not([data-view]))"
   - $type: state
     name: focus-visible
-    selector: .cal-cell:focus-visible
+    selector: .cal-time:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -272,24 +272,21 @@ tokens:
   cal.border-radius: "{sherpa.structure-rounding-top-left}"
   cal.background: "{sherpa.style-surface-base}"
   cal-weekdays.grid-template-columns: "{sherpa.display-mode-size-2xl}"
-  cal-weekdays.gap: "{sherpa.theme-gap-sm}"
+  cal-weekdays.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
+  cal-weekdays.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-weekdays.padding-inline: "{sherpa.theme-padding-md}"
   cal-days.grid-template-columns: "{sherpa.display-mode-size-2xl}"
-  cal-days.gap: "{sherpa.theme-gap-sm}"
+  cal-days.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
+  cal-days.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-days.padding-inline: "{sherpa.theme-padding-md}"
   cal-weekdays.padding-block-start: "{sherpa.theme-padding-md}"
   cal-days.padding-block-end: "{sherpa.theme-padding-md}"
-  cal-months.gap: "{sherpa.theme-gap-sm}"
+  cal-months.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
+  cal-months.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-months.padding: "{sherpa.theme-padding-md}"
-  cal-years.gap: "{sherpa.theme-gap-sm}"
+  cal-years.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
+  cal-years.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-years.padding: "{sherpa.theme-padding-md}"
-  cal-cell.block-size: "{sherpa.display-mode-size-2xl}"
-  cal-cell.border-width: "{sherpa.style-border-width}"
-  cal-cell.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  cal-cell.color: "{sherpa.theme-content-body-1}"
-  cal-cell.font-size: "{sherpa.font-size-body-base}"
-  cal-cell.font-weight: "{sherpa.font-weight-regular}"
-  cal-cell.line-height: "{sherpa.theme-content-line-height-base}"
   cal-time-label.gap: "{sherpa.display-mode-space-xs}"
   cal-time-label.font-size: "{sherpa.font-size-body-small}"
   cal-time-label.font-weight: "{sherpa.font-weight-medium}"
