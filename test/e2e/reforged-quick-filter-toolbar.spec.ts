@@ -297,7 +297,7 @@ test('the action cluster is built in, and data-type=view adds the save group', a
         return !!n && n.getBoundingClientRect().width > 0;
       };
       return {
-        add: shown('.add-chip'),
+        add: shown('.add-btn'),
         ai: shown('[data-act="ai"]'),
         clear: shown('[data-act="clear"]'),
         configure: shown('[data-act="configure"]'),
@@ -349,22 +349,20 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     };
     for (const a of ['ai', 'configure', 'refresh', 'overflow', 'save', 'view-menu']) await press(a);
 
-    // The Add control is a CHIP (Figma State=menu), so it reports through its own
-    // click path, not button-click.
-    const add = el.shadowRoot!.querySelector('.add-chip') as HTMLElement;
-    (add.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 30));
-
-    return { seen, addStuckOn: add.hasAttribute('data-current') };
+    // ADD is deliberately absent from this list. It is a single button now, and
+    // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
+    // fires when the menu commits, which its own test covers.
+    const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
+    return { seen, addIsButton: add.localName, addExpanded: add.getAttribute('aria-expanded') };
   }, MOUNT);
 
   expect(r.seen).toEqual([
     'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
-    'view-save', 'view-menu-open', 'filter-add',
+    'view-save', 'view-menu-open',
   ]);
-  // Add is a TRIGGER, not a state: a chip flips itself on click, and leaving that
-  // flip would show "Add" in the bar as though it were an active filter.
-  expect(r.addStuckOn).toBe(false);
+  // A plain button, announcing itself as a menu trigger.
+  expect(r.addIsButton).toBe('sherpa-button');
+  expect(r.addExpanded).toBe('false');
 });
 
 test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
@@ -638,7 +636,7 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
   expect(r.afterReset).toEqual({ view: true, trial: false });
 });
 
-test('the Add chip puts an available filter on the bar and drops it from its menu', async ({ page }) => {
+test('the Add button puts an available filter on the bar and drops it from its menu', async ({ page }) => {
   const r = await page.evaluate(async (mount) => {
     // eslint-disable-next-line no-new-func
     const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
@@ -656,7 +654,7 @@ test('the Add chip puts an available filter on the bar and drops it from its men
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
-    const add = sr.querySelector('.add-chip') as HTMLElement;
+    const add = sr.querySelector('.add-btn') as HTMLElement;
     const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
 
     const before = { chips: chips(), offered: offered() };
@@ -671,7 +669,6 @@ test('the Add chip puts an available filter on the bar and drops it from its men
     return {
       before,
       after: { chips: chips(), offered: offered() },
-      addStuckOn: add.hasAttribute('data-current'),
       // A MENU chip is deliberately absent from `active` (its id names a column,
       // not a value), so "did it arrive on?" is read off the chip itself.
       addedIsOn: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-current'),
@@ -688,10 +685,6 @@ test('the Add chip puts an available filter on the bar and drops it from its men
 
   // It arrives ON, so the reason you added it is visible immediately.
   expect(r.addedIsOn).toBe(true);
-
-  // The Add control never shows itself as "on" — it is a trigger, and its menu is
-  // a list of things to do, not a state it holds.
-  expect(r.addStuckOn).toBe(false);
 });
 
 test('the Add menu is multi-select and searchable; a chip can be removed', async ({ page }) => {
@@ -712,7 +705,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
-    const add = sr.querySelector('.add-chip') as HTMLElement;
+    const add = sr.querySelector('.add-btn') as HTMLElement;
     const addMenu = add.querySelector('sherpa-menu') as HTMLElement;
     const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
     const apply = async (host: HTMLElement) => {

@@ -44,13 +44,14 @@ anatomy:
           part: actions
           children:
             - slot: actions
-            - el: sherpa-quick-filter
-              class: add-chip
+            - el: sherpa-button
+              class: act add-btn
               attrs:
-                data-id: add
-                data-menu: ""
-                data-label: Add
-                data-icon-start: fa-solid fa-plus
+                data-act: add
+                data-size: sm
+                data-icon-end: fa-solid fa-caret-down
+                aria-haspopup: menu
+                aria-expanded: "false"
             - el: sherpa-button
               class: act
               attrs:

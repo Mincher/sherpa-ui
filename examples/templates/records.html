@@ -17,8 +17,13 @@
            on this grid's data live here — Add customer moved out of the section
            header, so it sits with the data it acts on. -->
       <sherpa-toolbar id="grid-actions">
+        <!-- A real ICON, not the literal "+" character this used to pass.
+             sherpa-button accepts either (a raw glyph is back-compat), but a
+             text "+" only inks about half its em, so it drew ~7px inside the
+             correct 14px box and read as too small. A Font Awesome glyph fills
+             the box Figma sizes with `icon-size`. -->
         <sherpa-button slot="leading" id="add-btn"
-                       data-look="saturated" data-icon-start="&#43;">
+                       data-look="saturated" data-icon-start="fa-solid fa-plus">
           Add customer
         </sherpa-button>
       </sherpa-toolbar>

@@ -125,6 +125,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
     // Action rows (the "Remove filter" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
+    // The ADD menu hangs off a sherpa-BUTTON, which — unlike a chip — does not
+    // relay menu-change as quick-filter-change. So its commit is heard directly.
+    this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
@@ -251,6 +254,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const single = def.select === 'single';
     const menu = menuTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
     menu.setAttribute('data-heading', def.label);
+    // The prototype carries slot="menu" for a CHIP; a sherpa-button names the
+    // same slot, so the one prototype serves both.
+    menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
     // A filter menu COMMITS on Apply. Filtering a table or chart is expensive and
     // a partly-built selection is rarely a query anyone wants run, so the rows are
@@ -337,21 +343,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // the toolbar itself would still see the raw chip click.
       event.stopImmediatePropagation();
       this.#cycleSort(sortChip);
-      return;
-    }
-
-    // The ADD chip is part of the action cluster, not the filter run. It reports
-    // its own event and must NOT reach #emitChange, or "add a filter" would be
-    // announced as a change to the filter SET — which it is not, yet.
-    const addChip = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-chip'),
-    );
-    if (addChip) {
-      event.stopImmediatePropagation();
-      // A toggle chip flips itself on click; Add is a trigger, not a state, so
-      // the flip is undone rather than left showing as an active filter.
-      addChip.removeAttribute('data-current');
-      this.emit('filter-add', {});
       return;
     }
 
@@ -463,14 +454,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
   }
 
-  /** Stamp the Add chip's menu from whatever is left to add. */
+  /** Stamp the Add button's menu from whatever is left to add. */
   #renderAvailable(): void {
-    const add = this.$<HTMLElement>('.add-chip');
+    const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
-    // Nothing left to add — the caret would open an empty list.
-    this.toggleAttribute('data-can-add', this.#available.length > 0);
+    // Nothing left to add — the button would open an empty list, so it is
+    // disabled rather than lying about what it can do.
+    const any = this.#available.length > 0;
+    this.toggleAttribute('data-can-add', any);
+    add.toggleAttribute('disabled', !any);
     add.querySelector('sherpa-menu')?.remove();
-    if (!this.#available.length) return;
+    if (!any) return;
     this.#addMenu(add, {
       id: 'add',
       label: 'Add filter',
@@ -569,8 +563,49 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'favourite':
         this.#toggleFavourite(btn);
         break;
+      case 'add':
+        // The button IS the trigger now — there is no caret to open the list.
+        // Adding a filter always meant "show me the options", so a body/caret
+        // split was two controls doing one job.
+        this.#openAddMenu(btn);
+        break;
     }
   };
+
+  /**
+   * The Add menu committed — put the chosen filters on the bar.
+   *
+   * Heard as `menu-change` rather than `quick-filter-change`: the menu hangs off
+   * a sherpa-button, and only a CHIP re-emits its menu's commit under the
+   * quick-filter name. A menu on a plain button reports for itself.
+   */
+  #onAddCommit = (event: Event): void => {
+    const add = event
+      .composedPath()
+      .find((n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-btn'));
+    if (!add) return;
+    event.stopImmediatePropagation();
+    const picked = (event as CustomEvent).detail?.values as string[] | undefined;
+    if (picked?.length) this.#addFilters(picked);
+  };
+
+  /**
+   * Open the Add button's menu, anchored to the button.
+   *
+   * `aria-expanded` tracks it so the control announces itself as a menu button,
+   * which is what makes a plain <button> an acceptable trigger for a popover.
+   */
+  #openAddMenu(btn: HTMLElement): void {
+    const menu = btn.querySelector<HTMLElement & { show?: (t: HTMLElement) => void }>(
+      'sherpa-menu',
+    );
+    if (!menu) return;
+    btn.setAttribute('aria-expanded', 'true');
+    menu.addEventListener('menu-close', () => btn.setAttribute('aria-expanded', 'false'), {
+      once: true,
+    });
+    menu.show?.(btn);
+  }
 
   /**
    * Flip the star.
@@ -782,19 +817,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // bar. That is not a change to the filter SET's values, it is a change to
       // which chips exist, so it is handled here and never reaches #emitChange
       // as a value edit.
-      const addChip = path.find(
-        (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-chip'),
-      );
-      if (addChip) {
-        event.stopImmediatePropagation();
-        const picked = [...addChip.querySelectorAll<HTMLInputElement>('input:checked')];
-        // The Add chip never shows itself as "on" — it is a trigger, and its
-        // menu is a list of things to do, not a state it holds.
-        addChip.removeAttribute('data-current');
-        if (picked.length) this.#addFilters(picked.map((i) => i.value));
-        return;
-      }
-
       // A FILTER menu chip committed its selection (Apply). The chip's own event
       // reports one chip's values; the toolbar must re-report the WHOLE state, so
       // swap it for the toolbar-level one.

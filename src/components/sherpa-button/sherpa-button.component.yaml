@@ -49,6 +49,12 @@ anatomy:
           - slot: badge
             attrs:
               data-accepts: badge
+      - el: span
+        class: menu-slot
+        children:
+          - slot: menu
+            attrs:
+              data-accepts: menu
 props:
   - $type: prop
     name: data-badge

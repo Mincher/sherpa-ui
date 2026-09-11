@@ -231,3 +231,10 @@
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 :host([disabled]) .icon { color: var(--sherpa-theme-content-body-1, #35353d); }
+
+
+/* The MENU slot holds a popover, which paints in the browser's top layer — so
+   this span must never take part in the button's own layout or it would widen
+   the box by the menu's width. `display: contents` removes it from layout
+   entirely while leaving the slotted menu addressable. */
+.menu-slot { display: contents; }

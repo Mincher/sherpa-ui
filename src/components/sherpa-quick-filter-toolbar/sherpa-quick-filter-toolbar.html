@@ -80,23 +80,27 @@
       <slot name="actions"></slot>
 
       <!--
-        ADD — a Filter Chip (atom) pinned State=MENU in the node, not a plain
-        button. That state is a GROUP: the chip body and a snapped caret Button
-        (Structure snap-left-edge, Style=default) lapped together by the −0.5
-        space/snapped gap into one control.
+        ADD — a single Button, read from the updated node (150:3688
+        right-actions[0]): Type=label, 99 x 24, pinned Structure=sm and
+        Style=default, so a white face and 0.5px #B3B3C3 ring like the rest of
+        the cluster.
 
-        `data-menu` is what puts the chip in that state, and it is set here
-        rather than left to populate(): the caret is part of what an Add control
-        IS in the design, where an ordinary filter chip only grows one when it
-        has values to offer. The body adds a filter; the caret opens the field
-        list.
+        Label "Add filter", and ONE icon: `triangle-down` at the END. The
+        instance's icon-start is present but `visible: false`, so the design
+        shows no leading glyph — 99 = 8 padding + 61 label + 8 gap + 14 icon + 8
+        padding, which only adds up without one.
+
+        The caret is now an END ICON on one button rather than a second snapped
+        control. That is the change: adding a filter always meant "show me the
+        list", so a body/caret split was two controls doing one job.
+
+        The <sherpa-menu> goes in the button's `menu` SLOT, not its default one —
+        a popover in the default slot lands inside the label, joining its text
+        and widening the box.
       -->
-      <sherpa-quick-filter
-        class="add-chip"
-        data-id="add"
-        data-menu
-        data-label="Add"
-        data-icon-start="fa-solid fa-plus"></sherpa-quick-filter>
+      <sherpa-button class="act add-btn" data-act="add" data-size="sm"
+                     data-icon-end="fa-solid fa-caret-down"
+                     aria-haspopup="menu" aria-expanded="false">Add filter</sherpa-button>
 
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="fa-solid fa-wand-magic-sparkles"
