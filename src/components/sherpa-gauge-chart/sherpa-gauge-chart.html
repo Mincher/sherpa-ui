@@ -1,11 +1,14 @@
 <!--
   sherpa-gauge-chart — a half-circle gauge for a single value on a 0–100 scale.
 
-  The fill arc is a conic-gradient. With no zones it is one sweep driven by a
-  --_fill-pct custom property JS sets from data-value (a JS→CSS-var geometry
-  bridge — CSS owns the drawing); data-status colours it. With data-zones it
-  becomes contiguous coloured threshold bands (e.g. green/amber/red). A needle
+  The ring is HALF A DONUT: stroked SVG arcs, one per band, exactly as
+  sherpa-donut-chart draws its slices. With no zones there is a single arc whose
+  dash length follows data-value and whose colour follows data-status. With
+  data-zones there is one arc per threshold band (e.g. green/amber/red). A needle
   rotates over the arc, the centre shows the value, and a caption sits beneath.
+
+  The stroke IS the hover target, so a band's tooltip hit area matches the band
+  it describes and the hollow centre is not hittable.
 
   Public API:
     data-value    number on the scale (drives the fill sweep + needle angle)
@@ -31,14 +34,45 @@
     <span class="title"><slot name="title"></slot></span>
   </div>
   <!--
-    The wrapper exists so the hover dots can sit OUTSIDE .gauge's clip. `.gauge`
-    uses `overflow: hidden` to hide the ring's bottom half, and that clip also cut
-    off the tooltips — so the dots are a SIBLING of the gauge, matched to its box.
+    The wrapper is the positioning context for the tooltip layer. It is a SIBLING
+    of the ring rather than its parent's only child, because a tip must be able to
+    escape the ring's own box.
   -->
   <div class="gauge-wrap">
   <div class="gauge" part="gauge" role="img" aria-label="Gauge chart">
-    <div class="track" part="track"></div>
-    <div class="fill" part="fill"></div>
+    <!--
+      THE RING IS SVG — half a donut.
+
+      It used to be two conic-gradient divs (a grey track + a coloured fill)
+      inside an `overflow: hidden` box that chopped the bottom half off. A
+      gradient paints hard-edged bands with NO per-band element, so a zone could
+      not be hovered: the hit target had to be faked as an HTML wedge clipped to
+      an 8-point polygon. That wedge ran from the HUB to the rim, so the hollow
+      centre was hittable, and its straight chords cut inside the real arc, so
+      the outer edge of each band was not. Both bugs came from the same place.
+
+      Now each zone is a STROKED ARC — one <circle> whose dash exposes only its
+      own span, exactly as sherpa-donut-chart draws a slice. The stroke IS the
+      hit target, so it follows the band precisely and the hole is not hittable
+      at all.
+
+      The viewBox is the TOP HALF of a 100×100 space (SVG's y grows DOWNWARD, so
+      the top half is y 0..50) and the circle is centred at (50,50) — its own
+      bottom edge — so only the upper half falls inside and no clipping is needed.
+
+      NO `preserveAspectRatio="none"`. The box is 2:1, so `none` stretched the
+      circle horizontally and no dash length could ever trace a true arc. The
+      default (`xMidYMid meet`) keeps it round; the viewBox is already 2:1, so it
+      fills the box without letterboxing.
+    -->
+    <svg class="ring" part="ring" viewBox="0 0 100 50" aria-hidden="true">
+      <!-- Every arc, including the grey REMAINDER band, is stamped in here by
+           #renderArcs. There is deliberately no separate full-length track:
+           the bands already cover the gauge up to the value, so the only part
+           a track ever showed was the leftover, and having it draw its own
+           half-circle meant a second copy of the dash maths. -->
+      <g class="zones"></g>
+    </svg>
     <div class="hub"><div class="needle" part="needle"></div></div>
     <div class="hub-cap" part="hub"></div>
     <div class="centre">
@@ -47,16 +81,13 @@
   </div>
 
   <!--
-    HOVER DOTS — one per threshold ZONE, and the tooltip anchors.
+    The tooltip layer: one zero-size anchor point + one tip per zone.
 
-    The fill is a conic-gradient, so there is no per-band element to hover and
-    nothing an SVG anchor could attach to either (an SVG element cannot be a CSS
-    anchor in Chromium — anchor-name never resolves and the tip lands in the
-    viewport corner). These are real HTML buttons instead.
-
-    Each dot places itself on its band's MID-ANGLE with CSS trig: the JS supplies
-    only the angle, and cos()/sin() do the geometry against the ring's own radius.
-    No JS measuring, so nothing re-runs on resize.
+    There are no visible markers. The reader hovers the BAND, which is the thing
+    they are already looking at. The anchor point exists because an SVG element
+    cannot be a CSS anchor in Chromium (anchor-name never resolves and the tip
+    lands in a viewport corner), so a plain <span> on the band's mid-angle stands
+    in for it.
   -->
   <div class="hotspots" part="hotspots"></div>
   </div>
@@ -67,23 +98,24 @@
   <figcaption class="caption" part="caption"><slot name="caption"></slot></figcaption>
   </figure>
 
-  <!-- One zone's hover dot + tooltip. JS sets --_angle (the band's mid-angle),
-       --_hue (its own colour) and the text; CSS trig puts the dot on the ring. -->
   <!--
-    One zone's invisible HIT WEDGE, its anchor point, and its tooltip.
+    One zone's ARC. Wrapped in an <svg> so the HTML parser switches to the SVG
+    namespace: a bare <circle> in an HTML template parses as HTMLUnknownElement
+    and paints absolutely nothing. JS clones the <circle> out of it.
+  -->
+  <template class="zone-tpl">
+    <svg><circle class="zone" cx="50" cy="50" fill="none" /></svg>
+  </template>
 
-    The fill is a single conic-gradient, so there is no per-band element to hover.
-    The wedge supplies one: a transparent box clipped to that band's pie slice, so
-    hovering the COLOURED BAND is what shows the tip — the reader points at the
-    data, not at a marker. Nothing is drawn.
+  <!--
+    One zone's anchor point + tooltip. JS sets --_angle (the band's mid-angle),
+    --_hue (its own colour) and the text; CSS trig puts the anchor on the ring.
 
-    The anchor point is separate and zero-size, because an SVG-free wedge is still
-    a big box: anchoring the tip to the wedge would centre it on the wedge's
-    bounding rect rather than on the band. The tip is a SIBLING of both — an
+    The anchor is zero-size and separate from the arc because an SVG element
+    cannot carry a CSS anchor-name in Chromium. The tip is its SIBLING — an
     absolutely-placed ancestor breaks anchor positioning for a fixed tip.
   -->
   <template class="hotspot-tpl">
-    <span class="hit-wedge"></span>
     <span class="hotspot chart-anchor-point"></span>
     <span class="chart-tip" role="tooltip">
       <span class="chart-tip-label"></span>

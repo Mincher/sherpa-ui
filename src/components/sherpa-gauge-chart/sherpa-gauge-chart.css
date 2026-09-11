@@ -55,10 +55,9 @@
   &:empty { display: none; }
 }
 
-/* ── Gauge: a full circle clipped to its top half ────────────────── */
-/* The positioning context for the hover-dot overlay. It wraps .gauge rather than
-   living inside it, because .gauge CLIPS (see below) and that clip cut the
-   tooltips off. No overflow of its own. */
+/* ── Gauge: half a donut, drawn as stroked SVG arcs ───────────────── */
+/* The positioning context for the tooltip layer. It wraps .gauge so a tip can
+   escape the ring's own box. No overflow of its own. */
 .gauge-wrap {
   position: relative;
   inline-size: var(--_size);
@@ -69,36 +68,93 @@
   position: relative;
   inline-size: var(--_size);
   block-size: calc(var(--_size) / 2);
-  /* Hides the ring's bottom half — the arc is drawn as a full circle. */
-  overflow: hidden;
+  /* NO `overflow: hidden`. The old ring was a full circle that had to be clipped
+     in half, and that clip also cut off the tooltips — which is why the hover
+     layer had to live outside the gauge. The viewBox now shows the top half, so
+     there is nothing to clip and tips are free to overflow. */
 }
-.track,
-.fill {
-  position: absolute;
-  inset-block-start: 0;
-  inline-size: var(--_size);
-  block-size: var(--_size);
-  border-radius: 50%;
-  /* punch the centre out into a ring */
-  mask: radial-gradient(circle, transparent calc(50% - var(--_ring)), #000 calc(50% - var(--_ring) + 0.5px));
-}
-/* Figma track binds a legacy _old_border/base token (Figma-side drift); the nearest
- * live token matching its value is theme-border-default-2 (#b3b3c3). */
-.track { background: var(--sherpa-theme-border-default-2, #b3b3c3); }
 
-/* Fill: single conic sweep from the left (start of the visible half), 0–50% of the
- * circle. When zones are supplied, JS overrides --_zones with a full multi-stop
- * conic-gradient and the host gains [data-zones]. */
-.fill {
-  background: conic-gradient(
-    from 270deg,
-    var(--_fill) 0 var(--_fill-pct),
-    transparent var(--_fill-pct) 100%
-  );
+/* The SVG fills the gauge box. The viewBox (0 0 100 50) is the TOP half of a
+   100×100 space and the circle is centred at (50,50), so only its upper half
+   falls inside and a 2:1 box shows a clean semicircle with no clipping.
+   SVG's y grows DOWNWARD, so the top half is y 0..50 — "0 50 100 50" would
+   have shown the hidden bottom half instead. */
+.ring {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
 }
-:host([data-zones]) .fill {
-  background: var(--_zones);
+
+/* NO ROTATION on the arcs.
+   Two earlier attempts rotated the circle to move the dash's starting point to
+   9 o'clock (the gauge's zero). Both drew the bands in the wrong place, because
+   `transform-box: fill-box` measures `transform-origin: 50% 50%` against the
+   circle's own 92×92 fill box, which is NOT its centre in viewBox coordinates —
+   the rotation happened about an off-centre point and swung the whole ring.
+
+   The dash offset can express the same thing with no transform at all: an
+   unrotated <circle> path starts at 3 o'clock and runs clockwise, so 9 o'clock
+   is exactly HALF the circumference along it. The TS bakes that half-turn into
+   every offset (see #renderArcs), which is both simpler and immune to how a
+   transform box happens to resolve. */
+
+/* Figma track binds a legacy _old_border/base token (Figma-side drift); the nearest
+ * live token matching its value is theme-border-default-2 (#b3b3c3).
+ * Half the circle, so the track spans exactly the visible gauge. */
+/* NO FULL-LENGTH TRACK.
+   A separate half-circle track underneath every band was redundant — the bands
+   already cover everything up to the value, so the only part that ever showed
+   was the remainder. It also had to duplicate the half-circle dash maths, which
+   is exactly where the geometry kept going wrong. Instead #renderArcs appends
+   ONE grey band covering the leftover span, drawn by the same code path (and so
+   with the same geometry) as every coloured band. */
+.zone[data-rest] {
+  stroke: var(--sherpa-theme-border-default-2, #b3b3c3);
+  /* The remainder is not data — nothing to hover, nothing to explain. */
+  pointer-events: none;
+  cursor: default;
 }
+
+/* One band. The STROKE is the hover target — that is the whole point of the
+   rebuild, and why there is no wedge element any more. BUTT caps: `round` would
+   add a half-stroke semicircle at each end (4 units on an 8-unit band), so
+   neighbouring zones would overlap and a tiny band would balloon into a blob. */
+.zone {
+  stroke: var(--_hue, var(--_fill));
+  stroke-linecap: butt;
+  cursor: pointer;
+  transition: stroke 100ms ease;
+}
+
+/* The band is its hue at 60%, with a solid 1px outline tracing it — the same
+   two-paint model sherpa-donut-chart uses for a slice, because one stroked
+   circle carries one paint and the fill tint and the outline are two. */
+@supports (color: color-mix(in srgb, red, transparent)) {
+  .zone {
+    stroke: color-mix(in srgb, var(--_hue, var(--_fill)) 60%, transparent);
+  }
+}
+
+/* Hover lifts the band to the FULL hue — the same information a thicker outline
+   would give, without changing the geometry under the pointer. */
+.zone:hover {
+  stroke: var(--_hue, var(--_fill));
+}
+
+/* The solid outline. A SECOND arc on the same geometry (see #renderArcs), so it
+   traces the band exactly. Not a pointer target: the tinted band beneath it
+   already is one, and two overlapping targets would fight over the tooltip. */
+.zone-outline {
+  fill: none;
+  stroke: var(--_hue, var(--_fill));
+  stroke-linecap: butt;
+  pointer-events: none;
+}
+
+/* The remainder is chrome, so it gets no outline of its own. */
+.zone-outline[data-rest] { display: none; }
 
 /* ── Needle ──────────────────────────────────────────────────────── */
 .hub {
@@ -223,34 +279,16 @@
    on the hub at its bottom centre. `--_from` / `--_to` are the band's edge angles
    from 12 o'clock; the polygon walks the arc between them in 8 steps, which is
    smooth enough for a hit area and cheap to compute in CSS. */
-.hit-wedge {
-  position: absolute;
-  inset: 0;
-  pointer-events: auto;
-  cursor: pointer;
-  /* A wedge from the hub (50% 100%) out to the rim, sampling the arc. */
-  clip-path: polygon(
-    50% 100%,
-    calc(50% + sin(var(--_from)) * 50%) calc(100% - cos(var(--_from)) * 50%),
-    calc(50% + sin(var(--_a1)) * 50%) calc(100% - cos(var(--_a1)) * 50%),
-    calc(50% + sin(var(--_a2)) * 50%) calc(100% - cos(var(--_a2)) * 50%),
-    calc(50% + sin(var(--_a3)) * 50%) calc(100% - cos(var(--_a3)) * 50%),
-    calc(50% + sin(var(--_a4)) * 50%) calc(100% - cos(var(--_a4)) * 50%),
-    calc(50% + sin(var(--_a5)) * 50%) calc(100% - cos(var(--_a5)) * 50%),
-    calc(50% + sin(var(--_a6)) * 50%) calc(100% - cos(var(--_a6)) * 50%),
-    calc(50% + sin(var(--_to)) * 50%) calc(100% - cos(var(--_to)) * 50%)
-  );
-}
-
-/* Hovering a wedge reveals ITS tip. `:has()` on the layer, because the wedge and
-   the tip are siblings but a `+` selector cannot skip the anchor point between
-   them. The index pairs them: wedge N lights tip N. */
-.hotspots:has(.hit-wedge[data-index="0"]:hover) .chart-tip[data-index="0"],
-.hotspots:has(.hit-wedge[data-index="1"]:hover) .chart-tip[data-index="1"],
-.hotspots:has(.hit-wedge[data-index="2"]:hover) .chart-tip[data-index="2"],
-.hotspots:has(.hit-wedge[data-index="3"]:hover) .chart-tip[data-index="3"],
-.hotspots:has(.hit-wedge[data-index="4"]:hover) .chart-tip[data-index="4"],
-.hotspots:has(.hit-wedge[data-index="5"]:hover) .chart-tip[data-index="5"] {
+/* Hovering a BAND reveals its tip.
+   `:has()` on the whole gauge wrapper, because the band lives inside <svg> and
+   the tip does not — no sibling selector can reach across that boundary. The
+   index pairs them: band N lights tip N. */
+.gauge-wrap:has(.zone[data-index="0"]:hover) .chart-tip[data-index="0"],
+.gauge-wrap:has(.zone[data-index="1"]:hover) .chart-tip[data-index="1"],
+.gauge-wrap:has(.zone[data-index="2"]:hover) .chart-tip[data-index="2"],
+.gauge-wrap:has(.zone[data-index="3"]:hover) .chart-tip[data-index="3"],
+.gauge-wrap:has(.zone[data-index="4"]:hover) .chart-tip[data-index="4"],
+.gauge-wrap:has(.zone[data-index="5"]:hover) .chart-tip[data-index="5"] {
   display: flex;
   opacity: 1;
 }

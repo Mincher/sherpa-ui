@@ -1,11 +1,19 @@
 /**
  * sherpa-gauge-chart — a half-circle gauge for one value on a 0–100 scale.
  *
- * From data-value, JS works out how full the gauge is and which way the needle
- * points, then hands those two numbers to CSS. CSS draws the arc and turns the
- * needle. With data-zones, JS composes the threshold bands into a single
- * conic-gradient value (--_zones) and CSS paints it; without zones, CSS draws
- * the plain single-colour sweep. The big number, caption and scale are text.
+ * HALF A DONUT: the ring is stroked SVG arcs, one per band, with exactly the
+ * geometry sherpa-donut-chart uses for a slice — a <circle> whose stroke-dasharray
+ * exposes only its own span. With data-zones there is one arc per threshold band;
+ * without, a single arc whose dash follows data-value.
+ *
+ * That replaced a pair of conic-gradient divs. A gradient has no per-band element,
+ * so a zone could not be hovered directly: the hit target was a separate HTML
+ * wedge clipped to an 8-point polygon from the HUB to the rim. It made the hollow
+ * centre hittable, and its straight chords cut inside the true arc so the band's
+ * outer edge was not. Now the STROKE is the target, so it matches the band exactly
+ * and the hole is not hittable at all.
+ *
+ * JS still hands CSS the needle angle. The big number, caption and scale are text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { radialArea } from '../../core/format-tick.js';
@@ -30,6 +38,20 @@ const STATUS_COLOUR: Record<string, string> = {
   critical: 'var(--sherpa-style-surface-critical-strong, #fc4e2d)',
   info: 'var(--sherpa-style-surface-info-strong, #3b4ccd)',
 };
+
+/**
+ * Ring thickness in viewBox units. The viewBox is a 100-unit circle, and Figma
+ * draws the gauge 16px thick on a 200px circle — 8 units here. Kept in TS rather
+ * than CSS because the arc RADIUS depends on it (the band sits on its mid-line),
+ * and an SVG `r` attribute cannot be written in terms of a CSS custom property.
+ */
+const RING_WIDTH = 8;
+
+/**
+ * Outline thickness in viewBox units — Figma strokes each band 1px on a 200px
+ * chart, which is 0.5 units here. The same value sherpa-donut-chart uses.
+ */
+const OUTLINE = 0.5;
 
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
@@ -62,18 +84,12 @@ export class SherpaGaugeChart extends SherpaElement {
     const raw = Number(this.dataset['value'] ?? 0);
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 
-    // Fill: 0–50% of the circle covers the visible top half.
-    this.style.setProperty('--_fill-pct', `${frac * 50}%`);
     // Needle: -90deg (left) → +90deg (right) across the half.
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
 
-    // Threshold zones → a full conic-gradient value bridged to CSS via --_zones.
+    // One arc per threshold band; with no bands, one arc as long as the value.
     const zones = this.#parseZones(min, max);
-    if (zones.length) {
-      this.style.setProperty('--_zones', this.#zonesGradient(zones));
-    } else {
-      this.style.removeProperty('--_zones');
-    }
+    this.#renderArcs(zones, frac);
     this.#renderHotspots(zones);
 
     const value = this.$('.value');
@@ -168,24 +184,13 @@ export class SherpaGaugeChart extends SherpaElement {
       // positioning for a fixed tip, and the dot must be absolute to sit on its
       // band.
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
-      const wedge = frag.querySelector<HTMLElement>('.hit-wedge')!;
       const dot = frag.querySelector<HTMLElement>('.hotspot')!;
       const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
-      // The index pairs the wedge with its tip; CSS cannot derive it.
-      wedge.dataset['index'] = String(i);
+      // The index pairs the ARC with its tip; CSS cannot derive it. (There is no
+      // hit wedge any more — the arc's own stroke is the target.)
       tip.dataset['index'] = String(i);
       dot.dataset['index'] = String(i);
 
-      // The hit wedge's own edges, plus six interior samples of its arc. The
-      // clip-path walks these to trace the band, so the target follows the
-      // coloured band rather than being a rectangle over it.
-      const from = -90 + zone.from * 180;
-      const to = -90 + zone.to * 180;
-      wedge.style.setProperty('--_from', `${from}deg`);
-      wedge.style.setProperty('--_to', `${to}deg`);
-      for (let k = 1; k <= 6; k++) {
-        wedge.style.setProperty(`--_a${k}`, `${from + ((to - from) * k) / 7}deg`);
-      }
       // The visible half runs -90deg (left) → +90deg (right), matching the
       // needle's own mapping, so a band's midpoint fraction lands on the same arc
       // the fill paints it on.
@@ -207,8 +212,15 @@ export class SherpaGaugeChart extends SherpaElement {
       const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
       tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
-      wedge.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
-      host.append(wedge, dot, tip);
+      // The accessible name goes on the ARC, which is the thing a pointer (and a
+      // screen reader's virtual cursor) actually lands on. The <svg> itself is
+      // aria-hidden, so the band needs role="img" to be announced at all.
+      const arc = this.$(`.zone[data-index="${i}"]`);
+      if (arc) {
+        arc.setAttribute('role', 'img');
+        arc.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
+      }
+      host.append(dot, tip);
     });
   }
 
@@ -223,19 +235,106 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 
   /**
-   * Build the conic-gradient. The visible half spans 0–50% of the circle
-   * (from 270deg). Each zone fraction 0–1 maps to 0–50% of the sweep. Hard
-   * stops keep the bands crisp; anything past the last band is transparent.
+   * Draw the ring: one stroked arc per band (or one for the value).
+   *
+   * Same primitive as a donut slice — a full <circle> whose stroke-dasharray
+   * shows only this band's run and hides the rest. The gap in the pair is the
+   * WHOLE circumference, so the dash never repeats and a band cannot wrap round
+   * and reappear on the far side.
+   *
+   * The circle is a full 360°, but the viewBox shows only its top half, so a
+   * fraction f of the GAUGE is f/2 of the circumference. The gauge's zero (9
+   * o'clock) is baked into the dash OFFSET here rather than reached by rotating
+   * the circle in CSS — see the offset line below for why.
+   *
+   * The last band is the grey remainder, so there is no separate track element.
    */
-  #zonesGradient(zones: Zone[]): string {
-    const stops: string[] = [];
-    for (const z of zones) {
-      const start = (z.from * 50).toFixed(3);
-      const end = (z.to * 50).toFixed(3);
-      stops.push(`${z.color} ${start}% ${end}%`);
-    }
-    stops.push('transparent 50% 100%');
-    return `conic-gradient(from 270deg, ${stops.join(', ')})`;
+  #renderArcs(zones: Zone[], frac: number): void {
+    const host = this.$('.zones');
+    const tpl = this.$<HTMLTemplateElement>('template.zone-tpl');
+    if (!host || !tpl) return;
+
+    // Radius and stroke come from the ring thickness, so the band sits on the
+    // mid-line between its inner and outer edge — the donut's rule.
+    const width = RING_WIDTH;
+    const radius = 50 - width / 2;
+    const circumference = 2 * Math.PI * radius;
+
+    // With no bands the gauge is a single arc as long as the value; the colour
+    // comes from CSS (--_fill), which already resolves data-status.
+    const bands: Array<{ from: number; to: number; color: string | null; rest?: true }> =
+      zones.length
+        ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color }))
+        : [{ from: 0, to: frac, color: null }];
+
+    // The REMAINDER — one grey band covering whatever the data leaves over.
+    //
+    // This replaced a full half-circle track drawn underneath everything. The
+    // bands already cover the gauge up to their end, so the only part of that
+    // track that ever showed WAS the remainder; drawing just that removes a
+    // second copy of the half-circle dash maths, which is where the geometry
+    // kept going wrong.
+    const filled = bands.length ? bands[bands.length - 1]!.to : 0;
+    if (filled < 1) bands.push({ from: filled, to: 1, color: null, rest: true });
+
+    host.replaceChildren();
+    bands.forEach((band, i) => {
+      const svg = tpl.content.firstElementChild!;
+      const arc = svg.firstElementChild!.cloneNode(true) as SVGCircleElement;
+      // HALF the circumference is the visible gauge, so every fraction halves.
+      const length = Math.max((band.to - band.from) * circumference * 0.5, 0);
+      arc.setAttribute('r', String(radius));
+      arc.setAttribute('stroke-width', String(width));
+      arc.setAttribute('stroke-dasharray', `${length} ${circumference}`);
+      // A NEGATIVE offset advances the dash along the path.
+      //
+      // The +0.5 is the gauge's zero. An unrotated <circle> path starts at 3
+      // o'clock and runs CLOCKWISE, so 9 o'clock — where the gauge begins — is
+      // exactly half the circumference along it, and clockwise from there runs
+      // up over the visible top. Baking that half-turn in here is why the arcs
+      // need no CSS rotation: rotating the circle instead meant resolving a
+      // transform-origin against the fill box, which swung the whole ring.
+      arc.setAttribute(
+        'stroke-dashoffset',
+        String(-(0.5 + band.from * 0.5) * circumference),
+      );
+      // The index pairs the arc with its tip; CSS cannot derive it.
+      arc.dataset['index'] = String(i);
+      // The remainder is chrome, not data: CSS greys it and drops its pointer
+      // target, so it never claims a tooltip.
+      if (band.rest) arc.dataset['rest'] = '';
+      if (band.color) arc.style.setProperty('--_hue', band.color);
+      host.appendChild(arc);
+
+      // The OUTLINE — two thin arcs tracing this band's inner and outer edge,
+      // exactly as sherpa-donut-chart outlines a slice. It has to be separate
+      // geometry because one stroked circle carries one paint, and the band is
+      // two: a 60% tint plus a solid edge. Each edge arc sits half its own width
+      // inside the band, so the stroke lands ON the edge rather than straddling
+      // it and bleeding outside the ring.
+      if (band.rest) return;
+      const inner = radius - width / 2;
+      const outer = radius + width / 2;
+      for (const edgeRadius of [inner + OUTLINE / 2, outer - OUTLINE / 2]) {
+        const edge = svg.firstElementChild!.cloneNode(true) as SVGCircleElement;
+        edge.classList.replace('zone', 'zone-outline');
+        edge.setAttribute('r', String(edgeRadius));
+        edge.setAttribute('stroke-width', String(OUTLINE));
+        // ITS OWN circumference — a different radius means a different path
+        // length, so reusing the band's numbers would leave the outline short.
+        const edgeCircumference = 2 * Math.PI * edgeRadius;
+        edge.setAttribute(
+          'stroke-dasharray',
+          `${Math.max((band.to - band.from) * edgeCircumference * 0.5, 0)} ${edgeCircumference}`,
+        );
+        edge.setAttribute(
+          'stroke-dashoffset',
+          String(-(0.5 + band.from * 0.5) * edgeCircumference),
+        );
+        if (band.color) edge.style.setProperty('--_hue', band.color);
+        host.appendChild(edge);
+      }
+    });
   }
 }
 
