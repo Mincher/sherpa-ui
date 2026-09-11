@@ -117,6 +117,53 @@
 .header .heading { flex: 1 1 auto; }
 .header ::slotted(*) { flex: 1 1 auto; }
 
+/* ── A CALENDAR HAS NO HEADING ───────────────────────────────────────────
+ * Read from the set (1156:29240): the two variants' headers hold DIFFERENT
+ * things and never both.
+ *
+ *   Type=List      header FRAME → one TEXT node, "ACTIONS"
+ *   Type=Calendar  header SLOT  → prev · month · next, and nothing else
+ *
+ * The month button already names the view, so a heading above it is a second
+ * title for the same card. A caller still passes data-heading (a date chip
+ * passes its column name, and that is what a screen reader announces via
+ * aria-label), so the text is kept and only hidden. */
+:host([data-type="calendar"]) .heading { display: none; }
+
+/* ── A SLOTTED STEPPER IS A SNAPPED GROUP, AND ONLY THIS FILE CAN SAY SO ──
+ *
+ * Figma's Calendar header (1156:29240 > Type=Calendar > header) is three Button
+ * instances whose borders MEET: prev at snap-right-edge, month at
+ * snap-all-edges, next at snap-left-edge.
+ *
+ * The buttons are slotted, so they sit in the MENU's light DOM — which puts
+ * them outside sherpa-calendar's shadow root, where the calendar's own
+ * `.cal-header` rules cannot reach them. Measured: the calendar's row read back
+ * `display: block`, `gap: normal`, margin 0, and the three buttons sat 4px
+ * apart because this slot's own `gap` was the only rule that applied. So the
+ * menu, which HOSTS them, is the only place the group can be joined.
+ *
+ * `::slotted()` cannot match a slotted element's CHILDREN, so the row itself is
+ * laid out here and the corner variables INHERIT down to the buttons — custom
+ * properties cross a shadow boundary where a selector does not. */
+.header ::slotted(.cal-header) {
+  display: flex;
+  align-items: center;
+  /* NO gap. The borders OVERLAP so the seam reads as one stroke rather than
+     two, and CSS `gap` cannot be negative — the overlap is a negative margin,
+     which has to sit on the buttons. `::slotted()` cannot reach them, so it is
+     written inline on the clone in sherpa-calendar.html beside the corners. */
+  gap: 0;
+
+  /* Squared all round; the two ends take their outer corners back below. The
+     values mirror the [data-snap] block in tokens.css, which is a bare selector
+     in a DOCUMENT sheet and so never reaches a shadow root. */
+  --sherpa-structure-rounding-top-left: 0px;
+  --sherpa-structure-rounding-top-right: 0px;
+  --sherpa-structure-rounding-bottom-left: 0px;
+  --sherpa-structure-rounding-bottom-right: 0px;
+}
+
 /* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
    line-height/xs 16, regular, content/body/+1, textAlignHorizontal LEFT and
    textCase ORIGINAL — it is NOT uppercased. The sample string is "ACTIONS",
@@ -238,19 +285,15 @@
 }
 
 /* ── Apply / Cancel footer ───────────────────────────────────────────────
-   Only present on a committing menu (data-commit). Sits below the rows with its
-   own divider, buttons trailing — the Figma footer convention. */
-.footer {
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sherpa-theme-gap-md, 8px);
-  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
-  padding-block-start: var(--sherpa-display-mode-space-xs, 8px);
-  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
-    var(--sherpa-theme-border-default-1, #e8e8f6);
-}
-:host([data-commit]) .footer { display: flex; }
+ * A composed <sherpa-container-footer> — Figma's `Container Footer`
+ * (Type=action-bar), which BOTH Menu variants hold in their `footer` slot. That
+ * component owns the row's padding (8 all round), its gap and top stroke, so
+ * nothing here restyles it; this only says WHEN it appears.
+ *
+ * `display: none` beats the component's own `[data-has-content]` rule, so a
+ * non-committing menu has no footer even though buttons are slotted into it. */
+.footer { display: none; }
+:host([data-commit]) .footer { display: block; }
 
 /* A separator row between groups. */
 ::slotted(hr) {

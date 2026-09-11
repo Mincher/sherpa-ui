@@ -665,16 +665,29 @@ function generateSpec(name) {
 
   // ── $extensions.sherpa ────────────────────────────────────────────────────────
   // The Figma binding cannot be read from code — carry it VERBATIM from the prior
-  // spec (figmaName/category/variantAxes/booleanProps/divergence). resync-figma.mjs
+  // spec (figmaName/figmaNodeId/category/variantAxes/booleanProps/composes/
+  // _divergence). resync-figma.mjs
   // owns keeping it aligned with live Figma. Only jsProps are re-derived (from TS).
   const sherpaExt = {};
   if (priorExt.figmaName) sherpaExt.figmaName = priorExt.figmaName;
+  // The node ID is what makes a binding CHECKABLE — a name can be duplicated or
+  // renamed, an id addresses one node. It was silently dropped on every regen
+  // because it was not on this list, so all 54 specs name a Figma component
+  // that nothing can look up.
+  if (priorExt.figmaNodeId) sherpaExt.figmaNodeId = priorExt.figmaNodeId;
   if (priorExt.category) sherpaExt.category = priorExt.category;
   if (Array.isArray(priorExt.variantAxes) && priorExt.variantAxes.length) {
     sherpaExt.variantAxes = priorExt.variantAxes.map((a) => ({ name: a.name, ...(a.values ? { values: a.values } : {}) }));
   }
   if (Array.isArray(priorExt.booleanProps) && priorExt.booleanProps.length) sherpaExt.booleanProps = priorExt.booleanProps;
+  // Which OTHER components this one instances, mirroring the Figma node's own
+  // instance children — the record that a thing is composed rather than redrawn.
+  if (Array.isArray(priorExt.composes) && priorExt.composes.length) sherpaExt.composes = priorExt.composes;
+  // BOTH spellings. The ratified key is `_divergence` (the leading underscore
+  // marks it as a note rather than a binding, and is what the components that
+  // carry one actually write); `divergence` is kept for the older specs.
   if (priorExt.divergence) sherpaExt.divergence = priorExt.divergence;
+  if (priorExt._divergence) sherpaExt._divergence = priorExt._divergence;
   if (jsProps.length) sherpaExt.jsProps = jsProps;
 
   // ── assemble ──────────────────────────────────────────────────────────────────

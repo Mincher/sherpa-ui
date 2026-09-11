@@ -32,6 +32,9 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 // Each grid cell is a composed sherpa-calendar-cell — Figma's own "Calendar
 // Cell" component — so it must be defined.
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
+// The month stepper is three composed Buttons (Figma's Calendar header is a
+// snapped Button group, not a row of bare arrows), so they must be defined.
+import '../sherpa-button/sherpa-button.js';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',

@@ -35,10 +35,26 @@
 -->
 <template id="default">
   <div class="cal" part="cal">
+    <!--
+      HEADER — three composed <sherpa-button>s, SNAPPED into one control.
+
+      Read from the Menu set's Calendar variant (1156:29240 > Type=Calendar >
+      header): it is not a bare row of text arrows but three Button instances —
+
+        prev   Type=icon,  32 x 32, Structure: snap-right-edge
+        month  Type=label, fills,   Structure: snap-all-edges
+        next   Type=icon,  32 x 32, Structure: snap-left-edge
+
+      all at Style=default. Their borders meet, so the trio reads as a single
+      stepper. It used to be hand-rolled <button>s with borders copied here,
+      which is the duplication the composition rule exists to stop.
+    -->
     <div class="cal-header" part="header">
-      <button type="button" class="cal-nav cal-prev" part="prev" aria-label="Previous">&lsaquo;</button>
-      <button type="button" class="cal-label" part="label" aria-live="polite"></button>
-      <button type="button" class="cal-nav cal-next" part="next" aria-label="Next">&rsaquo;</button>
+      <sherpa-button class="cal-nav cal-prev" part="prev" data-type="icon" data-snap="right"
+                     data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
+      <sherpa-button class="cal-label" part="label" data-snap="all" aria-live="polite"></sherpa-button>
+      <sherpa-button class="cal-nav cal-next" part="next" data-type="icon" data-snap="left"
+                     data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>
 
     <div class="cal-weekdays" part="weekdays" aria-hidden="true">
@@ -83,10 +99,29 @@
     label sync serve both — see #headerEls() in the TS.
   -->
   <template class="cal-header-tpl">
+    <!--
+      The two END buttons keep their OUTER corners, written INLINE.
+
+      This clone is projected into the MENU's light DOM, which is outside this
+      component's shadow root — so no rule in sherpa-calendar.css can reach it,
+      and `::slotted()` in sherpa-menu.css cannot reach a slotted element's
+      children either. An inline custom property travels with the clone and
+      inherits into the button, which is the one channel that crosses both
+      boundaries. The menu's `::slotted(.cal-header)` rule squares all four
+      corners on the row; these two take the ends back.
+
+      The `month` button stays square all round — Figma pins it to
+      Structure: snap-all-edges.
+    -->
     <div class="cal-header cal-header-projected" slot="header">
-      <button type="button" class="cal-nav cal-prev" aria-label="Previous">&lsaquo;</button>
-      <button type="button" class="cal-label" aria-live="polite"></button>
-      <button type="button" class="cal-nav cal-next" aria-label="Next">&rsaquo;</button>
+      <sherpa-button class="cal-nav cal-prev" data-type="icon" data-snap="right"
+                     style="--sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);"
+                     data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
+      <sherpa-button class="cal-label" data-snap="all" aria-live="polite"
+                     style="margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px); flex: 1 1 auto;"></sherpa-button>
+      <sherpa-button class="cal-nav cal-next" data-type="icon" data-snap="left"
+                     style="margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px); --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);"
+                     data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>
   </template>
 

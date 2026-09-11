@@ -47,6 +47,9 @@ import '../sherpa-input-text/sherpa-input-text.js';
 // The Apply/Cancel footer composes real buttons, so the menu must register them —
 // it cannot rely on the page having imported them.
 import '../sherpa-button/sherpa-button.js';
+// The footer IS Figma's Container Footer instance, so the menu composes that
+// component rather than drawing an action row of its own.
+import '../sherpa-container-footer/sherpa-container-footer.js';
 
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
@@ -186,6 +189,15 @@ export class SherpaMenu extends SherpaElement {
   #sync(): void {
     const heading = this.$('.heading');
     if (heading) heading.textContent = this.dataset['heading'] ?? '';
+
+    // A CALENDAR shows no heading — its header holds the month stepper and
+    // nothing else (Figma 1156:29240: the two variants' headers are exclusive).
+    // The name still has to reach a screen reader, so it moves to the card's
+    // own label rather than being silently dropped with the text.
+    const card = this.#card();
+    const name = this.dataset['heading'] ?? '';
+    if (card && name) card.setAttribute('aria-label', name);
+    else card?.removeAttribute('aria-label');
 
     // Single-select menus are radio rows; give them a shared name so the browser
     // enforces "one at a time" for us.

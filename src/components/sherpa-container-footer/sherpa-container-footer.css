@@ -23,12 +23,19 @@
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
-  /* Top divider is a lighter neutral than the container's outer border, matching
-     the family (Figma action-bar: strokeTop = border/default/+1 #e8e8f6). Status
-     tints it in Figma but the cascade exposes no tinted-border hook. */
+  /* 8 ALL ROUND — Figma binds padding/md on all four sides (51:66438). The
+     sides were padding/lg 16 until Will pulled them in, which had the footer
+     row indented from the card edge its buttons are meant to line up with. */
+  padding: var(--sherpa-theme-padding-md, 8px);
+  /* Top divider — read from the Container Footer node (51:66438): strokeTop is
+     style-border/width with the colour style-border/base +1, which is a lighter
+     neutral than the container's own outer border.
+
+     Reached through the STYLE layer, not through Theme. Both resolve to the
+     same #e8e8f6 today, but the Style layer is the one Figma binds, so a status
+     re-point there follows automatically instead of silently missing this row. */
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-theme-border-default-1, #e8e8f6);
+    var(--sherpa-style-border-base-1, #e8e8f6);
 }
 
 /* ── Alignment ────────────────────────────────────────────────────────── */

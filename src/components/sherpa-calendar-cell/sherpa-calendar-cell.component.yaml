@@ -114,6 +114,7 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Calendar Cell
+    figmaNodeId: "276:16589"
     category: control
     variantAxes:
       - name: State

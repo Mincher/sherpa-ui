@@ -55,8 +55,8 @@ events:
     bubbles: true
     composed: true
 tokens:
-  row.gap: "{sherpa.theme-gap-md}"
-  row.padding: "{sherpa.theme-padding-lg}"
+  row.gap: "{sherpa.theme-gap-sm}"
+  row.padding: "{sherpa.theme-padding-md}"
   row.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:

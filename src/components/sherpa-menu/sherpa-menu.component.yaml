@@ -54,28 +54,24 @@ anatomy:
         class: rows
         part: rows
         slot: ""
-      - el: div
+      - el: sherpa-container-footer
         class: footer
         part: footer
+        attrs:
+          data-align: end
         children:
           - el: sherpa-button
             class: clear
             part: clear
-            attrs:
-              data-size: sm
-              data-look: transparent
           - el: span
             class: footer-spacer
           - el: sherpa-button
             class: cancel
             part: cancel
-            attrs:
-              data-size: sm
           - el: sherpa-button
             class: apply
             part: apply
             attrs:
-              data-size: sm
               data-look: saturated
 props:
   - $type: prop
@@ -142,6 +138,9 @@ states:
     name: has-header
     selector: ":host([data-has-header])"
   - $type: state
+    name: calendar
+    selector: ":host([data-type=\"calendar\"])"
+  - $type: state
     name: search
     selector: ":host([data-search])"
   - $type: state
@@ -153,9 +152,6 @@ states:
   - $type: state
     name: commit
     selector: ":host([data-commit])"
-  - $type: state
-    name: calendar
-    selector: ":host([data-type=\"calendar\"])"
   - $type: state
     name: focus-visible
     selector: ":focus-visible"
@@ -214,12 +210,35 @@ tokens:
   heading.line-height: "{sherpa.theme-content-line-height-xs}"
   heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
   rows.gap: "{sherpa.display-mode-space-2xs}"
-  footer.gap: "{sherpa.theme-gap-md}"
-  footer.margin-block-start: "{sherpa.display-mode-space-3xs}"
-  footer.padding-block-start: "{sherpa.display-mode-space-xs}"
-  footer.border-block-start: "{sherpa.display-mode-border-width-sm}"
 $extensions:
   sherpa:
+    figmaName: Menu
+    figmaNodeId: "1156:29240"
+    category: overlay
+    variantAxes:
+      - name: Type
+        values:
+          - List
+          - Calendar
+    composes:
+      - sherpa-input-text
+      - sherpa-button
+      - sherpa-container-footer
+    _divergence:
+      nodeId: >-
+        49:66174 is now only the Type=List VARIANT; the set moved to 1156:29240 when the Calendar
+        variant was added. Older notes cite the variant id.
+      calendarWidth: >-
+        Figma's Calendar variant measures 562 wide, which is the RESULT of a 7-column grid beside a
+        time picker inside 8px padding, and is off the 8px grid. The code hugs its content instead,
+        so a calendar with no time picker is narrower rather than half empty.
+      heading: >-
+        The two variants' headers are exclusive: List holds one TEXT node, Calendar holds
+        prev/month/next and no heading. data-heading is still accepted on a calendar menu and moves
+        to the card's aria-label.
+      time: >-
+        The Calendar variant's `list` frame holds a `time-clock` beside the day grid. No code
+        counterpart yet; data-has-time renders a native <input type="time"> in the calendar instead.
     jsProps:
       - name: values
         type: string[]

@@ -1,8 +1,10 @@
 <!--
   sherpa-menu — a floating list of choices or actions.
 
-  Matches the Figma "Menu" (49:66174): a 240px card (padding 8, gap 2, radius 4,
-  Elevation md) with an optional 10/16 upper-case heading over 36-tall rows.
+  Matches the Figma "Menu" SET (1156:29240), whose `Type` axis is List | Calendar
+  and whose three slots are header, list and footer. Both variants share one card:
+  240 wide (Calendar hugs its grid), padding 8/8/0/8, gap 8, radius 4, Elevation md,
+  a 10/16 heading over 36-tall rows, and a composed `Container Footer` action bar.
 
   Native-first: the card IS a `popover`, so the browser puts it in the top layer,
   closes it on Escape and on an outside click, and manages focus — no scroll-lock
@@ -38,8 +40,13 @@
 
   Slots:
     header    — controls ABOVE the heading (a calendar's month stepper). The
-                Calendar node (268:14601) is a card of three regions: a `header`
-                slot, the content grid, and a Container Footer.
+                Calendar variant's header is three Button instances SNAPPED into
+                one control: prev (icon, snap-right-edge), month (label,
+                snap-all-edges), next (icon, snap-left-edge).
+
+                Those buttons land in the MENU's light DOM, outside the
+                calendar's shadow root — so this file styles the group; see the
+                `::slotted(.cal-header)` block in sherpa-menu.css.
     (default) — the rows (labels with inputs, or buttons)
 
   Fires:
@@ -101,27 +108,38 @@
     </div>
 
     <!--
-      Apply / Cancel footer, shown with data-commit. A committing menu holds its
-      row changes as DRAFT until Apply, so the chart or table behind it does not
-      re-query on every tick; Cancel restores the values the menu opened with.
+      FOOTER — the composed <sherpa-container-footer>, not a hand-drawn row.
 
-      Cancel is the DEFAULT look and Apply the saturated one, matching the Figma
-      footer convention (a cancel is not a transparent afterthought).
+      Read from the Menu set (1156:29240): BOTH variants' `footer` slot holds a
+      `Container Footer` instance at Type=action-bar — padding 8 all round, gap 4,
+      and a top stroke of style-border/base +1. That component already is that
+      row, owns those values and hides itself when empty, so the menu composes
+      it instead of copying its geometry.
+
+      A committing menu holds its row changes as DRAFT until Apply, so the chart
+      or table behind it does not re-query on every tick; Cancel restores the
+      values the menu opened with.
+
+      Read off the footer instances themselves (1156:29251 / 1144:28602), which
+      is what settles their size and look:
+
+        Clear   left  slot · Type=label · DEFAULT size · Style=default
+        Cancel  right slot · Type=label · DEFAULT size · Style=default
+        Apply   right slot · Type=label · DEFAULT size · Style: SATURATED
+
+      So all three are the button's DEFAULT size — 32 tall, matching the header
+      stepper and the Container Footer's own 32-tall slots. They carried
+      data-size="sm" and Clear a transparent look, neither of which Figma pins.
+
+      CLEAR sits on the LEFT, alone, where Figma puts "Today" — a destructive-ish
+      action belongs away from the one a thumb reaches for. The spacer is what
+      pushes the pair apart; both are shown only with data-clearable.
     -->
-    <div class="footer" part="footer">
-      <!--
-        CLEAR sits on the LEFT, alone — Figma's Container Footer (Type=action-bar)
-        splits into `left` and `right` slots, and holds "Today" on the left where
-        Cancel/Apply sit on the right. A destructive-ish action belongs away from
-        the one a thumb reaches for.
-
-        Shown with data-clearable, so an ordinary menu is unchanged.
-      -->
-      <sherpa-button class="clear" part="clear" data-size="sm"
-                     data-look="transparent">Clear</sherpa-button>
+    <sherpa-container-footer class="footer" part="footer" data-align="end">
+      <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <span class="footer-spacer"></span>
-      <sherpa-button class="cancel" part="cancel" data-size="sm">Cancel</sherpa-button>
-      <sherpa-button class="apply" part="apply" data-size="sm" data-look="saturated">Apply</sherpa-button>
-    </div>
+      <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>
+      <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>
+    </sherpa-container-footer>
   </div>
 </template>

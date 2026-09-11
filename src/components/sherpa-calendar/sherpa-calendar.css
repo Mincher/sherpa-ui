@@ -39,53 +39,64 @@
   overflow: hidden;
 }
 
-/* ── Header — a snapped button group: prev | month | next (gap 0) ───────── */
+/* ── Header — prev | month | next, three composed sherpa-buttons ─────────
+ *
+ * Read from the Menu set's Calendar variant (1156:29240 > Type=Calendar >
+ * header). The three are Button instances at Style=default with a Structure
+ * snap mode each — snap-right-edge, snap-all-edges, snap-left-edge — so their
+ * borders meet and the trio reads as ONE stepper.
+ *
+ * Nothing here styles a button. The buttons style themselves; this file says
+ * only how they sit together, which is the whole point of composing them. */
 .cal-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0;
 }
 
-.cal-label {
-  flex: 1 1 auto;
-  block-size: var(--sherpa-structure-height, 32px);
-  text-align: center;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-style-content-base, #0c0b11);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
-  border-inline: 0; /* snap-all-edges: the outer buttons carry the side strokes */
+/* The borders OVERLAP so the seam is one stroke, not two. CSS `gap` cannot be
+   negative, so the overlap is a negative margin on the followers — the same
+   idiom every other snapped group in the system uses. */
+.cal-header > :not(:first-child) {
+  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
 }
 
-.cal-nav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-structure-height, 32px);
-  block-size: var(--sherpa-structure-height, 32px);
-  padding: 0;
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: 0;
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #0c0b11);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+/* The month button takes the free width (Figma: prev/next hug at 32, month
+   FILLS) and centres its label. */
+.cal-label { flex: 1 1 auto; }
+.cal-nav { flex: 0 0 auto; }
 
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
+/* The end buttons take their OUTER corners back. These four rules are written on
+   the buttons themselves rather than on the row, because when the header is
+   PROJECTED into a menu's header slot the row lives in the menu's light DOM and
+   `.cal-header > :first-child` — a rule in THIS shadow root — cannot match it.
+   A rule that targets the button by its own class is carried in the clone and
+   applies wherever the clone is hosted. See #projectHeader() and the matching
+   `::slotted(.cal-header)` block in sherpa-menu.css. */
+
+/* THE SNAPPED CORNERS, written here rather than left to `[data-snap]`.
+   `[data-snap]` is a bare selector in tokens.css, which is loaded into the
+   DOCUMENT and deliberately NOT into SherpaElement.sharedStyles — so it reaches
+   a button in the light DOM but never one inside this shadow root. The
+   attribute stays on the buttons (it is the honest description of what they
+   are, and it works if one is re-hosted); the four corner variables are also
+   written directly so the group actually joins.
+
+   By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
+.cal-header > * {
+  --sherpa-structure-rounding-top-left: 0px;
+  --sherpa-structure-rounding-top-right: 0px;
+  --sherpa-structure-rounding-bottom-left: 0px;
+  --sherpa-structure-rounding-bottom-right: 0px;
 }
-/* The header group hugs the card's top corners (the card clips them). */
-.cal-header .cal-nav:first-child { border-inline-end: 0; }
-.cal-header .cal-nav:last-child { border-inline-start: 0; }
+.cal-header > :first-child {
+  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.cal-header > :last-child {
+  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
 
 /* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
    8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */
@@ -115,17 +126,6 @@
 :host([data-view="year"]) .cal-years { display: grid; }
 /* The weekday row belongs to the day layout only. */
 :host(:is([data-view="month"], [data-view="year"])) .cal-weekdays { display: none; }
-
-.cal-label {
-  cursor: pointer;
-  background: var(--sherpa-style-surface-base, #ffffff);
-  font-family: inherit;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-  }
-  &:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
-}
 
 /* Weekday captions are Calendar Buttons too: 14/20 regular content/body/+1. */
 .cal-weekdays span {

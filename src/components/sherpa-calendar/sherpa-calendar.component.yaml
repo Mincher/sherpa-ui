@@ -29,23 +29,27 @@ anatomy:
           class: cal-header
           part: header
           children:
-            - el: button
+            - el: sherpa-button
               class: cal-nav cal-prev
               part: prev
               attrs:
-                type: button
+                data-type: icon
+                data-snap: right
+                data-icon-start: fa-solid fa-chevron-left
                 aria-label: Previous
-            - el: button
+            - el: sherpa-button
               class: cal-label
               part: label
               attrs:
-                type: button
+                data-snap: all
                 aria-live: polite
-            - el: button
+            - el: sherpa-button
               class: cal-nav cal-next
               part: next
               attrs:
-                type: button
+                data-type: icon
+                data-snap: left
+                data-icon-start: fa-solid fa-chevron-right
                 aria-label: Next
         - el: div
           class: cal-weekdays
@@ -119,20 +123,38 @@ anatomy:
           attrs:
             slot: header
           children:
-            - el: button
+            - el: sherpa-button
               class: cal-nav cal-prev
               attrs:
-                type: button
+                data-type: icon
+                data-snap: right
+                style: >-
+                  --sherpa-structure-rounding-top-left:
+                  var(--sherpa-display-mode-border-rounding-base, 4px);
+                  --sherpa-structure-rounding-bottom-left:
+                  var(--sherpa-display-mode-border-rounding-base, 4px);
+                data-icon-start: fa-solid fa-chevron-left
                 aria-label: Previous
-            - el: button
+            - el: sherpa-button
               class: cal-label
               attrs:
-                type: button
+                data-snap: all
                 aria-live: polite
-            - el: button
+                style: >-
+                  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px); flex: 1 1
+                  auto;
+            - el: sherpa-button
               class: cal-nav cal-next
               attrs:
-                type: button
+                data-type: icon
+                data-snap: left
+                style: >-
+                  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+                  --sherpa-structure-rounding-top-right:
+                  var(--sherpa-display-mode-border-rounding-base, 4px);
+                  --sherpa-structure-rounding-bottom-right:
+                  var(--sherpa-display-mode-border-rounding-base, 4px);
+                data-icon-start: fa-solid fa-chevron-right
                 aria-label: Next
 props:
   - $type: prop
@@ -218,7 +240,7 @@ states:
     selector: ":host(:not([data-view]))"
   - $type: state
     name: focus-visible
-    selector: .cal-nav:focus-visible
+    selector: .cal-cell:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -249,20 +271,6 @@ tokens:
   cal.border-color: "{sherpa.theme-border-default-2}"
   cal.border-radius: "{sherpa.structure-rounding-top-left}"
   cal.background: "{sherpa.style-surface-base}"
-  cal-label.block-size: "{sherpa.structure-height}"
-  cal-label.font-size: "{sherpa.font-size-body-base}"
-  cal-label.font-weight: "{sherpa.font-weight-regular}"
-  cal-label.line-height: "{sherpa.theme-content-line-height-base}"
-  cal-label.color: "{sherpa.style-content-base}"
-  cal-label.border-width: "{sherpa.style-border-width}"
-  cal-label.border-color: "{sherpa.style-border-base}"
-  cal-nav.inline-size: "{sherpa.structure-height}"
-  cal-nav.block-size: "{sherpa.structure-height}"
-  cal-nav.border-width: "{sherpa.style-border-width}"
-  cal-nav.border-color: "{sherpa.style-border-base}"
-  cal-nav.background: "{sherpa.style-surface-base}"
-  cal-nav.color: "{sherpa.style-content-base}"
-  cal-nav.font-size: "{sherpa.theme-content-size-base}"
   cal-weekdays.grid-template-columns: "{sherpa.display-mode-size-2xl}"
   cal-weekdays.gap: "{sherpa.theme-gap-sm}"
   cal-weekdays.padding-inline: "{sherpa.theme-padding-md}"
@@ -275,7 +283,6 @@ tokens:
   cal-months.padding: "{sherpa.theme-padding-md}"
   cal-years.gap: "{sherpa.theme-gap-sm}"
   cal-years.padding: "{sherpa.theme-padding-md}"
-  cal-label.background: "{sherpa.style-surface-base}"
   cal-cell.block-size: "{sherpa.display-mode-size-2xl}"
   cal-cell.border-width: "{sherpa.style-border-width}"
   cal-cell.border-radius: "{sherpa.display-mode-border-rounding-base}"
