@@ -255,6 +255,12 @@ is a structural change to the header, larger than this item.
 
 ## 7. Full token sweep — pull CURRENT values from every collection, mode and extension
 
+> **Note (2026-09-11):** a COMPONENT-level sweep is now done and tooled —
+> `scripts/figma-harvest-colours.mjs`, which compares each component's CSS
+> against the variable Figma actually BINDS (the question nothing was asking;
+> see commits a14f985a and 8f5b4bce). That is a different axis from this item,
+> which is about token VALUES per mode and extension. Both are still owed.
+
 **Will's words:** "Do another pass of pulling current token values from all figma
 variable collections, extension and modes and updating the CSS values where
 needed."
@@ -469,3 +475,24 @@ Read first: `sherpa-color-transparent-group` and
 `sherpa-transparent-follows-primitives` in memory — `color-transparent/*` is RAW
 HEX and does NOT follow a primitive re-point, so an orphan probe is owed after
 any ramp change.
+
+**Two things Will asked to fold into this work** (2026-09-11):
+
+1. **Chart series colours should be set by CSS, not JS.** `sherpa-barchart`
+   currently writes them in TypeScript —
+   `bar.style.setProperty('--_hue', 'var(--sherpa-data-viz-series-N)')` — which
+   is the one place in the system where a colour is chosen by script rather than
+   by a selector. It also means a CSS-only audit cannot see series 2 and 3.
+   Check `sherpa-line-chart`, `sherpa-donut-chart` and `sherpa-gauge-chart` for
+   the same pattern.
+
+2. **Fix the ramps in Figma** at the same time.
+
+**The opacity idiom, so it is not misread again.** A translucent mark is ONE
+bound hue at a paint opacity — the Legend Swatch and all five Donut slices are
+`data-viz/categorical/color N` at 60%, with the variable on the STROKE and the
+fill taking the same hue. That is correct and deliberate. I reported it as
+"unbound in Figma" during the sweep; Will: *"It's not a figma problem. We use
+the transparent color ramps in figma correctly. You just interpreted it all
+wrong."* The code already matches it
+(`color-mix(in srgb, var(--_hue) 60%, transparent)`).
