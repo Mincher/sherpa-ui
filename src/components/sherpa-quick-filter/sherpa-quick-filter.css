@@ -16,7 +16,7 @@
  *   "Left"  = the simple chip, pinned Structure ext `snap-right-edge` / default
  *             → rounding 4/0/0/4. Its own 0.5 ring and white face.
  *   "Button"= a Button/Type=icon, pinned Structure ext `snap-left-edge` / SM and
- *             Style=default → rounding 0/4/4/0, height 24, padding 8, icon 12,
+ *             Style=default → rounding 0/4/4/0, height 24, padding 8, icon 14,
  *             its own 0.5 ring and white face. NOT transparent — it is a
  *             bordered button snapped to the chip.
  *
@@ -125,6 +125,25 @@
   color: var(--sherpa-theme-content-active-1, #8300b6);
 }
 
+/* ── ON but holding no values → the WARNING look, not the active one ─────────
+   A value chip that is on with nothing picked filters by nothing, so it excludes
+   nothing — the purple "this is applied" tint would be a lie. JS flags the state
+   with data-empty (it needs the menu's checked rows to know); the colour choice
+   is entirely here.
+
+   These are the Style collection's own `warning` mode values: style-surface/base
+   +1 → surface-warning-base, style-border/base +1 → border-warning-2. Written as
+   explicit warning tokens rather than the --_status-* cascade because that needs
+   a [data-status] ANCESTOR, and nothing outside the chip knows it is empty.
+
+   It must come after the data-current rule to win — same specificity, so order
+   is what decides. */
+:host([data-current][data-empty]) :is(.body, .caret) {
+  background: var(--sherpa-theme-surface-warning-base, #fff4e1);
+  border-color: var(--sherpa-theme-border-warning-2, #ffc44c);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+}
+
 /* Leading status dot — shown only with data-indicator (Figma "Indicator (atom)"). */
 .indicator { display: none; }
 :host([data-indicator]) .indicator {
@@ -137,7 +156,17 @@
 
 /* Count chip — Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT: a neutral
    16-tall chip (white face, 0.5 grey ring, dark ink, radius sm), LEADING the label.
-   It is deliberately NOT the active tint — that was the bug. */
+   It is deliberately NOT the active tint — that was the bug.
+
+   The badge sits in .count-wrap, a position:relative box that exists ONLY to be
+   the positioning parent for the hover bubble. Without it the bubble would
+   anchor to .body and sit centred over the whole chip. */
+.count-wrap { display: none; }
+:host([data-count]) .count-wrap {
+  display: inline-flex;
+  position: relative;
+}
+
 .count { display: none; }
 :host([data-count]) .count {
   display: inline-flex;
@@ -149,10 +178,78 @@
   border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
+}
+
+/* ── The badge's value tooltip — pure CSS on hover/focus ─────────────────────
+   A count alone says HOW MANY but never WHICH, so hovering the badge lists the
+   chosen values above it.
+
+   This is a local copy of the sherpa-tooltip look, not a nested instance: the
+   badge lives inside THIS shadow root, and sherpa-tooltip works by wrapping a
+   light-DOM trigger, so it cannot reach in here. The fills, the 12/16 text and
+   the Elevation=md shadow are the same Theme tokens the tooltip binds, so the
+   two bubbles stay identical without a component boundary between them.
+
+   Reveal is CSS only — JS never toggles visibility. */
+.count-tip {
+  position: absolute;
+  z-index: 10;
+  /* Above the badge, the tooltip's own space/2xs clear of it. */
+  inset-block-end: calc(100% + var(--sherpa-display-mode-space-2xs, 4px));
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 16rem;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  background: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-4, #ffffff);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  text-align: start;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  /* Elevation=md, written out because a [data-elevation] pin is not inherited
+     into a shadow root (same reason sherpa-tooltip writes it longhand). */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-base, 2px)
+    var(--sherpa-theme-elevation-offset-y-base, 2px)
+    var(--sherpa-theme-elevation-blur-base, 16px)
+    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-style-surface-shadow, #15151e80);
+
+  /* Hidden: no layout shift, no pointer capture, unreadable to AT. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, visibility 120ms ease;
+}
+
+/* The down-pointing tail, same border-triangle geometry as sherpa-tooltip's
+   .arrow at placement=top. Physical offsets on purpose: the point direction is
+   welded to the coloured physical border edge, so logical insets would desync
+   it in RTL. Geometry, not spacing. */
+.count-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 6px 0 6px; /* off-grid-ok — drawn glyph, 12×6 tail */
+  border-color: var(--sherpa-style-content-base, #0c0b11) transparent transparent transparent;
+}
+
+.count-wrap:hover .count-tip,
+.count-wrap:focus-within .count-tip {
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Leading icon — shown only with data-icon-start (Figma "Icon", a funnel default). */
@@ -170,7 +267,7 @@
 
 /* ── Menu caret — Figma "Button/Type=icon" snapped to the chip's right ────────
    Structure ext `snap-left-edge` at the SM mode: 24 square (Structure height=sm
-   → space/xl 24), padding 8, radius 0/4/4/0, icon-size 12. Style=default, so it
+   → space/xl 24), padding 8, radius 0/4/4/0, icon-size 14. Style=default, so it
    is a BORDERED white button, NOT a transparent one — it reads as the other half
    of the same control. It only exists in State=menu. */
 .caret {
@@ -180,7 +277,7 @@
   flex-shrink: 0;
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: 100%;
-  /* Figma padding 8 all round on a 24 box with a 12 glyph — the glyph is centred
+  /* Figma padding 8 all round on a 24 box with a 14 glyph — the glyph is centred
      and the box is fixed, so the padding is what sizes the hit area, not layout. */
   padding: 0;
   border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
@@ -191,8 +288,9 @@
   border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  /* Structure `icon-size` in the SM mode → content/size/small 12. */
-  font-size: var(--sherpa-theme-content-size-small, 12px);
+  /* Structure `icon-size` in the SM mode → content/size/base 14 (it was
+     content/size/small 12 until the Structure sm mode was re-pointed in Figma). */
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
   box-sizing: border-box;

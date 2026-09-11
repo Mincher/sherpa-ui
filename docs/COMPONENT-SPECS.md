@@ -162,7 +162,9 @@ Each component gets:
 - **Appearance / status:** brand purple accent (AI/quick-filter, not action accent); on-tint/count/caret/disabled all CSS off `data-current`/`disabled`. No `data-look`.
 - **Sizing / geometry:** Structure sizes; pill radius.
 - **States:** default · current · inactive/disabled (click guarded). CSS-owned.
-- **Behaviour + events:** toggles `data-current`, fires **`quick-filter-click`** (detail { active }).
+- **Behaviour + events:** toggles `data-current`, fires **`quick-filter-click`** (detail { active }); a slotted menu's commit fires **`quick-filter-change`** (detail { values }).
+- **Label rule:** with EXACTLY ONE menu value picked the chip rewrites `data-label` to `Field: Value` (the row's visible text, not its raw value). Two or more revert to the bare field name and let `data-count` carry the number.
+- **Count rule:** `data-count` means **how many VALUES are picked**, never how many rows match. A menu sets it only at **2 or more** picks — at one the label already names the value — so the badge never reads `1`, and a plain toggle chip never gets one. Hovering the badge reveals `.count-tip` above it listing the chosen values (CSS-only; the same list is on the badge's `aria-label`, since the bubble is `aria-hidden`).
 - **Composition:** composed-by quick-filter-toolbar.
 - **Notes / divergences:** GAP — Figma intent also names quick-filter-menu-open/-dismiss/-ai-accept; code fires only quick-filter-click (menu/dismiss/AI unimplemented).
 
@@ -170,7 +172,7 @@ Each component gets:
 - **Purpose:** a bar of quick-filter chips + a slot for host action controls.
 - **Anatomy:** `.chips` · `view` slot (leading) · `actions` slot (trailing). Cloning prototype stamps chips.
 - **Variants:** `Type = data | view` (Figma). DIVERGENCE: code = single 3-zone slot bar, Type not implemented.
-- **Properties:** `content` (SLOT, chips via `populate([{id,label,type?,active?,count?}])`), `right-actions`/`actions` (SLOT), `view` (SLOT).
+- **Properties:** `content` (SLOT, chips via `populate([{id,label,type?,active?,icon?,options?,select?}])`), `right-actions`/`actions` (SLOT), `view` (SLOT). No `count` — a badge on a toggle chip could only mean a RESULT count, which a host with a server-side query does not know when the bar is built.
 - **Appearance / status:** neutral toolbar; chips carry brand purple. No `data-look`.
 - **Sizing / geometry:** full-width; Structure sizes for chips.
 - **States:** per-chip current; toolbar static. CSS-owned.

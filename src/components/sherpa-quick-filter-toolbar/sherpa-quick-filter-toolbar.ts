@@ -1,7 +1,7 @@
 /**
  * sherpa-quick-filter-toolbar — a row of filter chips above a grid or list.
  *
- * Give it chips with populate([{ id, label, type?, active?, count? }]). When you
+ * Give it chips with populate([{ id, label, type?, active?, icon?, options? }]). When you
  * click a chip it toggles on or off, and the toolbar fires quick-filter-change
  * with the ids of every chip that's currently on. There's a slot for your own
  * extra buttons — the old add/edit/save-view features are left out on purpose.
@@ -52,7 +52,6 @@ export interface QuickFilterDef {
   label: string;
   type?: string;
   active?: boolean;
-  count?: number;
   /** A leading Font Awesome icon class list. */
   icon?: string;
   /**
@@ -100,7 +99,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
   }
 
-  /** populate([{ id, label, type?, active?, count? }]) — the filter chips. */
+  /**
+   * populate([{ id, label, type?, active?, icon?, options? }]) — the filter chips.
+   *
+   * There is deliberately no `count`. A badge on a plain TOGGLE chip could only
+   * mean "how many rows match", which the host often cannot know up front — a
+   * server-side query has not answered yet when the bar is built. The badge is
+   * reserved for "how many VALUES are picked", which a menu chip sets itself.
+   */
   protected override renderData(data: unknown): void {
     this.#filters = Array.isArray(data) ? (data as QuickFilterDef[]) : [];
     this.#render();
@@ -190,7 +196,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.setAttribute('data-label', f.label);
       if (f.type) chip.setAttribute('data-type', f.type);
       if (f.active) chip.setAttribute('data-current', '');
-      if (f.count != null) chip.setAttribute('data-count', String(f.count));
       if (f.icon) chip.setAttribute('data-icon-start', f.icon);
       if (f.options?.length) this.#addMenu(chip, f);
       list.appendChild(chip);
@@ -328,17 +333,34 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const desc = chip.dataset['direction'] === 'desc';
     const column = this.#organise.sort?.find((c) => c.field === this.#menuValue('sort'));
     chip.setAttribute('data-label', column ? `Sort: ${column.label}` : 'Sort');
-    chip.setAttribute(
-      'data-icon-start',
-      !live
-        ? 'fa-solid fa-arrow-down-a-z'
-        : desc
-          ? 'fa-solid fa-arrow-down-z-a'
-          : 'fa-solid fa-arrow-down-a-z',
-    );
+    const { sortNone, sortAsc, sortDesc } = SherpaQuickFilterToolbar.#icons;
+    // OFF gets its OWN glyph. It used to wear the ascending arrow, so a
+    // suspended sort looked identical to an active ascending one — the whole
+    // point of a tri-state icon is that the three states look different.
+    chip.setAttribute('data-icon-start', !live ? sortNone : desc ? sortDesc : sortAsc);
   }
 
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */
+
+  /**
+   * Glyphs for the organise chips, mirroring the Figma icons page (`group`,
+   * `sort-none`, `sort-ascending`, `sort-descending`).
+   *
+   * These are Font Awesome APPROXIMATIONS of the Apex artwork — this branch has
+   * no local icon set, every icon is an FA class list. Named here rather than
+   * inline so the three places that set a sort glyph cannot drift apart, which
+   * is how the off-state ended up wearing the ascending arrow.
+   *
+   * `wide-short` / `short-wide` over `a-z` / `z-a`: the Figma glyphs are plain
+   * bars with an arrow, not letters, and a Sort chip can order a NUMBER column
+   * where an A-Z badge reads as wrong.
+   */
+  static readonly #icons = {
+    group: 'fa-solid fa-layer-group',
+    sortNone: 'fa-solid fa-bars',
+    sortAsc: 'fa-solid fa-arrow-up-wide-short',
+    sortDesc: 'fa-solid fa-arrow-down-wide-short',
+  } as const;
 
   /**
    * organise({ group: [...], sort: [...] }) — the columns the leading chips offer.
@@ -409,7 +431,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // fa-SOLID: the free Font Awesome set the examples load has no regular
         // weight for these two glyphs, so `fa-regular` rendered the missing-glyph
         // box. The other toolbar chips (tag, user) are solid for the same reason.
-        this.#organiseChip('group', 'Group', 'fa-solid fa-layer-group',
+        this.#organiseChip('group', 'Group', SherpaQuickFilterToolbar.#icons.group,
           group.map((c) => ({ value: c.field, label: c.label }))),
       );
     }
@@ -417,7 +439,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // The MENU picks the column; the chip BODY cycles the direction. Listing
       // each column twice (A-Z and Z-A) doubled a long menu and made "turn the
       // sort off but keep the column" impossible to express.
-      const chip = this.#organiseChip('sort', 'Sort', 'fa-solid fa-arrow-down-a-z',
+      // Built in the OFF state, so it opens with the sort-none glyph.
+      const chip = this.#organiseChip('sort', 'Sort', SherpaQuickFilterToolbar.#icons.sortNone,
         sort.map((c) => ({ value: c.field, label: c.label })));
       chip.dataset['direction'] = 'asc';
       zone.appendChild(chip);

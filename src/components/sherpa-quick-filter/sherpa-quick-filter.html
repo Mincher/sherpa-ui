@@ -35,10 +35,19 @@
   Public API:
     data-type       default | ai | populated
     data-current    selected/on state (boolean)
-    data-label      chip text (or use the default slot)
+    data-label      chip text (or use the default slot). Rewritten to
+                    "Field: Value" while exactly ONE menu value is picked;
+                    two or more revert to the field name plus the count badge.
     data-icon-start leading icon — an FA class list (Figma default is a funnel)
     data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
-    data-count      leading count chip (shown when present)
+    data-count      leading count chip (shown when present). A menu sets it
+                    only at TWO or more picked values — at one the label already
+                    names the value, so a "1" badge would be noise.
+                    Hovering the badge reveals .count-tip ABOVE it, listing the
+                    chosen values. The bubble is a local copy of the
+                    sherpa-tooltip look rather than a nested instance: the badge
+                    lives in this shadow root, so a light-DOM wrapper component
+                    cannot reach it. Reveal is pure CSS on .count-wrap:hover.
     data-menu       Figma State=menu — snap on the caret button
 
   Slots:
@@ -53,7 +62,14 @@
   <div class="chip" part="chip">
     <button class="body" part="body" type="button">
       <span class="indicator" part="indicator" aria-hidden="true"></span>
-      <span class="count" part="count" aria-hidden="true"></span>
+      <span class="count-wrap">
+        <!-- role=img so the aria-label is actually announced: a bare <span> with
+             an aria-label is ignored by AT (no role = no accessible name). The
+             label is the only route to the value list, since .count-tip is a
+             CSS-only bubble and therefore aria-hidden. -->
+        <span class="count" part="count" role="img"></span>
+        <span class="count-tip" part="count-tip" role="tooltip" aria-hidden="true"></span>
+      </span>
       <span class="icon" part="icon" aria-hidden="true"></span>
       <span class="label" part="label"><slot></slot></span>
     </button>
