@@ -212,4 +212,22 @@
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
+
+/* …EXCEPT a TRANSPARENT button, which stays transparent.
+   Its look tier sets --_surface to transparent (Figma's Style: Transparent
+   extension resolves style-surface/base to #ffffff at 0% alpha), and filling it
+   on disable made a borderless control suddenly grow a grey box — the disabled
+   pagination arrows painted a slab where there had been nothing. A tertiary
+   button says "off" by dimming its INK, which is all it has.
+
+   The ink still dims: --_content is untouched above, and the icon rule below
+   covers the glyph. */
+:host([data-look="transparent"][disabled]) .trigger {
+  background: transparent;
+  border-color: transparent;
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
+:host([data-look="transparent"][disabled]) .icon {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
 :host([disabled]) .icon { color: var(--sherpa-theme-content-body-1, #35353d); }

@@ -28,24 +28,43 @@
       <select class="rows" id="rows" part="rows"></select>
     </div>
 
+    <!--
+      Read from the Figma node (Pagination 48:65826). The four controls are
+      Button instances at Structure=DEFAULT (32×32) pinned Style=Transparent,
+      and they sit in TWO SNAPPED PAIRS with the page field between them:
+
+          [ « | ‹ ]   [48px field]  of 10   [ › | » ]
+
+      They were hand-rolled <button>s with pure-CSS chevron glyphs, which is the
+      same re-implementation the app header carried: a component that exists,
+      written again by hand, free to drift from it.
+    -->
     <nav class="controls" part="controls" aria-label="Pagination">
-      <button class="btn first" data-action="first" type="button" aria-label="First page">
-        <span class="chev chev-double-left" aria-hidden="true"></span>
-      </button>
-      <button class="btn prev" data-action="prev" type="button" aria-label="Previous page">
-        <span class="chev chev-left" aria-hidden="true"></span>
-      </button>
+      <span class="pair pair-back">
+        <sherpa-button class="btn first" data-action="first" data-type="icon"
+                       data-look="transparent" data-snap="right"
+                       data-icon-start="fa-solid fa-angles-left"
+                       aria-label="First page"></sherpa-button>
+        <sherpa-button class="btn prev" data-action="prev" data-type="icon"
+                       data-look="transparent" data-snap="left"
+                       data-icon-start="fa-solid fa-angle-left"
+                       aria-label="Previous page"></sherpa-button>
+      </span>
 
       <input class="page-input" type="number" inputmode="numeric" min="1" step="1"
              part="page-input" aria-label="Page number" />
       <span class="total" part="total" aria-hidden="true">of 1</span>
 
-      <button class="btn next" data-action="next" type="button" aria-label="Next page">
-        <span class="chev chev-right" aria-hidden="true"></span>
-      </button>
-      <button class="btn last" data-action="last" type="button" aria-label="Last page">
-        <span class="chev chev-double-right" aria-hidden="true"></span>
-      </button>
+      <span class="pair pair-fwd">
+        <sherpa-button class="btn next" data-action="next" data-type="icon"
+                       data-look="transparent" data-snap="right"
+                       data-icon-start="fa-solid fa-angle-right"
+                       aria-label="Next page"></sherpa-button>
+        <sherpa-button class="btn last" data-action="last" data-type="icon"
+                       data-look="transparent" data-snap="left"
+                       data-icon-start="fa-solid fa-angles-right"
+                       aria-label="Last page"></sherpa-button>
+      </span>
     </nav>
   </div>
 

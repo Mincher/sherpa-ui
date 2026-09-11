@@ -23,6 +23,8 @@
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The four page controls are composed sherpa-buttons, as Figma instances them.
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);
@@ -131,16 +133,28 @@ export class SherpaPagination extends SherpaElement {
     const select = this.$<HTMLSelectElement>('.rows');
     if (select) select.value = String(this.pageSize);
 
-    // Boundary disabling (native disabled → inactive tokens; CSS owns the look).
-    this.$<HTMLButtonElement>('.first')!.disabled = page <= 1;
-    this.$<HTMLButtonElement>('.prev')!.disabled = page <= 1;
-    this.$<HTMLButtonElement>('.next')!.disabled = page >= total;
-    this.$<HTMLButtonElement>('.last')!.disabled = page >= total;
+    // Boundary disabling. The controls are composed <sherpa-button>s, which take
+    // `disabled` as an ATTRIBUTE and mirror it onto their own inner <button> —
+    // a `.disabled` PROPERTY on the host is not the native one and would set an
+    // expando that nothing reads.
+    for (const [sel, off] of [
+      ['.first', page <= 1],
+      ['.prev', page <= 1],
+      ['.next', page >= total],
+      ['.last', page >= total],
+    ] as const) {
+      this.$(sel)?.toggleAttribute('disabled', off);
+    }
   }
 
   #onClick = (event: Event): void => {
-    const btn = (event.target as HTMLElement).closest<HTMLButtonElement>('.btn');
-    if (!btn || btn.disabled) return;
+    // composedPath, not closest: the click starts inside the sherpa-button's OWN
+    // shadow root, so `event.target` is its inner <button> and `closest` from
+    // there never reaches this component's `.btn` host.
+    const btn = event
+      .composedPath()
+      .find((n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('btn'));
+    if (!btn || btn.hasAttribute('disabled')) return;
 
     switch (btn.dataset['action']) {
       case 'first':

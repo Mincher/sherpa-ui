@@ -169,8 +169,10 @@ tokens:
   trigger.gap: "{sherpa.button-space-gap}"
   trigger.min-block-size: "{sherpa.button-size-height}"
   trigger.padding-inline: "{sherpa.button-space-padding}"
+  trigger.border-width: "{sherpa.style-border-width}"
   trigger.font-size: "{sherpa.button-font-size}"
-  trigger.font-weight: "{sherpa.font-weight-semibold}"
+  trigger.font-weight: "{sherpa.structure-font-weight}"
+  trigger.line-height: "{sherpa.button-font-line-height}"
   icon.inline-size: "{sherpa.button-size-icon}"
   icon.block-size: "{sherpa.button-size-icon}"
 $extensions:

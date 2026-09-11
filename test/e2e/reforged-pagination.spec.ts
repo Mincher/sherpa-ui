@@ -72,7 +72,10 @@ test('prev / first disable at page 1; next / last disable at the last page', asy
       el.setAttribute('data-total-pages', '10');
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      const dis = (sel: string) => el.shadowRoot!.querySelector<HTMLButtonElement>(sel)!.disabled;
+      // The controls are composed <sherpa-button>s, which take `disabled` as an
+      // ATTRIBUTE (and mirror it onto their own inner <button>) — a `.disabled`
+      // PROPERTY on the host is not the native one and reads undefined.
+      const dis = (sel: string) => el.shadowRoot!.querySelector(sel)!.hasAttribute('disabled');
       return { prev: dis('.btn.prev'), first: dis('.btn.first'), next: dis('.btn.next'), last: dis('.btn.last') };
     };
     return { atStart: await mk('1'), atEnd: await mk('10') };

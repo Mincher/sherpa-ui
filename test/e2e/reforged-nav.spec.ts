@@ -232,14 +232,28 @@ test('typing in search filters the rows and marks the matched text', async ({ pa
         { label: 'Admin', items: [{ id: 'users', label: 'Users' }] },
       ],
     });
-    await new Promise((res) => setTimeout(res, 20));
+    // WAIT FOR THE NAV-ITEMS' OWN SHADOW ROOTS, not for a fixed 20ms.
+    // populate() stamps sherpa-nav-items, and the <mark> this test reads lives
+    // inside each one's shadow root — so the nav's `rendered` resolving is not
+    // enough. Under parallel load they had not rendered within the fixed wait
+    // and the marks read empty, about one full run in three.
     const s = nav.shadowRoot!;
+    const items = () => [...s.querySelectorAll('sherpa-nav-item')] as (HTMLElement & {
+      rendered?: Promise<void>;
+    })[];
+    for (let i = 0; i < 100 && items().length < 3; i++) {
+      await new Promise((res) => setTimeout(res, 10));
+    }
+    await Promise.all(items().map((n) => n.rendered));
     const input = s.querySelector<HTMLInputElement>('.search-input')!;
 
     const type = async (value: string) => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
       await new Promise((res) => setTimeout(res, 20));
+      // Filtering re-renders the items, so wait out their shadow roots again
+      // before reading a <mark> from inside one.
+      await Promise.all(items().map((n) => n.rendered));
       const rows = Array.from(s.querySelectorAll('.content .nav-row'));
       const visible = rows
         .filter((row) => !(row as HTMLElement).hasAttribute('data-filtered-out'))

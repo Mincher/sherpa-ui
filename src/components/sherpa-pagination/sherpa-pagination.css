@@ -31,13 +31,15 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
-  /* Figma's Input Field (atom) in the pagination row measures 89 × 32. 89 is a
-     HUG-derived width (value + stepper), not a designed step, and it is off the
-     8px grid — so it is snapped to 88px, the step beside it, which no single
-     size token happens to name.
-     FIGMA FLAG for Will: that field is a hugging frame, so its width drifts with
-     its content; pinning it would make the row stable. */
-  --_field: 88px;
+  /* TWO widths, not one. Re-read from the Figma node (Pagination 48:65826): the
+     rows-per-page field is 72 × 32 and the page field is 48 × 32. They were both
+     88px here, from an earlier reading of a HUGGING frame whose width drifted
+     with its content — which is why the row looked so wide.
+
+     The sizes are what each field HOLDS: "10"/"25"/"50"/"100" plus a chevron in
+     72, and 1–3 digits in 48. Both on the 8px grid. */
+  --_field-rows: 72px;
+  --_field-page: 48px;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
@@ -112,105 +114,59 @@
   }
 }
 
-/* Figma's fixed Pagination gives BOTH fields the same 89×32 Input Field (atom)
-   box — the page field was 5ch (44px), so the two read as different controls. A
-   fixed width also stops the row reflowing as the page number gains a digit. */
+/* Both are the Figma "Input Field (atom)" box at 32 tall, sized to what each
+   one holds. A FIXED width (rather than ch or auto) is what stops the row
+   reflowing as the page number gains a digit. */
 .page-input {
-  inline-size: var(--_field);
+  inline-size: var(--_field-page);
   text-align: center;
 }
 .rows {
-  inline-size: var(--_field);
+  inline-size: var(--_field-rows);
 }
 
 /* ── Nav buttons ──────────────────────────────────────────────────────────
-   Figma SNAPS them into pairs — first+prev, next+last — using the Structure snap
-   extensions, so only the pair's OUTER corners are rounded and the two share one
-   hairline where they meet. Each button was rounded on all four corners, so the
-   pair read as two separate controls with a gap between them. */
-.controls .btn {
-  border-radius: 0;
+ * Composed <sherpa-button>s (Figma Pagination 48:65826 instances them at
+ * Structure=default 32×32, pinned Style=Transparent), so the component owns its
+ * own size, fill, hover, active, disabled and focus ring. ~90 lines of that —
+ * plus four hand-drawn pure-CSS chevrons — used to live here.
+ *
+ * Figma SNAPS them into pairs: first+prev and next+last, so each pair keeps only
+ * its OUTER corners and the two share one hairline where they meet.
+ */
+.pair {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
-/* The leading button of each pair keeps its left corners… */
-.btn.first,
-.btn.next {
-  border-start-start-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
-}
-/* …and the trailing button keeps its right ones. */
-.btn.prev,
-.btn.last {
-  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
-  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
-  /* The negative space/snapped gap laps the two rings into one hairline. CSS
-     `gap` cannot go negative, so it has to be a margin (see the filter chip). */
+/* The negative snapped gap laps the two rings into one hairline. CSS `gap`
+   cannot go negative, so it has to be a margin. */
+.pair > :not(:first-child) {
   margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-inline-size: var(--_control);
-  block-size: var(--_control);
-  padding-inline: var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid transparent;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  cursor: pointer;
-  transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
+/* The snapped CORNERS, set here rather than left to `data-snap`.
+   `[data-snap]` is a plain selector in tokens.css, which is loaded into the
+   DOCUMENT and deliberately NOT in SherpaElement.sharedStyles — so it reaches a
+   button in the light DOM but never one inside this shadow root. The attribute
+   stays on each button as the honest description of what it is; the same four
+   corner variables are written directly so the pair actually joins.
 
-  &:hover:not(:disabled) {
-    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
-  }
-  &:active:not(:disabled) {
-    background: var(--sherpa-theme-surface-default-transparent, #ffffff00);
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
+   By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
+.pair > * {
+  --sherpa-structure-rounding-top-left: 0px;
+  --sherpa-structure-rounding-top-right: 0px;
+  --sherpa-structure-rounding-bottom-left: 0px;
+  --sherpa-structure-rounding-bottom-right: 0px;
 }
-
-/* ── Disabled (prev/next/first/last at boundaries) — inactive tokens ──── */
-.btn:disabled {
-  cursor: not-allowed;
-  pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+.pair > :first-child {
+  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-
-/* ── Chevron glyphs (pure CSS, no icon font) ──────────────────────────── */
-.chev {
-  position: relative;
-  inline-size: 7px; /* off-grid-ok */
-  block-size: 7px; /* off-grid-ok */
-  box-sizing: border-box;
+.pair > :last-child {
+  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-.chev::before,
-.chev::after {
-  content: "";
-  position: absolute;
-  inset-block-start: 0;
-  inline-size: 7px; /* off-grid-ok */
-  block-size: 7px; /* off-grid-ok */
-  border-right: var(--sherpa-display-mode-border-width-lg, 2px) solid currentColor;
-  border-bottom: var(--sherpa-display-mode-border-width-lg, 2px) solid currentColor;
-  box-sizing: border-box;
-}
-/* Single chevrons hide the second stroke. */
-.chev-left::after,
-.chev-right::after {
-  content: none;
-}
-.chev-left::before { inset-inline-start: 0; transform: rotate(135deg); }
-.chev-right::before { inset-inline-start: 0; transform: rotate(-45deg); }
-
-/* Double chevrons — two nested strokes offset along the inline axis. */
-.chev-double-left::before { inset-inline-start: -3px /* off-grid-ok */; transform: rotate(135deg); }
-.chev-double-left::after  { inset-inline-start: 3px /* off-grid-ok */; transform: rotate(135deg); }
-.chev-double-right::before { inset-inline-start: -3px /* off-grid-ok */; transform: rotate(-45deg); }
-.chev-double-right::after  { inset-inline-start: 3px /* off-grid-ok */; transform: rotate(-45deg); }
 
 /* ── Disabled fields ──────────────────────────────────────────────────── */
 :host([disabled]) .rows,

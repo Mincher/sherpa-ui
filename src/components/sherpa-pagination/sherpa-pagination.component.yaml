@@ -42,28 +42,27 @@ anatomy:
           attrs:
             aria-label: Pagination
           children:
-            - el: button
-              class: btn first
-              attrs:
-                data-action: first
-                type: button
-                aria-label: First page
+            - el: span
+              class: pair pair-back
               children:
-                - el: span
-                  class: chev chev-double-left
+                - el: sherpa-button
+                  class: btn first
                   attrs:
-                    aria-hidden: "true"
-            - el: button
-              class: btn prev
-              attrs:
-                data-action: prev
-                type: button
-                aria-label: Previous page
-              children:
-                - el: span
-                  class: chev chev-left
+                    data-action: first
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: right
+                    data-icon-start: fa-solid fa-angles-left
+                    aria-label: First page
+                - el: sherpa-button
+                  class: btn prev
                   attrs:
-                    aria-hidden: "true"
+                    data-action: prev
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: left
+                    data-icon-start: fa-solid fa-angle-left
+                    aria-label: Previous page
             - el: input
               class: page-input
               part: page-input
@@ -78,28 +77,27 @@ anatomy:
               part: total
               attrs:
                 aria-hidden: "true"
-            - el: button
-              class: btn next
-              attrs:
-                data-action: next
-                type: button
-                aria-label: Next page
+            - el: span
+              class: pair pair-fwd
               children:
-                - el: span
-                  class: chev chev-right
+                - el: sherpa-button
+                  class: btn next
                   attrs:
-                    aria-hidden: "true"
-            - el: button
-              class: btn last
-              attrs:
-                data-action: last
-                type: button
-                aria-label: Last page
-              children:
-                - el: span
-                  class: chev chev-double-right
+                    data-action: next
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: right
+                    data-icon-start: fa-solid fa-angle-right
+                    aria-label: Next page
+                - el: sherpa-button
+                  class: btn last
                   attrs:
-                    aria-hidden: "true"
+                    data-action: last
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: left
+                    data-icon-start: fa-solid fa-angles-right
+                    aria-label: Last page
     - el: template
       class: rows-opt-tpl
       children:
@@ -181,10 +179,6 @@ tokens:
   page-input.background: "{sherpa.theme-surface-default-base}"
   page-input.color: "{sherpa.theme-content-body-1}"
   page-input.font-size: "{sherpa.font-size-body-base}"
-  btn.padding-inline: "{sherpa.structure-space-padding}"
-  btn.border-width: "{sherpa.style-border-width}"
-  btn.border-radius: "{sherpa.structure-rounding-top-left}"
-  btn.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:
     figmaName: Pagination

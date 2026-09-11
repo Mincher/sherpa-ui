@@ -147,3 +147,31 @@ test('data-snap joins buttons into a seamless group (per-corner radius)', async 
   expect(parseFloat(r.all.tl)).toBe(0);
   expect(parseFloat(r.all.tr)).toBe(0);
 });
+
+test('a disabled TRANSPARENT button dims its ink instead of growing a grey box', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mk = async (look: string | null) => {
+      const b = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
+      if (look) b.setAttribute('data-look', look);
+      b.setAttribute('disabled', '');
+      b.textContent = 'x';
+      document.getElementById('root')!.appendChild(b);
+      await b.rendered;
+      const t = getComputedStyle(b.shadowRoot!.querySelector('.trigger')!);
+      return { bg: t.backgroundColor, border: t.borderTopColor, ink: t.color };
+    };
+    return { transparent: await mk('transparent'), plain: await mk(null) };
+  });
+
+  // A tertiary button has no box to grey out — its look tier sets --_surface to
+  // transparent (Figma's Style: Transparent extension resolves style-surface/base
+  // to #ffffff at 0% alpha). Filling it on disable made a borderless control
+  // suddenly grow a slab: the disabled pagination arrows painted one.
+  expect(r.transparent.bg).toBe('rgba(0, 0, 0, 0)');
+  expect(r.transparent.border).toBe('rgba(0, 0, 0, 0)');
+  // It still says "off" — by dimming the ink, which is all it has.
+  expect(r.transparent.ink).toBe('rgb(179, 179, 195)');
+
+  // The DEFAULT look keeps Figma's inactive treatment: dark ink on grey.
+  expect(r.plain.bg).toBe('rgb(179, 179, 195)');
+});
