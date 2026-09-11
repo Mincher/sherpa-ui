@@ -94,6 +94,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     this.$('.clear')?.addEventListener('click', this.#onClear);
+    this.$('.today')?.addEventListener('click', this.#onToday);
     // The search is a composed <sherpa-input-text>, which re-dispatches the
     // inner control's `input`. Listening on the component rather than reaching
     // into its shadow root for the raw <input>.
@@ -331,6 +332,20 @@ export class SherpaMenu extends SherpaElement {
     // Report the emptied state the same way a tick does, so a host that is not
     // committing sees the change at once.
     if (!this.#commits) this.emit('menu-change', { values: this.values });
+  };
+
+  /**
+   * Today — drive the slotted calendar to today.
+   *
+   * The BUTTON is the menu's (Figma puts Today in the Calendar footer's `left`
+   * slot) while the BEHAVIOUR is the calendar's, so this calls the calendar's
+   * public `today()` rather than reaching into it. Stays OPEN, like a day
+   * click: Today picks a date, it does not commit one — Apply still does that.
+   */
+  #onToday = (): void => {
+    for (const cal of this.querySelectorAll<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
+      cal.today?.();
+    }
   };
 
   #onClick = (event: Event): void => {

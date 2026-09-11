@@ -360,15 +360,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // A calendar is not a list to search, and the search would filter
         // nothing — so it is not offered here.
         menu.removeAttribute('data-search');
-        // A date filter can be taken back to "no date", which a set of value
-        // rows cannot express by unticking — so the menu offers Clear.
-        menu.setAttribute('data-clearable', '');
+        // NO data-clearable. The Calendar footer's left slot holds TODAY in
+        // Figma, not Clear — so that is what a calendar menu shows there, and
+        // the way back to "no date" is the remove-filter row below (which the
+        // date branch used to skip by returning early).
         // The Menu set's own `Type = Calendar` variant: a wider card whose list
         // region runs horizontally, so a day grid and a time picker sit side by
         // side. The calendar is the CONTENT; the menu is the card.
         menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
+      // A DATE chip gets the remove row too. It used to return here, straight
+      // past it, so a date filter was the one kind of chip a reader could add
+      // and then never take off the bar — and with Clear gone from the footer
+      // (Figma puts Today in that slot) it would have no way back at all.
+      this.#addRemoveRow(chip, menu);
       chip.setAttribute('data-menu', '');
       chip.appendChild(menu);
       return;
@@ -388,16 +394,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu.appendChild(row);
     }
 
-    // A REMOVE row on the filter chips only. Not on the organise chips (Group and
-    // Sort are fixed parts of the bar, not filters a user put there) and not on
-    // the Add chip itself, whose menu IS the list of things to add.
-    if (chip.classList.contains('chip')) {
-      const removeTpl = this.$<HTMLTemplateElement>('template.qf-remove-tpl');
-      if (removeTpl) menu.appendChild(removeTpl.content.firstElementChild!.cloneNode(true));
-    }
+    this.#addRemoveRow(chip, menu);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
+  }
+
+  /**
+   * Give a chip's menu its "Remove filter" row.
+   *
+   * FILTER chips only. Not the organise chips (Group and Sort are fixed parts
+   * of the bar, not filters a user put there) and not the Add chip itself,
+   * whose menu IS the list of things to add.
+   *
+   * Shared rather than written inline because BOTH menu shapes need it — a
+   * value menu and a date menu — and the date branch returns early, which is
+   * exactly how it came to be missing from date chips.
+   */
+  #addRemoveRow(chip: HTMLElement, menu: HTMLElement): void {
+    if (!chip.classList.contains('chip')) return;
+    const removeTpl = this.$<HTMLTemplateElement>('template.qf-remove-tpl');
+    if (removeTpl) menu.appendChild(removeTpl.content.firstElementChild!.cloneNode(true));
   }
 
   /**

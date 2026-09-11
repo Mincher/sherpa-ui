@@ -862,7 +862,14 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       menuHeaderShown: getComputedStyle(menu.shadowRoot.querySelector('.header')!).display,
       calOwnHeader: getComputedStyle(cal.shadowRoot.querySelector('.cal-header')!).display,
       monthLabel: projected?.querySelector('.cal-label')?.textContent ?? null,
+      // The Calendar footer's LEFT slot holds Today (Figma 1156:29251), not
+      // Clear — so that is the button a date menu shows there.
+      todayShown: getComputedStyle(menu.shadowRoot.querySelector('.today')!).display,
       clearShown: getComputedStyle(menu.shadowRoot.querySelector('.clear')!).display,
+      // …and the way OFF the bar is the remove row, which the date branch used
+      // to skip: it returned before the row was appended, so a date filter was
+      // the one kind of chip a reader could add and never take away.
+      hasRemoveRow: !!menu.querySelector('.qf-remove'),
     };
 
     // The projected stepper still drives the calendar it came from.
@@ -881,15 +888,20 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       values: JSON.parse(JSON.stringify(el.values)),
     };
 
-    // CLEAR takes it back to no date — something a set of value rows cannot
-    // express by unticking.
-    const clearBtn = menu.shadowRoot.querySelector('.clear') as HTMLElement & {
+    // TODAY re-picks rather than empties, so the date after it is today's.
+    const todayBtn = menu.shadowRoot.querySelector('.today') as HTMLElement & {
       shadowRoot: ShadowRoot;
     };
-    (clearBtn.shadowRoot.querySelector('button') as HTMLElement).click();
+    (todayBtn.shadowRoot.querySelector('button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 120));
 
-    return { before, steppedTo, after, cleared: cal.dataset['value'] ?? null };
+    const now = new Date();
+    const p2 = (n: number) => String(n).padStart(2, '0');
+    return {
+      before, steppedTo, after,
+      afterToday: cal.dataset['value'] ?? null,
+      todayIso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
+    };
   }, MOUNT);
 
   // The menu holds a CALENDAR, and only the menu draws an action row.
@@ -920,7 +932,14 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   // The projected stepper still drives the calendar it was stamped from.
   expect(r.steppedTo).not.toBe(r.before.monthLabel);
 
-  // CLEAR empties the selection.
-  expect(r.before.clearShown).not.toBe('none');
-  expect(r.cleared).toBe(null);
+  // TODAY is the left footer button on a calendar menu, and Clear is not —
+  // Figma's Calendar footer puts Today in that slot and holds ONE control
+  // there. It jumps the calendar to today rather than emptying it.
+  expect(r.before.todayShown).not.toBe('none');
+  expect(r.before.clearShown).toBe('none');
+  expect(r.afterToday).toBe(r.todayIso);
+
+  // The way back OFF the bar is the remove row. A date chip skipped it before,
+  // so with Clear gone it would have had no way out at all.
+  expect(r.before.hasRemoveRow).toBe(true);
 });

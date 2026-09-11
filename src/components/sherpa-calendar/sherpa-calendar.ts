@@ -401,6 +401,18 @@ export class SherpaCalendar extends SherpaElement {
   /* ── Footer actions ─────────────────────────────────────────────────── */
 
   /**
+   * Jump to today and select it.
+   *
+   * PUBLIC, because when this calendar is embedded the Today button is not in
+   * this shadow root — it belongs to the host's footer (Figma's Calendar footer
+   * puts it in the Container Footer's `left` slot), and the host has to be able
+   * to reach the behaviour without reaching into private state.
+   */
+  today(): void {
+    this.#onToday();
+  }
+
+  /**
    * Today — jump the view to today's month and select today (single mode) or
    * begin a fresh range at today (range mode). Reuses the normal pick path so
    * datetime-change / range-select still fire.

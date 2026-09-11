@@ -56,7 +56,8 @@ events:
     composed: true
 tokens:
   row.gap: "{sherpa.theme-gap-sm}"
-  row.padding: "{sherpa.theme-padding-md}"
+  row.padding-block: "{sherpa.theme-padding-md}"
+  row.padding-inline: "{sherpa.theme-padding-none}"
   row.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:

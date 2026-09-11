@@ -23,10 +23,15 @@
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
   gap: var(--sherpa-theme-gap-sm, 4px);
-  /* 8 ALL ROUND — Figma binds padding/md on all four sides (51:66438). The
-     sides were padding/lg 16 until Will pulled them in, which had the footer
-     row indented from the card edge its buttons are meant to line up with. */
-  padding: var(--sherpa-theme-padding-md, 8px);
+  /* 8 BLOCK, 0 INLINE — read from the Container Footer node (51:66438), which
+     binds padding/md top and bottom and padding/NONE on both sides.
+
+     The sides went 16 → 8 → 0 as Will tightened them. Zero is the one that
+     makes the footer's buttons line up with the edge of whatever holds it (a
+     menu card already has its own 8px padding), rather than being indented
+     inside it by a second gutter. */
+  padding-block: var(--sherpa-theme-padding-md, 8px);
+  padding-inline: var(--sherpa-theme-padding-none, 0px);
   /* Top divider — read from the Container Footer node (51:66438): strokeTop is
      style-border/width with the colour style-border/base +1, which is a lighter
      neutral than the container's own outer border.

@@ -208,10 +208,25 @@
  *
  * Both are hidden unless data-clearable, so an ordinary menu's footer is the
  * two buttons it always was. */
+/* ── The footer's LEFT position ──────────────────────────────────────────
+ * Figma's two footers differ only here: the Calendar's `left` slot holds
+ * "Today", the List's is empty. So a calendar menu shows Today and an ordinary
+ * clearable menu shows Clear — one control, never both. */
 .clear { display: none; }
+.today { display: none; }
 .footer-spacer { display: none; }
+
 :host([data-clearable]) .clear { display: inline-flex; }
-:host([data-clearable]) .footer-spacer {
+
+/* A CALENDAR replaces Clear with Today, whether or not it is clearable: the
+   node puts Today in that slot, and two buttons there is not a layout Figma
+   has. Clearing a date is still reachable — picking a day again is the way
+   back, and the chip's own remove-filter row drops the filter entirely. */
+:host([data-type="calendar"]) .today { display: inline-flex; }
+:host([data-type="calendar"]) .clear { display: none; }
+
+:host([data-clearable]) .footer-spacer,
+:host([data-type="calendar"]) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -287,7 +302,7 @@
 /* ── Apply / Cancel footer ───────────────────────────────────────────────
  * A composed <sherpa-container-footer> — Figma's `Container Footer`
  * (Type=action-bar), which BOTH Menu variants hold in their `footer` slot. That
- * component owns the row's padding (8 all round), its gap and top stroke, so
+ * component owns the row's padding (8 block, 0 inline), gap and top stroke, so
  * nothing here restyles it; this only says WHEN it appears.
  *
  * `display: none` beats the component's own `[data-has-content]` rule, so a

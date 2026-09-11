@@ -30,6 +30,7 @@
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
     data-clearable  show a Clear button in the footer that empties the selection
+                    (a CALENDAR menu shows Today there instead — see the footer)
     data-type     list (default) | calendar — the Menu set's own `Type` axis.
                   `calendar` widens the card and lays the LIST region out
                   horizontally, so a day grid and a time picker sit side by
@@ -111,7 +112,7 @@
       FOOTER — the composed <sherpa-container-footer>, not a hand-drawn row.
 
       Read from the Menu set (1156:29240): BOTH variants' `footer` slot holds a
-      `Container Footer` instance at Type=action-bar — padding 8 all round, gap 4,
+      `Container Footer` instance at Type=action-bar — padding 8 block / 0 inline, gap 4,
       and a top stroke of style-border/base +1. That component already is that
       row, owns those values and hides itself when empty, so the menu composes
       it instead of copying its geometry.
@@ -136,6 +137,18 @@
       pushes the pair apart; both are shown only with data-clearable.
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
+      <!--
+        THE LEFT SLOT. Figma's two footers differ in exactly this position:
+
+          Calendar   left = "Today"      right = Cancel · Apply
+          List       left = (empty)      right = Cancel · Apply
+
+        Today is the calendar's, and it REPLACES Clear rather than joining it —
+        one control on the left, as the node has. Clear stays for a list menu
+        that asks for it (data-clearable), where Figma leaves the slot empty and
+        the code has always offered one.
+      -->
+      <sherpa-button class="today" part="today">Today</sherpa-button>
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>

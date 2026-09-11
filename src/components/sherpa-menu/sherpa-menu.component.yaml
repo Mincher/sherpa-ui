@@ -61,6 +61,9 @@ anatomy:
           data-align: end
         children:
           - el: sherpa-button
+            class: today
+            part: today
+          - el: sherpa-button
             class: clear
             part: clear
           - el: span
@@ -91,7 +94,9 @@ props:
     name: data-clearable
     type: string
     kind: content
-    description: show a Clear button in the footer that empties the selection
+    description: >-
+      show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today
+      there instead — see the footer)
   - $type: prop
     name: data-commit
     type: string

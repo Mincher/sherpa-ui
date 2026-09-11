@@ -119,12 +119,12 @@ test('an embedded calendar contributes only its grid — the menu owns the chrom
   expect(r.ownFooter).toBe('none');
 
   // The footer IS Figma's Container Footer instance, not a row drawn by the
-  // menu — the 8px-all-round padding is that component's, and proves it.
+  // menu — that 8-block / 0-inline padding is the node's, and proves it.
   expect(r.footerTag).toBe('sherpa-container-footer');
-  expect(r.footerRowPadding).toBe('8px');
+  expect(r.footerRowPadding).toBe('8px 0px');
 });
 
-test('a date filter chip opens a calendar menu, picks a day, and clears it', async ({ page }) => {
+test('a date filter chip opens a calendar menu, picks a day, and jumps to today', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
@@ -159,15 +159,24 @@ test('a date filter chip opens a calendar menu, picks a day, and clears it', asy
     await new Promise((res) => setTimeout(res, 40));
     const afterPick = cal.dataset['value'] ?? null;
 
-    // Clear is in the menu's footer — the menu empties the slotted calendar.
-    (menu.shadowRoot.querySelector('.clear') as HTMLElement).click();
+    // TODAY is the left footer button on a calendar (Figma puts it in that
+    // slot), and it re-picks rather than empties — so the date after it is
+    // today's, not null. Clicked through the DOM the way a reader would, which
+    // also proves the button is actually reachable: it is hidden on this
+    // variant's Clear, and a click on a hidden button silently does nothing.
+    const today = menu.shadowRoot.querySelector('.today') as HTMLElement;
+    const todayReachable = getComputedStyle(today).display !== 'none';
+    today.click();
     await new Promise((res) => setTimeout(res, 40));
 
+    const now = new Date();
+    const p2 = (n: number) => String(n).padStart(2, '0');
     return {
       menuType: menu.getAttribute('data-type'),
       projected: !!menu.querySelector(':scope > .cal-header-projected'),
-      picked, afterPick,
-      afterClear: cal.dataset['value'] ?? null,
+      picked, afterPick, todayReachable,
+      afterToday: cal.dataset['value'] ?? null,
+      todayIso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
     };
   });
 
@@ -179,9 +188,10 @@ test('a date filter chip opens a calendar menu, picks a day, and clears it', asy
   expect(r.picked).toMatchObject({ value: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) });
   expect(r.afterPick).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
-  // Clear takes it back to "no date" — a thing a set of value rows cannot say
-  // by unticking, which is why a date menu offers the button at all.
-  expect(r.afterClear).toBeNull();
+  // The left footer button on a calendar is Today, and it is really there —
+  // this whole flow would pass against a hidden button otherwise.
+  expect(r.todayReachable).toBe(true);
+  expect(r.afterToday).toBe(r.todayIso);
 });
 
 test('a calendar menu shows no heading; the footer buttons are default size', async ({ page }) => {
@@ -201,12 +211,17 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
       const btn = (c: string) => {
         const b = m.shadowRoot.querySelector('.' + c) as HTMLElement;
         const box = b.getBoundingClientRect();
-        return { h: Math.round(box.height), size: b.getAttribute('data-size'), look: b.getAttribute('data-look') };
+        return { h: Math.round(box.height), size: b.getAttribute('data-size'),
+                 look: b.getAttribute('data-look'),
+                 shown: getComputedStyle(b).display !== 'none' };
       };
       const out = {
         heading: getComputedStyle(m.shadowRoot.querySelector('.heading')!).display,
         ariaLabel: (m.shadowRoot.querySelector('.menu') as HTMLElement).getAttribute('aria-label'),
-        clear: btn('clear'), cancel: btn('cancel'), apply: btn('apply'),
+        // The LEFT button, whichever this variant has: a calendar shows Today
+        // there, a list shows Clear.
+        left: btn('today').shown ? btn('today') : btn('clear'),
+        cancel: btn('cancel'), apply: btn('apply'),
       };
       m.hide();
       return out;
@@ -231,15 +246,15 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
   // button's DEFAULT size at 32 tall, matching the Container Footer's own
   // 32-tall slots. They used to carry data-size="sm".
   for (const shape of [r.list, r.calendar]) {
-    for (const b of [shape.clear, shape.cancel, shape.apply]) {
+    for (const b of [shape.left, shape.cancel, shape.apply]) {
       expect(b.h).toBe(32);
       expect(b.size).toBeNull();
     }
-    // Apply is the only saturated one; Clear is NOT transparent — Figma pins
-    // Style=default on it, where the code had a transparent look.
+    // Apply is the only saturated one; the left button is NOT transparent —
+    // Figma pins Style=default on it, where the code had a transparent look.
     expect(shape.apply.look).toBe('saturated');
     expect(shape.cancel.look).toBeNull();
-    expect(shape.clear.look).toBeNull();
+    expect(shape.left.look).toBeNull();
   }
 });
 
@@ -355,4 +370,87 @@ test('the grid keeps one width across day / month / year, INSIDE a hugging menu'
   expect(Math.abs(m2 - m3)).toBeLessThanOrEqual(0.1);
   // A third of seven day-columns is wider than two of them.
   expect(m1).toBeGreaterThan(64);
+});
+
+test('the calendar footer holds Today on the left, and it drives the calendar', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const open = async (html: string) => {
+      root.innerHTML = '<button id="t">t</button>' + html;
+      const m = document.getElementById('m') as HTMLElement & {
+        rendered?: Promise<void>; show: (t: HTMLElement) => void; hide: () => void; shadowRoot: ShadowRoot;
+      };
+      await m.rendered;
+      const cal = m.querySelector('sherpa-calendar') as (HTMLElement & {
+        rendered?: Promise<void>; dataset: DOMStringMap;
+      }) | null;
+      if (cal) await cal.rendered;
+      await new Promise((res) => setTimeout(res, 40));
+      m.show(document.getElementById('t')!);
+      await new Promise((res) => setTimeout(res, 40));
+      return { m, cal };
+    };
+    const box = (m: HTMLElement & { shadowRoot: ShadowRoot }, c: string) => {
+      const el = m.shadowRoot.querySelector('.' + c) as HTMLElement;
+      const b = el.getBoundingClientRect();
+      return { shown: getComputedStyle(el).display !== 'none', x: Math.round(b.left), w: Math.round(b.width) };
+    };
+
+    const cal = await open('<sherpa-menu id="m" data-type="calendar" data-commit data-clearable>' +
+      '<sherpa-calendar data-embedded></sherpa-calendar></sherpa-menu>');
+    const calendar = {
+      today: box(cal.m, 'today'), clear: box(cal.m, 'clear'),
+      cancel: box(cal.m, 'cancel'), apply: box(cal.m, 'apply'),
+    };
+
+    // Drive it from somewhere far away — a year view with no date picked.
+    cal.cal!.dataset['view'] = 'year';
+    delete cal.cal!.dataset['value'];
+    await new Promise((res) => setTimeout(res, 40));
+    const before = { view: cal.cal!.dataset['view'], value: cal.cal!.dataset['value'] ?? null };
+    (cal.m.shadowRoot.querySelector('.today') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 50));
+    const after = { view: cal.cal!.dataset['view'], value: cal.cal!.dataset['value'] ?? null };
+    const stillOpen = !!cal.m.shadowRoot.querySelector('.menu:popover-open');
+    cal.m.hide();
+
+    const list = await open('<sherpa-menu id="m" data-heading="Plan" data-commit data-clearable>' +
+      '<label><input type="checkbox" value="p"/>Pro</label></sherpa-menu>');
+    const listFooter = { today: box(list.m, 'today'), clear: box(list.m, 'clear') };
+
+    const iso = (() => {
+      const d = new Date();
+      const p2 = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+    })();
+    return { calendar, before, after, stillOpen, listFooter, iso };
+  });
+
+  // Figma's two footers differ in exactly one position: the Calendar's `left`
+  // slot holds "Today", the List's is empty. So Today REPLACES Clear on a
+  // calendar rather than joining it — one control there, as the node has.
+  expect(r.calendar.today.shown).toBe(true);
+  expect(r.calendar.clear.shown).toBe(false);
+
+  // Today is on the LEFT, away from the pair a thumb reaches for.
+  expect(r.calendar.today.x).toBeLessThan(r.calendar.cancel.x);
+  expect(r.calendar.cancel.x).toBeLessThan(r.calendar.apply.x);
+
+  // The node's own widths: Today 57, Cancel 62, Apply 54 (±1 for text metrics).
+  expect(Math.abs(r.calendar.today.w - 57)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.calendar.cancel.w - 62)).toBeLessThanOrEqual(1);
+  expect(Math.abs(r.calendar.apply.w - 54)).toBeLessThanOrEqual(1);
+
+  // The BUTTON is the menu's; the BEHAVIOUR is the calendar's. Clicking it from
+  // a year view with nothing picked lands on today's DAY view with today set.
+  expect(r.before).toEqual({ view: 'year', value: null });
+  expect(r.after).toEqual({ view: 'day', value: r.iso });
+
+  // It stays OPEN — Today picks a date, it does not commit one. Apply does that.
+  expect(r.stillOpen).toBe(true);
+
+  // A LIST menu is unchanged: Figma leaves its left slot empty, and a clearable
+  // one still offers Clear there.
+  expect(r.listFooter.today.shown).toBe(false);
+  expect(r.listFooter.clear.shown).toBe(true);
 });
