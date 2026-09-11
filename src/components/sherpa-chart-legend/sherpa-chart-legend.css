@@ -56,7 +56,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: start;
+  /* CENTRED, unlike the vertical legend.
+     A horizontal legend sits BELOW its chart and spans the container's full
+     width, so a start-aligned row hangs off the left while the chart it labels
+     is centred above it. A vertical legend stacks BESIDE the chart and keeps
+     `start`, because there its labels read as a left-aligned list. */
+  justify-content: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
