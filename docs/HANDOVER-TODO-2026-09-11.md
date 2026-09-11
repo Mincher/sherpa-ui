@@ -216,6 +216,87 @@ obvious candidate — they may draw their own indicator).
 
 ---
 
+## 7. Full token sweep — pull CURRENT values from every collection, mode and extension
+
+**Will's words:** "Do another pass of pulling current token values from all figma
+variable collections, extension and modes and updating the CSS values where
+needed."
+
+This session only swept what Will named (Structure, then `style-content`). Both
+times there WAS real drift, so assume the rest has drifted too.
+
+### Scope
+
+23 collections in `figma.tokens.json`, of which **9 are extensions** that carry no
+leaves in the dump and are read from a separate cache
+(`src/styles/tokens/figma.extensions.json`):
+
+```
+base collections   data-viz · display-mode · elevation · input · layout
+                   layout-app-shell · layout-calendar-d · layout-calendar-m-y
+                   navigation · primitives · structure · style · switch · theme
+extensions         display-comfortable · display-compact · style-saturated
+                   style-transparent · structure-snap-{all,top,bottom,left,right}-edge
+```
+
+Every collection × every mode. `display-mode` alone has light/dark; `style` has 8
+status modes; `data-viz` has 15.
+
+### Method that worked twice this session — do NOT re-export the whole file
+
+`figma_export_tokens` on the whole file churns 800+ leaves and drags in the known
+dangling-alias warnings, which buries the real changes. Instead, per collection:
+
+1. **Read Figma** with `figma_execute`: resolve each variable's `valuesByMode`,
+   turning a `VARIABLE_ALIAS` into `{collection.path.to.target}` (dots, not
+   slashes) so it compares against the dump's reference format.
+2. **Diff against the dump in Python**, normalising the reference prefix — the
+   dump writes `{theme.content.size.small}` where the Figma side reads
+   `{content.size.small}`. Strip a leading `theme.` / `display-mode.` /
+   `primitives.` before comparing.
+   **Ignore hex CASE** — a previous pass found 139 of 147 "differences" were case
+   only.
+   Remember the **primary mode lives in `$value`**, not in
+   `$extensions[...].modes` (which only holds the non-primary modes). Missing that
+   is why the first `style-content` patch attempt found nothing.
+3. **Patch only the changed leaves** in `figma.tokens.json` — both `$value` (if
+   primary) and `lastSyncedValue.<mode>.reference`, plus `modes.<mode>` for
+   non-primary. Use a JSON round-trip with `ensure_ascii=True`, or the em dashes
+   in every `$description` re-encode and the diff explodes to 132 lines.
+4. **Re-project**: `node scripts/project-tokens.mjs`. It must report
+   `✓ no warnings`. Check `git diff --stat` — a correct sync touches only the
+   lines you patched.
+5. **Sweep the hardcoded fallbacks.** This is the step that is easy to skip and
+   the reason the pass matters: CLAUDE.md requires every `var()` fallback to equal
+   the value the token actually resolves to. The `style-content` change left **25
+   stale fallbacks across 17 component CSS files**. For each changed token, grep
+   `sherpa-<token-name>, *#` across `src/components/` and compare.
+
+### Extensions need a different read
+
+An extension override **writes fine but reads back EMPTY** from
+`valuesByMode` — a long-standing Figma API quirk, already recorded in memory. Read
+them by creating a scratch node, binding the variable, pinning the node to the
+extension's mode, and reading the RESOLVED value off the node. That is how
+`figma.extensions.json` was built; `scripts/` has prior art for the bound-probe.
+
+### Known Figma-side problems that will show up as noise
+
+- Dangling aliases to `VariableID:7:9xx` (~25 warnings on a full export) — these
+  are cross-library references, not drift. Do not "fix" them.
+- `DATA VIZ series/2-10` were deleted in an earlier rename pass and flagged, not
+  fixed.
+- Anything the diff reports as hex-case-only is not a change.
+
+### Worth doing first
+
+Write the diff as a **reusable script** rather than ad-hoc Python in the shell.
+This is the third time the same compare has been hand-rolled, and it will be
+wanted again. `scripts/resync-figma.mjs --check` already does the equivalent for
+component specs — a `--check` mode for TOKENS belongs beside it.
+
+---
+
 ## Done this session (for context — no action needed)
 
 - **Icons page:** cleared padding + gap on 208 icon component sets in Figma. The
