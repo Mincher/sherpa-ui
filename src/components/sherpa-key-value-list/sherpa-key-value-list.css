@@ -5,7 +5,7 @@
  *   horizontal (default) — key / value side by side (a two-column grid)
  *   vertical             — key above value, each pair block-stacked
  *
- * The value renders inside a subtle grey rounded pill (a surface chip) that
+ * The value renders inside a pale grey rounded pill (a surface chip) that
  * hugs its content; the key stays plain text.
  *
  * JS only stamps the dt/dd pairs; every visual decision lives here.
@@ -31,8 +31,17 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* The value sits inside a subtle grey rounded pill that hugs its content
-   (Figma: Value Slot = surface/default-2 fill, rounding/sm, padding/sm). */
+/* The value sits inside a subtle grey rounded pill that hugs its content.
+
+   Read from the Key Value Pair node (62:283 > Value Slot): the fill is
+   style-surface/base +1 = #e8e8f6, the PALE grey. It was
+   theme-surface/default/+2 = #b3b3c3, which is three steps darker and the
+   colour of a BORDER, not a surface — a dark slab behind every value.
+
+   The comment here used to say "surface/default-2", which had been true once
+   and was never re-checked against the node. That is the whole reason the
+   sweeps kept missing this: a stale comment reads exactly like a verified one.
+   scripts/figma-harvest-colours.mjs now makes the comparison instead. */
 .value {
   margin: 0;
   min-inline-size: 0;
@@ -42,7 +51,7 @@
   padding-inline: var(--sherpa-theme-padding-sm, 4px);
   color: var(--sherpa-theme-content-body-1, #35353D);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 

@@ -20,10 +20,20 @@
   vertical-align: middle;
   inline-size: fit-content;
 
-  /* Look-tier routing — neutral until a [data-status]/[data-look] lights it up. */
-  --_surface: var(--_status-surface, var(--sherpa-theme-surface-default-base, #ffffff));
-  --_content: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  /* Look-tier routing — neutral until a [data-status]/[data-look] lights it up.
+
+     The UNSTATUSED fallbacks are read from the Tag node (10:2187 > Type=full):
+     surface style-surface/base #ffffff, border style-border/base #b3b3c3, and
+     content style-content/base #0c0b11 on BOTH the label and the icon.
+
+     The content fallback was theme-content/body/+1 #35353d — a lighter grey, so
+     a plain tag's text sat one step too faint. The three now route through the
+     STYLE layer together, which is the layer Figma binds and the one a status
+     mode re-points; mixing a Theme fallback in meant one of the three did not
+     follow the other two. */
+  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
+  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
 }
 
 /* Figma Tag/Type=full (Structure=xs): FIXED height 16 (Structure::height), padding

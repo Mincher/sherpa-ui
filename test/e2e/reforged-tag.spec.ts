@@ -24,10 +24,17 @@ test('default is a neutral pill: white surface, grey border, dark text', async (
     const cs = getComputedStyle(pill);
     return { bg: cs.backgroundColor, border: cs.borderTopColor, text: cs.color };
   });
-  expect(r.bg).toBe('rgb(255, 255, 255)'); // control-surface-default (neutral)
-  expect(r.border).toBe('rgb(179, 179, 195)'); // style-border-base → theme-border-default-2 (#b3b3c3 grey)
+  // Read from the Tag node (10:2187 > Type=full), which binds all three through
+  // the STYLE layer: surface/base #ffffff, border/base #b3b3c3, and
+  // content/base #0c0b11 on BOTH the label and the icon.
+  expect(r.bg).toBe('rgb(255, 255, 255)'); // style-surface/base
+  expect(r.border).toBe('rgb(179, 179, 195)'); // style-border/base #b3b3c3
   expect(r.border).not.toBe(r.bg); // a visible grey border
-  expect(r.text).toBe('rgb(53, 53, 61)'); // style-content-base → content-body-1 (#35353d) dark ink
+  // #0c0b11. This asserted #35353d — the lighter theme-content/body/+1 — and
+  // its own comment claimed that WAS style-content/base, which it is not. The
+  // assertion and the code agreed with each other and both disagreed with
+  // Figma, which is why no test caught it.
+  expect(r.text).toBe('rgb(12, 11, 17)');
 });
 
 test('an ancestor [data-status] colours the pill via the cascade', async ({ page }) => {
