@@ -170,15 +170,15 @@ Each component gets:
 
 ## sherpa-quick-filter-toolbar  (Figma "Filter Toolbar")
 - **Purpose:** a bar of quick-filter chips + a slot for host action controls.
-- **Anatomy:** `.chips` · `view` slot (leading) · `actions` slot (trailing). Cloning prototype stamps chips.
-- **Variants:** `Type = data | view` (Figma). DIVERGENCE: code = single 3-zone slot bar, Type not implemented.
-- **Properties:** `content` (SLOT, chips via `populate([{id,label,type?,active?,icon?,options?,select?}])`), `right-actions`/`actions` (SLOT), `view` (SLOT). No `count` — a badge on a toggle chip could only mean a RESULT count, which a host with a server-side query does not know when the bar is built.
-- **Appearance / status:** neutral toolbar; chips carry brand purple. No `data-look`.
-- **Sizing / geometry:** full-width; Structure sizes for chips.
-- **States:** per-chip current; toolbar static. CSS-owned.
-- **Behaviour + events:** clicking a chip fires **`quick-filter-change`** (detail { active: string[] }).
-- **Composition:** composes quick-filter; above Grid/List.
-- **Notes / divergences:** deliberately simpler than Figma — baked-in view chip / preset dividers / action cluster (Add/AI/undo/refresh/star/Save/overflow) delegated to slots. Recorded in .thin.yaml _divergence.
+- **Anatomy:** `view` slot (leading) · `.organise-zone` (Group/Sort) · `.chips` · `.actions-zone` (the built-in action cluster). Cloning prototype stamps chips.
+- **Variants:** `Type = data | view` (Figma), implemented as `data-type`. `view` adds the snapped ★|Save|▾ group to the cluster.
+- **Properties:** `data-type = data | view`, `data-no-actions` (hide the cluster), `data-favourite`; chips via `populate([{id,label,type?,active?,icon?,options?,select?}])`; Group/Sort columns via `organise({group,sort})`; `actions` (SLOT, host extras, rendered BEFORE the cluster), `view` (SLOT). No `count` — a badge on a toggle chip could only mean a RESULT count, which a host with a server-side query does not know when the bar is built.
+- **Appearance / status:** neutral toolbar; chips carry brand purple; cluster buttons are `data-look="transparent"` (tertiary). A lit ★ takes the brand ink (`theme-content-active-2`), matching app-header's own favourite.
+- **Sizing / geometry:** full-width; Structure sizes for chips. The cluster is `flex: 0 0 auto` with `margin-inline-start: auto`, so it stays at the trailing edge even when the chip run wraps.
+- **States:** per-chip current; `data-favourite` on the host. CSS-owned.
+- **Behaviour + events:** `quick-filter-change` (detail { active, values, picked }), `group-change`, `sort-change`, plus the cluster: `filter-add`, `filter-clear`, `ai-filter-request`, `filter-configure`, `data-refresh`, `filter-overflow`, and for `view`: `view-save`, `view-favorite` (detail { favourite }), `view-menu-open`. `clearAll()` is public — the undo button resets rather than merely announcing.
+- **Composition:** composes quick-filter + button; above Grid/List, or in app-header's `filters` slot (the view-level bar).
+- **Notes / divergences:** the action cluster is now BUILT IN, reversing the earlier "delegated to slots" decision (Will, 2026-09-11) — Figma models it as one component and every host had to rebuild the same seven buttons. The view group's snapped corners are set in the toolbar's own CSS, NOT by `data-snap`: that selector lives in tokens.css, which is loaded into the document and deliberately not in `sharedStyles`, so it never reaches a button inside a shadow root.
 
 ## sherpa-loader  (Figma "Loading Spinner atom")
 - **Purpose:** an indeterminate spinner for unknown-duration work.

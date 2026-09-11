@@ -183,6 +183,25 @@ export async function init(root) {
       { label: 'Workspace', href: '#' },
       { label: 'Customers' },
     ],
+    // The header's toolbar is the VIEW-level one (data-type="view" in
+    // index.html), so its chips are SAVED VIEWS, not the grid's column filters.
+    // A view is a whole saved arrangement — which is why this bar, and not the
+    // data bar below it, is the one that carries Save / favourite.
+    filters: [
+      {
+        id: 'view',
+        label: 'All customers',
+        icon: 'fa-solid fa-table-list',
+        active: true,
+        select: 'single',
+        options: [
+          { value: 'all', label: 'All customers', selected: true },
+          { value: 'mine', label: 'My accounts' },
+          { value: 'risk', label: 'At risk' },
+          { value: 'renewals', label: 'Renewals this quarter' },
+        ],
+      },
+    ],
   });
   header?.setAttribute('data-heading', 'Customers');
   header?.setAttribute('data-icon', 'fa-solid fa-users');

@@ -72,9 +72,87 @@
   min-inline-size: 0;
 }
 
-.actions-zone { display: none; }
-:host([data-has-actions]) .actions-zone {
+/* ── Action cluster ──────────────────────────────────────────────────
+ * Figma's `right-actions` slot, built in. ALWAYS shown now — it used to be an
+ * empty slot gated on data-has-actions, so the bar ended at the last filter
+ * chip. `data-no-actions` is the way out for a host that owns the trailing end
+ * itself.
+ *
+ * `margin-inline-start: auto` rather than a spacer: the chip run already
+ * flex-grows, but it wraps, and on a wrapped second line the grown run no
+ * longer reaches the end of the bar. The auto margin pins the cluster to the
+ * trailing edge either way. */
+.actions-zone {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* Never wraps or squashes — these are the bar's fixed controls. */
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+}
+:host([data-no-actions]) .actions-zone { display: none; }
+
+/* The 1x16 divider inside the cluster, before the refresh/overflow tail.
+   Same rectangle as the view and organise zone dividers. */
+.act-divider {
+  flex: 0 0 auto;
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  background: var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+
+/* ── The view-scope group ────────────────────────────────────────────
+ * Figma's "Frame 1": ★ · Save · ▾ at gap -0.5 — their borders OVERLAP so the
+ * three read as one control. `gap` cannot be negative in CSS, so the overlap is
+ * a negative margin on the followers, which is the same idiom the snapped
+ * control pairs elsewhere use.
+ *
+ * Only the `view` type has it. Figma's Type=data cluster ends at the divider. */
+.view-group { display: none; }
+:host([data-type="view"]) .view-group {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.view-group > :not(:first-child) {
+  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+}
+
+/* The snapped corners, set HERE rather than left to `data-snap`.
+   `[data-snap]` is a plain selector in tokens.css, which is loaded into the
+   DOCUMENT and deliberately NOT in SherpaElement.sharedStyles — so it reaches a
+   button in the light DOM but never one inside this shadow root. The attribute
+   is kept on the buttons (it is the honest description of what they are, and it
+   works if one is ever re-hosted), and the same four corner variables are
+   written directly so the group actually joins.
+
+   The values mirror the [data-snap] block exactly: an edge named is an edge
+   SQUARED. First child keeps its leading corners, last child its trailing ones,
+   and anything between is square all round. Written by position rather than by
+   `[data-snap="…"]` so the rule survives a re-order of the group. */
+.view-group > * {
+  --sherpa-structure-rounding-top-left: 0px;
+  --sherpa-structure-rounding-top-right: 0px;
+  --sherpa-structure-rounding-bottom-left: 0px;
+  --sherpa-structure-rounding-bottom-right: 0px;
+}
+.view-group > :first-child {
+  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.view-group > :last-child {
+  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* The lit star. `fa-solid` over the outline `fa-regular` says "on" in the glyph
+   itself, so the state survives for anyone who cannot see the colour. JS swaps
+   the class; the ink is CSS's.
+
+   The BRAND purple, matching sherpa-app-header's own favourite star — a
+   favourite is the same act in both places and must not be two colours. (Not
+   `--sherpa-theme-content-accent-1`: that token does not exist, and a var()
+   naming a missing token fails SILENTLY to its hardcoded fallback.) */
+:host([data-favourite]) [data-act="favourite"] {
+  color: var(--sherpa-theme-content-active-2, #c046ff);
 }

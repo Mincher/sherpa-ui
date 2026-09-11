@@ -7,31 +7,39 @@
   controls; an optional leading view slot (data-type="view") holds a view chip.
 
   Public API:
-    data-type   data (default) | view   (view = the App-Header view-scope treatment)
+    data-type      data (default) | view   (view adds the ★/Save/▾ group)
+    data-no-actions  hide the built-in cluster entirely (host owns the trailing end)
+    data-favourite   the ★ is lit (view type)
 
   Slots:
     view     — leading view chip (view type)
-    actions  — trailing controls (add filter, clear, …)
+    actions  — host extras, placed BEFORE the built-in cluster
 
-  Fires: quick-filter-change — detail: { active: string[] }
+  Fires:
+    quick-filter-change  — detail: { active, values, picked }
+    group-change / sort-change
+    filter-add           — the Add chip's body was clicked
+    filter-clear         — the undo button: every chip reset
+    ai-filter-request    — the AI button
+    filter-configure     — the sliders button
+    data-refresh         — the refresh button
+    view-save            — Save (view type)
+    view-favorite        — the ★ toggled. detail: { favourite: boolean }
+    view-menu-open       — the Save group's ▾ (view type)
+    filter-overflow      — the ⋮ button
 
-  ── FIGMA DIVERGENCE (intentional) ──────────────────────────────────────────
-  Figma "Filter Toolbar" (node 150:3688) is a fuller toolbar than this code, on
-  purpose. Figma bakes in, as built-in instances:
-    • a leading view chip (Type=view) or a Switch toggle (Type=data);
-    • filter/preset chips separated by vertical Dividers;
-    • a trailing ACTION CLUSTER: Add (split menu), AI/brand filter, undo,
-      refresh, favourite/star, Save-view (split menu) and an overflow (⋮).
-    • view-scope actions (view-menu-open / view-change / view-save /
-      view-favorite / data-refresh / ai-filter-request) per Figma's description.
-  This component is a deliberately SIMPLER 3-zone slot bar (view / chips /
-  actions). The action cluster, dividers and save-view controls are NOT built
-  in — the host composes them into the `actions` (and `view`) slots. Chips are
-  stamped by populate(); dividers/presets/switch are host-supplied via slots.
-  The extra Figma events above are therefore the host's responsibility, not
-  fired here. See the component's .thin.yaml `_divergence` block for the record.
-  DO NOT expand this component to match Figma without a deliberate decision.
-  ─────────────────────────────────────────────────────────────────────────────
+  ── THE ACTION CLUSTER (Figma "Filter Toolbar" 150:3688) ────────────────────
+  The trailing cluster is BUILT IN and follows Figma's `Type` axis. It used to be
+  an empty `actions` slot with the cluster "delegated to the host" — reversed on
+  Will's call, because Figma models this as ONE component and every host that
+  mounted a toolbar had to rebuild the same seven buttons.
+
+  Both types, in order:   Add chip · AI · undo · configure · │ · refresh · ⋮
+  Type=view ALSO inserts, after the divider:  [★│Save│▾]  (one snapped group)
+
+  Every control exists in the template from the start; `data-type` reveals the
+  view-only group through CSS. The `actions` slot survives for host extras and
+  renders BEFORE the built-in cluster.
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -51,8 +59,67 @@
     <div class="organise-zone" part="organise"></div>
 
     <div class="chips" part="chips"></div>
+    <!--
+      ACTION CLUSTER — Figma's `right-actions` slot, built in.
+
+      Every button exists here from the start; CSS reveals the view-only group
+      off :host([data-type="view"]). Nothing is created at runtime.
+
+      The buttons are icon-only sherpa-buttons at data-look="transparent" (the
+      tertiary tier — Figma's cluster is unfilled, borderless glyphs). Each
+      carries an aria-label, because an icon button has no text to name it.
+    -->
     <div class="actions-zone" part="actions">
+      <!-- Host extras first, so a slotted control reads as part of the host's
+           own toolbar rather than interrupting the standard cluster. -->
       <slot name="actions"></slot>
+
+      <!-- ADD — a menu CHIP in Figma (State=menu), not a button: its body adds a
+           filter and its caret opens the field list. Built as a chip so it
+           matches the run it sits beside. -->
+      <sherpa-quick-filter
+        class="add-chip"
+        data-id="add"
+        data-label="Add"
+        data-icon-start="fa-solid fa-plus"></sherpa-quick-filter>
+
+      <sherpa-button class="act" data-act="ai" data-type="icon" data-look="transparent"
+                     data-icon-start="fa-solid fa-wand-magic-sparkles"
+                     aria-label="Filter with AI"></sherpa-button>
+      <sherpa-button class="act" data-act="clear" data-type="icon" data-look="transparent"
+                     data-icon-start="fa-solid fa-arrow-rotate-left"
+                     aria-label="Reset filters"></sherpa-button>
+      <sherpa-button class="act" data-act="configure" data-type="icon" data-look="transparent"
+                     data-icon-start="fa-solid fa-sliders-up"
+                     aria-label="Configure filters"></sherpa-button>
+
+      <span class="act-divider" aria-hidden="true"></span>
+
+      <!--
+        THE VIEW GROUP — Figma's "Frame 1": three controls SNAPPED into one box
+        (gap -0.5, i.e. their borders overlap). data-snap squares the joined
+        edges so they read as a single control, which is what makes ★ and ▾ read
+        as parts of Save rather than three loose buttons.
+
+        Shown only for data-type="view".
+      -->
+      <span class="view-group">
+        <sherpa-button class="act" data-act="favourite" data-type="icon" data-look="transparent"
+                       data-snap="right" data-icon-start="fa-regular fa-star"
+                       aria-label="Favourite this view" aria-pressed="false"></sherpa-button>
+        <sherpa-button class="act save-btn" data-act="save" data-look="transparent"
+                       data-snap="all" data-icon-start="fa-solid fa-upload">Save</sherpa-button>
+        <sherpa-button class="act" data-act="view-menu" data-type="icon" data-look="transparent"
+                       data-snap="left" data-icon-start="fa-solid fa-caret-down"
+                       aria-label="View options" aria-haspopup="menu"></sherpa-button>
+      </span>
+
+      <sherpa-button class="act" data-act="refresh" data-type="icon" data-look="transparent"
+                     data-icon-start="fa-solid fa-arrows-rotate"
+                     aria-label="Refresh data"></sherpa-button>
+      <sherpa-button class="act" data-act="overflow" data-type="icon" data-look="transparent"
+                     data-icon-start="fa-solid fa-ellipsis-vertical"
+                     aria-label="More actions" aria-haspopup="menu"></sherpa-button>
     </div>
   </div>
 

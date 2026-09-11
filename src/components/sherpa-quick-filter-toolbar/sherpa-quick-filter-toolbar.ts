@@ -6,17 +6,15 @@
  * with the ids of every chip that's currently on. There's a slot for your own
  * extra buttons — the old add/edit/save-view features are left out on purpose.
  *
- * FIGMA DIVERGENCE (intentional): Figma "Filter Toolbar" (node 150:3688) is a
- * fuller toolbar — it bakes in a leading view chip / Switch, divider-separated
- * preset chips, and a trailing action cluster (Add, AI filter, undo, refresh,
- * favourite/star, Save-view split menu, overflow ⋮), plus view-scope events
- * (view-menu-open / view-change / view-save / view-favorite / data-refresh /
- * ai-filter-request). This component is a deliberately SIMPLER 3-zone slot bar:
- * the action cluster and save-view controls are DELEGATED to slotted content
- * (the `actions` and `view` slots), not built in, and those extra events are
- * the host's responsibility, not fired here. Do not expand to match Figma
- * without a deliberate decision. Recorded in the component's .thin.yaml
- * `_divergence` block; the .component.yaml is generated so the prose lives here.
+ * THE ACTION CLUSTER is built in, following Figma's `Type` axis (Filter Toolbar
+ * 150:3688). Both types show:  Add · AI · undo · configure · │ · refresh · ⋮
+ * and `data-type="view"` inserts a snapped [★ │ Save │ ▾] group after the
+ * divider. This REVERSES an earlier decision to delegate the cluster to an
+ * `actions` slot — Figma models it as one component, and every host that
+ * mounted a toolbar had to rebuild the same seven buttons. `data-no-actions`
+ * hides the cluster for a host that wants the trailing end to itself; the
+ * `actions` slot survives for host extras and renders before the cluster.
+ *
  * The bar OPENS with a Group and a Sort chip (Figma Filter Toolbar Type=data leads
  * its content slot with two menu chips, then a divider, then the filter chips).
  * Those two change how the grid is ARRANGED rather than which rows survive, so
@@ -34,11 +32,22 @@
  * @fires quick-filter-change — the active filter set changes. bubbles + composed. detail: { active: string[], values: Record<string, string[]>, picked: Record<string, string[]> }
  * @fires group-change — the group column changed. bubbles + composed. detail: { field: string | null }
  * @fires sort-change — the sort column or direction changed. bubbles + composed. detail: { field: string | null, direction: 'asc' | 'desc' }
+ * @fires filter-add — the Add chip's body was clicked. bubbles + composed. detail: {}
+ * @fires filter-clear — the undo button reset every chip. bubbles + composed. detail: {}
+ * @fires ai-filter-request — the AI button was clicked. bubbles + composed. detail: {}
+ * @fires filter-configure — the configure (sliders) button was clicked. bubbles + composed. detail: {}
+ * @fires data-refresh — the refresh button was clicked. bubbles + composed. detail: {}
+ * @fires filter-overflow — the overflow (⋮) button was clicked. bubbles + composed. detail: {}
+ * @fires view-save — Save was clicked (view type). bubbles + composed. detail: {}
+ * @fires view-favorite — the star toggled (view type). bubbles + composed. detail: { favourite: boolean }
+ * @fires view-menu-open — the Save group's caret was clicked (view type). bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
+// The built-in action cluster is made of buttons, so they must be defined.
+import '../sherpa-button/sherpa-button.js';
 
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
@@ -92,6 +101,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onRender(): void {
     this.addEventListener('quick-filter-click', this.#onChipClick);
+    // The cluster is delegated from its own zone, not per button: every control
+    // is a sherpa-button firing the same button-click, so one listener reads
+    // data-act off whichever one was pressed.
+    this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
     // The organise chips carry MENUS, so their selection arrives as the chip's
     // own quick-filter-change (relayed from <sherpa-menu>), not as a body click.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
@@ -257,6 +270,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
+    // The ADD chip is part of the action cluster, not the filter run. It reports
+    // its own event and must NOT reach #emitChange, or "add a filter" would be
+    // announced as a change to the filter SET — which it is not, yet.
+    const addChip = path.find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-chip'),
+    );
+    if (addChip) {
+      event.stopImmediatePropagation();
+      // A toggle chip flips itself on click; Add is a trigger, not a state, so
+      // the flip is undone rather than left showing as an active filter.
+      addChip.removeAttribute('data-current');
+      this.emit('filter-add', {});
+      return;
+    }
+
     const chip = path.find(
       (n): n is ChipEl => n instanceof HTMLElement && n.classList.contains('chip'),
     );
@@ -338,6 +366,101 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // suspended sort looked identical to an active ascending one — the whole
     // point of a tri-state icon is that the three states look different.
     chip.setAttribute('data-icon-start', !live ? sortNone : desc ? sortDesc : sortAsc);
+  }
+
+  /* ── Action cluster ────────────────────────────────────────────────── */
+
+  /**
+   * One listener for the whole cluster.
+   *
+   * Every control fires the same `button-click`, so the ACTION is read off
+   * `data-act` rather than each button owning a listener. A new button in the
+   * template needs one line in this map, not new wiring.
+   *
+   * The events are the ones Figma's own description names, so a host written
+   * against the design finds the event it expects.
+   */
+  #onAction = (event: Event): void => {
+    const path = event.composedPath();
+    const btn = path.find(
+      (n): n is HTMLElement => n instanceof HTMLElement && !!n.dataset['act'],
+    );
+    if (!btn) return;
+
+    switch (btn.dataset['act']) {
+      case 'ai':
+        this.emit('ai-filter-request', {});
+        break;
+      case 'clear':
+        // The undo button RESETS rather than merely announcing: a host should not
+        // have to reach into the shadow root to clear chips it did not stamp.
+        this.clearAll();
+        break;
+      case 'configure':
+        this.emit('filter-configure', {});
+        break;
+      case 'refresh':
+        this.emit('data-refresh', {});
+        break;
+      case 'overflow':
+        this.emit('filter-overflow', {});
+        break;
+      case 'save':
+        this.emit('view-save', {});
+        break;
+      case 'view-menu':
+        this.emit('view-menu-open', {});
+        break;
+      case 'favourite':
+        this.#toggleFavourite(btn);
+        break;
+    }
+  };
+
+  /**
+   * Flip the star.
+   *
+   * The attribute is the state and CSS paints from it; the GLYPH swaps too
+   * (outline → solid) so the state survives for anyone who cannot tell the
+   * brand purple from the default ink. `aria-pressed` carries it to a screen
+   * reader, which is why the star is a toggle button rather than a plain one.
+   */
+  #toggleFavourite(btn: HTMLElement): void {
+    const on = !this.hasAttribute('data-favourite');
+    this.toggleAttribute('data-favourite', on);
+    btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
+    btn.setAttribute('aria-pressed', String(on));
+    this.emit('view-favorite', { favourite: on });
+  }
+
+  /**
+   * Turn every chip off and drop every picked value.
+   *
+   * This is what the undo button means: not "undo the last thing" but "back to
+   * no filters". The organise chips are included — a grouping and a sort are as
+   * much a view state as a filter is, and leaving them behind made the reset
+   * look broken.
+   *
+   * Fires the three change events afterwards, so a host re-queries once per
+   * concern rather than once per chip.
+   */
+  clearAll(): void {
+    for (const chip of this.#chips()) {
+      chip.removeAttribute('data-current');
+      for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+    }
+    for (const chip of this.$$<HTMLElement>('.organise-chip')) {
+      chip.removeAttribute('data-current');
+      for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+      if (chip.dataset['id'] === 'sort') {
+        chip.dataset['direction'] = 'asc';
+        this.#syncSortLabel(chip);
+      }
+    }
+    this.emit('filter-clear', {});
+    this.#emitChange();
+    this.emit('group-change', { field: null });
+    this.emit('sort-change', { field: null, direction: 'asc' });
   }
 
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */

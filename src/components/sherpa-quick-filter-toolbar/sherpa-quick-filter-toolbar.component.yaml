@@ -34,12 +34,97 @@ anatomy:
           part: view-zone
           slot: view
         - el: div
+          class: organise-zone
+          part: organise
+        - el: div
           class: chips
           part: chips
         - el: div
           class: actions-zone
           part: actions
-          slot: actions
+          children:
+            - slot: actions
+            - el: sherpa-quick-filter
+              class: add-chip
+              attrs:
+                data-id: add
+                data-label: Add
+                data-icon-start: fa-solid fa-plus
+            - el: sherpa-button
+              class: act
+              attrs:
+                data-act: ai
+                data-type: icon
+                data-look: transparent
+                data-icon-start: fa-solid fa-wand-magic-sparkles
+                aria-label: Filter with AI
+            - el: sherpa-button
+              class: act
+              attrs:
+                data-act: clear
+                data-type: icon
+                data-look: transparent
+                data-icon-start: fa-solid fa-arrow-rotate-left
+                aria-label: Reset filters
+            - el: sherpa-button
+              class: act
+              attrs:
+                data-act: configure
+                data-type: icon
+                data-look: transparent
+                data-icon-start: fa-solid fa-sliders-up
+                aria-label: Configure filters
+            - el: span
+              class: act-divider
+              attrs:
+                aria-hidden: "true"
+            - el: span
+              class: view-group
+              children:
+                - el: sherpa-button
+                  class: act
+                  attrs:
+                    data-act: favourite
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: right
+                    data-icon-start: fa-regular fa-star
+                    aria-label: Favourite this view
+                    aria-pressed: "false"
+                - el: sherpa-button
+                  class: act save-btn
+                  attrs:
+                    data-act: save
+                    data-look: transparent
+                    data-snap: all
+                    data-icon-start: fa-solid fa-upload
+                - el: sherpa-button
+                  class: act
+                  attrs:
+                    data-act: view-menu
+                    data-type: icon
+                    data-look: transparent
+                    data-snap: left
+                    data-icon-start: fa-solid fa-caret-down
+                    aria-label: View options
+                    aria-haspopup: menu
+            - el: sherpa-button
+              class: act
+              attrs:
+                data-act: refresh
+                data-type: icon
+                data-look: transparent
+                data-icon-start: fa-solid fa-arrows-rotate
+                aria-label: Refresh data
+            - el: sherpa-button
+              class: act
+              attrs:
+                data-act: overflow
+                data-type: icon
+                data-look: transparent
+                data-icon-start: fa-solid fa-ellipsis-vertical
+                aria-label: More actions
+                aria-haspopup: menu
     - el: template
       class: qf-tpl
       children:
@@ -47,34 +132,106 @@ anatomy:
           class: chip
 props:
   - $type: prop
+    name: data-favourite
+    type: string
+    kind: style
+    description: the ★ is lit (view type)
+  - $type: prop
+    name: data-no-actions
+    type: string
+    kind: style
+    description: hide the built-in cluster entirely (host owns the trailing end)
+  - $type: prop
     name: data-type
     type: enum
     kind: style
     values:
       - data
       - view
-    description: data  | view   (view = the App-Header view-scope treatment)
+    description: data  | view   (view adds the ★/Save/▾ group)
 states:
   - $type: state
     name: has-view
     selector: ":host([data-has-view])"
   - $type: state
-    name: has-actions
-    selector: ":host([data-has-actions])"
+    name: has-organise
+    selector: ":host([data-has-organise])"
+  - $type: state
+    name: no-actions
+    selector: ":host([data-no-actions])"
+  - $type: state
+    name: view
+    selector: ":host([data-type=\"view\"])"
+  - $type: state
+    name: favourite
+    selector: ":host([data-favourite])"
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (active). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (active, values, pickedValues, groupField, sortField, sortDirection,
+      sortSuspended). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: quick-filter-change
     bubbles: true
     composed: true
+  - $type: event
+    name: values
+    bubbles: true
+    composed: true
+  - $type: event
+    name: picked
+    bubbles: true
+    composed: true
+  - $type: event
+    name: group-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-add
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-clear
+    bubbles: true
+    composed: true
+  - $type: event
+    name: ai-filter-request
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-configure
+    bubbles: true
+    composed: true
+  - $type: event
+    name: data-refresh
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-save
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-favorite
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-menu-open
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-overflow
+    bubbles: true
+    composed: true
 tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
   bar.padding: "{sherpa.display-mode-space-2xs}"
-  bar.border-block-end: "{sherpa.display-mode-border-width-base}"
   chips.gap: "{sherpa.display-mode-space-xs}"
+  actions-zone.gap: "{sherpa.display-mode-space-xs}"
+  act-divider.inline-size: "{sherpa.display-mode-border-width-base}"
+  act-divider.block-size: "{sherpa.display-mode-size-sm}"
+  act-divider.background: "{sherpa.theme-border-default-2}"
 $extensions:
   sherpa:
     figmaName: Filter Toolbar
@@ -98,5 +255,23 @@ $extensions:
         expand to match Figma without a deliberate decision.
     jsProps:
       - name: active
+        type: string
+        access: read
+      - name: values
+        type: string
+        access: read
+      - name: pickedValues
+        type: string
+        access: read
+      - name: groupField
+        type: string
+        access: read
+      - name: sortField
+        type: string
+        access: read
+      - name: sortDirection
+        type: string
+        access: read
+      - name: sortSuspended
         type: string
         access: read

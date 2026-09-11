@@ -205,7 +205,10 @@
                        data-notifications="4">
       <!-- app-header.populate() stamps into these empty children by slot name. -->
       <sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs>
-      <sherpa-quick-filter-toolbar slot="filters"></sherpa-quick-filter-toolbar>
+      <!-- data-type="view": the VIEW-level toolbar, so its action cluster gains
+           the snapped [star | Save | caret] group. The records view's own
+           toolbar is data type, and shows the cluster without it. -->
+      <sherpa-quick-filter-toolbar slot="filters" data-type="view"></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
     <!-- The per-view content is fetched + injected here by the router. -->
