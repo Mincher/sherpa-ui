@@ -299,3 +299,60 @@ test('a cell fills its grid track in every view — nothing clips it', async ({ 
   expect(r['day']!.trackW).toBe(32);
   expect(r['month']!.trackW).toBeGreaterThan(32);
 });
+
+test('the grid keeps one width across day / month / year, INSIDE a hugging menu', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    // IN A MENU, which is where this breaks. The calendar menu's card is
+    // `inline-size: max-content` — it hugs what it holds — so a grid that does
+    // not state its own width collapses to the widest label in it.
+    root.innerHTML =
+      '<button id="t">t</button>' +
+      '<sherpa-menu id="m" data-type="calendar" data-commit data-clearable>' +
+      '<sherpa-calendar data-embedded></sherpa-calendar></sherpa-menu>';
+    const menu = document.getElementById('m') as HTMLElement & {
+      rendered?: Promise<void>; show: (t: HTMLElement) => void;
+    };
+    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & {
+      rendered?: Promise<void>; shadowRoot: ShadowRoot; dataset: DOMStringMap;
+    };
+    await menu.rendered;
+    await cal.rendered;
+    await new Promise((res) => setTimeout(res, 40));
+    menu.show(document.getElementById('t')!);
+    await new Promise((res) => setTimeout(res, 40));
+
+    const out: Record<string, { gridW: number; cols: number[] }> = {};
+    for (const [view, sel] of [['day', '.cal-days'], ['month', '.cal-months'], ['year', '.cal-years']] as const) {
+      cal.dataset['view'] = view;
+      await new Promise((res) => setTimeout(res, 40));
+      const grid = cal.shadowRoot.querySelector(sel) as HTMLElement;
+      out[view] = {
+        gridW: Math.round(grid.getBoundingClientRect().width),
+        cols: getComputedStyle(grid).gridTemplateColumns.split(' ').map((c) => Math.round(parseFloat(c) * 10) / 10),
+      };
+    }
+    return out;
+  });
+
+  // ONE width for all three views. Figma's Grid frame (962:6062) is 224 wide
+  // with both axes FIXED, in a `content` slot whose own description says it
+  // holds "day grid, month grid, or year grid" — one box, three contents. So
+  // switching view must not resize the calendar.
+  expect(r['month']!.gridW).toBe(r['day']!.gridW);
+  expect(r['year']!.gridW).toBe(r['day']!.gridW);
+
+  // 7 day columns at the node's own 32.
+  expect(r['day']!.cols).toEqual([32, 32, 32, 32, 32, 32, 32]);
+
+  // …and 3 EQUAL month/year columns, each a third of that same width. This is
+  // the regression: with no stated width, 1fr collapsed to the widest label —
+  // 25.2px in the month view ("Sep"), 33.6px in the year view ("2022") —
+  // squishing three columns together while the day view still looked right.
+  const [m1, m2, m3] = r['month']!.cols as [number, number, number];
+  expect(r['month']!.cols).toHaveLength(3);
+  expect(Math.abs(m1 - m2)).toBeLessThanOrEqual(0.1);
+  expect(Math.abs(m2 - m3)).toBeLessThanOrEqual(0.1);
+  // A third of seven day-columns is wider than two of them.
+  expect(m1).toBeGreaterThan(64);
+});

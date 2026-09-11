@@ -102,44 +102,56 @@
 
 /* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
    8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */
-/* ── The grids — every track 1fr ─────────────────────────────────────────
+/* ── The grids — every track 1fr, inside ONE fixed-width box ──────────────
  *
  * Read from the Calendar's Grid frame (962:6062): 7 columns and 7 rows, every
- * one of them FLEX 1, with colGap 0 and rowGap 2. Will set them all to 1fr
- * precisely so one grid serves the day, month and year views without three sets
- * of track sizes to keep in step.
+ * one FLEX 1, colGap 0, rowGap 2 — and the frame itself is 224 wide with BOTH
+ * axes set to FIXED, sitting in a `content` slot that is also 224. Its own slot
+ * description says that slot holds "day grid, month grid, or year grid", so all
+ * three views share that one 224-wide box.
  *
- * The columns were `repeat(7, 32px)` and the month/year cells were pinned to a
- * hardcoded 40px block-size — a number in no token and in no Figma node, which
- * left 4px of dead space above and below every month and year cell. A 1fr track
- * takes its height from the row, and the cell fills the track. */
-.cal-weekdays,
-.cal-days {
-  display: grid;
-  /* 1fr tracks with a 32px FLOOR. Figma's Grid frame is 224 wide for 7 cells of
-     32, so the tracks are 1fr THERE because the frame is already the right
-     width — a bare 1fr in code let the grid shrink to whatever box it landed
-     in and squeezed each day to 29. `minmax` keeps Will's 1fr behaviour (the
-     tracks still share any extra evenly) without letting a cell go under the
-     size the node says it is. */
-  grid-template-columns: repeat(7, minmax(var(--sherpa-display-mode-size-2xl, 32px), 1fr));
-  grid-auto-rows: var(--sherpa-display-mode-size-2xl, 32px);
+ * THAT FIXED WIDTH IS THE WHOLE POINT, and missing it is what broke the month
+ * and year views. `1fr` divides a width it is GIVEN; it cannot invent one. In
+ * Figma the frame is already 224, so 1fr there means "a seventh of 224" = 32.
+ * In code the grid was left to size itself, so inside a menu card that hugs its
+ * content (`inline-size: max-content`) a 1fr track collapsed to the widest
+ * label it held:
+ *
+ *     month view   3 columns at 25.2px   ("Sep")
+ *     year view    3 columns at 33.6px   ("2022")
+ *
+ * — squished together, exactly as Will described, while the day view looked
+ * fine because 7 two-digit numbers happen to add up near the right width.
+ *
+ * So the WIDTH is declared once, on the shared grid box, and 1fr then does its
+ * job in all three views. 7 x 32 = 224, which is the node's number. */
+.cal-grid,
+.cal-weekdays {
+  /* The content region Figma fixes at 224. Every view gets the same box, so
+     switching day → month → year cannot change the calendar's width. */
+  inline-size: calc(7 * var(--sherpa-display-mode-size-2xl, 32px));
+  box-sizing: content-box;
   column-gap: 0;
   row-gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
+  grid-auto-rows: var(--sherpa-display-mode-size-2xl, 32px);
+}
+
+.cal-weekdays,
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
 }
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
-/* Month / year: the same 1fr tracks in three columns rather than seven. */
+/* Month / year: the same 224 box and the same 1fr tracks, three across rather
+   than seven — so a month cell is a third of the width a week is. */
 .cal-months,
 .cal-years {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: var(--sherpa-display-mode-size-2xl, 32px);
-  column-gap: 0;
-  row-gap: var(--sherpa-display-mode-space-3xs, 2px);
-  padding: var(--sherpa-theme-padding-md, 8px);
+  padding-block: var(--sherpa-theme-padding-md, 8px);
 }
 
 /* ── Layout visibility (day | month | year) ─────────────────────────── */
