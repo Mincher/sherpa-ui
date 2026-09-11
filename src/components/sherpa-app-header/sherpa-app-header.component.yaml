@@ -38,61 +38,52 @@ anatomy:
                 class: history
                 part: history
                 children:
-                  - el: button
-                    class: btn back
+                  - el: sherpa-button
+                    class: back
                     part: back
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: xs
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-arrow-left
                       aria-label: Back
-                    children:
-                      - el: i
-                        class: fa-solid fa-arrow-left
-                        attrs:
-                          aria-hidden: "true"
                   - slot: breadcrumbs
               - el: div
                 class: actions
                 part: actions
                 children:
                   - slot: actions
-                  - el: button
+                  - el: sherpa-button
                     class: ai
                     part: ai
                     attrs:
-                      type: button
+                      data-size: sm
+                      data-icon-start: fa-solid fa-wand-magic-sparkles
                     children:
-                      - el: i
-                        class: fa-solid fa-wand-magic-sparkles
-                        attrs:
-                          aria-hidden: "true"
                       - el: span
                         class: ai-label
-                  - el: button
-                    class: btn labs
+                  - el: sherpa-button
+                    class: labs
                     part: labs
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: sm
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-flask
                       aria-label: Labs
-                    children:
-                      - el: i
-                        class: fa-solid fa-flask
-                        attrs:
-                          aria-hidden: "true"
                   - el: span
                     class: divider divider-labs
                     attrs:
                       aria-hidden: "true"
-                  - el: button
-                    class: btn theme-toggle
+                  - el: sherpa-button
+                    class: theme-toggle
                     part: theme-toggle
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: sm
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-moon
                       aria-label: Toggle theme
-                    children:
-                      - el: i
-                        class: fa-solid fa-moon
-                        attrs:
-                          aria-hidden: "true"
                   - el: span
                     class: divider divider-tools
                     attrs:
@@ -101,59 +92,51 @@ anatomy:
                     class: notifications
                     part: notifications
                     children:
-                      - el: button
-                        class: btn notif-btn
+                      - el: sherpa-button
+                        class: notif-btn
                         part: notif-btn
                         attrs:
-                          type: button
+                          data-type: icon
+                          data-size: sm
+                          data-look: transparent
+                          data-icon-start: fa-solid fa-bell
                           aria-label: Notifications
-                        children:
-                          - el: i
-                            class: fa-solid fa-bell
-                            attrs:
-                              aria-hidden: "true"
                       - el: span
                         class: notif-badge
                         part: notif-badge
                         attrs:
                           aria-hidden: "true"
-                  - el: button
-                    class: btn account
+                  - el: sherpa-button
+                    class: account
                     part: account
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: sm
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-user-gear
                       aria-label: Account
-                    children:
-                      - el: i
-                        class: fa-solid fa-user-gear
-                        attrs:
-                          aria-hidden: "true"
-                  - el: button
-                    class: btn help
+                  - el: sherpa-button
+                    class: help
                     part: help
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: sm
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-headset
                       aria-label: Support
-                    children:
-                      - el: i
-                        class: fa-solid fa-headset
-                        attrs:
-                          aria-hidden: "true"
                   - el: span
                     class: divider divider-menu
                     attrs:
                       aria-hidden: "true"
-                  - el: button
-                    class: btn menu
+                  - el: sherpa-button
+                    class: menu
                     part: menu
                     attrs:
-                      type: button
+                      data-type: icon
+                      data-size: sm
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-grip
                       aria-label: Switch app
-                    children:
-                      - el: i
-                        class: fa-solid fa-grip
-                        attrs:
-                          aria-hidden: "true"
           - el: div
             class: row-view
             part: row-view
@@ -290,9 +273,6 @@ states:
   - $type: state
     name: not-loading
     selector: ":host(:not([data-loading]))"
-  - $type: state
-    name: focus-visible
-    selector: .btn:focus-visible
 events:
   - $type: event
     name: header-back
@@ -312,25 +292,6 @@ tokens:
   divider.inline-size: "{sherpa.display-mode-border-width-base}"
   divider.block-size: "{sherpa.display-mode-size-sm}"
   divider.background: "{sherpa.theme-border-default-2}"
-  btn.inline-size: "{sherpa.display-mode-size-lg}"
-  btn.block-size: "{sherpa.display-mode-size-lg}"
-  btn.border-radius: "{sherpa.structure-rounding-top-left}"
-  btn.color: "{sherpa.style-content-base}"
-  btn.font-size: "{sherpa.theme-content-size-base}"
-  back.inline-size: "{sherpa.display-mode-size-sm}"
-  back.block-size: "{sherpa.display-mode-size-sm}"
-  back.font-size: "{sherpa.theme-content-size-xs}"
-  ai.gap: "{sherpa.structure-space-gap}"
-  ai.block-size: "{sherpa.display-mode-size-lg}"
-  ai.padding-inline: "{sherpa.structure-space-padding}"
-  ai.border-width: "{sherpa.style-border-width}"
-  ai.border-color: "{sherpa.style-border-base}"
-  ai.border-radius: "{sherpa.structure-rounding-top-left}"
-  ai.background: "{sherpa.style-surface-base}"
-  ai.color: "{sherpa.style-content-base}"
-  ai.font-size: "{sherpa.font-size-body-base}"
-  ai.font-weight: "{sherpa.font-weight-regular}"
-  ai.line-height: "{sherpa.theme-content-line-height-base}"
   notif-badge.inset-block-end: "{sherpa.display-mode-space-sm}"
   notif-badge.inset-inline-start: "{sherpa.display-mode-space-2xs}"
   notif-badge.min-inline-size: "{sherpa.display-mode-size-sm}"

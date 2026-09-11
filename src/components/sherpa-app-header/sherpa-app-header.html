@@ -67,19 +67,26 @@
       <!-- ── Row 1: history + actions ─────────────────────────────── -->
       <div class="row-history" part="row-history">
         <div class="history" part="history">
-          <button class="btn back" part="back" type="button" aria-label="Back">
-            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
-          </button>
+          <!-- Structure=XS (16), not sm. Figma pins the back button one step
+               smaller than the action cluster — it belongs to the breadcrumb
+               line, which is 16 tall, not to the 24-tall actions row. -->
+          <sherpa-button class="back" part="back" data-type="icon" data-size="xs"
+                         data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
+                         aria-label="Back"></sherpa-button>
           <slot name="breadcrumbs"></slot>
         </div>
 
         <div class="actions" part="actions">
           <slot name="actions"></slot>
 
-          <button class="ai" part="ai" type="button">
-            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+          <!-- Type=LABEL at Structure=sm, pinned Style=DEFAULT — so it keeps the
+               grey border every default button has. It is the one action here
+               that is not Transparent, which is what sets it apart from the
+               icon run beside it. -->
+          <sherpa-button class="ai" part="ai" data-size="sm"
+                         data-icon-start="fa-solid fa-wand-magic-sparkles">
             <span class="ai-label">Ask N-zo</span>
-          </button>
+          </sherpa-button>
 
           <!--
             THE DIVIDERS AND THE ORDER ARE FIGMA'S, read from the App Header's
@@ -91,15 +98,15 @@
             The old order put chat/beaker/moon in one group and bell/account/help
             in another, with a chat button Figma does not have at all.
           -->
-          <button class="btn labs" part="labs" type="button" aria-label="Labs">
-            <i class="fa-solid fa-flask" aria-hidden="true"></i>
-          </button>
+          <sherpa-button class="labs" part="labs" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="fa-solid fa-flask"
+                         aria-label="Labs"></sherpa-button>
 
           <span class="divider divider-labs" aria-hidden="true"></span>
 
-          <button class="btn theme-toggle" part="theme-toggle" type="button" aria-label="Toggle theme">
-            <i class="fa-solid fa-moon" aria-hidden="true"></i>
-          </button>
+          <sherpa-button class="theme-toggle" part="theme-toggle" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="fa-solid fa-moon"
+                         aria-label="Toggle theme"></sherpa-button>
 
           <span class="divider divider-tools" aria-hidden="true"></span>
 
@@ -111,29 +118,29 @@
               fallback box, `content: none` and zero width), so the button was
               silently blank. Verified in the browser rather than assumed.
             -->
-            <button class="btn notif-btn" part="notif-btn" type="button" aria-label="Notifications">
-              <i class="fa-solid fa-bell" aria-hidden="true"></i>
-            </button>
+            <sherpa-button class="notif-btn" part="notif-btn" data-type="icon" data-size="sm"
+                           data-look="transparent" data-icon-start="fa-solid fa-bell"
+                           aria-label="Notifications"></sherpa-button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
           <!-- `user-settings`, not a plain user circle: this opens account
                SETTINGS, which is why Figma's glyph carries the cog. -->
-          <button class="btn account" part="account" type="button" aria-label="Account">
-            <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
-          </button>
+          <sherpa-button class="account" part="account" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="fa-solid fa-user-gear"
+                         aria-label="Account"></sherpa-button>
           <!-- `headset`, not a question mark: this is "talk to support", not
                "read the docs". -->
-          <button class="btn help" part="help" type="button" aria-label="Support">
-            <i class="fa-solid fa-headset" aria-hidden="true"></i>
-          </button>
+          <sherpa-button class="help" part="help" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="fa-solid fa-headset"
+                         aria-label="Support"></sherpa-button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
           <!-- `app-switcher` (a grid of squares), not a hamburger: it switches
                APPS, where a hamburger reads as "this page's menu". -->
-          <button class="btn menu" part="menu" type="button" aria-label="Switch app">
-            <i class="fa-solid fa-grip" aria-hidden="true"></i>
-          </button>
+          <sherpa-button class="menu" part="menu" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="fa-solid fa-grip"
+                         aria-label="Switch app"></sherpa-button>
         </div>
       </div>
 

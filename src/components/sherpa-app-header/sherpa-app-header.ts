@@ -39,6 +39,11 @@
  * @fires breadcrumb-click   — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// Every action is a composed sherpa-button, exactly as Figma instances them, so
+// it must be defined. The header used to hand-roll eight plain <button> elements
+// with ~50 lines of CSS re-implementing the component — which is precisely how
+// the two drifted apart.
+import '../sherpa-button/sherpa-button.js';
 
 interface Crumb { label: string; href?: string }
 interface FilterChip { id: string; label: string; type?: string; active?: boolean; count?: number }
@@ -80,7 +85,11 @@ export class SherpaAppHeader extends SherpaElement {
     this.#sync();
     // One listener per plain action — each just announces itself.
     for (const [sel, event] of ACTIONS) {
-      this.$(sel)?.addEventListener('click', () => this.emit(event, {}));
+      // `button-click`, not the native `click`. sherpa-button suppresses its own
+      // event when disabled, where a raw click listener would still fire on the
+      // host element — the actions are composed sherpa-buttons now, so the
+      // component's event is the honest signal.
+      this.$(sel)?.addEventListener('button-click', () => this.emit(event, {}));
     }
     // Re-dispatch a slotted breadcrumbs' selection as our own header event.
     this.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);

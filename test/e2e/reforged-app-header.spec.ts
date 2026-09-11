@@ -84,6 +84,14 @@ test('every header action fires its event', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
+    // The header's own `rendered` resolves when ITS shadow root exists; the
+    // composed sherpa-buttons inside still have none, so their inner <button> is
+    // not reachable yet.
+    await Promise.all(
+      [...s.querySelectorAll('sherpa-button')].map(
+        (b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered,
+      ),
+    );
 
     // One event per Figma action button, in header order.
     const actions: ReadonlyArray<readonly [string, string]> = [
@@ -99,7 +107,12 @@ test('every header action fires its event', async ({ page }) => {
     const seen: Record<string, unknown> = {};
     for (const [, event] of actions) el.addEventListener(event, () => (seen[event] = true));
 
-    for (const [sel] of actions) (s.querySelector(sel) as HTMLElement).click();
+    // Each action is a composed <sherpa-button>, so the real control is the
+    // <button> inside ITS shadow root — clicking the host does not press it.
+    for (const [sel] of actions) {
+      const host = s.querySelector(sel) as HTMLElement & { shadowRoot: ShadowRoot };
+      (host.shadowRoot.querySelector('button') as HTMLElement).click();
+    }
     await new Promise((res) => setTimeout(res, 0));
 
     return {
@@ -198,6 +211,13 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const s = el.shadowRoot!;
+    // Composed children render after the host, and a button with no shadow root
+    // measures zero-width — which the `shown` filter below would then drop.
+    await Promise.all(
+      [...s.querySelectorAll('sherpa-button')].map(
+        (b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered,
+      ),
+    );
 
     // Everything the cluster draws, in DOM order, skipping what CSS hides.
     const shown = (n: Element) => (n as HTMLElement).getBoundingClientRect().width > 0;
@@ -207,6 +227,10 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
       .map((n) => {
         if (n.classList.contains('divider')) return '|';
         if (n.classList.contains('notif-badge')) return 'badge';
+        // A composed sherpa-button keeps its glyph in its OWN shadow root; the
+        // host only carries data-icon-start.
+        const attr = n.getAttribute('data-icon-start');
+        if (attr) return attr.replace('fa-solid fa-', '');
         const icon = n.querySelector('i');
         return icon ? icon.className.replace('fa-solid fa-', '') : n.className;
       });
@@ -243,10 +267,18 @@ test('every action glyph actually renders (no Font Awesome PRO classes)', async 
     await el.rendered;
     // The webfont has to have loaded before ::before has any content to measure.
     await document.fonts.ready;
-    return [...el.shadowRoot!.querySelectorAll('.actions i, .back i')].map((i) => ({
-      cls: i.className.replace('fa-solid fa-', ''),
-      content: getComputedStyle(i, '::before').content,
-    }));
+    // Every action is a composed sherpa-button, so the rendered <i> is inside
+    // ITS shadow root — the host only carries the class list as an attribute.
+    const hosts = [...el.shadowRoot!.querySelectorAll('sherpa-button[data-icon-start]')];
+    await Promise.all(hosts.map((b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered));
+    return hosts.flatMap((b) =>
+      [...(b as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot.querySelectorAll('i')]
+        .filter((i) => i.className.includes('fa-'))
+        .map((i) => ({
+          cls: i.className.replace(/^icon icon-\w+ /, '').replace('fa-solid fa-', ''),
+          content: getComputedStyle(i, '::before').content,
+        })),
+    );
   });
 
   // A PRO class in the free webfont renders NOTHING — no glyph and no fallback

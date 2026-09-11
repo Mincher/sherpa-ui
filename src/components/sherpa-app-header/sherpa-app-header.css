@@ -103,75 +103,26 @@
   flex-shrink: 0;
 }
 
-/* ── Icon buttons — Figma Button/Type=icon, Structure sm, Transparent look ──
-   24×24, radius 4, no fill or ring, a 14px glyph in style-content/base. ─────── */
-.btn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
-  padding: 0;
-  border: 0;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: transparent;
-  color: var(--sherpa-style-content-base, #0c0b11);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease;
+/* NO BUTTON STYLING HERE.
+   Every action is a composed <sherpa-button> carrying the same data-* Figma
+   pins its instances (Type=icon/label, Structure=sm or xs, Style=Transparent or
+   default), so the component owns its own size, fill, ring, hover, active and
+   focus ring. ~50 lines re-implementing all of that used to live here, which is
+   exactly how the header and the button drifted apart.
 
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
-}
-
-/* The back button is the one 16×16 (Structure=xs) button in the header. */
-.back {
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
-}
-
-/* ── "Ask N-zo" — the AI action: a DEFAULT-look label button at Structure sm ──
-   24 tall, padding-inline 8, gap 8, radius 4, white face + 0.5 grey ring. ───── */
-.ai {
-  display: none;
-  align-items: center;
-  gap: var(--sherpa-structure-space-gap, 8px);
-  flex-shrink: 0;
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
-  padding-inline: var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-style-content-base, #0c0b11);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 100ms ease;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
-}
+   The header only says WHERE they sit and WHEN they show — below. */
 
 /* ── Per-affordance gating ─────────────────────────────────────────────
    Each button appears only when the product opts in. The dividers follow the
    groups they separate, so no group leaves a dangling rule. */
+/* Hidden until the product opts in. The `.btn` class used to carry this, and it
+   went with the styling it was attached to — so every action must name itself
+   here or the whole cluster shows unasked. */
+.back, .ai, .labs, .theme-toggle, .notif-btn, .account, .help, .menu {
+  display: none;
+  flex-shrink: 0;
+}
+
 :host([data-back]) .back { display: inline-flex; }
 :host([data-ai]) .ai { display: inline-flex; }
 :host([data-labs]) .labs { display: inline-flex; }
