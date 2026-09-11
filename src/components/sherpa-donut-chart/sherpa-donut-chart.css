@@ -203,18 +203,31 @@
 }
 :host([data-variant="pie"]) .centre { display: none; }
 
-/* Centre: value content/size/h1 24 on 32 semibold (−0.2 tracking); sub 10/16 regular. */
+/* Centre: value content/size/h1 24 on 32 semibold (−0.2 tracking); sub 10/16
+   regular. BOTH MONOSPACED — the centre of a donut is its total, a number, and it
+   reads on the same scale as the legend and the axes beside it. Figma's Donut
+   Chart (465:61966) bound content/font/body on both texts until this pass and was
+   re-pointed to content/font/MONOSPACED first, so the two sides agree. */
 .value {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-theme-content-size-h1, 24px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  /* REGULAR, not semibold. At 24px in a monospaced face the weight is already
+     doing plenty of work — Bold read as shouting beside the light-caps label
+     above it, and mono's even stems make a heavy weight look heavier than the
+     same weight in Inter. Will's call; Figma re-pointed to match. */
+  font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  /* content/body/BASE — the darkest ink, as Figma binds it. It read body/+1
+     (#35353D) here, which is the SUBLABEL's colour: the total and its caption
+     were the same grey, so the total did not lead. */
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
   font-variant-numeric: tabular-nums;
 
   &:empty { display: none; }
 }
 .sub {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);

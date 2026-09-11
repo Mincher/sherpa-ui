@@ -106,7 +106,7 @@ tokens:
   figures.gap: "{sherpa.structure-space-gap}"
   value.font-family: "{sherpa.font-family-mono}"
   value.font-size: "{sherpa.theme-content-size-h1}"
-  value.font-weight: "{sherpa.font-weight-semibold}"
+  value.font-weight: "{sherpa.font-weight-regular}"
   value.line-height: "{sherpa.theme-content-line-height-h1}"
   value.letter-spacing: "{sherpa.theme-content-letter-spacing-h1}"
   value.color: "{sherpa.theme-content-body-base}"

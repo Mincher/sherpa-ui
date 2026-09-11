@@ -93,7 +93,11 @@
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-theme-content-size-h1, 24px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  /* REGULAR, not semibold. At 24px in a monospaced face the weight is already
+     doing plenty of work — Bold read as shouting beside the light-caps label
+     above it, and mono's even stems make a heavy weight look heavier than the
+     same weight in Inter. Will's call; Figma re-pointed to match. */
+  font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
   /* NO status in this colour. Figma binds the value text to

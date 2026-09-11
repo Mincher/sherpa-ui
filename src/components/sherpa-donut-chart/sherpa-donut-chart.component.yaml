@@ -38,6 +38,9 @@ anatomy:
                 - el: g
                   class: slices
             - el: div
+              class: hotspots
+              part: hotspots
+            - el: div
               class: centre
               children:
                 - el: span
@@ -82,6 +85,9 @@ states:
     name: pie
     selector: ":host([data-variant=\"pie\"])"
   - $type: state
+    name: not-has-legend
+    selector: ":host(:not([data-has-legend]))"
+  - $type: state
     name: focus-visible
     selector: .slice:focus-visible
 capabilities:
@@ -105,11 +111,13 @@ tokens:
   layout.gap: "{sherpa.display-mode-space-lg}"
   slice.stroke: "{sherpa.data-viz-series-1}"
   slice-outline.stroke: "{sherpa.data-viz-series-1}"
+  value.font-family: "{sherpa.font-family-mono}"
   value.font-size: "{sherpa.theme-content-size-h1}"
-  value.font-weight: "{sherpa.font-weight-semibold}"
+  value.font-weight: "{sherpa.font-weight-regular}"
   value.line-height: "{sherpa.theme-content-line-height-h1}"
   value.letter-spacing: "{sherpa.theme-content-letter-spacing-h1}"
-  value.color: "{sherpa.theme-content-body-1}"
+  value.color: "{sherpa.theme-content-body-base}"
+  sub.font-family: "{sherpa.font-family-mono}"
   sub.font-size: "{sherpa.font-size-body-xs}"
   sub.line-height: "{sherpa.theme-content-line-height-xs}"
   sub.color: "{sherpa.theme-content-body-1}"
