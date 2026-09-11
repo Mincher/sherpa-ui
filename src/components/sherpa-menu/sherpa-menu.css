@@ -91,6 +91,21 @@
    the viewport corner. That was the bug. */
 
 /* Heading — 10/16 regular, upper-case, content/body/+1. */
+/* ── Header slot ─────────────────────────────────────────────────────────
+ * Controls above the heading — a calendar's month stepper is the case this
+ * exists for. CSS-gated on SherpaElement's own slot-presence flag, so a menu
+ * with nothing slotted here is completely unchanged.
+ *
+ * Figma's Calendar header is a HORIZONTAL row: prev · label · next, where the
+ * label stretches and the two steppers hug. */
+.header { display: none; }
+:host([data-has-header]) .header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+
 /* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
    line-height/xs 16, regular, content/body/+1, textAlignHorizontal LEFT and
    textCase ORIGINAL — it is NOT uppercased. The sample string is "ACTIONS",
@@ -126,6 +141,22 @@
    `display: none` rather than a filter class so a hidden row is also out of the
    tab order and out of the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
+
+/* ── Clear ───────────────────────────────────────────────────────────────
+ * Figma's Container Footer (Type=action-bar) splits into `left` and `right`
+ * slots — "Today" on the left, Cancel/Apply on the right. Clear takes that left
+ * position: a destructive-ish action belongs away from the one a thumb reaches
+ * for, and the spacer is what pushes the pair apart.
+ *
+ * Both are hidden unless data-clearable, so an ordinary menu's footer is the
+ * two buttons it always was. */
+.clear { display: none; }
+.footer-spacer { display: none; }
+:host([data-clearable]) .clear { display: inline-flex; }
+:host([data-clearable]) .footer-spacer {
+  display: block;
+  flex: 1 1 auto;
+}
 
 /* Shown only when a search is active AND nothing matched, so an empty menu with
    no search (a caller passed no rows) still reads as empty rather than as a

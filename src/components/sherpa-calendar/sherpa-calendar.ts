@@ -70,9 +70,12 @@ export class SherpaCalendar extends SherpaElement {
     const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
     if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     if (!this.dataset['view']) this.dataset['view'] = 'day';
-    this.$('.cal-prev')?.addEventListener('click', this.#onPrev);
-    this.$('.cal-next')?.addEventListener('click', this.#onNext);
-    this.$('.cal-label')?.addEventListener('click', this.#onLabel);
+    // EMBEDDED: the stepper is projected into the host's own `header` slot, so
+    // it must exist before its listeners are bound.
+    if (this.hasAttribute('data-embedded')) this.#projectHeader();
+    for (const el of this.#headerEls('.cal-prev')) el.addEventListener('click', this.#onPrev);
+    for (const el of this.#headerEls('.cal-next')) el.addEventListener('click', this.#onNext);
+    for (const el of this.#headerEls('.cal-label')) el.addEventListener('click', this.#onLabel);
     this.$('.cal-days')?.addEventListener('click', this.#onDayClick);
     this.$('.cal-months')?.addEventListener('click', this.#onMonthClick);
     this.$('.cal-years')?.addEventListener('click', this.#onYearClick);
@@ -113,9 +116,45 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Rendering ──────────────────────────────────────────────────────── */
 
+  /**
+   * One header control, wherever it lives.
+   *
+   * A calendar has ONE header, but `data-embedded` moves it out of this shadow
+   * root and into the host's — so every listener and the label sync have to
+   * reach either side of the boundary. Returning a list rather than an element
+   * keeps both cases on one code path instead of branching at each call.
+   */
+  #headerEls(sel: string): HTMLElement[] {
+    const own = this.$<HTMLElement>(sel);
+    // The projected stepper is a sibling in the PARENT, not a descendant here
+    // (see #projectHeader for why), so it is looked for there.
+    const projected = (this.parentElement ?? this).querySelector<HTMLElement>(
+      `:scope > .cal-header-projected ${sel}`,
+    );
+    return [own, projected].filter((e): e is HTMLElement => !!e);
+  }
+
+  /**
+   * Put the month stepper in the HOST's header slot.
+   *
+   * A clone of the light-DOM prototype carries `slot="header"`, so a sherpa-menu
+   * renders it in its own header region — the Calendar node's first of three.
+   * Idempotent: a re-render must not stack a second stepper.
+   */
+  #projectHeader(): void {
+    const tpl = this.$<HTMLTemplateElement>('template.cal-header-tpl');
+    if (!tpl) return;
+    // Into the PARENT, not into this element. `slot="header"` only assigns a
+    // DIRECT child of the slot's own host — a node one level deeper (inside the
+    // calendar, inside the menu) is never assigned, which is exactly what
+    // happened: the stepper existed, worked, and rendered nowhere.
+    const host = this.parentElement ?? this;
+    if (host.querySelector(':scope > .cal-header-projected')) return;
+    host.appendChild(tpl.content.firstElementChild!.cloneNode(true));
+  }
+
   #render(): void {
-    const label = this.$('.cal-label');
-    if (label) {
+    for (const label of this.#headerEls('.cal-label')) {
       label.textContent =
         this.#view === 'day' ? `${MONTHS[this.#viewMonth]} ${this.#viewYear}`
         : this.#view === 'month' ? String(this.#viewYear)

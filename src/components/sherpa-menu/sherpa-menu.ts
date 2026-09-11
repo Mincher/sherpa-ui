@@ -30,6 +30,7 @@
  * @fires menu-change — the selection was COMMITTED. detail: { values: string[] }
  * @fires menu-apply  — Apply was clicked. detail: { values: string[] }
  * @fires menu-cancel — Cancel was clicked; values already restored. detail: {}
+ * @fires menu-clear — Clear was clicked; the selection is already empty. detail: {}
  * @fires menu-select — an action row was clicked. detail: { value, label }
  * @fires menu-open   — detail: {}
  * @fires menu-close  — detail: {}
@@ -47,7 +48,7 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
-  static override observed = ['data-heading', 'data-align', 'data-search', 'open'];
+  static override observed = ['data-heading', 'data-align', 'data-search', 'data-clearable', 'open'];
 
   /** The gap between the trigger and the card (Figma space/2xs). */
   static readonly OFFSET = 4;
@@ -79,6 +80,7 @@ export class SherpaMenu extends SherpaElement {
     // The footer is in the SHADOW root, so its clicks are listened for there.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
+    this.$('.clear')?.addEventListener('click', this.#onClear);
     // The search is a composed <sherpa-input-text>, which re-dispatches the
     // inner control's `input`. Listening on the component rather than reaching
     // into its shadow root for the raw <input>.
@@ -287,6 +289,26 @@ export class SherpaMenu extends SherpaElement {
     this.values = this.#baseline;
     this.emit('menu-cancel', {});
     this.hide();
+  };
+
+  /**
+   * Empty the selection and report it.
+   *
+   * Clears BOTH kinds of content a menu can hold: the value rows' checkboxes,
+   * and a slotted calendar's date attributes. A committing menu stays OPEN —
+   * clearing is a change to the draft, not a decision, so the reader can pick
+   * again or Cancel out of it. Without data-commit there is no draft, so it
+   * commits immediately like any other tick.
+   */
+  #onClear = (): void => {
+    for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+    for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {
+      for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
+    }
+    this.emit('menu-clear', {});
+    // Report the emptied state the same way a tick does, so a host that is not
+    // committing sees the change at once.
+    if (!this.#commits) this.emit('menu-change', { values: this.values });
   };
 
   #onClick = (event: Event): void => {

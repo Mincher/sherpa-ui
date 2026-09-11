@@ -18,10 +18,14 @@
     data-min        earliest selectable day (ISO); earlier days are disabled
     data-max        latest selectable day (ISO); later days are disabled
     data-has-time   (boolean) show a native <input type=time> in the footer
-    data-embedded   (boolean) the HOST owns the action row — hides this one's
-                    footer. Figma's Calendar composes a Container Footer rather
-                    than drawing its own, so a Calendar inside a Menu has ONE
-                    footer: the menu's.
+    data-embedded   (boolean) the HOST owns the card's chrome — see the note below
+
+  data-embedded, in full: Figma's Calendar (268:14601) is a card of three parts —
+  a `header` SLOT holding the month stepper, the day/month/year grid, and a
+  Container Footer. A calendar IS a menu in this system. So when embedded, this
+  component contributes only its GRID: the footer is hidden (the host draws the
+  action row) and the stepper is PROJECTED into the host's `header` slot, so the
+  menu is the card and there is one header and one footer rather than two.
 
   Fires:
     datetime-change (detail: value string — a single day or its date+time chosen)
@@ -62,6 +66,29 @@
       </div>
     </div>
   </div>
+
+  <!--
+    The month stepper, as a LIGHT-DOM prototype.
+
+    `data-embedded` moves the header OUT of this shadow root and into the host's
+    own — a clone of this goes in the light DOM carrying `slot="header"`, so a
+    sherpa-menu hosts it in its `header` region natively.
+
+    That is the Calendar node's own shape (268:14601): a card of three regions,
+    whose FIRST is a `header` SLOT holding ‹ · "August 2026" · ›. A calendar IS a
+    menu in this system, so the stepper belongs to the menu's header rather than
+    to a second header drawn inside a nested component.
+
+    The same three classes as the shadow header, so one set of listeners and one
+    label sync serve both — see #headerEls() in the TS.
+  -->
+  <template class="cal-header-tpl">
+    <div class="cal-header cal-header-projected" slot="header">
+      <button type="button" class="cal-nav cal-prev" aria-label="Previous">&lsaquo;</button>
+      <button type="button" class="cal-label" aria-live="polite"></button>
+      <button type="button" class="cal-nav cal-next" aria-label="Next">&rsaquo;</button>
+    </div>
+  </template>
 
   <!-- Cell prototype — cloned per day/month/year by JS, never rendered directly. -->
   <template class="cal-cell-tpl">

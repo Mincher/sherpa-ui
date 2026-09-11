@@ -847,6 +847,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
     };
     await cal.rendered;
 
+    const projected = menu.querySelector('.cal-header-projected') as HTMLElement;
     const before = {
       label: chip.getAttribute('data-label'),
       on: chip.hasAttribute('data-current'),
@@ -856,21 +857,39 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       menuFooter: getComputedStyle(menu.shadowRoot.querySelector('.footer')!).display,
       // A calendar is not a list to search.
       hasSearch: menu.hasAttribute('data-search'),
+      // …and ONE header: the MENU's, holding the calendar's own stepper.
+      projectedSlot: projected?.assignedSlot?.name ?? null,
+      menuHeaderShown: getComputedStyle(menu.shadowRoot.querySelector('.header')!).display,
+      calOwnHeader: getComputedStyle(cal.shadowRoot.querySelector('.cal-header')!).display,
+      monthLabel: projected?.querySelector('.cal-label')?.textContent ?? null,
+      clearShown: getComputedStyle(menu.shadowRoot.querySelector('.clear')!).display,
     };
+
+    // The projected stepper still drives the calendar it came from.
+    (projected.querySelector('.cal-next') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 60));
+    const steppedTo = projected.querySelector('.cal-label')!.textContent;
 
     cal.setAttribute('data-value', '2024-06-15');
     await new Promise((res) => setTimeout(res, 60));
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
 
-    return {
-      before,
-      after: {
-        label: chip.getAttribute('data-label'),
-        on: chip.hasAttribute('data-current'),
-        values: JSON.parse(JSON.stringify(el.values)),
-      },
+    const after = {
+      label: chip.getAttribute('data-label'),
+      on: chip.hasAttribute('data-current'),
+      values: JSON.parse(JSON.stringify(el.values)),
     };
+
+    // CLEAR takes it back to no date — something a set of value rows cannot
+    // express by unticking.
+    const clearBtn = menu.shadowRoot.querySelector('.clear') as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    (clearBtn.shadowRoot.querySelector('button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 120));
+
+    return { before, steppedTo, after, cleared: cal.dataset['value'] ?? null };
   }, MOUNT);
 
   // The menu holds a CALENDAR, and only the menu draws an action row.
@@ -888,4 +907,20 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   // …and the chip carries the day, formatted, rather than an ISO string.
   expect(r.after.label).toMatch(/^Created: /);
   expect(r.after.label).not.toContain('2024-06-15');
+
+  // ONE HEADER, and it is the MENU's. The Calendar node is a card of three
+  // regions whose first is a `header` slot holding ‹ · "August 2026" · › — so a
+  // calendar inside a menu contributes its stepper to that slot rather than
+  // drawing a second header of its own.
+  expect(r.before.projectedSlot).toBe('header');
+  expect(r.before.menuHeaderShown).not.toBe('none');
+  expect(r.before.calOwnHeader).toBe('none');
+  expect(r.before.monthLabel).toMatch(/\w+ \d{4}/);
+
+  // The projected stepper still drives the calendar it was stamped from.
+  expect(r.steppedTo).not.toBe(r.before.monthLabel);
+
+  // CLEAR empties the selection.
+  expect(r.before.clearShown).not.toBe('none');
+  expect(r.cleared).toBe(null);
 });

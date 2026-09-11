@@ -264,6 +264,12 @@
   }
 }
 
+/* EMBEDDED — the host owns the card's own chrome, so this component contributes
+   only its GRID. The stepper is projected into the host's `header` slot (a
+   light-DOM clone carrying slot="header"), so the one drawn in here would be a
+   second copy. */
+:host([data-embedded]) .cal-header { display: none; }
+
 /* EMBEDDED — the host owns the action row.
    Figma's Calendar composes a `Container Footer` (Type=action-bar) rather than
    drawing its own, and a Calendar inside a Menu therefore has ONE footer: the
@@ -349,3 +355,8 @@
     color: var(--_accent-on);
   }
 }
+
+
+/* The PROJECTED stepper lives in the LIGHT DOM, so this component's own sheet
+   cannot reach it — its host styles it. Nothing here; the rule is a note so the
+   next reader does not go looking for one. */

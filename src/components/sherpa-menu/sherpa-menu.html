@@ -27,11 +27,15 @@
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
+    data-clearable  show a Clear button in the footer that empties the selection
     data-select   multiple (default, checkbox rows) | single (radio rows)
     data-align    start (default) | end   which trigger edge the card lines up with
     open          native-ish boolean: reflects/controls the popover
 
   Slots:
+    header    — controls ABOVE the heading (a calendar's month stepper). The
+                Calendar node (268:14601) is a card of three regions: a `header`
+                slot, the content grid, and a Container Footer.
     (default) — the rows (labels with inputs, or buttons)
 
   Fires:
@@ -39,11 +43,26 @@
                   Without data-commit that is every row tick; with it, only Apply.
     menu-apply  — Apply was clicked. detail: { values: string[] }
     menu-cancel — Cancel was clicked; the values are already restored. detail: {}
+    menu-clear  — Clear was clicked; the selection is already empty. detail: {}
     menu-select — an action row was clicked. detail: { value, label }
     menu-open / menu-close — detail: {}
 -->
 <template id="default">
   <div class="menu" part="menu" popover="auto" role="menu">
+    <!--
+      HEADER — a slot, not just the text heading below it.
+
+      Read from the Calendar node (268:14601), which is a card of exactly three
+      regions: a `header` SLOT holding ‹ · "August 2026" · ›, the content grid,
+      and a Container Footer. A calendar IS a menu in this system, so its month
+      stepper belongs in the menu's own header rather than inside a nested
+      component that draws a second one.
+
+      CSS-gated on SherpaElement's slot-presence flag, so a menu with nothing
+      slotted here is unchanged.
+    -->
+    <div class="header" part="header"><slot name="header"></slot></div>
+
     <p class="heading" part="heading"></p>
 
     <!--
@@ -85,6 +104,17 @@
       footer convention (a cancel is not a transparent afterthought).
     -->
     <div class="footer" part="footer">
+      <!--
+        CLEAR sits on the LEFT, alone — Figma's Container Footer (Type=action-bar)
+        splits into `left` and `right` slots, and holds "Today" on the left where
+        Cancel/Apply sit on the right. A destructive-ish action belongs away from
+        the one a thumb reaches for.
+
+        Shown with data-clearable, so an ordinary menu is unchanged.
+      -->
+      <sherpa-button class="clear" part="clear" data-size="sm"
+                     data-look="transparent">Clear</sherpa-button>
+      <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel" data-size="sm">Cancel</sherpa-button>
       <sherpa-button class="apply" part="apply" data-size="sm" data-look="saturated">Apply</sherpa-button>
     </div>

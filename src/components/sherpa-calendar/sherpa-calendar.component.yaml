@@ -112,13 +112,28 @@ anatomy:
                   attrs:
                     type: button
     - el: template
-      class: cal-cell-tpl
+      class: cal-header-tpl
       children:
-        - el: button
-          class: cal-cell
+        - el: div
+          class: cal-header cal-header-projected
           attrs:
-            type: button
-            role: gridcell
+            slot: header
+          children:
+            - el: button
+              class: cal-nav cal-prev
+              attrs:
+                type: button
+                aria-label: Previous
+            - el: button
+              class: cal-label
+              attrs:
+                type: button
+                aria-live: polite
+            - el: button
+              class: cal-nav cal-next
+              attrs:
+                type: button
+                aria-label: Next
 props:
   - $type: prop
     name: data-embedded
@@ -126,8 +141,12 @@ props:
     kind: style
     default: false
     description: >-
-      the HOST owns the action row — hides this one's footer. Figma's Calendar composes a Container
-      Footer rather than drawing its own, so a Calendar inside a Menu has ONE footer: the menu's.
+      the HOST owns the card's chrome — see the note below data-embedded, in full: Figma's Calendar
+      (268:14601) is a card of three parts — a `header` SLOT holding the month stepper, the
+      day/month/year grid, and a Container Footer. A calendar IS a menu in this system. So when
+      embedded, this component contributes only its GRID: the footer is hidden (the host draws the
+      action row) and the stepper is PROJECTED into the host's `header` slot, so the menu is the
+      card and there is one header and one footer rather than two.
   - $type: prop
     name: data-has-time
     type: boolean

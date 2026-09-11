@@ -29,6 +29,10 @@ anatomy:
       popover: auto
       role: menu
     children:
+      - el: div
+        class: header
+        part: header
+        slot: header
       - el: p
         class: heading
         part: heading
@@ -54,6 +58,14 @@ anatomy:
         part: footer
         children:
           - el: sherpa-button
+            class: clear
+            part: clear
+            attrs:
+              data-size: sm
+              data-look: transparent
+          - el: span
+            class: footer-spacer
+          - el: sherpa-button
             class: cancel
             part: cancel
             attrs:
@@ -78,6 +90,11 @@ props:
     type: string
     kind: style
     description: the CSS anchor-name of the trigger, for anchor positioning
+  - $type: prop
+    name: data-clearable
+    type: string
+    kind: content
+    description: show a Clear button in the footer that empties the selection
   - $type: prop
     name: data-commit
     type: string
@@ -107,8 +124,14 @@ props:
     description: "native-ish boolean: reflects/controls the popover"
 states:
   - $type: state
+    name: has-header
+    selector: ":host([data-has-header])"
+  - $type: state
     name: search
     selector: ":host([data-search])"
+  - $type: state
+    name: clearable
+    selector: ":host([data-clearable])"
   - $type: state
     name: no-matches
     selector: ":host([data-no-matches])"
@@ -137,6 +160,10 @@ events:
     composed: true
   - $type: event
     name: menu-cancel
+    bubbles: true
+    composed: true
+  - $type: event
+    name: menu-clear
     bubbles: true
     composed: true
   - $type: event

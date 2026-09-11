@@ -360,6 +360,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // A calendar is not a list to search, and the search would filter
         // nothing — so it is not offered here.
         menu.removeAttribute('data-search');
+        // A date filter can be taken back to "no date", which a set of value
+        // rows cannot express by unticking — so the menu offers Clear.
+        menu.setAttribute('data-clearable', '');
         menu.appendChild(cal);
       }
       chip.setAttribute('data-menu', '');
