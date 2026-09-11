@@ -120,6 +120,17 @@ props:
       - single
     description: multiple  | single (radio rows)
   - $type: prop
+    name: data-type
+    type: enum
+    kind: content
+    values:
+      - list
+      - calendar
+    description: >-
+      list  | calendar — the Menu set's own `Type` axis. `calendar` widens the card and lays the
+      LIST region out horizontally, so a day grid and a time picker sit side by side. Everything
+      else is the same menu.
+  - $type: prop
     name: open
     type: string
     description: "native-ish boolean: reflects/controls the popover"
@@ -142,6 +153,9 @@ states:
   - $type: state
     name: commit
     selector: ":host([data-commit])"
+  - $type: state
+    name: calendar
+    selector: ":host([data-type=\"calendar\"])"
   - $type: state
     name: focus-visible
     selector: ":focus-visible"

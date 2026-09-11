@@ -264,10 +264,29 @@
   }
 }
 
-/* EMBEDDED — the host owns the card's own chrome, so this component contributes
-   only its GRID. The stepper is projected into the host's `header` slot (a
-   light-DOM clone carrying slot="header"), so the one drawn in here would be a
-   second copy. */
+/* ── EMBEDDED — the host IS the card ─────────────────────────────────────
+ * Will's split (2026-09-11): the Menu component now carries `Type = Calendar`,
+ * and the Calendar page holds only the visual parts a calendar is built FROM
+ * (Calendar Cell, time-clock). So an embedded calendar contributes its GRID and
+ * its month logic, and nothing else — the surrounding card is the menu's.
+ *
+ * Everything the card is made of goes:
+ *   • the border, radius and surface (the menu draws them)
+ *   • the header (projected into the menu's `header` slot instead)
+ *   • the footer (the menu's Container Footer owns Today / Cancel / Apply)
+ */
+:host([data-embedded]) .cal {
+  border: 0;
+  border-radius: 0;
+  background: none;
+  /* No clipping either: the card's own overflow belongs to the card. */
+  overflow: visible;
+  /* FILLS the menu's list region rather than hugging, so the grid can stretch
+     to whatever width the menu gives it. */
+  inline-size: 100%;
+}
+:host([data-embedded]) { display: block; }
+
 :host([data-embedded]) .cal-header { display: none; }
 
 /* EMBEDDED — the host owns the action row.

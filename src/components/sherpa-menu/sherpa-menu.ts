@@ -31,6 +31,9 @@
  * @fires menu-apply  — Apply was clicked. detail: { values: string[] }
  * @fires menu-cancel — Cancel was clicked; values already restored. detail: {}
  * @fires menu-clear — Clear was clicked; the selection is already empty. detail: {}
+ *
+ * @attr {enum} data-type — list (default) | calendar. The Menu set's own `Type`
+ *   axis: `calendar` widens the card and runs the list region horizontally.
  * @fires menu-select — an action row was clicked. detail: { value, label }
  * @fires menu-open   — detail: {}
  * @fires menu-close  — detail: {}
@@ -48,7 +51,14 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
-  static override observed = ['data-heading', 'data-align', 'data-search', 'data-clearable', 'open'];
+  static override observed = [
+    'data-heading',
+    'data-align',
+    'data-search',
+    'data-clearable',
+    'data-type',
+    'open',
+  ];
 
   /** The gap between the trigger and the card (Figma space/2xs). */
   static readonly OFFSET = 4;

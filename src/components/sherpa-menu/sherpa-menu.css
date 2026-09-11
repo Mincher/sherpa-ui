@@ -259,3 +259,34 @@
   border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-theme-border-default-1, #e8e8f6);
 }
+
+
+/* ── Type = Calendar ─────────────────────────────────────────────────────
+ * Read from the Menu set (1156:29240), which Will split into
+ * `Type = List | Calendar`. Both variants share the card — gap 8, padding
+ * 8/8/0/8, three slots — and differ in exactly two things:
+ *
+ *   the WIDTH      List 240, Calendar 527 (it holds a 7-column grid, and
+ *                  optionally a time picker beside it)
+ *   the LIST AXIS  List stacks its rows; Calendar lays its regions out
+ *                  HORIZONTALLY — [ day grid | time ] side by side
+ *
+ * So this is a variant of the menu, not a component of its own. Everything
+ * else — the header slot, the footer slot, the commit behaviour — is the
+ * menu's and is inherited unchanged. */
+:host([data-type="calendar"]) .menu {
+  /* HUGS its content rather than taking a fixed width. Figma's Calendar variant
+     measures 527, but that is the RESULT of a 7-column grid beside a time
+     picker inside 8px padding — not a designed step, and it is off the 8px
+     grid, which is the tell. A calendar with no time picker should be narrower
+     rather than half empty, so the card is sized by what it holds. */
+  inline-size: max-content;
+}
+
+/* The list region runs ACROSS for a calendar — Figma's `list` frame is
+   HORIZONTAL there (gap 4), holding the Grid and the Time picker as siblings. */
+:host([data-type="calendar"]) .rows {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}

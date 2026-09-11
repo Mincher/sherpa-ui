@@ -395,3 +395,40 @@ test('data-search filters the rows without disturbing what is ticked', async ({ 
   // searching safe inside a committing menu: narrow, tick, clear, tick, Apply once.
   expect(r.stillTicked).toBe(true);
 });
+
+test('data-type="calendar" is a MENU variant: wider card, horizontal list region', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mk = async (type?: string) => {
+      const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void> };
+      if (type) menu.setAttribute('data-type', type);
+      menu.setAttribute('data-heading', 'Pick');
+      for (const label of ['One', 'Two']) {
+        const row = document.createElement('label');
+        row.innerHTML = `<input type="checkbox" value="${label}" /><span>${label}</span>`;
+        menu.appendChild(row);
+      }
+      document.getElementById('root')!.appendChild(menu);
+      await menu.rendered;
+      const card = menu.shadowRoot!.querySelector('.menu') as HTMLElement;
+      const rows = menu.shadowRoot!.querySelector('.rows') as HTMLElement;
+      return {
+        width: getComputedStyle(card).inlineSize,
+        direction: getComputedStyle(rows).flexDirection,
+      };
+    };
+    return { list: await mk(), calendar: await mk('calendar') };
+  });
+
+  // Read from the Menu set (1156:29240), which Will split into
+  // `Type = List | Calendar`. Both share the card — gap, padding, three slots —
+  // and differ in exactly two things:
+  //
+  //   the WIDTH: List is a fixed 240; Calendar hugs, because it holds a
+  //   7-column grid and optionally a time picker beside it.
+  expect(r.list.width).toBe('240px');
+  expect(r.calendar.width).not.toBe('240px');
+
+  //   the LIST AXIS: a calendar lays its regions out side by side.
+  expect(r.list.direction).toBe('column');
+  expect(r.calendar.direction).toBe('row');
+});

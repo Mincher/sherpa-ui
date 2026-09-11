@@ -363,6 +363,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // A date filter can be taken back to "no date", which a set of value
         // rows cannot express by unticking — so the menu offers Clear.
         menu.setAttribute('data-clearable', '');
+        // The Menu set's own `Type = Calendar` variant: a wider card whose list
+        // region runs horizontally, so a day grid and a time picker sit side by
+        // side. The calendar is the CONTENT; the menu is the card.
+        menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
       chip.setAttribute('data-menu', '');
