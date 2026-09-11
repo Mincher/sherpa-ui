@@ -256,6 +256,10 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
   ]);
 });
 
+/* Narrower than reforged-icons.spec.ts on purpose, and both are worth having:
+   that one scans the SOURCE, so it catches a Pro class the moment it is written;
+   this one walks what the header actually RENDERS, so it also catches a glyph
+   that never reaches the DOM. */
 test('every action glyph actually renders (no Font Awesome PRO classes)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-header') as WithRender;
