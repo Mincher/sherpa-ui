@@ -47,21 +47,26 @@
     <p class="heading" part="heading"></p>
 
     <!--
-      SEARCH — a bare input directly under the heading, revealed by data-search.
+      SEARCH — the Input Field (atom), composed, not hand-rolled.
+
+      Read from the Menu node (49:66174): its second child is an
+      `Input Field (atom)` instance at 224 x 32, between the heading and the
+      rows. sherpa-input-text IS that component, so it owns the field's box,
+      ring, focus state and icon — there is nothing here for this menu to
+      restyle.
 
       No label and no description: the placeholder and its position under the
-      heading say what it is, and a menu this size cannot spare a line to repeat
-      it. `aria-label` carries the name for a screen reader instead.
+      heading say what it is, and a 240px card cannot spare a line to repeat it.
+      `aria-label` carries the name for a screen reader instead.
 
-      It filters the ROWS it has, so it never re-queries and never disturbs what
-      is already ticked — a row hidden by a search keeps its state and comes back
-      with it. `type="search"` gets the platform's own clear affordance free.
+      It filters the ROWS the menu already has, so it never re-queries and never
+      disturbs what is ticked — a row hidden by a search keeps its state and
+      comes back with it.
     -->
-    <div class="search" part="search">
-      <i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-      <input class="search-input" part="search-input" type="search"
-             placeholder="Search" autocomplete="off" spellcheck="false" />
-    </div>
+    <sherpa-input-text class="search" part="search"
+                       data-icon-start="fa-solid fa-magnifying-glass"
+                       placeholder="Search" autocomplete="off"
+                       aria-label="Search this menu"></sherpa-input-text>
 
     <!-- Shown when a search matches no row. Without it the card collapses to an
          empty box and reads as broken rather than as "nothing found". -->

@@ -223,20 +223,38 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const tpl = this.$<HTMLTemplateElement>('template.qf-tpl');
     if (!list || !tpl) return;
 
+    // CAPTURE WHAT IS ON SCREEN FIRST. A re-render rebuilds every chip from
+    // #filters, whose `options` still carry the flags they were POPULATED with
+    // — so adding or removing one filter reset every other chip's picks and its
+    // on/off state. The live DOM is the only record of what the user has done
+    // since; it has to survive the rebuild.
+    const live = new Map<string, { on: boolean; picked: Set<string> }>();
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'];
+      if (!id) continue;
+      live.set(id, {
+        on: chip.hasAttribute('data-current'),
+        picked: new Set(this.#chipPicks(chip)),
+      });
+    }
+
     list.replaceChildren();
     for (const f of this.#filters) {
       const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
       if (f.type) chip.setAttribute('data-type', f.type);
-      if (f.active) chip.setAttribute('data-current', '');
+      // The chip's LIVE state wins over its definition's; a chip the user has
+      // never touched has no live entry and falls back to `active`.
+      if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
       if (f.icon) chip.setAttribute('data-icon-start', f.icon);
       // A selector, not a toggle: always on, and its body does not flip it.
       if (f.persistent) {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
-      if (f.options?.length) this.#addMenu(chip, f);
+      if (f.options?.length) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
     }
   }
@@ -246,7 +264,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * chip's light DOM. Cloned from the menu prototypes in the template, so no
    * structural innerHTML is written.
    */
-  #addMenu(chip: HTMLElement, def: QuickFilterDef): void {
+  #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
     const menuTpl = this.$<HTMLTemplateElement>('template.qf-menu-tpl');
     const rowTpl = this.$<HTMLTemplateElement>('template.qf-row-tpl');
     if (!menuTpl || !rowTpl) return;
@@ -274,7 +292,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       input.type = single ? 'radio' : 'checkbox';
       input.value = option.value;
       if (single) input.name = `qf-${def.id}`;
-      input.checked = !!option.selected;
+      // A LIVE pick beats the definition's `selected`: the set is what the user
+      // has ticked since, and is absent only for a chip being built for the
+      // first time.
+      input.checked = picked ? picked.has(option.value) : !!option.selected;
       row.querySelector('.qf-row-label')!.textContent = option.label;
       menu.appendChild(row);
     }

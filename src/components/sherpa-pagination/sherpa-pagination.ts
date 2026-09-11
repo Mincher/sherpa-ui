@@ -11,7 +11,7 @@
  * @element sherpa-pagination
  * @attr {number} data-page          — current 1-based page (default 1)
  * @attr {number} data-total-pages   — total page count (default 1)
- * @attr {number} data-page-size     — active rows-per-page value (default first option)
+ * @attr {number} data-page-size     — active rows-per-page value (default 25)
  * @attr {string} data-rows-options  — comma list of rows choices, e.g. "10,25,50"
  *
  * @fires page-change      — bubbles + composed. detail: { page }
@@ -62,11 +62,19 @@ export class SherpaPagination extends SherpaElement {
     this.setAttribute('data-page', String(this.#clamp(value)));
   }
 
+  /** The default rows-per-page when a host does not name one. */
+  static readonly DEFAULT_PAGE_SIZE = 25;
+
   get pageSize(): number {
     const opts = this.#rowsOptions();
     const raw = parseInt(this.dataset['pageSize'] ?? '', 10);
     if (!Number.isNaN(raw)) return raw;
-    return opts[0] ?? 10;
+    // 25 by default, not the first option. 10 rows is a thin slice of a real
+    // table — it fills less than half a panel and makes paging the main way to
+    // read the data. A host can still name any size with data-page-size, and a
+    // set that does not offer 25 falls back to its own first option.
+    const preferred = SherpaPagination.DEFAULT_PAGE_SIZE;
+    return opts.includes(preferred) ? preferred : (opts[0] ?? preferred);
   }
   set pageSize(value: number) {
     this.setAttribute('data-page-size', String(Math.max(1, Math.trunc(value) || 1)));

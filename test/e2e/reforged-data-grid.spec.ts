@@ -673,3 +673,48 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
   expect(r.name.type).toBe(null);
   expect(r.name.header).not.toBe('flex-end');
 });
+
+test('the scroller FILLS a sized host, and still scrolls inside it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.cssText = 'block-size:300px;inline-size:600px;display:flex;';
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    box.appendChild(grid);
+    document.getElementById('root')!.appendChild(box);
+    await grid.rendered;
+    grid.populate({
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: Array.from({ length: 40 }, (_, i) => ({ name: `Row ${i}` })),
+    });
+    await new Promise((res) => setTimeout(res, 60));
+
+    const sc = grid.shadowRoot!.querySelector('.scroller') as HTMLElement;
+    const gridH = grid.getBoundingClientRect().height;
+    const scH = sc.getBoundingClientRect().height;
+    sc.scrollTop = 120;
+    await new Promise((res) => setTimeout(res, 40));
+    return {
+      hostH: gridH,
+      scrollerH: scH,
+      // The only difference should be the host's own 0.5px border, top and bottom.
+      shortfall: +(gridH - scH).toFixed(1),
+      canScroll: sc.scrollHeight > sc.clientHeight,
+      scrolled: sc.scrollTop,
+    };
+  });
+
+  // FILLS. Without `flex: 1 1 auto` the scroller sized to its CONTENT, so in a
+  // fixed-height panel the rows stopped short of the grid's own bottom edge and
+  // left a white band under them.
+  expect(r.hostH).toBeCloseTo(300, 0);
+  expect(r.shortfall).toBeLessThanOrEqual(2);
+
+  // …and still scrolls. `min-block-size: 0` is the other half: a flex child
+  // floors at its content size, so without it the box would refuse to shrink
+  // below the full row list and the scroll would never engage.
+  expect(r.canScroll).toBe(true);
+  expect(r.scrolled).toBe(120);
+});

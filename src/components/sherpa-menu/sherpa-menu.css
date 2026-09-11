@@ -28,6 +28,17 @@
 }
 
 .menu {
+  /* THE CARD SETS ITS OWN TEXT DIRECTION.
+     `text-align` inherits, and this popover is slotted into whatever triggers it
+     — a chip, a button, a toolbar. A sherpa-button centres its own content, so a
+     menu mounted in one inherited `center` and its heading sat 46px right of
+     every row beneath it. A floating card's contents must not depend on where
+     its trigger happens to live, so the card states it rather than inheriting.
+
+     The individual parts that DO centre (the no-matches message) say so
+     themselves. */
+  text-align: start;
+
   /* Fixed, not absolute: --_x / --_y are viewport coordinates from the trigger's
      own bounding rect, so no containing block or scroll offset can shift them. */
   position: fixed;
@@ -80,69 +91,35 @@
    the viewport corner. That was the bug. */
 
 /* Heading — 10/16 regular, upper-case, content/body/+1. */
+/* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
+   line-height/xs 16, regular, content/body/+1, textAlignHorizontal LEFT and
+   textCase ORIGINAL — it is NOT uppercased. The sample string is "ACTIONS",
+   which is written in caps, not transformed into them; applying
+   text-transform here shouted every heading a caller passed. */
 .heading {
   margin: 0;
   padding-inline: var(--sherpa-theme-padding-md, 8px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-font-size-body-xs, 10px);
+  font-size: var(--sherpa-theme-content-size-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
-  text-transform: uppercase;
+  letter-spacing: var(--sherpa-theme-content-letter-spacing-xs, 0px);
+  text-align: start;
 
   &:empty { display: none; }
 }
 
 /* ── Search ──────────────────────────────────────────────────────────────
- * A bare field under the heading, revealed by data-search. It carries the same
- * Input Field (atom) box every other field in the system uses — 32 tall, 0.5px
- * ring, radius 4 — so it does not read as a special menu-only control.
+ * A composed <sherpa-input-text> — the Input Field (atom) the Menu node
+ * instances at 224 x 32. The component owns its own box, ring, focus state and
+ * icon, so there is nothing to restyle here.
  *
  * `flex: 0 0 auto` keeps it OUT of the scroll: the rows scroll beneath it, and a
  * search that scrolled away with its own results would be useless. */
 .search { display: none; }
 :host([data-search]) .search {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  display: block;
   flex: 0 0 auto;
-  margin-block-end: var(--sherpa-display-mode-space-3xs, 2px);
-  padding-inline: var(--sherpa-theme-padding-md, 8px);
-  padding-block: var(--sherpa-display-mode-space-2xs, 4px);
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-}
-/* Focus lights the FIELD, not the bare input — the field is the visible box. */
-.search:focus-within {
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-}
-
-.search-icon {
-  flex: 0 0 auto;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  line-height: 1;
-}
-
-.search-input {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  /* The FIELD owns the box; the input is a bare text layer inside it. */
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-style-content-base, #0c0b11);
-
-  /* The field draws the ring, so the input must not draw its own. */
-  &:focus-visible { outline: none; }
-  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
-  /* WebKit's own clear button, which type="search" gives us free. */
-  &::-webkit-search-cancel-button { cursor: pointer; }
 }
 
 /* A row hidden by the search. CSS owns the hiding; JS only writes the flag — and
@@ -170,7 +147,10 @@
 .rows {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
+  /* Figma's `list` frame gaps at space/2xs 4 — the CARD gaps at space/3xs 2,
+     which is what this used to copy. Two different numbers for two different
+     frames. */
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-block-size: 0;
   overflow-y: auto;
 }

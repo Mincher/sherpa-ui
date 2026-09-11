@@ -32,22 +32,14 @@ anatomy:
       - el: p
         class: heading
         part: heading
-      - el: div
+      - el: sherpa-input-text
         class: search
         part: search
-        children:
-          - el: i
-            class: search-icon fa-solid fa-magnifying-glass
-            attrs:
-              aria-hidden: "true"
-          - el: input
-            class: search-input
-            part: search-input
-            attrs:
-              type: search
-              placeholder: Search
-              autocomplete: "off"
-              spellcheck: "false"
+        attrs:
+          data-icon-start: fa-solid fa-magnifying-glass
+          placeholder: Search
+          autocomplete: "off"
+          aria-label: Search this menu
       - el: p
         class: no-matches
         part: no-matches
@@ -125,7 +117,7 @@ states:
     selector: ":host([data-commit])"
   - $type: state
     name: focus-visible
-    selector: .search-input:focus-visible
+    selector: ":focus-visible"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -171,15 +163,11 @@ tokens:
   menu.box-shadow: "{sherpa.theme-elevation-offset-x-base}"
   heading.padding-inline: "{sherpa.theme-padding-md}"
   heading.color: "{sherpa.theme-content-body-1}"
-  heading.font-size: "{sherpa.font-size-body-xs}"
+  heading.font-size: "{sherpa.theme-content-size-xs}"
   heading.font-weight: "{sherpa.font-weight-regular}"
   heading.line-height: "{sherpa.theme-content-line-height-xs}"
-  search-icon.color: "{sherpa.theme-content-body-2}"
-  search-icon.font-size: "{sherpa.theme-content-size-small}"
-  search-input.font-size: "{sherpa.theme-content-size-small}"
-  search-input.line-height: "{sherpa.theme-content-line-height-base}"
-  search-input.color: "{sherpa.style-content-base}"
-  rows.gap: "{sherpa.display-mode-space-3xs}"
+  heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
+  rows.gap: "{sherpa.display-mode-space-2xs}"
   footer.gap: "{sherpa.theme-gap-md}"
   footer.margin-block-start: "{sherpa.display-mode-space-3xs}"
   footer.padding-block-start: "{sherpa.display-mode-space-xs}"

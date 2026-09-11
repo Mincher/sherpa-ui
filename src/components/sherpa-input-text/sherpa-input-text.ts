@@ -78,9 +78,35 @@ export class SherpaInputText extends SherpaElement {
     set('.label', this.dataset['label']);
     set('.description', this.dataset['description']);
     set('.message', this.dataset['error']);
-    // Icon glyphs — the ::before content reads data-glyph; CSS gates visibility.
-    this.$('.icon-start')?.setAttribute('data-glyph', this.dataset['iconStart'] ?? '');
-    this.$('.icon-end')?.setAttribute('data-glyph', this.dataset['iconEnd'] ?? '');
+    // Icons — a Font Awesome CLASS LIST or a raw glyph character.
+    this.#syncIcon('.icon-start', this.dataset['iconStart']);
+    this.#syncIcon('.icon-end', this.dataset['iconEnd']);
+  }
+
+  /**
+   * Put one icon on the field.
+   *
+   * Accepts either form, matching sherpa-button: a Font Awesome class list
+   * ("fa-solid fa-magnifying-glass") or a raw character ("+"). Only the
+   * character path can go through `data-glyph`, whose CSS is
+   * `content: attr(data-glyph)` — handed a class list it printed the class list
+   * as text, which is exactly what a menu's search field showed.
+   *
+   * The two components took different forms until now, which is a trap for
+   * anyone composing one into the other: the same attribute name meant two
+   * different things.
+   */
+  #syncIcon(sel: string, value: string | undefined): void {
+    const el = this.$(sel);
+    if (!el) return;
+    const base = sel === '.icon-start' ? 'icon icon-start' : 'icon icon-end';
+    if (value && /\bfa-/.test(value)) {
+      el.className = `${base} ${value}`;
+      el.removeAttribute('data-glyph');
+    } else {
+      el.className = base;
+      el.setAttribute('data-glyph', value ?? '');
+    }
   }
 
   /** Mirror native attributes host → inner control. */

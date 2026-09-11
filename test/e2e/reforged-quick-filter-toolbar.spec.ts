@@ -756,3 +756,70 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
   expect(r.afterRemove.chips).toEqual(['plan', 'seats']);
   expect(r.afterRemove.offered).toEqual(['tickets', 'health']);
 });
+
+test('adding or removing a filter never disturbs the others', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar()) as HTMLElement & {
+      populate?: (d: unknown) => void;
+      available?: (d: unknown) => void;
+      values?: Record<string, string[]>;
+    };
+    el.populate!([
+      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'region', label: 'Region', options: [{ value: 'emea', label: 'EMEA' }] },
+      { id: 'trial', label: 'Trial' },
+    ]);
+    el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
+    await new Promise((res) => setTimeout(res, 60));
+
+    const sr = el.shadowRoot!;
+    const apply = async (host: Element) => {
+      const m = host.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+      (m.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
+      await new Promise((res) => setTimeout(res, 150));
+    };
+    const snap = () => ({
+      values: JSON.parse(JSON.stringify(el.values)),
+      trialOn: !!sr.querySelector('.chip[data-id="trial"]')?.hasAttribute('data-current'),
+    });
+
+    // Build up some state: two menu chips picked, one toggle chip ON.
+    for (const id of ['plan', 'region']) {
+      const chip = sr.querySelector(`.chip[data-id="${id}"]`)!;
+      (chip.querySelector('input') as HTMLInputElement).click();
+      await apply(chip);
+    }
+    (sr.querySelector('.chip[data-id="trial"]')!.shadowRoot!.querySelector('.body') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 80));
+    const before = snap();
+
+    // ADD one…
+    const add = sr.querySelector('.add-btn')!;
+    (add.querySelector('input') as HTMLInputElement).click();
+    await apply(add);
+    const afterAdd = snap();
+
+    // …and REMOVE a different one.
+    (sr.querySelector('.chip[data-id="region"] .qf-remove') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 200));
+    const afterRemove = snap();
+
+    return { before, afterAdd, afterRemove };
+  }, MOUNT);
+
+  expect(r.before.values).toEqual({ plan: ['pro'], region: ['emea'] });
+  expect(r.before.trialOn).toBe(true);
+
+  // A re-render rebuilds every chip from #filters, whose `options` still carry
+  // the flags they were POPULATED with — so adding one filter used to reset
+  // every other chip's picks and its on/off state. The live DOM is the only
+  // record of what the user has done since.
+  expect(r.afterAdd.values).toEqual({ plan: ['pro'], region: ['emea'] });
+  expect(r.afterAdd.trialOn).toBe(true);
+
+  // Removing one drops ONLY its own values.
+  expect(r.afterRemove.values).toEqual({ plan: ['pro'] });
+  expect(r.afterRemove.trialOn).toBe(true);
+});

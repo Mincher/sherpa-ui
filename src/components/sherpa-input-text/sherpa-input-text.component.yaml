@@ -120,14 +120,14 @@ props:
     description: native value (also a JS property)
 states:
   - $type: state
+    name: has-actions
+    selector: ":host([data-has-actions])"
+  - $type: state
     name: icon-start
     selector: ":host([data-icon-start])"
   - $type: state
     name: icon-end
     selector: ":host([data-icon-end])"
-  - $type: state
-    name: has-actions
-    selector: ":host([data-has-actions])"
   - $type: state
     name: error
     selector: ":host([data-error])"
@@ -154,30 +154,33 @@ events:
     bubbles: true
     composed: true
 tokens:
-  field.gap: "{sherpa.structure-space-gap}"
-  label.font-size: "{sherpa.font-size-body-base}"
-  label.font-weight: "{sherpa.font-weight-semibold}"
+  field.gap: "{sherpa.theme-gap-sm}"
+  label.font-size: "{sherpa.font-size-body-small}"
+  label.font-weight: "{sherpa.font-weight-medium}"
+  label.line-height: "{sherpa.theme-content-line-height-small}"
   label.color: "{sherpa.theme-content-body-base}"
   description.font-size: "{sherpa.font-size-body-small}"
-  description.color: "{sherpa.theme-content-body-1}"
-  description.margin-bottom: "{sherpa.theme-padding-xs}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
+  description.color: "{sherpa.theme-content-body-2}"
   control-row.gap: "{sherpa.structure-space-gap}"
-  control-row.min-block-size: "{sherpa.display-size-2xl}"
+  control-row.min-block-size: "{sherpa.display-mode-size-2xl}"
   control-row.padding-inline: "{sherpa.structure-space-padding}"
   control-row.border-width: "{sherpa.style-border-width}"
   control-row.border-radius: "{sherpa.structure-rounding-top-left}"
-  control-row.background: "{sherpa.style-surface-base}"
+  control-row.background: "{sherpa.theme-surface-default-base}"
   control.padding-block: "{sherpa.theme-padding-sm}"
-  control.color: "{sherpa.style-content-base}"
-  control.font-size: "{sherpa.font-size-body-large}"
-  icon.inline-size: "{sherpa.display-size-md}"
-  icon.block-size: "{sherpa.display-size-md}"
+  control.color: "{sherpa.theme-content-body-base}"
+  control.font-size: "{sherpa.font-size-body-base}"
+  control.line-height: "{sherpa.theme-content-line-height-base}"
+  icon.inline-size: "{sherpa.theme-size-icon-xs}"
+  icon.block-size: "{sherpa.theme-size-icon-xs}"
   icon.color: "{sherpa.theme-content-body-1}"
   actions.gap: "{sherpa.structure-space-gap}"
-  message.padding: "{sherpa.theme-padding-sm}"
-  message.border-radius: "{sherpa.structure-rounding-top-left}"
-  message.font-size: "{sherpa.font-size-body-large}"
-  field-minimal.gap: "{sherpa.display-space-xs}"
+  message.padding: "{sherpa.theme-padding-xs}"
+  message.border-radius: "{sherpa.structure-rounding-bottom-right}"
+  message.font-size: "{sherpa.font-size-body-base}"
+  message.line-height: "{sherpa.theme-content-line-height-base}"
+  field-minimal.gap: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Input Field (atom)

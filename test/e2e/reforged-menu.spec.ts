@@ -342,11 +342,19 @@ test('data-search filters the rows without disturbing what is ticked', async ({ 
     const rows = () =>
       [...menu.children].filter((n) => !(n as HTMLElement).hasAttribute('data-filtered-out'))
         .map((n) => n.textContent!.trim());
-    const input = menu.shadowRoot!.querySelector('.search-input') as HTMLInputElement;
+    // The search is a composed sherpa-input-text (the Input Field atom the Menu
+    // node instances), so the value goes on the COMPONENT and its own inner
+    // control raises the event the menu listens for.
+    const field = menu.shadowRoot!.querySelector('.search') as HTMLElement & {
+      rendered?: Promise<void>;
+      value: string;
+    };
+    await field.rendered;
+    const control = field.shadowRoot!.querySelector('input') as HTMLInputElement;
     const type = async (v: string) => {
-      input.value = v;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      await new Promise((res) => setTimeout(res, 30));
+      control.value = v;
+      control.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await new Promise((res) => setTimeout(res, 40));
     };
 
     // Tick one BEFORE searching, to prove a filter never disturbs the draft.

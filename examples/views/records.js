@@ -91,7 +91,9 @@ export async function init(root) {
   let sort = { field: null, direction: 'asc' };
   let group = null;               // the column the toolbar's Group chip picked
   let page = 1;
-  let pageSize = 10;
+  // Read from the pager rather than hardcoded: sherpa-pagination defaults to 25,
+  // and a number written here would silently disagree with the select beside it.
+  let pageSize = 25;
 
   /* A chip's id IS its column. It used to be looked up in a hardcoded map of the
      four chips the bar happened to start with — so a filter ADDED through the Add

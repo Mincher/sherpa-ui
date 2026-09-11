@@ -37,6 +37,9 @@
  * @prop {string[]} values — the checked row values (read/write)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The search field is the composed Input Field (atom), as the Menu node
+// instances it — not a hand-rolled input.
+import '../sherpa-input-text/sherpa-input-text.js';
 // The Apply/Cancel footer composes real buttons, so the menu must register them —
 // it cannot rely on the page having imported them.
 import '../sherpa-button/sherpa-button.js';
@@ -76,8 +79,10 @@ export class SherpaMenu extends SherpaElement {
     // The footer is in the SHADOW root, so its clicks are listened for there.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
-    // The search field is in the SHADOW root too.
-    this.$('.search-input')?.addEventListener('input', this.#onSearch);
+    // The search is a composed <sherpa-input-text>, which re-dispatches the
+    // inner control's `input`. Listening on the component rather than reaching
+    // into its shadow root for the raw <input>.
+    this.$('.search')?.addEventListener('input', this.#onSearch);
   }
 
   /**
@@ -93,8 +98,9 @@ export class SherpaMenu extends SherpaElement {
    * clear the search, tick again, and Apply once.
    */
   #onSearch = (): void => {
-    const input = this.$<HTMLInputElement>('.search-input');
-    const q = (input?.value ?? '').trim().toLowerCase();
+    // `value` is a property on sherpa-input-text, mirrored from its control.
+    const field = this.$<HTMLElement & { value?: string }>('.search');
+    const q = (field?.value ?? '').trim().toLowerCase();
     let shown = 0;
     for (const row of this.#rows()) {
       const hit = !q || (row.textContent ?? '').toLowerCase().includes(q);

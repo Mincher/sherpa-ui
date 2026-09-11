@@ -34,6 +34,16 @@
    without it the table wins and the host grows to fit every row, which is exactly
    what the fixed-height container is meant to stop. */
 .scroller {
+  /* GROWS to fill the host. The host is a flex column; without `flex: 1 1 auto`
+     the scroller sized to its CONTENT, so in a fixed-height panel the rows
+     stopped 83px short of the grid's own bottom edge and left a white band
+     under them — and a short page never scrolled at all, because the box had
+     already grown to fit.
+
+     `min-block-size: 0` is the other half: a flex child floors at its content
+     size otherwise, so the box would refuse to shrink below the full row list
+     and the scroll would never engage. */
+  flex: 1 1 auto;
   min-block-size: 0;
   overflow: auto;
 }
