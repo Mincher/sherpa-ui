@@ -129,7 +129,7 @@ Two things to check before writing it:
 
 ---
 
-## 4. Button icon sizes don't match the Figma Structure size modes
+## 4. Button icon sizes don't match the Figma Structure size modes  ✅ DONE (bb0d6ea5)
 
 **Will's words:** "Fix button icon sizes to match Figma structure modes icon
 sizes."
@@ -219,7 +219,7 @@ and inset before choosing.
 
 ---
 
-## 6. Four new Figma icons → Font Awesome  (decision made, not yet applied everywhere)
+## 6. Four new Figma icons → Font Awesome  ✅ DONE (15f34470)
 
 Will added `group`, `sort-none`, `sort-ascending`, `sort-descending` to the Figma
 Icons page (all 14×14, zero padding). Will chose **map to Font Awesome**, not a
@@ -238,9 +238,18 @@ named map (`SherpaQuickFilterToolbar.#icons`):
 That also fixed a real bug: the OFF state wore the ascending arrow, so a
 suspended sort looked identical to an active ascending one.
 
-**Still to do:** check whether anything else in the codebase shows a group or sort
-glyph and should use the same map (the data grid's own sortable headers are the
-obvious candidate — they may draw their own indicator).
+**Done (15f34470):** the data grid WAS the remaining case — it drew a pure-CSS
+border triangle, which can only point up or down, so a sortable-but-unsorted
+column showed nothing and read as unsortable. It now uses the same four pairs,
+held as one public static (`SherpaDataGrid.icons`) with a test pinning them, so
+the grid's arrow and the toolbar's chip cannot drift.
+
+Swept the rest: the only other sort/caret glyphs are menu disclosure carets in
+sherpa-chart-legend and sherpa-quick-filter, which are correct as they are.
+
+**Noted, not done:** Figma's Grid Cell header (926:34238) carries its sort
+control as a 16x16 icon Button in an `actions` frame beside a menu button. That
+is a structural change to the header, larger than this item.
 
 ---
 
@@ -413,3 +422,50 @@ any that remain — they are not part of the suite:
 ```bash
 rm -f test/e2e/zz-*.spec.ts
 ```
+
+---
+
+## 8. Date/time should use the JavaScript Temporal API
+
+**Will's words:** "The date and time aspects of sherpa (like in calendar
+components) should use the javascript temporal api to be modern, robust, and
+future proof."
+
+Today `sherpa-calendar` uses `Date` plus hand-rolled ISO string helpers
+(`toIso`, `parseIso`, `datePart`, the `TIME_RE` / `ISO_RE` regexes) and does its
+own month arithmetic in `#step()` and `#renderDays()`. That is the code Temporal
+replaces: `Temporal.PlainDate`, `PlainYearMonth` and `PlainTime` carry the
+calendar maths, the ISO parsing and the formatting.
+
+Worth checking first:
+
+1. **Browser support.** Temporal shipped in Chromium 143. The tests run
+   Chromium, but a component library cannot assume it — decide whether this
+   needs a polyfill dependency, which would be the branch's FIRST runtime
+   dependency and is Will's call, not an implementation detail.
+2. **Where the boundary sits.** `data-value` is an ISO string on the public API
+   and should stay one — a `Temporal.PlainDate` cannot live in an attribute.
+   Temporal belongs INSIDE the component.
+3. **The range and time paths** are the ones that benefit most: `#pickRange`
+   compares ISO strings lexically today (which works, but only by accident of
+   the format), and `data-has-time` splits on "T" by hand.
+
+Also affects: the Menu Calendar variant's `time-clock` region, which has no code
+counterpart yet — worth building on Temporal from the start rather than porting
+it twice.
+
+---
+
+## 9. Figma colour OPACITY variable refactor
+
+**Will's words:** "let's focus on the Figma colour opacity variable refactor."
+
+Queued by Will while item 6 was finishing. Scope to be confirmed with him before
+starting — the obvious candidates are the `color-transparent/*` group (raw hex +
+alpha, graded 10/20/30/40/50% per step) and the `*-transparent` semantic
+aliases, but which way the refactor goes is his design decision.
+
+Read first: `sherpa-color-transparent-group` and
+`sherpa-transparent-follows-primitives` in memory — `color-transparent/*` is RAW
+HEX and does NOT follow a primitive re-point, so an orphan probe is owed after
+any ramp change.
