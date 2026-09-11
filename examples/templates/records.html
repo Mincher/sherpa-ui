@@ -30,12 +30,14 @@
       </sherpa-toolbar>
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
       <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
+      <!-- 100 rows / 10 per page = 10 pages. records.js overwrites
+           data-total-pages on every render, so this is only the pre-JS value. -->
       <sherpa-pagination
         id="pager"
         data-page="1"
         data-page-size="10"
-        data-total-pages="3"
-        data-rows-options="10,25,50"></sherpa-pagination>
+        data-total-pages="10"
+        data-rows-options="10,25,50,100"></sherpa-pagination>
     </div>
   </div>
 </div>

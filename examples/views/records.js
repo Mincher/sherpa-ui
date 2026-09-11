@@ -1,44 +1,88 @@
 /**
  * examples/views/records.js — the records / CRUD-table view's logic.
  *
- * Exported as init(root): builds ~30 customers, populates the grid / quick-filter
+ * Exported as init(root): builds 100 customers, populates the grid / quick-filter
  * toolbar / pagination / dialog that live inside `root`, and wires filter/sort/
  * page + the add-customer dialog → toast flow. The shared nav/header live once in
- * index.html. Behaviour is identical to the old standalone records.html.
+ * index.html.
+ *
+ * 100 rows over 10 pages is the point: it exercises pagination, the grid's own
+ * internal scroll inside a fixed-height panel, and grouping across a row count
+ * that no longer fits on one screen.
  */
 export async function init(root) {
-  /* ── Data: ~30 customers ──────────────────────────────────────────── */
+  /* ── Data: 100 customers ──────────────────────────────────────────── */
   const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
                  'Yuki','Carlos','Freya','Noah','Zara','Isaac','Maya','Leon','Amara','Felix',
-                 'Ingrid','Rashid','Elena','Tomas','Hana','Bruno','Lila','Kofi','Greta','Sven'];
+                 'Ingrid','Rashid','Elena','Tomas','Hana','Bruno','Lila','Kofi','Greta','Sven',
+                 'Anika','Mateo','Chloe','Dmitri','Esme','Farid','Gwen','Hugo','Iris','Jonas',
+                 'Kira','Lucas','Mira','Nadia','Oscar','Paula','Quinn','Rosa','Samir','Tara'];
   const last  = ['Okafor','Reyes','Khan','Moreau','Berg','Haddad','Nair','Walsh','Costa','Blum',
                  'Tanaka','Vega','Lund','Schmidt','Ali','Cohen','Iyer','Petit','Diallo','Braun',
-                 'Solberg','Aziz','Popov','Novak','Sato','Ferrari','Roy','Mensah','Meyer','Dahl'];
-  const plans  = ['Free','Starter','Pro','Enterprise'];
-  const states = ['active','trial','suspended','churned'];
+                 'Solberg','Aziz','Popov','Novak','Sato','Ferrari','Roy','Mensah','Meyer','Dahl',
+                 'Bauer','Silva','Duval','Ivanov','Ortiz','Rahman','Price','Keller','Nilsen','Weber',
+                 'Sharma','Jensen','Rossi','Farah','Lindqvist','Marek','Osei','Dubois','Yilmaz','Kaur'];
+  const plans   = ['Free','Starter','Pro','Enterprise'];
+  const states  = ['active','trial','suspended','churned'];
+  const regions = ['EMEA','AMER','APAC','LATAM'];
+  const owners  = ['Unassigned','Ravi Menon','Dana Whitlock','Pierre Sadler'];
+  const tiers   = ['Bronze','Silver','Gold','Platinum'];
 
-  const customers = Array.from({ length: 30 }, (_, i) => {
-    const name = `${first[i]} ${last[i]}`;
-    const status = states[i % states.length];
-    const plan = plans[(i * 3 + 1) % plans.length];
-    const d = new Date(2025, i % 12, ((i * 7) % 27) + 1);
+  /* A tiny deterministic PRNG. The demo data has to look unpatterned — with
+     plain `i % n` strides every column marched in lockstep, so row 1 and row 5
+     were the same customer in all but name. It stays SEEDED so the grid, the
+     chip counts and any screenshot are identical on every reload. */
+  let seed = 20260911;
+  const rnd = () => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    return seed / 0x7fffffff;
+  };
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+
+  const customers = Array.from({ length: 100 }, (_, i) => {
+    const f = pick(first);
+    const l = pick(last);
+    const status = pick(states);
+    const plan = pick(plans);
+    const created = new Date(2024, Math.floor(rnd() * 12), Math.floor(rnd() * 27) + 1);
+    // Last seen always TRAILS creation, so the two date columns never contradict
+    // each other (a customer cannot be seen before the account existed).
+    const seen = new Date(created.getTime() + (Math.floor(rnd() * 300) + 1) * 86400000);
     return {
-      name,
-      email: `${first[i].toLowerCase()}.${last[i].toLowerCase()}@example.com`,
+      name: `${f} ${l}`,
+      // The index keeps the address unique even when the same name is drawn twice.
+      email: `${f.toLowerCase()}.${l.toLowerCase()}${i}@example.com`,
       status,
       plan,
-      created: d.toISOString().slice(0, 10),
-      spend: `$${(120 + ((i * 137) % 900)).toLocaleString()}`,
+      region: pick(regions),
+      tier: pick(tiers),
+      owner: pick(owners),
+      // Real NUMBERS, not pre-formatted strings: the grid right-aligns
+      // type: 'number' cells in mono and sorts them numerically. A '$1,234'
+      // string would sort as text, putting $90 after $1,000.
+      seats: 1 + Math.floor(rnd() * 240),
+      spend: 120 + Math.floor(rnd() * 9880),
+      openTickets: Math.floor(rnd() * 9),
+      health: 40 + Math.floor(rnd() * 61),
+      created: created.toISOString().slice(0, 10),
+      lastSeen: seen.toISOString().slice(0, 10),
     };
   });
 
   const columns = [
-    { field: 'name',    header: 'Name',    sortable: true },
-    { field: 'email',   header: 'Email',   sortable: true },
-    { field: 'status',  header: 'Status',  sortable: true },
-    { field: 'plan',    header: 'Plan',    sortable: true },
-    { field: 'created', header: 'Created', sortable: true, type: 'date' },
-    { field: 'spend',   header: 'Spend',   sortable: true },
+    { field: 'name',        header: 'Name',      sortable: true },
+    { field: 'email',       header: 'Email',     sortable: true },
+    { field: 'status',      header: 'Status',    sortable: true },
+    { field: 'plan',        header: 'Plan',      sortable: true },
+    { field: 'tier',        header: 'Tier',      sortable: true },
+    { field: 'region',      header: 'Region',    sortable: true },
+    { field: 'owner',       header: 'Owner',     sortable: true },
+    { field: 'seats',       header: 'Seats',     sortable: true, type: 'number' },
+    { field: 'spend',       header: 'Spend',     sortable: true, type: 'number' },
+    { field: 'openTickets', header: 'Tickets',   sortable: true, type: 'number' },
+    { field: 'health',      header: 'Health',    sortable: true, type: 'number' },
+    { field: 'created',     header: 'Created',   sortable: true, type: 'date' },
+    { field: 'lastSeen',    header: 'Last seen', sortable: true, type: 'date' },
   ];
 
   /* ── Live view state: filtered → sorted → paged ──────────────────── */
@@ -51,8 +95,9 @@ export async function init(root) {
 
   /* Which grid column each value-menu chip constrains. A chip's id names the
      COLUMN, and its menu holds the values — matching the ids against `row.status`
-     (as this used to) meant a Plan pick matched nothing and emptied the grid. */
-  const valueChipColumn = { plan: 'plan', owner: null };
+     (as this used to) meant a Plan pick matched nothing and emptied the grid.
+     `owner` now has a real column, so it filters rather than sitting inert. */
+  const valueChipColumn = { plan: 'plan', owner: 'owner', region: 'region', tier: 'tier' };
 
   const applyFilter = (rows) => {
     let out = activeFilters.length
@@ -71,8 +116,15 @@ export async function init(root) {
     return out;
   };
 
-  const compare = (a, b, field, dir) =>
-    String(a[field]).localeCompare(String(b[field]), undefined, { numeric: true }) * dir;
+  /* Numbers compare as numbers, everything else as text — the same rule the grid
+     uses internally, so the toolbar's Sort chip and the grid's own header sort
+     can never disagree about the order. */
+  const compare = (a, b, field, dir) => {
+    const av = a[field];
+    const bv = b[field];
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
+    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
+  };
 
   /* Grouping runs BEFORE the sort key, so rows of the same group stay together
      and the sort orders them WITHIN their group. */
@@ -92,6 +144,11 @@ export async function init(root) {
     if (page > totalPages) page = totalPages;
     const start = (page - 1) * pageSize;
     const slice = rows.slice(start, start + pageSize);
+    /* Rows go in RAW. `spend` stays a number so both sorts — this view's Sort
+       chip and the grid's own internal #sortRows — compare it numerically. A
+       pre-formatted '$1,234' would send the grid's header sort back to a lexical
+       compare, putting $90 after $1,000. The number columns are right-aligned
+       mono via `type: 'number'`, which is the alignment the money needed. */
     grid.populate({ columns, rows: slice });
     pager.dataset.totalPages = String(totalPages);
     pager.dataset.page = String(page);
@@ -133,25 +190,29 @@ export async function init(root) {
   /* Quick-filter chips — status segments with counts, plus two value pickers.
      A chip with `options` shows a caret and opens a menu of real checkbox/radio
      rows; a chip without them is a plain on/off toggle. */
-  const countOf = (s) => customers.filter((c) => c.status === s).length;
-  const uniquePlans = [...new Set(customers.map((c) => c.plan))];
+  /* No `count` on the toggle chips. A badge there would have to mean "how many
+     rows match", which a real app with a server-side query does not know when
+     the bar is built — so the toolbar no longer takes one. The badge is reserved
+     for "how many VALUES are picked", which each menu chip sets itself. */
+  const valuesOf = (field) => [...new Set(customers.map((c) => c[field]))].sort();
+  const asOptions = (field) =>
+    valuesOf(field).map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
   qft.populate([
-    { id: 'active',    label: 'Active',    type: 'data', count: countOf('active') },
-    { id: 'trial',     label: 'Trial',     type: 'data', count: countOf('trial') },
-    { id: 'suspended', label: 'Suspended', type: 'data', count: countOf('suspended') },
-    { id: 'churned',   label: 'Churned',   type: 'data', count: countOf('churned') },
-    // MULTI-select: any number of plans.
+    { id: 'active',    label: 'Active',    type: 'data' },
+    { id: 'trial',     label: 'Trial',     type: 'data' },
+    { id: 'suspended', label: 'Suspended', type: 'data' },
+    { id: 'churned',   label: 'Churned',   type: 'data' },
+    // MULTI-select: any number of plans / regions / tiers. Picking exactly one
+    // reads back as "Plan: Pro" on the chip; two or more show the count badge.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
-      select: 'multiple',
-      options: uniquePlans.map((p) => ({ value: p.toLowerCase(), label: p })) },
+      select: 'multiple', options: asOptions('plan') },
+    { id: 'region', label: 'Region', type: 'data', icon: 'fa-solid fa-globe',
+      select: 'multiple', options: asOptions('region') },
+    { id: 'tier', label: 'Tier', type: 'data', icon: 'fa-solid fa-award',
+      select: 'multiple', options: asOptions('tier') },
     // SINGLE-select: one owner at a time.
     { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
-      select: 'single',
-      options: [
-        { value: 'any', label: 'Anyone', selected: true },
-        { value: 'me',  label: 'Assigned to me' },
-        { value: 'unassigned', label: 'Unassigned' },
-      ] },
+      select: 'single', options: asOptions('owner') },
   ]);
 
   /* The leading Group and Sort chips — how the grid is ARRANGED, at the start of
