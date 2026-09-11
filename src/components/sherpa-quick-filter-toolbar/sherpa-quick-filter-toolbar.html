@@ -160,6 +160,22 @@
   </template>
 
   <!--
+    A DATE filter's menu content: the calendar itself, in place of value rows.
+
+    `data-embedded` drops the calendar's own Apply/Cancel — the MENU owns the
+    action row, exactly as Figma's Calendar composes a Container Footer rather
+    than drawing one. So a date chip commits through the same single Apply as
+    every other filter chip, and the toolbar needs no date-specific path.
+
+    The same prototype serves the range and time variants that are coming: those
+    are `data-type="range"` and `data-has-time` on this element, which the chip
+    definition sets — not a second template.
+  -->
+  <template class="qf-calendar-tpl">
+    <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
+  </template>
+
+  <!--
     "Remove filter" — an ACTION row, so a <button>, not a label+input. The menu
     treats the two differently on purpose: a value row is part of the draft that
     Apply commits, where an action fires immediately. Removing a filter is not a

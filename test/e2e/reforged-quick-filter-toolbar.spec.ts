@@ -823,3 +823,69 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
   expect(r.afterRemove.values).toEqual({ plan: ['pro'] });
   expect(r.afterRemove.trialOn).toBe(true);
 });
+
+test('a DATE chip opens a calendar, commits through the menu, and labels its day', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar()) as HTMLElement & {
+      populate?: (d: unknown) => void;
+      values?: Record<string, string[]>;
+    };
+    el.populate!([
+      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'created', label: 'Created', kind: 'date' },
+    ]);
+    await new Promise((res) => setTimeout(res, 80));
+
+    const sr = el.shadowRoot!;
+    const chip = sr.querySelector('.chip[data-id="created"]') as HTMLElement;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & {
+      rendered?: Promise<void>;
+      shadowRoot: ShadowRoot;
+    };
+    await cal.rendered;
+
+    const before = {
+      label: chip.getAttribute('data-label'),
+      on: chip.hasAttribute('data-current'),
+      // ONE footer: the menu's. Figma's Calendar composes a Container Footer
+      // rather than drawing its own, so a Calendar inside a Menu has one.
+      calFooter: getComputedStyle(cal.shadowRoot.querySelector('.cal-footer')!).display,
+      menuFooter: getComputedStyle(menu.shadowRoot.querySelector('.footer')!).display,
+      // A calendar is not a list to search.
+      hasSearch: menu.hasAttribute('data-search'),
+    };
+
+    cal.setAttribute('data-value', '2024-06-15');
+    await new Promise((res) => setTimeout(res, 60));
+    (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 200));
+
+    return {
+      before,
+      after: {
+        label: chip.getAttribute('data-label'),
+        on: chip.hasAttribute('data-current'),
+        values: JSON.parse(JSON.stringify(el.values)),
+      },
+    };
+  }, MOUNT);
+
+  // The menu holds a CALENDAR, and only the menu draws an action row.
+  expect(r.before.calFooter).toBe('none');
+  expect(r.before.menuFooter).not.toBe('none');
+  expect(r.before.hasSearch).toBe(false);
+  expect(r.before.label).toBe('Created');
+  expect(r.before.on).toBe(false);
+
+  // Committing turns the chip ON and reports the day in the SAME shape a value
+  // chip uses — an array — so no consumer has to branch on the chip's kind.
+  expect(r.after.on).toBe(true);
+  expect(r.after.values).toEqual({ created: ['2024-06-15'] });
+
+  // …and the chip carries the day, formatted, rather than an ISO string.
+  expect(r.after.label).toMatch(/^Created: /);
+  expect(r.after.label).not.toContain('2024-06-15');
+});

@@ -102,6 +102,9 @@ export async function init(root) {
      construction; matching on the column set instead means any chip works, added
      or not. */
   const columnFields = new Set(columns.map((c) => c.field));
+  // Columns holding an ISO date — a two-pick filter on one of these is a range,
+  // where two picks on any other column means "either of these values".
+  const dateFields = new Set(['created', 'lastSeen']);
 
   const applyFilter = (rows) => {
     let out = activeFilters.length
@@ -113,6 +116,13 @@ export async function init(root) {
       // A chip whose id names no column is deliberately inert rather than
       // silently filtering everything away.
       if (!columnFields.has(field) || !picked.length) continue;
+      // TWO picks on a date column is a RANGE (inclusive) — the shape a
+      // date-range chip will report. One pick is an exact day.
+      if (picked.length === 2 && dateFields.has(field)) {
+        const [from, to] = [...picked].sort();
+        out = out.filter((r) => String(r[field]) >= from && String(r[field]) <= to);
+        continue;
+      }
       const wanted = new Set(picked.map((v) => String(v).toLowerCase()));
       out = out.filter((r) => wanted.has(String(r[field]).toLowerCase()));
     }
@@ -237,6 +247,11 @@ export async function init(root) {
     // SINGLE-select: one owner at a time.
     { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
       select: 'single', options: asOptions('owner') },
+    // A DATE chip: its menu is a calendar rather than a list of values, and its
+    // label carries the chosen day. `kind` is what picks the menu's content —
+    // date-range and time will be values here, not new chip types.
+    { id: 'created', label: 'Created', type: 'data', kind: 'date',
+      icon: 'fa-solid fa-calendar' },
   ]);
 
   /* What the ADD chip offers — filters a user can put on the bar OVER AND ABOVE

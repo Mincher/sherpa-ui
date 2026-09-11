@@ -121,6 +121,14 @@ anatomy:
             role: gridcell
 props:
   - $type: prop
+    name: data-embedded
+    type: boolean
+    kind: style
+    default: false
+    description: >-
+      the HOST owns the action row — hides this one's footer. Figma's Calendar composes a Container
+      Footer rather than drawing its own, so a Calendar inside a Menu has ONE footer: the menu's.
+  - $type: prop
     name: data-has-time
     type: boolean
     kind: content
@@ -184,6 +192,9 @@ states:
     name: has-time
     selector: ":host([data-has-time])"
   - $type: state
+    name: embedded
+    selector: ":host([data-embedded])"
+  - $type: state
     name: not-view
     selector: ":host(:not([data-view]))"
   - $type: state
@@ -214,66 +225,79 @@ events:
     bubbles: true
     composed: true
 tokens:
-  cal.gap: "{sherpa.theme-gap-md}"
-  cal.padding: "{sherpa.theme-padding-lg}"
-  cal.border-width: "{sherpa.style-border-width}"
+  cal.gap: "{sherpa.theme-gap-sm}"
+  cal.border-width: "{sherpa.display-mode-border-width-base}"
+  cal.border-color: "{sherpa.theme-border-default-2}"
   cal.border-radius: "{sherpa.structure-rounding-top-left}"
   cal.background: "{sherpa.style-surface-base}"
-  cal.box-shadow: "{sherpa.shadow-md}"
-  cal-header.gap: "{sherpa.display-space-xs}"
-  cal-label.font-size: "{sherpa.font-size-body-large}"
-  cal-label.font-weight: "{sherpa.font-weight-semibold}"
-  cal-label.color: "{sherpa.theme-content-body-base}"
+  cal-label.block-size: "{sherpa.structure-height}"
+  cal-label.font-size: "{sherpa.font-size-body-base}"
+  cal-label.font-weight: "{sherpa.font-weight-regular}"
+  cal-label.line-height: "{sherpa.theme-content-line-height-base}"
+  cal-label.color: "{sherpa.style-content-base}"
+  cal-label.border-width: "{sherpa.style-border-width}"
+  cal-label.border-color: "{sherpa.style-border-base}"
   cal-nav.inline-size: "{sherpa.structure-height}"
   cal-nav.block-size: "{sherpa.structure-height}"
-  cal-nav.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-nav.border-width: "{sherpa.style-border-width}"
+  cal-nav.border-color: "{sherpa.style-border-base}"
+  cal-nav.background: "{sherpa.style-surface-base}"
   cal-nav.color: "{sherpa.style-content-base}"
-  cal-nav.font-size: "{sherpa.font-size-heading-h2}"
-  cal-weekdays.grid-template-columns: "{sherpa.display-size-2xl}"
-  cal-weekdays.gap: "{sherpa.display-space-3xs}"
-  cal-days.grid-template-columns: "{sherpa.display-size-2xl}"
-  cal-days.gap: "{sherpa.display-space-3xs}"
-  cal-months.gap: "{sherpa.display-space-2xs}"
-  cal-years.gap: "{sherpa.display-space-2xs}"
-  cal-cell.block-size: "{sherpa.display-size-2xl}"
+  cal-nav.font-size: "{sherpa.theme-content-size-base}"
+  cal-weekdays.grid-template-columns: "{sherpa.display-mode-size-2xl}"
+  cal-weekdays.gap: "{sherpa.theme-gap-sm}"
+  cal-weekdays.padding-inline: "{sherpa.theme-padding-md}"
+  cal-days.grid-template-columns: "{sherpa.display-mode-size-2xl}"
+  cal-days.gap: "{sherpa.theme-gap-sm}"
+  cal-days.padding-inline: "{sherpa.theme-padding-md}"
+  cal-weekdays.padding-block-start: "{sherpa.theme-padding-md}"
+  cal-days.padding-block-end: "{sherpa.theme-padding-md}"
+  cal-months.gap: "{sherpa.theme-gap-sm}"
+  cal-months.padding: "{sherpa.theme-padding-md}"
+  cal-years.gap: "{sherpa.theme-gap-sm}"
+  cal-years.padding: "{sherpa.theme-padding-md}"
+  cal-label.background: "{sherpa.style-surface-base}"
+  cal-cell.block-size: "{sherpa.display-mode-size-2xl}"
   cal-cell.border-width: "{sherpa.style-border-width}"
-  cal-cell.border-radius: "{sherpa.display-border-rounding-base}"
-  cal-cell.color: "{sherpa.style-content-base}"
+  cal-cell.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  cal-cell.color: "{sherpa.theme-content-body-1}"
   cal-cell.font-size: "{sherpa.font-size-body-base}"
-  cal-time-label.gap: "{sherpa.display-space-xs}"
+  cal-cell.font-weight: "{sherpa.font-weight-regular}"
+  cal-cell.line-height: "{sherpa.theme-content-line-height-base}"
+  cal-time-label.gap: "{sherpa.display-mode-space-xs}"
   cal-time-label.font-size: "{sherpa.font-size-body-small}"
   cal-time-label.font-weight: "{sherpa.font-weight-medium}"
   cal-time-label.color: "{sherpa.theme-content-body-1}"
-  cal-time.padding-block: "{sherpa.display-space-3xs}"
-  cal-time.padding-inline: "{sherpa.display-space-xs}"
+  cal-time.padding-block: "{sherpa.display-mode-space-3xs}"
+  cal-time.padding-inline: "{sherpa.display-mode-space-xs}"
   cal-time.border-width: "{sherpa.style-border-width}"
-  cal-time.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-time.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-time.background: "{sherpa.style-surface-base}"
-  cal-time.color: "{sherpa.style-content-base}"
+  cal-time.color: "{sherpa.theme-content-body-1}"
   cal-time.font-size: "{sherpa.font-size-body-base}"
   cal-footer.gap: "{sherpa.theme-gap-md}"
-  cal-footer.margin-block-start: "{sherpa.display-space-3xs}"
+  cal-footer.margin-block-start: "{sherpa.display-mode-space-3xs}"
   cal-footer.padding-block-start: "{sherpa.theme-gap-md}"
   cal-footer.border-block-start: "{sherpa.style-border-width}"
-  cal-actions.gap: "{sherpa.display-space-xs}"
+  cal-actions.gap: "{sherpa.display-mode-space-xs}"
   cal-today.font-size: "{sherpa.font-size-body-base}"
   cal-today.font-weight: "{sherpa.font-weight-medium}"
   cal-cancel.block-size: "{sherpa.structure-height}"
-  cal-cancel.padding-block: "{sherpa.display-space-3xs}"
+  cal-cancel.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-cancel.padding-inline: "{sherpa.theme-padding-lg}"
   cal-cancel.border-width: "{sherpa.style-border-width}"
-  cal-cancel.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-cancel.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-cancel.background: "{sherpa.style-surface-base}"
-  cal-cancel.color: "{sherpa.style-content-base}"
+  cal-cancel.color: "{sherpa.theme-content-body-1}"
   cal-cancel.font-size: "{sherpa.font-size-body-base}"
   cal-cancel.font-weight: "{sherpa.font-weight-medium}"
   cal-apply.block-size: "{sherpa.structure-height}"
-  cal-apply.padding-block: "{sherpa.display-space-3xs}"
+  cal-apply.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-apply.padding-inline: "{sherpa.theme-padding-lg}"
   cal-apply.border-width: "{sherpa.style-border-width}"
-  cal-apply.border-radius: "{sherpa.display-border-rounding-base}"
+  cal-apply.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-apply.background: "{sherpa.style-surface-base}"
-  cal-apply.color: "{sherpa.style-content-base}"
+  cal-apply.color: "{sherpa.theme-content-body-1}"
   cal-apply.font-size: "{sherpa.font-size-body-base}"
   cal-apply.font-weight: "{sherpa.font-weight-medium}"
 $extensions:

@@ -264,6 +264,16 @@
   }
 }
 
+/* EMBEDDED — the host owns the action row.
+   Figma's Calendar composes a `Container Footer` (Type=action-bar) rather than
+   drawing its own, and a Calendar inside a Menu therefore has ONE footer: the
+   menu's. Without this a date filter chip showed two Apply/Cancel pairs stacked
+   on top of each other.
+
+   The Today link goes with it — it belongs to that action row. A host that wants
+   it can put one in its own footer. */
+:host([data-embedded]) .cal-footer { display: none; }
+
 /* ── Footer action row — Today link | Cancel / Apply ────────────────────── */
 .cal-footer {
   display: flex;

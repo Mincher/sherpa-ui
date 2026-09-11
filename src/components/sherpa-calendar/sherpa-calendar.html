@@ -18,6 +18,10 @@
     data-min        earliest selectable day (ISO); earlier days are disabled
     data-max        latest selectable day (ISO); later days are disabled
     data-has-time   (boolean) show a native <input type=time> in the footer
+    data-embedded   (boolean) the HOST owns the action row — hides this one's
+                    footer. Figma's Calendar composes a Container Footer rather
+                    than drawing its own, so a Calendar inside a Menu has ONE
+                    footer: the menu's.
 
   Fires:
     datetime-change (detail: value string — a single day or its date+time chosen)

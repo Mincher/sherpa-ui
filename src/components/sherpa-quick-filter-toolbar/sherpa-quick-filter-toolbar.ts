@@ -48,6 +48,8 @@ import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 // The built-in action cluster is made of buttons, so they must be defined.
 import '../sherpa-button/sherpa-button.js';
+// A `date` chip's menu holds a calendar, so it must be defined.
+import '../sherpa-calendar/sherpa-calendar.js';
 
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
@@ -70,6 +72,17 @@ export interface QuickFilterDef {
    */
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
+  /**
+   * What the chip's menu holds.
+   *
+   *   values (default)  checkbox / radio rows built from `options`
+   *   date              a calendar — one day
+   *
+   * `date-range` and `time` will join this list; they are the same calendar with
+   * data-type="range" and data-has-time, so they are a value here rather than a
+   * new template.
+   */
+  kind?: 'values' | 'date';
   /**
    * A chip that cannot be switched OFF — a SELECTOR rather than a toggle.
    *
@@ -207,11 +220,57 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return out;
   }
 
-  /** The values ticked in one chip's menu. */
+  /**
+   * What one chip's menu holds — the values ticked, or the day picked.
+   *
+   * A DATE chip reports its calendar's value as a single-entry array, so every
+   * consumer of `values` / `pickedValues` sees one shape and never has to
+   * branch on the chip's kind. A range will report two entries for the same
+   * reason.
+   */
   #chipPicks(chip: HTMLElement): string[] {
+    const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
+    if (cal) {
+      const start = cal.dataset['valueStart'];
+      const end = cal.dataset['valueEnd'];
+      if (start && end) return [start, end];
+      const value = cal.dataset['value'];
+      return value ? [value] : [];
+    }
     return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked')).map(
       (i) => i.value,
     );
+  }
+
+  /**
+   * Show a date chip's chosen day in its own label.
+   *
+   * A value chip can say "Plan: Pro" because its picks ARE its labels; a date
+   * chip's pick is an ISO string, which is not what a bar should read. It is
+   * formatted to the reader's own locale, short form — the chip is a summary,
+   * and "12 Sep" is the part that matters at that size.
+   *
+   * The base label is remembered on the chip, because a second pick would
+   * otherwise format a label that already carried the first one.
+   */
+  #syncDateLabel(chip: HTMLElement): void {
+    const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
+    if (!cal) return;
+    const base = (chip.dataset['baseLabel'] ??= chip.getAttribute('data-label') ?? '');
+    const picked = this.#chipPicks(chip);
+    if (!picked.length) {
+      chip.setAttribute('data-label', base);
+      return;
+    }
+    const fmt = (iso: string): string => {
+      // The ISO string is parsed as UTC, so it is FORMATTED as UTC too —
+      // otherwise a browser west of Greenwich renders the previous day.
+      const d = new Date(`${iso}T00:00:00Z`);
+      return Number.isNaN(d.getTime())
+        ? iso
+        : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    };
+    chip.setAttribute('data-label', `${base}: ${picked.map(fmt).join(' – ')}`);
   }
 
   #chips(): ChipEl[] {
@@ -254,8 +313,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
-      if (f.options?.length) this.#addMenu(chip, f, prior?.picked);
+      // A DATE chip has no `options` — its menu is a calendar — so the menu is
+      // stamped on kind as well as on having values to list.
+      if (f.options?.length || f.kind === 'date') this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
+      // A date chip's label carries its chosen day, so it has to be re-derived
+      // after a rebuild like everything else.
+      if (f.kind === 'date') this.#syncDateLabel(chip);
     }
   }
 
@@ -285,6 +349,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
     menu.setAttribute('data-search', '');
+
+    // A DATE chip's menu holds a CALENDAR instead of value rows. Everything
+    // above — the heading, the commit footer — is the same, so a date filter
+    // applies exactly like any other chip.
+    if (def.kind === 'date') {
+      const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
+      if (calTpl) {
+        const cal = calTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        // A calendar is not a list to search, and the search would filter
+        // nothing — so it is not offered here.
+        menu.removeAttribute('data-search');
+        menu.appendChild(cal);
+      }
+      chip.setAttribute('data-menu', '');
+      chip.appendChild(menu);
+      return;
+    }
 
     for (const option of def.options ?? []) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -848,14 +929,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         event.stopImmediatePropagation();
         // A menu chip is ON while it holds picks — that is what makes an applied
         // value filter visible in the bar.
-        const id = filterChip.dataset['id'] ?? '';
         // A persistent chip stays on whatever its menu holds — an empty pick is
         // still a view, where an ordinary value chip with nothing picked is not
         // filtering anything and says so by going off.
+        // Read the chip's OWN picks, not `values`. `values` reports only chips
+        // that are already ON, so a chip currently off could never turn itself
+        // on by committing — which is every date chip's first pick, since a
+        // calendar has no body toggle to switch it on beforehand.
         filterChip.toggleAttribute(
           'data-current',
-          filterChip.hasAttribute('data-persistent') || (this.values[id]?.length ?? 0) > 0,
+          filterChip.hasAttribute('data-persistent') || this.#chipPicks(filterChip).length > 0,
         );
+        // A date chip carries its chosen day in its label.
+        this.#syncDateLabel(filterChip);
         this.#emitChange();
       }
       return;
