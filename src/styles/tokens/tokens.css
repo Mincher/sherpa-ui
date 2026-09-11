@@ -1737,22 +1737,30 @@
     grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
     column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
     row-gap: var(--sherpa-layout-grid-gap-vertical, 16px);
-    /* FILL the parent up to the breakpoint's max width, then centre.
-       An auto inline margin alone does NOT do this inside a flex column: the auto
-       margin overrides the default align-items stretch, so the grid shrink-wrapped
-       to its content (358px inside a 1368px view) and every track came out a few
-       pixels wide. The explicit width restores the stretch; max-inline-size still
-       caps it at the breakpoint's max. */
+    /* FILLS ITS PARENT. No max-inline-size.
+
+       It used to cap at --sherpa-layout-grid-max-width and centre, which left a
+       1428px parent showing a 1280px grid — 74px of dead space each side, and
+       224px at 1800. Two reasons that was wrong:
+
+         • Those values are Figma's ARTBOARD widths (480 / 768 / 1280 / 1600),
+           which describe the canvas a design is drawn on, not a measure limit
+           for the content inside it. The token stays; this rule just is not its
+           consumer.
+         • They sit one breakpoint behind. 'wide' is 1600 but its media query
+           starts at 1920, so every width from 1280 to 1920 was pinned at 1280.
+
+       The app shell already constrains the page, so this was a SECOND cap
+       fighting it. 'data-bleed' went with the cap — there is nothing left to
+       opt out of.
+
+       'inline-size: 100%' is still explicit: inside a flex column an auto inline
+       margin overrides the default align-items stretch, and the grid
+       shrink-wrapped to its content (358px inside a 1368px view) with every
+       track a few pixels wide. */
     inline-size: 100%;
-    max-inline-size: var(--sherpa-layout-grid-max-width, 480px);
-    margin-inline: auto;
     padding: var(--sherpa-layout-grid-padding, 16px);
     box-sizing: border-box;
-  }
-  /* Full-bleed: fills its parent instead of centring on the max width. */
-  .sherpa-grid[data-bleed] {
-    max-inline-size: none;
-    margin-inline: 0;
   }
   /* Span helpers — a child claims N of the current breakpoint's columns, clamped
      so a span wider than the grid wraps rather than overflowing it. */
