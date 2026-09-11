@@ -60,14 +60,85 @@
     .panel[data-rows="4"] { --_rows: 4; }
     .panel[data-rows="6"] { --_rows: 6; }
     .panel[data-rows="8"] { --_rows: 8; }
-    /* The grid is the only part that may grow; everything else in the panel keeps
-       its natural height. `min-height: 0` is what lets it shrink below its content
-       so its own scroll box takes over. */
-    .panel[data-rows] > sherpa-data-grid {
+    /* ONE child may grow to fill the panel; everything else keeps its natural
+       height. `min-height: 0` is what lets it shrink below its content so its own
+       scroll box (a grid) or its own ratio grid (a chart area) takes over.
+
+       Both names are listed because the growing child differs by panel: a data
+       panel grows its grid, a chart panel grows its chart area. */
+    .panel[data-rows] > :is(sherpa-data-grid, .chart-area) {
       flex: 1 1 auto;
       min-height: 0;
     }
-    .panel[data-rows] > :not(sherpa-data-grid) { flex: 0 0 auto; }
+    .panel[data-rows] > :not(sherpa-data-grid, .chart-area) { flex: 0 0 auto; }
+
+    /* ── Chart panels: the CONTENT area is a ratio grid ───────────────
+       Not the dashboard's own card grid (that is .sherpa-grid below) — this is
+       the split INSIDE one container, between the chart and the thing beside
+       or below it.
+
+       The ratio follows the LEGEND'S ORIENTATION, because that is what decides
+       whether the pair reads as two columns or two rows — and it is 80/20 either
+       way, with the CHART in the larger cell. A legend is a KEY: it needs only
+       enough room to list its entries, and every share beyond that is room taken
+       from the thing it describes.
+
+       `data-chart` is an opt-in: a panel holding a data grid or a key-value list
+       has no chart to give the larger share to, and silently splitting it would
+       be wrong.
+
+       The donut is NOT in this rule. Its legend is a real `slot="legend"`, so it
+       is a CHILD of the chart rather than a sibling, and sherpa-donut-chart owns
+       that 60/40 internally. Two layouts competing for the same pair was the
+       trap the handover flagged; the split lives with whoever actually contains
+       both items.
+
+       `minmax(0, Nfr)` rather than a bare `fr`: a bare fr floors at the item's
+       min-content size, so a wide chart or a long legend label would push its
+       track past its share and quietly break the ratio.
+
+       Both cells CENTRE their content in both axes (`place-items: center`), so a
+       chart narrower than its cell sits in the middle of it rather than against
+       the inline-start edge. */
+    .panel[data-chart] {
+      /* The chart area is the row that GROWS; the header and anything else keep
+         their natural height. */
+      display: flex;
+      flex-direction: column;
+    }
+    .panel[data-chart] > .chart-area {
+      display: grid;
+      place-items: center;
+      gap: var(--sherpa-display-mode-space-base, 16px);
+      flex: 1 1 auto;
+      min-block-size: 0;
+      min-inline-size: 0;
+    }
+    /* Legend BELOW → 2 rows, 80/20, chart in the tall cell. */
+    .panel[data-chart="stacked"] > .chart-area {
+      grid-template-rows: minmax(0, 4fr) minmax(0, 1fr);
+    }
+    /* Legend BESIDE → 2 columns, 80/20, chart in the wide cell.
+       Both tracks floor at 0, so the ratio ALWAYS holds: a legend label that does
+       not fit truncates rather than stealing the chart's share. */
+    .panel[data-chart="split"] > .chart-area {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+    }
+    /* SLOTTED: the chart contains its own legend and owns the split itself (the
+       donut). One cell, and the chart fills it — the ratio is the component's
+       business, the filling is the panel's. */
+    .panel[data-chart="slotted"] > .chart-area {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* A chart fills the cell it was given; the legend keeps its natural size and
+       is centred in its own. Without this the chart hugged its content and the
+       ratio bought nothing. */
+    .panel[data-chart] > .chart-area > :first-child {
+      inline-size: 100%;
+      block-size: 100%;
+      min-inline-size: 0;
+      min-block-size: 0;
+    }
 
     /* The pager fills the panel and carries its own Figma padding (8 × 12), so its
        controls sit 12px in from the grid's edges — which is the design. */

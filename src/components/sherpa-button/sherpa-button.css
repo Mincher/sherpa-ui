@@ -168,12 +168,20 @@
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ────────────── */
 
+/* The box is a fixed square so every icon button is the same size whatever glyph
+   it carries — but the GLYPH inside it is a font character of its own width, and
+   a narrow one (the vertical ellipsis, a caret) sat against the box's leading
+   edge and read as off-centre. `place-content: center` centres the glyph in both
+   axes; `text-align: center` covers the case where the glyph is laid out as text
+   rather than as a flex item. */
 .icon {
   display: none;
+  place-content: center;
   inline-size: var(--sherpa-button-size-icon, 14px);
   block-size: var(--sherpa-button-size-icon, 14px);
   font-style: normal;
   line-height: 1;
+  text-align: center;
   color: var(--_content);
 }
 :host([data-icon-start]) .icon-start { display: inline-flex; }

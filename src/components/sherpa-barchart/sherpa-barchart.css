@@ -23,7 +23,13 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  /* The plot's MINIMUM height, not its fixed one. A chart in a sized cell should
+     fill it — the plot row grows and the axis row keeps its natural height (see
+     .chart-body). Left as a fixed track, a chart in a 290px cell drew 180px of
+     bars and left 110px of white under them. */
   --_plot-height: 180px;
+  /* Fill a sized parent; a chart in an unsized one keeps its natural height. */
+  min-block-size: 0;
 }
 
 /* Figure semantics without a layout box: its children (caption + plot) stay
@@ -159,7 +165,15 @@
 .chart-body {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
-  grid-template-rows: var(--_plot-height) auto;
+  /* The plot row GROWS to fill a sized host and floors at --_plot-height; the
+     x-axis row keeps its natural height. `minmax(min, 1fr)` rather than a fixed
+     track, so a chart in a 290px cell draws 290px of plot instead of 180px of
+     plot and 110px of white. In an UNSIZED host there is nothing to fill, so
+     1fr resolves to the minimum and the chart keeps its natural 180px. */
+  grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
+  /* The body is the part that takes the host's spare height. */
+  flex: 1 1 auto;
+  min-block-size: 0;
   /* NO column gap. The axis LINE is the y-axis box's trailing border, so it marks
      the plot's own left edge — a gap there floated the line away from the data it
      bounds. The breathing room belongs on the other side of that line, between
@@ -214,8 +228,12 @@
   display: none;
   position: relative;
   flex: 0 0 auto;
-  /* EXACTLY the plot's height — the labels are placed as a percentage of it. */
-  block-size: var(--_plot-height);
+  /* EXACTLY the plot's height — the labels are placed as a percentage of it.
+     Taken from the GRID ROW (100%), not from --_plot-height: that var is the
+     row's MINIMUM now, so in a sized cell the plot grows past it and a hard
+     180px axis left its labels stranded above a 260px run of bars. The row
+     sizes both, so they cannot drift. */
+  block-size: 100%;
   /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing to
      this box — the `auto` grid track collapsed to 0 and every number hung outside
      the chart's left edge. Sizing it from the data instead (the longest label's

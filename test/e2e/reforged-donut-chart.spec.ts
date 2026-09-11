@@ -98,13 +98,14 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
   expect(r.pie['r']).toBe(25);
 });
 
-test('the ring stays circular at any width and never exceeds the Figma 200', async ({ page }) => {
+test('the ring scales uniformly to whichever axis runs out first', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const make = async (containerWidth: string): Promise<Record<string, number | boolean>> => {
+    const make = async (w: string, h?: string): Promise<Record<string, number | boolean>> => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
       const box = document.createElement('div');
-      box.style.inlineSize = containerWidth;
+      box.style.inlineSize = w;
+      if (h) box.style.blockSize = h;
       const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
         rendered?: Promise<void>;
         populate(d: unknown): void;
@@ -121,19 +122,32 @@ test('the ring stays circular at any width and never exceeds the Figma 200', asy
         square: Math.abs(ring.width - ring.height) < 1,
       };
     };
-    return { wide: await make('600px'), narrow: await make('120px') };
+    return {
+      wide: await make('600px'),
+      narrow: await make('120px'),
+      short: await make('600px', '140px'),
+    };
   });
 
-  // A circle, not an ellipse — the width and height come from ONE declaration plus
-  // aspect-ratio, so they cannot disagree. Previously both were a fixed 200px, so
-  // the donut could not scale with its container at all.
+  // A CIRCLE, never an ellipse. One declaration plus aspect-ratio sizes both axes,
+  // so they cannot disagree however the container is shaped.
   expect(r.wide['square']).toBe(true);
   expect(r.narrow['square']).toBe(true);
+  expect(r.short['square']).toBe(true);
 
-  // Capped at the Figma 200 in a wide panel, but shrinks to fit a narrow one.
-  expect(r.wide['w']).toBe(200);
+  // GROWS past the Figma 200 in a roomy container. That 200 is the MINIMUM drawn
+  // size now, not a ceiling: capping there left a 200px ring adrift in a wide
+  // card, which read as a half-empty panel rather than a deliberate one.
+  expect(r.wide['w']).toBeGreaterThan(200);
+
+  // …and shrinks below it when the container is genuinely narrower.
   expect(r.narrow['w']).toBe(120);
   expect(r.narrow['h']).toBe(120);
+
+  // The SMALLER axis binds. Given 600 wide but only 140 tall, the ring takes the
+  // height — a donut that filled the width there would be a 600px circle
+  // overflowing its box.
+  expect(r.short['w']).toBeLessThanOrEqual(140);
 });
 
 test('setSliceHidden drops a slice and re-shares the whole circle', async ({ page }) => {

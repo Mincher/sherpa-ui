@@ -27,43 +27,63 @@
 
   <!-- Charts on the same grid: 4 of 12 on desktop (three across). -->
   <div class="sherpa-grid">
-    <div class="panel" data-span="4">
+    <!-- data-chart="stacked" + data-rows="6": the chart AREA is a 70/30 two-row
+         grid that FILLS the panel's content area, rather than the chart and the
+         legend each hugging their own content and leaving the card part empty.
+         The panel needs a real height for "fill" to mean anything, which is what
+         data-rows gives it (the same layout-grid row unit the data-grid panel
+         uses). -->
+    <div class="panel" data-span="4" data-chart="stacked" data-rows="6">
       <sherpa-container-header data-heading="Alerts by category"></sherpa-container-header>
-      <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
       <!-- Every chart carries a legend: a categorical series is only readable if
            the reader can name the colours. Horizontal, so it sits BELOW the chart
-           (vertical legends go beside one). -->
-      <sherpa-chart-legend id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
+           (vertical legends go beside one) — which is what makes this the ROW
+           split rather than the column one. -->
+      <div class="chart-area">
+        <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
+        <sherpa-chart-legend id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
+      </div>
     </div>
 
-    <div class="panel" data-span="4">
+    <!-- NO data-chart here. The donut's legend is a real slot="legend", so it is
+         a CHILD of the chart rather than a sibling, and sherpa-donut-chart owns
+         the 60/40 column split internally. Wrapping it in a chart-area too would
+         be two layouts competing over the same pair. It still takes data-rows, so
+         the donut fills the same card height as its neighbours. -->
+    <div class="panel" data-span="4" data-chart="slotted" data-rows="6">
       <sherpa-container-header data-heading="Endpoints by OS"></sherpa-container-header>
-      <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
-        <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
-      </sherpa-donut-chart>
+      <div class="chart-area">
+        <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
+          <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
+        </sherpa-donut-chart>
+      </div>
     </div>
 
-    <div class="panel" data-span="4">
+    <div class="panel" data-span="4" data-chart="stacked" data-rows="6">
       <sherpa-container-header data-heading="Storage used"></sherpa-container-header>
-      <sherpa-gauge-chart
-        id="gauge"
-        data-min="0"
-        data-max="100"
-        data-caption="4.2 TB of 6 TB used"
-        data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
       <!-- The gauge's legend names its ZONES rather than a data series — the
            bands are meaningless without the thresholds they stand for. READ-ONLY:
            a gauge shows one value, so there is no series to toggle off. -->
-      <sherpa-chart-legend id="gauge-legend" data-orientation="horizontal" data-readonly></sherpa-chart-legend>
+      <div class="chart-area">
+        <sherpa-gauge-chart
+          id="gauge"
+          data-min="0"
+          data-max="100"
+          data-caption="4.2 TB of 6 TB used"
+          data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
+        <sherpa-chart-legend id="gauge-legend" data-orientation="horizontal" data-readonly></sherpa-chart-legend>
+      </div>
     </div>
 
     <!-- A time series needs horizontal room, so it takes 8 of 12. -->
-    <div class="panel" data-span="8">
+    <div class="panel" data-span="8" data-chart="stacked" data-rows="6">
       <sherpa-container-header data-heading="Sessions vs. incidents"></sherpa-container-header>
-      <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
       <!-- Horizontal legends go BELOW their chart (vertical ones go beside it), so
            this one is a sibling after the chart rather than a slotted child. -->
-      <sherpa-chart-legend id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
+      <div class="chart-area">
+        <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
+        <sherpa-chart-legend id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
+      </div>
     </div>
   </div>
 
