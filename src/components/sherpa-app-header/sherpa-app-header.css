@@ -164,16 +164,38 @@
   position: absolute;
   inset-block-end: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
   inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
+  /* Read from the node (App Header 150:3690 > "Notif Badge", an Indicator (atom)
+     Type=count pinned Style: Saturated + Elevation: LG). Every value below is
+     that instance's own, not a guess:
+
+       14 × 16, padding-inline space/3xs 2
+       radius   border/radius/150 = 3px   (it was 999 — a pill, not the design)
+       fill     style-surface/base under the Saturated pin → #3B4CCD
+       text     content/size/BASE 14 on line-height/base 20, MONOSPACED,
+                style-content/base → #FFFFFF   (it was 10px on the body face)
+       shadow   Elevation lg: 4 4 24 -12, in the accent at 30%
+  */
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-display-mode-size-sm, 16px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   text-align: center;
+  /* The Elevation pin's own values, written out. `[data-elevation]` is a bare
+     selector in tokens.css, which is loaded into the DOCUMENT and deliberately
+     not in sharedStyles — so it never reaches an element inside this shadow
+     root, and pinning the attribute alone would have done nothing. */
+  box-shadow:
+    var(--sherpa-theme-elevation-offset-x-large, 4px)
+    var(--sherpa-theme-elevation-offset-y-large, 4px)
+    var(--sherpa-theme-elevation-blur-large, 24px)
+    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-display-mode-color-transparent-accent-color-3, #3b4ccd4d);
 }
 :host([data-notifications]) .notif-badge { display: block; }
 

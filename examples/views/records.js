@@ -236,6 +236,23 @@ export async function init(root) {
       select: 'single', options: asOptions('owner') },
   ]);
 
+  /* What the ADD chip offers — filters a user can put on the bar OVER AND ABOVE
+     the defaults above. That is what the Add control is for in the design: its
+     caret opens this list, and picking one stamps the chip into the run and
+     drops it from the menu (a filter already on the bar is not one you can add
+     again).
+
+     These are the columns the default set leaves out, so the bar starts with the
+     common ones and the rest are a click away rather than crowding it. */
+  qft.available([
+    { id: 'seats', label: 'Seats', type: 'data', icon: 'fa-solid fa-chair',
+      select: 'multiple', options: asOptions('seats').slice(0, 8) },
+    { id: 'health', label: 'Health', type: 'data', icon: 'fa-solid fa-heart-pulse',
+      select: 'multiple', options: asOptions('health') },
+    { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'fa-solid fa-ticket',
+      select: 'multiple', options: asOptions('openTickets').slice(0, 8) },
+  ]);
+
   /* The leading Group and Sort chips — how the grid is ARRANGED, at the start of
      the toolbar (Figma Filter Toolbar Type=data opens with these two, then a
      divider, then the filter chips). Their own events, so a group/sort pick is

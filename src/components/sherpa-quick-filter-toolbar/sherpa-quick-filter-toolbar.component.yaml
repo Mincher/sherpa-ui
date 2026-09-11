@@ -48,31 +48,32 @@ anatomy:
               class: add-chip
               attrs:
                 data-id: add
+                data-menu: ""
                 data-label: Add
                 data-icon-start: fa-solid fa-plus
             - el: sherpa-button
               class: act
               attrs:
+                data-size: sm
                 data-act: ai
                 data-type: icon
-                data-look: transparent
                 data-icon-start: fa-solid fa-wand-magic-sparkles
                 aria-label: Filter with AI
             - el: sherpa-button
               class: act
               attrs:
+                data-size: sm
                 data-act: clear
                 data-type: icon
-                data-look: transparent
                 data-icon-start: fa-solid fa-arrow-rotate-left
                 aria-label: Reset filters
             - el: sherpa-button
               class: act
               attrs:
+                data-size: sm
                 data-act: configure
                 data-type: icon
-                data-look: transparent
-                data-icon-start: fa-solid fa-sliders-up
+                data-icon-start: fa-solid fa-sliders
                 aria-label: Configure filters
             - el: span
               class: act-divider
@@ -84,9 +85,9 @@ anatomy:
                 - el: sherpa-button
                   class: act
                   attrs:
+                    data-size: sm
                     data-act: favourite
                     data-type: icon
-                    data-look: transparent
                     data-snap: right
                     data-icon-start: fa-regular fa-star
                     aria-label: Favourite this view
@@ -94,16 +95,16 @@ anatomy:
                 - el: sherpa-button
                   class: act save-btn
                   attrs:
+                    data-size: sm
                     data-act: save
-                    data-look: transparent
                     data-snap: all
                     data-icon-start: fa-solid fa-upload
                 - el: sherpa-button
                   class: act
                   attrs:
+                    data-size: sm
                     data-act: view-menu
                     data-type: icon
-                    data-look: transparent
                     data-snap: left
                     data-icon-start: fa-solid fa-caret-down
                     aria-label: View options
@@ -111,17 +112,17 @@ anatomy:
             - el: sherpa-button
               class: act
               attrs:
+                data-size: sm
                 data-act: refresh
                 data-type: icon
-                data-look: transparent
                 data-icon-start: fa-solid fa-arrows-rotate
                 aria-label: Refresh data
             - el: sherpa-button
               class: act
               attrs:
+                data-size: sm
                 data-act: overflow
                 data-type: icon
-                data-look: transparent
                 data-icon-start: fa-solid fa-ellipsis-vertical
                 aria-label: More actions
                 aria-haspopup: menu

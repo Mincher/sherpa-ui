@@ -65,32 +65,51 @@
       Every button exists here from the start; CSS reveals the view-only group
       off :host([data-type="view"]). Nothing is created at runtime.
 
-      The buttons are icon-only sherpa-buttons at data-look="transparent" (the
-      tertiary tier — Figma's cluster is unfilled, borderless glyphs). Each
-      carries an aria-label, because an icon button has no text to name it.
+      The buttons are icon-only sherpa-buttons at the DEFAULT look — white face,
+      0.5px #B3B3C3 ring. Read from the node's own pins: every Button instance in
+      `right-actions` is pinned `Style: default`, with fill #FFFFFF and stroke
+      #B3B3C3. They were built on the assumption that a
+      run of icon buttons must be tertiary; the pins say otherwise, and a bordered
+      cluster is what separates these ACTIONS from the filter chips beside them.
+
+      Each carries an aria-label, because an icon button has no text to name it.
     -->
     <div class="actions-zone" part="actions">
       <!-- Host extras first, so a slotted control reads as part of the host's
            own toolbar rather than interrupting the standard cluster. -->
       <slot name="actions"></slot>
 
-      <!-- ADD — a menu CHIP in Figma (State=menu), not a button: its body adds a
-           filter and its caret opens the field list. Built as a chip so it
-           matches the run it sits beside. -->
+      <!--
+        ADD — a Filter Chip (atom) pinned State=MENU in the node, not a plain
+        button. That state is a GROUP: the chip body and a snapped caret Button
+        (Structure snap-left-edge, Style=default) lapped together by the −0.5
+        space/snapped gap into one control.
+
+        `data-menu` is what puts the chip in that state, and it is set here
+        rather than left to populate(): the caret is part of what an Add control
+        IS in the design, where an ordinary filter chip only grows one when it
+        has values to offer. The body adds a filter; the caret opens the field
+        list.
+      -->
       <sherpa-quick-filter
         class="add-chip"
         data-id="add"
+        data-menu
         data-label="Add"
         data-icon-start="fa-solid fa-plus"></sherpa-quick-filter>
 
-      <sherpa-button class="act" data-act="ai" data-type="icon" data-look="transparent"
+      <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="fa-solid fa-wand-magic-sparkles"
                      aria-label="Filter with AI"></sherpa-button>
-      <sherpa-button class="act" data-act="clear" data-type="icon" data-look="transparent"
+      <sherpa-button class="act" data-size="sm" data-act="clear" data-type="icon"
                      data-icon-start="fa-solid fa-arrow-rotate-left"
                      aria-label="Reset filters"></sherpa-button>
-      <sherpa-button class="act" data-act="configure" data-type="icon" data-look="transparent"
-                     data-icon-start="fa-solid fa-sliders-up"
+      <!-- Figma's glyph is `sliders-up`, which is Font Awesome PRO — and a Pro
+           class in the free webfont renders NOTHING at all (content: none, zero
+           glyph). `fa-sliders` is the same control-sliders picture in Free.
+           Verified by rendering both inside a real shadow root. -->
+      <sherpa-button class="act" data-size="sm" data-act="configure" data-type="icon"
+                     data-icon-start="fa-solid fa-sliders"
                      aria-label="Configure filters"></sherpa-button>
 
       <span class="act-divider" aria-hidden="true"></span>
@@ -104,20 +123,20 @@
         Shown only for data-type="view".
       -->
       <span class="view-group">
-        <sherpa-button class="act" data-act="favourite" data-type="icon" data-look="transparent"
+        <sherpa-button class="act" data-size="sm" data-act="favourite" data-type="icon"
                        data-snap="right" data-icon-start="fa-regular fa-star"
                        aria-label="Favourite this view" aria-pressed="false"></sherpa-button>
-        <sherpa-button class="act save-btn" data-act="save" data-look="transparent"
+        <sherpa-button class="act save-btn" data-size="sm" data-act="save"
                        data-snap="all" data-icon-start="fa-solid fa-upload">Save</sherpa-button>
-        <sherpa-button class="act" data-act="view-menu" data-type="icon" data-look="transparent"
+        <sherpa-button class="act" data-size="sm" data-act="view-menu" data-type="icon"
                        data-snap="left" data-icon-start="fa-solid fa-caret-down"
                        aria-label="View options" aria-haspopup="menu"></sherpa-button>
       </span>
 
-      <sherpa-button class="act" data-act="refresh" data-type="icon" data-look="transparent"
+      <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
                      data-icon-start="fa-solid fa-arrows-rotate"
                      aria-label="Refresh data"></sherpa-button>
-      <sherpa-button class="act" data-act="overflow" data-type="icon" data-look="transparent"
+      <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
                      data-icon-start="fa-solid fa-ellipsis-vertical"
                      aria-label="More actions" aria-haspopup="menu"></sherpa-button>
     </div>

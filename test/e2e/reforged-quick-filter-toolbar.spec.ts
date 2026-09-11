@@ -540,3 +540,59 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
   // Reset clears the filters and leaves the view in place.
   expect(r.afterReset).toEqual({ view: true, trial: false });
 });
+
+test('the Add chip puts an available filter on the bar and drops it from its menu', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar()) as HTMLElement & {
+      populate?: (d: unknown) => void;
+      available?: (d: unknown) => void;
+      active?: string[];
+    };
+    el.populate!([{ id: 'active', label: 'Active' }]);
+    el.available!([
+      { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
+      { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
+    ]);
+    await new Promise((res) => setTimeout(res, 60));
+
+    const sr = el.shadowRoot!;
+    const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
+    const add = sr.querySelector('.add-chip') as HTMLElement;
+    const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
+
+    const before = { chips: chips(), offered: offered() };
+
+    // Pick one and commit it, exactly as the caret's menu does.
+    ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === 'health')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    const menu = add.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+    (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 120));
+
+    return {
+      before,
+      after: { chips: chips(), offered: offered() },
+      addStuckOn: add.hasAttribute('data-current'),
+      // A MENU chip is deliberately absent from `active` (its id names a column,
+      // not a value), so "did it arrive on?" is read off the chip itself.
+      addedIsOn: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-current'),
+    };
+  }, MOUNT);
+
+  expect(r.before.chips).toEqual(['active']);
+  expect(r.before.offered).toEqual(['health', 'seats']);
+
+  // The picked filter MOVES: onto the bar, and out of the menu — a filter already
+  // on the bar is not one you can add again.
+  expect(r.after.chips).toEqual(['active', 'health']);
+  expect(r.after.offered).toEqual(['seats']);
+
+  // It arrives ON, so the reason you added it is visible immediately.
+  expect(r.addedIsOn).toBe(true);
+
+  // The Add control never shows itself as "on" — it is a trigger, and its menu is
+  // a list of things to do, not a state it holds.
+  expect(r.addStuckOn).toBe(false);
+});

@@ -106,6 +106,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   #filters: QuickFilterDef[] = [];
   #organise: OrganiseDef = {};
+  /**
+   * Filters the user MAY add but has not — the Add chip's menu.
+   *
+   * Separate from #filters because they are the two halves of one idea: what is
+   * on the bar, and what else could be. Picking one moves it across.
+   */
+  #available: QuickFilterDef[] = [];
 
   override onRender(): void {
     this.addEventListener('quick-filter-click', this.#onChipClick);
@@ -118,6 +125,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
+    if (this.#available.length) this.#renderAvailable();
   }
 
   /**
@@ -390,6 +398,51 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.setAttribute('data-icon-start', !live ? sortNone : desc ? sortDesc : sortAsc);
   }
 
+  /**
+   * available([...]) — the filters the Add chip offers.
+   *
+   * The Add control is a Filter Chip pinned State=menu in the design: its body
+   * is a trigger and its caret opens a list. This is that list — the filters
+   * a user can put on the bar OVER AND ABOVE the defaults populate() gave it.
+   *
+   * Picking one STAMPS it into the chip run and drops it from the menu, because
+   * a filter already on the bar is not one you can add again. It arrives ON, so
+   * the reason you added it is visible immediately.
+   */
+  available(defs: QuickFilterDef[]): void {
+    this.#available = Array.isArray(defs) ? defs : [];
+    this.#renderAvailable();
+  }
+
+  /** Stamp the Add chip's menu from whatever is left to add. */
+  #renderAvailable(): void {
+    const add = this.$<HTMLElement>('.add-chip');
+    if (!add) return;
+    // Nothing left to add — the caret would open an empty list.
+    this.toggleAttribute('data-can-add', this.#available.length > 0);
+    add.querySelector('sherpa-menu')?.remove();
+    if (!this.#available.length) return;
+    this.#addMenu(add, {
+      id: 'add',
+      label: 'Add filter',
+      select: 'single',
+      options: this.#available.map((f) => ({ value: f.id, label: f.label })),
+    });
+  }
+
+  /** Move one available filter onto the bar. */
+  #addFilter(id: string): void {
+    const i = this.#available.findIndex((f) => f.id === id);
+    if (i < 0) return;
+    const [def] = this.#available.splice(i, 1);
+    // ON on arrival: a filter you just chose should be doing something.
+    this.#filters = [...this.#filters, { ...def!, active: true }];
+    this.#render();
+    this.#renderAvailable();
+    this.emit('filter-add', { id, filter: def });
+    this.#emitChange();
+  }
+
   /* ── Action cluster ────────────────────────────────────────────────── */
 
   /**
@@ -632,6 +685,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('organise-chip'),
     );
     if (!chip) {
+      // The ADD chip's menu committed — the user picked a filter to put on the
+      // bar. That is not a change to the filter SET's values, it is a change to
+      // which chips exist, so it is handled here and never reaches #emitChange
+      // as a value edit.
+      const addChip = path.find(
+        (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-chip'),
+      );
+      if (addChip) {
+        event.stopImmediatePropagation();
+        const picked = addChip.querySelector<HTMLInputElement>('input:checked');
+        // The Add chip never shows itself as "on" — it is a trigger, and its
+        // menu is a list of things to do, not a state it holds.
+        addChip.removeAttribute('data-current');
+        if (picked) this.#addFilter(picked.value);
+        return;
+      }
+
       // A FILTER menu chip committed its selection (Apply). The chip's own event
       // reports one chip's values; the toolbar must re-report the WHOLE state, so
       // swap it for the toolbar-level one.
