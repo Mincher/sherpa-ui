@@ -68,11 +68,15 @@
         <span class="label" part="label"></span>
         <span class="value" part="value"></span>
       </button>
+      <!-- Figma's `triangle-down`, which every other menu control in the system
+           wears (the quick-filter chip's caret, the toolbar's Save caret) — so
+           "this opens a list" looks the same wherever it appears. It was a
+           horizontal ellipsis, which reads as "more actions", not "expand". -->
       <sherpa-button
         class="rollup-menu-btn"
         data-size="xs"
         data-type="icon"
-        data-icon-start="fa-solid fa-ellipsis"
+        data-icon-start="fa-solid fa-caret-down"
         aria-haspopup="menu"
         aria-expanded="false"></sherpa-button>
       <sherpa-menu class="rollup-menu" data-heading="Breakdown" data-commit></sherpa-menu>

@@ -212,7 +212,10 @@ test('entries share three grid tracks, so labels and values align', async ({ pag
   expect(r.columnGap).toBe('8px');
   expect(r.rowGap).toBe('4px');
   expect(r.padding).toBe('8px');
-  expect(r.fontSize).toBe('10px');
+  // content/size/SMALL 12, read from the Figma node's own bound variable
+  // (Chart Legend 1099:37879 — every Category and value text binds
+  // content/size/small). It was size/xs 10 here.
+  expect(r.fontSize).toBe('12px');
   expect(r.lineHeight).toBe('16px');
   // Figma "Legend Swatch": 12×12.
   expect(r.swatchBox).toBe('12x12');
@@ -310,4 +313,43 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
   // Apply reports BOTH lists, so a chart applies the edit in one pass.
   expect(r.detail?.active).toEqual([6, 8]);
   expect(r.detail?.hidden).toEqual([5, 7]);
+});
+
+test('label and value carry two inks, and BOTH grey when the entry is off', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate([{ label: 'Disk', value: 42 }, { label: 'CPU', value: 31 }]);
+    await new Promise((res) => setTimeout(res, 20));
+
+    const item = el.shadowRoot!.querySelector('.item') as HTMLElement;
+    const grab = () => ({
+      label: getComputedStyle(item.querySelector('.label')!).color,
+      value: getComputedStyle(item.querySelector('.value')!).color,
+    });
+    const on = grab();
+    item.click();
+    // The row fades its colour over 100ms, so a shorter wait samples the middle
+    // of the transition and reads an in-between grey.
+    await new Promise((res) => setTimeout(res, 250));
+    return { on, off: grab() };
+  });
+
+  // TWO INKS while on. Read from the Figma node's bindings (Chart Legend
+  // 1099:37879): the Category text binds content/body/+1 (#35353D) and the value
+  // text binds content/body/base (#0C0B11), so the number reads as the fact and
+  // the name as its caption.
+  expect(r.on.label).toBe('rgb(53, 53, 61)');
+  expect(r.on.value).toBe('rgb(12, 11, 17)');
+  expect(r.on.label).not.toBe(r.on.value);
+
+  // OFF greys BOTH. The value's own darker ink beat the row's dimmed colour, so a
+  // switched-off entry kept a fully dark number beside a greyed-out name and read
+  // as still active.
+  expect(r.off.label).toBe('rgb(179, 179, 195)');
+  expect(r.off.value).toBe('rgb(179, 179, 195)');
 });

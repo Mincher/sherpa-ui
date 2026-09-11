@@ -6,7 +6,8 @@
  *   grid     3 columns · column gap space/xs 8 · row gap space/2xs 4
  *   swatch   the "Legend Swatch" component (1098:37786): 12×12, radius 4, the
  *            series hue at 60% with a solid 1px stroke in the same hue
- *   text     content/size/xs 10 on line-height/xs 16, regular, content/body/base
+ *   text     content/size/small 12 on line-height/xs 16, regular;
+ *            category = content/body/+1, value = content/body/base
  *
  * WHY A GRID. With one flex row per entry the value sits wherever its own label
  * ends, so a legend of mixed label lengths has ragged values. Three shared grid
@@ -78,10 +79,17 @@
   border: none;
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  /* The ROW's ink is the CATEGORY's, because the label is the row's own text and
+     the value overrides it below. Read from the Figma node's bindings
+     (Chart Legend 1099:37879): the Category text binds content/body/+1 and the
+     value text binds content/body/base — two different inks, where the code had
+     one. */
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
-  /* Figma: content/size/xs 10 on line-height/xs 16, regular. */
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  /* Figma: content/size/SMALL 12 on line-height/xs 16, regular. It was size/xs
+     10 here; the bound variable on every Category and value text node is
+     content/size/small. */
+  font-size: var(--sherpa-theme-content-size-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   text-align: start;
@@ -114,6 +122,13 @@
 /* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
    also wash out the swatch's own translucency and compound in dark mode). */
 .item[aria-pressed="false"] {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
+/* The VALUE greys with its label. It carries its own darker ink (Figma binds it
+   to content/body/base where the Category binds content/body/+1), and that
+   colour beat the row's dimmed one — so a switched-off entry kept a fully dark
+   number beside a greyed-out name, which read as still active. */
+.item[aria-pressed="false"] .value {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 .item[aria-pressed="false"] .swatch {
@@ -166,8 +181,13 @@
 }
 
 /* The value hugs its digits at the end of the row; an entry without one leaves the
-   track empty rather than collapsing it, so the other entries stay aligned. */
+   track empty rather than collapsing it, so the other entries stay aligned.
+
+   DARKER than its label: Figma binds the value text to content/body/base and the
+   Category text to content/body/+1, so the number reads as the fact and the name
+   as its caption. The row carries the label's ink, and this overrides it. */
 .value {
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   text-align: end;
   font-variant-numeric: tabular-nums;
 }

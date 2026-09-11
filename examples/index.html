@@ -78,10 +78,15 @@
        or below it.
 
        The ratio follows the LEGEND'S ORIENTATION, because that is what decides
-       whether the pair reads as two columns or two rows — and it is 80/20 either
-       way, with the CHART in the larger cell. A legend is a KEY: it needs only
-       enough room to list its entries, and every share beyond that is room taken
-       from the thing it describes.
+       whether the pair reads as two columns or two rows — and the two constrain
+       different things:
+
+         legend BELOW  the chart (horizontal) → 2 rows,    80/20
+         legend BESIDE the chart (vertical)   → 2 columns, 70/30
+
+       with the CHART in the larger cell either way. A legend below runs the full
+       width and needs only height; one beside the chart has to fit its longest
+       label into its own column, so it gets a little more.
 
        `data-chart` is an opt-in: a panel holding a data grid or a key-value list
        has no chart to give the larger share to, and silently splitting it would
@@ -118,11 +123,15 @@
     .panel[data-chart="stacked"] > .chart-area {
       grid-template-rows: minmax(0, 4fr) minmax(0, 1fr);
     }
-    /* Legend BESIDE → 2 columns, 80/20, chart in the wide cell.
+    /* Legend BESIDE → 2 columns, 70/30, chart in the wide cell.
+       A HORIZONTAL split gives the legend more than a vertical one (80/20),
+       because the two constrain different things: a legend below the chart runs
+       the full width and needs only height, where one beside it has to fit its
+       longest label into its own column.
        Both tracks floor at 0, so the ratio ALWAYS holds: a legend label that does
        not fit truncates rather than stealing the chart's share. */
     .panel[data-chart="split"] > .chart-area {
-      grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
     }
     /* SLOTTED: the chart contains its own legend and owns the split itself (the
        donut). One cell, and the chart fills it — the ratio is the component's

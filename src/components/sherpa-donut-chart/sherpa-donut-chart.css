@@ -50,12 +50,13 @@
    hug its text, so the pair measured 55% / 33% of the figure with ~12% dead
    space trailing — no split at all, and neither item centred on anything.
 
-   `4fr 1fr` is 80/20, with the CHART in the wide cell. A legend is a KEY: it
-   needs only enough room to list its entries, and every share beyond that is
-   room taken from the ring it describes. The floor is 0, so the ratio always holds:
-   a label that does not fit truncates rather than stealing the ring's share.
+   `7fr 3fr` is 70/30, with the CHART in the wide cell. A legend BESIDE a chart
+   gets more than one below it (80/20): it has to fit its longest label into its
+   own column, where a full-width legend below needs only height. The floor is 0,
+   so the ratio always holds — a label that does not fit truncates rather than
+   stealing the ring's share.
    Both cells centre their content (`justify-items: center`), so the ring sits in
-   the middle of its 80% and the legend in the middle of its 20% rather than both
+   the middle of its 70% and the legend in the middle of its 30% rather than both
    crowding the inline-start edge.
 
    The tracks are `minmax(0, Nfr)`: a bare `fr` floors at the item's min-content
@@ -63,7 +64,7 @@
    break the ratio. */
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
   align-items: center;
   justify-items: center;
   gap: var(--sherpa-display-mode-space-lg, 20px);

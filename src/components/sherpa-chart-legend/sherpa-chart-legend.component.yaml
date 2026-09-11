@@ -61,6 +61,9 @@ states:
     name: horizontal
     selector: ":host([data-orientation=\"horizontal\"])"
   - $type: state
+    name: readonly
+    selector: ":host([data-readonly])"
+  - $type: state
     name: focus-visible
     selector: .item:focus-visible
 events:
@@ -84,8 +87,8 @@ tokens:
   legend.row-gap: "{sherpa.display-mode-space-2xs}"
   legend.padding: "{sherpa.display-mode-space-xs}"
   item.border-radius: "{sherpa.structure-rounding-top-left}"
-  item.color: "{sherpa.theme-content-body-base}"
-  item.font-size: "{sherpa.theme-content-size-xs}"
+  item.color: "{sherpa.theme-content-body-1}"
+  item.font-size: "{sherpa.theme-content-size-small}"
   item.font-weight: "{sherpa.font-weight-regular}"
   item.line-height: "{sherpa.theme-content-line-height-xs}"
   swatch.inline-size: "{sherpa.display-mode-size-xs}"
@@ -94,6 +97,8 @@ tokens:
   swatch.border-width: "{sherpa.display-mode-border-width-base}"
   swatch.border-color: "{sherpa.data-viz-series-1}"
   swatch.background: "{sherpa.data-viz-series-1}"
+  value.color: "{sherpa.theme-content-body-base}"
+  rollup-menu-btn.margin-inline-start: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Legend Item
