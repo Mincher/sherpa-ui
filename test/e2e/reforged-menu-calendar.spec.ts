@@ -454,3 +454,79 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   expect(r.listFooter.today.shown).toBe(false);
   expect(r.listFooter.clear.shown).toBe(true);
 });
+
+test('Remove filter is a footer button after Today, and the card widens to hold it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate([
+      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'created', label: 'Created', kind: 'date' },
+    ]);
+    await new Promise((res) => setTimeout(res, 80));
+
+    const chip = el.shadowRoot.querySelector('.chip[data-id="created"]') as HTMLElement;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>; show: (t: HTMLElement) => void; shadowRoot: ShadowRoot;
+    };
+    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot };
+    await menu.rendered;
+    await cal.rendered;
+    menu.show(chip);
+    await new Promise((res) => setTimeout(res, 60));
+
+    const rect = (el2: Element) => {
+      const b = el2.getBoundingClientRect();
+      return { x: Math.round(b.left), r: Math.round(b.right), w: Math.round(b.width) };
+    };
+    const card = menu.shadowRoot.querySelector('.menu') as HTMLElement;
+    const footerRow = (menu.shadowRoot.querySelector('.footer') as HTMLElement)
+      .shadowRoot!.querySelector('.row') as HTMLElement;
+    const grid = cal.shadowRoot.querySelector('.cal-days') as HTMLElement;
+
+    const order = ['today', 'remove', 'cancel', 'apply'].map(
+      (c) => rect(menu.shadowRoot.querySelector('.' + c)!).x,
+    );
+    const before = {
+      order,
+      shown: ['today', 'remove', 'cancel', 'apply'].map(
+        (c) => getComputedStyle(menu.shadowRoot.querySelector('.' + c)!).display !== 'none',
+      ),
+      card: rect(card), footer: rect(footerRow), grid: rect(grid),
+      chips: [...el.shadowRoot.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']),
+    };
+
+    // Clicking it takes the chip off the bar — the same menu-select value the
+    // action ROW emits, so the toolbar's one handler catches both shapes.
+    const rm = menu.shadowRoot.querySelector('.remove') as HTMLElement & { shadowRoot: ShadowRoot };
+    (rm.shadowRoot.querySelector('button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 120));
+
+    return {
+      before,
+      chipsAfter: [...el.shadowRoot.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']),
+    };
+  });
+
+  // All four are present on a date chip's menu.
+  expect(r.before.shown).toEqual([true, true, true, true]);
+
+  // Today, then Remove filter, then the committing pair — Will's order.
+  const [today, remove, cancel, apply] = r.before.order as [number, number, number, number];
+  expect(today).toBeLessThan(remove);
+  expect(remove).toBeLessThan(cancel);
+  expect(cancel).toBeLessThan(apply);
+
+  // THE CARD GREW. A calendar card hugs its content, and four buttons are wider
+  // than a 224 day grid — under `max-content` the card sized to the GRID alone
+  // and the footer ran off its edge.
+  expect(r.before.card.w).toBeGreaterThan(r.before.grid.w);
+  expect(r.before.footer.r).toBeLessThanOrEqual(r.before.card.r);
+
+  // And it removes the filter.
+  expect(r.before.chips).toEqual(['plan', 'created']);
+  expect(r.chipsAfter).toEqual(['plan']);
+});

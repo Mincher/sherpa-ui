@@ -21,6 +21,7 @@
  * @attr {string}  data-heading  optional heading (upper-case 10/16)
  * @attr {enum}    data-select   multiple (default) | single
  * @attr {enum}    data-align    start (default) | end — which trigger edge to line up with
+ * @attr {boolean} data-removable show a "Remove filter" footer button (after Today)
  * @attr {boolean} data-commit   show the Apply/Cancel footer and DEFER changes
  *                until Apply (without it, every row tick commits immediately)
  * @attr {boolean} open          reflects/controls the popover
@@ -59,6 +60,7 @@ export class SherpaMenu extends SherpaElement {
     'data-align',
     'data-search',
     'data-clearable',
+    'data-removable',
     'data-type',
     'open',
   ];
@@ -95,6 +97,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     this.$('.clear')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
+    this.$('.remove')?.addEventListener('click', this.#onRemove);
     // The search is a composed <sherpa-input-text>, which re-dispatches the
     // inner control's `input`. Listening on the component rather than reaching
     // into its shadow root for the raw <input>.
@@ -346,6 +349,18 @@ export class SherpaMenu extends SherpaElement {
     for (const cal of this.querySelectorAll<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
       cal.today?.();
     }
+  };
+
+  /**
+   * Remove filter — the footer button form of the action ROW.
+   *
+   * Emits exactly what a `<button value="remove">` row emits, so a host listens
+   * for one event whichever shape its menu is. A calendar menu has no rows, and
+   * this is how it still offers the action.
+   */
+  #onRemove = (): void => {
+    this.emit('menu-select', { value: 'remove', label: 'Remove filter' });
+    this.hide();
   };
 
   #onClick = (event: Event): void => {

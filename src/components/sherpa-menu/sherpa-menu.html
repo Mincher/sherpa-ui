@@ -29,6 +29,9 @@
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
+    data-removable  show a "Remove filter" button in the footer (after Today);
+                    it emits menu-select with value="remove", exactly as the
+                    action ROW of the same name does
     data-clearable  show a Clear button in the footer that empties the selection
                     (a CALENDAR menu shows Today there instead — see the footer)
     data-type     list (default) | calendar — the Menu set's own `Type` axis.
@@ -149,6 +152,19 @@
         the code has always offered one.
       -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
+      <!--
+        REMOVE FILTER — a footer button, after Today, on the left side.
+
+        A calendar menu has no rows, so it had nowhere to put the "Remove
+        filter" ACTION row a value menu carries in its list. Sitting it in the
+        footer beside Today is what gives a date chip a way off the bar.
+
+        It emits the SAME `menu-select` with value="remove" the row does, so the
+        toolbar's existing handler catches it either way and nothing downstream
+        has to know which shape the menu is.
+      -->
+      <sherpa-button class="remove" part="remove"
+                     data-icon-start="fa-solid fa-xmark">Remove filter</sherpa-button>
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>

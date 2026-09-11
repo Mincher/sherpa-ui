@@ -866,10 +866,15 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       // Clear — so that is the button a date menu shows there.
       todayShown: getComputedStyle(menu.shadowRoot.querySelector('.today')!).display,
       clearShown: getComputedStyle(menu.shadowRoot.querySelector('.clear')!).display,
-      // …and the way OFF the bar is the remove row, which the date branch used
-      // to skip: it returned before the row was appended, so a date filter was
+      // …and the way OFF the bar is a FOOTER BUTTON after Today. A calendar
+      // menu has no list, so the action ROW a value menu carries has nowhere to
+      // sit — the date branch skipped it entirely, which left a date filter as
       // the one kind of chip a reader could add and never take away.
-      hasRemoveRow: !!menu.querySelector('.qf-remove'),
+      removeShown: getComputedStyle(menu.shadowRoot.querySelector('.remove')!).display,
+      // No geometry here — this menu is never SHOWN, so every rect reads 0. The
+      // footer's order and the card's width are measured in
+      // reforged-menu-calendar.spec.ts, which opens one.
+      removable: menu.hasAttribute('data-removable'),
     };
 
     // The projected stepper still drives the calendar it came from.
@@ -939,7 +944,9 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   expect(r.before.clearShown).toBe('none');
   expect(r.afterToday).toBe(r.todayIso);
 
-  // The way back OFF the bar is the remove row. A date chip skipped it before,
-  // so with Clear gone it would have had no way out at all.
-  expect(r.before.hasRemoveRow).toBe(true);
+  // The way back OFF the bar is a footer button, AFTER Today. A date chip had
+  // neither before: no remove row (the branch returned past it) and, once Clear
+  // moved aside for Today, no way out at all.
+  expect(r.before.removable).toBe(true);
+  expect(r.before.removeShown).not.toBe('none');
 });

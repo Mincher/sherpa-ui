@@ -214,7 +214,14 @@
  * clearable menu shows Clear — one control, never both. */
 .clear { display: none; }
 .today { display: none; }
+.remove { display: none; }
 .footer-spacer { display: none; }
+
+/* A calendar menu has no ROWS, so the "Remove filter" action row a value menu
+   carries in its list has nowhere to live — it becomes a footer button instead,
+   after Today. Opt-in, because only a chip that can be taken off the bar has
+   anything to remove. */
+:host([data-removable]) .remove { display: inline-flex; }
 
 :host([data-clearable]) .clear { display: inline-flex; }
 
@@ -226,6 +233,7 @@
 :host([data-type="calendar"]) .clear { display: none; }
 
 :host([data-clearable]) .footer-spacer,
+:host([data-removable]) .footer-spacer,
 :host([data-type="calendar"]) .footer-spacer {
   display: block;
   flex: 1 1 auto;
@@ -334,11 +342,19 @@
  * menu's and is inherited unchanged. */
 :host([data-type="calendar"]) .menu {
   /* HUGS its content rather than taking a fixed width. Figma's Calendar variant
-     measures 527, but that is the RESULT of a 7-column grid beside a time
+     measures 562, but that is the RESULT of a 7-column grid beside a time
      picker inside 8px padding — not a designed step, and it is off the 8px
      grid, which is the tell. A calendar with no time picker should be narrower
-     rather than half empty, so the card is sized by what it holds. */
-  inline-size: max-content;
+     rather than half empty, so the card is sized by what it holds.
+
+     `max-content` alone sized the card to the GRID and let the footer overflow:
+     Today + Remove filter + Cancel + Apply is wider than a 224 day grid, so the
+     row was clipped at the card's edge. `fit-content` with a floor of the
+     footer's own content width lets the card grow to whichever region is wider
+     — the grid, or the buttons — which is what an auto-layout frame that hugs
+     does in Figma. */
+  inline-size: fit-content;
+  min-inline-size: min-content;
 }
 
 /* The list region runs ACROSS for a calendar — Figma's `list` frame is

@@ -370,11 +370,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
-      // A DATE chip gets the remove row too. It used to return here, straight
-      // past it, so a date filter was the one kind of chip a reader could add
-      // and then never take off the bar — and with Clear gone from the footer
-      // (Figma puts Today in that slot) it would have no way back at all.
-      this.#addRemoveRow(chip, menu);
+      // A DATE chip's remove is a FOOTER BUTTON, not a row — a calendar menu
+      // has no list for a row to sit in. It sits after Today and emits the same
+      // menu-select value="remove", so #onMenuSelect catches both shapes.
+      if (chip.classList.contains('chip')) menu.setAttribute('data-removable', '');
       chip.setAttribute('data-menu', '');
       chip.appendChild(menu);
       return;

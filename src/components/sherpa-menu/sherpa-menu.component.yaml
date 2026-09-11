@@ -64,6 +64,11 @@ anatomy:
             class: today
             part: today
           - el: sherpa-button
+            class: remove
+            part: remove
+            attrs:
+              data-icon-start: fa-solid fa-xmark
+          - el: sherpa-button
             class: clear
             part: clear
           - el: span
@@ -108,6 +113,13 @@ props:
     kind: content
     description: optional heading (rendered upper-case at 10/16)
   - $type: prop
+    name: data-removable
+    type: string
+    kind: content
+    description: >-
+      show a "Remove filter" button in the footer (after Today); it emits menu-select with
+      value="remove", exactly as the action ROW of the same name does
+  - $type: prop
     name: data-search
     type: string
     kind: content
@@ -148,6 +160,9 @@ states:
   - $type: state
     name: search
     selector: ":host([data-search])"
+  - $type: state
+    name: removable
+    selector: ":host([data-removable])"
   - $type: state
     name: clearable
     selector: ":host([data-clearable])"
