@@ -353,6 +353,150 @@
 
 .sort-icon { inline-size: 0; block-size: 0; }
 
+
+/* ── Pinned (frozen) columns ────────────────────────────────────────
+ * The leading columns stay put while the rest scroll UNDER them.
+ *
+ * WHICH columns: the selection cell (when data-selectable reveals it) plus the
+ * first drawn data column. JS marks both with `data-pinned` rather than CSS
+ * naming nth-child, because the offset shifts by one when data-selectable is
+ * absent — and #shownColumns() can drop the grouped column, so "the first data
+ * column" is not a fixed field either.
+ *
+ * WHY a variable for the second offset: the data column auto-sizes to its
+ * content, so its inline-start offset (the width of everything pinned before it)
+ * is not knowable in CSS. JS measures it once per render and writes
+ * `--_pin-offset` on the host. That is state, not presentation — CSS still owns
+ * every paint.
+ *
+ * STACKING: a pinned BODY cell must sit above the unpinned cells it overlaps
+ * (z-index 2) but BELOW the header (z-index 3), or the frozen column would draw
+ * over the sticky head when both are pinned at once. A pinned HEADER cell is the
+ * corner where both stick, so it takes 4 — above everything.
+ *
+ * OPACITY: a pinned cell needs its own opaque fill, exactly like the sticky
+ * header does. `position: sticky` only moves the box; the scrolling content still
+ * paints in its own layer, so a transparent pinned cell shows the columns sliding
+ * beneath it. The row's state tints (hover / focused / selected) are transparent
+ * on purpose, so a pinned cell paints the base surface and then INHERITS the tint
+ * on top via the row rules below — otherwise a selected row's pinned cells would
+ * be the only part of it left unpainted.
+ */
+:is(.head-cell, .filter-cell, .cell, .select-cell)[data-pinned] {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+}
+/* The SECOND pinned cell clears the first. `--_pin-offset` is the measured width
+   of everything pinned before it; 0 when the selection column is hidden, so the
+   same rule is correct either way. */
+:is(.head-cell, .filter-cell, .cell)[data-pinned] {
+  inset-inline-start: var(--_pin-offset, 0px);
+}
+
+/* Body cells: an opaque base fill so scrolling columns do not show through. */
+.cell[data-pinned],
+.row > .select-cell[data-pinned] {
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+/* …then the row's own state tint, layered on top of that opaque base. The row
+   background cannot reach a sticky cell (the cell paints its own), so each state
+   is restated here against the pinned cells. */
+.row:hover > [data-pinned] {
+  background:
+    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+.row[data-focused] > [data-pinned] {
+  background:
+    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+.row:has(.row-select:checked) > [data-pinned] {
+  background:
+    linear-gradient(var(--sherpa-theme-surface-active-transparent, #c046ff4d) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+.row[data-focused]:has(.row-select:checked) > [data-pinned] {
+  background:
+    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d) 0 100%),
+    linear-gradient(var(--sherpa-theme-surface-active-transparent, #c046ff4d) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* The header corner: sticks in BOTH axes, so it outranks the header row it sits
+   in as well as the body column it heads. */
+:is(.head-cell, .filter-cell, .select-head, .filter-spacer)[data-pinned] { z-index: 4; }
+
+/* ── The scroll shadow ──────────────────────────────────────────────
+ * Only while content is ACTUALLY scrolled under the pinned columns — an edge
+ * shadow that is always there reads as a permanent divider, not as depth.
+ *
+ * `scroll-state(scrollable: inline-start)` asks the scroll container whether it
+ * can still scroll TOWARD its inline-start edge, which is true exactly when the
+ * user has scrolled away from it. That is a container query on scroll position,
+ * so no scroll listener and no JS-written attribute is involved. Chromium 133+.
+ *
+ * The shadow is drawn as a pseudo-element on the TRAILING edge of the last
+ * pinned cell rather than a box-shadow on the cell, because a box-shadow on a
+ * <td> in the separate border model is clipped by the neighbouring cell in some
+ * paint orders — the pseudo-element is positioned and always paints.
+ *
+ * No fallback is written for engines without scroll-state: the columns still pin
+ * correctly there, they simply do not gain the depth cue. A scroll listener was
+ * the alternative and it buys one shadow for a per-frame JS cost. */
+.scroller {
+  container-type: scroll-state;
+  container-name: grid-scroll;
+}
+
+[data-pinned][data-pin-last] {
+  position: sticky;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    inline-size: var(--sherpa-display-mode-space-sm, 12px);
+    translate: 100% 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    /* Two stops, both transparent neutrals: the +4 step carries the near edge so
+       the shadow reads against the grid's white cell fill, and it falls away to
+       nothing over the 12px. A single faint stop was invisible on white. */
+    background: linear-gradient(
+      to right,
+      var(--sherpa-display-mode-color-transparent-neutral-color-4, #4e4e5966),
+      var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33),
+      transparent
+    );
+  }
+}
+
+@container grid-scroll scroll-state(scrollable: inline-start) {
+  [data-pinned][data-pin-last]::after { opacity: 1; }
+}
+
+/* ── Group rows under horizontal scroll ─────────────────────────────
+ * A group row spans every column, so it is as wide as the whole table and its
+ * content would slide out of view with the scroll. The ROW cannot be pinned (it
+ * is the full width — there is nothing to pin it against), so the inner flex box
+ * is pinned instead: it sticks to the scrollport's inline-start edge while its
+ * <td> keeps its full colspan width.
+ *
+ * `position: sticky` needs a width to stick within, and the inner span is a flex
+ * box inside a full-width cell — so it is given `max-inline-size: max-content`,
+ * which keeps it only as wide as the checkbox + chevron + label and lets that
+ * narrow box travel along the cell.
+ */
+.group-inner {
+  position: sticky;
+  inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
+  max-inline-size: max-content;
+}
+
 /* ── Body ──────────────────────────────────────────────────────────── */
 /* ── Row states ─────────────────────────────────────────────────────────────
  * THREE states, in this order of precedence:

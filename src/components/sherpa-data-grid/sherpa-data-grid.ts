@@ -52,7 +52,15 @@ interface GridConfig {
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
   static override html = new URL('./sherpa-data-grid.html', import.meta.url);
-  static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
+  // data-selectable is observed even though CSS owns its reveal: the frozen
+  // columns' inline-start offset is the MEASURED width of the selection cell, so
+  // showing or hiding that column has to re-run #syncPinned().
+  static override observed = [
+    'data-sort-field',
+    'data-sort-direction',
+    'data-group-field',
+    'data-selectable',
+  ];
 
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
@@ -129,6 +137,54 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncGroupSelects();
     // The focused row survives a sort / filter too — it is a record, not a position.
     this.#syncFocused();
+    this.#syncPinned();
+  }
+
+  /**
+   * Flag one cell as part of the frozen leading block.
+   *
+   * `data-pin-last` names the LAST pinned cell in the row — the only one that
+   * draws the scroll shadow, so that a two-column freeze shows one edge and not
+   * two. #syncPinned() moves the flag once the real set is known.
+   */
+  #markPinned(cell: HTMLElement, last: boolean): void {
+    cell.toggleAttribute('data-pinned', true);
+    cell.toggleAttribute('data-pin-last', last);
+  }
+
+  /**
+   * Settle the frozen columns after a render.
+   *
+   * Two jobs, both of which need the DOM to exist:
+   *
+   *  1. The SELECTION cells join the frozen block, but only while
+   *     data-selectable reveals them — a hidden `display: none` cell must not be
+   *     pinned, or it would still claim the inline-start offset.
+   *  2. The second pinned column's offset is the MEASURED width of the selection
+   *     cell. The data column auto-sizes to its content, so no CSS value can
+   *     express "clear whatever is pinned before me"; JS writes the one number
+   *     and CSS does the rest. Written as a custom property on the host, so it is
+   *     state, not a style decision.
+   */
+  #syncPinned(): void {
+    const selectable = this.hasAttribute('data-selectable');
+    for (const cell of this.$$('.select-cell')) {
+      // The select cell is the FIRST pinned column, so it is only the last one
+      // when there is no data column beside it — which cannot happen once the
+      // grid has any columns at all.
+      if (selectable) this.#markPinned(cell as HTMLElement, false);
+      else {
+        cell.removeAttribute('data-pinned');
+        cell.removeAttribute('data-pin-last');
+      }
+    }
+
+    // getBoundingClientRect rather than offsetWidth: the select cell's width is a
+    // 0.5px-bordered 32px box, so the real laid-out width is fractional and
+    // rounding it left a hairline of the scrolling column visible under the pin.
+    const probe = this.$('.head-row > .select-cell');
+    const offset = selectable && probe ? probe.getBoundingClientRect().width : 0;
+    this.style.setProperty('--_pin-offset', `${offset}px`);
   }
 
   #renderHead(): void {
@@ -140,15 +196,19 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
     headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
-    for (const col of this.#shownColumns()) {
+    this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
+      // The FIRST drawn column is frozen. Marked here rather than selected in CSS
+      // with nth-child, because the position shifts by one when data-selectable
+      // is absent and #shownColumns() can drop the grouped column.
+      if (i === 0) this.#markPinned(th, true);
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
       if (sortable && col.field === sortField) th.dataset['sort'] = sortDir ?? 'asc';
       headRow.appendChild(th);
-    }
+    });
 
     this.#renderFilterRow();
   }
@@ -161,9 +221,10 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Keep the fixed leading spacer <th>; rebuild only the dynamic filter cells.
     filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());
-    for (const col of this.#shownColumns()) {
+    this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
+      if (i === 0) this.#markPinned(th, true);
       const label = col.header ?? col.field;
       const input = th.querySelector<HTMLInputElement>('.filter-input')!;
       input.placeholder = `Filter ${label}`;
@@ -177,7 +238,7 @@ export class SherpaDataGrid extends SherpaElement {
         th.toggleAttribute('data-has-value', true);
       }
       filterRow.appendChild(th);
-    }
+    });
   }
 
   /**
@@ -234,13 +295,14 @@ export class SherpaDataGrid extends SherpaElement {
       // Which group this row belongs to, so CSS can hide it when that group's
       // row is collapsed — the row itself never needs a `display` write.
       if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
-      for (const col of columns) {
+      columns.forEach((col, c) => {
         const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         if (col.type) td.dataset['type'] = col.type;
+        if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
         td.textContent = value == null ? '' : String(value);
         tr.appendChild(td);
-      }
+      });
       body.appendChild(tr);
     });
 
