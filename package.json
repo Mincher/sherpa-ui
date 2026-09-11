@@ -27,7 +27,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "node scripts/build-reforged.mjs",
-    "build:watch": "tsc -p tsconfig.reforged.json --watch",
+    "build:watch": "node scripts/build-reforged.mjs --watch",
+    "build:watch:ts": "tsc -p tsconfig.reforged.json --watch",
     "type-check": "tsc -p tsconfig.reforged.json --noEmit",
     "lint": "eslint 'src/**/*.ts' --max-warnings 0",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
