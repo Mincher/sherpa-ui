@@ -9,11 +9,14 @@
  *
  * Figma model: the resting tile carries a subtle surface (surface/default/+1).
  * The tile is status-fillable — a [data-status] ancestor overrides it, filling the
- * whole tile with the status surface (status-surface/default → --_status-surface),
- * outlines it with the status border, and re-inks the label/value via the status
- * text cascade (status-content/title → --_status-text). The value's resting
- * colour binds content/primary/base; the trend delta takes the success/critical
- * status ramp inks.
+ * whole tile with the status surface (status-surface/default → --_status-surface)
+ * and outlining it with the status border.
+ *
+ * The TEXT does not follow. Read from the Figma node (61:263): the label binds
+ * content/body/+1 and the value binds content/body/BASE — plain Theme tokens with
+ * no status in them — where only the DELTA binds style-content/base, which does
+ * follow the cascade. The status belongs to the CHANGE, not to the figure: 1,284
+ * endpoints is neither good nor bad, and +3.1% is the part that carries a verdict.
  */
 
 /* Figma Metric (61:263): the LABEL sits ABOVE the card (gap space/xs 8); the CARD
@@ -93,7 +96,18 @@
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0C0B11));
+  /* NO status in this colour. Figma binds the value text to
+     content/body/BASE — a plain Theme token with no status in it — where the
+     DELTA binds style-content/base, which does follow the status cascade.
+
+     Reading --_status-text first turned the whole reading green or red, which
+     said "this number is a success" when the status belongs to the CHANGE, not
+     to the figure. 1,284 endpoints is neither good nor bad; +3.1% is the part
+     that carries a verdict. Same reasoning as the label above.
+
+     (The rule: text that FOLLOWS status reaches for the cascade; text that
+     ignores it names the Theme token directly.) */
+  color: var(--sherpa-theme-content-body-base, #0C0B11);
 }
 
 /* ── Trend + delta — 12px arrow + 12/16 status-ink delta, gap 4 ───────── */

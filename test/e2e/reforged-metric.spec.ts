@@ -188,3 +188,41 @@ test('status is derived from the trend, and the card stays white with no border'
   // …but the delta ink DOES follow the status.
   expect(r.up['deltaColour']).not.toBe(r.down['deltaColour']);
 });
+
+test('a [data-status] ancestor does NOT recolour the label or the value', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (status: string | null) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const box = document.createElement('div');
+      if (status) box.setAttribute('data-status', status);
+      const el = document.createElement('sherpa-metric') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate(d: unknown): void;
+      };
+      box.appendChild(el);
+      root.appendChild(box);
+      await el.rendered;
+      el.populate({ label: 'Active endpoints', value: '1,284', deltaPercent: 3.1 });
+      await new Promise((res) => setTimeout(res, 30));
+      const sr = el.shadowRoot!;
+      return {
+        label: getComputedStyle(sr.querySelector('.label')!).color,
+        value: getComputedStyle(sr.querySelector('.value')!).color,
+      };
+    };
+    return { none: await read(null), success: await read('success'), critical: await read('critical') };
+  });
+
+  // Read from the Figma node (Metric 61:263): the label binds content/body/+1 and
+  // the value binds content/body/BASE — plain Theme tokens with no status in them.
+  // Only the DELTA binds style-content/base, which follows the status cascade.
+  //
+  // Reading --_status-text first turned the whole reading green or red, which said
+  // "this number is a success" when the status belongs to the CHANGE: 1,284
+  // endpoints is neither good nor bad, and +3.1% is the part carrying a verdict.
+  expect(r.none.value).toBe('rgb(12, 11, 17)');
+  expect(r.none.label).toBe('rgb(53, 53, 61)');
+  expect(r.success).toEqual(r.none);
+  expect(r.critical).toEqual(r.none);
+});
