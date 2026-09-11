@@ -307,7 +307,15 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
   text-align: start;
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
-  border-block: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  /* BOTTOM edge only, not `border-block`.
+     Figma's Grid Cell Type=header does stroke both edges — but in Figma the grid
+     has no outer card around it, so that top stroke IS the table's top boundary.
+     Here the host already draws the grid's frame, so a top stroke on the header
+     landed a second hairline directly on it: two 1px lines at the same y read as
+     one thick grey band above the column labels. Worse, .select-head never had
+     one, so the doubled line started at the second column and looked ragged.
+     The bottom edge is a real internal rule (header vs first row) and stays. */
+  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 
   &[data-sortable="false"] .head-btn { cursor: default; }
