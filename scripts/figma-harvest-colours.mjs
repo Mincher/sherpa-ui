@@ -38,10 +38,33 @@
  * actually happens. A property-by-property map would need an element↔selector
  * correspondence the two sides do not share.
  *
- * ── Known false positives, and why they are not silenced ────────────────────
+ * ── Known false positives ───────────────────────────────────────────────────
  * A nested INSTANCE reports its own component's bindings (a Button inside a
- * Container Header is the Button's business). Those are filtered by depth when
- * the row's path crosses into a known component name — see `ownRows`.
+ * Container Header is the Button's business). Those are filtered by `ownRows`.
+ *
+ * FOUR more that the full sweep turned up. None is silenced automatically —
+ * each needs a human to look at the node — but knowing the shapes saves
+ * re-deriving them:
+ *
+ *  1. JS-DRIVEN COLOUR. sherpa-barchart sets its series hue in TypeScript
+ *     (`bar.style.setProperty('--_hue', 'var(--sherpa-data-viz-series-N)')`),
+ *     so a CSS-only scan sees series 1 and misses 2 and 3. Grep the .ts before
+ *     believing a data-viz miss.
+ *  2. SLOTTED CONTENT. The Callout's action link is whatever the caller slots
+ *     in, so its colour is not the component's to set. Figma draws a specimen;
+ *     the component correctly has no rule for it.
+ *  3. ONE FIGMA NODE, MANY COMPONENTS. `Data Field` is the figmaName of
+ *     barchart, line-chart AND sparkline, so one node's rows are judged three
+ *     times and a bar chart's bars are reported against a sparkline that has
+ *     none. See the `oneToMany` divergence convention.
+ *  4. STATUS-CASCADE COLOUR. A Toast's surface comes from --_status-surface-
+ *     subtle; Figma's node shows the SUCCESS specimen (#f0fff5). The component
+ *     is right and the scan cannot see a cascade it is not under.
+ *
+ * ── What it catches that nothing else does ──────────────────────────────────
+ * Besides drifted tokens: a figmaName that no longer resolves. `Legend Item`
+ * had been renamed `Chart Legend` in Figma, so sherpa-chart-legend's binding
+ * pointed at nothing and every check that followed it silently passed.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -186,6 +209,15 @@ function sameColour(a, b) {
  *
  * A name-only check calls both of those a miss, which buries the first ten deep
  * in the second. That is how the earlier sweeps produced noise and got skimmed.
+ *
+ * A third bucket, `raw`, is for paint that is GENUINELY unbound in Figma. It
+ * deliberately EXCLUDES the opacity idiom: a translucent paint of a hue the
+ * component can already reach is bound correctly. Figma's Legend Swatch is
+ * data-viz/categorical/color 1 at 60% — the variable sits on the STROKE and the
+ * fill takes the same hue through the paint's own opacity. The first version of
+ * this tool folded alpha into the hex, found no `boundVariables.color` on that
+ * layer, and reported a correct design as Figma-side drift. Hue and opacity are
+ * carried separately now.
  */
 export function diff(harvest) {
   const map = componentMap();
@@ -208,6 +240,14 @@ export function diff(harvest) {
     const seen = new Set();
     for (const row of mine) {
       if (row.token === 'RAW') {
+        // A TRANSLUCENT paint of a colour the component can already reach is
+        // not unbound drift — it is the system's opacity idiom. Figma's Legend
+        // Swatch is data-viz/categorical/color 1 painted at 60%, with only the
+        // STROKE carrying the variable; the fill takes the same hue through the
+        // paint's own opacity. Reporting that as RAW was my misreading, not a
+        // Figma problem.
+        const reachableHue = reachable.has(row.hex.slice(0, 7));
+        if (reachableHue && (row.opacity ?? 1) < 1) continue;
         const k = 'raw' + row.at + row.prop + row.hex;
         if (!seen.has(k)) { seen.add(k); raws.push(row); }
         continue;
@@ -258,12 +298,33 @@ if (diffArg) {
     }
     for (const raw of r.raws) {
       rawCount += 1;
-      console.log(`  raw     ${raw.prop.padEnd(6)} ${raw.hex.padEnd(9)} unbound in FIGMA  at ${raw.at}`);
+      const alpha = (raw.opacity ?? 1) < 1 ? ` @${raw.opacity}` : '';
+      console.log(`  raw     ${raw.prop.padEnd(6)} ${(raw.hex + alpha).padEnd(11)} unbound in FIGMA  at ${raw.at}`);
     }
   }
   console.log(`\n${wrongCount} WRONG (the CSS cannot paint Figma's colour)` +
     (quiet ? '' : `  ·  ${routedCount} same colour via another token  ·  ${rawCount} unbound in Figma`));
   process.exit(wrongCount ? 1 : 0);
+}
+
+/**
+ * `--names` — print the snippet that checks every figmaName still RESOLVES.
+ *
+ * The cheapest and highest-value check here. A renamed Figma component leaves a
+ * spec pointing at nothing, and every tool that follows the name then passes
+ * silently — sherpa-chart-legend named "Legend Item" long after Figma had
+ * renamed it "Chart Legend", so nothing had checked its bindings in months.
+ */
+if (process.argv.includes('--names')) {
+  const names = [...new Set(Object.values(componentMap()))].sort();
+  console.log('// paste into figma_execute — lists specs whose figmaName is GONE');
+  console.log(`const WANT = ${JSON.stringify(names)};`);
+  console.log(`await figma.loadAllPagesAsync();
+const tops = figma.root.findAllWithCriteria({ types: ['COMPONENT_SET','COMPONENT'] })
+  .filter((n) => !(n.parent && n.parent.type === 'COMPONENT_SET'));
+const have = new Set(tops.map((n) => n.name));
+return { missing: WANT.filter((w) => !have.has(w)) };`);
+  process.exit(0);
 }
 
 if (process.argv.includes('--snippet')) {

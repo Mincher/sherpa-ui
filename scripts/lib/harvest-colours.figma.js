@@ -31,10 +31,16 @@ for (const name of WANT) {
         const id = paint.boundVariables && paint.boundVariables.color && paint.boundVariables.color.id;
         const row = {
           at: p, prop: key === 'fills' ? 'fill' : 'stroke',
-          hex: hex(paint.color, paint.opacity ?? 1),
+          // The HUE without the paint's opacity, plus the opacity alongside it.
+          // A translucent fill of a bound hue is the system's own idiom — a
+          // Legend Swatch is data-viz/categorical/color 1 at 60% — so folding
+          // the alpha into the hex turns a correct binding into an unrecognised
+          // colour. Keep them apart and let the reader decide.
+          hex: hex(paint.color),
+          opacity: paint.opacity == null ? 1 : Math.round(paint.opacity * 100) / 100,
           token: id ? await varPath(id) : 'RAW',
         };
-        const k = row.at + row.prop + row.token + row.hex;
+        const k = row.at + row.prop + row.token + row.hex + row.opacity;
         if (!seen.has(k)) { seen.add(k); rows.push(row); }
       }
     }
