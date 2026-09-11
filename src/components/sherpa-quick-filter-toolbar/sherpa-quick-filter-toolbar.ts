@@ -503,6 +503,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #toggleFavourite(btn: HTMLElement): void {
     const on = !this.hasAttribute('data-favourite');
     this.toggleAttribute('data-favourite', on);
+    // ACTIVE is a real Style MODE in the design, not a colour to invent: the
+    // Style collection's `active` mode re-points style-surface/base to
+    // surface/active/base, style-border/base to border/active/+2 and
+    // style-content/base to content/active/+1.
+    //
+    // The attribute is set as the honest description of the state — and CSS in
+    // THIS component's sheet does the painting, because the [data-status]
+    // SELECTOR that would normally supply --_status-* lives in tokens.css,
+    // which is loaded into the DOCUMENT and is not in sharedStyles. It reaches
+    // a light-DOM element (verified: it resolves #f2dfff there) and never one
+    // inside a shadow root, so the button saw nothing at all.
+    if (on) btn.setAttribute('data-status', 'active');
+    else btn.removeAttribute('data-status');
     btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
     btn.setAttribute('aria-pressed', String(on));
     this.emit('view-favorite', { favourite: on });

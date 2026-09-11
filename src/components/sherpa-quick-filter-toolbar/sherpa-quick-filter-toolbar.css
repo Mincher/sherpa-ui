@@ -145,14 +145,28 @@
   --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
-/* The lit star. `fa-solid` over the outline `fa-regular` says "on" in the glyph
-   itself, so the state survives for anyone who cannot see the colour. JS swaps
-   the class; the ink is CSS's.
+/* The lit star takes the ACTIVE Style mode, set as data-status on the button
+   itself (see #toggleFavourite) — not a colour written here.
 
-   The BRAND purple, matching sherpa-app-header's own favourite star — a
-   favourite is the same act in both places and must not be two colours. (Not
-   `--sherpa-theme-content-accent-1`: that token does not exist, and a var()
-   naming a missing token fails SILENTLY to its hardcoded fallback.) */
+   It used to set `color` on the sherpa-button HOST, which does nothing: the
+   button paints from its own --_content variable inside its shadow root, so the
+   host's colour never reached the trigger and a favourited star looked
+   identical to an unfavourited one. The glyph swap (outline → solid) was
+   carrying the whole state on its own.
+
+   The mode's three tokens are written out HERE rather than left to the
+   [data-status="active"] block in tokens.css. That block is a bare selector in
+   a DOCUMENT stylesheet — it is not in SherpaElement.sharedStyles — so it
+   matches a light-DOM element (verified: --_status-surface resolves to #f2dfff
+   there) and never one inside another component's shadow root. Setting the
+   attribute alone left the star completely unpainted.
+
+   Feeding the --_status-* properties is what makes the BUTTON pick it up: those
+   are custom properties, and custom properties DO inherit across a shadow
+   boundary. The button's own --_surface / --_border / --_content already read
+   them first. */
 :host([data-favourite]) [data-act="favourite"] {
-  color: var(--sherpa-theme-content-active-2, #c046ff);
+  --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
+  --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
+  --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
 }

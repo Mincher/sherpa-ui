@@ -395,6 +395,91 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
   expect(r.detail).toEqual([true, false]);
 });
 
+test('a favourited star takes the ACTIVE Style mode, face ring and ink', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = await mountToolbar('view');
+    const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    const read = () => {
+      const t = getComputedStyle(star.shadowRoot.querySelector('.trigger')!);
+      return {
+        status: star.dataset['status'] ?? null,
+        bg: t.backgroundColor,
+        border: t.borderTopColor,
+        ink: getComputedStyle(star.shadowRoot.querySelector('i')!).color,
+      };
+    };
+    const off = read();
+    (star.shadowRoot.querySelector('button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 120));
+    const on = read();
+
+    // READ WHILE IT IS ON. These properties only exist in the favourited state,
+    // so reading them after the second click returns empty strings — which is
+    // what the first version of this test did, and it looked like the fix had
+    // not worked at all.
+    //
+    // The star's OWN --_status-* values are the exact chain its trigger paints
+    // from, so the comparison is like-for-like. Not a hand-converted hex (the
+    // browser rounds #F2DFFF to 224, not the arithmetic 223) and not a probe
+    // elsewhere in the tree (a light-DOM one resolves through tokens.css's
+    // [data-status] block, a different chain).
+    const sc = getComputedStyle(star);
+    const expected = {
+      surface: sc.getPropertyValue('--_status-surface').trim(),
+      border: sc.getPropertyValue('--_status-border').trim(),
+      text: sc.getPropertyValue('--_status-text').trim(),
+    };
+
+    (star.shadowRoot.querySelector('button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 120));
+
+    return { off, on, backOff: read(), expected };
+  }, MOUNT);
+
+  // Each resolved to a real colour, so the assertions below mean something — an
+  // EMPTY value (the properties never reaching the button) is exactly the bug
+  // this test exists for, and would otherwise pass silently.
+  expect(r.expected.surface).toMatch(/^#[0-9a-f]{6}$/i);
+  expect(r.expected.border).toMatch(/^#[0-9a-f]{6}$/i);
+  expect(r.expected.text).toMatch(/^#[0-9a-f]{6}$/i);
+
+  // ACTIVE is a Style MODE in the design, not an invented colour: the Style
+  // collection's `active` mode re-points style-surface/base → surface/active/base,
+  // style-border/base → border/active/+2 and style-content/base → content/active/+1.
+  // The star takes all three, not just tinted ink.
+  expect(r.on.status).toBe('active');
+
+  // The three PAINT differently from the default look. Asserted as "changed",
+  // not against fixed triples: the exact rgb depends on the browser's own
+  // rounding of the token hex (it paints #F2DFFF as 242,224,255, where the
+  // arithmetic is 223), which is not what this test is about.
+  expect(r.on.bg).not.toBe(r.off.bg);
+  expect(r.on.border).not.toBe(r.off.border);
+  expect(r.on.ink).not.toBe(r.off.ink);
+
+  // …and they are the ACTIVE tokens, not some other colour: each painted value
+  // carries the same leading channel as the property it came from.
+  const firstChannel = (v: string): number => {
+    const hex = /^#(..)/.exec(v);
+    return hex ? parseInt(hex[1]!, 16) : Number(/(\d+)/.exec(v)?.[1] ?? -1);
+  };
+  expect(firstChannel(r.on.bg)).toBe(firstChannel(r.expected.surface));
+  expect(firstChannel(r.on.border)).toBe(firstChannel(r.expected.border));
+  expect(firstChannel(r.on.ink)).toBe(firstChannel(r.expected.text));
+
+  // Off is the plain default look, and the toggle is REVERSIBLE — clicking again
+  // returns every one of the three to exactly what it was.
+  expect(r.off.status).toBe(null);
+  expect(r.backOff.status).toBe(null);
+  expect(r.backOff.bg).toBe(r.off.bg);
+  expect(r.backOff.border).toBe(r.off.border);
+  expect(r.backOff.ink).toBe(r.off.ink);
+});
+
 test('the undo button clears every chip and the organise state', async ({ page }) => {
   const r = await page.evaluate(async (mount) => {
     // eslint-disable-next-line no-new-func
