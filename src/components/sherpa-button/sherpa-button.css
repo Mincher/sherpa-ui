@@ -179,6 +179,16 @@
   place-content: center;
   inline-size: var(--sherpa-button-size-icon, 14px);
   block-size: var(--sherpa-button-size-icon, 14px);
+  /* THE GLYPH IS A FONT CHARACTER, so `font-size` is what scales it — the two
+     size properties above only size its BOX. Without this the glyph inherited
+     the LABEL's size and matched its box only by coincidence: measured at
+     data-size="2xs" an 8px glyph rattled inside a 10px box, and at "xl" a 20px
+     glyph overflowed a 16px one. The other four modes happened to agree, which
+     is why it looked fine until someone used the two ends of the scale.
+
+     Figma binds the icon's width AND height to the same `Structure / icon-size`
+     (Button set 11:2463 > icon-start), so one variable drives all three here. */
+  font-size: var(--sherpa-button-size-icon, 14px);
   font-style: normal;
   line-height: 1;
   text-align: center;

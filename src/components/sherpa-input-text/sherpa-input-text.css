@@ -126,9 +126,17 @@ textarea.control {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  /* Figma icon-leading/-trailing: size/icon/xs → 16. */
+  /* Figma icon-leading / icon-trailing measure 14 x 14 (Input Field atom
+     935:38549), which is what size/icon/xs resolves to — the old comment here
+     claimed 16 and was never true.
+
+     THE GLYPH IS A FONT CHARACTER, so font-size is what scales it; the two size
+     properties only size its BOX. Without it the glyph inherited the FIELD's
+     text size and painted at 16 inside a 14 box — a magnifying glass that
+     overhung its own square. One variable now drives all three. */
   inline-size: var(--sherpa-theme-size-icon-xs, 14px);
   block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 /* A RAW GLYPH character only. A Font Awesome class list draws through the
