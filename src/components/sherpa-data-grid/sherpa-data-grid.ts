@@ -187,6 +187,26 @@ export class SherpaDataGrid extends SherpaElement {
     this.style.setProperty('--_pin-offset', `${offset}px`);
   }
 
+  /**
+   * Will's four new Figma icons, mapped to Font Awesome.
+   *
+   * The SAME map the quick-filter toolbar's organise chips use. Kept as one
+   * public static rather than copied, so the grid's sort arrow and the
+   * toolbar's sort chip can never drift into two different glyphs for one
+   * state — which is the whole reason the map exists.
+   *
+   *   group            fa-layer-group
+   *   sort-none        fa-bars
+   *   sort-ascending   fa-arrow-up-wide-short
+   *   sort-descending  fa-arrow-down-wide-short
+   */
+  static readonly icons = {
+    group: 'fa-solid fa-layer-group',
+    sortNone: 'fa-solid fa-bars',
+    sortAsc: 'fa-solid fa-arrow-up-wide-short',
+    sortDesc: 'fa-solid fa-arrow-down-wide-short',
+  } as const;
+
   #renderHead(): void {
     const headRow = this.$('.head-row');
     const tpl = this.$<HTMLTemplateElement>('template.head-cell-tpl');
@@ -210,7 +230,22 @@ export class SherpaDataGrid extends SherpaElement {
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
-      if (sortable && col.field === sortField) th.dataset['sort'] = sortDir ?? 'asc';
+      const active = sortable && col.field === sortField;
+      if (active) th.dataset['sort'] = sortDir ?? 'asc';
+
+      // THE SORT GLYPH — a tri-state, from the shared map.
+      //
+      // A sortable column that is NOT the current sort shows `sort-none`, so it
+      // reads as "you can sort by this" before anyone clicks. The old pure-CSS
+      // triangle had no third state: it could only be up or down, so an
+      // unsorted column showed nothing and looked unsortable.
+      const icon = th.querySelector('.sort-icon');
+      if (icon) {
+        const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
+        icon.className = sortable
+          ? `sort-icon ${!active ? sortNone : (sortDir === 'desc' ? sortDesc : sortAsc)}`
+          : 'sort-icon';
+      }
       headRow.appendChild(th);
     });
 

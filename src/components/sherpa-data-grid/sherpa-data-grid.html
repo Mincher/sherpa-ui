@@ -77,7 +77,14 @@
     <th class="head-cell" scope="col">
       <button class="head-btn" type="button">
         <span class="head-label"></span>
-        <span class="sort-icon" aria-hidden="true"></span>
+        <!--
+          The sort indicator is a Font Awesome GLYPH, set by JS from the same
+          named map the quick-filter toolbar's organise chips use — the one
+          place Will's four new Figma icons (group, sort-none, sort-ascending,
+          sort-descending) are mapped. It was a pure-CSS triangle drawn with
+          border tricks, which could show only two of the three states.
+        -->
+        <i class="sort-icon" aria-hidden="true"></i>
       </button>
     </th>
   </template>

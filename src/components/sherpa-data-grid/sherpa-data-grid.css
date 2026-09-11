@@ -330,16 +330,19 @@
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
-  /* Sort caret — a pure-CSS triangle (border trick); the 3px sides are half the
-     6px arrow width, off-grid by geometry not spacing. Hidden unless active sort. */
-  &[data-sort="asc"] .sort-icon {
-    border-inline: 3px solid transparent;
-    border-block-end: 4px solid currentColor;
-  }
-  &[data-sort="desc"] .sort-icon {
-    border-inline: 3px solid transparent;
-    border-block-start: 4px solid currentColor;
-  }
+  /* The sort glyph's ACTIVE / RESTING colour. The glyph itself is a Font
+     Awesome class written by JS (see SherpaDataGrid.icons); which of the three
+     it is, is data — only how loud it looks is presentation.
+
+     A sortable-but-unsorted column shows `sort-none` in the muted ink, so it
+     offers itself without competing with the column that IS sorted. */
+  .sort-icon { color: var(--sherpa-theme-content-body-1, #35353d); }
+  &[data-sort] .sort-icon { color: var(--sherpa-theme-content-body-base, #0c0b11); }
+
+  /* A column that cannot be sorted carries no glyph — JS leaves the class list
+     bare — so the box must go too, or an empty 14px square would hold the
+     label 14px short of a sortable column's and the headings would not line up. */
+  &[data-sortable="false"] .sort-icon { display: none; }
 }
 .head-btn {
   display: flex;
@@ -382,7 +385,19 @@
   text-align: end;
 }
 
-.sort-icon { inline-size: 0; block-size: 0; }
+/* The glyph is a FONT character, so font-size is what scales it — the two size
+   properties only size its box. Figma's header `actions` frame holds 16x16 icon
+   Buttons (Grid Cell 926:34238), and the glyph inside one is the icon scale. */
+.sort-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  place-content: center;
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
+  font-style: normal;
+  line-height: 1;
+}
 
 
 /* ── Pinned (frozen) columns ────────────────────────────────────────

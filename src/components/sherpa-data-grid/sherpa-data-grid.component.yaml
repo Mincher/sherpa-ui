@@ -86,7 +86,7 @@ anatomy:
               children:
                 - el: span
                   class: head-label
-                - el: span
+                - el: i
                   class: sort-icon
                   attrs:
                     aria-hidden: "true"
@@ -227,6 +227,9 @@ tokens:
   head-btn.font-weight: "{sherpa.font-weight-regular}"
   head-btn.line-height: "{sherpa.theme-content-line-height-base}"
   head-btn.color: "{sherpa.theme-content-body-1}"
+  sort-icon.inline-size: "{sherpa.theme-size-icon-xs}"
+  sort-icon.block-size: "{sherpa.theme-size-icon-xs}"
+  sort-icon.font-size: "{sherpa.theme-size-icon-xs}"
   group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
   row.background: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
