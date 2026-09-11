@@ -245,6 +245,9 @@
 /* Figma value-label: content/size/xs 10 on 16, regular, content/body/+1 — the gauge
    reads its value as a small label, not display type. */
 .value {
+  /* MONOSPACED — the gauge's readings are NUMBERS, on the same scale as a 2D
+     chart's axis, so they take the same face. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
@@ -257,6 +260,10 @@
   display: flex;
   justify-content: space-between;
   inline-size: var(--_size);
+  /* MONOSPACED — the gauge's readings are NUMBERS, on the same scale as a 2D
+     chart's axis, so they take the same face. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-font-size-body-xs, 10px);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);

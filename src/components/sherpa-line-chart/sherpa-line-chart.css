@@ -95,7 +95,19 @@
   display: flex;
   justify-content: space-between;
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
+  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
+     the digits jittering between gridlines as a value changes. Figma's Chart Axis
+     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
+     nodes; it bound content/font/body until this pass and was re-pointed there
+     first, so the two sides agree. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-font-size-body-small, 12px);
+  /* STATED, not `normal`. An unset line-height is resolved by the FONT, and
+     JetBrains Mono resolves it taller than Inter — so the mono switch left the
+     labels' descenders on the chart's bottom edge. Figma binds
+     content/line-height/small 16 here. */
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);
 }
 .x-label {
@@ -184,6 +196,13 @@
   padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
   border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
+  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
+     the digits jittering between gridlines as a value changes. Figma's Chart Axis
+     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
+     nodes; it bound content/font/body until this pass and was re-pointed there
+     first, so the two sides agree. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-variant-numeric: tabular-nums;
   /* Axis text: SMALL 12/16, the same size the horizontal axis labels use — the
      two axes are one scale, and 14 against 12 read as a mistake. */
   font-size: var(--sherpa-font-size-body-small, 12px);

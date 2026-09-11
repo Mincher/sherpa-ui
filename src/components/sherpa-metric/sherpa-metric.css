@@ -36,11 +36,17 @@
    OUTSIDE the card, so it names the metric rather than reporting on it. Reading
    --_status-text first turned every title green or red, which read as part of the
    reading instead of its caption. The delta and the sparkline carry the status. */
+/* LIGHT and UPPERCASE — read from the Figma node (Metric 61:263): the label text
+   binds content/weight/LIGHT (300) and carries textCase: UPPER. It was regular
+   400 sentence case here. The caps are a CSS transform rather than capitalised
+   content, so the accessible name and the host's data-label stay as written. */
 .label {
   margin: 0;
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  font-weight: var(--sherpa-font-weight-light, 300);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  letter-spacing: var(--sherpa-theme-content-letter-spacing-small, 0px);
+  text-transform: uppercase;
   color: var(--sherpa-theme-content-body-1, #35353d);
   white-space: nowrap;
   overflow: hidden;
@@ -74,10 +80,15 @@
   min-inline-size: 0;
 }
 
-/* ── Value — content/size/h1 24 on line-height/h1 32, semibold, hero font, −0.2 tracking ── */
+/* ── Value — content/size/h1 24 on line-height/h1 32, semibold, MONO, −0.2 tracking ── */
 .value {
   margin: 0;
-  font-family: inherit; /* content/font/hero resolves to Inter — same family as body */
+  /* MONOSPACED. Figma binds this text to content/font/MONOSPACED (JetBrains
+     Mono), not the body face — the comment here said content/font/hero, which is
+     a different variable and resolved to Inter. A metric is a NUMBER, and mono's
+     tabular figures stop the digits shifting as the value updates. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-theme-content-size-h1, 24px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);

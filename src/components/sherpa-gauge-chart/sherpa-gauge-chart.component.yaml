@@ -18,58 +18,78 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: figure
-    class: chart-figure
-    part: figure
-    children:
-      - el: div
-        class: chart-header
-        part: header
-        children:
-          - el: span
-            class: title
-            slot: title
-      - el: div
-        class: gauge
-        part: gauge
-        attrs:
-          role: img
-          aria-label: Gauge chart
-        children:
-          - el: div
-            class: track
-            part: track
-          - el: div
-            class: fill
-            part: fill
-          - el: div
-            class: hub
-            children:
-              - el: div
-                class: needle
-                part: needle
-          - el: div
-            class: hub-cap
-            part: hub
-          - el: div
-            class: centre
-            children:
-              - el: span
-                class: value
-                part: value
-      - el: div
-        class: scale
-        part: scale
-        children:
-          - el: span
-            class: min
-          - el: span
-            class: max
-      - el: figcaption
-        class: caption
-        part: caption
-        slot: caption
+  roots:
+    - el: figure
+      class: chart-figure
+      part: figure
+      children:
+        - el: div
+          class: chart-header
+          part: header
+          children:
+            - el: span
+              class: title
+              slot: title
+        - el: div
+          class: gauge-wrap
+          children:
+            - el: div
+              class: gauge
+              part: gauge
+              attrs:
+                role: img
+                aria-label: Gauge chart
+              children:
+                - el: svg
+                  class: ring
+                  part: ring
+                  attrs:
+                    viewBox: 0 0 100 50
+                    aria-hidden: "true"
+                  children:
+                    - el: g
+                      class: zones
+                - el: div
+                  class: hub
+                  children:
+                    - el: div
+                      class: needle
+                      part: needle
+                - el: div
+                  class: hub-cap
+                  part: hub
+                - el: div
+                  class: centre
+                  children:
+                    - el: span
+                      class: value
+                      part: value
+            - el: div
+              class: hotspots
+              part: hotspots
+        - el: div
+          class: scale
+          part: scale
+          children:
+            - el: span
+              class: min
+            - el: span
+              class: max
+        - el: figcaption
+          class: caption
+          part: caption
+          slot: caption
+    - el: template
+      class: zone-tpl
+      children:
+        - el: svg
+          children:
+            - el: circle
+              class: zone
+              attrs:
+                cx: "50"
+                cy: "50"
+                fill: none
 props:
   - $type: prop
     name: data-caption
@@ -118,9 +138,6 @@ props:
       or any CSS colour. Omit for the single-colour sweep.
 states:
   - $type: state
-    name: zones
-    selector: ":host([data-zones])"
-  - $type: state
     name: caption
     selector: ":host([data-caption])"
   - $type: state
@@ -139,15 +156,20 @@ tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
   title.color: "{sherpa.theme-content-body-base}"
-  track.background: "{sherpa.style-border-base}"
-  needle.background: "{sherpa.theme-content-body-base}"
-  hub-cap.background: "{sherpa.theme-content-body-base}"
-  value.font-size: "{sherpa.font-size-heading-h1}"
-  value.font-weight: "{sherpa.font-weight-bold}"
-  value.color: "{sherpa.theme-content-body-base}"
-  scale.font-size: "{sherpa.font-size-body-small}"
+  needle.inline-size: "{sherpa.display-mode-border-width-base}"
+  needle.background: "{sherpa.theme-content-body-2}"
+  hub-cap.background: "{sherpa.theme-content-body-1}"
+  value.font-family: "{sherpa.font-family-mono}"
+  value.font-size: "{sherpa.font-size-body-xs}"
+  value.font-weight: "{sherpa.font-weight-regular}"
+  value.line-height: "{sherpa.theme-content-line-height-xs}"
+  value.color: "{sherpa.theme-content-body-1}"
+  scale.font-family: "{sherpa.font-family-mono}"
+  scale.font-size: "{sherpa.font-size-body-xs}"
+  scale.line-height: "{sherpa.theme-content-line-height-xs}"
   scale.color: "{sherpa.theme-content-body-1}"
   caption.font-size: "{sherpa.font-size-body-small}"
+  caption.line-height: "{sherpa.theme-content-line-height-small}"
   caption.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:

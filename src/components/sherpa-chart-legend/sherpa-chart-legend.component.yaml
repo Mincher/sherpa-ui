@@ -88,6 +88,7 @@ tokens:
   legend.padding: "{sherpa.display-mode-space-xs}"
   item.border-radius: "{sherpa.structure-rounding-top-left}"
   item.color: "{sherpa.theme-content-body-1}"
+  item.font-family: "{sherpa.font-family-mono}"
   item.font-size: "{sherpa.theme-content-size-small}"
   item.font-weight: "{sherpa.font-weight-regular}"
   item.line-height: "{sherpa.theme-content-line-height-xs}"

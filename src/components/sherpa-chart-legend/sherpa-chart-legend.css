@@ -85,7 +85,10 @@
      value text binds content/body/base — two different inks, where the code had
      one. */
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: inherit;
+  /* MONOSPACED. Figma binds every Category and value text in the Chart Legend
+     (1099:37879) to content/font/MONOSPACED, not the body face — a legend sits
+     beside a chart's own labels and reads as part of the same numeric run. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   /* Figma: content/size/SMALL 12 on line-height/xs 16, regular. It was size/xs
      10 here; the bound variable on every Category and value text node is
      content/size/small. */

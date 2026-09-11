@@ -61,6 +61,9 @@ anatomy:
                     - el: g
                       class: series-layer
                 - el: div
+                  class: hotspots
+                  part: hotspots
+                - el: div
                   class: x-axis
                   part: x-axis
                 - el: span
@@ -127,6 +130,9 @@ states:
   - $type: state
     name: not-area
     selector: ":host(:not([data-variant=\"area\"]))"
+  - $type: state
+    name: focus-visible
+    selector: .hotspot:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -140,23 +146,30 @@ tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
   title.color: "{sherpa.theme-content-body-base}"
+  plot.border-block-end: "{sherpa.display-mode-border-width-base}"
   line.stroke: "{sherpa.data-viz-series-1}"
   area.fill: "{sherpa.data-viz-series-1}"
   x-axis.margin-block-start: "{sherpa.display-mode-space-2xs}"
+  x-axis.font-family: "{sherpa.font-family-mono}"
   x-axis.font-size: "{sherpa.font-size-body-small}"
+  x-axis.line-height: "{sherpa.theme-content-line-height-small}"
   x-axis.color: "{sherpa.theme-content-body-1}"
-  chart-body.gap: "{sherpa.display-mode-space-2xs}"
-  y-axis.font-size: "{sherpa.font-size-body-base}"
+  axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
+  y-axis.inline-size: "{sherpa.display-mode-size-lg}"
+  y-axis.padding-inline-end: "{sherpa.display-mode-space-sm}"
+  y-axis.border-inline-end: "{sherpa.display-mode-border-width-sm}"
+  y-axis.font-family: "{sherpa.font-family-mono}"
+  y-axis.font-size: "{sherpa.font-size-body-small}"
   y-axis.font-weight: "{sherpa.font-weight-regular}"
-  y-axis.line-height: "{sherpa.theme-content-line-height-base}"
+  y-axis.line-height: "{sherpa.theme-content-line-height-small}"
   y-axis.color: "{sherpa.theme-content-body-1}"
-  y-tick.padding-inline-end: "{sherpa.display-mode-space-2xs}"
-  y-tick.border-inline-end: "{sherpa.display-mode-border-width-sm}"
   axis-label.color: "{sherpa.theme-content-body-1}"
   axis-label.font-size: "{sherpa.font-size-body-base}"
   axis-label.font-weight: "{sherpa.font-weight-regular}"
   axis-label.line-height: "{sherpa.theme-content-line-height-base}"
   axis-label-x.margin-block-start: "{sherpa.display-mode-space-2xs}"
+  hotspot.inline-size: "{sherpa.display-mode-size-base}"
+  hotspot.block-size: "{sherpa.display-mode-size-base}"
 $extensions:
   sherpa:
     figmaName: Data Field
