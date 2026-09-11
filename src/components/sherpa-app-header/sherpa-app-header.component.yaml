@@ -17,8 +17,6 @@ $description: >-
 element:
   $type: element
   tag: header
-  attributes:
-    role: banner
   provides: []
 templates:
   - default
@@ -27,8 +25,6 @@ anatomy:
     el: header
     class: bar
     part: bar
-    attrs:
-      role: banner
     children:
       - el: div
         class: content
@@ -36,63 +32,131 @@ anatomy:
         children:
           - el: div
             class: row-history
-            part: history-row
+            part: row-history
             children:
               - el: div
                 class: history
                 part: history
                 children:
                   - el: button
-                    class: back
+                    class: btn back
                     part: back
                     attrs:
                       type: button
                       aria-label: Back
-                  - el: div
-                    class: breadcrumb
-                    part: breadcrumb
-                    slot: breadcrumb
+                    children:
+                      - el: i
+                        class: fa-solid fa-arrow-left
+                        attrs:
+                          aria-hidden: "true"
+                  - slot: breadcrumbs
               - el: div
                 class: actions
                 part: actions
                 children:
                   - slot: actions
+                  - el: button
+                    class: ai
+                    part: ai
+                    attrs:
+                      type: button
+                    children:
+                      - el: i
+                        class: fa-solid fa-wand-magic-sparkles
+                        attrs:
+                          aria-hidden: "true"
+                      - el: span
+                        class: ai-label
+                  - el: button
+                    class: btn labs
+                    part: labs
+                    attrs:
+                      type: button
+                      aria-label: Labs
+                    children:
+                      - el: i
+                        class: fa-solid fa-flask
+                        attrs:
+                          aria-hidden: "true"
                   - el: span
-                    class: divider
-                    part: divider
+                    class: divider divider-labs
                     attrs:
                       aria-hidden: "true"
                   - el: button
-                    class: favorite
-                    part: favorite
+                    class: btn theme-toggle
+                    part: theme-toggle
                     attrs:
                       type: button
-                      aria-pressed: "false"
-                      aria-label: Favourite
-                  - el: button
-                    class: export
-                    part: export
+                      aria-label: Toggle theme
+                    children:
+                      - el: i
+                        class: fa-solid fa-moon
+                        attrs:
+                          aria-hidden: "true"
+                  - el: span
+                    class: divider divider-tools
                     attrs:
-                      type: button
-                      aria-label: Export
+                      aria-hidden: "true"
                   - el: span
                     class: notifications
                     part: notifications
                     children:
                       - el: button
-                        class: notif-btn
+                        class: btn notif-btn
                         part: notif-btn
                         attrs:
                           type: button
                           aria-label: Notifications
+                        children:
+                          - el: i
+                            class: fa-solid fa-bell
+                            attrs:
+                              aria-hidden: "true"
                       - el: span
                         class: notif-badge
                         part: notif-badge
                         attrs:
-                          role: status
+                          aria-hidden: "true"
+                  - el: button
+                    class: btn account
+                    part: account
+                    attrs:
+                      type: button
+                      aria-label: Account
+                    children:
+                      - el: i
+                        class: fa-solid fa-user-gear
+                        attrs:
+                          aria-hidden: "true"
+                  - el: button
+                    class: btn help
+                    part: help
+                    attrs:
+                      type: button
+                      aria-label: Support
+                    children:
+                      - el: i
+                        class: fa-solid fa-headset
+                        attrs:
+                          aria-hidden: "true"
+                  - el: span
+                    class: divider divider-menu
+                    attrs:
+                      aria-hidden: "true"
+                  - el: button
+                    class: btn menu
+                    part: menu
+                    attrs:
+                      type: button
+                      aria-label: Switch app
+                    children:
+                      - el: i
+                        class: fa-solid fa-grip
+                        attrs:
+                          aria-hidden: "true"
           - el: div
             class: row-view
-            part: view-row
+            part: row-view
             children:
               - el: div
                 class: title-row
@@ -106,6 +170,7 @@ anatomy:
                   - el: h1
                     class: title
                     part: title
+                  - slot: title
               - el: div
                 class: filters
                 part: filters
@@ -114,45 +179,108 @@ anatomy:
         class: loading-bar
         part: loading-bar
         attrs:
-          role: progressbar
-          aria-hidden: "true"
+          role: presentation
         children:
           - el: span
             class: loading-fill
 props:
   - $type: prop
-    name: data-favorite
+    name: data-account
+    type: string
+    kind: style
+    description: show the account button
+  - $type: prop
+    name: data-ai
+    type: string
+    kind: style
+    description: show the "Ask N-zo" AI button
+  - $type: prop
+    name: data-ai-label
     type: string
     kind: content
+    default: "\"Ask N-zo\""
+    description: its label
+  - $type: prop
+    name: data-back
+    type: string
+    kind: style
+    description: show the back button
+  - $type: prop
+    name: data-favorite
+    type: string
+    kind: style
     default: false
     description: — favourited state (the star toggle)
   - $type: prop
     name: data-heading
     type: string
     kind: content
-    description: — the view title (hidden when empty)
+    description: the view title (row 2)
+  - $type: prop
+    name: data-help
+    type: string
+    kind: style
+    description: show the support button
   - $type: prop
     name: data-icon
     type: string
     kind: content
-    description: — a glyph before the title
+    description: the view icon — an FA class list ("fa-solid fa-gauge")
+  - $type: prop
+    name: data-labs
+    type: string
+    kind: style
+    description: show the labs/beaker button
   - $type: prop
     name: data-loading
     type: string
     kind: style
-    description: — show the loading bar
+    description: run the indeterminate loading bar
+  - $type: prop
+    name: data-menu
+    type: string
+    kind: style
+    description: show the app-switcher button
   - $type: prop
     name: data-notifications
     type: string
     kind: content
-    description: — notification count (shows the badge; hidden at 0/unset)
+    description: unread count — shows the bell + its badge
+  - $type: prop
+    name: data-theme-toggle
+    type: string
+    kind: style
+    description: show the light/dark (moon) button
+  - $type: prop
+    name: data-title
+    type: string
+    kind: content
+    description: accepted as an alias for data-heading
 states:
   - $type: state
-    name: favorite
-    selector: ":host([data-favorite])"
+    name: back
+    selector: ":host([data-back])"
+  - $type: state
+    name: ai
+    selector: ":host([data-ai])"
+  - $type: state
+    name: labs
+    selector: ":host([data-labs])"
+  - $type: state
+    name: theme-toggle
+    selector: ":host([data-theme-toggle])"
   - $type: state
     name: notifications
     selector: ":host([data-notifications])"
+  - $type: state
+    name: account
+    selector: ":host([data-account])"
+  - $type: state
+    name: help
+    selector: ":host([data-help])"
+  - $type: state
+    name: menu
+    selector: ":host([data-menu])"
   - $type: state
     name: icon
     selector: ":host([data-icon])"
@@ -164,87 +292,68 @@ states:
     selector: ":host(:not([data-loading]))"
   - $type: state
     name: focus-visible
-    selector: .back:focus-visible
+    selector: .btn:focus-visible
 events:
   - $type: event
-    name: back-click
+    name: header-back
     bubbles: true
     composed: true
   - $type: event
-    name: favorite-toggle
-    bubbles: true
-    composed: true
-    trigger:
-      "on": click
-      node: .favorite
-  - $type: event
-    name: view-export
-    bubbles: true
-    composed: true
-    trigger:
-      "on": click
-      node: .export
-  - $type: event
-    name: breadcrumb-click
-    bubbles: true
-    composed: true
-    trigger:
-      "on": breadcrumb-select
-      node: .breadcrumb
-  - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: href
+    name: header-notifications
     bubbles: true
     composed: true
 tokens:
-  content.gap: "{sherpa.display-space-sm}"
-  content.padding: "{sherpa.display-space-xs}"
-  row-history.gap: "{sherpa.display-space-xs}"
-  row-history.min-block-size: "{sherpa.display-size-lg}"
-  history.gap: "{sherpa.display-space-2xs}"
-  actions.gap: "{sherpa.display-space-xs}"
-  divider.inline-size: "{sherpa.display-border-width-base}"
-  divider.block-size: "{sherpa.display-size-md}"
-  divider.background: "{sherpa.style-border-base}"
-  back.inline-size: "{sherpa.display-size-lg}"
-  back.block-size: "{sherpa.display-size-lg}"
-  back.border-radius: "{sherpa.display-border-rounding-base}"
-  back.color: "{sherpa.theme-content-body-1}"
-  back.font-size: "{sherpa.font-size-body-base}"
-  favorite.inline-size: "{sherpa.display-size-lg}"
-  favorite.block-size: "{sherpa.display-size-lg}"
-  favorite.border-radius: "{sherpa.display-border-rounding-base}"
-  favorite.color: "{sherpa.theme-content-body-1}"
-  favorite.font-size: "{sherpa.font-size-body-base}"
-  export.inline-size: "{sherpa.display-size-lg}"
-  export.block-size: "{sherpa.display-size-lg}"
-  export.border-radius: "{sherpa.display-border-rounding-base}"
-  export.color: "{sherpa.theme-content-body-1}"
-  export.font-size: "{sherpa.font-size-body-base}"
-  notif-btn.inline-size: "{sherpa.display-size-lg}"
-  notif-btn.block-size: "{sherpa.display-size-lg}"
-  notif-btn.border-radius: "{sherpa.display-border-rounding-base}"
-  notif-btn.color: "{sherpa.theme-content-body-1}"
-  notif-btn.font-size: "{sherpa.font-size-body-base}"
-  notif-badge.min-inline-size: "{sherpa.display-size-md}"
-  notif-badge.block-size: "{sherpa.display-size-md}"
-  notif-badge.padding-inline: "{sherpa.display-space-3xs}"
-  notif-badge.border-radius: "{sherpa.display-border-rounding-full}"
+  content.gap: "{sherpa.display-mode-space-sm}"
+  content.padding: "{sherpa.display-mode-space-xs}"
+  row-history.gap: "{sherpa.display-mode-space-xs}"
+  row-history.min-block-size: "{sherpa.display-mode-size-lg}"
+  history.gap: "{sherpa.display-mode-space-2xs}"
+  actions.gap: "{sherpa.display-mode-space-xs}"
+  divider.inline-size: "{sherpa.display-mode-border-width-base}"
+  divider.block-size: "{sherpa.display-mode-size-sm}"
+  divider.background: "{sherpa.theme-border-default-2}"
+  btn.inline-size: "{sherpa.display-mode-size-lg}"
+  btn.block-size: "{sherpa.display-mode-size-lg}"
+  btn.border-radius: "{sherpa.structure-rounding-top-left}"
+  btn.color: "{sherpa.style-content-base}"
+  btn.font-size: "{sherpa.theme-content-size-base}"
+  back.inline-size: "{sherpa.display-mode-size-sm}"
+  back.block-size: "{sherpa.display-mode-size-sm}"
+  back.font-size: "{sherpa.theme-content-size-xs}"
+  ai.gap: "{sherpa.structure-space-gap}"
+  ai.block-size: "{sherpa.display-mode-size-lg}"
+  ai.padding-inline: "{sherpa.structure-space-padding}"
+  ai.border-width: "{sherpa.style-border-width}"
+  ai.border-color: "{sherpa.style-border-base}"
+  ai.border-radius: "{sherpa.structure-rounding-top-left}"
+  ai.background: "{sherpa.style-surface-base}"
+  ai.color: "{sherpa.style-content-base}"
+  ai.font-size: "{sherpa.font-size-body-base}"
+  ai.font-weight: "{sherpa.font-weight-regular}"
+  ai.line-height: "{sherpa.theme-content-line-height-base}"
+  notif-badge.inset-block-end: "{sherpa.display-mode-space-sm}"
+  notif-badge.inset-inline-start: "{sherpa.display-mode-space-2xs}"
+  notif-badge.min-inline-size: "{sherpa.display-mode-size-sm}"
+  notif-badge.block-size: "{sherpa.display-mode-size-sm}"
+  notif-badge.padding-inline: "{sherpa.display-mode-space-3xs}"
+  notif-badge.border-radius: "{sherpa.display-mode-border-rounding-full}"
   notif-badge.background: "{sherpa.theme-surface-accent-2}"
   notif-badge.color: "{sherpa.theme-content-body-base-fixed}"
-  notif-badge.font-size: "{sherpa.font-size-body-xs}"
-  notif-badge.font-weight: "{sherpa.font-weight-semibold}"
-  notif-badge.line-height: "{sherpa.display-size-md}"
-  row-view.gap: "{sherpa.display-space-sm}"
-  title-row.gap: "{sherpa.display-space-xs}"
-  view-icon.inline-size: "{sherpa.display-size-md}"
-  title.font-size: "{sherpa.font-size-heading-h2}"
-  title.font-weight: "{sherpa.font-weight-bold}"
-  title.color: "{sherpa.theme-content-body-base}"
-  loading-bar.block-size: "{sherpa.display-border-width-lg}"
+  notif-badge.font-size: "{sherpa.theme-content-size-xs}"
+  notif-badge.font-weight: "{sherpa.font-weight-regular}"
+  notif-badge.line-height: "{sherpa.display-mode-size-sm}"
+  row-view.gap: "{sherpa.display-mode-space-sm}"
+  title-row.gap: "{sherpa.display-mode-space-xs}"
+  title-row.min-block-size: "{sherpa.display-mode-size-lg}"
+  view-icon.inline-size: "{sherpa.theme-size-icon-xs}"
+  view-icon.block-size: "{sherpa.theme-size-icon-xs}"
+  view-icon.font-size: "{sherpa.theme-size-icon-xs}"
+  view-icon.color: "{sherpa.theme-content-body-1}"
+  title.font-size: "{sherpa.font-size-body-large}"
+  title.font-weight: "{sherpa.font-weight-regular}"
+  title.line-height: "{sherpa.theme-content-line-height-large}"
+  title.color: "{sherpa.theme-content-body-1}"
+  loading-bar.block-size: "{sherpa.display-mode-border-width-lg}"
   loading-fill.background: "{sherpa.theme-surface-active-2}"
 $extensions:
   sherpa:

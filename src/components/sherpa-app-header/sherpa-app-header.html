@@ -1,49 +1,65 @@
 <!--
   sherpa-app-header — the top application header bar.
 
-  Matches the Figma "App Header" (150:3690) exactly. Two stacked rows inside an 8px
-  padded content frame (gap 12), on a flat style-surface/base with NO borders:
+  Read from the Figma "App Header" node (150:3690), not from a screenshot. Two
+  stacked rows inside an 8px padded content frame (gap 12), on a flat
+  style-surface/base with NO borders:
 
     Row 1 — History & Actions (space-between, 24 tall)
       left   : back button (16px Transparent icon) + breadcrumbs
       right  : "Ask N-zo" (24-tall default label button, AI icon)
-             · divider · chat · beaker · moon
-             · divider · notifications · account · help
-             · divider · menu
+             · beaker · divider · moon · divider
+             · notifications (bell-ring + badge) · account (user-settings)
+             · support (headset) · divider · app-switcher
     Row 2 — View Details (gap 12)
-      title row : 16px view icon + view title (16/24 regular)
+      title row : 16px view icon + view title (content/size/large 16 on
+                  line-height/large 24, regular, content/body/+1)
       filters   : the embedded quick-filter toolbar (Type=view)
 
   Every action button is a 24×24 Transparent icon button (Figma Structure=sm), so
   they are pure chrome until the app wires them. Each is CSS-gated on a data-* flag
   so a product can drop the ones it does not use.
 
+  ── WHAT CHANGED, AND WHY (2026-09-11) ───────────────────────────────────────
+  The old build claimed to match Figma "exactly" and did not. Corrected against
+  the node's own data:
+    • ACTION ORDER. Figma groups beaker alone, then moon alone, then the
+      bell/account/support run, then the app switcher. The code had
+      chat+beaker+moon | bell+account+help.
+    • NO CHAT BUTTON. Figma has none; the code invented one.
+    • FOUR GLYPHS. help is `headset` (talk to support), not a question mark;
+      account is `user-settings` (it opens settings), not a plain user circle;
+      the menu is `app-switcher` (a grid — it switches APPS), not a hamburger;
+      the bell is `bell-ring`.
+    • NO FAVOURITE STAR. Figma's Title Row holds only the view icon and title.
+      The view-level Filter Toolbar below already carries a ★ firing
+      view-favorite, so a second one here did the same job twice.
+  ──────────────────────────────────────────────────────────────────────────────
+
   Public API:
-    data-title          the view title (row 2)
+    data-heading        the view title (row 2)
+    data-title          accepted as an alias for data-heading
     data-icon           the view icon — an FA class list ("fa-solid fa-gauge")
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label (default "Ask N-zo")
-    data-chat           show the chat button
     data-labs           show the labs/beaker button
     data-theme-toggle   show the light/dark (moon) button
     data-notifications  unread count — shows the bell + its badge
     data-account        show the account button
-    data-help           show the help button
-    data-menu           show the overflow menu button
-    data-favorite       the view is favourited (fills the star)
+    data-help           show the support button
+    data-menu           show the app-switcher button
     data-loading        run the indeterminate loading bar
 
   Slots:
     breadcrumbs  the breadcrumb trail (row 1, left)
     actions      extra buttons before the standard action set
-    title        rich view title (overrides data-title)
+    title        rich view title (overrides data-heading)
     filters      the quick-filter toolbar (row 2)
 
   Fires:
-    header-back · header-ai · header-chat · header-labs · header-theme
+    header-back · header-ai · header-labs · header-theme
     header-notifications · header-account · header-help · header-menu
-    header-favorite — detail: { favorite }
 -->
 <template id="default">
   <header class="bar" part="bar">
@@ -65,14 +81,22 @@
             <span class="ai-label">Ask N-zo</span>
           </button>
 
-          <span class="divider divider-ai" aria-hidden="true"></span>
+          <!--
+            THE DIVIDERS AND THE ORDER ARE FIGMA'S, read from the App Header's
+            `Actions` slot (150:3690):
 
-          <button class="btn chat" part="chat" type="button" aria-label="Chat">
-            <i class="fa-solid fa-comment" aria-hidden="true"></i>
-          </button>
+              Ask N-zo · beaker · │ · moon · │ · bell+badge · user-settings ·
+              headset · │ · app-switcher
+
+            The old order put chat/beaker/moon in one group and bell/account/help
+            in another, with a chat button Figma does not have at all.
+          -->
           <button class="btn labs" part="labs" type="button" aria-label="Labs">
             <i class="fa-solid fa-flask" aria-hidden="true"></i>
           </button>
+
+          <span class="divider divider-labs" aria-hidden="true"></span>
+
           <button class="btn theme-toggle" part="theme-toggle" type="button" aria-label="Toggle theme">
             <i class="fa-solid fa-moon" aria-hidden="true"></i>
           </button>
@@ -80,22 +104,35 @@
           <span class="divider divider-tools" aria-hidden="true"></span>
 
           <span class="notifications" part="notifications">
+            <!--
+              Figma's glyph is `bell-ring`. Its closest FREE Font Awesome match is
+              `fa-bell` — `fa-bell-on` is the ringing one but it is PRO, and a Pro
+              class in the free webfont renders NOTHING at all (no glyph, no
+              fallback box, `content: none` and zero width), so the button was
+              silently blank. Verified in the browser rather than assumed.
+            -->
             <button class="btn notif-btn" part="notif-btn" type="button" aria-label="Notifications">
               <i class="fa-solid fa-bell" aria-hidden="true"></i>
             </button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
+          <!-- `user-settings`, not a plain user circle: this opens account
+               SETTINGS, which is why Figma's glyph carries the cog. -->
           <button class="btn account" part="account" type="button" aria-label="Account">
-            <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+            <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
           </button>
-          <button class="btn help" part="help" type="button" aria-label="Help">
-            <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+          <!-- `headset`, not a question mark: this is "talk to support", not
+               "read the docs". -->
+          <button class="btn help" part="help" type="button" aria-label="Support">
+            <i class="fa-solid fa-headset" aria-hidden="true"></i>
           </button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
-          <button class="btn menu" part="menu" type="button" aria-label="Menu">
-            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+          <!-- `app-switcher` (a grid of squares), not a hamburger: it switches
+               APPS, where a hamburger reads as "this page's menu". -->
+          <button class="btn menu" part="menu" type="button" aria-label="Switch app">
+            <i class="fa-solid fa-grip" aria-hidden="true"></i>
           </button>
         </div>
       </div>
@@ -106,10 +143,10 @@
           <span class="view-icon" part="view-icon" aria-hidden="true"></span>
           <h1 class="title" part="title"></h1>
           <slot name="title"></slot>
-          <button class="btn favorite" part="favorite" type="button"
-                  aria-pressed="false" aria-label="Favourite this view">
-            <i class="fa-solid fa-star" aria-hidden="true"></i>
-          </button>
+          <!-- NO favourite star. Figma's Title Row (150:3690) holds only the view
+               icon and the title, and the view-level Filter Toolbar below it
+               already carries a ★ that fires view-favorite. Two stars on one
+               screen doing the same job was the divergence. -->
         </div>
 
         <div class="filters" part="filters">

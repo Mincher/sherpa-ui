@@ -174,30 +174,45 @@
    groups they separate, so no group leaves a dangling rule. */
 :host([data-back]) .back { display: inline-flex; }
 :host([data-ai]) .ai { display: inline-flex; }
-:host([data-chat]) .chat { display: inline-flex; }
 :host([data-labs]) .labs { display: inline-flex; }
 :host([data-theme-toggle]) .theme-toggle { display: inline-flex; }
 :host([data-notifications]) .notif-btn { display: inline-flex; }
 :host([data-account]) .account { display: inline-flex; }
 :host([data-help]) .help { display: inline-flex; }
 :host([data-menu]) .menu { display: inline-flex; }
-:host([data-favorite-action]) .favorite { display: inline-flex; }
 
-/* Dividers: only between two groups that are both present. */
+/* Dividers: only between two groups that are BOTH present, so a product that
+   drops a group never leaves a rule floating with nothing on one side.
+
+   FIGMA'S GROUPING (App Header 150:3690 `Actions` slot), which is narrower than
+   the code's used to be — beaker stands alone, and moon stands alone:
+
+     Ask N-zo · beaker │ moon │ bell · account · support │ app-switcher
+
+   The old rules grouped chat+beaker+moon as one "tools" set, which put the
+   dividers in the wrong two places. */
 .divider { display: none; }
-:host([data-ai]:is([data-chat], [data-labs], [data-theme-toggle])) .divider-ai { display: block; }
-:host(:is([data-chat], [data-labs], [data-theme-toggle]):is([data-notifications], [data-account], [data-help])) .divider-tools { display: block; }
-:host([data-menu]:is([data-notifications], [data-account], [data-help])) .divider-menu { display: block; }
+/* …between the AI/beaker group and moon. */
+:host(:is([data-ai], [data-labs])[data-theme-toggle]) .divider-labs { display: block; }
+/* …between moon and the notifications run. */
+:host(:is([data-ai], [data-labs], [data-theme-toggle]):is([data-notifications], [data-account], [data-help])) .divider-tools { display: block; }
+/* …before the app switcher. */
+:host([data-menu]:is([data-notifications], [data-account], [data-help], [data-theme-toggle], [data-labs], [data-ai])) .divider-menu { display: block; }
 
 /* ── Notifications: button + count badge ────────────────────────────── */
 .notifications { position: relative; display: inline-flex; flex-shrink: 0; }
 
 /* The badge is the accent count chip Figma pins on the bell. */
+/* The badge hangs off the BELL'S BOTTOM EDGE, not its top.
+   Read from the Figma node (App Header 150:3690, `Actions` slot): the bell sits
+   at y 0..24 and the Notif Badge at y 22, so ~14 of its 16px falls BELOW the
+   button. It was pinned to the top-right corner here, where it sat over the
+   bell's own ringing lines and read as part of the glyph. */
 .notif-badge {
   display: none;
   position: absolute;
-  inset-block-start: calc(-1 * var(--sherpa-display-mode-space-3xs, 2px));
-  inset-inline-end: calc(-1 * var(--sherpa-display-mode-space-3xs, 2px));
+  inset-block-end: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
+  inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
@@ -254,11 +269,6 @@
   text-overflow: ellipsis;
 
   &:empty { display: none; }
-}
-
-/* Favourited — the star fills with the brand accent (Style active ink). */
-:host([data-favorite]) .favorite {
-  color: var(--sherpa-theme-content-active-2, #c046ff);
 }
 
 /* Filters row — the embedded quick-filter toolbar; collapses when empty. */

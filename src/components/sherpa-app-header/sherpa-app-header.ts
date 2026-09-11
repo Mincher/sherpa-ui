@@ -20,21 +20,16 @@
  * @attr {boolean} data-back          show the back button
  * @attr {boolean} data-ai            show the "Ask N-zo" button
  * @attr {string}  data-ai-label      its label (default "Ask N-zo")
- * @attr {boolean} data-chat          show the chat button
- * @attr {boolean} data-labs          show the labs button
+ * @attr {boolean} data-labs          show the labs (beaker) button
  * @attr {boolean} data-theme-toggle  show the light/dark button
  * @attr {string}  data-notifications unread count — shows the bell + badge
  * @attr {boolean} data-account       show the account button
- * @attr {boolean} data-help          show the help button
- * @attr {boolean} data-menu          show the overflow menu button
- * @attr {boolean} data-favorite-action show the favourite star
- * @attr {boolean} data-favorite      the view is favourited
+ * @attr {boolean} data-help          show the support (headset) button
+ * @attr {boolean} data-menu          show the app-switcher button
  * @attr {boolean} data-loading       run the loading bar
  *
  * @fires back-click         — detail: {}
- * @fires favorite-toggle    — detail: { favorite }
  * @fires ai-click           — detail: {}
- * @fires chat-click         — detail: {}
  * @fires labs-click         — detail: {}
  * @fires theme-toggle       — detail: {}
  * @fires notifications-open — detail: {}
@@ -55,11 +50,13 @@ interface AppHeaderConfig {
 
 interface Populatable extends HTMLElement { populate?: (d: unknown) => void; rendered?: Promise<void> }
 
-/** Every plain action button: its class → the event it fires. */
+/** Every plain action button: its class → the event it fires.
+ *
+ * In FIGMA'S ORDER (App Header 150:3690 `Actions` slot), so the list reads like
+ * the bar does. There is no chat button — the code had invented one. */
 const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
-  ['.chat', 'chat-click'],
   ['.labs', 'labs-click'],
   ['.theme-toggle', 'theme-toggle'],
   ['.notif-btn', 'notifications-open'],
@@ -77,7 +74,6 @@ export class SherpaAppHeader extends SherpaElement {
     'data-icon',
     'data-ai-label',
     'data-notifications',
-    'data-favorite',
   ];
 
   override onRender(): void {
@@ -86,8 +82,6 @@ export class SherpaAppHeader extends SherpaElement {
     for (const [sel, event] of ACTIONS) {
       this.$(sel)?.addEventListener('click', () => this.emit(event, {}));
     }
-    // The star is the one button that also latches state.
-    this.$('.favorite')?.addEventListener('click', this.#onFavorite);
     // Re-dispatch a slotted breadcrumbs' selection as our own header event.
     this.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
   }
@@ -141,17 +135,9 @@ export class SherpaAppHeader extends SherpaElement {
     if (badge) badge.textContent = count && count !== '0' ? count : '';
     if (count === '0') this.removeAttribute('data-notifications');
 
-    // Favourite reflects onto the star's aria-pressed.
-    this.$('.favorite')?.setAttribute('aria-pressed', String(this.hasAttribute('data-favorite')));
   }
 
   /* ── Events ─────────────────────────────────────────────────────── */
-
-  #onFavorite = (): void => {
-    const favorite = !this.hasAttribute('data-favorite');
-    this.toggleAttribute('data-favorite', favorite);
-    this.emit('favorite-toggle', { favorite });
-  };
 
   #onBreadcrumb = (event: Event): void => {
     const { index, label, href } = (event as CustomEvent).detail ?? {};

@@ -8,18 +8,31 @@
        sets data-heading="Dashboard"), so a heading here repeated it a second time
        a few pixels lower. A view's content starts with its content. -->
 
-  <!-- Metric tiles on the layout grid: 3 of 12 each on desktop (so four fit a
-       row), 4 of 8 on tablet (two per row), and full width on mobile. The span is
-       clamped to the breakpoint's column count, so nothing overflows. -->
+  <!--
+    ONE GRID for the whole view.
+
+    The metrics, the charts and the summary were three separate .sherpa-grid
+    elements, which meant three independent column systems stacked on top of each
+    other: a metric's left edge and a chart card's left edge only lined up because
+    both happened to start at column 1. Any span that did not divide evenly would
+    have drifted out of step, and the gap BETWEEN the groups was the wrapper's
+    margin rather than the grid's own row gap.
+
+    One grid puts every item on the same 12 columns, so the edges line up by
+    construction and the vertical rhythm is the grid's throughout. `data-span`
+    still wraps each row: 3+3+3+3 fills a row of metrics, 4+4+4 a row of charts,
+    then 8 and finally full.
+
+    Metric tiles: 3 of 12 on desktop (so four fit a row), 4 of 8 on tablet (two
+    per row), full width on mobile. The span is clamped to the breakpoint's
+    column count, so nothing overflows.
+  -->
   <div class="sherpa-grid">
     <sherpa-metric id="m-endpoints" data-span="3"></sherpa-metric>
     <sherpa-metric id="m-alerts" data-span="3"></sherpa-metric>
     <sherpa-metric id="m-uptime" data-span="3"></sherpa-metric>
     <sherpa-metric id="m-patch" data-span="3"></sherpa-metric>
-  </div>
 
-  <!-- Charts on the same grid: 4 of 12 on desktop (three across). -->
-  <div class="sherpa-grid">
     <!-- data-chart="stacked" + data-rows="6": the chart AREA is a 70/30 two-row
          grid that FILLS the panel's content area, rather than the chart and the
          legend each hugging their own content and leaving the card part empty.
@@ -78,11 +91,8 @@
         <sherpa-chart-legend id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
       </div>
     </div>
-  </div>
 
-  <!-- Summary spans the full width, whatever the breakpoint. It used to sit
-       OUTSIDE .view in its own wrapper, so it did not share the view's rhythm. -->
-  <div class="sherpa-grid">
+    <!-- Summary spans the full width, whatever the breakpoint. -->
     <div class="panel" data-span="full">
       <sherpa-container-header data-heading="Summary"></sherpa-container-header>
       <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>

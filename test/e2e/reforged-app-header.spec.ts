@@ -70,11 +70,14 @@ test('data-notifications shows a count badge; 0/unset hides it', async ({ page }
   expect(r.clearedAttr).toBe(false); // 0 removes the attribute → hidden again
 });
 
-test('every header action fires its event; favourite toggles and fires', async ({ page }) => {
+test('every header action fires its event', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-header') as WithRender;
     // Each action is opt-in, so turn them all on for this test.
-    for (const flag of ['back', 'ai', 'chat', 'labs', 'theme-toggle', 'account', 'help', 'menu', 'favorite-action']) {
+    // No `chat` and no `favorite-action`: read from the Figma node (App Header
+    // 150:3690), neither exists — the code had invented a chat button, and the
+    // view-level Filter Toolbar below the header carries the ★.
+    for (const flag of ['back', 'ai', 'labs', 'theme-toggle', 'account', 'help', 'menu']) {
       el.setAttribute(`data-${flag}`, '');
     }
     el.setAttribute('data-notifications', '3');
@@ -86,7 +89,6 @@ test('every header action fires its event; favourite toggles and fires', async (
     const actions: ReadonlyArray<readonly [string, string]> = [
       ['.back', 'back-click'],
       ['.ai', 'ai-click'],
-      ['.chat', 'chat-click'],
       ['.labs', 'labs-click'],
       ['.theme-toggle', 'theme-toggle'],
       ['.notif-btn', 'notifications-open'],
@@ -96,17 +98,21 @@ test('every header action fires its event; favourite toggles and fires', async (
     ];
     const seen: Record<string, unknown> = {};
     for (const [, event] of actions) el.addEventListener(event, () => (seen[event] = true));
-    el.addEventListener('favorite-toggle', (e) => (seen['fav'] = (e as CustomEvent).detail.favorite));
 
     for (const [sel] of actions) (s.querySelector(sel) as HTMLElement).click();
-    (s.querySelector('.favorite') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 0));
 
-    return { seen, fired: actions.map(([, e]) => e), favAttr: el.hasAttribute('data-favorite') };
+    return {
+      seen,
+      fired: actions.map(([, e]) => e),
+      // Neither exists any more — asserted so a re-added one is noticed.
+      hasChat: !!s.querySelector('.chat'),
+      hasStar: !!s.querySelector('.favorite'),
+    };
   });
   for (const event of r.fired) expect(r.seen[event]).toBe(true);
-  expect(r.seen['fav']).toBe(true); // first click favourites
-  expect(r.favAttr).toBe(true);
+  expect(r.hasChat).toBe(false);
+  expect(r.hasStar).toBe(false);
 });
 
 test('data-loading reveals the loading bar', async ({ page }) => {
@@ -180,4 +186,73 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
   expect(r.hasCrumbs).toBe(true);
   expect(r.hasFilters).toBe(true);
   expect(r.clicked).toBe(true); // breadcrumb-select re-dispatched as breadcrumb-click
+});
+
+test('the action cluster is in Figma order, with Figma glyphs', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-header') as WithRender;
+    for (const flag of ['back', 'ai', 'labs', 'theme-toggle', 'account', 'help', 'menu']) {
+      el.setAttribute(`data-${flag}`, '');
+    }
+    el.setAttribute('data-notifications', '3');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const s = el.shadowRoot!;
+
+    // Everything the cluster draws, in DOM order, skipping what CSS hides.
+    const shown = (n: Element) => (n as HTMLElement).getBoundingClientRect().width > 0;
+    const order = [...s.querySelector('.actions')!.children]
+      .flatMap((n) => (n.classList.contains('notifications') ? [...n.children] : [n]))
+      .filter((n) => shown(n))
+      .map((n) => {
+        if (n.classList.contains('divider')) return '|';
+        if (n.classList.contains('notif-badge')) return 'badge';
+        const icon = n.querySelector('i');
+        return icon ? icon.className.replace('fa-solid fa-', '') : n.className;
+      });
+    return { order };
+  });
+
+  // Read from the App Header node's `Actions` slot (150:3690). The order is the
+  // design's, not a convenience: beaker stands alone and moon stands alone, which
+  // is why the dividers fall where they do. The code used to group
+  // chat+beaker+moon, with a chat button Figma does not have.
+  expect(r.order).toEqual([
+    'wand-magic-sparkles', // Ask N-zo (AI)
+    'flask',               // beaker
+    '|',
+    'moon',
+    '|',
+    'bell',                // Figma: bell-ring — fa-bell-on is PRO and renders nothing
+    'badge',
+    'user-gear',           // Figma: user-settings — it opens SETTINGS
+    'headset',             // Figma: headset — talk to support, not read docs
+    '|',
+    'grip',                // Figma: app-switcher — a grid, not a hamburger
+  ]);
+});
+
+test('every action glyph actually renders (no Font Awesome PRO classes)', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-header') as WithRender;
+    for (const flag of ['back', 'ai', 'labs', 'theme-toggle', 'account', 'help', 'menu']) {
+      el.setAttribute(`data-${flag}`, '');
+    }
+    el.setAttribute('data-notifications', '3');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // The webfont has to have loaded before ::before has any content to measure.
+    await document.fonts.ready;
+    return [...el.shadowRoot!.querySelectorAll('.actions i, .back i')].map((i) => ({
+      cls: i.className.replace('fa-solid fa-', ''),
+      content: getComputedStyle(i, '::before').content,
+    }));
+  });
+
+  // A PRO class in the free webfont renders NOTHING — no glyph and no fallback
+  // box, just `content: none` and zero width — so the button goes silently blank.
+  // `fa-bell-on` (Figma's `bell-ring`) is one, and shipped that way until this was
+  // measured in a browser rather than assumed from the class name.
+  expect(r.length).toBeGreaterThan(0);
+  for (const g of r) expect(`${g.cls}: ${g.content}`).not.toContain('none');
 });
