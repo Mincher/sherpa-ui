@@ -15,25 +15,47 @@ export async function init(root) {
       { label: 'Monitoring', href: '#monitoring' },
       { label: 'Dashboard' },
     ],
-    // Chips with `options` get a caret and a value menu (a real popover of
-    // checkbox/radio rows). Without options a chip is a plain on/off toggle.
+    // The header's toolbar is the VIEW-level one (data-type="view" in
+    // index.html), so it carries SAVED VIEWS — the preset arrangements of this
+    // page — not the data filters that narrow what a chart shows.
+    //
+    // That split is the whole point of the two toolbars: a VIEW is a saved
+    // arrangement ("Critical only", "EMEA operations"), which is why this bar
+    // and not the data bar carries Save and favourite. Picking one re-applies
+    // every setting it remembers. Data filters live with the data they filter.
+    //
+    // ONE chip, single-select: you are looking at exactly one view at a time.
     filters: [
-      { id: 'all',      label: 'All sites', active: true, count: 42 },
-      { id: 'critical', label: 'Critical',  count: 3 },
-      { id: 'offline',  label: 'Offline',   count: 8 },
-      // MULTI-select: pick any number of regions.
-      { id: 'region', label: 'Region', icon: 'fa-solid fa-globe', select: 'multiple', options: [
-        { value: 'emea', label: 'EMEA', selected: true },
-        { value: 'amer', label: 'Americas' },
-        { value: 'apac', label: 'APAC' },
-      ] },
-      // SINGLE-select: exactly one window at a time (radio rows).
-      { id: 'window', label: 'Time window', icon: 'fa-solid fa-clock', select: 'single', options: [
-        { value: '1h',  label: 'Last hour' },
-        { value: '24h', label: 'Last 24 hours', selected: true },
-        { value: '7d',  label: 'Last 7 days' },
-      ] },
+      {
+        id: 'view',
+        label: 'Fleet overview',
+        // A SELECTOR, not a toggle: you are always in some view.
+        persistent: true,
+        icon: 'fa-solid fa-gauge-high',
+        active: true,
+        select: 'single',
+        options: [
+          { value: 'fleet',    label: 'Fleet overview', selected: true },
+          { value: 'critical', label: 'Critical only' },
+          { value: 'emea',     label: 'EMEA operations' },
+          { value: 'capacity', label: 'Capacity planning' },
+        ],
+      },
     ],
+  };
+
+  /**
+   * The saved views this dashboard offers.
+   *
+   * A view is a whole arrangement, so each one names the data filters it
+   * re-applies. Held here rather than in the chip's options because the chip
+   * carries the LABELS a reader picks from; this is what picking one MEANS.
+   */
+  const savedViews = {
+    fleet:    { label: 'Fleet overview',   sites: 'all',      window: '24h' },
+    critical: { label: 'Critical only',    sites: 'critical', window: '1h' },
+    emea:     { label: 'EMEA operations',  sites: 'all',      window: '24h', region: 'emea' },
+    capacity: { label: 'Capacity planning', sites: 'all',     window: '7d' },
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -187,8 +209,29 @@ export async function init(root) {
     console.log('bar-click', e.detail);
   });
 
-  // Quick-filter changes on the shared header — visible feedback.
+  // ── The VIEW toolbar: picking a saved view ─────────────────────────────
+  // The header's toolbar is data-type="view", so a change here means "show me a
+  // different saved arrangement" — not "filter the data". A real app would
+  // re-apply every setting the view remembers and re-query; the example shows
+  // the two things that are visible without a backend: the chip renames itself
+  // to the view it is in, and the header heading follows.
   header?.addEventListener('quick-filter-change', (e) => {
-    console.log('quick-filter-change', e.detail);
+    const picked = e.detail.values?.view?.[0];
+    if (!picked) return;
+    const view = savedViews[picked];
+    if (!view) return;
+    // The chip carries the view's NAME, so the bar says which arrangement is on
+    // screen. This is what a persistent selector chip is for: it is never off,
+    // it just says which one.
+    const chip = header
+      .querySelector('sherpa-quick-filter-toolbar')
+      ?.shadowRoot?.querySelector('.chip[data-id="view"]');
+    chip?.setAttribute('data-label', view.label);
+    console.log('view-change', picked, view);
   });
+
+  // The cluster's own actions, for the example's sake.
+  header?.addEventListener('view-save', () => console.log('view-save'));
+  header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
+  header?.addEventListener('data-refresh', () => console.log('data-refresh'));
 }

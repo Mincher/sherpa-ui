@@ -70,6 +70,14 @@ export interface QuickFilterDef {
    */
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
+  /**
+   * A chip that cannot be switched OFF — a SELECTOR rather than a toggle.
+   *
+   * The view chip is the case this exists for: you are always looking at some
+   * view, so "no view" is not a state the page can be in. Its menu changes
+   * WHICH one; its body has nothing to turn off.
+   */
+  persistent?: boolean;
 }
 
 interface ChipEl extends HTMLElement {
@@ -210,6 +218,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (f.type) chip.setAttribute('data-type', f.type);
       if (f.active) chip.setAttribute('data-current', '');
       if (f.icon) chip.setAttribute('data-icon-start', f.icon);
+      // A selector, not a toggle: always on, and its body does not flip it.
+      if (f.persistent) {
+        chip.setAttribute('data-persistent', '');
+        chip.setAttribute('data-current', '');
+      }
       if (f.options?.length) this.#addMenu(chip, f);
       list.appendChild(chip);
     }
@@ -289,6 +302,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       (n): n is ChipEl => n instanceof HTMLElement && n.classList.contains('chip'),
     );
     if (!chip) return;
+
+    // A PERSISTENT chip is a selector: it has already flipped itself off by the
+    // time this fires (a chip is a two-state toggle by default), so put it back.
+    // You are always in some view — "no view" is not a state the page can be in,
+    // and the menu is what changes which one.
+    if (chip.hasAttribute('data-persistent')) {
+      chip.toggleAttribute('data-current', true);
+      return;
+    }
     this.#emitChange();
   };
 
@@ -446,6 +468,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   clearAll(): void {
     for (const chip of this.#chips()) {
+      // A PERSISTENT chip survives a reset — "no view" is not a state the page
+      // can be in, so clearing the filters must not leave the view chip off with
+      // nothing to put back. Its PICK survives with it: resetting the filters
+      // does not mean leaving the view you are in.
+      if (chip.hasAttribute('data-persistent')) continue;
       chip.removeAttribute('data-current');
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
     }
@@ -616,7 +643,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // A menu chip is ON while it holds picks — that is what makes an applied
         // value filter visible in the bar.
         const id = filterChip.dataset['id'] ?? '';
-        filterChip.toggleAttribute('data-current', (this.values[id]?.length ?? 0) > 0);
+        // A persistent chip stays on whatever its menu holds — an empty pick is
+        // still a view, where an ordinary value chip with nothing picked is not
+        // filtering anything and says so by going off.
+        filterChip.toggleAttribute(
+          'data-current',
+          filterChip.hasAttribute('data-persistent') || (this.values[id]?.length ?? 0) > 0,
+        );
         this.#emitChange();
       }
       return;

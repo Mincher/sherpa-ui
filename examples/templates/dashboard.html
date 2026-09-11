@@ -4,16 +4,9 @@
      The shell + nav + header live ONCE in index.html; this is JUST the content.
      views/dashboard.js populates the metrics/charts and wires events. -->
 <div class="view">
-  <!-- The heading sits on the grid too, so its left edge lines up with the
-       cards below rather than with the viewport. -->
-  <div class="sherpa-grid">
-    <sherpa-section-header
-      data-span="full"
-      data-heading="Overview"
-      data-size="lg">
-      <span slot="description">Fleet health and endpoint activity across the last 30 days.</span>
-    </sherpa-section-header>
-  </div>
+  <!-- NO section header. The APP HEADER owns the view's name (views/dashboard.js
+       sets data-heading="Dashboard"), so a heading here repeated it a second time
+       a few pixels lower. A view's content starts with its content. -->
 
   <!-- Metric tiles on the layout grid: 3 of 12 each on desktop (so four fit a
        row), 4 of 8 on tablet (two per row), and full width on mobile. The span is

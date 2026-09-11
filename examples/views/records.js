@@ -191,6 +191,8 @@ export async function init(root) {
       {
         id: 'view',
         label: 'All customers',
+        // A SELECTOR, not a toggle: you are always in some view.
+        persistent: true,
         icon: 'fa-solid fa-table-list',
         active: true,
         select: 'single',

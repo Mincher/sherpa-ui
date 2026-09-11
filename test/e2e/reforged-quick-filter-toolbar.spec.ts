@@ -485,3 +485,58 @@ test('the view group is snapped: outer corners round, inner ones square', async 
   expect(r[1]!.left).toBeLessThan(r[0]!.right);
   expect(r[2]!.left).toBeLessThan(r[1]!.right);
 });
+
+test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar('view')) as HTMLElement & { populate?: (d: unknown) => void };
+    el.populate!([
+      {
+        id: 'view',
+        label: 'All customers',
+        persistent: true,
+        select: 'single',
+        options: [{ value: 'all', label: 'All customers', selected: true }],
+      },
+      { id: 'trial', label: 'Trial', active: true },
+    ]);
+    await new Promise((res) => setTimeout(res, 60));
+
+    const view = el.shadowRoot!.querySelector('.chip[data-id="view"]') as HTMLElement;
+    const trial = el.shadowRoot!.querySelector('.chip[data-id="trial"]') as HTMLElement;
+    const on = (c: HTMLElement) => c.hasAttribute('data-current');
+
+    const start = { view: on(view), trial: on(trial) };
+
+    // Click the persistent chip's body — an ordinary chip would go off.
+    (view.shadowRoot!.querySelector('.body') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 40));
+    const afterClick = { view: on(view), trial: on(trial) };
+
+    // …and the ordinary one still toggles, so this is not just "nothing works".
+    (trial.shadowRoot!.querySelector('.body') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 40));
+    const afterTrial = { view: on(view), trial: on(trial) };
+
+    // A full reset must not leave the page with no view.
+    const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
+    (undo.shadowRoot!.querySelector('button') as HTMLElement).click();
+    await new Promise((res) => setTimeout(res, 60));
+
+    return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
+  }, MOUNT);
+
+  expect(r.start).toEqual({ view: true, trial: true });
+
+  // The view chip stays ON. You are always looking at SOME view — "no view" is
+  // not a state the page can be in, and the menu is what changes which one.
+  expect(r.afterClick.view).toBe(true);
+
+  // An ordinary chip still toggles, so the persistent one is special, not broken.
+  expect(r.afterTrial.trial).toBe(false);
+  expect(r.afterTrial.view).toBe(true);
+
+  // Reset clears the filters and leaves the view in place.
+  expect(r.afterReset).toEqual({ view: true, trial: false });
+});

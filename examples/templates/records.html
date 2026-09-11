@@ -3,16 +3,10 @@
      the app-shell's default (content) slot by the SPA router in index.html.
      views/records.js builds the data and populates the grid / toolbar / dialog. -->
 <div class="view">
-  <!-- Heading and table both sit on the layout grid, so their left edges align
-       and the table picks up the breakpoint's padding and max width. -->
-  <div class="sherpa-grid">
-    <!-- No actions here: page actions for the grid live in the GRID's own
-         toolbar now, so they sit with the data they act on rather than at the
-         top of the page. -->
-    <sherpa-section-header data-span="full" data-heading="Customers">
-      <span slot="description">Manage customer accounts, plans and billing.</span>
-    </sherpa-section-header>
-  </div>
+  <!-- NO section header. The APP HEADER owns the view's name (views/records.js
+       sets data-heading="Customers"), so a heading here repeated it. Page actions
+       already moved into the GRID's own toolbar, where they sit with the data
+       they act on. -->
 
   <div class="sherpa-grid">
     <!-- A data table always wants every column it can get. `data-rows="8"` fixes
