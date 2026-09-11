@@ -29,6 +29,9 @@
  * @fires calendar-apply   detail: { value: string }             — the footer Apply button confirmed the current value
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// Each grid cell is a composed sherpa-calendar-cell — Figma's own "Calendar
+// Cell" component — so it must be defined.
+import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -198,22 +201,43 @@ export class SherpaCalendar extends SherpaElement {
     for (let d = 1; d <= daysInMonth; d++) {
       const iso = toIso(y, m, d);
       const cell = this.#cell();
-      cell.textContent = String(d);
+      cell.setAttribute('data-label', String(d));
+      cell.dataset['value'] = iso;
       cell.dataset['iso'] = iso;
-      if (iso === todayIso) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
+      // `data-state` is the cell component's own API, mirroring the node's State
+      // axis. The older data-today / data-selected flags stay alongside it: the
+      // calendar's own CSS still reads them for the month and year grids.
+      if (iso === todayIso) {
+        cell.setAttribute('data-today', '');
+        cell.setAttribute('data-state', 'today');
+        cell.setAttribute('aria-current', 'date');
+      }
       if ((min && iso < min) || (max && iso > max)) cell.setAttribute('disabled', '');
 
       if (this.#type === 'single') {
-        if (iso === single) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
+        if (iso === single) {
+          cell.setAttribute('data-selected', '');
+          cell.setAttribute('data-state', 'selected');
+          cell.setAttribute('aria-selected', 'true');
+        }
       } else {
         const isStart = !!start && iso === start;
         const isEnd = !!end && iso === end;
         if (isStart || isEnd) {
           cell.setAttribute('data-selected', '');
           cell.setAttribute('data-range-end', '');
+          // The two ENDS keep their outer corners and square the ones that meet
+          // the band — which is why the code's range half is three states where
+          // the node draws one. A single-day range is both ends at once, so it
+          // stays fully rounded.
+          cell.setAttribute(
+            'data-state',
+            isStart && isEnd ? 'selected' : isStart ? 'range-start' : 'range-end',
+          );
           cell.setAttribute('aria-selected', 'true');
         } else if (start && end && iso > start && iso < end) {
           cell.setAttribute('data-in-range', '');
+          cell.setAttribute('data-state', 'range-mid');
           cell.setAttribute('aria-selected', 'true');
         }
       }

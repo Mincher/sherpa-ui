@@ -97,6 +97,7 @@ export { SherpaNavItem } from './components/sherpa-nav-item/sherpa-nav-item.js';
 export { SherpaNavSection } from './components/sherpa-nav-section/sherpa-nav-section.js';
 export { SherpaChatMessage } from './components/sherpa-chat-message/sherpa-chat-message.js';
 export { SherpaCalendar } from './components/sherpa-calendar/sherpa-calendar.js';
+export { SherpaCalendarCell } from './components/sherpa-calendar-cell/sherpa-calendar-cell.js';
 export { SherpaSelectGroup } from './components/sherpa-select-group/sherpa-select-group.js';
 export { SherpaTransferList } from './components/sherpa-transfer-list/sherpa-transfer-list.js';
 export { SherpaCodeBlock } from './components/sherpa-code-block/sherpa-code-block.js';

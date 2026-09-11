@@ -91,7 +91,16 @@
   </template>
 
   <!-- Cell prototype — cloned per day/month/year by JS, never rendered directly. -->
+  <!--
+    One grid cell — a composed <sherpa-calendar-cell>, which is the Figma
+    "Calendar Cell" (276:16589) Will split onto the Calendar page as one of the
+    parts a calendar is built FROM. It owns the cell's 32x32 box, its three
+    states and its text; this component owns which day each one is.
+
+    It was a bare <button> styled here, which is the duplication the system's
+    composition rule exists to stop.
+  -->
   <template class="cal-cell-tpl">
-    <button type="button" class="cal-cell" role="gridcell"></button>
+    <sherpa-calendar-cell class="cal-cell" role="gridcell"></sherpa-calendar-cell>
   </template>
 </template>

@@ -1,0 +1,44 @@
+<!--
+  sherpa-calendar-cell — one day, month or year in a calendar's grid.
+
+  Read from the Figma "Calendar Cell" node (276:16589), which Will split onto the
+  Calendar page as one of the visual parts a calendar is built FROM. 32×32,
+  rounding/base 4, and a `State` axis of default | today | selected-range.
+
+  THE STATE LIVES ON AN INNER `Content` BOX, not on the host. That is the node's
+  own structure and it is what makes a RANGE work: the content box carries the
+  fill and the rounding, so a run of selected days can square its inner corners
+  and stay round at the two ends, while the host keeps its own hit area and
+  focus ring.
+
+    default          content fill transparent (#FFFFFF00)
+    today            content fill style-surface/info at 30% (#008BBA4D)
+    selected-range   content fill surface/active/base (#F2DFFF), rounding 0
+
+  Every state shares its text: content/body/+1 on content/size/base 14 over
+  line-height/base 20, centred, regular.
+
+  A real <button>, so keyboard, focus and screen-reader behaviour come free —
+  the same reason every other cell-like control in the system is one.
+
+  Public API:
+    data-state     default (omitted) | today | selected | range-start |
+                   range-end | range-mid
+    data-label     the number to show (or use the default slot)
+    data-outside   this day belongs to the neighbouring month
+    disabled       native — outside data-min / data-max
+
+  Fires: cell-click — the cell was pressed. detail: { value }
+-->
+<template id="default">
+  <button class="cell" part="cell" type="button">
+    <!--
+      The CONTENT box carries the state's fill and rounding, exactly as the node
+      does. It is a separate box from the button so a range can square its inner
+      corners without touching the button's own focus ring.
+    -->
+    <span class="content" part="content">
+      <span class="label" part="label"><slot></slot></span>
+    </span>
+  </button>
+</template>

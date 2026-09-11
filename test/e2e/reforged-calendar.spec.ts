@@ -61,12 +61,17 @@ test('highlights the selected day from data-value', async ({ page }) => {
     return {
       count: selected.length,
       iso: selected[0]?.getAttribute('data-iso'),
-      text: selected[0]?.textContent,
+      // A cell is a composed sherpa-calendar-cell now, so its NUMBER lives in
+      // its own shadow root — `data-label` is the API that put it there.
+      text: (selected[0] as HTMLElement)?.dataset['label'],
+      state: (selected[0] as HTMLElement)?.dataset['state'],
     };
   });
   expect(r.count).toBe(1);
   expect(r.iso).toBe('2026-08-13');
   expect(r.text).toBe('13');
+  // …and it carries the cell component's own state, mirroring the node's axis.
+  expect(r.state).toBe('selected');
 });
 
 test('next-month nav re-renders the grid to the following month', async ({ page }) => {
