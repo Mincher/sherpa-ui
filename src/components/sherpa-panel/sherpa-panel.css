@@ -35,7 +35,7 @@
     var(--sherpa-display-mode-size-4xs, 2px)
     var(--sherpa-display-mode-size-2xs, 8px)
     -4px
-    var(--sherpa-style-surface-shadow, #0c0b1180);
+    var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
 .root {

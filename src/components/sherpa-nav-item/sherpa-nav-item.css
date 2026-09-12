@@ -15,9 +15,9 @@
     --sherpa-navigation-nav-shadow-spread: 0;
     --_is-visible: revert-layer;
     --_is-hidden: none;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: default;
   }
 }
@@ -27,7 +27,7 @@
  * sherpa-nav-item — presentation.
  *
  * Data-matched to the Figma "Navigation Item" (32:43138):
- *   row box   HOST · 24 tall (size/lg) · pad 0 × indent-tier / space/xs 8
+ *   row box   HOST · 24 tall (size/lg) · pad 0 × nav-item-tier / space/xs 8
  *             · gap/md 8 · structure rounding 4 · style-surface/base face
  *   Icon      16 square (size/icon/xs), OUTSIDE `content`
  *   content   FILL + grow, gap 8, bound to Navigation::isVisible
@@ -47,7 +47,7 @@
  * hide together with the rail; the leading icon and the dot are outside it and stay.
  */
 
-/* THE ROW BOX. Figma: 24 tall, gap/md 8, padding 0 × [indent-tier-N, space/xs 8],
+/* THE ROW BOX. Figma: 24 tall, gap/md 8, padding 0 × [nav-item-tier-N, space/xs 8],
    structure rounding, never wrapping (a tag or chevron dropping to a second line
    was a visible bug). */
 :host {
@@ -59,7 +59,7 @@
   /* Leading inset = the rail's indent tier (mode-switched); trailing = space/xs 8.
      Both are overridable so the rail can square the row up when it is icon-only
      in the 40px collapsed state — see the collapsed block in sherpa-nav.css. */
-  padding-inline: var(--_indent, var(--sherpa-navigation-indent-tier-1, 8px))
+  padding-inline: var(--_indent, var(--sherpa-navigation-nav-item-tier-1, 8px))
     var(--_pad-end, var(--sherpa-display-mode-space-xs, 8px));
   border-radius: var(--sherpa-structure-rounding-top-left, 4px);
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -73,9 +73,9 @@
   transition: background-color 100ms ease, color 100ms ease;
 }
 
-/* Nesting depth → the Figma indent tiers (indent-tier-1/2/3 = 8 / 32 / 48). */
-:host([data-tier="2"]) { --_indent: var(--sherpa-navigation-indent-tier-2, 32px); }
-:host([data-tier="3"]) { --_indent: var(--sherpa-navigation-indent-tier-3, 48px); }
+/* Nesting depth → the Figma nav-item tiers (nav-item-tier-1/2/3 = 8 / 32 / 48). */
+:host([data-tier="2"]) { --_indent: var(--sherpa-navigation-nav-item-tier-2, 32px); }
+:host([data-tier="3"]) { --_indent: var(--sherpa-navigation-nav-item-tier-3, 48px); }
 
 /* ── The navigate target — a native <button> or <a href> ──────────────────
    Transparent and unpadded: the HOST is the box. This element exists only to be

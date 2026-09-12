@@ -9,10 +9,10 @@
  * Figma binding model (Tooltip (atom), data-extracted): the bubble fills
  * style-content/base (#35353d) with white 12/16 regular text; the corner rounds
  * border/rounding/base (4) and the tip pads space/2xs × space/xs with gap/md 8. The
- * component pins Elevation=md → one bound drop shadow (offset 2,2 · blur 16 ·
- * spread −8 · style-surface/shadow #0c0b1180), written here from the Theme
- * elevation "base" tokens because a [data-elevation] pin is not inherited into the
- * shadow root. A 12×6 pointer arrow (.arrow) in the same fill points from the
+ * component pins Elevation=md → one bound drop shadow (offset 8,8 · blur 16 ·
+ * spread −4 · style-surface/shadow, now neutral/fixed/color 4 at 30% =
+ * #35353d4c), written out here because a [data-elevation] pin is a bare
+ * selector in tokens.css and is not inherited into this shadow root. A 12×6 pointer arrow (.arrow) in the same fill points from the
  * bubble back toward the trigger; its side flips with data-placement.
  */
 
@@ -49,11 +49,11 @@
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   /* Elevation=md (Figma pin on the atom). */
   box-shadow:
-    var(--sherpa-display-mode-size-4xs, 2px)
-    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px)
-    -8px
-    var(--sherpa-style-surface-shadow, #0c0b1180);
+    -4px
+    var(--sherpa-style-surface-shadow, #35353d4c);
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */
   visibility: hidden;

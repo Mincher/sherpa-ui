@@ -54,7 +54,7 @@
       var(--sherpa-display-mode-size-4xs, 2px)
       var(--sherpa-display-mode-size-sm, 16px)
       -8px
-      var(--sherpa-style-surface-shadow, #0c0b1180);
+      var(--sherpa-style-surface-shadow, #35353d4c);
   }
 }
 
@@ -191,16 +191,16 @@
      not in sharedStyles — so it never reaches an element inside this shadow
      root, and pinning the attribute alone would have done nothing. */
   box-shadow:
-    var(--sherpa-display-mode-size-3xs, 4px)
-    var(--sherpa-display-mode-size-3xs, 4px)
-    var(--sherpa-display-mode-size-lg, 24px)
-    -12px
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xl, 32px)
+    -8px
     /* THE SHADOW COLOUR IS style-surface/shadow, always. The Elevation
        collection now carries geometry only (blur, offset, spread) — its colour
        leaf is gone, and this badge was reaching for an accent tint of its own.
        One token means a status re-point moves every shadow in the system
        together, rather than this one staying blue. */
-    var(--sherpa-style-surface-shadow, #0c0b1180);
+    var(--sherpa-style-surface-shadow, #35353d4c);
 }
 :host([data-notifications]) .notif-badge { display: block; }
 

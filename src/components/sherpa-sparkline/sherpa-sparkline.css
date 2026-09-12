@@ -37,7 +37,7 @@
      the current status ramp (Will corrected this: under the Metric's Style=success pin
      it resolves to #36de8c, not a neutral grey). The status cascade supplies it; the
      fallback is the same strong step for the default (neutral) mode. */
-  --_line: var(--_status-border-strong, var(--sherpa-style-border-base-1, #e8e8f6));
+  --_line: var(--_status-border-strong, var(--sherpa-style-border-base-1, #35353d));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;

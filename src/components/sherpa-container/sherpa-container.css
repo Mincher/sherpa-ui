@@ -37,7 +37,7 @@
   --_shadow: none;
   box-shadow: var(--_shadow);
   /* Elevation shadow colour (Figma Elevation collection → style-surface/shadow). */
-  --_shadow-color: var(--sherpa-style-surface-shadow, #0c0b1180);
+  --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
 /* ── Variant: fill stretches to its parent; fit hugs its content ───── */
@@ -55,16 +55,16 @@
    from the Theme elevation tokens because the [data-elevation] cascade vars are
    resolved at :root (zero) and cannot be re-pointed inside a shadow root. ── */
 :host([data-elevation="sm"]) {
-  --_shadow: var(--sherpa-display-mode-size-4xs, 2px) var(--sherpa-display-mode-size-4xs, 2px)
+  --_shadow: var(--sherpa-display-mode-size-3xs, 4px) var(--sherpa-display-mode-size-3xs, 4px)
     var(--sherpa-display-mode-size-2xs, 8px) -4px var(--_shadow-color);
 }
 :host([data-elevation="md"]) {
-  --_shadow: var(--sherpa-display-mode-size-4xs, 2px) var(--sherpa-display-mode-size-4xs, 2px)
-    var(--sherpa-display-mode-size-sm, 16px) -8px var(--_shadow-color);
+  --_shadow: var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px) -4px var(--_shadow-color);
 }
 :host([data-elevation="lg"]) {
-  --_shadow: var(--sherpa-display-mode-size-3xs, 4px) var(--sherpa-display-mode-size-3xs, 4px)
-    var(--sherpa-display-mode-size-lg, 24px) -12px var(--_shadow-color);
+  --_shadow: var(--sherpa-display-mode-size-2xs, 8px) var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xl, 32px) -8px var(--_shadow-color);
 }
 
 /* ── Padding scale — bound to the scoped container-space vars ──────── */

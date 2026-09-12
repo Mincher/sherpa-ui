@@ -4364,10 +4364,9 @@
             }
           },
           "modes": {
-            "sm": "{display-mode.size.2xs}",
-            "md": "{display-mode.size.sm}",
-            "lg": "{display-mode.size.lg}",
-            "inset": "{display-mode.size.2xs}"
+            "sm": "{primitives.effects.blur.300}",
+            "md": "{primitives.effects.blur.400}",
+            "lg": "{primitives.effects.blur.600}"
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4404,10 +4403,9 @@
             }
           },
           "modes": {
-            "sm": "{display-mode.size.4xs}",
-            "md": "{display-mode.size.4xs}",
-            "lg": "{display-mode.size.3xs}",
-            "inset": -2
+            "sm": "{primitives.effects.offset.500}",
+            "md": "{primitives.effects.offset.700}",
+            "lg": "{primitives.effects.offset.700}"
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4417,7 +4415,7 @@
         }
       },
       "$type": "dimension",
-      "$value": "{display-mode.size.none}"
+      "$value": "{primitives.effects.offset.0}"
     },
     "offset-y": {
       "$description": "Design value.",
@@ -4444,10 +4442,9 @@
             }
           },
           "modes": {
-            "sm": "{display-mode.size.4xs}",
-            "md": "{display-mode.size.4xs}",
-            "lg": "{display-mode.size.3xs}",
-            "inset": -2
+            "sm": "{primitives.effects.offset.500}",
+            "md": "{primitives.effects.offset.700}",
+            "lg": "{primitives.effects.offset.700}"
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4484,10 +4481,9 @@
             }
           },
           "modes": {
-            "sm": -4,
-            "md": -8,
-            "lg": -12,
-            "inset": -4
+            "sm": "{primitives.effects.spread.200}",
+            "md": "{primitives.effects.spread.200}",
+            "lg": "{primitives.effects.spread.300}"
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -5047,7 +5043,27 @@
         }
       }
     },
-    "indent-tier-1": {
+    "headerState": {
+      "$value": "default",
+      "$type": "string",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:31:937",
+          "figmaResolvedType": "STRING",
+          "modes": {
+            "collapsed": "default",
+            "hover": "default",
+            "pinned": "pinned",
+            "settings": "settings"
+          },
+          "primaryMode": "default",
+          "scopes": [
+            "ALL_SCOPES"
+          ]
+        }
+      }
+    },
+    "nav-item-tier-1": {
       "$value": "{display-mode.space.xs}",
       "$type": "dimension",
       "$extensions": {
@@ -5067,7 +5083,7 @@
         }
       }
     },
-    "indent-tier-2": {
+    "nav-item-tier-2": {
       "$value": "{display-mode.space.2xl}",
       "$type": "dimension",
       "$extensions": {
@@ -5087,7 +5103,7 @@
         }
       }
     },
-    "indent-tier-3": {
+    "nav-item-tier-3": {
       "$value": "{display-mode.space.4xl}",
       "$type": "dimension",
       "$extensions": {
@@ -5103,26 +5119,6 @@
           "primaryMode": "default",
           "scopes": [
             "GAP"
-          ]
-        }
-      }
-    },
-    "headerState": {
-      "$value": "default",
-      "$type": "string",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:31:937",
-          "figmaResolvedType": "STRING",
-          "modes": {
-            "collapsed": "default",
-            "hover": "default",
-            "pinned": "pinned",
-            "settings": "settings"
-          },
-          "primaryMode": "default",
-          "scopes": [
-            "ALL_SCOPES"
           ]
         }
       }
@@ -10463,7 +10459,7 @@
           }
         },
         "$type": "color",
-        "$value": "{theme.border.default.+1}"
+        "$value": "{theme.border.default.+3}"
       },
       "width": {
         "$description": "Border / stroke colour.",
@@ -10975,19 +10971,19 @@
             ],
             "variableId": "VariableID:1014:33893",
             "opacity": {
-              "default": "{primitives::effects/opacity/500}",
-              "info": "{primitives::effects/opacity/500}",
-              "critical": "{primitives::effects/opacity/500}",
-              "warning": "{primitives::effects/opacity/500}",
-              "urgent": "{primitives::effects/opacity/500}",
-              "success": "{primitives::effects/opacity/500}",
-              "active": "{primitives::effects/opacity/500}",
-              "inactive": "{primitives::effects/opacity/500}"
+              "default": "{primitives::effects/opacity/300}",
+              "info": "{primitives::effects/opacity/300}",
+              "critical": "{primitives::effects/opacity/300}",
+              "warning": "{primitives::effects/opacity/300}",
+              "urgent": "{primitives::effects/opacity/300}",
+              "success": "{primitives::effects/opacity/300}",
+              "active": "{primitives::effects/opacity/300}",
+              "inactive": "{primitives::effects/opacity/300}"
             }
           }
         },
         "$type": "color",
-        "$value": "{display-mode.color.neutral.color 5}"
+        "$value": "{display-mode.color.neutral.fixed.color 4}"
       }
     }
   },

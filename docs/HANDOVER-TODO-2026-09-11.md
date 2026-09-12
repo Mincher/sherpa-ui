@@ -462,7 +462,7 @@ it twice.
 
 ---
 
-## 9. Figma colour OPACITY variable refactor
+## 9. Figma colour OPACITY variable refactor  ✅ DONE (Figma side by Will; pulled in 3f3972b3, 242e117f + this)
 
 **Will's words:** "let's focus on the Figma colour opacity variable refactor."
 
@@ -487,6 +487,35 @@ any ramp change.
    the same pattern.
 
 2. **Fix the ramps in Figma** at the same time.
+
+**HOW IT LANDED.** Will did the Figma side; the code followed in three pulls.
+
+The model: **every colour variable is fully opaque, and opacity is applied where
+it is USED** — via Figma's composed values (`COMPOSE_COLOR` with the alpha bound
+to a `Primitives::effects/opacity/*` number variable, a ladder of 0–100 in tens).
+Two whole token families went away:
+
+    Display Mode :: color-transparent/*   45 leaves
+    Theme        :: surface/*/transparent  8 leaves
+    Theme        :: elevation/*           20 leaves
+    Elevation    :: color                  1 leaf
+
+Elevation now carries GEOMETRY ONLY, switched by mode, off its own
+`effects/blur|offset|spread` primitives — so `[data-elevation]` picks the step
+rather than components naming `-small`/`-base`/`-large` tokens. The `inset` mode
+is gone (nothing used it).
+
+**THE TRAP, and it is the thing to remember.** `figma_export_tokens` FLATTENS a
+composed value to its colour and DROPS THE ALPHA, silently. It turned every drop
+shadow in the system opaque. The dump now records the opacity in
+`$extensions["figma-console-mcp"].opacity` and `project-tokens.mjs` re-applies it
+via `withOpacity()` → `color-mix(in srgb, <value> N%, transparent)`. Easy to miss
+because 223 of 231 composed values are at 100%; exactly one leaf
+(`style-surface/shadow`) actually changes, and every shadow depends on it.
+
+Also learned: the export MERGES against the file on disk, so it happily re-emits
+deleted variables and reports "REMOVED 0". Read the collection's own
+`variableIds` list, not an export, to know what exists.
 
 **The opacity idiom, so it is not misread again.** A translucent mark is ONE
 bound hue at a paint opacity — the Legend Swatch and all five Donut slices are

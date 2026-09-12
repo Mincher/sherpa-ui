@@ -222,7 +222,7 @@ tokens:
   menu.background: "{sherpa.style-surface-base}"
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
-  menu.box-shadow: "{sherpa.theme-elevation-offset-x-base}"
+  menu.box-shadow: "{sherpa.display-mode-size-2xs}"
   heading.padding-inline: "{sherpa.theme-padding-md}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.theme-content-size-xs}"

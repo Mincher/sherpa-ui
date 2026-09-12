@@ -1542,7 +1542,7 @@
   --sherpa-data-viz-series-10: var(--sherpa-theme-data-viz-categorical-color-10);
   --sherpa-data-viz-series-11: var(--sherpa-theme-data-viz-categorical-color-11);
   --sherpa-style-border-base: var(--sherpa-theme-border-default-2);
-  --sherpa-style-border-base-1: var(--sherpa-theme-border-default-1);
+  --sherpa-style-border-base-1: var(--sherpa-theme-border-default-3);
   --sherpa-style-border-width: var(--sherpa-display-mode-border-width-sm);
   --sherpa-style-content-base: var(--sherpa-theme-content-body-base);
   --sherpa-style-content-inverse: var(--sherpa-theme-content-body-4);
@@ -1552,7 +1552,7 @@
   --sherpa-style-surface-base: var(--sherpa-theme-surface-default-base);
   --sherpa-style-surface-base-1: var(--sherpa-theme-surface-default-1);
   --sherpa-style-surface-base-2: var(--sherpa-theme-surface-default-2);
-  --sherpa-style-surface-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-5) 50%, transparent);
+  --sherpa-style-surface-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-4) 30%, transparent);
 
     /* categorical data-viz series — stable public names */
   --sherpa-categorical-1: var(--sherpa-theme-data-viz-categorical-color-1);
@@ -1573,7 +1573,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-info-base);
     --_status-surface-strong: var(--sherpa-theme-surface-info-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-info-2);
     --_status-text: var(--sherpa-theme-content-info-1);
@@ -1585,7 +1585,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-critical-base);
     --_status-surface-strong: var(--sherpa-theme-surface-critical-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-critical-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-critical-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-critical-2);
     --_status-text: var(--sherpa-theme-content-critical-1);
@@ -1597,7 +1597,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-warning-base);
     --_status-surface-strong: var(--sherpa-theme-surface-warning-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-warning-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-warning-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-warning-2);
     --_status-text: var(--sherpa-theme-content-body-base);
@@ -1609,7 +1609,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-urgent-base);
     --_status-surface-strong: var(--sherpa-theme-surface-urgent-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-urgent-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-urgent-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-urgent-2);
     --_status-text: var(--sherpa-theme-content-urgent-1);
@@ -1621,7 +1621,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-success-base);
     --_status-surface-strong: var(--sherpa-theme-surface-success-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-success-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-success-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-success-3);
     --_status-text: var(--sherpa-theme-content-success-1);
@@ -1633,7 +1633,7 @@
     --_status-surface: var(--sherpa-theme-surface-active-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-active-base);
     --_status-surface-strong: var(--sherpa-theme-surface-active-1);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-active-2);
     --_status-border-strong: var(--sherpa-theme-border-active-2);
     --_status-text: var(--sherpa-theme-content-active-1);
@@ -1645,7 +1645,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-2);
     --_status-surface-subtle: var(--sherpa-theme-surface-default-2);
     --_status-surface-strong: var(--sherpa-theme-surface-default-2);
-    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-5) 50%, transparent);
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-5) 30%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-body-1);
@@ -1851,41 +1851,34 @@
 @layer elevation {
   :root {
   --sherpa-elevation-blur: var(--sherpa-display-mode-size-none);
-  --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-none);
+  --sherpa-elevation-offset-x: 0px;
   --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-none);
   --sherpa-elevation-spread: var(--sherpa-display-mode-size-none);
 
     /* elevation shadow convenience aliases */
-  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
-  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
-  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
+  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
+  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
+  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
   }
 
   [data-elevation="sm"] {
-    --sherpa-elevation-blur: var(--sherpa-display-mode-size-2xs);
-    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-4xs);
-    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-4xs);
+    --sherpa-elevation-blur: 8px;
+    --sherpa-elevation-offset-x: 2px;
+    --sherpa-elevation-offset-y: 2px;
     --sherpa-elevation-spread: -4px;
   }
 
   [data-elevation="md"] {
-    --sherpa-elevation-blur: var(--sherpa-display-mode-size-sm);
-    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-4xs);
-    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-4xs);
-    --sherpa-elevation-spread: -8px;
+    --sherpa-elevation-blur: 16px;
+    --sherpa-elevation-offset-x: 8px;
+    --sherpa-elevation-offset-y: 8px;
+    --sherpa-elevation-spread: -4px;
   }
 
   [data-elevation="lg"] {
-    --sherpa-elevation-blur: var(--sherpa-display-mode-size-lg);
-    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-3xs);
-    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-3xs);
-    --sherpa-elevation-spread: -12px;
-  }
-
-  [data-elevation="inset"] {
-    --sherpa-elevation-blur: var(--sherpa-display-mode-size-2xs);
-    --sherpa-elevation-offset-x: -2px;
-    --sherpa-elevation-offset-y: -2px;
-    --sherpa-elevation-spread: -4px;
+    --sherpa-elevation-blur: 32px;
+    --sherpa-elevation-offset-x: 8px;
+    --sherpa-elevation-offset-y: 8px;
+    --sherpa-elevation-spread: -8px;
   }
 }

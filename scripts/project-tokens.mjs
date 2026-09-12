@@ -236,46 +236,59 @@ const isDeadRef = (v) => isRef(v) && v.includes('__library:');
 // which IS a plain :root value. Keyed by the alias root, with the mode of the
 // SCOPED collection choosing the target mode.
 const MODE_ALIAS_TARGETS = {
-  // {elevation.<prop>} → the LITERAL that Elevation mode holds.
+  // {elevation.<prop>} → the value that Elevation mode actually holds.
   //
-  // This used to redirect to `--sherpa-theme-elevation-<prop>-<step>`. Those 20
-  // Theme leaves are GONE — Will moved the whole ramp into the Elevation
-  // collection's own modes — so the redirect named a variable nothing defines
-  // and the shadow silently vanished again, which is the exact bug this map was
-  // written to stop. A :root value no longer exists to point at, so the step's
-  // value is inlined instead.
+  // Two earlier versions of this hardcoded the ramp: first as
+  // `--sherpa-theme-elevation-<prop>-<step>` (those 20 Theme leaves were then
+  // deleted, so the redirect named nothing), then as a literal SIZE table
+  // (which went stale the moment the ramp moved onto its own
+  // `effects/blur|offset|spread` primitives). Both failures were the same
+  // mistake — a copy of Figma's data living in this file.
+  //
+  // So it READS the dump instead. `elevationStep()` is defined after the doc is
+  // loaded and resolves {elevation.<prop>} for a given mode from the Elevation
+  // collection itself, which means a ramp change in Figma flows through with no
+  // edit here.
   elevation: {
     // Which Elevation mode a scoped mode implies. `hover` lifts a surface, and
-    // the Figma nav pins Elevation=lg on the rail.
-    modeMap: { hover: 'lg', sm: 'sm', md: 'md', lg: 'lg', inset: 'inset' },
-    // Read from the Elevation collection (24:290) per mode. offset/blur alias a
-    // display-mode size; spread is a bare negative with no token.
-    rename: (prop, step) => {
-      const SIZE = {
-        sm:    { 'offset-x': '4xs', 'offset-y': '4xs', blur: '2xs' },
-        md:    { 'offset-x': '4xs', 'offset-y': '4xs', blur: 'sm' },
-        lg:    { 'offset-x': '3xs', 'offset-y': '3xs', blur: 'lg' },
-        inset: { blur: '2xs' },
-      };
-      const SPREAD = { sm: '-4px', md: '-8px', lg: '-12px', inset: '-4px' };
-      const OFFSET_INSET = { 'offset-x': '-2px', 'offset-y': '-2px' };
-      if (prop === 'spread') return SPREAD[step];
-      if (step === 'inset' && OFFSET_INSET[prop]) return OFFSET_INSET[prop];
-      const size = SIZE[step]?.[prop];
-      return size ? `var(--${PREFIX}display-mode-size-${size})` : '0';
-    },
-    // `rename` already returns a complete CSS value here, not a var NAME.
+    // the Figma nav pins Elevation=lg on the rail. Any mode the collection
+    // actually has maps to itself; unknown ones fall through to null.
+    modeMap: { hover: 'lg' },
     raw: true,
-    // The shadow COLOUR is not part of the elevation step ramp; it is the status
-    // shadow, so leave it pointing at the live var.
+    // The shadow COLOUR is not part of the elevation step ramp; it is the
+    // status shadow, so leave it pointing at the live var.
     skip: new Set(['color']),
   },
 };
+
 
 /**
  * Resolve a cross-collection mode alias for one scoped mode, or null when the value
  * needs no redirection.
  */
+/**
+ * One Elevation step's value for a property, READ FROM THE DUMP.
+ *
+ * The Elevation collection switches its four geometry leaves by mode, so
+ * `{elevation.blur}` under a scoped `hover` mode means "blur, at Elevation=lg".
+ * Resolving that here — rather than from a table in this file — is what stops
+ * the mapping going stale: the ramp has already moved twice (out of Theme, then
+ * onto its own effects/* primitives), and both times a hardcoded copy broke
+ * silently.
+ *
+ * Returns a complete CSS value (a literal for a primitive, a var() otherwise),
+ * or null when the collection has no such property or mode.
+ */
+function elevationStep(prop, mode) {
+  const leaf = (doc.elevation ?? {})[prop];
+  if (!leaf || !('$value' in leaf)) return null;
+  const ext = leaf.$extensions?.['figma-console-mcp'] ?? {};
+  const primary = ext.primaryMode;
+  const raw = mode === primary ? leaf.$value : (ext.modes ?? {})[mode];
+  if (raw === undefined) return null;
+  return toCss(raw, leaf.$type);
+}
+
 function modeAliasVar(value, scopedMode) {
   if (!isRef(value)) return null;
   const [root, ...rest] = value.slice(1, -1).split('.');
@@ -283,9 +296,10 @@ function modeAliasVar(value, scopedMode) {
   if (!spec) return null;
   const prop = rest.join('-');
   if (spec.skip?.has(prop)) return null;
-  const step = spec.modeMap[scopedMode];
+  const step = spec.modeMap[scopedMode] ?? scopedMode;
   if (!step) return null;
-  const out = spec.rename(prop, step);
+  const out = spec.rename ? spec.rename(prop, step) : elevationStep(prop, step);
+  if (out == null) return null;
   return spec.raw ? out : `var(${out})`;
 }
 
@@ -953,9 +967,9 @@ const shadowAliasLines = [
   // `--sherpa-elevation-color` no longer exists and these aliases named a
   // variable nothing defines. One token also means a status re-point moves
   // every shadow in the system together.
-  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
-  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
-  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
+  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
+  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
+  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
 ];
 
 // ════════════════════════════════════════════════════════════════════════════

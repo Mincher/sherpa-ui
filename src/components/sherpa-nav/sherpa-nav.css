@@ -15,10 +15,10 @@
     --sherpa-navigation-nav-shadow-spread: 0px;
     --_is-visible: revert-layer;
     --_is-hidden: none;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: default;
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 
   :host([data-nav-state="collapsed"]) {
@@ -33,10 +33,10 @@
     --sherpa-navigation-nav-shadow-spread: 0px;
     --_is-visible: none;
     --_is-hidden: revert-layer;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-2xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: default;
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-2xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 
   :host([data-nav-state="hover"]) {
@@ -45,16 +45,16 @@
     --sherpa-navigation-nav-container-header-label: Product name;
     --sherpa-navigation-nav-container-setting-button: default;
     --sherpa-navigation-nav-container-pin-button: default;
-    --sherpa-navigation-nav-shadow-blur: var(--sherpa-display-mode-size-lg);
-    --sherpa-navigation-nav-shadow-offset-x: var(--sherpa-display-mode-size-3xs);
-    --sherpa-navigation-nav-shadow-offset-y: var(--sherpa-display-mode-size-3xs);
-    --sherpa-navigation-nav-shadow-spread: -12px;
+    --sherpa-navigation-nav-shadow-blur: 32px;
+    --sherpa-navigation-nav-shadow-offset-x: 8px;
+    --sherpa-navigation-nav-shadow-offset-y: 8px;
+    --sherpa-navigation-nav-shadow-spread: -8px;
     --_is-visible: revert-layer;
     --_is-hidden: none;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: default;
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 
   :host([data-nav-state="pinned"]) {
@@ -69,10 +69,10 @@
     --sherpa-navigation-nav-shadow-spread: 0px;
     --_is-visible: revert-layer;
     --_is-hidden: none;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: pinned;
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 
   :host([data-nav-state="settings"]) {
@@ -87,10 +87,10 @@
     --sherpa-navigation-nav-shadow-spread: 0px;
     --_is-visible: revert-layer;
     --_is-hidden: none;
-    --sherpa-navigation-indent-tier-1: var(--sherpa-display-mode-space-xs);
-    --sherpa-navigation-indent-tier-2: var(--sherpa-display-mode-space-2xl);
-    --sherpa-navigation-indent-tier-3: var(--sherpa-display-mode-space-4xl);
     --sherpa-navigation-headerstate: settings;
+    --sherpa-navigation-nav-item-tier-1: var(--sherpa-display-mode-space-xs);
+    --sherpa-navigation-nav-item-tier-2: var(--sherpa-display-mode-space-2xl);
+    --sherpa-navigation-nav-item-tier-3: var(--sherpa-display-mode-space-4xl);
   }
 }
 /* == end sherpa:tokens == */
@@ -136,7 +136,7 @@
     var(--sherpa-navigation-nav-shadow-offset-y, 0px)
     var(--sherpa-navigation-nav-shadow-blur, 0px)
     var(--sherpa-navigation-nav-shadow-spread, 0px)
-    var(--sherpa-style-surface-shadow, #0c0b1180);
+    var(--sherpa-style-surface-shadow, #35353d4c);
   transition: box-shadow 160ms ease, background-color 160ms ease;
 }
 

@@ -35,7 +35,7 @@
   --_border: var(--sherpa-style-border-base, #b3b3c3);
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_badge: var(--_status-icon, var(--sherpa-style-indicator-accent, #3b4ccd));
-  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #0c0b1180));
+  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #35353d4c));
 }
 
 /* Inside a stack the container owns the corner, so the toast goes back in flow. The
@@ -75,10 +75,10 @@
   color: var(--_content);
   /* Elevation=md (Theme elevation "base" tokens) in the status shadow colour. */
   box-shadow:
-    var(--sherpa-display-mode-size-4xs, 2px)
-    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px)
-    -8px
+    -4px
     var(--_shadow-color);
 }
 

@@ -100,11 +100,11 @@
 @container scroll-state(stuck: top) {
   .header ::slotted(*) {
     box-shadow:
-      var(--sherpa-display-mode-size-4xs, 2px)
-      var(--sherpa-display-mode-size-4xs, 2px)
+      var(--sherpa-display-mode-size-2xs, 8px)
+      var(--sherpa-display-mode-size-2xs, 8px)
       var(--sherpa-display-mode-size-sm, 16px)
-      -8px
-      var(--sherpa-style-surface-shadow, #0c0b1180);
+      -4px
+      var(--sherpa-style-surface-shadow, #35353d4c);
   }
 }
 
