@@ -216,10 +216,10 @@
   /* Elevation=md, written out because a [data-elevation] pin is not inherited
      into a shadow root (same reason sherpa-tooltip writes it longhand). */
   box-shadow:
-    var(--sherpa-theme-elevation-offset-x-base, 2px)
-    var(--sherpa-theme-elevation-offset-y-base, 2px)
-    var(--sherpa-theme-elevation-blur-base, 16px)
-    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-sm, 16px)
+    -8px
     var(--sherpa-style-surface-shadow, #0c0b1180);
 
   /* Hidden: no layout shift, no pointer capture, unreadable to AT. */

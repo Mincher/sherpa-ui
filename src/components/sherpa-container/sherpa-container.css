@@ -55,16 +55,16 @@
    from the Theme elevation tokens because the [data-elevation] cascade vars are
    resolved at :root (zero) and cannot be re-pointed inside a shadow root. ── */
 :host([data-elevation="sm"]) {
-  --_shadow: var(--sherpa-theme-elevation-offset-x-small, 1px) var(--sherpa-theme-elevation-offset-y-small, 1px)
-    var(--sherpa-theme-elevation-blur-small, 8px) var(--sherpa-theme-elevation-spread-small, -4px) var(--_shadow-color);
+  --_shadow: var(--sherpa-display-mode-size-4xs, 2px) var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-2xs, 8px) -4px var(--_shadow-color);
 }
 :host([data-elevation="md"]) {
-  --_shadow: var(--sherpa-theme-elevation-offset-x-base, 2px) var(--sherpa-theme-elevation-offset-y-base, 2px)
-    var(--sherpa-theme-elevation-blur-base, 16px) var(--sherpa-theme-elevation-spread-base, -8px) var(--_shadow-color);
+  --_shadow: var(--sherpa-display-mode-size-4xs, 2px) var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-sm, 16px) -8px var(--_shadow-color);
 }
 :host([data-elevation="lg"]) {
-  --_shadow: var(--sherpa-theme-elevation-offset-x-large, 4px) var(--sherpa-theme-elevation-offset-y-large, 4px)
-    var(--sherpa-theme-elevation-blur-large, 24px) var(--sherpa-theme-elevation-spread-large, -12px) var(--_shadow-color);
+  --_shadow: var(--sherpa-display-mode-size-3xs, 4px) var(--sherpa-display-mode-size-3xs, 4px)
+    var(--sherpa-display-mode-size-lg, 24px) -12px var(--_shadow-color);
 }
 
 /* ── Padding scale — bound to the scoped container-space vars ──────── */

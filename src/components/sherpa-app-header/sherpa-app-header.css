@@ -50,10 +50,10 @@
 @container scroll-state(stuck: top) {
   :host {
     box-shadow:
-      var(--sherpa-theme-elevation-offset-x-base, 2px)
-      var(--sherpa-theme-elevation-offset-y-base, 2px)
-      var(--sherpa-theme-elevation-blur-base, 16px)
-      var(--sherpa-theme-elevation-spread-base, -8px)
+      var(--sherpa-display-mode-size-4xs, 2px)
+      var(--sherpa-display-mode-size-4xs, 2px)
+      var(--sherpa-display-mode-size-sm, 16px)
+      -8px
       var(--sherpa-style-surface-shadow, #0c0b1180);
   }
 }
@@ -191,10 +191,10 @@
      not in sharedStyles — so it never reaches an element inside this shadow
      root, and pinning the attribute alone would have done nothing. */
   box-shadow:
-    var(--sherpa-theme-elevation-offset-x-large, 4px)
-    var(--sherpa-theme-elevation-offset-y-large, 4px)
-    var(--sherpa-theme-elevation-blur-large, 24px)
-    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-display-mode-size-3xs, 4px)
+    var(--sherpa-display-mode-size-3xs, 4px)
+    var(--sherpa-display-mode-size-lg, 24px)
+    -12px
     /* THE SHADOW COLOUR IS style-surface/shadow, always. The Elevation
        collection now carries geometry only (blur, offset, spread) — its colour
        leaf is gone, and this badge was reaching for an accent tint of its own.

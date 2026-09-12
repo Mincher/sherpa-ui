@@ -31,10 +31,10 @@
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=sm on the Panel (Theme elevation "small" tokens). */
   box-shadow:
-    var(--sherpa-theme-elevation-offset-x-small, 1px)
-    var(--sherpa-theme-elevation-offset-y-small, 1px)
-    var(--sherpa-theme-elevation-blur-small, 8px)
-    var(--sherpa-theme-elevation-spread-small, -4px)
+    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-4xs, 2px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    -4px
     var(--sherpa-style-surface-shadow, #0c0b1180);
 }
 

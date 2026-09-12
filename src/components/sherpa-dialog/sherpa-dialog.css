@@ -41,10 +41,10 @@
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg on the Dialog (Theme elevation "large" tokens). */
   box-shadow:
-    var(--sherpa-theme-elevation-offset-x-large, 4px)
-    var(--sherpa-theme-elevation-offset-y-large, 4px)
-    var(--sherpa-theme-elevation-blur-large, 24px)
-    var(--sherpa-theme-elevation-spread-large, -12px)
+    var(--sherpa-display-mode-size-3xs, 4px)
+    var(--sherpa-display-mode-size-3xs, 4px)
+    var(--sherpa-display-mode-size-lg, 24px)
+    -12px
     var(--sherpa-style-surface-shadow, #0c0b1180);
 
   &::backdrop {

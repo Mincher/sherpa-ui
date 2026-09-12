@@ -236,12 +236,36 @@ const isDeadRef = (v) => isRef(v) && v.includes('__library:');
 // which IS a plain :root value. Keyed by the alias root, with the mode of the
 // SCOPED collection choosing the target mode.
 const MODE_ALIAS_TARGETS = {
-  // {elevation.<prop>} → --sherpa-theme-elevation-<prop>-<step>
+  // {elevation.<prop>} → the LITERAL that Elevation mode holds.
+  //
+  // This used to redirect to `--sherpa-theme-elevation-<prop>-<step>`. Those 20
+  // Theme leaves are GONE — Will moved the whole ramp into the Elevation
+  // collection's own modes — so the redirect named a variable nothing defines
+  // and the shadow silently vanished again, which is the exact bug this map was
+  // written to stop. A :root value no longer exists to point at, so the step's
+  // value is inlined instead.
   elevation: {
-    // Which Elevation mode a scoped mode implies. `hover` lifts a surface, and the
-    // Figma nav pins Elevation=lg on the rail.
-    modeMap: { hover: 'large', sm: 'small', md: 'base', lg: 'large', inset: 'sunken' },
-    rename: (prop, step) => `--${PREFIX}theme-elevation-${prop}-${step}`,
+    // Which Elevation mode a scoped mode implies. `hover` lifts a surface, and
+    // the Figma nav pins Elevation=lg on the rail.
+    modeMap: { hover: 'lg', sm: 'sm', md: 'md', lg: 'lg', inset: 'inset' },
+    // Read from the Elevation collection (24:290) per mode. offset/blur alias a
+    // display-mode size; spread is a bare negative with no token.
+    rename: (prop, step) => {
+      const SIZE = {
+        sm:    { 'offset-x': '4xs', 'offset-y': '4xs', blur: '2xs' },
+        md:    { 'offset-x': '4xs', 'offset-y': '4xs', blur: 'sm' },
+        lg:    { 'offset-x': '3xs', 'offset-y': '3xs', blur: 'lg' },
+        inset: { blur: '2xs' },
+      };
+      const SPREAD = { sm: '-4px', md: '-8px', lg: '-12px', inset: '-4px' };
+      const OFFSET_INSET = { 'offset-x': '-2px', 'offset-y': '-2px' };
+      if (prop === 'spread') return SPREAD[step];
+      if (step === 'inset' && OFFSET_INSET[prop]) return OFFSET_INSET[prop];
+      const size = SIZE[step]?.[prop];
+      return size ? `var(--${PREFIX}display-mode-size-${size})` : '0';
+    },
+    // `rename` already returns a complete CSS value here, not a var NAME.
+    raw: true,
     // The shadow COLOUR is not part of the elevation step ramp; it is the status
     // shadow, so leave it pointing at the live var.
     skip: new Set(['color']),
@@ -261,7 +285,8 @@ function modeAliasVar(value, scopedMode) {
   if (spec.skip?.has(prop)) return null;
   const step = spec.modeMap[scopedMode];
   if (!step) return null;
-  return `var(${spec.rename(prop, step)})`;
+  const out = spec.rename(prop, step);
+  return spec.raw ? out : `var(${out})`;
 }
 
 /** literal → CSS value (px for dimensions, bare for unitless). */
@@ -297,6 +322,31 @@ function toCss(value, type) {
     return `var(${refName(value)})`;
   }
   return literal(value, type);
+}
+
+/**
+ * A COMPOSED colour → CSS.
+ *
+ * Figma's new model separates hue from alpha: a colour variable can alias
+ * another AND carry its own opacity, bound to a number variable
+ * (Primitives::effects/opacity/*). The DTCG dump has no slot for that, so the
+ * export flattens it — the colour survives and the ALPHA IS SILENTLY LOST. That
+ * is not hypothetical: it turned every drop shadow in the system fully opaque.
+ *
+ * The opacity is preserved in `$extensions["figma-console-mcp"].opacity` when
+ * the dump is refreshed, and this applies it. `color-mix` is the only way to put
+ * an alpha on a value that is itself a var() — `#rrggbbaa` cannot wrap one.
+ *
+ * 100% is the overwhelming majority (223 of 231 composed values) and needs no
+ * wrapper at all, so it returns the plain value and keeps the output readable.
+ */
+function withOpacity(css, opacityRef) {
+  if (css == null || !opacityRef) return css;
+  const m = /effects[./]opacity[./](\d+)/.exec(String(opacityRef));
+  if (!m) return css;
+  const pct = Number(m[1]) / 10;            // opacity/500 → 50
+  if (!Number.isFinite(pct) || pct >= 100) return css;
+  return `color-mix(in srgb, ${css} ${pct}%, transparent)`;
 }
 
 /** A leaf's public var name: drop a redundant repeated collection segment (e.g.
@@ -338,6 +388,10 @@ function* walkLeaves(node, path = [], seen = new WeakSet()) {
       type: COUNT_PATHS.test(rawPath) ? 'number' : node.$type,
       modes: ext.modes ?? {},
       primaryMode: ext.primaryMode,
+      // Per-mode alpha from Figma's COMPOSED colour values. The DTCG export
+      // flattens a composition to its colour and drops the opacity, so it is
+      // carried here and re-applied by withOpacity(). See that function.
+      opacity: ext.opacity ?? {},
       scopes: ext.scopes ?? [],
     };
     return;
@@ -390,11 +444,12 @@ function scopeCheck(leaf) {
 // ── @property registrations (modern, animatable custom props) ───────────────
 // Register the interactive-surface seeds + snap radii as <color>/<length> so they
 // animate and validate. Kept small — only props that genuinely benefit.
-const propertyRegistrations = `  @property --sherpa-elevation-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: transparent;
-  }`;
+// Nothing to register. This held `--sherpa-elevation-color`, which the Elevation
+// collection no longer defines — its colour leaf is gone and the shadow colour
+// comes from Style::style-surface/shadow instead. An @property for a variable
+// nothing sets is worse than nothing: it gives the name a valid initial value,
+// so a typo resolves to `transparent` rather than failing loudly.
+const propertyRegistrations = '';
 
 // ════════════════════════════════════════════════════════════════════════════
 // Collect leaves per collection and route them.
@@ -426,18 +481,18 @@ for (const slug of Object.keys(doc)) {
     const byMode = {};
     for (const leaf of leaves) {
       if (typeof leaf.value === 'boolean') continue; // booleans are scoped visibility flags only
-      const v = toCss(leaf.value, leaf.type);
+      const v = withOpacity(toCss(leaf.value, leaf.type), leaf.opacity[leaf.primaryMode ?? 'light']);
       if (v == null) continue;
       L.root.push(`  ${leaf.name}: ${v};`);
       // light/dark re-point (display ramp) — into the SAME layer.
       if (route.modeAxis === 'light-dark' && leaf.modes.dark != null) {
-        const dv = toCss(leaf.modes.dark, leaf.type);
+        const dv = withOpacity(toCss(leaf.modes.dark, leaf.type), leaf.opacity.dark);
         if (dv != null && dv !== v) L.rootDark.push(`  ${leaf.name}: ${dv};`);
       }
       // non-primary modes → [attr="mode"] blocks in the same layer.
       if (!route.attr) continue;
       for (const [mode, mval] of Object.entries(leaf.modes)) {
-        const mv = toCss(mval, leaf.type);
+        const mv = withOpacity(toCss(mval, leaf.type), leaf.opacity[mode]);
         if (mv == null) continue;
         (byMode[mode] ??= []).push(`    ${leaf.name}: ${mv};`);
       }
@@ -770,7 +825,7 @@ for (const mode of STATUS_MODES) {
     const leaf = styleByKey[key];
     if (!leaf) continue;
     const raw = mode in leaf.modes ? leaf.modes[mode] : leaf.value;
-    const v = toCss(raw, leaf.type);
+    const v = withOpacity(toCss(raw, leaf.type), leaf.opacity[mode] ?? leaf.opacity[leaf.primaryMode]);
     if (v != null) lines.push(`    --${publicVar}: ${v};`);
   }
   if (lines.length) statusBlocks.push(`  [data-status="${mode}"] {\n${lines.join('\n')}\n  }`);
@@ -893,9 +948,14 @@ const densityComfortable = densityBlock('display-comfortable', 'comfortable');
 // Elevation shadow convenience aliases (traceable to the elevation collection).
 // ════════════════════════════════════════════════════════════════════════════
 const shadowAliasLines = [
-  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
-  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
-  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);',
+  // THE SHADOW COLOUR IS style-surface/shadow, directly. The Elevation
+  // collection now carries GEOMETRY only — Will removed its colour leaf, so
+  // `--sherpa-elevation-color` no longer exists and these aliases named a
+  // variable nothing defines. One token also means a status re-point moves
+  // every shadow in the system together.
+  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
+  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
+  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);',
 ];
 
 // ════════════════════════════════════════════════════════════════════════════

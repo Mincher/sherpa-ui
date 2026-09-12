@@ -19,11 +19,7 @@
  */
 @layer core, display-mode, theme, layout, structure, style, elevation, components;
 
-  @property --sherpa-elevation-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: transparent;
-  }
+
 
 @layer core {
 
@@ -77,11 +73,11 @@
   --sherpa-display-mode-color-neutral-fixed-color-3: #B3B3C3;
   --sherpa-display-mode-color-neutral-fixed-color-4: #35353D;
   --sherpa-display-mode-color-neutral-fixed-color-5: #0C0B11;
-  --sherpa-display-mode-color-success-color-1: #f0fff5;
-  --sherpa-display-mode-color-success-color-2: #82edb1;
-  --sherpa-display-mode-color-success-color-3: #36de8c;
-  --sherpa-display-mode-color-success-color-4: #00ad62;
-  --sherpa-display-mode-color-success-color-5: #006b37;
+  --sherpa-display-mode-color-success-color-1: #F0FFF5;
+  --sherpa-display-mode-color-success-color-2: #82EDB1;
+  --sherpa-display-mode-color-success-color-3: #36DE8C;
+  --sherpa-display-mode-color-success-color-4: #00AD62;
+  --sherpa-display-mode-color-success-color-5: #006B37;
   --sherpa-display-mode-color-tones-color-1: #F0F0FF;
   --sherpa-display-mode-color-tones-color-2: #D4D4E9;
   --sherpa-display-mode-color-tones-color-3: #9595A8;
@@ -136,6 +132,7 @@
   --sherpa-display-mode-size-sm: 16px;
   --sherpa-display-mode-size-xl: 28px;
   --sherpa-display-mode-size-xs: 12px;
+  --sherpa-display-mode-size-4xs: 2px;
   --sherpa-display-mode-space-2xl: 32px;
   --sherpa-display-mode-space-2xs: 4px;
   --sherpa-display-mode-space-3xl: 40px;
@@ -180,10 +177,10 @@
   --sherpa-display-mode-color-neutral-color-4: #878794;
   --sherpa-display-mode-color-neutral-color-5: #C4C4D3;
   --sherpa-display-mode-color-success-color-1: #005222;
-  --sherpa-display-mode-color-success-color-2: #008a4b;
-  --sherpa-display-mode-color-success-color-3: #00ad62;
-  --sherpa-display-mode-color-success-color-4: #00d178;
-  --sherpa-display-mode-color-success-color-5: #36de8c;
+  --sherpa-display-mode-color-success-color-2: #008A4B;
+  --sherpa-display-mode-color-success-color-3: #00AD62;
+  --sherpa-display-mode-color-success-color-4: #00D178;
+  --sherpa-display-mode-color-success-color-5: #36DE8C;
   --sherpa-display-mode-color-tones-color-1: #505061;
   --sherpa-display-mode-color-tones-color-2: #9595A8;
   --sherpa-display-mode-color-tones-color-4: #D4D4E9;
@@ -229,10 +226,10 @@
     --sherpa-display-mode-color-neutral-color-4: #878794;
     --sherpa-display-mode-color-neutral-color-5: #C4C4D3;
     --sherpa-display-mode-color-success-color-1: #005222;
-    --sherpa-display-mode-color-success-color-2: #008a4b;
-    --sherpa-display-mode-color-success-color-3: #00ad62;
-    --sherpa-display-mode-color-success-color-4: #00d178;
-    --sherpa-display-mode-color-success-color-5: #36de8c;
+    --sherpa-display-mode-color-success-color-2: #008A4B;
+    --sherpa-display-mode-color-success-color-3: #00AD62;
+    --sherpa-display-mode-color-success-color-4: #00D178;
+    --sherpa-display-mode-color-success-color-5: #36DE8C;
     --sherpa-display-mode-color-tones-color-1: #505061;
     --sherpa-display-mode-color-tones-color-2: #9595A8;
     --sherpa-display-mode-color-tones-color-4: #D4D4E9;
@@ -810,7 +807,7 @@
   --sherpa-theme-content-weight-regular: var(--sherpa-display-mode-fonts-weight-400);
   --sherpa-theme-content-weight-semibold: var(--sherpa-display-mode-fonts-weight-600);
   --sherpa-theme-data-viz-categorical-color-1: #7B1CE6;
-  --sherpa-theme-data-viz-categorical-color-10: #36de8c;
+  --sherpa-theme-data-viz-categorical-color-10: #36DE8C;
   --sherpa-theme-data-viz-categorical-color-11: #878794;
   --sherpa-theme-data-viz-categorical-color-2: #C046FF;
   --sherpa-theme-data-viz-categorical-color-3: #00B2A0;
@@ -848,7 +845,7 @@
   --sherpa-theme-data-viz-sequential-blue-green-color-7: #0F76A2;
   --sherpa-theme-data-viz-sequential-blue-green-color-8: #006591;
   --sherpa-theme-data-viz-sequential-blue-green-color-9: #00547F;
-  --sherpa-theme-data-viz-sequential-green-color-1: #9cfcc5;
+  --sherpa-theme-data-viz-sequential-green-color-1: #9CFCC5;
   --sherpa-theme-data-viz-sequential-green-color-10: #005500;
   --sherpa-theme-data-viz-sequential-green-color-11: #004200;
   --sherpa-theme-data-viz-sequential-green-color-2: #3BE990;
@@ -947,26 +944,6 @@
   --sherpa-theme-data-viz-sequential-turquoise-color-7: #008A75;
   --sherpa-theme-data-viz-sequential-turquoise-color-8: #007764;
   --sherpa-theme-data-viz-sequential-turquoise-color-9: #006453;
-  --sherpa-theme-elevation-blur-base: 16px;
-  --sherpa-theme-elevation-blur-large: 24px;
-  --sherpa-theme-elevation-blur-small: 8px;
-  --sherpa-theme-elevation-blur-sunken: 8px;
-  --sherpa-theme-elevation-blur-xl: 32px;
-  --sherpa-theme-elevation-offset-x-base: 2px;
-  --sherpa-theme-elevation-offset-x-large: 4px;
-  --sherpa-theme-elevation-offset-x-small: 1px;
-  --sherpa-theme-elevation-offset-x-sunken: -2px;
-  --sherpa-theme-elevation-offset-x-xl: 8px;
-  --sherpa-theme-elevation-offset-y-base: 2px;
-  --sherpa-theme-elevation-offset-y-large: 4px;
-  --sherpa-theme-elevation-offset-y-small: 1px;
-  --sherpa-theme-elevation-offset-y-sunken: -2px;
-  --sherpa-theme-elevation-offset-y-xl: 8px;
-  --sherpa-theme-elevation-spread-base: -8px;
-  --sherpa-theme-elevation-spread-large: -12px;
-  --sherpa-theme-elevation-spread-small: -4px;
-  --sherpa-theme-elevation-spread-sunken: -4px;
-  --sherpa-theme-elevation-spread-xl: -16px;
   --sherpa-theme-gap-lg: var(--sherpa-display-mode-space-sm);
   --sherpa-theme-gap-md: var(--sherpa-display-mode-space-xs);
   --sherpa-theme-gap-sm: var(--sherpa-display-mode-space-2xs);
@@ -1454,19 +1431,19 @@
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-3xs);
   }
 
-  /* structure — the lg size mode ([data-size]). */
-  [data-size="lg"] {
-    --sherpa-structure-height: var(--sherpa-display-mode-space-2xl);
-    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-large);
+  /* structure — the xs size mode ([data-size]). */
+  [data-size="xs"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-base);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-xs);
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
-    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xs);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
     --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
-    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-2xs);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-2xs);
   }
 
   /* structure — the sm size mode ([data-size]). */
@@ -1484,6 +1461,21 @@
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
   }
 
+  /* structure — the lg size mode ([data-size]). */
+  [data-size="lg"] {
+    --sherpa-structure-height: var(--sherpa-display-mode-space-2xl);
+    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-large);
+    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
+    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+  }
+
   /* structure — the xl size mode ([data-size]). */
   [data-size="xl"] {
     --sherpa-structure-height: var(--sherpa-display-mode-space-3xl);
@@ -1497,21 +1489,6 @@
     --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-lg);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
-  }
-
-  /* structure — the xs size mode ([data-size]). */
-  [data-size="xs"] {
-    --sherpa-structure-height: var(--sherpa-display-mode-space-base);
-    --sherpa-structure-icon-size: var(--sherpa-theme-content-size-xs);
-    --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
-    --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xs);
-    --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-space-gap: var(--sherpa-display-mode-space-2xs);
-    --sherpa-structure-space-padding: var(--sherpa-display-mode-space-2xs);
   }
 
   /* Snap — per-edge corner rounding ([data-snap]). */
@@ -1575,7 +1552,7 @@
   --sherpa-style-surface-base: var(--sherpa-theme-surface-default-base);
   --sherpa-style-surface-base-1: var(--sherpa-theme-surface-default-1);
   --sherpa-style-surface-base-2: var(--sherpa-theme-surface-default-2);
-  --sherpa-style-surface-shadow: #0C0B1180;
+  --sherpa-style-surface-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-5) 50%, transparent);
 
     /* categorical data-viz series — stable public names */
   --sherpa-categorical-1: var(--sherpa-theme-data-viz-categorical-color-1);
@@ -1596,7 +1573,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-info-base);
     --_status-surface-strong: var(--sherpa-theme-surface-info-1);
-    --_status-shadow: #00324680;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-info-2);
     --_status-text: var(--sherpa-theme-content-info-1);
@@ -1608,7 +1585,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-critical-base);
     --_status-surface-strong: var(--sherpa-theme-surface-critical-1);
-    --_status-shadow: #70110080;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-critical-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-critical-2);
     --_status-text: var(--sherpa-theme-content-critical-1);
@@ -1620,7 +1597,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-warning-base);
     --_status-surface-strong: var(--sherpa-theme-surface-warning-1);
-    --_status-shadow: #47310080;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-warning-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-warning-2);
     --_status-text: var(--sherpa-theme-content-body-base);
@@ -1632,7 +1609,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-urgent-base);
     --_status-surface-strong: var(--sherpa-theme-surface-urgent-1);
-    --_status-shadow: #4E1E0080;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-urgent-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-urgent-2);
     --_status-text: var(--sherpa-theme-content-urgent-1);
@@ -1644,7 +1621,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-success-base);
     --_status-surface-strong: var(--sherpa-theme-surface-success-1);
-    --_status-shadow: #00391D80;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-success-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-success-3);
     --_status-text: var(--sherpa-theme-content-success-1);
@@ -1656,7 +1633,7 @@
     --_status-surface: var(--sherpa-theme-surface-active-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-active-base);
     --_status-surface-strong: var(--sherpa-theme-surface-active-1);
-    --_status-shadow: #24003680;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-active-2);
     --_status-border-strong: var(--sherpa-theme-border-active-2);
     --_status-text: var(--sherpa-theme-content-active-1);
@@ -1668,7 +1645,7 @@
     --_status-surface: var(--sherpa-theme-surface-default-2);
     --_status-surface-subtle: var(--sherpa-theme-surface-default-2);
     --_status-surface-strong: var(--sherpa-theme-surface-default-2);
-    --_status-shadow: #0C0B1180;
+    --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-5) 50%, transparent);
     --_status-border: var(--sherpa-theme-border-default-2);
     --_status-border-strong: var(--sherpa-theme-border-default-2);
     --_status-text: var(--sherpa-theme-content-body-1);
@@ -1873,47 +1850,42 @@
 
 @layer elevation {
   :root {
-  --sherpa-elevation-blur: 0px;
-  --sherpa-elevation-color: #00000000;
-  --sherpa-elevation-offset-x: 0px;
-  --sherpa-elevation-offset-y: 0px;
-  --sherpa-elevation-spread: 0px;
+  --sherpa-elevation-blur: var(--sherpa-display-mode-size-none);
+  --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-none);
+  --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-none);
+  --sherpa-elevation-spread: var(--sherpa-display-mode-size-none);
 
     /* elevation shadow convenience aliases */
-  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
-  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
-  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-elevation-color, #15151e33);
-  }
-
-  [data-elevation="inset"] {
-    --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-sunken);
-    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
-    --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-sunken);
-    --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-sunken);
-    --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-sunken);
-  }
-
-  [data-elevation="lg"] {
-    --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-large);
-    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
-    --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-large);
-    --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-large);
-    --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-large);
-  }
-
-  [data-elevation="md"] {
-    --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-base);
-    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
-    --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-base);
-    --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-base);
-    --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-base);
+  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
+  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
+  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #0c0b1180);
   }
 
   [data-elevation="sm"] {
-    --sherpa-elevation-blur: var(--sherpa-theme-elevation-blur-small);
-    --sherpa-elevation-color: var(--sherpa-style-surface-shadow);
-    --sherpa-elevation-offset-x: var(--sherpa-theme-elevation-offset-x-small);
-    --sherpa-elevation-offset-y: var(--sherpa-theme-elevation-offset-y-small);
-    --sherpa-elevation-spread: var(--sherpa-theme-elevation-spread-small);
+    --sherpa-elevation-blur: var(--sherpa-display-mode-size-2xs);
+    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-4xs);
+    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-4xs);
+    --sherpa-elevation-spread: -4px;
+  }
+
+  [data-elevation="md"] {
+    --sherpa-elevation-blur: var(--sherpa-display-mode-size-sm);
+    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-4xs);
+    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-4xs);
+    --sherpa-elevation-spread: -8px;
+  }
+
+  [data-elevation="lg"] {
+    --sherpa-elevation-blur: var(--sherpa-display-mode-size-lg);
+    --sherpa-elevation-offset-x: var(--sherpa-display-mode-size-3xs);
+    --sherpa-elevation-offset-y: var(--sherpa-display-mode-size-3xs);
+    --sherpa-elevation-spread: -12px;
+  }
+
+  [data-elevation="inset"] {
+    --sherpa-elevation-blur: var(--sherpa-display-mode-size-2xs);
+    --sherpa-elevation-offset-x: -2px;
+    --sherpa-elevation-offset-y: -2px;
+    --sherpa-elevation-spread: -4px;
   }
 }

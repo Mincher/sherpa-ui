@@ -68,20 +68,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{primitives.color.basic.blue-green.500}",
-              "divergent/purple-yellow": "{primitives.color.basic.purple.500}",
-              "divergent/turquoise-razamatazz": "{primitives.color.extended.turquoise.500}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 1}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 1}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 1}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 1}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 1}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 1}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 1}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 1}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 1}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 1}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 1}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 1}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 1}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 1}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 1}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 1}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 1}",
+              "divergent/purple-yellow": "{primitives.color.basic.purple.500}",
+              "divergent/blue-green-pink": "{primitives.color.basic.blue-green.500}",
+              "divergent/turquoise-razamatazz": "{primitives.color.extended.turquoise.500}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -147,20 +147,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:951}",
-              "divergent/purple-yellow": "#422772",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:962}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 2}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 2}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 2}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 2}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 2}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 2}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 2}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 2}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 2}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 2}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 2}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 2}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 2}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 2}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 2}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 2}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 2}",
+              "divergent/purple-yellow": "#422772",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 2}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 2}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -226,20 +226,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:952}",
-              "divergent/purple-yellow": "#503287",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:963}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 3}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 3}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 3}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 3}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 3}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 3}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 3}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 3}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 3}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 3}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 3}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 3}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 3}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 3}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 3}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 3}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 3}",
+              "divergent/purple-yellow": "#503287",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 3}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 3}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -307,20 +307,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:953}",
-              "divergent/purple-yellow": "{__library:VariableID:7:942}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:964}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 4}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 4}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 4}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 4}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 4}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 4}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 4}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 4}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 4}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 4}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 4}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 4}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 4}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 4}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 4}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 4}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 4}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 4}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 4}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 4}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -388,20 +388,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:954}",
-              "divergent/purple-yellow": "{__library:VariableID:7:943}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:965}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 5}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 5}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 5}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 5}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 5}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 5}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 5}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 5}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 5}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 5}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 5}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 5}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 5}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 5}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 5}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 5}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 5}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 5}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 5}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 5}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -469,20 +469,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:955}",
-              "divergent/purple-yellow": "{__library:VariableID:7:944}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:966}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 6}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 6}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 6}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 6}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 6}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 6}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 6}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 6}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 6}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 6}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 6}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 6}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 6}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 6}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 6}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 6}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 6}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 6}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 6}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 6}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -550,20 +550,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:956}",
-              "divergent/purple-yellow": "{__library:VariableID:7:945}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:967}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 7}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 7}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 7}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 7}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 7}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 7}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 7}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 7}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 7}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 7}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 7}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 7}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 7}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 7}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 7}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 7}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 7}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 7}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 7}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 7}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -631,20 +631,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:957}",
-              "divergent/purple-yellow": "{__library:VariableID:7:946}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:968}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 8}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 8}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 8}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 8}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 8}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 8}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 8}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 8}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 8}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 8}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 8}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 8}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 8}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 8}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 8}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 8}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 8}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 8}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 8}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 8}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -712,20 +712,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:958}",
-              "divergent/purple-yellow": "{__library:VariableID:7:947}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:969}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 9}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 9}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 9}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 9}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 9}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 9}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 9}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 9}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 9}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 9}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 9}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 9}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 9}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 9}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 9}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 9}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 9}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 9}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 9}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 9}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -793,20 +793,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{__library:VariableID:7:959}",
-              "divergent/purple-yellow": "{__library:VariableID:7:948}",
-              "divergent/turquoise-razamatazz": "{__library:VariableID:7:970}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 10}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 10}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 10}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 10}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 10}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 10}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 10}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 10}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 10}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 10}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 10}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 10}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 10}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 10}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 10}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 10}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 10}",
+              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 10}",
+              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 10}",
+              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 10}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -874,20 +874,20 @@
               }
             },
             "modes": {
-              "divergent/blue-green-pink": "{primitives.color.basic.pink.500}",
-              "divergent/purple-yellow": "{primitives.color.extended.warm-yellow.500}",
-              "divergent/turquoise-razamatazz": "{primitives.color.extended.razamatazz.500}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 11}",
+              "sequential/purple": "{theme.data-viz.sequential.purple.color 11}",
+              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 11}",
+              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 11}",
               "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 11}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 11}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 11}",
+              "sequential/blue": "{theme.data-viz.sequential.blue.color 11}",
               "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 11}",
               "sequential/orange": "{theme.data-viz.sequential.orange.color 11}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 11}",
               "sequential/pink": "{theme.data-viz.sequential.pink.color 11}",
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 11}",
               "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 11}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 11}"
+              "sequential/green": "{theme.data-viz.sequential.green.color 11}",
+              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 11}",
+              "divergent/purple-yellow": "{primitives.color.extended.warm-yellow.500}",
+              "divergent/blue-green-pink": "{primitives.color.basic.pink.500}",
+              "divergent/turquoise-razamatazz": "{primitives.color.extended.razamatazz.500}"
             },
             "primaryMode": "categorical",
             "scopes": [
@@ -1355,7 +1355,11 @@
                 "dark": "{primitives.color.extended.neon-blue.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334418"
+              "variableId": "VariableID:740:334418",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1379,7 +1383,11 @@
                 "dark": "{primitives.color.extended.neon-blue.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334419"
+              "variableId": "VariableID:740:334419",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1403,7 +1411,11 @@
                 "dark": "{primitives.color.extended.neon-blue.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334420"
+              "variableId": "VariableID:740:334420",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1427,7 +1439,11 @@
                 "dark": "{primitives.color.extended.neon-blue.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334421"
+              "variableId": "VariableID:740:334421",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1451,7 +1467,11 @@
                 "dark": "{primitives.color.extended.neon-blue.400}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334422"
+              "variableId": "VariableID:740:334422",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1477,7 +1497,11 @@
                 "dark": "{primitives.color.basic.greyscale.900}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:1017:36141"
+              "variableId": "VariableID:1017:36141",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1503,7 +1527,11 @@
                 "dark": "{primitives.color.extended.phlox.1000}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334413"
+              "variableId": "VariableID:740:334413",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1527,7 +1555,11 @@
                 "dark": "{primitives.color.extended.phlox.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334414"
+              "variableId": "VariableID:740:334414",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1551,7 +1583,11 @@
                 "dark": "{primitives.color.extended.phlox.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334415"
+              "variableId": "VariableID:740:334415",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1575,7 +1611,11 @@
                 "dark": "{primitives.color.extended.phlox.400}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334416"
+              "variableId": "VariableID:740:334416",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1599,7 +1639,11 @@
                 "dark": "{primitives.color.extended.phlox.200}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334417"
+              "variableId": "VariableID:740:334417",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1625,7 +1669,11 @@
                 "dark": "{primitives.color.basic.red.900}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334438"
+              "variableId": "VariableID:740:334438",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1649,7 +1697,11 @@
                 "dark": "{primitives.color.basic.red.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334439"
+              "variableId": "VariableID:740:334439",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1673,7 +1725,11 @@
                 "dark": "{primitives.color.basic.red.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334440"
+              "variableId": "VariableID:740:334440",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1697,7 +1753,11 @@
                 "dark": "{primitives.color.basic.red.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334441"
+              "variableId": "VariableID:740:334441",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1721,7 +1781,11 @@
                 "dark": "{primitives.color.basic.red.400}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334442"
+              "variableId": "VariableID:740:334442",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1747,7 +1811,11 @@
                 "dark": "{primitives.color.basic.blue-green.1000}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334423"
+              "variableId": "VariableID:740:334423",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1771,7 +1839,11 @@
                 "dark": "{primitives.color.basic.blue-green.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334424"
+              "variableId": "VariableID:740:334424",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1795,7 +1867,11 @@
                 "dark": "{primitives.color.basic.blue-green.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334425"
+              "variableId": "VariableID:740:334425",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1819,7 +1895,11 @@
                 "dark": "{primitives.color.basic.blue-green.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334426"
+              "variableId": "VariableID:740:334426",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1843,7 +1923,11 @@
                 "dark": "{primitives.color.basic.blue-green.300}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334427"
+              "variableId": "VariableID:740:334427",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1869,7 +1953,11 @@
                 "dark": "{primitives.color.basic.greyscale.1000}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334119"
+              "variableId": "VariableID:740:334119",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1894,7 +1982,11 @@
                 "dark": "{primitives.color.basic.greyscale.900}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:6:467"
+              "variableId": "VariableID:6:467",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1918,7 +2010,11 @@
                 "dark": "{primitives.color.basic.greyscale.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334120"
+              "variableId": "VariableID:740:334120",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1942,7 +2038,11 @@
                 "dark": "{primitives.color.basic.greyscale.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334453"
+              "variableId": "VariableID:740:334453",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1966,7 +2066,11 @@
                 "dark": "{primitives.color.basic.greyscale.300}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334454"
+              "variableId": "VariableID:740:334454",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -1991,7 +2095,11 @@
                   "dark": "{primitives.color.basic.greyscale.0}"
                 },
                 "primaryMode": "light",
-                "variableId": "VariableID:900:32480"
+                "variableId": "VariableID:900:32480",
+                "opacity": {
+                  "light": "{primitives::effects/opacity/1000}",
+                  "dark": "{primitives::effects/opacity/1000}"
+                }
               }
             },
             "$type": "color",
@@ -2016,7 +2124,11 @@
                   "dark": "{primitives.color.basic.greyscale.100}"
                 },
                 "primaryMode": "light",
-                "variableId": "VariableID:900:32483"
+                "variableId": "VariableID:900:32483",
+                "opacity": {
+                  "light": "{primitives::effects/opacity/1000}",
+                  "dark": "{primitives::effects/opacity/1000}"
+                }
               }
             },
             "$type": "color",
@@ -2040,7 +2152,11 @@
                   "dark": "{primitives.color.basic.greyscale.400}"
                 },
                 "primaryMode": "light",
-                "variableId": "VariableID:900:32484"
+                "variableId": "VariableID:900:32484",
+                "opacity": {
+                  "light": "{primitives::effects/opacity/1000}",
+                  "dark": "{primitives::effects/opacity/1000}"
+                }
               }
             },
             "$type": "color",
@@ -2064,7 +2180,11 @@
                   "dark": "{primitives.color.basic.greyscale.800}"
                 },
                 "primaryMode": "light",
-                "variableId": "VariableID:900:32485"
+                "variableId": "VariableID:900:32485",
+                "opacity": {
+                  "light": "{primitives::effects/opacity/1000}",
+                  "dark": "{primitives::effects/opacity/1000}"
+                }
               }
             },
             "$type": "color",
@@ -2088,7 +2208,11 @@
                   "dark": "{primitives.color.basic.greyscale.1000}"
                 },
                 "primaryMode": "light",
-                "variableId": "VariableID:900:32481"
+                "variableId": "VariableID:900:32481",
+                "opacity": {
+                  "light": "{primitives::effects/opacity/1000}",
+                  "dark": "{primitives::effects/opacity/1000}"
+                }
               }
             },
             "$type": "color",
@@ -2115,7 +2239,11 @@
                 "dark": "{primitives.color.basic.green.1000}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334443"
+              "variableId": "VariableID:740:334443",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2139,7 +2267,11 @@
                 "dark": "{primitives.color.basic.green.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334444"
+              "variableId": "VariableID:740:334444",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2163,7 +2295,11 @@
                 "dark": "{primitives.color.basic.green.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334445"
+              "variableId": "VariableID:740:334445",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2187,7 +2323,11 @@
                 "dark": "{primitives.color.basic.green.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334446"
+              "variableId": "VariableID:740:334446",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2211,7 +2351,11 @@
                 "dark": "{primitives.color.basic.green.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334447"
+              "variableId": "VariableID:740:334447",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2237,7 +2381,11 @@
                 "dark": "{primitives.color.extended.slate.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334448"
+              "variableId": "VariableID:740:334448",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2261,7 +2409,11 @@
                 "dark": "{primitives.color.extended.slate.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334449"
+              "variableId": "VariableID:740:334449",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2285,7 +2437,11 @@
                 "dark": "{primitives.color.extended.slate.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334450"
+              "variableId": "VariableID:740:334450",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2309,7 +2465,11 @@
                 "dark": "{primitives.color.extended.slate.300}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334451"
+              "variableId": "VariableID:740:334451",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2333,7 +2493,11 @@
                 "dark": "{primitives.color.extended.slate.100}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334452"
+              "variableId": "VariableID:740:334452",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2359,7 +2523,11 @@
                 "dark": "{primitives.color.basic.orange.1000}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334433"
+              "variableId": "VariableID:740:334433",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2383,7 +2551,11 @@
                 "dark": "{primitives.color.basic.orange.800}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334434"
+              "variableId": "VariableID:740:334434",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2407,7 +2579,11 @@
                 "dark": "{primitives.color.basic.orange.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334435"
+              "variableId": "VariableID:740:334435",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2431,7 +2607,11 @@
                 "dark": "{primitives.color.basic.orange.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334436"
+              "variableId": "VariableID:740:334436",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2455,7 +2635,11 @@
                 "dark": "{primitives.color.basic.orange.400}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334437"
+              "variableId": "VariableID:740:334437",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2481,7 +2665,11 @@
                 "dark": "{primitives.color.extended.warm-yellow.900}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334428"
+              "variableId": "VariableID:740:334428",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2505,7 +2693,11 @@
                 "dark": "{primitives.color.extended.warm-yellow.700}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334429"
+              "variableId": "VariableID:740:334429",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2529,7 +2721,11 @@
                 "dark": "{primitives.color.extended.warm-yellow.600}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334430"
+              "variableId": "VariableID:740:334430",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2553,7 +2749,11 @@
                 "dark": "{primitives.color.extended.warm-yellow.500}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334431"
+              "variableId": "VariableID:740:334431",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -2577,7 +2777,11 @@
                 "dark": "{primitives.color.extended.warm-yellow.400}"
               },
               "primaryMode": "light",
-              "variableId": "VariableID:740:334432"
+              "variableId": "VariableID:740:334432",
+              "opacity": {
+                "light": "{primitives::effects/opacity/1000}",
+                "dark": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -3683,6 +3887,24 @@
         },
         "$type": "dimension",
         "$value": "{primitives.scale.150}"
+      },
+      "4xs": {
+        "$description": "Spacing (gap / padding / size).",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:6:363",
+            "figmaResolvedType": "FLOAT",
+            "modes": {
+              "dark": "{primitives.scale.25}"
+            },
+            "primaryMode": "light",
+            "scopes": [
+              "WIDTH_HEIGHT"
+            ]
+          }
+        },
+        "$type": "dimension",
+        "$value": "{primitives.scale.25}"
       }
     },
     "space": {
@@ -4142,10 +4364,10 @@
             }
           },
           "modes": {
-            "inset": "{theme.elevation.blur.sunken}",
-            "lg": "{theme.elevation.blur.large}",
-            "md": "{theme.elevation.blur.base}",
-            "sm": "{theme.elevation.blur.small}"
+            "sm": "{display-mode.size.2xs}",
+            "md": "{display-mode.size.sm}",
+            "lg": "{display-mode.size.lg}",
+            "inset": "{display-mode.size.2xs}"
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4155,47 +4377,7 @@
         }
       },
       "$type": "dimension",
-      "$value": 0
-    },
-    "color": {
-      "$description": "Shadow / effect value.",
-      "$extensions": {
-        "figma-console-mcp": {
-          "collectionId": "VariableCollectionId:24:290",
-          "figmaResolvedType": "COLOR",
-          "lastSyncedAt": "2026-09-09T09:43:47.989Z",
-          "lastSyncedValue": {
-            "inset": {
-              "reference": "{style.style-surface.shadow}"
-            },
-            "lg": {
-              "reference": "{style.style-surface.shadow}"
-            },
-            "md": {
-              "reference": "{style.style-surface.shadow}"
-            },
-            "passthrough": {
-              "literal": "#00000000"
-            },
-            "sm": {
-              "reference": "{style.style-surface.shadow}"
-            }
-          },
-          "modes": {
-            "inset": "{style.style-surface.shadow}",
-            "lg": "{style.style-surface.shadow}",
-            "md": "{style.style-surface.shadow}",
-            "sm": "{style.style-surface.shadow}"
-          },
-          "primaryMode": "passthrough",
-          "scopes": [
-            "EFFECT_COLOR"
-          ],
-          "variableId": "VariableID:24:295"
-        }
-      },
-      "$type": "color",
-      "$value": "#00000000"
+      "$value": "{display-mode.size.none}"
     },
     "offset-x": {
       "$description": "Design value.",
@@ -4222,10 +4404,10 @@
             }
           },
           "modes": {
-            "inset": "{theme.elevation.offset.x.sunken}",
-            "lg": "{theme.elevation.offset.x.large}",
-            "md": "{theme.elevation.offset.x.base}",
-            "sm": "{theme.elevation.offset.x.small}"
+            "sm": "{display-mode.size.4xs}",
+            "md": "{display-mode.size.4xs}",
+            "lg": "{display-mode.size.3xs}",
+            "inset": -2
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4235,7 +4417,7 @@
         }
       },
       "$type": "dimension",
-      "$value": 0
+      "$value": "{display-mode.size.none}"
     },
     "offset-y": {
       "$description": "Design value.",
@@ -4262,10 +4444,10 @@
             }
           },
           "modes": {
-            "inset": "{theme.elevation.offset.y.sunken}",
-            "lg": "{theme.elevation.offset.y.large}",
-            "md": "{theme.elevation.offset.y.base}",
-            "sm": "{theme.elevation.offset.y.small}"
+            "sm": "{display-mode.size.4xs}",
+            "md": "{display-mode.size.4xs}",
+            "lg": "{display-mode.size.3xs}",
+            "inset": -2
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4275,7 +4457,7 @@
         }
       },
       "$type": "dimension",
-      "$value": 0
+      "$value": "{display-mode.size.none}"
     },
     "spread": {
       "$description": "Design value.",
@@ -4302,10 +4484,10 @@
             }
           },
           "modes": {
-            "inset": "{theme.elevation.spread.sunken}",
-            "lg": "{theme.elevation.spread.large}",
-            "md": "{theme.elevation.spread.base}",
-            "sm": "{theme.elevation.spread.small}"
+            "sm": -4,
+            "md": -8,
+            "lg": -12,
+            "inset": -4
           },
           "primaryMode": "passthrough",
           "scopes": [
@@ -4315,7 +4497,7 @@
         }
       },
       "$type": "dimension",
-      "$value": 0
+      "$value": "{display-mode.size.none}"
     }
   },
   "input": {
@@ -4380,8 +4562,8 @@
             }
           },
           "modes": {
-            "desktop": 1280,
             "tablet": 768,
+            "desktop": 1280,
             "wide": 1920
           },
           "primaryMode": "mobile",
@@ -4417,8 +4599,8 @@
               }
             },
             "modes": {
-              "desktop": 12,
               "tablet": 8,
+              "desktop": 12,
               "wide": 12
             },
             "primaryMode": "mobile",
@@ -4453,8 +4635,8 @@
               }
             },
             "modes": {
-              "desktop": "{display-mode.space.base}",
               "tablet": "{display-mode.space.base}",
+              "desktop": "{display-mode.space.base}",
               "wide": "{display-mode.space.base}"
             },
             "primaryMode": "mobile",
@@ -4489,8 +4671,8 @@
               }
             },
             "modes": {
-              "desktop": "{display-mode.space.base}",
               "tablet": "{display-mode.space.base}",
+              "desktop": "{display-mode.space.base}",
               "wide": "{display-mode.space.base}"
             },
             "primaryMode": "mobile",
@@ -4525,8 +4707,8 @@
               }
             },
             "modes": {
-              "desktop": 1280,
               "tablet": 768,
+              "desktop": 1280,
               "wide": 1600
             },
             "primaryMode": "mobile",
@@ -4561,8 +4743,8 @@
               }
             },
             "modes": {
-              "desktop": "{display-mode.space.base}",
               "tablet": "{display-mode.space.base}",
+              "desktop": "{display-mode.space.base}",
               "wide": "{display-mode.space.base}"
             },
             "primaryMode": "mobile",
@@ -4597,8 +4779,8 @@
               }
             },
             "modes": {
-              "desktop": "{display-mode.space.6xl}",
               "tablet": "{display-mode.space.6xl}",
+              "desktop": "{display-mode.space.6xl}",
               "wide": "{display-mode.space.6xl}"
             },
             "primaryMode": "mobile",
@@ -5797,7 +5979,7 @@
               }
             },
             "$type": "color",
-            "$value": "#f0fff5"
+            "$value": "#F0FFF5"
           },
           "200": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5814,7 +5996,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9cfcc5"
+            "$value": "#9CFCC5"
           },
           "300": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5831,7 +6013,7 @@
               }
             },
             "$type": "color",
-            "$value": "#82edb1"
+            "$value": "#82EDB1"
           },
           "400": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5848,7 +6030,7 @@
               }
             },
             "$type": "color",
-            "$value": "#69dd9f"
+            "$value": "#69DD9F"
           },
           "500": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5865,7 +6047,7 @@
               }
             },
             "$type": "color",
-            "$value": "#36de8c"
+            "$value": "#36DE8C"
           },
           "600": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5882,7 +6064,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00d178"
+            "$value": "#00D178"
           },
           "700": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5899,7 +6081,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00ad62"
+            "$value": "#00AD62"
           },
           "800": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5916,7 +6098,7 @@
               }
             },
             "$type": "color",
-            "$value": "#008a4b"
+            "$value": "#008A4B"
           },
           "900": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -5933,7 +6115,7 @@
               }
             },
             "$type": "color",
-            "$value": "#006b37"
+            "$value": "#006B37"
           },
           "1000": {
             "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
@@ -9004,7 +9186,7 @@
             }
           },
           "$type": "number",
-          "$value": 20
+          "$value": 10
         },
         "200": {
           "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
@@ -9023,7 +9205,7 @@
             }
           },
           "$type": "number",
-          "$value": 40
+          "$value": 20
         },
         "300": {
           "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
@@ -9042,7 +9224,7 @@
             }
           },
           "$type": "number",
-          "$value": 60
+          "$value": 30
         },
         "400": {
           "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
@@ -9061,7 +9243,7 @@
             }
           },
           "$type": "number",
-          "$value": 80
+          "$value": 40
         },
         "500": {
           "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
@@ -9077,6 +9259,66 @@
               },
               "primaryMode": "value",
               "variableId": "VariableID:5:40"
+            }
+          },
+          "$type": "number",
+          "$value": 50
+        },
+        "600": {
+          "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:5:2",
+              "figmaResolvedType": "FLOAT",
+              "primaryMode": "value"
+            }
+          },
+          "$type": "number",
+          "$value": 60
+        },
+        "700": {
+          "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:5:2",
+              "figmaResolvedType": "FLOAT",
+              "primaryMode": "value"
+            }
+          },
+          "$type": "number",
+          "$value": 70
+        },
+        "800": {
+          "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:5:2",
+              "figmaResolvedType": "FLOAT",
+              "primaryMode": "value"
+            }
+          },
+          "$type": "number",
+          "$value": 80
+        },
+        "900": {
+          "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:5:2",
+              "figmaResolvedType": "FLOAT",
+              "primaryMode": "value"
+            }
+          },
+          "$type": "number",
+          "$value": 90
+        },
+        "1000": {
+          "$description": "Foundation: raw base value. Bindable foundation layer (both Figma & code).",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:5:2",
+              "figmaResolvedType": "FLOAT",
+              "primaryMode": "value"
             }
           },
           "$type": "number",
@@ -9622,10 +9864,10 @@
           },
           "modes": {
             "2xs": "{display-mode.space.sm}",
-            "lg": "{display-mode.space.2xl}",
+            "xs": "{display-mode.space.base}",
             "sm": "{display-mode.space.xl}",
-            "xl": "{display-mode.space.3xl}",
-            "xs": "{display-mode.space.base}"
+            "lg": "{display-mode.space.2xl}",
+            "xl": "{display-mode.space.3xl}"
           },
           "primaryMode": "default",
           "scopes": [
@@ -9665,10 +9907,10 @@
           },
           "modes": {
             "2xs": "{theme.content.size.xs}",
-            "lg": "{theme.content.size.large}",
+            "xs": "{theme.content.size.xs}",
             "sm": "{theme.content.size.base}",
-            "xl": "{theme.content.size.large}",
-            "xs": "{theme.content.size.xs}"
+            "lg": "{theme.content.size.large}",
+            "xl": "{theme.content.size.large}"
           },
           "primaryMode": "default",
           "scopes": [
@@ -9709,10 +9951,10 @@
             },
             "modes": {
               "2xs": "{display-mode.fonts.scale.sm}",
-              "lg": "{display-mode.fonts.scale.xl}",
+              "xs": "{display-mode.fonts.scale.xl}",
               "sm": "{display-mode.fonts.scale.xl}",
-              "xl": "{display-mode.fonts.scale.xl}",
-              "xs": "{display-mode.fonts.scale.xl}"
+              "lg": "{display-mode.fonts.scale.xl}",
+              "xl": "{display-mode.fonts.scale.xl}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -9752,10 +9994,10 @@
             },
             "modes": {
               "2xs": "{display-mode.fonts.scale.2xs}",
-              "lg": "{display-mode.fonts.scale.lg}",
+              "xs": "{display-mode.fonts.scale.xs}",
               "sm": "{display-mode.fonts.scale.base}",
-              "xl": "{display-mode.fonts.scale.xl}",
-              "xs": "{display-mode.fonts.scale.xs}"
+              "lg": "{display-mode.fonts.scale.lg}",
+              "xl": "{display-mode.fonts.scale.xl}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -9795,10 +10037,10 @@
             },
             "modes": {
               "2xs": "{display-mode.fonts.weight.400}",
-              "lg": "{display-mode.fonts.weight.400}",
+              "xs": "{display-mode.fonts.weight.400}",
               "sm": "{display-mode.fonts.weight.400}",
-              "xl": "{display-mode.fonts.weight.400}",
-              "xs": "{display-mode.fonts.weight.400}"
+              "lg": "{display-mode.fonts.weight.400}",
+              "xl": "{display-mode.fonts.weight.400}"
             },
             "primaryMode": "default",
             "variableId": "VariableID:935:38173"
@@ -9837,10 +10079,10 @@
             },
             "modes": {
               "2xs": "{display-mode.border.rounding.sm}",
-              "lg": "{display-mode.border.rounding.base}",
+              "xs": "{display-mode.border.rounding.base}",
               "sm": "{display-mode.border.rounding.base}",
-              "xl": "{display-mode.border.rounding.lg}",
-              "xs": "{display-mode.border.rounding.base}"
+              "lg": "{display-mode.border.rounding.base}",
+              "xl": "{display-mode.border.rounding.lg}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -9880,10 +10122,10 @@
             },
             "modes": {
               "2xs": "{display-mode.border.rounding.sm}",
-              "lg": "{display-mode.border.rounding.base}",
+              "xs": "{display-mode.border.rounding.base}",
               "sm": "{display-mode.border.rounding.base}",
-              "xl": "{display-mode.border.rounding.lg}",
-              "xs": "{display-mode.border.rounding.base}"
+              "lg": "{display-mode.border.rounding.base}",
+              "xl": "{display-mode.border.rounding.lg}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -9923,10 +10165,10 @@
             },
             "modes": {
               "2xs": "{display-mode.border.rounding.sm}",
-              "lg": "{display-mode.border.rounding.base}",
+              "xs": "{display-mode.border.rounding.base}",
               "sm": "{display-mode.border.rounding.base}",
-              "xl": "{display-mode.border.rounding.lg}",
-              "xs": "{display-mode.border.rounding.base}"
+              "lg": "{display-mode.border.rounding.base}",
+              "xl": "{display-mode.border.rounding.lg}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -9966,10 +10208,10 @@
             },
             "modes": {
               "2xs": "{display-mode.border.rounding.sm}",
-              "lg": "{display-mode.border.rounding.base}",
+              "xs": "{display-mode.border.rounding.base}",
               "sm": "{display-mode.border.rounding.base}",
-              "xl": "{display-mode.border.rounding.lg}",
-              "xs": "{display-mode.border.rounding.base}"
+              "lg": "{display-mode.border.rounding.base}",
+              "xl": "{display-mode.border.rounding.lg}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10011,10 +10253,10 @@
             },
             "modes": {
               "2xs": "{display-mode.space.3xs}",
-              "lg": "{display-mode.space.sm}",
+              "xs": "{display-mode.space.2xs}",
               "sm": "{display-mode.space.xs}",
-              "xl": "{display-mode.space.sm}",
-              "xs": "{display-mode.space.2xs}"
+              "lg": "{display-mode.space.sm}",
+              "xl": "{display-mode.space.sm}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10054,10 +10296,10 @@
             },
             "modes": {
               "2xs": "{display-mode.space.3xs}",
-              "lg": "{display-mode.space.sm}",
+              "xs": "{display-mode.space.2xs}",
               "sm": "{display-mode.space.xs}",
-              "xl": "{display-mode.space.sm}",
-              "xs": "{display-mode.space.2xs}"
+              "lg": "{display-mode.space.sm}",
+              "xl": "{display-mode.space.sm}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10153,13 +10395,13 @@
               }
             },
             "modes": {
-              "active": "{theme.border.active.+2}",
-              "critical": "{theme.border.default.+2}",
-              "inactive": "{theme.border.default.+2}",
               "info": "{theme.border.default.+2}",
-              "success": "{theme.border.default.+2}",
+              "critical": "{theme.border.default.+2}",
+              "warning": "{theme.border.default.+2}",
               "urgent": "{theme.border.default.+2}",
-              "warning": "{theme.border.default.+2}"
+              "success": "{theme.border.default.+2}",
+              "active": "{theme.border.active.+2}",
+              "inactive": "{theme.border.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10205,13 +10447,13 @@
               }
             },
             "modes": {
-              "active": "{theme.border.active.+2}",
-              "critical": "{theme.border.critical.+2}",
-              "inactive": "{theme.border.default.+2}",
               "info": "{theme.border.info.+2}",
-              "success": "{theme.border.success.+3}",
+              "critical": "{theme.border.critical.+2}",
+              "warning": "{theme.border.warning.+2}",
               "urgent": "{theme.border.urgent.+2}",
-              "warning": "{theme.border.warning.+2}"
+              "success": "{theme.border.success.+3}",
+              "active": "{theme.border.active.+2}",
+              "inactive": "{theme.border.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10257,13 +10499,13 @@
               }
             },
             "modes": {
-              "active": "{display-mode.border.width.sm}",
-              "critical": "{display-mode.border.width.sm}",
-              "inactive": "{display-mode.border.width.sm}",
               "info": "{display-mode.border.width.sm}",
-              "success": "{display-mode.border.width.sm}",
+              "critical": "{display-mode.border.width.sm}",
+              "warning": "{display-mode.border.width.sm}",
               "urgent": "{display-mode.border.width.sm}",
-              "warning": "{display-mode.border.width.sm}"
+              "success": "{display-mode.border.width.sm}",
+              "active": "{display-mode.border.width.sm}",
+              "inactive": "{display-mode.border.width.sm}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10310,13 +10552,13 @@
               }
             },
             "modes": {
-              "active": "{theme.content.active.+1}",
-              "critical": "{theme.content.critical.+1}",
-              "inactive": "{theme.content.body.+1}",
               "info": "{theme.content.info.+1}",
-              "success": "{theme.content.success.+1}",
+              "critical": "{theme.content.critical.+1}",
+              "warning": "{theme.content.body.base}",
               "urgent": "{theme.content.urgent.+1}",
-              "warning": "{theme.content.body.base}"
+              "success": "{theme.content.success.+1}",
+              "active": "{theme.content.active.+1}",
+              "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
             "variableId": "VariableID:954:35958"
@@ -10358,13 +10600,13 @@
               }
             },
             "modes": {
-              "active": "{theme.content.body.+4}",
-              "critical": "{theme.content.body.+4}",
-              "inactive": "{theme.content.body.+1}",
               "info": "{theme.content.body.+4}",
-              "success": "{theme.content.body.+4}",
+              "critical": "{theme.content.body.+4}",
+              "warning": "{theme.content.body.+4}",
               "urgent": "{theme.content.body.+4}",
-              "warning": "{theme.content.body.+4}"
+              "success": "{theme.content.body.+4}",
+              "active": "{theme.content.body.+4}",
+              "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
             "variableId": "VariableID:956:36646"
@@ -10406,13 +10648,13 @@
               }
             },
             "modes": {
-              "active": "{theme.content.body.+1}",
-              "critical": "{theme.content.body.+1}",
-              "inactive": "{theme.content.body.+1}",
               "info": "{theme.content.body.+1}",
-              "success": "{theme.content.body.+1}",
+              "critical": "{theme.content.body.+1}",
+              "warning": "{theme.content.body.+1}",
               "urgent": "{theme.content.body.+1}",
-              "warning": "{theme.content.body.+1}"
+              "success": "{theme.content.body.+1}",
+              "active": "{theme.content.body.+1}",
+              "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
             "variableId": "VariableID:974:11990"
@@ -10454,13 +10696,13 @@
               }
             },
             "modes": {
-              "active": "{theme.content.body.+2}",
-              "critical": "{theme.content.body.+2}",
-              "inactive": "{theme.content.body.+1}",
               "info": "{theme.content.body.+2}",
-              "success": "{theme.content.body.+2}",
+              "critical": "{theme.content.body.+2}",
+              "warning": "{theme.content.body.+1}",
               "urgent": "{theme.content.body.+2}",
-              "warning": "{theme.content.body.+1}"
+              "success": "{theme.content.body.+2}",
+              "active": "{theme.content.body.+2}",
+              "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
             "variableId": "VariableID:974:11991"
@@ -10504,13 +10746,13 @@
               }
             },
             "modes": {
-              "active": "{theme.content.active.+1}",
-              "critical": "{theme.surface.critical.+3}",
-              "inactive": "{theme.surface.default.+2}",
               "info": "{theme.surface.info.+3}",
-              "success": "{theme.surface.success.+3}",
+              "critical": "{theme.surface.critical.+3}",
+              "warning": "{theme.surface.warning.+3}",
               "urgent": "{theme.surface.urgent.+3}",
-              "warning": "{theme.surface.warning.+3}"
+              "success": "{theme.surface.success.+3}",
+              "active": "{theme.content.active.+1}",
+              "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10559,13 +10801,13 @@
               }
             },
             "modes": {
-              "active": "{theme.surface.active.base}",
-              "critical": "{theme.surface.default.base}",
-              "inactive": "{theme.surface.default.+2}",
               "info": "{theme.surface.default.base}",
-              "success": "{theme.surface.default.base}",
+              "critical": "{theme.surface.default.base}",
+              "warning": "{theme.surface.default.base}",
               "urgent": "{theme.surface.default.base}",
-              "warning": "{theme.surface.default.base}"
+              "success": "{theme.surface.default.base}",
+              "active": "{theme.surface.active.base}",
+              "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10612,13 +10854,13 @@
               }
             },
             "modes": {
-              "active": "{theme.surface.active.base}",
-              "critical": "{theme.surface.critical.base}",
-              "inactive": "{theme.surface.default.+2}",
               "info": "{theme.surface.info.base}",
-              "success": "{theme.surface.success.base}",
+              "critical": "{theme.surface.critical.base}",
+              "warning": "{theme.surface.warning.base}",
               "urgent": "{theme.surface.urgent.base}",
-              "warning": "{theme.surface.warning.base}"
+              "success": "{theme.surface.success.base}",
+              "active": "{theme.surface.active.base}",
+              "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10665,13 +10907,13 @@
               }
             },
             "modes": {
-              "active": "{theme.surface.active.+1}",
-              "critical": "{theme.surface.critical.+1}",
-              "inactive": "{theme.surface.default.+2}",
               "info": "{theme.surface.info.+1}",
-              "success": "{theme.surface.success.+1}",
+              "critical": "{theme.surface.critical.+1}",
+              "warning": "{theme.surface.warning.+1}",
               "urgent": "{theme.surface.urgent.+1}",
-              "warning": "{theme.surface.warning.+1}"
+              "success": "{theme.surface.success.+1}",
+              "active": "{theme.surface.active.+1}",
+              "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
             "scopes": [
@@ -10718,24 +10960,34 @@
               }
             },
             "modes": {
-              "info": "#00324680",
-              "critical": "#70110080",
-              "warning": "#47310080",
-              "urgent": "#4E1E0080",
-              "success": "#00391D80",
-              "active": "#24003680",
-              "inactive": "#0C0B1180"
+              "info": "{display-mode.color.info.color 5}",
+              "critical": "{display-mode.color.critical.color 5}",
+              "warning": "{display-mode.color.warning.color 5}",
+              "urgent": "{display-mode.color.urgent.color 5}",
+              "success": "{display-mode.color.success.color 5}",
+              "active": "{display-mode.color.brand.color 5}",
+              "inactive": "{display-mode.color.neutral.color 5}"
             },
             "primaryMode": "default",
             "scopes": [
               "FRAME_FILL",
               "SHAPE_FILL"
             ],
-            "variableId": "VariableID:1014:33893"
+            "variableId": "VariableID:1014:33893",
+            "opacity": {
+              "default": "{primitives::effects/opacity/500}",
+              "info": "{primitives::effects/opacity/500}",
+              "critical": "{primitives::effects/opacity/500}",
+              "warning": "{primitives::effects/opacity/500}",
+              "urgent": "{primitives::effects/opacity/500}",
+              "success": "{primitives::effects/opacity/500}",
+              "active": "{primitives::effects/opacity/500}",
+              "inactive": "{primitives::effects/opacity/500}"
+            }
           }
         },
         "$type": "color",
-        "$value": "#0C0B1180"
+        "$value": "{display-mode.color.neutral.color 5}"
       }
     }
   },
@@ -10984,7 +11236,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36612"
+              "variableId": "VariableID:956:36612",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11005,7 +11260,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36613"
+              "variableId": "VariableID:956:36613",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11026,7 +11284,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36614"
+              "variableId": "VariableID:956:36614",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11047,7 +11308,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36615"
+              "variableId": "VariableID:956:36615",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11068,7 +11332,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36611"
+              "variableId": "VariableID:956:36611",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11091,7 +11358,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36617"
+              "variableId": "VariableID:956:36617",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11112,7 +11382,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36618"
+              "variableId": "VariableID:956:36618",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11133,7 +11406,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36619"
+              "variableId": "VariableID:956:36619",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11154,7 +11430,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36620"
+              "variableId": "VariableID:956:36620",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11175,7 +11454,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36616"
+              "variableId": "VariableID:956:36616",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11198,7 +11480,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36637"
+              "variableId": "VariableID:956:36637",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11219,7 +11504,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36638"
+              "variableId": "VariableID:956:36638",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11240,7 +11528,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36639"
+              "variableId": "VariableID:956:36639",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11261,7 +11552,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36640"
+              "variableId": "VariableID:956:36640",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11282,7 +11576,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36636"
+              "variableId": "VariableID:956:36636",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11305,7 +11602,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36607"
+              "variableId": "VariableID:956:36607",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11326,7 +11626,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36608"
+              "variableId": "VariableID:956:36608",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11347,7 +11650,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36609"
+              "variableId": "VariableID:956:36609",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11368,7 +11674,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36610"
+              "variableId": "VariableID:956:36610",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11389,7 +11698,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36606"
+              "variableId": "VariableID:956:36606",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11412,7 +11724,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36622"
+              "variableId": "VariableID:956:36622",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11433,7 +11748,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36623"
+              "variableId": "VariableID:956:36623",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11454,7 +11772,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36624"
+              "variableId": "VariableID:956:36624",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11475,7 +11796,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36625"
+              "variableId": "VariableID:956:36625",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11496,7 +11820,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36621"
+              "variableId": "VariableID:956:36621",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11519,7 +11846,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36642"
+              "variableId": "VariableID:956:36642",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11540,7 +11870,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36643"
+              "variableId": "VariableID:956:36643",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11561,7 +11894,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36644"
+              "variableId": "VariableID:956:36644",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11582,7 +11918,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36645"
+              "variableId": "VariableID:956:36645",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11603,7 +11942,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36641"
+              "variableId": "VariableID:956:36641",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11626,7 +11968,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36632"
+              "variableId": "VariableID:956:36632",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11647,7 +11992,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36633"
+              "variableId": "VariableID:956:36633",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11668,7 +12016,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36634"
+              "variableId": "VariableID:956:36634",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11689,7 +12040,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36635"
+              "variableId": "VariableID:956:36635",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11710,7 +12064,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36631"
+              "variableId": "VariableID:956:36631",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11733,7 +12090,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36627"
+              "variableId": "VariableID:956:36627",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11754,7 +12114,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36628"
+              "variableId": "VariableID:956:36628",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11775,7 +12138,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36629"
+              "variableId": "VariableID:956:36629",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11796,7 +12162,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36630"
+              "variableId": "VariableID:956:36630",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11817,7 +12186,10 @@
               "scopes": [
                 "STROKE_COLOR"
               ],
-              "variableId": "VariableID:956:36626"
+              "variableId": "VariableID:956:36626",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11843,7 +12215,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:955:36110"
+              "variableId": "VariableID:955:36110",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11865,7 +12240,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:955:36111"
+              "variableId": "VariableID:955:36111",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11883,7 +12261,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36694"
+              "variableId": "VariableID:957:36694",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11901,7 +12282,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36695"
+              "variableId": "VariableID:957:36695",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11923,7 +12307,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:31:950"
+              "variableId": "VariableID:31:950",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11943,7 +12330,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:740:334078"
+              "variableId": "VariableID:740:334078",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11961,7 +12351,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:906:32530"
+              "variableId": "VariableID:906:32530",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11979,7 +12372,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:906:32531"
+              "variableId": "VariableID:906:32531",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -11997,7 +12393,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:832:339476"
+              "variableId": "VariableID:832:339476",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12015,7 +12414,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:956:36485"
+              "variableId": "VariableID:956:36485",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12033,7 +12435,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36740"
+              "variableId": "VariableID:957:36740",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12054,7 +12459,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35764"
+              "variableId": "VariableID:949:35764",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12073,7 +12481,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35765"
+              "variableId": "VariableID:949:35765",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12091,7 +12502,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36690"
+              "variableId": "VariableID:957:36690",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12109,7 +12523,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36691"
+              "variableId": "VariableID:957:36691",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12128,7 +12545,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:842:339722"
+              "variableId": "VariableID:842:339722",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12205,7 +12625,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35756"
+              "variableId": "VariableID:949:35756",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12224,7 +12647,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35757"
+              "variableId": "VariableID:949:35757",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12242,7 +12668,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36684"
+              "variableId": "VariableID:957:36684",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12260,7 +12689,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36685"
+              "variableId": "VariableID:957:36685",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12279,7 +12711,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:842:339718"
+              "variableId": "VariableID:842:339718",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12685,7 +13120,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:955:36112"
+              "variableId": "VariableID:955:36112",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12707,7 +13145,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:955:36113"
+              "variableId": "VariableID:955:36113",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12725,7 +13166,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36696"
+              "variableId": "VariableID:957:36696",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12743,7 +13187,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36697"
+              "variableId": "VariableID:957:36697",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -12765,7 +13212,10 @@
               "scopes": [
                 "TEXT_FILL"
               ],
-              "variableId": "VariableID:29:849"
+              "variableId": "VariableID:29:849",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13007,7 +13457,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35758"
+              "variableId": "VariableID:949:35758",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13026,7 +13479,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35759"
+              "variableId": "VariableID:949:35759",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13044,7 +13500,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36692"
+              "variableId": "VariableID:957:36692",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13062,7 +13521,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36693"
+              "variableId": "VariableID:957:36693",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13081,7 +13543,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:842:339719"
+              "variableId": "VariableID:842:339719",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13102,7 +13567,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35760"
+              "variableId": "VariableID:949:35760",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13121,7 +13589,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35761"
+              "variableId": "VariableID:949:35761",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13139,7 +13610,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36688"
+              "variableId": "VariableID:957:36688",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13157,7 +13631,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36689"
+              "variableId": "VariableID:957:36689",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13176,7 +13653,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:842:339720"
+              "variableId": "VariableID:842:339720",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13197,7 +13677,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35762"
+              "variableId": "VariableID:949:35762",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13216,7 +13699,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:949:35763"
+              "variableId": "VariableID:949:35763",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13234,7 +13720,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36686"
+              "variableId": "VariableID:957:36686",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13252,7 +13741,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:957:36687"
+              "variableId": "VariableID:957:36687",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -13271,7 +13763,10 @@
                 }
               },
               "primaryMode": "Sherpa",
-              "variableId": "VariableID:842:339721"
+              "variableId": "VariableID:842:339721",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -16645,458 +17140,6 @@
         }
       }
     },
-    "elevation": {
-      "blur": {
-        "base": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": 16
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:888"
-            }
-          },
-          "$type": "dimension",
-          "$value": 16
-        },
-        "large": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": 24
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:889"
-            }
-          },
-          "$type": "dimension",
-          "$value": 24
-        },
-        "small": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": 8
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:887"
-            }
-          },
-          "$type": "dimension",
-          "$value": 8
-        },
-        "sunken": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": 8
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:890"
-            }
-          },
-          "$type": "dimension",
-          "$value": 8
-        },
-        "xl": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": 32
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:1042"
-            }
-          },
-          "$type": "dimension",
-          "$value": 32
-        }
-      },
-      "offset": {
-        "x": {
-          "base": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 2
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:896"
-              }
-            },
-            "$type": "dimension",
-            "$value": 2
-          },
-          "large": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 4
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:897"
-              }
-            },
-            "$type": "dimension",
-            "$value": 4
-          },
-          "small": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 1
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:895"
-              }
-            },
-            "$type": "dimension",
-            "$value": 1
-          },
-          "sunken": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": -2
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:898"
-              }
-            },
-            "$type": "dimension",
-            "$value": -2
-          },
-          "xl": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 8
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:1044"
-              }
-            },
-            "$type": "dimension",
-            "$value": 8
-          }
-        },
-        "y": {
-          "base": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 2
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:892"
-              }
-            },
-            "$type": "dimension",
-            "$value": 2
-          },
-          "large": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 4
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:893"
-              }
-            },
-            "$type": "dimension",
-            "$value": 4
-          },
-          "small": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 1
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:891"
-              }
-            },
-            "$type": "dimension",
-            "$value": 1
-          },
-          "sunken": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": -2
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:894"
-              }
-            },
-            "$type": "dimension",
-            "$value": -2
-          },
-          "xl": {
-            "$description": "Shadow / effect value.",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "FLOAT",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": 8
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "EFFECT_FLOAT"
-                ],
-                "variableId": "VariableID:7:1045"
-              }
-            },
-            "$type": "dimension",
-            "$value": 8
-          }
-        }
-      },
-      "spread": {
-        "base": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": -8
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:900"
-            }
-          },
-          "$type": "dimension",
-          "$value": -8
-        },
-        "large": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": -12
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:901"
-            }
-          },
-          "$type": "dimension",
-          "$value": -12
-        },
-        "small": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": -4
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:899"
-            }
-          },
-          "$type": "dimension",
-          "$value": -4
-        },
-        "sunken": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": -4
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:902"
-            }
-          },
-          "$type": "dimension",
-          "$value": -4
-        },
-        "xl": {
-          "$description": "Shadow / effect value.",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "FLOAT",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": -16
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "EFFECT_FLOAT"
-              ],
-              "variableId": "VariableID:7:1043"
-            }
-          },
-          "$type": "dimension",
-          "$value": -16
-        }
-      }
-    },
     "gap": {
       "lg": {
         "$extensions": {
@@ -17444,7 +17487,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36565"
+              "variableId": "VariableID:956:36565",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17466,7 +17512,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36566"
+              "variableId": "VariableID:956:36566",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17488,7 +17537,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36567"
+              "variableId": "VariableID:956:36567",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17510,7 +17562,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36568"
+              "variableId": "VariableID:956:36568",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17532,7 +17587,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36564"
+              "variableId": "VariableID:956:36564",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17556,7 +17614,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36571"
+              "variableId": "VariableID:956:36571",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17578,7 +17639,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36572"
+              "variableId": "VariableID:956:36572",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17600,7 +17664,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36573"
+              "variableId": "VariableID:956:36573",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17622,7 +17689,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36574"
+              "variableId": "VariableID:956:36574",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17644,7 +17714,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36570"
+              "variableId": "VariableID:956:36570",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17668,7 +17741,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36595"
+              "variableId": "VariableID:956:36595",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17690,7 +17766,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36596"
+              "variableId": "VariableID:956:36596",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17712,7 +17791,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36597"
+              "variableId": "VariableID:956:36597",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17734,7 +17816,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36598"
+              "variableId": "VariableID:956:36598",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17756,7 +17841,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36594"
+              "variableId": "VariableID:956:36594",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17780,7 +17868,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36559"
+              "variableId": "VariableID:956:36559",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17802,7 +17893,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36560"
+              "variableId": "VariableID:956:36560",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17824,7 +17918,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36561"
+              "variableId": "VariableID:956:36561",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17846,7 +17943,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36562"
+              "variableId": "VariableID:956:36562",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17868,7 +17968,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36558"
+              "variableId": "VariableID:956:36558",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17892,7 +17995,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36577"
+              "variableId": "VariableID:956:36577",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17914,7 +18020,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36578"
+              "variableId": "VariableID:956:36578",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17936,7 +18045,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36579"
+              "variableId": "VariableID:956:36579",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17958,7 +18070,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36580"
+              "variableId": "VariableID:956:36580",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -17980,7 +18095,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36576"
+              "variableId": "VariableID:956:36576",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18004,7 +18122,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36601"
+              "variableId": "VariableID:956:36601",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18026,7 +18147,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36602"
+              "variableId": "VariableID:956:36602",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18048,7 +18172,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36603"
+              "variableId": "VariableID:956:36603",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18070,7 +18197,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36604"
+              "variableId": "VariableID:956:36604",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18092,7 +18222,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36600"
+              "variableId": "VariableID:956:36600",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18116,7 +18249,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36589"
+              "variableId": "VariableID:956:36589",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18138,7 +18274,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36590"
+              "variableId": "VariableID:956:36590",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18160,7 +18299,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36591"
+              "variableId": "VariableID:956:36591",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18182,7 +18324,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36592"
+              "variableId": "VariableID:956:36592",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18204,7 +18349,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36588"
+              "variableId": "VariableID:956:36588",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18228,7 +18376,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36583"
+              "variableId": "VariableID:956:36583",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18250,7 +18401,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36584"
+              "variableId": "VariableID:956:36584",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18272,7 +18426,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36585"
+              "variableId": "VariableID:956:36585",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18294,7 +18451,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36586"
+              "variableId": "VariableID:956:36586",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",
@@ -18316,7 +18476,10 @@
                 "FRAME_FILL",
                 "SHAPE_FILL"
               ],
-              "variableId": "VariableID:956:36582"
+              "variableId": "VariableID:956:36582",
+              "opacity": {
+                "Sherpa": "{primitives::effects/opacity/1000}"
+              }
             }
           },
           "$type": "color",

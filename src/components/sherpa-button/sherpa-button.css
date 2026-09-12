@@ -21,13 +21,13 @@
     --sherpa-button-space-padding: var(--sherpa-display-mode-space-3xs);
   }
 
-  :host([data-size="lg"]) {
-    --sherpa-button-size-height: var(--sherpa-display-mode-space-2xl);
-    --sherpa-button-size-icon: var(--sherpa-theme-content-size-large);
+  :host([data-size="xs"]) {
+    --sherpa-button-size-height: var(--sherpa-display-mode-space-base);
+    --sherpa-button-size-icon: var(--sherpa-theme-content-size-xs);
     --sherpa-button-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
-    --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-lg);
-    --sherpa-button-space-gap: var(--sherpa-display-mode-space-sm);
-    --sherpa-button-space-padding: var(--sherpa-display-mode-space-sm);
+    --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-xs);
+    --sherpa-button-space-gap: var(--sherpa-display-mode-space-2xs);
+    --sherpa-button-space-padding: var(--sherpa-display-mode-space-2xs);
   }
 
   :host([data-size="sm"]) {
@@ -39,6 +39,15 @@
     --sherpa-button-space-padding: var(--sherpa-display-mode-space-xs);
   }
 
+  :host([data-size="lg"]) {
+    --sherpa-button-size-height: var(--sherpa-display-mode-space-2xl);
+    --sherpa-button-size-icon: var(--sherpa-theme-content-size-large);
+    --sherpa-button-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
+    --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-lg);
+    --sherpa-button-space-gap: var(--sherpa-display-mode-space-sm);
+    --sherpa-button-space-padding: var(--sherpa-display-mode-space-sm);
+  }
+
   :host([data-size="xl"]) {
     --sherpa-button-size-height: var(--sherpa-display-mode-space-3xl);
     --sherpa-button-size-icon: var(--sherpa-theme-content-size-large);
@@ -46,15 +55,6 @@
     --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-button-space-gap: var(--sherpa-display-mode-space-sm);
     --sherpa-button-space-padding: var(--sherpa-display-mode-space-sm);
-  }
-
-  :host([data-size="xs"]) {
-    --sherpa-button-size-height: var(--sherpa-display-mode-space-base);
-    --sherpa-button-size-icon: var(--sherpa-theme-content-size-xs);
-    --sherpa-button-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
-    --sherpa-button-font-size: var(--sherpa-display-mode-fonts-scale-xs);
-    --sherpa-button-space-gap: var(--sherpa-display-mode-space-2xs);
-    --sherpa-button-space-padding: var(--sherpa-display-mode-space-2xs);
   }
 }
 /* == end sherpa:tokens == */
