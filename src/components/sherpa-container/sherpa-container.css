@@ -37,7 +37,7 @@
   --_shadow: none;
   box-shadow: var(--_shadow);
   /* Elevation shadow colour (Figma Elevation collection → style-surface/shadow). */
-  --_shadow-color: var(--sherpa-style-surface-shadow, #15151e80);
+  --_shadow-color: var(--sherpa-style-surface-shadow, #0c0b1180);
 }
 
 /* ── Variant: fill stretches to its parent; fit hugs its content ───── */

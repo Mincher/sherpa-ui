@@ -72,7 +72,7 @@
    statement of fact, not a selection — which is why it is the info tint and not
    the active one. */
 :host([data-state="today"]) .content {
-  background: var(--sherpa-theme-surface-info-transparent, #008bba4d);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-3, #008bba) 30%, transparent);
 }
 
 /* ── State = selected / selected-range ───────────────────────────────────

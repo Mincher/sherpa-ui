@@ -136,7 +136,7 @@
     var(--sherpa-navigation-nav-shadow-offset-y, 0px)
     var(--sherpa-navigation-nav-shadow-blur, 0px)
     var(--sherpa-navigation-nav-shadow-spread, 0px)
-    var(--sherpa-style-surface-shadow, #15151e80);
+    var(--sherpa-style-surface-shadow, #0c0b1180);
   transition: box-shadow 160ms ease, background-color 160ms ease;
 }
 
@@ -235,7 +235,7 @@
 }
 /* Active (latched) header button — Style active. */
 .hdr-btn[aria-pressed="true"] {
-  background: var(--sherpa-theme-surface-active-transparent, #c046ff4d);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
   border-color: var(--sherpa-theme-border-active-2, #c046ff);
   color: var(--sherpa-theme-content-active-1, #8300b6);
 }

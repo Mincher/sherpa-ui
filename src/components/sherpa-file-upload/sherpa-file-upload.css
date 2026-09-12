@@ -103,7 +103,11 @@
 /* ── Drag-over state ─────────────────────────────────────────────────── */
 :host([data-dragover]) .drop-zone {
   border-color: var(--_accent);
-  background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
+  /* Figma's Theme surface transparent variables are GONE — opacity is now
+     applied where it is USED, not carried by a token. This one was
+     #FFFFFF00: fully clear, i.e. paints nothing. `transparent` says that
+     plainly and needs no token at all. */
+  background: transparent;
 }
 
 /* ── File list ───────────────────────────────────────────────────────── */
@@ -258,7 +262,7 @@
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
 
-  &:hover { background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00); }
+  &:hover { background: transparent; }
 }
 /* Upload — primary (filled) button */
 .upload {

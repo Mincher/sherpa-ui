@@ -54,7 +54,7 @@
       var(--sherpa-theme-elevation-offset-y-base, 2px)
       var(--sherpa-theme-elevation-blur-base, 16px)
       var(--sherpa-theme-elevation-spread-base, -8px)
-      var(--sherpa-style-surface-shadow, #15151e80);
+      var(--sherpa-style-surface-shadow, #0c0b1180);
   }
 }
 
@@ -195,7 +195,12 @@
     var(--sherpa-theme-elevation-offset-y-large, 4px)
     var(--sherpa-theme-elevation-blur-large, 24px)
     var(--sherpa-theme-elevation-spread-large, -12px)
-    var(--sherpa-display-mode-color-transparent-accent-color-3, #3b4ccd4d);
+    /* THE SHADOW COLOUR IS style-surface/shadow, always. The Elevation
+       collection now carries geometry only (blur, offset, spread) — its colour
+       leaf is gone, and this badge was reaching for an accent tint of its own.
+       One token means a status re-point moves every shadow in the system
+       together, rather than this one staying blue. */
+    var(--sherpa-style-surface-shadow, #0c0b1180);
 }
 :host([data-notifications]) .notif-badge { display: block; }
 

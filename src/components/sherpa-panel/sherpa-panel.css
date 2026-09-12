@@ -35,7 +35,7 @@
     var(--sherpa-theme-elevation-offset-y-small, 1px)
     var(--sherpa-theme-elevation-blur-small, 8px)
     var(--sherpa-theme-elevation-spread-small, -4px)
-    var(--sherpa-style-surface-shadow, #15151e80);
+    var(--sherpa-style-surface-shadow, #0c0b1180);
 }
 
 .root {

@@ -1876,7 +1876,7 @@
           "$value": "{primitives.color.basic.greyscale.0}"
         },
         "color 2": {
-          "$description": "Palette step \u2014 the source for Style (Sherpa)::content/secondary/base.",
+          "$description": "Palette step — the source for Style (Sherpa)::content/secondary/base.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:6:363",
@@ -1998,7 +1998,7 @@
             "$value": "{primitives.color.basic.greyscale.0}"
           },
           "color 2": {
-            "$description": "Palette step \u2014 the source for Style (Sherpa)::content/secondary/base.",
+            "$description": "Palette step — the source for Style (Sherpa)::content/secondary/base.",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:6:363",
@@ -2582,1241 +2582,6 @@
           },
           "$type": "color",
           "$value": "{primitives.color.extended.warm-yellow.900}"
-        }
-      }
-    },
-    "color-transparent": {
-      "accent": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#1E189C1A"
-                },
-                "light": {
-                  "literal": "#8AA3FF1A"
-                }
-              },
-              "modes": {
-                "dark": "#1E189C1A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32137"
-            }
-          },
-          "$type": "color",
-          "$value": "#8AA3FF1A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#2B34B433"
-                },
-                "light": {
-                  "literal": "#6681FF33"
-                }
-              },
-              "modes": {
-                "dark": "#2B34B433"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32138"
-            }
-          },
-          "$type": "color",
-          "$value": "#6681FF33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#3B4CCD4D"
-                },
-                "light": {
-                  "literal": "#3B4CCD4D"
-                }
-              },
-              "modes": {
-                "dark": "#3B4CCD4D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32139"
-            }
-          },
-          "$type": "color",
-          "$value": "#3B4CCD4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#4C63E566"
-                },
-                "light": {
-                  "literal": "#2B34B466"
-                }
-              },
-              "modes": {
-                "dark": "#4C63E566"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32140"
-            }
-          },
-          "$type": "color",
-          "$value": "#2B34B466"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#6681FF80"
-                },
-                "light": {
-                  "literal": "#1E189C80"
-                }
-              },
-              "modes": {
-                "dark": "#6681FF80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32141"
-            }
-          },
-          "$type": "color",
-          "$value": "#1E189C80"
-        }
-      },
-      "brand": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#8300B61A"
-                },
-                "light": {
-                  "literal": "#D89CFF1A"
-                }
-              },
-              "modes": {
-                "dark": "#8300B61A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32132"
-            }
-          },
-          "$type": "color",
-          "$value": "#D89CFF1A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#A41DE033"
-                },
-                "light": {
-                  "literal": "#CC76FF33"
-                }
-              },
-              "modes": {
-                "dark": "#A41DE033"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32133"
-            }
-          },
-          "$type": "color",
-          "$value": "#CC76FF33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#A41DE04D"
-                },
-                "light": {
-                  "literal": "#C046FF4D"
-                }
-              },
-              "modes": {
-                "dark": "#A41DE04D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32134"
-            }
-          },
-          "$type": "color",
-          "$value": "#C046FF4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#C046FF66"
-                },
-                "light": {
-                  "literal": "#A41DE066"
-                }
-              },
-              "modes": {
-                "dark": "#C046FF66"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32135"
-            }
-          },
-          "$type": "color",
-          "$value": "#A41DE066"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#C046FF80"
-                },
-                "light": {
-                  "literal": "#8300B680"
-                }
-              },
-              "modes": {
-                "dark": "#C046FF80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32136"
-            }
-          },
-          "$type": "color",
-          "$value": "#8300B680"
-        }
-      },
-      "critical": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#4F09001A"
-                },
-                "light": {
-                  "literal": "#FFDAD11A"
-                }
-              },
-              "modes": {
-                "dark": "#4F09001A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32157"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFDAD11A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#93190033"
-                },
-                "light": {
-                  "literal": "#FF856D33"
-                }
-              },
-              "modes": {
-                "dark": "#93190033"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32158"
-            }
-          },
-          "$type": "color",
-          "$value": "#FF856D33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#B722004D"
-                },
-                "light": {
-                  "literal": "#FC4E2D4D"
-                }
-              },
-              "modes": {
-                "dark": "#B722004D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32159"
-            }
-          },
-          "$type": "color",
-          "$value": "#FC4E2D4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#DD2C0166"
-                },
-                "light": {
-                  "literal": "#B7220066"
-                }
-              },
-              "modes": {
-                "dark": "#DD2C0166"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32160"
-            }
-          },
-          "$type": "color",
-          "$value": "#B7220066"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#FC4E2D80"
-                },
-                "light": {
-                  "literal": "#70110080"
-                }
-              },
-              "modes": {
-                "dark": "#FC4E2D80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32161"
-            }
-          },
-          "$type": "color",
-          "$value": "#70110080"
-        }
-      },
-      "info": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#0019251A"
-                },
-                "light": {
-                  "literal": "#D4F0FF1A"
-                }
-              },
-              "modes": {
-                "dark": "#0019251A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32142"
-            }
-          },
-          "$type": "color",
-          "$value": "#D4F0FF1A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#004E6A33"
-                },
-                "light": {
-                  "literal": "#6FD1FF33"
-                }
-              },
-              "modes": {
-                "dark": "#004E6A33"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32143"
-            }
-          },
-          "$type": "color",
-          "$value": "#6FD1FF33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#006C914D"
-                },
-                "light": {
-                  "literal": "#008BBA4D"
-                }
-              },
-              "modes": {
-                "dark": "#006C914D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32144"
-            }
-          },
-          "$type": "color",
-          "$value": "#008BBA4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#008BBA66"
-                },
-                "light": {
-                  "literal": "#006C9166"
-                }
-              },
-              "modes": {
-                "dark": "#008BBA66"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32145"
-            }
-          },
-          "$type": "color",
-          "$value": "#006C9166"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#6FD1FF80"
-                },
-                "light": {
-                  "literal": "#00324680"
-                }
-              },
-              "modes": {
-                "dark": "#6FD1FF80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32146"
-            }
-          },
-          "$type": "color",
-          "$value": "#00324680"
-        }
-      },
-      "neutral": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#15151E00"
-                },
-                "light": {
-                  "literal": "#FFFFFF00"
-                }
-              },
-              "modes": {
-                "dark": "#15151E00"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32130"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFFFFF00"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#30303A33"
-                },
-                "light": {
-                  "literal": "#EEEEFC33"
-                }
-              },
-              "modes": {
-                "dark": "#30303A33"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32129"
-            }
-          },
-          "$type": "color",
-          "$value": "#EEEEFC33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#6E6D794D"
-                },
-                "light": {
-                  "literal": "#B2B2BF4D"
-                }
-              },
-              "modes": {
-                "dark": "#6E6D794D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32131"
-            }
-          },
-          "$type": "color",
-          "$value": "#B2B2BF4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#8F8F9B66"
-                },
-                "light": {
-                  "literal": "#4E4E5966"
-                }
-              },
-              "modes": {
-                "dark": "#8F8F9B66"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32172"
-            }
-          },
-          "$type": "color",
-          "$value": "#4E4E5966"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#D0D0DD80"
-                },
-                "light": {
-                  "literal": "#15151E80"
-                }
-              },
-              "modes": {
-                "dark": "#D0D0DD80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32173"
-            }
-          },
-          "$type": "color",
-          "$value": "#15151E80"
-        }
-      },
-      "success": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#001C0C1A"
-                },
-                "light": {
-                  "literal": "#BBFFD21A"
-                }
-              },
-              "modes": {
-                "dark": "#0052221A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32162"
-            }
-          },
-          "$type": "color",
-          "$value": "#F0FFF51A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#00593033"
-                },
-                "light": {
-                  "literal": "#56E79633"
-                }
-              },
-              "modes": {
-                "dark": "#008A4B33"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32163"
-            }
-          },
-          "$type": "color",
-          "$value": "#82EDB133"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#007A454D"
-                },
-                "light": {
-                  "literal": "#20C1734D"
-                }
-              },
-              "modes": {
-                "dark": "#00AD624D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32164"
-            }
-          },
-          "$type": "color",
-          "$value": "#36DE8C4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#009D5A66"
-                },
-                "light": {
-                  "literal": "#007A4566"
-                }
-              },
-              "modes": {
-                "dark": "#00D17866"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32165"
-            }
-          },
-          "$type": "color",
-          "$value": "#00AD6266"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#20C17380"
-                },
-                "light": {
-                  "literal": "#00391D80"
-                }
-              },
-              "modes": {
-                "dark": "#36DE8C80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32166"
-            }
-          },
-          "$type": "color",
-          "$value": "#006B3780"
-        }
-      },
-      "tones": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#5050611A"
-                },
-                "light": {
-                  "literal": "#F0F0FF1A"
-                }
-              },
-              "modes": {
-                "dark": "#5050611A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32167"
-            }
-          },
-          "$type": "color",
-          "$value": "#F0F0FF1A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#9595A833"
-                },
-                "light": {
-                  "literal": "#D4D4E933"
-                }
-              },
-              "modes": {
-                "dark": "#9595A833"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32168"
-            }
-          },
-          "$type": "color",
-          "$value": "#D4D4E933"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#9595A84D"
-                },
-                "light": {
-                  "literal": "#9595A84D"
-                }
-              },
-              "modes": {
-                "dark": "#9595A84D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32169"
-            }
-          },
-          "$type": "color",
-          "$value": "#9595A84D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#D4D4E966"
-                },
-                "light": {
-                  "literal": "#9595A866"
-                }
-              },
-              "modes": {
-                "dark": "#D4D4E966"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32170"
-            }
-          },
-          "$type": "color",
-          "$value": "#9595A866"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#F0F0FF80"
-                },
-                "light": {
-                  "literal": "#50506180"
-                }
-              },
-              "modes": {
-                "dark": "#F0F0FF80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32171"
-            }
-          },
-          "$type": "color",
-          "$value": "#50506180"
-        }
-      },
-      "urgent": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#290C001A"
-                },
-                "light": {
-                  "literal": "#FFE6DA1A"
-                }
-              },
-              "modes": {
-                "dark": "#290C001A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32152"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFE6DA1A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#77320033"
-                },
-                "light": {
-                  "literal": "#FF955B33"
-                }
-              },
-              "modes": {
-                "dark": "#77320033"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32153"
-            }
-          },
-          "$type": "color",
-          "$value": "#FF955B33"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#D05C004D"
-                },
-                "light": {
-                  "literal": "#FF73004D"
-                }
-              },
-              "modes": {
-                "dark": "#D05C004D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32154"
-            }
-          },
-          "$type": "color",
-          "$value": "#FF73004D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#FF730066"
-                },
-                "light": {
-                  "literal": "#A2460066"
-                }
-              },
-              "modes": {
-                "dark": "#FF730066"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32155"
-            }
-          },
-          "$type": "color",
-          "$value": "#A2460066"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#FF955B80"
-                },
-                "light": {
-                  "literal": "#4E1E0080"
-                }
-              },
-              "modes": {
-                "dark": "#FF955B80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32156"
-            }
-          },
-          "$type": "color",
-          "$value": "#4E1E0080"
-        }
-      },
-      "warning": {
-        "color 1": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#4731001A"
-                },
-                "light": {
-                  "literal": "#FFF4E11A"
-                }
-              },
-              "modes": {
-                "dark": "#4731001A"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32147"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFF4E11A"
-        },
-        "color 2": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#A2750033"
-                },
-                "light": {
-                  "literal": "#FFDDA033"
-                }
-              },
-              "modes": {
-                "dark": "#A2750033"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32148"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFDDA033"
-        },
-        "color 3": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#D39A034D"
-                },
-                "light": {
-                  "literal": "#FFC44C4D"
-                }
-              },
-              "modes": {
-                "dark": "#D39A034D"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32149"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFC44C4D"
-        },
-        "color 4": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#FFC44C66"
-                },
-                "light": {
-                  "literal": "#A2750066"
-                }
-              },
-              "modes": {
-                "dark": "#FFC44C66"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32150"
-            }
-          },
-          "$type": "color",
-          "$value": "#A2750066"
-        },
-        "color 5": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:6:363",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.985Z",
-              "lastSyncedValue": {
-                "dark": {
-                  "literal": "#FFD17B80"
-                },
-                "light": {
-                  "literal": "#47310080"
-                }
-              },
-              "modes": {
-                "dark": "#FFD17B80"
-              },
-              "primaryMode": "light",
-              "scopes": [
-                "ALL_FILLS"
-              ],
-              "variableId": "VariableID:898:32151"
-            }
-          },
-          "$type": "color",
-          "$value": "#47310080"
         }
       }
     },
@@ -6580,7 +5345,7 @@
       "basic": {
         "blue": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6599,7 +5364,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6618,7 +5383,7 @@
             "$value": "#D3DDFF"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6637,7 +5402,7 @@
             "$value": "#A9BAFF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6656,7 +5421,7 @@
             "$value": "#8096FF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6675,7 +5440,7 @@
             "$value": "#5B6DFF"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6694,7 +5459,7 @@
             "$value": "#4141EF"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6713,7 +5478,7 @@
             "$value": "#3527D9"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6788,7 +5553,7 @@
         },
         "blue-green": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6807,7 +5572,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6826,7 +5591,7 @@
             "$value": "#D4F0FF"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6845,7 +5610,7 @@
             "$value": "#A5E1FF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6864,7 +5629,7 @@
             "$value": "#6FD1FF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6883,7 +5648,7 @@
             "$value": "#39BFF7"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6902,7 +5667,7 @@
             "$value": "#16ABE2"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6921,7 +5686,7 @@
             "$value": "#008BBA"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6940,7 +5705,7 @@
             "$value": "#006C91"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6959,7 +5724,7 @@
             "$value": "#004E6A"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6978,7 +5743,7 @@
             "$value": "#003246"
           },
           "1000": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -6999,7 +5764,7 @@
         },
         "green": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7018,7 +5783,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7035,7 +5800,7 @@
             "$value": "#f0fff5"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7052,7 +5817,7 @@
             "$value": "#9cfcc5"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7069,7 +5834,7 @@
             "$value": "#82edb1"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7086,7 +5851,7 @@
             "$value": "#69dd9f"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7103,7 +5868,7 @@
             "$value": "#36de8c"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7120,7 +5885,7 @@
             "$value": "#00d178"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7137,7 +5902,7 @@
             "$value": "#00ad62"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7154,7 +5919,7 @@
             "$value": "#008a4b"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7171,7 +5936,7 @@
             "$value": "#006b37"
           },
           "1000": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7226,7 +5991,7 @@
             "$value": "#E8E8F6"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7245,7 +6010,7 @@
             "$value": "#D8D8E8"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7264,7 +6029,7 @@
             "$value": "#C4C4D3"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7283,7 +6048,7 @@
             "$value": "#B3B3C3"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7302,7 +6067,7 @@
             "$value": "#878794"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7321,7 +6086,7 @@
             "$value": "#5D5D69"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7340,7 +6105,7 @@
             "$value": "#494954"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7359,7 +6124,7 @@
             "$value": "#35353D"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7378,7 +6143,7 @@
             "$value": "#15151D"
           },
           "1000": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7399,7 +6164,7 @@
         },
         "orange": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7418,7 +6183,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7437,7 +6202,7 @@
             "$value": "#FFE6DA"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7474,7 +6239,7 @@
             "$value": "#FFB28B"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7493,7 +6258,7 @@
             "$value": "#FF955B"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7512,7 +6277,7 @@
             "$value": "#FF7300"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7531,7 +6296,7 @@
             "$value": "#D05C00"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7550,7 +6315,7 @@
             "$value": "#A24600"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7569,7 +6334,7 @@
             "$value": "#773200"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7588,7 +6353,7 @@
             "$value": "#4E1E00"
           },
           "1000": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7627,7 +6392,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7646,7 +6411,7 @@
             "$value": "#F8D2FF"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7665,7 +6430,7 @@
             "$value": "#F0A3FF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7684,7 +6449,7 @@
             "$value": "#E66AFF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7703,7 +6468,7 @@
             "$value": "#C94AE1"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7722,7 +6487,7 @@
             "$value": "#AB27C3"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7741,7 +6506,7 @@
             "$value": "#9300AA"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7760,7 +6525,7 @@
             "$value": "#760089"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7835,7 +6600,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7854,7 +6619,7 @@
             "$value": "#E1D8FF"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7873,7 +6638,7 @@
             "$value": "#C5B0FF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7892,7 +6657,7 @@
             "$value": "#AB85FF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7911,7 +6676,7 @@
             "$value": "#9552FF"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7930,7 +6695,7 @@
             "$value": "#7B1CE6"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7949,7 +6714,7 @@
             "$value": "#6800C8"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -7968,7 +6733,7 @@
             "$value": "#5400A4"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8025,7 +6790,7 @@
         },
         "red": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8044,7 +6809,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8063,7 +6828,7 @@
             "$value": "#FFDAD1"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8082,7 +6847,7 @@
             "$value": "#FFB2A1"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8101,7 +6866,7 @@
             "$value": "#FF856D"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8120,7 +6885,7 @@
             "$value": "#FC4E2D"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8139,7 +6904,7 @@
             "$value": "#DD2C01"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8158,7 +6923,7 @@
             "$value": "#B72200"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8177,7 +6942,7 @@
             "$value": "#931900"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8196,7 +6961,7 @@
             "$value": "#701100"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8309,7 +7074,7 @@
             "$value": "#FFCE8F"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8328,7 +7093,7 @@
             "$value": "#FFBD60"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8547,7 +7312,7 @@
             "$value": "#4C2C84"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8694,7 +7459,7 @@
             "$value": "#B0C3FF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8713,7 +7478,7 @@
             "$value": "#8AA3FF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8732,7 +7497,7 @@
             "$value": "#6681FF"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8751,7 +7516,7 @@
             "$value": "#4C63E5"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8770,7 +7535,7 @@
             "$value": "#3B4CCD"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8899,7 +7664,7 @@
             "$value": "#E5BFFF"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8918,7 +7683,7 @@
             "$value": "#D89CFF"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8937,7 +7702,7 @@
             "$value": "#CC76FF"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -8956,7 +7721,7 @@
             "$value": "#C046FF"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9103,7 +7868,7 @@
             "$value": "#FFB5C2"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9122,7 +7887,7 @@
             "$value": "#FF8AA4"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9141,7 +7906,7 @@
             "$value": "#FF5385"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9160,7 +7925,7 @@
             "$value": "#ED186B"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9271,7 +8036,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9290,7 +8055,7 @@
             "$value": "#F0F0FF"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9309,7 +8074,7 @@
             "$value": "#E2E2F6"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9346,7 +8111,7 @@
             "$value": "#C7C7DB"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9365,7 +8130,7 @@
             "$value": "#BABACE"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9512,7 +8277,7 @@
             "$value": "#82FFEC"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9531,7 +8296,7 @@
             "$value": "#5DF5E0"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9550,7 +8315,7 @@
             "$value": "#4DE8D3"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9569,7 +8334,7 @@
             "$value": "#3BDBC7"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9588,7 +8353,7 @@
             "$value": "#00B2A0"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9663,7 +8428,7 @@
         },
         "warm-yellow": {
           "0": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9682,7 +8447,7 @@
             "$value": "#FFFFFF"
           },
           "100": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9701,7 +8466,7 @@
             "$value": "#FFF4E1"
           },
           "200": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9720,7 +8485,7 @@
             "$value": "#FFE9C1"
           },
           "300": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9739,7 +8504,7 @@
             "$value": "#FFDDA0"
           },
           "400": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9758,7 +8523,7 @@
             "$value": "#FFD17B"
           },
           "500": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9777,7 +8542,7 @@
             "$value": "#FFC44C"
           },
           "600": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9796,7 +8561,7 @@
             "$value": "#D39A03"
           },
           "700": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9815,7 +8580,7 @@
             "$value": "#A27500"
           },
           "800": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9834,7 +8599,7 @@
             "$value": "#735200"
           },
           "900": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -9853,7 +8618,7 @@
             "$value": "#473100"
           },
           "1000": {
-            "$description": "Foundation: raw palette colour \u2014 a ramp step others alias. Bindable foundation layer (both Figma & code).",
+            "$description": "Foundation: raw palette colour — a ramp step others alias. Bindable foundation layer (both Figma & code).",
             "$extensions": {
               "figma-console-mcp": {
                 "collectionId": "VariableCollectionId:5:2",
@@ -11953,13 +10718,13 @@
               }
             },
             "modes": {
-              "critical": "{display-mode.color-transparent.critical.color 5}",
-              "info": "{display-mode.color-transparent.info.color 5}",
-              "active": "{display-mode.color-transparent.brand.color 5}",
-              "success": "{display-mode.color-transparent.success.color 5}",
-              "warning": "{display-mode.color-transparent.warning.color 5}",
-              "urgent": "{display-mode.color-transparent.urgent.color 5}",
-              "inactive": "{display-mode.color-transparent.neutral.color 5}"
+              "info": "#00324680",
+              "critical": "#70110080",
+              "warning": "#47310080",
+              "urgent": "#4E1E0080",
+              "success": "#00391D80",
+              "active": "#24003680",
+              "inactive": "#0C0B1180"
             },
             "primaryMode": "default",
             "scopes": [
@@ -11970,7 +10735,7 @@
           }
         },
         "$type": "color",
-        "$value": "{display-mode.color-transparent.neutral.color 5}"
+        "$value": "#0C0B1180"
       }
     }
   },
@@ -13277,7 +12042,7 @@
       },
       "critical": {
         "+1": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -13296,7 +12061,7 @@
           "$value": "{display-mode.color.critical.color 4}"
         },
         "+2": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -13351,7 +12116,7 @@
           "$value": "{display-mode.color.critical.color 1}"
         },
         "base": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -13428,7 +12193,7 @@
       },
       "info": {
         "+1": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -13447,7 +12212,7 @@
           "$value": "{display-mode.color.info.color 4}"
         },
         "+2": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -13502,7 +12267,7 @@
           "$value": "{display-mode.color.info.color 1}"
         },
         "base": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14230,7 +12995,7 @@
       },
       "success": {
         "+1": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14249,7 +13014,7 @@
           "$value": "{display-mode.color.success.color 4}"
         },
         "+2": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14304,7 +13069,7 @@
           "$value": "{display-mode.color.success.color 1}"
         },
         "base": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14325,7 +13090,7 @@
       },
       "urgent": {
         "+1": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14344,7 +13109,7 @@
           "$value": "{display-mode.color.urgent.color 4}"
         },
         "+2": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14399,7 +13164,7 @@
           "$value": "{display-mode.color.urgent.color 1}"
         },
         "base": {
-          "$description": "Palette step \u2014 the source for Status::status-surface/default.",
+          "$description": "Palette step — the source for Status::status-surface/default.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14420,7 +13185,7 @@
       },
       "warning": {
         "+1": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14439,7 +13204,7 @@
           "$value": "{display-mode.color.warning.color 4}"
         },
         "+2": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -14494,7 +13259,7 @@
           "$value": "{display-mode.color.warning.color 1}"
         },
         "base": {
-          "$description": "Palette step \u2014 a scoped token aliases this.",
+          "$description": "Palette step — a scoped token aliases this.",
           "$extensions": {
             "figma-console-mcp": {
               "collectionId": "VariableCollectionId:7:714",
@@ -18772,28 +17537,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.accent.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.accent.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36569"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.accent.color 3}"
         }
       },
       "active": {
@@ -18906,28 +17649,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.brand.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.brand.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36575"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.brand.color 3}"
         }
       },
       "critical": {
@@ -19040,28 +17761,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.critical.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.critical.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36599"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.critical.color 3}"
         }
       },
       "default": {
@@ -19174,28 +17873,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.neutral.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "literal": "#FFFFFF00"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36563"
-            }
-          },
-          "$type": "color",
-          "$value": "#FFFFFF00"
         }
       },
       "info": {
@@ -19308,28 +17985,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.info.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.info.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36581"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.info.color 3}"
         }
       },
       "success": {
@@ -19442,28 +18097,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.success.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.success.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36605"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.success.color 3}"
         }
       },
       "urgent": {
@@ -19576,28 +18209,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.urgent.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.urgent.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36593"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.urgent.color 3}"
         }
       },
       "warning": {
@@ -19710,28 +18321,6 @@
           },
           "$type": "color",
           "$value": "{display-mode.color.warning.color 1}"
-        },
-        "transparent": {
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.988Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{display-mode.color-transparent.warning.color 3}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL"
-              ],
-              "variableId": "VariableID:956:36587"
-            }
-          },
-          "$type": "color",
-          "$value": "{display-mode.color-transparent.warning.color 3}"
         }
       }
     }

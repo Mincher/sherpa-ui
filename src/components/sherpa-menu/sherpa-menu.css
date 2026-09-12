@@ -81,7 +81,7 @@
     var(--sherpa-theme-elevation-offset-y-base, 2px)
     var(--sherpa-theme-elevation-blur-base, 16px)
     var(--sherpa-theme-elevation-spread-base, -8px)
-    var(--sherpa-style-surface-shadow, #15151e80);
+    var(--sherpa-style-surface-shadow, #0c0b1180);
 }
 
 /* Open — the browser adds :popover-open when showPopover() runs. */

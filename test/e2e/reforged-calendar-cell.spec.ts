@@ -26,8 +26,23 @@ test('each State paints the fill the node names, on the inner content box', asyn
       await cell.rendered;
       const content = cell.shadowRoot!.querySelector('.content') as HTMLElement;
       const cs = getComputedStyle(content);
+      // NORMALISED to r,g,b,a numbers. `color-mix()` computes in a colour space,
+      // so the browser reports `color(srgb 0 0.545098 0.729412 / 0.3)` where a
+      // literal reports `rgba(0, 139, 186, 0.3)` — the SAME colour, spelled two
+      // ways. Comparing the string made a notation change look like a colour
+      // change; comparing the numbers asks what was actually meant.
+      const probe = document.createElement('canvas').getContext('2d')!;
+      const rgba = (v: string) => {
+        const m = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)$/.exec(v);
+        if (m) return [Math.round(+m[1]! * 255), Math.round(+m[2]! * 255),
+                       Math.round(+m[3]! * 255), m[4] == null ? 1 : +m[4]];
+        const n = v.match(/[\d.]+/g) ?? [];
+        return [Math.round(+(n[0] ?? 0)), Math.round(+(n[1] ?? 0)),
+                Math.round(+(n[2] ?? 0)), n[3] == null ? 1 : +n[3]];
+      };
+      void probe;
       return {
-        bg: cs.backgroundColor,
+        bg: rgba(cs.backgroundColor),
         radius: cs.borderTopLeftRadius,
         label: content.textContent!.trim(),
         // 32x32 — display-mode/size/2xl.
@@ -45,16 +60,16 @@ test('each State paints the fill the node names, on the inner content box', asyn
   // The STATE lives on the inner Content box, not the host — that is the node's
   // own structure, and it is what lets a range square its inner corners while
   // the button keeps its own focus ring.
-  expect(r.default.bg).toBe('rgba(0, 0, 0, 0)'); // the node's #FFFFFF00
+  expect(r.default.bg).toEqual([0, 0, 0, 0]); // the node's #FFFFFF00
   expect(r.default.label).toBe('15');
   expect(r.default.h).toBeCloseTo(32, 0);
 
   // today → style-surface/info at 30% (#008BBA4D). Today is a statement of
   // fact, not a selection, which is why it is the info tint and not the active.
-  expect(r.today.bg).toBe('rgba(0, 139, 186, 0.3)');
+  expect(r.today.bg).toEqual([0, 139, 186, 0.3]);
 
   // selected → surface/active/base (#F2DFFF).
-  expect(r.selected.bg).toBe('rgb(242, 223, 255)');
+  expect(r.selected.bg).toEqual([242, 223, 255, 1]);
 
   // A RANGE's middle squares its corners so a run reads as one band — the
   // node's selected-range variant has rounding 0 for exactly this reason.

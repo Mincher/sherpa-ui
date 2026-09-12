@@ -325,7 +325,11 @@
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
   &:hover {
-    background: var(--sherpa-theme-surface-default-transparent, #FFFFFF00);
+    /* Figma's Theme surface transparent variables are GONE — opacity is now
+       applied where it is USED, not carried by a token. This one was
+       #FFFFFF00: fully clear, i.e. paints nothing. `transparent` says that
+       plainly and needs no token at all. */
+    background: transparent;
   }
   &:focus-visible {
     outline: none;

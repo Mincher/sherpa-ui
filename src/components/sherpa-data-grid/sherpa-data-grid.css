@@ -450,23 +450,23 @@
    is restated here against the pinned cells. */
 .row:hover > [data-pinned] {
   background:
-    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33) 0 100%),
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
 .row[data-focused] > [data-pinned] {
   background:
-    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d) 0 100%),
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
 .row:has(.row-select:checked) > [data-pinned] {
   background:
-    linear-gradient(var(--sherpa-theme-surface-active-transparent, #c046ff4d) 0 100%),
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
 .row[data-focused]:has(.row-select:checked) > [data-pinned] {
   background:
-    linear-gradient(var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d) 0 100%),
-    linear-gradient(var(--sherpa-theme-surface-active-transparent, #c046ff4d) 0 100%),
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent) 0 100%),
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
 
@@ -514,8 +514,8 @@
        nothing over the 12px. A single faint stop was invisible on white. */
     background: linear-gradient(
       to right,
-      var(--sherpa-display-mode-color-transparent-neutral-color-4, #4e4e5966),
-      var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33),
+      color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-4, #35353d) 40%, transparent),
+      color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent),
       transparent
     );
   }
@@ -577,20 +577,20 @@
   /* Hover — the transparent +1 tint: a light preview of what clicking will mark,
      deliberately one step lighter than the focused state it previews. */
   &:hover {
-    background: var(--sherpa-display-mode-color-transparent-neutral-color-2, #eeeefc33);
+    background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent);
   }
 
   /* FOCUSED: the last row clicked. The transparent +2 step — +1 was 20% alpha and
      read as almost nothing against white, so the last-clicked row was invisible. */
   &[data-focused] {
-    background: var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d);
+    background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent);
   }
 
   /* SELECTED: the checkbox is on. The ACTIVE surface — the brand tint the design
      system uses for "chosen", not the accent one this had before. Transparent so
      the row's own dividers stay visible through it. */
   &:has(.row-select:checked) {
-    background: var(--sherpa-theme-surface-active-transparent, #c046ff4d);
+    background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
   }
 }
 
@@ -603,8 +603,8 @@
   .row[data-focused]:has(.row-select:checked) {
     background: color-mix(
       in srgb,
-      var(--sherpa-display-mode-color-transparent-neutral-color-3, #b2b2bf4d),
-      var(--sherpa-theme-surface-active-transparent, #c046ff4d)
+      color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent),
+      color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent)
     );
   }
 }

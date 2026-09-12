@@ -35,7 +35,7 @@
   --_border: var(--sherpa-style-border-base, #b3b3c3);
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_badge: var(--_status-icon, var(--sherpa-style-indicator-accent, #3b4ccd));
-  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #15151e80));
+  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #0c0b1180));
 }
 
 /* Inside a stack the container owns the corner, so the toast goes back in flow. The

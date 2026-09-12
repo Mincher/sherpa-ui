@@ -840,11 +840,20 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
 
     const sr = el.shadowRoot!;
     const chip = sr.querySelector('.chip[data-id="created"]') as HTMLElement;
-    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>;
+      shadowRoot: ShadowRoot;
+    };
     const cal = menu.querySelector('sherpa-calendar') as HTMLElement & {
       rendered?: Promise<void>;
       shadowRoot: ShadowRoot;
     };
+    // BOTH, not just the calendar. This awaited only the calendar and then read
+    // getComputedStyle off the MENU's own shadow root — which under parallel
+    // load had not rendered yet, so `display` came back as "" rather than
+    // "none". It passed alone and failed in a full run, which is the shape of
+    // every flake: the thing being measured was never waited for.
+    await menu.rendered;
     await cal.rendered;
 
     const projected = menu.querySelector('.cal-header-projected') as HTMLElement;

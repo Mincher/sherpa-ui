@@ -10,7 +10,7 @@
  * style-content/base (#35353d) with white 12/16 regular text; the corner rounds
  * border/rounding/base (4) and the tip pads space/2xs × space/xs with gap/md 8. The
  * component pins Elevation=md → one bound drop shadow (offset 2,2 · blur 16 ·
- * spread −8 · style-surface/shadow #15151e80), written here from the Theme
+ * spread −8 · style-surface/shadow #0c0b1180), written here from the Theme
  * elevation "base" tokens because a [data-elevation] pin is not inherited into the
  * shadow root. A 12×6 pointer arrow (.arrow) in the same fill points from the
  * bubble back toward the trigger; its side flips with data-placement.
@@ -53,7 +53,7 @@
     var(--sherpa-theme-elevation-offset-y-base, 2px)
     var(--sherpa-theme-elevation-blur-base, 16px)
     var(--sherpa-theme-elevation-spread-base, -8px)
-    var(--sherpa-style-surface-shadow, #15151e80);
+    var(--sherpa-style-surface-shadow, #0c0b1180);
 
   /* Hidden state — no layout, unreadable to AT, no pointer capture. */
   visibility: hidden;
