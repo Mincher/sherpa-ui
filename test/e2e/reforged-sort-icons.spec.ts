@@ -44,7 +44,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
       rows: [{ name: 'a', n: 1, x: 'p' }, { name: 'b', n: 2, x: 'q' }],
     });
     await document.fonts.ready;
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const read = () => [...el.shadowRoot.querySelectorAll('.head-cell')].map((th) => {
       const cell = th as HTMLElement;
@@ -64,7 +64,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
 
     const click = async (field: string) => {
       (el.shadowRoot.querySelector(`.head-cell[data-field="${field}"] .head-btn`) as HTMLElement).click();
-      await new Promise((res) => setTimeout(res, 50));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
     const unsorted = read();

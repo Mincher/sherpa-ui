@@ -34,7 +34,7 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
     await el.rendered;
 
     el.populate!({ name: 'Revenue', value: '$1.2M', deltaPercent: 12.5 });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
     return {
@@ -58,7 +58,7 @@ test('a down trend colours the delta critical', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ name: 'Churn', value: '3.1%', deltaPercent: -4 });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       trend: el.getAttribute('data-trend'),
       delta: el.shadowRoot!.querySelector('.delta')!.textContent,
@@ -105,7 +105,7 @@ test('values feed and reveal the embedded sparkline', async ({ page }) => {
       rendered?: Promise<void>;
     };
     await spark.rendered;
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       hasValuesAttr: el.hasAttribute('data-has-values'),
@@ -127,7 +127,7 @@ test('no values → the sparkline region stays hidden', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ name: 'Flat', value: '7' });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       hasValuesAttr: el.hasAttribute('data-has-values'),
       sparkHidden: getComputedStyle(el.shadowRoot!.querySelector('.spark')!).display === 'none',
@@ -146,7 +146,7 @@ test('status is derived from the trend, and the card stays white with no border'
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.populate(data);
-      await new Promise((res) => setTimeout(res, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const row = el.shadowRoot!.querySelector('.row')!;
       const rs = getComputedStyle(row);
       return {
@@ -204,7 +204,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
       root.appendChild(box);
       await el.rendered;
       el.populate({ label: 'Active endpoints', value: '1,284', deltaPercent: 3.1 });
-      await new Promise((res) => setTimeout(res, 30));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const sr = el.shadowRoot!;
       return {
         label: getComputedStyle(sr.querySelector('.label')!).color,

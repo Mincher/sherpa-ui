@@ -56,9 +56,9 @@ test('toggling the summary fires a composed toggle with { open }', async ({ page
     // multiple state changes in one task into a single event — so flush between
     // the two clicks to observe both the open and the close toggle.
     summary.click(); // open
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     summary.click(); // close
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { events, open: el.open };
   });
   expect(r.events).toEqual([true, false]);

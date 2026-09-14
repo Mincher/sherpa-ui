@@ -29,7 +29,7 @@ test('populate() sets the --_v / --_min / --_range custom properties', async ({ 
     await el.rendered;
 
     el.populate!([10, 25, 15, 30]);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       v0: el.style.getPropertyValue('--_v0').trim(),
@@ -69,7 +69,7 @@ test('unused segments and points collapse via CSS (data-len)', async ({ page }) 
     el.setAttribute('data-values', '5,9,7'); // 3 points → 2 live segments
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const shapes = Array.from(el.shadowRoot!.querySelectorAll('.shape')) as HTMLElement[];
     const points = Array.from(el.shadowRoot!.querySelectorAll('.point')) as HTMLElement[];
@@ -121,7 +121,7 @@ test('empty values leave every shape/point hidden', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([]); // empty
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     // data-len="0" → CSS collapses every shape and point.
     const shapes = Array.from(el.shadowRoot!.querySelectorAll('.shape')) as HTMLElement[];

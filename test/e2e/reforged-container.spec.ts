@@ -22,7 +22,7 @@ test('header/footer regions collapse when empty, appear when slotted', async ({ 
     bare.innerHTML = '<p>body only</p>';
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     // Container with a header + footer.
     const full = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
@@ -30,7 +30,7 @@ test('header/footer regions collapse when empty, appear when slotted', async ({ 
       '<div slot="header">Title</div><p>body</p><div slot="footer">Actions</div>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const vis = (el: HTMLElement, sel: string) =>
       getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
@@ -79,12 +79,12 @@ test('populate({state}) toggles the state overlay; clearing removes it', async (
     const overlayVisible = () => getComputedStyle(el.shadowRoot!.querySelector('.state')!).display !== 'none';
 
     el.populate!({ state: 'loading' });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const loadingShown = overlayVisible();
     const spinnerShown = getComputedStyle(el.shadowRoot!.querySelector('.state-loading')!).display !== 'none';
 
     el.populate!({ state: null });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const clearedHidden = !overlayVisible();
 
     return { loadingShown, spinnerShown, clearedHidden };
@@ -101,7 +101,7 @@ test('slotting [slot="error"] shows the error overlay (slot-driven, D6), not loa
     el.innerHTML = '<p>body</p><div slot="error">It broke.</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0)); // let slotchange reflect data-has-error
+    await (window as unknown as { __settled: () => Promise<void> }).__settled(); // let slotchange reflect data-has-error
 
     const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {
@@ -127,7 +127,7 @@ test('slotting [slot="empty"] shows the empty overlay (slot-driven, D6)', async 
     el.innerHTML = '<p>body</p><div slot="empty">No rows.</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const shown = (sel: string) => getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {

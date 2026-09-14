@@ -25,7 +25,7 @@ test('renderElement builds an element with props, slots and children', async ({ 
     }) as HTMLElement & { rendered?: Promise<void> };
     document.getElementById('root')!.appendChild(el);
     await (el as { rendered?: Promise<void> }).rendered;
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       elevation: el.getAttribute('data-elevation'),
       headerTag: el.querySelector('[slot="header"]')?.tagName.toLowerCase() ?? null,
@@ -51,7 +51,7 @@ test('renderView composes an id-addressed tree into the view frame', async ({ pa
       },
     }) as { el: HTMLElement };
     document.getElementById('root')!.appendChild(el);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       frame: el.className,
       navRegion: el.querySelector('[data-region="nav"]')?.tagName.toLowerCase() ?? null,
@@ -79,7 +79,7 @@ test('$state data binding populates from state and re-populates on write', async
     }) as { el: HTMLElement & { rendered?: Promise<void> }; state: { set: (p: string, v: unknown) => void } };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     // Scope to .content — the nav rail also stamps its default quick items
     // (Home · Recent · Favorites) into the header, which aren't state rows.
     const before = el.shadowRoot!.querySelectorAll('.content .nav-row').length;
@@ -89,7 +89,7 @@ test('$state data binding populates from state and re-populates on write', async
       { id: 'b', label: 'Beta' },
       { id: 'c', label: 'Gamma' },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const after = el.shadowRoot!.querySelectorAll('.content .nav-row').length;
     return { before, after };
   });
@@ -121,14 +121,14 @@ test('writes wiring: one element writes state, a bound consumer reacts', async (
     // Wait deterministically for the nav to render + populate its rows.
     const nav = el.querySelector('sherpa-nav') as HTMLElement & { rendered?: Promise<void> };
     await nav.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const yRow = Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
       (r) => r.dataset['id'] === 'y'
     )!;
     const yItem = yRow.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
     await yItem.rendered;
     (yItem.shadowRoot!.querySelector('.nav-button, .nav-link') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const echo = el.querySelector('sherpa-tag')!;
     return { stateVal: state.get('/picked'), echoLabel: echo.getAttribute('data-label') };

@@ -28,7 +28,7 @@ test('the shared tip rules resolve: anchored, flippable, hidden until hover', as
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([{ label: 'Disk', value: 42 }, { label: 'CPU', value: 31 }]);
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const mark = sr.querySelector<HTMLElement>('.bar-col')!;
@@ -82,7 +82,7 @@ test('hovering a bar shows its tip ABOVE the bar, with a gap', async ({ page }) 
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([{ label: 'Disk', value: 42 }, { label: 'CPU', value: 31 }]);
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
   });
 
   // A REAL pointer move: :hover cannot be faked by dispatching an event.
@@ -146,7 +146,7 @@ test('a donut anchors its tips to invisible points, hovered from the SLICE', asy
       { label: 'C', value: 25 },
       { label: 'D', value: 25 },
     ]);
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const dots = Array.from(sr.querySelectorAll<HTMLElement>('.hotspot'));
@@ -194,7 +194,7 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const dots = Array.from(sr.querySelectorAll<HTMLElement>('.hotspot'));
@@ -239,7 +239,7 @@ test('sparkline dots space themselves across the box at the data heights', async
     el.setAttribute('data-values', '10,20,30,40,50');
     document.getElementById('root')!.replaceChildren(el);
     await (el as HTMLElement & { rendered?: Promise<void> }).rendered;
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const shown = Array.from(sr.querySelectorAll<HTMLElement>('.hotspot')).filter(

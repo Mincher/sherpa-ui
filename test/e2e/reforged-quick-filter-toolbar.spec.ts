@@ -23,7 +23,7 @@ test('renders a quick-filter chip per filter, honouring initial active', async (
       { id: 'region', label: 'Region', active: true },
       { id: 'ai', label: 'Suggested', type: 'ai' },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const chips = Array.from(el.shadowRoot!.querySelectorAll('.chip'));
     return {
       count: chips.length,
@@ -48,7 +48,12 @@ test('toggling a chip emits quick-filter-change with all active ids', async ({ p
       { id: 'a', label: 'A' },
       { id: 'b', label: 'B' },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    // WAIT FOR THE CHIPS, not for 20ms. Each stamped chip renders its own shadow
+    // root, and this test reads `chips[0].shadowRoot.querySelector(...)` — on a
+    // loaded machine the chip had not rendered, shadowRoot was null, and the
+    // test threw rather than failed. __settled() awaits every pending
+    // sherpa-* render, including inside shadow roots.
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const events: string[][] = [];
     el.addEventListener('quick-filter-change', (e) => events.push((e as CustomEvent).detail.active));
@@ -57,9 +62,9 @@ test('toggling a chip emits quick-filter-change with all active ids', async ({ p
     // the menu caret).
     const chips = Array.from(el.shadowRoot!.querySelectorAll('.chip')) as HTMLElement[];
     (chips[0]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // A on
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     (chips[1]!.shadowRoot!.querySelector('.body') as HTMLElement).click(); // B on
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return events;
   });
@@ -94,7 +99,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       group: [{ field: 'team', label: 'Team' }],
       sort: [{ field: 'name', label: 'Name' }],
     });
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const zone = sr.querySelector('.organise-zone')!;
@@ -124,7 +129,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       input.checked = true;
       input.dispatchEvent(new Event('change', { bubbles: true }));
       (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
-      await new Promise((res) => setTimeout(res, 40));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
     const events: Array<Record<string, unknown>> = [];
@@ -145,7 +150,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
     ];
     for (const step of ['1', '2', '3', '4', '5', '6']) {
       (sortChip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-      await new Promise((res) => setTimeout(res, 40));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       cycle.push({ step, field: el.sortField, dir: el.sortDirection, suspended: el.sortSuspended });
     }
 
@@ -209,7 +214,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
       { id: 'plan', label: 'Plan', select: 'multiple',
         options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] },
     ]);
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="plan"]')!;
     const menu = chip.querySelector('sherpa-menu')!;
@@ -221,7 +226,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
       b.dispatchEvent(new Event('change', { bubbles: true }));
     }
     (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const snap = () => ({
       on: chip.hasAttribute('data-current'),
@@ -233,12 +238,12 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
 
     // Toggle OFF from the chip body.
     (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const off = snap();
 
     // …and back ON.
     (chip.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const back = snap();
 
     return { applied, off, back };
@@ -345,7 +350,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const press = async (act: string) => {
       const btn = el.shadowRoot!.querySelector(`[data-act="${act}"]`) as HTMLElement;
       (btn.shadowRoot!.querySelector('button') as HTMLElement).click();
-      await new Promise((res) => setTimeout(res, 30));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
     for (const a of ['ai', 'configure', 'refresh', 'overflow', 'save', 'view-menu']) await press(a);
 
@@ -376,7 +381,7 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
     const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement;
     const press = async () => {
       (star.shadowRoot!.querySelector('button') as HTMLElement).click();
-      await new Promise((res) => setTimeout(res, 30));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return {
         on: el.hasAttribute('data-favourite'),
         icon: star.getAttribute('data-icon-start'),
@@ -509,7 +514,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
     el.organise!({ group: [{ field: 'region', label: 'Region' }] });
     // populate() stamps the chips, which are themselves custom elements — give
     // them a turn to upgrade before reaching for one.
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     // Turn the menu chip on so there is a live value constraint to clear.
     const plan = el.shadowRoot!.querySelector('.chip[data-id="plan"]') as HTMLElement;
@@ -522,7 +527,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
 
     const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
     (undo.shadowRoot!.querySelector('button') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       before,
@@ -596,7 +601,7 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
       },
       { id: 'trial', label: 'Trial', active: true },
     ]);
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const view = el.shadowRoot!.querySelector('.chip[data-id="view"]') as HTMLElement;
     const trial = el.shadowRoot!.querySelector('.chip[data-id="trial"]') as HTMLElement;
@@ -606,18 +611,18 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
 
     // Click the persistent chip's body — an ordinary chip would go off.
     (view.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const afterClick = { view: on(view), trial: on(trial) };
 
     // …and the ordinary one still toggles, so this is not just "nothing works".
     (trial.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const afterTrial = { view: on(view), trial: on(trial) };
 
     // A full reset must not leave the page with no view.
     const undo = el.shadowRoot!.querySelector('[data-act="clear"]') as HTMLElement;
     (undo.shadowRoot!.querySelector('button') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
   }, MOUNT);
@@ -650,7 +655,7 @@ test('the Add button puts an available filter on the bar and drops it from its m
       { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
       { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
     ]);
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
@@ -661,7 +666,7 @@ test('the Add button puts an available filter on the bar and drops it from its m
 
     // MULTI-select: pick one and commit it, exactly as the caret's menu does.
     ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === 'health')!.click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const menu = add.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 120));
@@ -701,7 +706,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
       { id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] },
       { id: 'tickets', label: 'Tickets', options: [{ value: '1', label: '1' }] },
     ]);
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
@@ -772,7 +777,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       { id: 'trial', label: 'Trial' },
     ]);
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const apply = async (host: Element) => {
@@ -792,7 +797,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       await apply(chip);
     }
     (sr.querySelector('.chip[data-id="trial"]')!.shadowRoot!.querySelector('.body') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 80));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const before = snap();
 
     // ADD one…
@@ -836,7 +841,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date' },
     ]);
-    await new Promise((res) => setTimeout(res, 80));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const chip = sr.querySelector('.chip[data-id="created"]') as HTMLElement;
@@ -888,11 +893,11 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
 
     // The projected stepper still drives the calendar it came from.
     (projected.querySelector('.cal-next') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const steppedTo = projected.querySelector('.cal-label')!.textContent;
 
     cal.setAttribute('data-value', '2024-06-15');
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
 

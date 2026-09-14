@@ -70,7 +70,7 @@ test('the heading slot overrides data-heading', async ({ page }) => {
     el.innerHTML = '<h2 slot="heading">Slotted</h2>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       hasHeadingAttr: el.hasAttribute('data-has-heading'),
       // The default .title is FALLBACK content inside <slot name="heading">; a
@@ -89,14 +89,14 @@ test('the actions region hides when empty and appears when slotted', async ({ pa
     bare.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const full = document.createElement('sherpa-container-header') as HeaderEl;
     full.setAttribute('data-heading', 'Full');
     full.innerHTML = '<button slot="actions">Act</button>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const vis = (el: HTMLElement) =>
       getComputedStyle(el.shadowRoot!.querySelector('.actions')!).display !== 'none';
@@ -144,7 +144,7 @@ test('data-dismissible close button fires dismiss', async ({ page }) => {
     let dismissed = false;
     el.addEventListener('header-dismiss', () => (dismissed = true));
     close.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { closeVisible, dismissed };
   });
   expect(r.closeVisible).toBe(true);
@@ -162,7 +162,7 @@ test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ p
     let detail: unknown = null;
     el.addEventListener('header-collapse', (e) => (detail = (e as CustomEvent).detail));
     toggle.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { collapsedAfter: el.hasAttribute('data-collapsed'), detail };
   });
   expect(r.collapsedAfter).toBe(true);
@@ -177,14 +177,14 @@ test('the metadata slot is hidden when empty and appears when slotted', async ({
     bare.setAttribute('data-heading', 'Bare');
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const withMeta = document.createElement('sherpa-container-header') as HeaderEl;
     withMeta.setAttribute('data-heading', 'Meta');
     withMeta.innerHTML = '<span slot="metadata">Updated 2h ago</span>';
     document.getElementById('root')!.appendChild(withMeta);
     await withMeta.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const vis = (el: HTMLElement) =>
       getComputedStyle(el.shadowRoot!.querySelector('.metadata')!).display !== 'none';
@@ -214,7 +214,7 @@ test('the panel variant renders a link-style title and the metadata row', async 
     panel.innerHTML = '<span slot="metadata">buildings · Acme Corp</span>';
     document.getElementById('root')!.appendChild(panel);
     await panel.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const s = panel.shadowRoot!;
     const titleColor = getComputedStyle(s.querySelector('.title')!).color;
@@ -240,7 +240,7 @@ test('the default variant is unchanged: metadata hidden, no link-style title', a
     el.setAttribute('data-description', 'A subtitle');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
       variant: el.getAttribute('data-variant'), // unset by default

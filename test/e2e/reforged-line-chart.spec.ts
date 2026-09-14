@@ -18,7 +18,7 @@ test('maps a series to an SVG polyline (y inverted, x across the width)', async 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ labels: ['a', 'b', 'c'], series: [[0, 50, 100]] }); // min 0, max 100
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const line = el.shadowRoot!.querySelector('polyline.line')!;
     return {
       points: line.getAttribute('points'),
@@ -45,7 +45,7 @@ test('renders one series group per series (multi-series)', async ({ page }) => {
         { name: 'B', values: [2, 1] },
       ],
     });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return el.shadowRoot!.querySelectorAll('.series-layer > .series').length;
   });
   expect(count).toBe(2);
@@ -62,7 +62,7 @@ test('area variant reveals the fill; line variant hides it', async ({ page }) =>
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       el.populate!({ labels: ['a', 'b'], series: [[10, 20]] });
-      await new Promise((res) => setTimeout(res, 10));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return getComputedStyle(el.shadowRoot!.querySelector('.area')!).display;
     };
     return { line: await mk(), area: await mk('area') };
@@ -90,7 +90,7 @@ test('setSeriesHidden removes a series and re-scales the axis to what is left', 
         { name: 'small', values: [2, 8, 5] },
       ],
     });
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const count = (): number => sr.querySelectorAll('g.series').length;
@@ -110,10 +110,10 @@ test('setSeriesHidden removes a series and re-scales the axis to what is left', 
 
     const both = { count: count(), spread: spread(), hues: hues() };
     el.setSeriesHidden(0);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const alone = { count: count(), spread: spread(), hues: hues(), list: el.hiddenSeries };
     el.setSeriesHidden(0, false);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const restored = { count: count(), hues: hues(), list: el.hiddenSeries };
     return { both, alone, restored };
   });
@@ -146,7 +146,7 @@ test('the y axis spans the data extent, not zero to max', async ({ page }) => {
     // Values well above zero: an axis running 0..1000 would label gridlines that
     // are nowhere near where the line actually sits.
     el.populate({ labels: ['a', 'b', 'c'], series: [[900, 1000, 950]] });
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const ticks = Array.from(sr.querySelectorAll('.y-tick'));

@@ -61,7 +61,7 @@ test('closing the dialog fires a composed close event', async ({ page }) => {
     el.show!();
     el.close!();
     // The native <dialog> close event is dispatched on a task — let it flush.
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return count;
   });
   expect(fired).toBe(1);

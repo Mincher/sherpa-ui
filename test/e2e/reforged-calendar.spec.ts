@@ -170,11 +170,11 @@ test('clicking the label zooms out to the month picker, then the year picker', a
 
     const dayLabel = label();
     (s.querySelector('.cal-label') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const monthLayout = { label: label(), monthsVisible: monthsVisible(), daysVisible: daysVisible(), cells: s.querySelectorAll('.cal-months .cal-cell').length };
 
     (s.querySelector('.cal-label') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const yearLayout = { yearsVisible: yearsVisible(), cells: s.querySelectorAll('.cal-years .cal-cell').length };
 
     return { dayLabel, monthLayout, yearLayout };
@@ -199,7 +199,7 @@ test('picking a month zooms back into that month\'s days', async ({ page }) => {
     // Click "Feb" (month index 1).
     const feb = Array.from(s.querySelectorAll<HTMLElement>('.cal-months .cal-cell')).find((c) => c.dataset['month'] === '1')!;
     feb.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       layout: el.getAttribute('data-view'),
       label: s.querySelector('.cal-label')!.textContent,
@@ -221,7 +221,7 @@ test('picking a year zooms into that year\'s months', async ({ page }) => {
     const s = el.shadowRoot!;
     const y2024 = Array.from(s.querySelectorAll<HTMLElement>('.cal-years .cal-cell')).find((c) => c.dataset['year'] === '2024')!;
     y2024.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { layout: el.getAttribute('data-view'), label: s.querySelector('.cal-label')!.textContent };
   });
   expect(r.layout).toBe('month');

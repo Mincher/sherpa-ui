@@ -91,13 +91,13 @@ test('it is a real button: it fires cell-click, and disabled suppresses it', asy
     cell.addEventListener('cell-click', (e) => seen.push((e as CustomEvent).detail));
     const btn = cell.shadowRoot!.querySelector('button') as HTMLElement;
     btn.click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     cell.setAttribute('disabled', '');
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const btnDisabled = (cell.shadowRoot!.querySelector('button') as HTMLButtonElement).disabled;
     btn.click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { seen, btnDisabled };
   });

@@ -89,7 +89,7 @@ test('a native input event re-dispatches as input with { value }', async ({ page
     input.value = '60';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       events,
@@ -111,7 +111,7 @@ test('populate({ value }) sets the value', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ value: 33 });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { value: el.value, pct: el.style.getPropertyValue('--_pct').trim() };
   });
   expect(r.value).toBe(33);
@@ -152,7 +152,7 @@ test('data-show-value reveals an editable value input; typing updates the slider
     el.addEventListener('change', (e) => (changed = (e as CustomEvent).detail.value));
     field.value = '65';
     field.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { visible, initial, changed, hostValue: el.getAttribute('value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
   });
@@ -175,7 +175,7 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
     const field = el.shadowRoot!.querySelector('.value-input') as HTMLInputElement;
     field.value = '999';
     field.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { fieldValue: field.value, hostValue: el.getAttribute('value') };
   });
   expect(r.fieldValue).toBe('50'); // snapped to max

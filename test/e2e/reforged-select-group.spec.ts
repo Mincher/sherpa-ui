@@ -37,7 +37,7 @@ test('renders one child per option with label + description', async ({ page }) =
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     const children = el.querySelectorAll('sherpa-select-radio'); // options are slotted (light DOM)
     return {
@@ -60,7 +60,7 @@ test('data-multiple renders checkboxes and allows multi-select', async ({ page }
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const boxes = el.querySelectorAll('sherpa-select-checkbox');
     el.value = ['a', 'c'];
@@ -79,7 +79,7 @@ test('radio value is a single string (single-select)', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     el.value = 'b';
     return { value: el.value };
   }, OPTIONS);
@@ -93,7 +93,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(options);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let detail: unknown = null;
     el.addEventListener('change', (e) => (detail = (e as CustomEvent).detail.value));
@@ -104,7 +104,7 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
     };
     await child.rendered;
     child.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { detail };
   }, OPTIONS);
   expect(r.detail).toEqual(['a']); // aggregate value carried up from the child

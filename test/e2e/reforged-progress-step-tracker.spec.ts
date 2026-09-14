@@ -19,7 +19,7 @@ test('renders one node per step and marks states around the current step', async
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'Details' }, { label: 'Review' }, { label: 'Done' }]);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const steps = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.step'));
     return { count: steps.length, states: steps.map((s) => s.getAttribute('data-state')) };
@@ -38,9 +38,9 @@ test('advancing data-current-step re-marks the states', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     el.setAttribute('data-current-step', '2');
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.step')).map((s) =>
       s.getAttribute('data-state'),
     );

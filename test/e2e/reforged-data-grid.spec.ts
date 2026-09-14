@@ -30,7 +30,7 @@ test('renders header cells and a row per record', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
     return {
       headers: Array.from(sr.querySelectorAll('.head-label')).map((h) => h.textContent),
@@ -54,7 +54,7 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const names = () =>
       Array.from(el.shadowRoot!.querySelectorAll('.body .row')).map((row) => row.querySelector('.cell')!.textContent);
@@ -64,12 +64,12 @@ test('clicking a header sorts asc then desc and reflects the attributes', async 
       )!;
 
     scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // asc by score
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const asc = names();
     const ascAttr = { field: el.dataset['sortField'], dir: el.dataset['sortDirection'] };
 
     scoreHeader().querySelector<HTMLElement>('.head-btn')!.click(); // desc
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const desc = names();
 
     return { asc, ascAttr, desc };
@@ -88,7 +88,7 @@ test('clicking a row fires row-click with the record', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(config);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let row: Record<string, unknown> | null = null;
     el.addEventListener('row-click', (e) => (row = (e as CustomEvent).detail.row));
@@ -107,7 +107,7 @@ test('an empty rows array shows the empty state', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ columns: [{ field: 'x' }], rows: [] });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       empty: el.hasAttribute('data-empty'),
       visible: getComputedStyle(el.shadowRoot!.querySelector('.empty')!).display !== 'none',
@@ -134,7 +134,7 @@ test('every cell type uses the Figma label typography, not the UA <th> bold', as
       ],
       rows: [{ name: 'Alpha', qty: 3 }],
     });
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = grid.shadowRoot!;
     const read = (sel: string): Record<string, string> => {
@@ -206,7 +206,7 @@ async function installBuilder(page: import('@playwright/test').Page): Promise<vo
       root.appendChild(el);
       await el.rendered;
       el.populate(config);
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return el;
     };
   });
@@ -223,7 +223,7 @@ test('typing in a filter narrows rows to substring matches in THAT column', asyn
       const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await new Promise((res) => setTimeout(res, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
     const names = (): (string | null)[] =>
       Array.from(sr.querySelectorAll('.body .row')).map((row) => row.children[1]!.textContent);
@@ -290,7 +290,7 @@ test('a populated filter shows a clear button that empties only its own column',
       const input = cell(field).querySelector<HTMLInputElement>('.filter-input')!;
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await new Promise((res) => setTimeout(res, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
     const empty = { clearShown: shown(clear('name')), flag: cell('name').hasAttribute('data-has-value') };
@@ -323,7 +323,7 @@ test('a populated filter shows a clear button that empties only its own column',
     };
 
     clear('name').click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const afterClear = {
       nameValue: cell('name').querySelector<HTMLInputElement>('.filter-input')!.value,
       nameClearShown: shown(clear('name')),
@@ -364,7 +364,7 @@ test('a filter matching nothing keeps the filter row usable', async ({ page }) =
     )!;
     input.value = 'zzzzzz';
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const shown = (sel: string): boolean => {
       const node = sr.querySelector(sel);
@@ -405,14 +405,14 @@ test('row-click resolves against the FILTERED list, not the full one', async ({ 
     )!;
     input.value = 'active'; // leaves Jane (index 2) and Nina (index 3) of the full list
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const clicks: unknown[] = [];
     el.addEventListener('row-click', (e) => clicks.push((e as CustomEvent).detail));
     // Click the FIRST visible row. Its data-index is 0, which in the UNFILTERED
     // list would be Marcus — the wrong record.
     (sr.querySelector('.body .row .cell') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { clicks };
   }, FILTER_CONFIG);
 
@@ -432,7 +432,7 @@ test('re-populating clears stale filters', async ({ page }) => {
     )!;
     input.value = 'marcus';
     input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const filtered = sr.querySelectorAll('.body .row').length;
 
     // New data may not even have that column. Carrying the filter over would hide
@@ -441,7 +441,7 @@ test('re-populating clears stale filters', async ({ page }) => {
       columns: [{ field: 'other', header: 'Other' }],
       rows: [{ other: 'x' }, { other: 'y' }],
     });
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       filtered,
       afterRepopulate: sr.querySelectorAll('.body .row').length,
@@ -478,7 +478,7 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
       ],
     });
     el.dataset['groupField'] = 'team';
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const read = () => ({
@@ -504,7 +504,7 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
     // Fold the first group shut.
     const first = sr.querySelector<HTMLElement>('.group-row')!;
     first.querySelector<HTMLElement>('.group-toggle')!.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const folded = {
       ...read(),
       collapsed: first.hasAttribute('data-collapsed'),
@@ -514,12 +514,12 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
     // A re-render (here: a sort) must KEEP the fold — the flag lives on the
     // component, not on the rows it just replaced.
     el.dataset['sortField'] = 'name';
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const afterSort = { visible: read().visible, collapsed: sr.querySelector('.group-row')!.hasAttribute('data-collapsed') };
 
     // Un-grouping brings the column straight back, with no re-populate.
     delete el.dataset['groupField'];
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const ungrouped = { headers: read().headers, groups: read().groups.length };
 
     return { grouped, folded, afterSort, ungrouped };
@@ -568,7 +568,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
       ],
     });
     el.dataset['groupField'] = 'team';
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     let emitted: string[] = [];
@@ -584,7 +584,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     // Tick the Blue group's box.
     const blueBox = sr.querySelector<HTMLInputElement>('.group-row[data-group="Blue"] .group-select')!;
     blueBox.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const selected = {
       blue: checkedIn('Blue'),
       blueTotal: rowsIn('Blue').length,
@@ -595,22 +595,22 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
 
     // Untick one Blue row: the group box must go INDETERMINATE, not stay checked.
     rowsIn('Blue')[0]!.querySelector<HTMLInputElement>('.row-select')!.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const partial = { checked: blueBox.checked, indeterminate: blueBox.indeterminate };
 
     // Click the INDETERMINATE box: the browser resolves it to CHECKED (that is
     // native checkbox behaviour, not something to fight), so the group fills back
     // up. A second click then clears it.
     blueBox.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const refilled = { blue: checkedIn('Blue'), emitted: emitted.length };
     blueBox.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const cleared = { blue: checkedIn('Blue'), emitted: emitted.length };
 
     // The header select-all fills every group box in.
     sr.querySelector<HTMLInputElement>('.select-all')!.click();
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const all = {
       groups: Array.from(sr.querySelectorAll<HTMLInputElement>('.group-select')).map((b) => b.checked),
     };
@@ -643,7 +643,7 @@ test('a numeric column right-aligns its HEADER with its digits', async ({ page }
       ],
       rows: [{ name: 'Acme', seats: 42 }],
     });
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = grid.shadowRoot!;
     const pick = (field: string) => {
@@ -689,13 +689,13 @@ test('the scroller FILLS a sized host, and still scrolls inside it', async ({ pa
       columns: [{ field: 'name', header: 'Name' }],
       rows: Array.from({ length: 40 }, (_, i) => ({ name: `Row ${i}` })),
     });
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sc = grid.shadowRoot!.querySelector('.scroller') as HTMLElement;
     const gridH = grid.getBoundingClientRect().height;
     const scH = sc.getBoundingClientRect().height;
     sc.scrollTop = 120;
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       hostH: gridH,
       scrollerH: scH,

@@ -47,7 +47,7 @@ test('every button size paints its glyph at its own icon-size token', async ({ p
     })[];
     await Promise.all(btns.map((b) => b.rendered));
     await document.fonts.ready;
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return btns.map((b) => {
       const i = b.shadowRoot.querySelector('.icon-start') as HTMLElement;
@@ -96,7 +96,7 @@ test('no component paints a glyph at a size its own box disagrees with', async (
       };
       await el.rendered;
       await document.fonts.ready;
-      await new Promise((res) => setTimeout(res, 30));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
       for (const n of [...el.shadowRoot.querySelectorAll('*')] as HTMLElement[]) {
         const cs = getComputedStyle(n);

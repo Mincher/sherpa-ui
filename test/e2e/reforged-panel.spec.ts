@@ -25,7 +25,7 @@ test('renders header (from data-heading) / body / footer regions', async ({ page
     el.innerHTML = '<p>body</p><div slot="footer">actions</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const vis = (sel: string) =>
       getComputedStyle(el.shadowRoot!.querySelector(sel)!).display !== 'none';
     return {

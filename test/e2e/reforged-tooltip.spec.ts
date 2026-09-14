@@ -80,7 +80,7 @@ test('text property reflects to data-text and the bubble', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.text = 'Set via property';
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       attr: el.getAttribute('data-text'),
       bubble: el.shadowRoot!.querySelector('.tip-text')!.textContent,

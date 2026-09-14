@@ -27,13 +27,13 @@ test('collapses when empty, appears when the slot has content', async ({ page })
     const bare = document.createElement('sherpa-container-footer') as FooterEl;
     document.getElementById('root')!.appendChild(bare);
     await bare.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const full = document.createElement('sherpa-container-footer') as FooterEl;
     full.innerHTML = '<button>Save</button>';
     document.getElementById('root')!.appendChild(full);
     await full.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       bareContentAttr: bare.hasAttribute('data-has-content'),
@@ -56,7 +56,7 @@ test('data-align controls the row justification', async ({ page }) => {
       el.innerHTML = '<button>A</button><button>B</button>';
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
-      await new Promise((res) => setTimeout(res, 0));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return getComputedStyle(el.shadowRoot!.querySelector('.row')!).justifyContent;
     };
     return {

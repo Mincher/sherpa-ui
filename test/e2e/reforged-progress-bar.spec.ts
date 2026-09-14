@@ -105,7 +105,7 @@ test('populate({ value }) sets the percentage', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!({ value: 75 });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const bar = el.shadowRoot!.querySelector('.bar') as HTMLProgressElement;
     return { value: el.value, barValue: bar.value };
   });

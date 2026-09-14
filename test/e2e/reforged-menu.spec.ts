@@ -246,14 +246,14 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
 
     // Open, tick one, and confirm NOTHING has been reported yet.
     menu.show();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     inputs[0]!.click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const draft = { events: events.length, ticked: inputs[0]!.checked, values: menu.values };
 
     // Cancel restores the values the menu OPENED with.
     press('.cancel');
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const cancelled = {
       names: events.map(([n]) => n),
       ticked: inputs[0]!.checked,
@@ -262,11 +262,11 @@ test('a committing menu defers changes to Apply, and Cancel discards them', asyn
 
     // Reopen, tick a different row, Apply.
     menu.show();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     inputs[1]!.click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     press('.apply');
-    await new Promise((res) => setTimeout(res, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const applied = {
       names: events.map(([n]) => n),
       values: menu.values,
@@ -316,7 +316,7 @@ test('a menu WITHOUT data-commit still commits on every tick', async ({ page }) 
     const footerShown =
       getComputedStyle(menu.shadowRoot!.querySelector('.footer')!).display !== 'none';
     menu.querySelector<HTMLInputElement>('input')!.click();
-    await new Promise((res) => setTimeout(res, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { footerShown, changes };
   });
 
@@ -354,7 +354,7 @@ test('data-search filters the rows without disturbing what is ticked', async ({ 
     const type = async (v: string) => {
       control.value = v;
       control.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await new Promise((res) => setTimeout(res, 40));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
     // Tick one BEFORE searching, to prove a filter never disturbs the draft.

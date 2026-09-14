@@ -38,7 +38,7 @@ test('populate stamps one sherpa-list-item per row from the prototype', async ({
       { title: 'Beta' },
       { title: 'Gamma', description: 'third' },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     const items = Array.from(s.querySelectorAll('.body > .row-item > sherpa-list-item'));
     return {
@@ -60,9 +60,9 @@ test('re-populating replaces the previous rows', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ title: 'Old 1' }, { title: 'Old 2' }]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     el.populate([{ title: 'New' }]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return Array.from(
       el.shadowRoot!.querySelectorAll('.body > .row-item > sherpa-list-item'),
     ).map((n) => n.getAttribute('data-label'));
@@ -76,14 +76,14 @@ test('clicking a stamped row keeps only that row current (single-current)', asyn
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ title: 'One' }, { title: 'Two' }, { title: 'Three' }]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const items = Array.from(
       el.shadowRoot!.querySelectorAll<HTMLElement>('.body > .row-item > sherpa-list-item'),
     );
     items[0]!.click();
-    await new Promise((res) => setTimeout(res, 5));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     items[2]!.click();
-    await new Promise((res) => setTimeout(res, 5));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return items.map((n) => n.hasAttribute('data-current'));
   });
   // Only the last-clicked row (index 2) stays current.
@@ -98,7 +98,7 @@ test('slotted sherpa-list-item children are supported (data-has-content)', async
       '<sherpa-list-item data-heading="Slotted B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       hasContent: el.hasAttribute('data-has-content'),
       childCount: el.querySelectorAll(':scope > sherpa-list-item').length,
@@ -116,10 +116,10 @@ test('single-current applies across slotted children too', async ({ page }) => {
       '<sherpa-list-item data-heading="B" data-interactive></sherpa-list-item>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const kids = Array.from(el.querySelectorAll<HTMLElement>(':scope > sherpa-list-item'));
     kids[1]!.click(); // click B → A must deactivate
-    await new Promise((res) => setTimeout(res, 5));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return kids.map((n) => n.hasAttribute('data-current'));
   });
   expect(r).toEqual([false, true]);
@@ -131,7 +131,7 @@ test('empty-state message shows when there are no rows', async ({ page }) => {
     el.setAttribute('data-empty', 'Nothing here yet');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const empty = el.shadowRoot!.querySelector('.empty')!;
     return {
       visible: getComputedStyle(empty).display !== 'none',
@@ -150,9 +150,9 @@ test('empty-state hides once rows are populated', async ({ page }) => {
     el.setAttribute('data-empty', 'Nothing here yet');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     el.populate([{ title: 'Now populated' }]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const empty = el.shadowRoot!.querySelector('.empty')!;
     return {
       hostFlag: el.hasAttribute('data-empty-visible'),
@@ -170,7 +170,7 @@ test('bordered variant collapses the inter-row gap', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ title: 'A' }, { title: 'B' }]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return getComputedStyle(el.shadowRoot!.querySelector('.body')!).rowGap;
   });
   expect(parseFloat(gap)).toBe(0);

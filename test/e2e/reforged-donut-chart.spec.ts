@@ -24,7 +24,7 @@ test('draws one real SVG arc per slice, spanning its share', async ({ page }) =>
       { label: 'B', value: 30 }, // 25%
       { label: 'C', value: 30 }, // 25%
     ]);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const arcs = Array.from(sr.querySelectorAll<SVGCircleElement>('.slice'));
@@ -81,7 +81,7 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       el.populate!([{ label: 'X', value: 1 }]);
-      await new Promise((res) => setTimeout(res, 10));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const arc = el.shadowRoot!.querySelector('.slice')!;
       return { r: Number(arc.getAttribute('r')), w: Number(arc.getAttribute('stroke-width')) };
     };
@@ -114,7 +114,7 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
       root.appendChild(box);
       await el.rendered;
       el.populate([{ label: 'A', value: 3 }, { label: 'B', value: 1 }]);
-      await new Promise((res) => setTimeout(res, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const ring = el.shadowRoot!.querySelector('.ring-wrap')!.getBoundingClientRect();
       return {
         w: Math.round(ring.width),
@@ -165,7 +165,7 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
       { label: 'B', value: 30 },
       { label: 'C', value: 20 },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
     const arcs = (): SVGCircleElement[] =>
@@ -184,10 +184,10 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
 
     const before = { shares: shares(), hues: hues(), indices: indices() };
     el.setSliceHidden(0);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const hidden = { shares: shares(), hues: hues(), indices: indices(), list: el.hiddenSlices };
     el.setSliceHidden(0, false);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const restored = { shares: shares(), hues: hues(), list: el.hiddenSlices };
     return { before, hidden, restored };
   });

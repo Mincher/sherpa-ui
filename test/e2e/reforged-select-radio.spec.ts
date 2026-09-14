@@ -105,7 +105,7 @@ test('radios sharing a name group natively — selecting one deselects the other
 
     inputB.checked = true; // user picks B
     inputB.dispatchEvent(new Event('change', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 0)); // let group coordination settle
+    await (window as unknown as { __settled: () => Promise<void> }).__settled(); // let group coordination settle
 
     return {
       sameName,

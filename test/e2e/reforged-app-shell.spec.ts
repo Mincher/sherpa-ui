@@ -21,7 +21,7 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
       '<div slot="nav">N</div><div slot="header">H</div><div>Content</div>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const q = (s: string) => el.shadowRoot!.querySelector(s) as HTMLElement;
     const nav = getComputedStyle(q('.nav'));
     const shellBox = q('.shell').getBoundingClientRect();

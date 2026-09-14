@@ -65,6 +65,50 @@
       customElements.whenDefined('sherpa-panel'),
     ]);
     window.__reforgedReady = true;
+
+    /**
+     * Wait for the DOM to actually SETTLE, instead of guessing a duration.
+     *
+     * Tests were written with fixed `setTimeout(res, 20)` waits after a
+     * populate() — 264 of them across the suite. A guessed duration is a race:
+     * it passes on an idle machine and fails under load, and the failure is
+     * always the same shape (`shadowRoot` of a not-yet-rendered child is null,
+     * so reading it throws). Three tests failed that way in a loaded run while
+     * passing alone.
+     *
+     * This waits for the real condition. Every SherpaElement exposes a
+     * `rendered` promise, so:
+     *   1. await every sherpa-* element currently in the tree, ANYWHERE —
+     *      including inside shadow roots, which is where stamped children live;
+     *   2. do it again, because resolving those can stamp more (a toolbar
+     *      renders chips, each chip renders its own menu);
+     *   3. settle the frame so CSS has been applied before anything is measured.
+     *
+     * Usage in a test:  await page.evaluate(() => window.__settled());
+     */
+    window.__settled = async function settled(passes = 3) {
+      const collect = (root, out) => {
+        for (const el of root.querySelectorAll('*')) {
+          if (el.localName.startsWith('sherpa-') && el.rendered) out.add(el.rendered);
+          if (el.shadowRoot) collect(el.shadowRoot, out);
+        }
+        return out;
+      };
+      for (let i = 0; i < passes; i++) {
+        const pending = collect(document, new Set());
+        await Promise.all(pending);
+        // DRAIN THE MICROTASK QUEUE between passes. populate() is
+        // `this.rendered.then(() => this.renderData(data))`, so renderData runs
+        // in a LATER microtask than the promise we just awaited — awaiting
+        // `rendered` alone returns before a single chip has been stamped. One
+        // extra turn lets that callback run, and the next pass then sees the
+        // children it created.
+        await Promise.resolve();
+        await Promise.resolve();
+      }
+      // Two frames: one for the last render to paint, one for style to apply.
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    };
   </script>
 </body>
 </html>

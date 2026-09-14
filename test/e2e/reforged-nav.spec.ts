@@ -29,7 +29,7 @@ test('legacy array populate() renders items and marks the active one', async ({ 
       { id: 'reports', label: 'Reports' },
       { id: 'settings', label: 'Settings' },
     ]);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     // Scope to .content — the rail also carries the default quick items
     // (Home · Recent · Favorites) in its header, which are not section rows.
     const rows = nav.shadowRoot!.querySelectorAll('.content .nav-row sherpa-nav-item');
@@ -56,7 +56,7 @@ test('rich config renders brand, sections with labels, and quick items', async (
         { label: 'Admin', items: [{ id: 'settings', label: 'Settings' }] },
       ],
     });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     return {
       product: s.querySelector('.product')?.textContent,
@@ -85,7 +85,7 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
       { id: 'home', label: 'Home' },
       { id: 'reports', label: 'Reports' },
     ]);
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let selected: string | null = null;
     nav.addEventListener('nav-select', (e) => (selected = (e as CustomEvent).detail.id));
@@ -97,7 +97,7 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
     const item = reports.querySelector('sherpa-nav-item') as HTMLElement & { rendered?: Promise<void> };
     await item.rendered;
     (item.shadowRoot!.querySelector('.nav-button, .nav-link') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { selected, activeId: nav.getAttribute('data-active-id') };
   });
@@ -114,7 +114,7 @@ test('typing in search fires nav-search with the query', async ({ page }) => {
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
     nav.populate!({ product: { name: 'Sherpa' }, sections: [{ items: [{ id: 'a', label: 'A' }] }] });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let query: string | null = null;
     nav.addEventListener('nav-search', (e) => (query = (e as CustomEvent).detail.query));
@@ -122,7 +122,7 @@ test('typing in search fires nav-search with the query', async ({ page }) => {
     const input = nav.shadowRoot!.querySelector('.search-input') as HTMLInputElement;
     input.value = 'rep';
     input.dispatchEvent(new Event('input', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { query };
   });
   expect(r.query).toBe('rep');
@@ -137,7 +137,7 @@ test('the rail starts collapsed: 40px, no product name, search or section labels
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
     nav.populate!({ product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'fa-regular fa-house' }] }] });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     return {
       state: nav.dataset['navState'],
@@ -188,7 +188,7 @@ test('the pin latches the rail open; settings switches mode and relabels the hea
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
     nav.populate!({ product: { name: 'Sherpa' } });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
 
     (s.querySelector('.pin') as HTMLElement).click();
@@ -242,7 +242,7 @@ test('typing in search filters the rows and marks the matched text', async ({ pa
       rendered?: Promise<void>;
     })[];
     for (let i = 0; i < 100 && items().length < 3; i++) {
-      await new Promise((res) => setTimeout(res, 10));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
     }
     await Promise.all(items().map((n) => n.rendered));
     const input = s.querySelector<HTMLInputElement>('.search-input')!;
@@ -250,7 +250,7 @@ test('typing in search filters the rows and marks the matched text', async ({ pa
     const type = async (value: string) => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
-      await new Promise((res) => setTimeout(res, 20));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
       // Filtering re-renders the items, so wait out their shadow roots again
       // before reading a <mark> from inside one.
       await Promise.all(items().map((n) => n.rendered));
@@ -302,7 +302,7 @@ test('the search clear button appears with text and resets the filter', async ({
       product: { name: 'Sherpa' },
       sections: [{ label: 'Views', items: [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }] }],
     });
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     const input = s.querySelector<HTMLInputElement>('.search-input')!;
     const clear = s.querySelector<HTMLElement>('.search-clear')!;
@@ -311,14 +311,14 @@ test('the search clear button appears with text and resets the filter', async ({
     const empty = shown();
     input.value = 'alp';
     input.dispatchEvent(new Event('input', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const typed = shown();
     const filtered = s.querySelectorAll('.content .nav-row:not([data-filtered-out])').length;
 
     let searchEvents = 0;
     nav.addEventListener('nav-search', () => searchEvents++);
     clear.click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     // NOTE: the button also calls input.focus() so typing continues in the field.
     // That is not asserted here — a headless page with no user activation never
     // moves focus off <body>, so neither activeElement nor a focus listener sees it.
@@ -359,7 +359,7 @@ test('the settings button swaps the rail to its own section list', async ({ page
         ] },
       ],
     });
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     const read = () => ({
       sections: Array.from(s.querySelectorAll('.section-label')).map((el) => el.textContent),
@@ -371,11 +371,11 @@ test('the settings button swaps the rail to its own section list', async ({ page
 
     const main = read();
     (s.querySelector('.settings') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const settings = { ...read(), label: s.querySelector('.product')!.textContent };
     // Leaving settings restores the product tree.
     (s.querySelector('.settings') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { main, settings, back: read() };
   });
 
@@ -401,7 +401,7 @@ test('the default quick items are Home · Recent · Favorites', async ({ page })
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
     nav.populate!({ product: { name: 'Sherpa' } });
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return Array.from(
       nav.shadowRoot!.querySelectorAll<HTMLElement>('.quick sherpa-nav-item'),
     ).map((el) => el.dataset['label']);
@@ -447,7 +447,7 @@ test('children start hidden, indent one tier deeper, and carry no icon', async (
     await nav.rendered;
     nav.populate(config);
     nav.setAttribute('data-nav-state', 'pinned');
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const row = (label: string): HTMLElement =>
       Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
@@ -522,7 +522,7 @@ test('the chevron toggles a subtree without navigating, and a shut parent keeps 
     await nav.rendered;
     nav.populate(config);
     nav.setAttribute('data-nav-state', 'pinned');
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const row = (label: string): HTMLElement =>
       Array.from(nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')).find(
@@ -537,18 +537,18 @@ test('the chevron toggles a subtree without navigating, and a shut parent keeps 
     nav.addEventListener('nav-select', (e) => selects.push((e as CustomEvent).detail.id));
 
     chevron('Endpoints').click();
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const opened = { servers: shown('Servers'), desktops: shown('Desktops'), laptops: shown('Laptops') };
 
     chevron('Desktops').click();
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const bothOpen = { laptops: shown('Laptops') };
 
     // Shutting the GRANDPARENT must hide the grandchild, even though Desktops
     // itself is still marked open. This is why visibility walks the whole
     // ancestor chain rather than looking one level up.
     chevron('Endpoints').click();
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const grandparentShut = { desktops: shown('Desktops'), laptops: shown('Laptops') };
 
     return { opened, bothOpen, grandparentShut, selects };
@@ -584,9 +584,9 @@ test('the collapsed rail hides every child row, tag and chevron', async ({ page 
     // Open the parent FIRST, so the test proves collapsing hides an already-open
     // subtree rather than relying on it being shut anyway.
     nav.setAttribute('data-nav-state', 'pinned');
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     (item('Endpoints').shadowRoot!.querySelector('.expand') as HTMLElement).click();
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const openFirst = row('Servers').offsetParent !== null;
 
     nav.setAttribute('data-nav-state', 'collapsed');
@@ -631,7 +631,7 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
     await nav.rendered;
     nav.populate(config);
     nav.setAttribute('data-nav-state', 'pinned');
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = nav.shadowRoot!;
     // Figma pins the pin/settings Buttons to Structure=sm: height → space/xl 24,

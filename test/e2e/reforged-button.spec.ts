@@ -78,7 +78,7 @@ test('emits button-click; suppresses it when disabled', async ({ page }) => {
     const afterEnabled = clicks;
 
     el.setAttribute('disabled', '');
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     trigger.click();
     const afterDisabled = clicks;
 
@@ -115,7 +115,7 @@ test('slot presence reflects to data-has-content on the host', async ({ page }) 
     empty.setAttribute('data-label', 'via-attr');
     document.getElementById('root')!.appendChild(empty);
     await empty.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       withText: withText.hasAttribute('data-has-content'),

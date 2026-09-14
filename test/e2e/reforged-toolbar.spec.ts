@@ -15,7 +15,7 @@ test('lays out leading / trailing slot regions', async ({ page }) => {
     el.innerHTML = '<span slot="leading">L</span>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
       bar: !!el.shadowRoot?.querySelector('.bar'),
       hasLeading: el.hasAttribute('data-has-leading'),

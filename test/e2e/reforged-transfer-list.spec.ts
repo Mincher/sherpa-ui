@@ -35,7 +35,7 @@ test('splits items into available and selected panes', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
       available: s.querySelectorAll('.source .row').length,
@@ -54,7 +54,7 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
 
     let detail: unknown = null;
@@ -68,7 +68,7 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
       new CustomEvent('item-select', { bubbles: true, composed: true, detail: { selected: true } }),
     );
     (s.querySelector('sherpa-button[data-move="add"]') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       detail,
@@ -88,10 +88,10 @@ test('add-all moves every available item across', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     (s.querySelector('sherpa-button[data-move="add-all"]') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { selected: el.selected!.sort(), available: s.querySelectorAll('.source .row').length };
   }, POOL);
   expect(r.selected).toEqual(['r', 'w', 'x']);
@@ -104,10 +104,10 @@ test('remove-all empties the selected pane', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     (s.querySelector('sherpa-button[data-move="remove-all"]') as HTMLElement).click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { selected: el.selected, empty: s.querySelector('.target')!.hasAttribute('data-empty') };
   }, POOL);
   expect(r.selected).toEqual([]);
@@ -120,7 +120,7 @@ test('rows are composed sherpa-list-item + moves are composed sherpa-button', as
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate!(pool);
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
       listItems: s.querySelectorAll('.row sherpa-list-item').length,

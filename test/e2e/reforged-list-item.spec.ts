@@ -57,7 +57,7 @@ test('slotted leading and trailing content reflect to data-has-* on the host', a
     el.innerHTML = '<span slot="leading">L</span><button slot="trailing">Go</button>';
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
       hasLeading: el.hasAttribute('data-has-leading'),
@@ -194,7 +194,7 @@ test('data-draggable reveals the drag handle and fires item-drag', async ({ page
     let dragged = false;
     el.addEventListener('item-drag', () => (dragged = true));
     drag.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { visible, dragged };
   });
   expect(r.visible).toBe(true);
@@ -215,7 +215,7 @@ test('data-expandable toggle flips data-expanded and fires item-expand', async (
     el.addEventListener('item-expand', (e) => (detail = (e as CustomEvent).detail));
     el.addEventListener('item-click', () => (rowClicked = true));
     expand.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { expandedAfter: el.hasAttribute('data-expanded'), detail, rowClicked };
   });
   expect(r.expandedAfter).toBe(true);
@@ -238,7 +238,7 @@ test('data-selectable control toggles selection and fires item-select', async ({
     let detail: unknown = null;
     el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
     checkbox.click();
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };
   });
   expect(r.visible).toBe(true);

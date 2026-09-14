@@ -80,7 +80,7 @@ test('the copy button fires code-copy with the code and flips data-copied', asyn
     });
 
     (el.shadowRoot!.querySelector('.copy') as HTMLButtonElement).click();
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       code: (detail as { code?: string } | null)?.code,

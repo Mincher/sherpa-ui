@@ -54,12 +54,12 @@ test('data-notifications shows a count badge; 0/unset hides it', async ({ page }
     const hidden = getComputedStyle(badge).display === 'none';
 
     el.setAttribute('data-notifications', '5');
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const shownText = badge.textContent;
     const shown = getComputedStyle(badge).display !== 'none';
 
     el.setAttribute('data-notifications', '0');
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const clearedAttr = el.hasAttribute('data-notifications');
 
     return { hidden, shownText, shown, clearedAttr };
@@ -113,7 +113,7 @@ test('every header action fires its event', async ({ page }) => {
       const host = s.querySelector(sel) as HTMLElement & { shadowRoot: ShadowRoot };
       (host.shadowRoot.querySelector('button') as HTMLElement).click();
     }
-    await new Promise((res) => setTimeout(res, 0));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       seen,
@@ -142,7 +142,7 @@ test('data-loading reveals the loading bar', async ({ page }) => {
     });
     const before = read();
     el.setAttribute('data-loading', '');
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const after = read();
     return { before, after };
   });
@@ -175,12 +175,12 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
       breadcrumb: [{ label: 'Home' }, { label: 'Reports' }],
       filters: [{ id: 'all', label: 'All', active: true }, { id: 'mine', label: 'Mine' }],
     });
-    await new Promise((res) => setTimeout(res, 30));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const crumbs = el.querySelector('sherpa-breadcrumbs[slot="breadcrumb"]') as WithRender;
     const qft = el.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
     await crumbs.rendered;
-    await new Promise((res) => setTimeout(res, 20));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     // Re-dispatch: a breadcrumbs' own event surfaces as breadcrumb-click on the header.
     let clicked = false;
@@ -188,7 +188,7 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
     crumbs.dispatchEvent(new CustomEvent('breadcrumb-select', {
       bubbles: true, composed: true, detail: { index: 0, label: 'Home' },
     }));
-    await new Promise((res) => setTimeout(res, 10));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       hasCrumbs: !!crumbs,
