@@ -27,9 +27,13 @@ interface FooterControl extends HTMLElement {
 export class SherpaSelectCard extends SherpaElement {
   static override css = new URL('./sherpa-select-card.css', import.meta.url);
   static override html = new URL('./sherpa-select-card.html', import.meta.url);
+  /** Header title + description into the shadow (CSS collapses empties). */
+  static override props = {
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
+  } as const;
+
   static override observed = [
-    'data-label',
-    'data-description',
     'data-selected',
     'data-select-mode',
     'name',
@@ -44,7 +48,6 @@ export class SherpaSelectCard extends SherpaElement {
     if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     this.#syncRole();
 
-    this.#syncText();
     this.#syncControl();
     this.#syncAria();
 
@@ -56,8 +59,9 @@ export class SherpaSelectCard extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-description') this.#syncText();
-    else if (name === 'data-select-mode') {
+    // data-label / data-description are declared props — they no longer reach
+    // here, so the trailing `else` cannot catch them.
+    if (name === 'data-select-mode') {
       this.#syncRole();
       this.#syncControl();
     } else if (name === 'data-selected') {
@@ -74,14 +78,6 @@ export class SherpaSelectCard extends SherpaElement {
   /** Host role follows the select mode: checkbox for multi, radio otherwise. */
   #syncRole(): void {
     this.setAttribute('role', this.#isCheckbox() ? 'checkbox' : 'radio');
-  }
-
-  /** Header title + description into the shadow (CSS collapses empties). */
-  #syncText(): void {
-    const label = this.$('.label');
-    if (label) label.textContent = this.dataset['label'] ?? '';
-    const description = this.$('.description');
-    if (description) description.textContent = this.dataset['description'] ?? '';
   }
 
   /**

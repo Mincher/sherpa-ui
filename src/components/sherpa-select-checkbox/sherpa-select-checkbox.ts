@@ -15,9 +15,13 @@ const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
 export class SherpaSelectCheckbox extends SherpaElement {
   static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);
   static override html = new URL('./sherpa-select-checkbox.html', import.meta.url);
+  /** Label + description text into the shadow (CSS collapses empties). */
+  static override props = {
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
+  } as const;
+
   static override observed = [
-    'data-label',
-    'data-description',
     'checked',
     'indeterminate',
     ...MIRRORED,
@@ -27,22 +31,12 @@ export class SherpaSelectCheckbox extends SherpaElement {
 
   override onRender(): void {
     this.#control = this.$<HTMLInputElement>('.control');
-    this.#syncText();
     this.#syncState();
     this.#control?.addEventListener('change', this.#onChange);
   }
 
-  override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-description') this.#syncText();
-    else this.#syncState();
-  }
-
-  /** Label + description text into the shadow (CSS collapses empties). */
-  #syncText(): void {
-    const label = this.$('.label');
-    if (label) label.textContent = this.dataset['label'] ?? '';
-    const description = this.$('.description');
-    if (description) description.textContent = this.dataset['description'] ?? '';
+  override onChange(): void {
+    this.#syncState();
   }
 
   /** Mirror native attributes + checked/indeterminate host → inner control. */

@@ -22,7 +22,12 @@ let uid = 0;
 export class SherpaTooltip extends SherpaElement {
   static override css = new URL('./sherpa-tooltip.css', import.meta.url);
   static override html = new URL('./sherpa-tooltip.html', import.meta.url);
-  static override observed = ['data-text', 'data-placement'];
+  /** Mirror data-text into the bubble's text span (CSS handles all visibility). */
+  static override props = {
+    'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
+  } as const;
+
+  static override observed = ['data-placement'];
 
   override onRender(): void {
     if (!this.dataset['placement']) this.dataset['placement'] = 'top';
@@ -31,11 +36,6 @@ export class SherpaTooltip extends SherpaElement {
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
 
-    this.#syncText();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-text') this.#syncText();
   }
 
   /* ── Public API ──────────────────────────────────────────────────────── */
@@ -46,14 +46,6 @@ export class SherpaTooltip extends SherpaElement {
   set text(value: string) {
     if (value) this.dataset['text'] = value;
     else delete this.dataset['text'];
-  }
-
-  /* ── Private ─────────────────────────────────────────────────────────── */
-
-  /** Mirror data-text into the bubble's text span (CSS handles all visibility). */
-  #syncText(): void {
-    const el = this.$('.tip-text');
-    if (el) el.textContent = this.dataset['text'] ?? '';
   }
 }
 
