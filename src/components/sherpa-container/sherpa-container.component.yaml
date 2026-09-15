@@ -142,6 +142,33 @@ states:
     name: lg
     selector: ":host([data-padding=\"lg\"])"
   - $type: state
+    name: sm
+    selector: ":host([data-padding-inline=\"sm\"])"
+  - $type: state
+    name: md
+    selector: ":host([data-padding-inline=\"md\"])"
+  - $type: state
+    name: lg
+    selector: ":host([data-padding-inline=\"lg\"])"
+  - $type: state
+    name: rows
+    selector: ":host([data-rows])"
+  - $type: state
+    name: "4"
+    selector: ":host([data-rows=\"4\"])"
+  - $type: state
+    name: "6"
+    selector: ":host([data-rows=\"6\"])"
+  - $type: state
+    name: "8"
+    selector: ":host([data-rows=\"8\"])"
+  - $type: state
+    name: "10"
+    selector: ":host([data-rows=\"10\"])"
+  - $type: state
+    name: "12"
+    selector: ":host([data-rows=\"12\"])"
+  - $type: state
     name: has-header
     selector: ":host([data-has-header])"
   - $type: state

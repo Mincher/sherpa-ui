@@ -83,6 +83,16 @@
 :host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
 
+/* Inline padding, set SEPARATELY from the block padding.
+   A card full of full-bleed parts — a toolbar with its own bottom rule, a grid,
+   a pager with its own top rule — wants `data-padding="none"` VERTICALLY so each
+   divider still meets both card edges, but the content itself still needs to
+   breathe horizontally. `data-padding-inline` gives that without reintroducing
+   the top and bottom inset that would break the dividers. */
+:host([data-padding-inline="sm"]) { --_pad-inline: var(--sherpa-theme-padding-sm, 4px); }
+:host([data-padding-inline="md"]) { --_pad-inline: var(--sherpa-theme-padding-md, 8px); }
+:host([data-padding-inline="lg"]) { --_pad-inline: var(--sherpa-theme-padding-lg, 16px); }
+
 /* ── data-rows — a card sized in LAYOUT GRID ROWS ─────────────────────────
    A card with no height is as tall as whatever is inside it, which is wrong for
    two common cases: a chart hugs its own minimum and leaves the card part empty,
@@ -164,7 +174,10 @@
   padding: 0;
 }
 .body {
-  padding: var(--_pad);
+  /* Block from the padding scale; inline from it too UNLESS data-padding-inline
+     names its own — so the two axes can differ without a second scale. */
+  padding-block: var(--_pad);
+  padding-inline: var(--_pad-inline, var(--_pad));
   flex: 1 1 auto;
   min-height: 0;
 }

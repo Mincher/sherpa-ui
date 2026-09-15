@@ -146,3 +146,40 @@ test('a body child grows even when a header shares the light DOM', async ({ page
   expect(r.body).toBe(r.card - r.headerH);
   expect(r.body).toBeGreaterThan(100);
 });
+
+test('data-padding-inline pads the content sideways without restoring the block inset', async ({ page }) => {
+  // A card full of full-bleed parts — a toolbar with its own bottom rule, a grid,
+  // a pager with its own top rule — wants NO block padding, so each divider still
+  // meets both card edges. But the content itself still needs to breathe
+  // horizontally. The two axes therefore have to be settable apart.
+  const got = await page.evaluate(async () => {
+    const read = async (attrs: string) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
+      for (const pair of attrs.split(' ').filter(Boolean)) {
+        const [k, v] = pair.split('=');
+        el.setAttribute(k!, v ?? '');
+      }
+      root.appendChild(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const body = el.shadowRoot!.querySelector('.body')!;
+      const s = getComputedStyle(body);
+      return { block: s.paddingTop, inline: s.paddingLeft };
+    };
+    return {
+      // Both axes flush.
+      none: await read('data-padding=none'),
+      // Block stays flush; inline breathes.
+      split: await read('data-padding=none data-padding-inline=md'),
+      // With no override the inline axis still follows the padding scale.
+      scale: await read('data-padding=sm'),
+    };
+  });
+
+  expect(got.none).toEqual({ block: '0px', inline: '0px' });
+  expect(got.split).toEqual({ block: '0px', inline: '8px' });
+  // Unchanged behaviour for every card that does not use the new attribute.
+  expect(got.scale).toEqual({ block: '8px', inline: '8px' });
+});

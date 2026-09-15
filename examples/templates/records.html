@@ -20,9 +20,11 @@
        card at 8 layout-grid rows tall, so the grid SCROLLS inside it rather than
        the card growing with the row count and pushing the pager off the screen.
 
-       data-padding="none": every part below carries its own Figma padding, so a
-       second inset from the card would double it. -->
-  <sherpa-container data-span="full" data-rows="8" data-padding="none" data-fill>
+       data-padding="none" keeps the BLOCK inset at zero, so each part's own
+       divider still meets both card edges; data-padding-inline="md" gives the
+       content 8px of horizontal breathing room without bringing that inset back. -->
+  <sherpa-container data-span="full" data-rows="8"
+                    data-padding="none" data-padding-inline="md" data-fill>
 
     <!-- HEADER — the page-level actions for this grid's data. Add customer sits
          with the data it acts on rather than in a section header above the card.
