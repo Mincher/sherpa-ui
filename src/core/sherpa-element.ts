@@ -160,6 +160,15 @@ export interface PropDef {
   skipWhen?: string;
   /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
   fallbackAttr?: string;
+  /**
+   * How the value is RENDERED. Default is plain text.
+   *
+   * `'icon'` accepts both forms a Sherpa icon attribute has always allowed: a Font
+   * Awesome class list ("fa-solid fa-tag") or a single raw glyph character ("+").
+   * Without it, an FA class list is printed as literal text — which is exactly
+   * what chip, tag, list-item and container-header used to do.
+   */
+  as?: 'text' | 'icon';
   /** Allowed values for an `enum`. Documentation + spec parity; not enforced at runtime. */
   values?: readonly string[];
   /** Used when the attribute is absent. Numbers go through coerceNum. */
@@ -442,7 +451,34 @@ export abstract class SherpaElement extends HTMLElement {
       // `skipWhen` protects content the component owns: a projected [slot], or a
       // <mark> a search highlight left behind. A textContent write would erase it.
       if (!el || this.#guarded(el, def)) continue;
-      el.textContent = text === 'NaN' ? '' : text;
+      if (def.as === 'icon') this.#writeIcon(el, text);
+      else el.textContent = text === 'NaN' ? '' : text;
+    }
+  }
+
+  /**
+   * Render an icon value — a Font Awesome class list OR a single raw glyph.
+   *
+   * ONE policy, because there were three. Font Awesome draws its glyph from a
+   * `::before` on a class, so an FA value has to become CLASSES; a raw character
+   * has to become TEXT. Getting that backwards is silent: the class list prints
+   * as literal text ("fa-solid fa-tag"), which is what chip, tag, list-item and
+   * container-header all did, or the glyph vanishes.
+   *
+   * Classes go on the target ITSELF rather than a child `<i>`. Four components
+   * used to build that child with `createElement`, which CLAUDE.md forbids, and
+   * the child is not needed: any element can carry the FA classes.
+   *
+   * The target's own structural classes are preserved — only previously-applied
+   * `fa-*` classes are removed, so a re-render never accumulates two icons.
+   */
+  #writeIcon(el: Element, value: string): void {
+    for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
+    if (value && /\bfa-/.test(value)) {
+      el.classList.add(...value.split(/\s+/).filter(Boolean));
+      el.textContent = '';
+    } else {
+      el.textContent = value === 'NaN' ? '' : value;
     }
   }
 

@@ -112,7 +112,10 @@
 }
 :host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }
-.icon:empty { display: none; }
+/* A Font Awesome icon carries CLASSES and no text, so `:empty` would hide the very
+   icon it was meant to reveal. `:host([data-icon])` above already gates the region,
+   so the empty case is covered without this. */
+.icon:not([class*="fa-"]):empty { display: none; }
 
 /* Collapse the whole lead region only when nothing in it is shown. */
 :host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }

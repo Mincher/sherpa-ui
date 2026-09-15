@@ -339,3 +339,100 @@ test('props: `all` writes EVERY matching node, not just the first', async ({ pag
   expect(titles.length).toBeGreaterThan(1);
   expect(titles.every((t) => t === 'repeated')).toBe(true);
 });
+
+/* ── Declared props: icon rendering ───────────────────────────────────────── */
+
+/**
+ * Font Awesome draws its glyph from a ::before on a CLASS. So an FA value has to
+ * become classes, and a raw character has to become text. Getting that backwards
+ * is SILENT — the class list simply prints as the literal string
+ * "fa-solid fa-tag", which is what chip, tag, list-item and container-header all
+ * did before `as: 'icon'`.
+ */
+for (const [tag, sel] of [
+  ['sherpa-chip', '.glyph'],
+  ['sherpa-tag', '.glyph'],
+  ['sherpa-list-item', '.icon'],
+  ['sherpa-container-header', '.icon'],
+] as const) {
+  test(`${tag}: an FA class list becomes CLASSES, never literal text`, async ({ page }) => {
+    const got = await page.evaluate(
+      async ([t, s]) => {
+        const root = document.getElementById('root')!;
+        root.innerHTML = '';
+        const el = document.createElement(t) as HTMLElement & { rendered?: Promise<void> };
+        el.setAttribute('data-icon', 'fa-solid fa-tag');
+        root.appendChild(el);
+        await el.rendered;
+        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        const icon = el.shadowRoot!.querySelector(s)!;
+        return { text: icon.textContent, classes: [...icon.classList] };
+      },
+      [tag, sel] as const,
+    );
+    // The bug: the class list printed as text.
+    expect(got.text).toBe('');
+    expect(got.classes).toContain('fa-solid');
+    expect(got.classes).toContain('fa-tag');
+  });
+
+  test(`${tag}: a RAW glyph character still renders as text`, async ({ page }) => {
+    const got = await page.evaluate(
+      async ([t, s]) => {
+        const root = document.getElementById('root')!;
+        root.innerHTML = '';
+        const el = document.createElement(t) as HTMLElement & { rendered?: Promise<void> };
+        el.setAttribute('data-icon', '+');
+        root.appendChild(el);
+        await el.rendered;
+        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        const icon = el.shadowRoot!.querySelector(s)!;
+        return { text: icon.textContent, hasFa: [...icon.classList].some((c) => c.startsWith('fa-')) };
+      },
+      [tag, sel] as const,
+    );
+    expect(got).toEqual({ text: '+', hasFa: false });
+  });
+}
+
+test('icon: swapping the value does not accumulate two icons', async ({ page }) => {
+  const classes = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-icon', 'fa-solid fa-tag');
+    root.appendChild(el);
+    await el.rendered;
+    el.setAttribute('data-icon', 'fa-solid fa-star');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return [...el.shadowRoot!.querySelector('.glyph')!.classList];
+  });
+  expect(classes).toContain('fa-star');
+  // The old glyph must be GONE — two fa-* name classes would stack two ::before rules.
+  expect(classes).not.toContain('fa-tag');
+  // The structural class the template gave it must survive.
+  expect(classes).toContain('glyph');
+});
+
+test('icon: the glyph actually RENDERS — a Pro-only icon would be zero-width', async ({ page }) => {
+  // FA PRO icons fail SILENTLY on the free CDN: content resolves to `none` and the
+  // element has zero width, with no warning. Probing a real shadow root is the only
+  // way to catch it — a working glyph reports "" for content, so `none` is the test.
+  const probe = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-icon', 'fa-solid fa-tag');
+    root.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await document.fonts.ready;
+    const glyph = el.shadowRoot!.querySelector('.glyph')!;
+    return {
+      content: getComputedStyle(glyph, '::before').content,
+      width: glyph.getBoundingClientRect().width,
+    };
+  });
+  expect(probe.content).not.toBe('none');
+  expect(probe.width).toBeGreaterThan(0);
+});

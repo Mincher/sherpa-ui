@@ -53,7 +53,7 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     // `skipWhen`: a SLOTTED icon wins over the data-icon glyph, so the write is
     // skipped when the consumer has projected something into the icon span.
-    'data-icon': { type: 'string', kind: 'content', to: '.icon', skipWhen: '[slot]' },
+    'data-icon': { type: 'string', kind: 'content', to: '.icon', skipWhen: '[slot]', as: 'icon' },
   } as const;
 
   static override observed = ['data-collapsed'];

@@ -11,9 +11,12 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaTag extends SherpaElement {
   static override css = new URL('./sherpa-tag.css', import.meta.url);
   static override html = new URL('./sherpa-tag.html', import.meta.url);
-  /** data-icon is a glyph string; CSS `:host(:not([data-icon]))` gates visibility. */
+  /**
+   * data-icon takes a Font Awesome class list ("fa-solid fa-tag") or a single raw
+   * glyph character. CSS `:host(:not([data-icon]))` gates visibility.
+   */
   static override props = {
-    'data-icon': { type: 'string', kind: 'content', to: '.glyph' },
+    'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
   } as const;
 
   /** The dismissible template adds the close button; default is a plain pill. */
