@@ -449,6 +449,32 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   };
 
+  /**
+   * A calendar picked a day or completed a range — relabel its chip.
+   *
+   * The chip is found by composedPath rather than by `event.target`: the event
+   * starts inside the calendar's own shadow root and is retargeted at each
+   * boundary, so `target` is the toolbar by the time it arrives here.
+   */
+  #onDatePicked = (event: Event): void => {
+    // The CHIP HOST, not the first `.chip` in the path. A sherpa-quick-filter
+    // wraps its own inner <div class="chip">, which sits lower in the path and
+    // matched first — and #chipPicks on that bare div finds no calendar, so the
+    // label was rebuilt from an empty pick list every time.
+    const chip = event
+      .composedPath()
+      .find(
+        (n): n is HTMLElement =>
+          n instanceof HTMLElement && n.tagName === 'SHERPA-QUICK-FILTER',
+      );
+    if (!chip) return;
+    this.#syncDateLabel(chip);
+    // A date chip turns itself ON by picking — it has no body toggle to switch
+    // it on beforehand, unlike a value chip.
+    chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
+    this.#emitChange();
+  };
+
   #onFoldedCountsChanged = (): void => {
     this.#syncFoldedBadges();
   };
@@ -560,6 +586,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('change', this.#onFoldedCountsChanged);
     // Action rows (the "Remove filter" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
+    // A CALENDAR commits through its own events, not through the menu's. An
+    // auto-applying date chip has no Apply button, so without these its label
+    // only ever caught up when something else happened to re-render the bar.
+    this.addEventListener('datetime-change', this.#onDatePicked);
+    this.addEventListener('range-select', this.#onDatePicked);
     // The RANGE switch on a number or date menu. sherpa-switch re-dispatches its
     // native change as a COMPOSED one, so this reaches here where a bare
     // checkbox's would not.
@@ -741,23 +772,54 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if ('valueLabel' in target) target.valueLabel = '';
       return;
     }
-    const fmt = (iso: string): string => {
-      // The ISO string is parsed as UTC, so it is FORMATTED as UTC too —
-      // otherwise a browser west of Greenwich renders the previous day.
+    // The ISO string is parsed as UTC, so it is FORMATTED as UTC too — otherwise
+    // a browser west of Greenwich renders the previous day.
+    const at = (iso: string): Date | null => {
       const d = new Date(`${iso}T00:00:00Z`);
-      return Number.isNaN(d.getTime())
-        ? iso
-        : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
+      return Number.isNaN(d.getTime()) ? null : d;
     };
-    // The FIRST day plus an ellipsis, matching a value chip: the field name stays
-    // on the chip and never moves, and the caret carries what was picked. A range
-    // reads "12 Sep…" with the count badge saying 2 — the full range is on the
-    // badge's hover tip.
-    const first = fmt(picked[0]!);
-    if ('valueLabel' in target) target.valueLabel = picked.length > 1 ? `${first}…` : first;
-    // The badge carries the number, same rule as a value chip: two or more only.
-    if (picked.length > 1) chip.dataset['count'] = String(picked.length);
-    else delete chip.dataset['count'];
+    // DAY THEN MONTH, always — "03 Sep", never "Sep 03". `toLocaleDateString`
+    // orders the parts by locale, so a US reader got the month first and the
+    // shape the design asks for was lost. formatToParts gives the localised
+    // MONTH NAME (which should follow the reader's locale) while this code keeps
+    // the order (which should not).
+    const dayMonth = (d: Date): string => {
+      const parts = new Intl.DateTimeFormat(undefined, {
+        day: '2-digit',
+        month: 'short',
+        timeZone: 'UTC',
+      }).formatToParts(d);
+      const day = parts.find((x) => x.type === 'day')?.value ?? '';
+      const month = parts.find((x) => x.type === 'month')?.value ?? '';
+      return `${day} ${month}`;
+    };
+    const year = (d: Date): string =>
+      d.toLocaleDateString(undefined, { year: 'numeric', timeZone: 'UTC' });
+
+    // IN FULL, never abbreviated: "03 Sep – 18 Oct, 2026". A date range is the
+    // one filter whose value cannot be guessed from a count — "2" says nothing
+    // about which two days — so it reads out rather than hiding behind a badge
+    // and a hover tip.
+    //
+    // The YEAR is stated once at the end when both ends share it, which is the
+    // common case; a range crossing new year states it on each end, because
+    // "18 Dec – 03 Jan, 2027" would put the wrong year on the first day.
+    const start = at(picked[0]!);
+    const end = picked.length > 1 ? at(picked[1]!) : null;
+
+    let label: string;
+    if (!start) label = picked[0]!;
+    else if (!end) label = `${dayMonth(start)}, ${year(start)}`;
+    else if (year(start) === year(end)) {
+      label = `${dayMonth(start)} - ${dayMonth(end)}, ${year(start)}`;
+    } else {
+      label = `${dayMonth(start)}, ${year(start)} - ${dayMonth(end)}, ${year(end)}`;
+    }
+    if ('valueLabel' in target) target.valueLabel = label;
+
+    // NO COUNT BADGE. The label says both days outright, so a "2" beside it
+    // would only repeat how many are in the sentence already read.
+    delete chip.dataset['count'];
   }
 
   #chips(): ChipEl[] {
@@ -811,7 +873,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       list.appendChild(chip);
       // A date chip's label carries its chosen day, so it has to be re-derived
       // after a rebuild like everything else.
-      if (f.kind === 'date') this.#syncDateLabel(chip);
+      if (f.kind === 'date') {
+        // A date range reads in full — see #syncDateLabel. Every part of
+        // "03 Sep - 18 Oct, 2026" carries meaning, and there is no count that
+        // could stand in for a truncated end.
+        chip.setAttribute('data-full-value', '');
+        this.#syncDateLabel(chip);
+      }
     }
 
     // The run just changed, so what fits has changed with it. The ResizeObserver

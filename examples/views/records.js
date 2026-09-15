@@ -253,8 +253,14 @@ export async function init(root) {
     // date-range and time will be values here, not new chip types.
     // Also COMMITTING: a date scan is the other expensive case, and its footer
     // shows the full four-button row (Today · Remove · Cancel · Apply).
+    // ONLY the days the data actually carries are pickable. A `created` column
+    // is a scatter, not a span — most days have no record at all — so every
+    // other day is drawn inactive and a reader cannot choose one that would
+    // empty the grid. Derived from the records themselves, so it can never
+    // drift from them.
     { id: 'created', label: 'Created', type: 'data', kind: 'date',
-      removable: true, commit: true, icon: 'fa-solid fa-calendar' },
+      removable: true, commit: true, icon: 'fa-solid fa-calendar',
+      availableDates: [...new Set(customers.map((c) => c.created))].sort() },
   ]);
 
   /* What the ADD chip offers — filters a user can put on the bar OVER AND ABOVE

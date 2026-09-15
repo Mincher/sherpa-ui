@@ -1605,3 +1605,87 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
   expect(r.out.firstRow).toBe('qf-folded');
   expect(r.out.open).toBe(true);
 });
+
+/**
+ * A DATE chip's value reads IN FULL — "03 Sep - 15 Sep, 2026".
+ *
+ * Every part of it carries meaning, and unlike a value list there is no count
+ * that could stand in for a truncated end: "2" says nothing about which two
+ * days. So it is not clipped and it wears no badge.
+ */
+test('a DATE chip names its whole range, day first, without truncating', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([{ id: 'when', label: 'When', kind: 'date', range: true, active: true }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const chip = el.shadowRoot!.querySelector('.chip[data-id="when"]') as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    const cal = chip.querySelector('sherpa-calendar') as HTMLElement & {
+      rendered?: Promise<void>;
+      dataset: DOMStringMap;
+    };
+    await cal.rendered;
+
+    const read = async (start: string, end?: string): Promise<Record<string, unknown>> => {
+      if (end) {
+        cal.dataset['valueStart'] = start;
+        cal.dataset['valueEnd'] = end;
+        cal.dispatchEvent(
+          new CustomEvent('range-select', { bubbles: true, composed: true, detail: { start, end } }),
+        );
+      } else {
+        delete cal.dataset['valueStart'];
+        delete cal.dataset['valueEnd'];
+        cal.dataset['value'] = start;
+        cal.dispatchEvent(
+          new CustomEvent('datetime-change', { bubbles: true, composed: true, detail: start }),
+        );
+      }
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const label = chip.shadowRoot.querySelector('.caret-label') as HTMLElement;
+      return {
+        text: label.textContent,
+        // NOT clipped — the rule every other chip's value follows is overridden
+        // for this one by data-full-value.
+        truncated: label.scrollWidth > label.clientWidth + 1,
+        maxWidth: getComputedStyle(label).maxInlineSize,
+        // …and NO badge: the label already says both days outright.
+        badge: chip.dataset['count'] ?? null,
+      };
+    };
+
+    return {
+      sameYear: await read('2026-09-03', '2026-09-15'),
+      crossYear: await read('2026-12-18', '2027-01-03'),
+      single: await read('2026-09-15'),
+      fullValue: chip.hasAttribute('data-full-value'),
+    };
+  });
+
+  // DAY THEN MONTH, always. toLocaleDateString orders the parts by locale, so a
+  // US reader got "Sep 03" and the shape the design asks for was lost — the
+  // month NAME follows the locale, the ORDER does not.
+  expect(r.sameYear.text).toBe('03 Sep - 15 Sep, 2026');
+
+  // The YEAR is stated once when both ends share it. A range crossing new year
+  // states it on each end, because "18 Dec - 03 Jan, 2027" would put the wrong
+  // year on the first day.
+  expect(r.crossYear.text).toBe('18 Dec, 2026 - 03 Jan, 2027');
+
+  // One day is one date, with its year.
+  expect(r.single.text).toBe('15 Sep, 2026');
+
+  for (const step of [r.sameYear, r.crossYear, r.single]) {
+    expect(step.truncated).toBe(false);
+    expect(step.maxWidth).toBe('none');
+    expect(step.badge).toBeNull();
+  }
+  expect(r.fullValue).toBe(true);
+});
