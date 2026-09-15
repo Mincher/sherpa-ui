@@ -16,41 +16,51 @@
 
        data-padding="none": the toolbars, the grid and the pager each carry their
        own Figma padding, so a second inset from the card would double it. -->
-  <sherpa-container data-span="full" data-rows="8" data-padding="none">
-    <!-- The card's content as ONE run, with no gap: each part carries its own
-         Figma padding and its own divider, so a gap between them would be a
-         second, competing rhythm. The card's fixed height goes to the item marked
-         data-grow (the grid). -->
+  <!-- A data table always wants every column it can get. `data-rows="8"` fixes the
+       card at 8 layout-grid rows tall, so the grid SCROLLS inside it rather than
+       the card growing with the row count and pushing the pager off the screen.
+
+       data-padding="none": every part below carries its own Figma padding, so a
+       second inset from the card would double it. -->
+  <sherpa-container data-span="full" data-rows="8" data-padding="none" data-fill>
+
+    <!-- HEADER — the page-level actions for this grid's data. Add customer sits
+         with the data it acts on rather than in a section header above the card.
+         The toolbar brings its own padding and bottom rule, so the container
+         leaves it bare (see .header ::slotted in sherpa-container.css). -->
+    <sherpa-toolbar slot="header" id="grid-actions">
+      <!-- A real ICON, not the literal "+" character this used to pass.
+           sherpa-button accepts either (a raw glyph is back-compat), but a
+           text "+" only inks about half its em, so it drew ~7px inside the
+           correct 14px box and read as too small. A Font Awesome glyph fills
+           the box Figma sizes with `icon-size`. -->
+      <sherpa-button slot="leading" id="add-btn"
+                     data-look="saturated" data-icon-start="fa-solid fa-plus">
+        Add customer
+      </sherpa-button>
+    </sherpa-toolbar>
+
+    <!-- CONTENT — the filter toolbar and the grid it filters, as ONE run with no
+         gap: each carries its own padding and divider, so a gap between them
+         would be a second, competing rhythm. -->
     <sherpa-stack data-gap="none" data-grow data-fill>
-      <!-- The ACTIONS toolbar, ABOVE the quick-filter toolbar. Page-level actions
-           on this grid's data live here — Add customer moved out of the section
-           header, so it sits with the data it acts on. -->
-      <sherpa-toolbar id="grid-actions">
-        <!-- A real ICON, not the literal "+" character this used to pass.
-             sherpa-button accepts either (a raw glyph is back-compat), but a
-             text "+" only inks about half its em, so it drew ~7px inside the
-             correct 14px box and read as too small. A Font Awesome glyph fills
-             the box Figma sizes with `icon-size`. -->
-        <sherpa-button slot="leading" id="add-btn"
-                       data-look="saturated" data-icon-start="fa-solid fa-plus">
-          Add customer
-        </sherpa-button>
-      </sherpa-toolbar>
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <!-- data-grow: this is the item that takes the card's leftover height. The
-           two toolbars above and the pager below keep their natural size, so the
-           grid scrolls INSIDE the card and the pager stays put at the bottom. -->
+      <!-- data-grow: this is the item that takes the card's leftover height, so
+           the grid scrolls INSIDE the card while the header and footer stay put. -->
       <sherpa-data-grid id="grid" data-grow data-selectable data-filterable></sherpa-data-grid>
-      <!-- NO data-page-size: the component defaults to 25, and naming a size here
-           would override it for no reason. 100 rows / 25 = 4 pages; records.js
-           overwrites data-total-pages on every render, so this is only the
-           pre-JS value. -->
-      <sherpa-pagination
-        id="pager"
-        data-page="1"
-        data-total-pages="4"
-        data-rows-options="10,25,50,100"></sherpa-pagination>
     </sherpa-stack>
+
+    <!-- FOOTER — the pager, pinned below the scrolling content. It carries its
+         own padding and top rule, so the container leaves it bare too.
+         NO data-page-size: the component defaults to 25, and naming a size here
+         would override it for no reason. The source overwrites data-page and
+         data-total-pages on every load, so these are only the pre-JS values. -->
+    <sherpa-pagination
+      slot="footer"
+      id="pager"
+      data-page="1"
+      data-total-pages="4"
+      data-rows-options="10,25,50,100"></sherpa-pagination>
   </sherpa-container>
 </div>
 

@@ -173,12 +173,16 @@
 :host([data-has-header]) .header { display: block; }
 :host([data-has-footer]) .footer { display: block; }
 
-.header ::slotted(:not(sherpa-container-header)) {
+/* A component that already carries its own Figma padding and divider is left
+   alone — sherpa-toolbar (8 x 4 + a bottom rule) and sherpa-pagination (8 x 12 +
+   a top rule) are the two that commonly fill these regions, and wrapping either
+   in a second inset drew the padding and the rule twice. */
+.header ::slotted(:not(sherpa-container-header, sherpa-toolbar, sherpa-quick-filter-toolbar)) {
   display: block;
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
-.footer ::slotted(:not(sherpa-container-footer)) {
+.footer ::slotted(:not(sherpa-container-footer, sherpa-pagination)) {
   display: block;
   padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
