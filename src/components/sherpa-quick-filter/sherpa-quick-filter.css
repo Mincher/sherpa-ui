@@ -299,6 +299,12 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
+  /* A <button> does NOT inherit the page font — browsers substitute their own UI
+     face — so the caret's label rendered in Arial while the chip's rendered in
+     Inter. Same size, same line-height, different typeface: the two texts sat
+     visibly off from each other. `.body` above already carries this line for the
+     same reason; the caret was simply never given it. */
+  font-family: inherit;
   /* Structure `icon-size` in the SM mode → content/size/base 14 (it was
      content/size/small 12 until the Structure sm mode was re-pointed in Figma). */
   font-size: var(--sherpa-theme-content-size-base, 14px);
@@ -324,7 +330,11 @@
    write, and no stray padding around a zero-width span. */
 .caret-label {
   font-size: var(--sherpa-theme-content-size-base, 14px);
-  line-height: 1;
+  /* The SAME line-height as the chip's own label (Figma 150:3408: both labels are
+     14 on 20). `line-height: 1` looked centred — the two boxes shared a midpoint —
+     but a 14px line box and a 20px one put their baselines in different places, so
+     the two texts sat visibly off from each other. */
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: nowrap;
   /* A long value truncates rather than stretching the bar — the full list is on
      the badge's hover tip and in its aria-label. */

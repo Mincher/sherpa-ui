@@ -411,3 +411,58 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
   expect(r.toggleOn.empty).toBe(false);
   expect(r.toggleOn.bg).toBe('rgb(242, 223, 255)');
 });
+
+test('the caret label sits on the SAME text line as the chip label', async ({ page }) => {
+  // Two causes of a vertical mismatch, both silent because the element BOXES
+  // line up perfectly either way — only the text inside them drifts:
+  //
+  //   1. a different line-height (14 vs 20) puts the baselines in different
+  //      places inside boxes that share a midpoint;
+  //   2. a <button> does NOT inherit the page font, so the caret's label
+  //      rendered in the browser's own UI face (Arial) while the chip's rendered
+  //      in Inter — same size, same line-height, different typeface.
+  //
+  // So this measures the TEXT with a Range, not the element box.
+  const got = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-label', 'Region');
+    el.setAttribute('data-menu', '');
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void> };
+    menu.setAttribute('slot', 'menu');
+    menu.setAttribute('data-select', 'multiple');
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = 'emea';
+    label.append(input, document.createTextNode('EMEA'));
+    menu.appendChild(label);
+    el.appendChild(menu);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await menu.rendered;
+    await document.fonts.ready;
+
+    input.click();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const textTop = (node: Element): number => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      return range.getBoundingClientRect().top;
+    };
+    const chipLabel = el.shadowRoot!.querySelector('.label')!;
+    const caretLabel = el.shadowRoot!.querySelector('.caret-label')!;
+    const family = (n: Element): string => getComputedStyle(n).fontFamily.split(',')[0]!.trim();
+    return {
+      delta: Math.abs(textTop(caretLabel) - textTop(chipLabel)),
+      sameFont: family(caretLabel) === family(chipLabel),
+      sameLineHeight:
+        getComputedStyle(caretLabel).lineHeight === getComputedStyle(chipLabel).lineHeight,
+    };
+  });
+
+  expect(got.sameFont).toBe(true);
+  expect(got.sameLineHeight).toBe(true);
+  // Exact, not approximate — both labels are 14 on 20 in Figma (150:3408).
+  expect(got.delta).toBeLessThan(0.5);
+});

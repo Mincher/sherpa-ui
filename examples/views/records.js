@@ -169,7 +169,10 @@ export async function init(root) {
     filters: [
       {
         id: 'view',
-        label: 'All customers',
+        // The FIELD name, not the picked view — Figma's Type=view toolbar reads
+        // Label "View" with the value in the caret (150:3688). It said
+        // "All customers" here, which is a VALUE sitting in the field's place.
+        label: 'View',
         // A SELECTOR, not a toggle: you are always in some view.
         persistent: true,
         icon: 'fa-solid fa-table-list',
@@ -279,10 +282,14 @@ export async function init(root) {
   source.bind(grid, { as: (rows) => ({ columns, rows }) });
   source.bind(pager);
 
-  /* The toolbar steers filters, sort and grouping. Its chips are translated by
-     hand because only this view knows that two picks on `created` mean a RANGE;
-     everything else the source reads straight off the event. */
-  source.bind(qft, { readonly: true });
+  /* The toolbar is NOT bound. Its populate() means "here are your CHIPS", not
+     "here are your rows" — binding it overwrote the chips with records and the
+     bar came back holding only Group and Sort. A component whose populate()
+     takes something other than rows steers the source through its events and is
+     fed by hand, which is what these three listeners are.
+
+     Its chips are translated here rather than by the source because only this
+     view knows that two picks on `created` mean a RANGE, not an either/or. */
   qft.addEventListener('quick-filter-change', (e) => {
     source.setFilter(filterFromChips(e.detail.values));
   });
