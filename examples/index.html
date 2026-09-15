@@ -26,7 +26,15 @@
       <!-- data-type="view": the VIEW-level toolbar, so its action cluster gains
            the snapped [star | Save | caret] group. The records view's own
            toolbar is data type, and shows the cluster without it. -->
-      <sherpa-quick-filter-toolbar slot="filters" data-type="view"></sherpa-quick-filter-toolbar>
+      <!--
+        `data-reset-on-populate`: the header's filters belong to the VIEW, not to
+        the session. Each view populates this bar with its own set, and carrying
+        the last view's picks into the next would filter it by choices made
+        somewhere else — which is exactly what a saved view or a preset is meant
+        to decide for itself.
+      -->
+      <sherpa-quick-filter-toolbar slot="filters" data-type="view"
+                                   data-reset-on-populate></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
     <!-- The per-view content is fetched + injected here by the router. -->

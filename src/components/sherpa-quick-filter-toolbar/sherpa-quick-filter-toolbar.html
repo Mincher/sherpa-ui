@@ -8,6 +8,13 @@
 
   Two per-filter flags decide what a chip IS rather than how it looks:
 
+    data-reset-on-populate
+                populate() REPLACES the chips rather than amending them: a chip's
+                live picks do NOT survive it. For a bar whose filter set is owned
+                by something else — a saved view, a preset — where carrying the
+                last view's choices into the next one would filter it by the
+                wrong thing. Without it, live state survives a re-populate, which
+                is what stops adding one filter resetting every other.
     data-bounds a CSS selector for the region a chip's MENU must stay inside —
                 the app's content area, say. Passed to every menu this bar
                 stamps; without one they fall back to the viewport.

@@ -836,14 +836,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // — so adding or removing one filter reset every other chip's picks and its
     // on/off state. The live DOM is the only record of what the user has done
     // since; it has to survive the rebuild.
+    //
+    // …unless the caller is REPLACING the set rather than amending it. A view
+    // change hands the bar a whole new filter definition, and carrying the old
+    // picks into it would leave the new view filtered by the previous one's
+    // choices. `data-reset-on-populate` says the definition is the whole truth,
+    // which is what a saved view or a preset hands over.
     const live = new Map<string, { on: boolean; picked: Set<string> }>();
-    for (const chip of this.#chips()) {
-      const id = chip.dataset['id'];
-      if (!id) continue;
-      live.set(id, {
-        on: chip.hasAttribute('data-current'),
-        picked: new Set(this.#chipPicks(chip)),
-      });
+    if (!this.hasAttribute('data-reset-on-populate')) {
+      for (const chip of this.#chips()) {
+        const id = chip.dataset['id'];
+        if (!id) continue;
+        live.set(id, {
+          on: chip.hasAttribute('data-current'),
+          picked: new Set(this.#chipPicks(chip)),
+        });
+      }
     }
 
     list.replaceChildren();

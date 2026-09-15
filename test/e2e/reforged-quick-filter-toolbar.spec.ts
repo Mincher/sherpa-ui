@@ -1689,3 +1689,75 @@ test('a DATE chip names its whole range, day first, without truncating', async (
   }
   expect(r.fullValue).toBe(true);
 });
+
+/**
+ * data-reset-on-populate — the filter set is OWNED by the caller.
+ *
+ * A bar normally carries a chip's live picks across a re-populate, which is what
+ * stops adding one filter resetting every other. But a bar whose set belongs to
+ * something else — the app header, whose filters come from the VIEW — must not:
+ * carrying the last view's choices into the next filters it by decisions made
+ * somewhere else, and a saved view or a preset is meant to decide for itself.
+ */
+test('data-reset-on-populate drops live picks; without it they survive', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const run = async (reset: boolean): Promise<{ before: string[]; after: string[] }> => {
+      const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate(d: unknown): void;
+        pickedValues: Record<string, string[]>;
+      };
+      if (reset) el.setAttribute('data-reset-on-populate', '');
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+
+      const set = (label: string): unknown[] => [
+        {
+          id: 'region',
+          label,
+          select: 'multiple',
+          options: [
+            { value: 'emea', label: 'EMEA' },
+            { value: 'apac', label: 'APAC' },
+          ],
+        },
+      ];
+
+      el.populate(set('Region'));
+      await settle();
+
+      // The user picks a value.
+      const menu = el.shadowRoot!.querySelector('.chip[data-id="region"] sherpa-menu') as HTMLElement & {
+        rendered?: Promise<void>;
+        shadowRoot: ShadowRoot;
+      };
+      await menu.rendered;
+      const box = menu.querySelector<HTMLInputElement>('label:not(.qf-all) input')!;
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      (menu.shadowRoot.querySelector('.apply') as HTMLElement | null)?.click();
+      await settle();
+      const before = el.pickedValues['region'] ?? [];
+
+      // …and the caller populates again, as a view change does.
+      el.populate(set('Region'));
+      await settle();
+      return { before, after: el.pickedValues['region'] ?? [] };
+    };
+
+    return { resetting: await run(true), keeping: await run(false) };
+  });
+
+  // Both picked something to begin with, or the test proves nothing.
+  expect(r.resetting.before).toEqual(['emea']);
+  expect(r.keeping.before).toEqual(['emea']);
+
+  // WITH the flag the definition is the whole truth.
+  expect(r.resetting.after).toEqual([]);
+  // WITHOUT it the live state survives — which is what stops adding one filter
+  // resetting every other.
+  expect(r.keeping.after).toEqual(['emea']);
+});
