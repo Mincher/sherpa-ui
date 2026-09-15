@@ -1733,17 +1733,30 @@
   --sherpa-categorical-10: color-mix(in srgb, #8a8a9a 50%, transparent);
   --sherpa-data-viz-series-10: color-mix(in srgb, #8a8a9a 50%, transparent);
 
+    /* status by NAME — a chart paints several statuses at once and so
+       cannot pin a mode per status. The ramp mid, and the same at 50%. */
+  --sherpa-status-success-fill: color-mix(in srgb, #36de8c 50%, transparent);
+  --sherpa-status-success: #36de8c;
+  --sherpa-status-warning-fill: color-mix(in srgb, #ffc44c 50%, transparent);
+  --sherpa-status-warning: #ffc44c;
+  --sherpa-status-urgent-fill: color-mix(in srgb, #ff7300 50%, transparent);
+  --sherpa-status-urgent: #ff7300;
+  --sherpa-status-critical-fill: color-mix(in srgb, #dd2c01 50%, transparent);
+  --sherpa-status-critical: #dd2c01;
+  --sherpa-status-info-fill: color-mix(in srgb, #16abe2 50%, transparent);
+  --sherpa-status-info: #16abe2;
+
     /* series BORDER — colour 5 of the active sequence, held fixed */
   --sherpa-data-viz-series-border-1: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-2: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-3: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-4: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-5: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-6: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-7: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-8: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-9: var(--sherpa-theme-data-viz-sequential-purple-color-5);
-  --sherpa-data-viz-series-border-10: var(--sherpa-theme-data-viz-sequential-purple-color-5);
+  --sherpa-data-viz-series-border-2: var(--sherpa-theme-data-viz-sequential-phlox-color-5);
+  --sherpa-data-viz-series-border-3: var(--sherpa-theme-data-viz-sequential-turquoise-color-5);
+  --sherpa-data-viz-series-border-4: var(--sherpa-theme-data-viz-sequential-blue-green-color-5);
+  --sherpa-data-viz-series-border-5: var(--sherpa-theme-data-viz-sequential-blue-color-5);
+  --sherpa-data-viz-series-border-6: #a88d59;
+  --sherpa-data-viz-series-border-7: #a778b0;
+  --sherpa-data-viz-series-border-8: #c92e61;
+  --sherpa-data-viz-series-border-9: #00ac43;
+  --sherpa-data-viz-series-border-10: #8a8a9a;
   --sherpa-data-viz-series-border: var(--sherpa-theme-data-viz-sequential-purple-color-5);
   }
 

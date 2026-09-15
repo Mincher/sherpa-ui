@@ -165,16 +165,13 @@
    `[data-status]` blocks live in tokens.css, which is LIGHT-DOM ONLY: a custom
    property inherits across a shadow boundary but a SELECTOR does not, so a
    data-status set on an element INSIDE this shadow root never matched and every
-   swatch fell back to neutral grey. The tokens themselves are theme vars, which do
-   inherit in, so they can be named directly.
+   swatch fell back to neutral grey.
 
-   These are the same `border-<status>-2` tokens --_status-border-strong resolves
-   to, so a zone's key and its band agree. */
-.item[data-status="success"] .swatch { --_hue: var(--sherpa-theme-border-success-2, #36de8c); }
-.item[data-status="warning"] .swatch { --_hue: var(--sherpa-theme-border-warning-2, #ffc44c); }
-.item[data-status="critical"] .swatch { --_hue: var(--sherpa-theme-border-critical-2, #dd2c01); }
-.item[data-status="urgent"] .swatch { --_hue: var(--sherpa-theme-border-urgent-2, #ff7300); }
-.item[data-status="info"] .swatch { --_hue: var(--sherpa-theme-border-info-2, #008bba); }
+   The names are set INLINE by the TS now, from the same
+   `--sherpa-status-<name>-fill` / `--sherpa-status-<name>` pair a gauge band
+   uses — so a zone's key and the band it labels are painted from one source.
+   The CSS rules that lived here set `--_hue` to a SOLID colour, which also
+   overrode the 50% the fill is supposed to carry. */
 
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
   .swatch {

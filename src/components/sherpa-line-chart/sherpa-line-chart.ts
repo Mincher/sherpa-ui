@@ -182,6 +182,11 @@ export class SherpaLineChart extends SherpaElement {
           dot.style.setProperty('--_x', `${x}%`);
           dot.style.setProperty('--_y', `${y}%`);
           dot.style.setProperty('--_hue', hue);
+          // …and its BORDER. A dot lives in the .hotspots layer, OUTSIDE the <g>
+          // that carries the series' properties, so it inherits nothing — without
+          // this its `var(--_border, …)` fell through to the fallback and every
+          // dot painted the same grey.
+          dot.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
           // The anchor NAME on BOTH: the dot declares it, the tip points at it.
           dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
           tip.style.setProperty('--_anchor', `--line-${si}-${i}`);

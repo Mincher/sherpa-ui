@@ -25,7 +25,10 @@ import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.
 interface Zone {
   from: number;
   to: number;
+  /** The band's translucent FILL — the status sequence's mid step at 50%. */
   color: string;
+  /** Its SOLID outline — the same sequence's `border` variable. */
+  border: string;
   /** The band's bounds on the RAW scale, for its hover tooltip's label. */
   rawFrom: number;
   rawTo: number;
@@ -34,20 +37,21 @@ interface Zone {
 }
 
 /**
- * The status names a zone may be declared with, in the order the data-viz Status
- * palette re-points its series. `0-60:success` is series 1, `warning` series 2,
- * and so on — so a status name resolves to a POSITION, and the position picks the
- * hue, exactly as a donut slice picks its own.
+ * The status names a zone may be declared with.
  *
- * The colours themselves are NOT here. Every band reads
- * `--sherpa-data-viz-series-N` like any other chart mark; setting
- * `data-palette="status"` on the host re-points series 1-5 onto the status ramps
- * (@layer style in tokens.css, from the `Status` EXTENSION of Figma's Data Viz
- * collection). That is the whole point: a chart needs no status-aware colour code
- * of its own, and any other chart can speak status with the same one attribute.
+ * A status resolves to `--sherpa-status-<name>` — a variable NAMED for it, whose
+ * `-fill` companion is the same colour at the marks' 50%. Both come from the
+ * Status extension of Figma's Data Viz collection (@layer style in tokens.css).
  *
- * These used to be five hardcoded `--sherpa-theme-surface-<status>-2` vars — the
- * gauge naming ramps directly, which no other chart did and none could reuse.
+ * It used to resolve to `--sherpa-data-viz-series-N` by POSITION, on the reading
+ * that `data-palette="status"` re-pointed series 1-5 onto the five status ramps.
+ * That stopped being true when the palette became ONE STATUS PER SEQUENCE:
+ * sequence 1 is the whole green ramp, sequence 2 the whole amber one, so
+ * series 1..10 within a mode are ten steps of a SINGLE hue. A gauge painting
+ * success/warning/critical asked for series 1, 2 and 4 — three shades of green.
+ *
+ * A status is a MODE in that palette, and a gauge paints several at once, so it
+ * cannot pin one. Naming the colour is the way out.
  */
 const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
@@ -90,9 +94,10 @@ const SPAN_DEG = 180;
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  static override observed = [
-    'data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit',
-  ];
+  // ONE LINE, deliberately: the spec generator parses this declaration off a
+  // single line. Split across lines it reads only the first and the round-trip
+  // check then reports props the TS does not have.
+  static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit'];
 
   override onRender(): void {
     this.#sync();
@@ -202,6 +207,7 @@ export class SherpaGaugeChart extends SherpaElement {
         from: clamp(from),
         to: clamp(band.to),
         color: this.#zoneColour(band.color),
+        border: this.#zoneBorder(band.color),
         // Kept alongside the fractions: the tooltip names the band on the scale
         // the reader sees ("60–85"), not as a 0–1 fraction of it.
         rawFrom: from,
@@ -296,8 +302,14 @@ export class SherpaGaugeChart extends SherpaElement {
    * Anything else is taken as a raw CSS colour and passed through.
    */
   #zoneColour(name: string): string {
-    const i = STATUS_ORDER.indexOf(name as (typeof STATUS_ORDER)[number]);
-    return i === -1 ? name : `var(--sherpa-data-viz-series-${i + 1})`;
+    const known = (STATUS_ORDER as readonly string[]).includes(name);
+    return known ? `var(--sherpa-status-${name}-fill)` : name;
+  }
+
+  /** A status's SOLID colour, for the band's outline. */
+  #zoneBorder(name: string): string {
+    const known = (STATUS_ORDER as readonly string[]).includes(name);
+    return known ? `var(--sherpa-status-${name})` : name;
   }
 
   /**
@@ -343,10 +355,11 @@ export class SherpaGaugeChart extends SherpaElement {
       from: number;
       to: number;
       color: string | null;
+      border?: string;
       rest?: true;
       zone?: Zone;
     }> = zones.length
-      ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color, zone: z }))
+      ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color, border: z.border, zone: z }))
       : [{ from: 0, to: frac, color: null }];
 
     // The FILLER — one grey band over whatever the bands leave uncovered, so the
@@ -392,6 +405,9 @@ export class SherpaGaugeChart extends SherpaElement {
       // target, so it never claims a tooltip.
       if (band.rest) arc.dataset['rest'] = '';
       if (band.color) arc.style.setProperty('--_hue', band.color);
+      // The OUTLINE is the status sequence's own `border` — solid, where the fill
+      // is the same sequence's mid step at 50%.
+      if (band.border) arc.style.setProperty('--_border', band.border);
       host.appendChild(arc);
       // The remainder is chrome and names no zone, so it gets no hover dot.
       if (band.zone) drawn.push(band.zone);

@@ -163,10 +163,17 @@ export class SherpaChartLegend extends SherpaElement {
       entry.dataset['index'] = String(i);
       const swatch = entry.querySelector<HTMLElement>('.swatch')!;
       if (item.status) {
-        // A STATUS swatch. `data-status` on the entry lights the status cascade,
-        // and the swatch reads --_status-border-strong from it — the same token a
-        // sparkline's stroke uses, so a zone's key and its band agree.
+        // A STATUS swatch reads the SAME pair its band does —
+        // `--sherpa-status-<name>-fill` (the status sequence's mid step at 50%)
+        // and `--sherpa-status-<name>` (that sequence's border). A key that does
+        // not match the thing it labels is worse than no key.
+        //
+        // It used to light the `--_status-*` cascade via `data-status`, which is
+        // a different token set: the swatch and the gauge band it named were
+        // painted from two unrelated sources and drifted apart.
         entry.dataset['status'] = item.status;
+        swatch.style.setProperty('--_hue', `var(--sherpa-status-${item.status}-fill)`);
+        swatch.style.setProperty('--_border', `var(--sherpa-status-${item.status})`);
       } else {
         // The series hue by 1-based index, wrapping at the palette size.
         swatch.style.setProperty('--_hue', seriesVar(i, item.colorIndex));

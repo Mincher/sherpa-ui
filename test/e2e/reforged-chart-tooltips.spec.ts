@@ -233,18 +233,22 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
   expect(r.tips).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
   // A status name picks a data-viz series BY POSITION — success → series 1,
   // warning → 2, urgent → 3, critical → 4, info → 5 — which is the same variable
-  // a donut slice uses. `data-palette="status"` on an ancestor is what re-points
-  // those five onto the status ramps (tokens.css), so one attribute switches a
-  // chart between categorical hues and status colours without the component
-  // knowing either set.
+  // its own sequence. A status is a MODE in the Status palette — sequence 1 is
+  // the whole green ramp, sequence 2 the whole amber one — so a status cannot be
+  // a series INDEX: series 1..10 within a mode are ten steps of ONE hue.
   //
-  // NOT `--sherpa-style-surface-*`: that set is status-MODED — one [data-status]
-  // pin re-points the whole set and it has no per-status names — so a gauge
-  // painting several statuses at once could never use it.
+  // It used to read `--sherpa-data-viz-series-N` by position, on the earlier
+  // reading that the palette re-pointed series 1-5 onto the five status ramps.
+  // A gauge painting success/warning/critical then asked for series 1, 2 and 4 —
+  // three shades of green.
+  //
+  // A gauge paints several statuses at once and so cannot pin a mode, which is
+  // why the status is NAMED. The `-fill` is that sequence's mid step at 50%; the
+  // bare name is its border, solid.
   expect(r.hues).toEqual([
-    'var(--sherpa-data-viz-series-1)',
-    'var(--sherpa-data-viz-series-2)',
-    'var(--sherpa-data-viz-series-4)',
+    'var(--sherpa-status-success-fill)',
+    'var(--sherpa-status-warning-fill)',
+    'var(--sherpa-status-critical-fill)',
   ]);
   expect(r.outsideClip).toBe('gauge-wrap');
 });

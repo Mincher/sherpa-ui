@@ -936,6 +936,24 @@ const seriesBorderLines = [];
     }
   }
 
+  // The BORDER per series, from that series' OWN sequence.
+  //
+  // The `border` leaf carries one value per MODE, and the generic leaf emit gives
+  // only the primary mode — so every series got a PURPLE outline while its fill
+  // came from its own ramp. The per-mode values are collected the same way the
+  // picks are, and Set 2 supplies the second five.
+  const borderByMode = new Map();
+  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
+    if (!/(^|\/)border$/.test(leaf.rawPath)) continue;
+    for (const mode of modeNames) {
+      const raw = leaf.modes?.[mode];
+      if (raw != null) borderByMode.set(mode, toCss(raw, leaf.type));
+    }
+  }
+  const borders = modeNames.map((m) => borderByMode.get(m)).filter((v) => v != null);
+  const set2Border = extDoc['data-viz-set-2']?.vars?.['data-viz/border'];
+  if (set2Border) for (const mode of Object.keys(set2Border)) borders.push(set2Border[mode]);
+
   for (const [n, v] of hues) {
     const pick = picks[n - 1] ?? v;
     categoricalLines.push(`  --sherpa-categorical-${n}: ${pick};`);
@@ -945,9 +963,11 @@ const seriesBorderLines = [];
     // chart came out monochrome. A chart that genuinely wants one ramp sets
     // [data-palette] and gets the sequential reading back.
     categoricalLines.push(`  --sherpa-data-viz-series-${n}: ${pick};`);
-    // One border per series name, so a chart can ask for its own index without
-    // knowing how the borders happen to be wired.
-    if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${border};`);
+    // Each series' border comes from its OWN sequence — the same ramp its fill
+    // does — so a phlox slice is outlined in phlox, not in the primary mode's
+    // purple.
+    const bor = borders[n - 1] ?? border;
+    if (bor != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${bor};`);
   }
   if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border: ${border};`);
   if (!hues.length) warn('data-viz: no series/N leaves found in the dump');
@@ -972,6 +992,7 @@ const seriesBorderLines = [];
 // series-*` aliases are re-pointed, because charts consume whichever they were
 // written against.
 const paletteBlocks = [];
+const statusSeriesLines = [];
 for (const slug of ['data-viz-status', 'data-viz-set-2']) {
   const cache = extDoc[slug]?.vars;
   const palette = slug.replace(/^data-viz-/, '');
@@ -1003,6 +1024,35 @@ for (const slug of ['data-viz-status', 'data-viz-set-2']) {
     lines.sort((a, b) => idx(a) - idx(b) || a.localeCompare(b));
     if (lines.length) {
       paletteBlocks.push(`  [data-palette="${palette}"] {\n${lines.join('\n')}\n  }`);
+    }
+
+    // STATUS gets one more thing: a variable NAMED for each status.
+    //
+    // Its five sequences ARE the five statuses — sequence 1 is the whole green
+    // ramp, 2 amber, and so on — so a status is a MODE here, not a series index.
+    // A gauge paints several statuses at once and cannot pin five modes, so it
+    // needs to name a colour directly: `--sherpa-status-<name>` is that ramp's
+    // mid (its `border`), and `-fill` is the same at the marks' 50%.
+    //
+    // These live OUTSIDE the [data-palette] block — a chart names a status
+    // whether or not it has opted into the palette.
+    if (slug === 'data-viz-status') {
+      const order = ['success', 'warning', 'urgent', 'critical', 'info'];
+      // FILL = the sequence's MID step (series 5); BORDER = the `border`
+      // variable. Both are read from the status's own sequence, so the pair
+      // stays correct if a ramp is ever re-pointed.
+      const midRow = cache['data-viz/series/5'] ?? {};
+      const borderRow = cache['data-viz/border'] ?? {};
+      order.forEach((status, i) => {
+        const mode = `sequence ${i + 1}`;
+        const mid = midRow[mode];
+        const bor = borderRow[mode];
+        if (mid != null) {
+          statusSeriesLines.push(
+            `  --sherpa-status-${status}-fill: color-mix(in srgb, ${mid} 50%, transparent);`);
+        }
+        if (bor != null) statusSeriesLines.push(`  --sherpa-status-${status}: ${bor};`);
+      });
     }
   }
 }
@@ -1504,6 +1554,11 @@ const styleVars = [
   '',
   '    /* data-viz series — stable public names */',
   ...categoricalLines,
+  ...(statusSeriesLines.length
+    ? ['', '    /* status by NAME — a chart paints several statuses at once and so',
+       '       cannot pin a mode per status. The ramp mid, and the same at 50%. */',
+       ...statusSeriesLines]
+    : []),
   ...(seriesBorderLines.length
     ? ['', '    /* series BORDER — colour 5 of the active sequence, held fixed */',
        ...seriesBorderLines]

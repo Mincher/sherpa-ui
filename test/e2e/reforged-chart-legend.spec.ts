@@ -46,10 +46,11 @@ test('renders a row per item with label + value and categorical swatches', async
   // Both must RESOLVE: an undefined custom property paints nothing, with no error.
   expect(r.ring1).not.toBe('rgb(0, 0, 0)');
   expect(r.ring5).not.toBe('rgb(0, 0, 0)');
-  // The rings MATCH, and that is the design: every series in a chart shares ONE
-  // border — colour 5 of the active sequence. The fills differ, the outline does
-  // not. It is the ramp's identity, not the series'.
-  expect(r.ring1).toBe(r.ring5);
+  // Each series is outlined in its OWN sequence's border — colour 5 of the ramp
+  // its fill comes from — so two different series have two different rings. They
+  // briefly all shared one: the projector read the `border` leaf's PRIMARY mode
+  // only, so every mark was outlined in purple whatever its fill.
+  expect(r.ring1).not.toBe(r.ring5);
   // …and the ring is SOLID, where the fill is translucent.
   expect(r.ring1).not.toMatch(/\/ 0\./);
   // The TOKEN's 50%, not a component tint — the swatch adds none of its own.

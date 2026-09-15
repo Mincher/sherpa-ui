@@ -100,7 +100,7 @@ props:
     name: data-label
     type: string
     kind: content
-    description: centre value label
+    description: the MIDPOINT tick above the arc. Defaults to the middle of the
   - $type: prop
     name: data-max
     type: string
@@ -124,6 +124,11 @@ props:
       - info
     description: critical | warning | success | info  (single-colour fill)
   - $type: prop
+    name: data-unit
+    type: string
+    kind: content
+    description: suffix for all three scale ticks, e.g. "%" → 0% / 50% / 100%
+  - $type: prop
     name: data-value
     type: string
     kind: content
@@ -136,6 +141,12 @@ props:
       threshold bands — "0-50:success,50-80:warning,80-100:critical" (compact) OR a JSON array
       [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info)
       or any CSS colour. Omit for the single-colour sweep.
+  - $type: prop
+    name: scale
+    type: string
+    description: >-
+      it is a TICK, like min and max, not the reading. It sits at the top centre of the arc, which
+      is the halfway point; the NEEDLE is what reports the value.
 states:
   - $type: state
     name: vertical

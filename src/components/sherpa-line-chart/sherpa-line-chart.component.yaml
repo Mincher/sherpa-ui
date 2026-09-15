@@ -82,7 +82,7 @@ props:
   - $type: prop
     name: data-axis-label
     type: string
-    kind: content
+    kind: style
     description: y-axis caption (shown when set)
   - $type: prop
     name: data-label
@@ -116,7 +116,7 @@ props:
   - $type: prop
     name: data-x-axis-label
     type: string
-    kind: content
+    kind: style
     description: x-axis caption (shown when set)
 states:
   - $type: state
@@ -172,8 +172,8 @@ tokens:
   axis-label.font-weight: "{sherpa.font-weight-regular}"
   axis-label.line-height: "{sherpa.theme-content-line-height-base}"
   axis-label-x.margin-block-start: "{sherpa.display-mode-space-2xs}"
-  hotspot.inline-size: "{sherpa.display-mode-size-base}"
-  hotspot.block-size: "{sherpa.display-mode-size-base}"
+  hotspot.inline-size: "{sherpa.display-mode-size-sm}"
+  hotspot.block-size: "{sherpa.display-mode-size-sm}"
 $extensions:
   sherpa:
     figmaName: Data Field
