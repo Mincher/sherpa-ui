@@ -414,13 +414,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
-      // A DATE chip's remove is a FOOTER BUTTON, not a row — a calendar menu
-      // has no list for a row to sit in. It sits after Today and emits the same
-      // menu-select value="remove", so #onMenuSelect catches both shapes. Gated
-      // on the SAME opt-in as the row, so the two shapes agree.
-      if (chip.classList.contains('chip') && def.removable && !def.persistent) {
-        menu.setAttribute('data-removable', '');
-      }
+      this.#addRemove(chip, menu, def);
       chip.setAttribute('data-menu', '');
       chip.appendChild(menu);
       return;
@@ -457,34 +451,38 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu.appendChild(row);
     }
 
-    this.#addRemoveRow(chip, menu, def);
+    this.#addRemove(chip, menu, def);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
   }
 
   /**
-   * Give a chip's menu its "Remove filter" row.
+   * Give a chip's menu its "Remove filter" action — a FOOTER BUTTON.
+   *
+   * It was a row at the foot of the list for value chips and a footer button
+   * for date chips, because a calendar menu has no list for a row to sit in.
+   * One action in two places is one action too many: the button is the shape
+   * that works for both, it never scrolls away with a long list, and it sits
+   * with the menu's other actions rather than among the values.
    *
    * FILTER chips only, and only those the definition marks `removable`. Not the
    * organise chips (Group and Sort are fixed parts of the bar, not filters a
    * user put there), not the Add chip itself (whose menu IS the list of things
    * to add), and not a chip the host did not say may go.
    *
-   * The flag is OPT-IN rather than opt-out because the row DELETES the chip: the
-   * safe default when a host says nothing is to keep it. The view chip is the
-   * case this exists for — it is persistent, so removing it would leave the page
-   * in a state it has no way to be in.
+   * The flag is OPT-IN rather than opt-out because it DELETES the chip: the safe
+   * default when a host says nothing is to keep it. The view chip is the case
+   * this exists for — it is persistent, so removing it would leave the page in a
+   * state it has no way to be in.
    *
-   * Shared rather than written inline because BOTH menu shapes need it — a
-   * value menu and a date menu — and the date branch returns early, which is
-   * exactly how it came to be missing from date chips.
+   * The menu's own footer button emits the same `menu-select` with
+   * value="remove" that the row did, so #onMenuSelect is unchanged.
    */
-  #addRemoveRow(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
+  #addRemove(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
     if (!chip.classList.contains('chip')) return;
     if (!def.removable || def.persistent) return;
-    const remove = this.clone('template.qf-remove-tpl');
-    if (remove) menu.appendChild(remove);
+    menu.setAttribute('data-removable', '');
   }
 
   /**

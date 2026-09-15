@@ -231,11 +231,26 @@
 .remove { display: none; }
 .footer-spacer { display: none; }
 
-/* A calendar menu has no ROWS, so the "Remove filter" action row a value menu
-   carries in its list has nowhere to live — it becomes a footer button instead,
-   after Today. Opt-in, because only a chip that can be taken off the bar has
-   anything to remove. */
+/* "Remove filter" is a FOOTER BUTTON for every menu shape, not a row in the
+   list. A calendar has no list for a row to sit in, and a row at the foot of a
+   long list scrolls away from the action it belongs beside. Opt-in, because only
+   a chip that can be taken off the bar has anything to remove. */
 :host([data-removable]) .remove { display: inline-flex; }
+
+/* The CRITICAL ink, set here rather than left to the status cascade.
+   `data-status="critical"` on the button emits --_status-* from a bare
+   `[data-status]` rule in tokens.css, and a bare attribute rule in the token
+   sheet reaches the DOCUMENT only — it never applies inside a shadow root. The
+   button read the default near-black instead of the destructive red. Setting
+   the custom properties on the element itself is the sanctioned way across that
+   boundary: the button's own fallback chain picks them up unchanged.
+
+   Only the ink and the border. Removing a filter is destructive but it is not an
+   alarm, so the button keeps the footer's own surface rather than filling red. */
+.remove {
+  --_status-text: var(--sherpa-theme-content-critical-1, #b72200);
+  --_status-border: var(--sherpa-theme-border-critical-2, #dd2c01);
+}
 
 :host([data-clearable]) .clear { display: inline-flex; }
 

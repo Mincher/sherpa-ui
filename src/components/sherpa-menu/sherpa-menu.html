@@ -30,8 +30,7 @@
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
     data-removable  show a "Remove filter" button in the footer (after Today);
-                    it emits menu-select with value="remove", exactly as the
-                    action ROW of the same name does
+                    it emits menu-select with value="remove"
     data-clearable  show a Clear button in the footer that empties the selection
                     (a CALENDAR menu shows Today there instead — see the footer)
     data-type     list (default) | calendar — the Menu set's own `Type` axis.
@@ -155,15 +154,19 @@
       <!--
         REMOVE FILTER — a footer button, after Today, on the left side.
 
-        A calendar menu has no rows, so it had nowhere to put the "Remove
-        filter" ACTION row a value menu carries in its list. Sitting it in the
-        footer beside Today is what gives a date chip a way off the bar.
+        This was an action ROW at the foot of the list for a value menu and a
+        footer button for a calendar (which has no list for a row to sit in).
+        One action in two places is one too many: the button is the shape that
+        works for both, it never scrolls away with a long list, and it sits with
+        the menu's other actions rather than among the values.
 
-        It emits the SAME `menu-select` with value="remove" the row does, so the
-        toolbar's existing handler catches it either way and nothing downstream
-        has to know which shape the menu is.
+        `data-status="critical"` because it DELETES the chip. The status cascade
+        carries the destructive ink through the button's own tokens, which is
+        how the system says "this one is not a value pick" everywhere else.
+
+        It emits `menu-select` with value="remove".
       -->
-      <sherpa-button class="remove" part="remove"
+      <sherpa-button class="remove" part="remove" data-status="critical"
                      data-icon-start="fa-solid fa-xmark">Remove filter</sherpa-button>
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <span class="footer-spacer"></span>

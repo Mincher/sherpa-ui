@@ -710,10 +710,12 @@ test('the view chip offers no remove, defaults to its first option, and never go
       viewEmpty: view.hasAttribute('data-empty'),
       // The bar reports it like any other applied filter.
       values: JSON.parse(JSON.stringify(el.values)),
+      // "Remove filter" is a FOOTER BUTTON on the chip's menu now, not a row in
+      // its list — so the offer is the menu's own data-removable flag.
       remove: {
-        view: !!view.querySelector('.qf-remove'),
-        plan: !!chip('plan').querySelector('.qf-remove'),
-        region: !!chip('region').querySelector('.qf-remove'),
+        view: !!view.querySelector('sherpa-menu[data-removable]'),
+        plan: !!chip('plan').querySelector('sherpa-menu[data-removable]'),
+        region: !!chip('region').querySelector('sherpa-menu[data-removable]'),
       },
     };
   }, MOUNT);
@@ -825,11 +827,14 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     await apply(add);
     const afterAdd = { chips: chips(), offered: offered() };
 
-    // …then take one back off through its own menu's "Remove filter" row.
+    // …then take one back off through its own menu's "Remove filter" BUTTON,
+    // which lives in the menu's footer (shadow DOM), not in the chip's list.
     const health = sr.querySelector('.chip[data-id="health"]') as HTMLElement;
-    const removeRow = health.querySelector('.qf-remove') as HTMLElement;
-    const removeLabel = removeRow.textContent!.trim();
-    removeRow.click();
+    const healthMenu = health.querySelector('sherpa-menu')!;
+    await (healthMenu as unknown as { rendered: Promise<void> }).rendered;
+    const removeBtn = healthMenu.shadowRoot!.querySelector('.remove') as HTMLElement;
+    const removeLabel = removeBtn.textContent!.trim();
+    removeBtn.click();
     await new Promise((res) => setTimeout(res, 200));
 
     return { menuShape, afterAdd, removeLabel, afterRemove: { chips: chips(), offered: offered() } };
@@ -899,7 +904,9 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
     const afterAdd = snap();
 
     // …and REMOVE a different one.
-    (sr.querySelector('.chip[data-id="region"] .qf-remove') as HTMLElement).click();
+    const regionMenu = sr.querySelector('.chip[data-id="region"] sherpa-menu')!;
+    await (regionMenu as unknown as { rendered: Promise<void> }).rendered;
+    (regionMenu.shadowRoot!.querySelector('.remove') as HTMLElement).click();
     await new Promise((res) => setTimeout(res, 200));
     const afterRemove = snap();
 
