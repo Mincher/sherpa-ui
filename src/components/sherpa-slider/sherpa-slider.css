@@ -25,6 +25,14 @@
   initial-value: 0%;
 }
 
+/* The START of the fill. 0 in single mode, so `.fill` runs from the rail's head
+   to --_pct exactly as it always did and the single-value path is unchanged. */
+@property --_pct-start {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 0%;
+}
+
 :host {
   display: flex;
   flex-direction: column;
@@ -39,6 +47,7 @@
   --_thumb: var(--sherpa-display-mode-size-sm, 16px);
   --_rail: var(--sherpa-display-mode-space-2xs, 4px);
   --_pct: 0%;
+  --_pct-start: 0%;
 }
 
 /* ── Head: label ───────────────────────────────────────────────────── */
@@ -95,7 +104,10 @@
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
-:host([data-show-value]) .value-input { display: block; }
+:host([data-show-value]) .value-end { display: block; }
+/* The START field exists only in a range. A single slider has one value, and an
+   empty box beside it would read as a second one that failed to fill. */
+:host([data-type="range"][data-show-value]) .value-start { display: block; }
 :host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
 :host([disabled]) .value-input {
   pointer-events: none;
@@ -121,9 +133,13 @@
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   overflow: hidden;
 }
+/* The filled span. `margin-inline-start` offsets it to the range's start and the
+   width is what is left, so ONE element serves both modes: in single mode the
+   start is 0 and this is the old "fill from the head" behaviour exactly. */
 .fill {
   block-size: 100%;
-  inline-size: var(--_pct, 0%);
+  margin-inline-start: var(--_pct-start, 0%);
+  inline-size: calc(var(--_pct, 0%) - var(--_pct-start, 0%));
   background: var(--_accent);
   border-radius: inherit;
 }
@@ -183,3 +199,33 @@
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+
+/* ── Range mode: two thumbs on one track ─────────────────────────────
+ * There is no native two-thumb range input, so range mode stacks TWO of them on
+ * the same rail and gives each one end. That buys the browser's own dragging,
+ * keyboard stepping and a11y for both thumbs instead of re-implementing them.
+ *
+ * The catch is that a stacked input covers the whole track, so the one painted
+ * on top would swallow every click — including clicks nearer the other thumb.
+ * `pointer-events: none` on the input with `auto` on its THUMB is the fix: only
+ * the 16px handles are hittable, and the bare rail belongs to neither.
+ */
+.range-end { display: none; }
+
+:host([data-type="range"]) .range,
+:host([data-type="range"]) .range-end {
+  /* Both inputs occupy the same box. The first is in flow; the second is pulled
+     back over it, so the two rails coincide exactly and a percentage means the
+     same position on either. */
+  pointer-events: none;
+}
+:host([data-type="range"]) .range-end {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+}
+
+:host([data-type="range"]) .range::-webkit-slider-thumb,
+:host([data-type="range"]) .range-end::-webkit-slider-thumb { pointer-events: auto; }
+:host([data-type="range"]) .range::-moz-range-thumb,
+:host([data-type="range"]) .range-end::-moz-range-thumb { pointer-events: auto; }

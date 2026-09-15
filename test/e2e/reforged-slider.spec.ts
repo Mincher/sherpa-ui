@@ -144,7 +144,10 @@ test('data-show-value reveals an editable value input; typing updates the slider
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const field = el.shadowRoot!.querySelector('.value-input') as HTMLInputElement;
+    // `.value-end`, not `.value-input`: range mode added a SECOND field before
+    // the track, so the bare class now matches two and querySelector would take
+    // the start one — which single mode keeps hidden.
+    const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
     const visible = getComputedStyle(field).display !== 'none';
     const initial = field.value;
 
@@ -172,7 +175,10 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
     el.setAttribute('data-show-value', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const field = el.shadowRoot!.querySelector('.value-input') as HTMLInputElement;
+    // `.value-end`, not `.value-input`: range mode added a SECOND field before
+    // the track, so the bare class now matches two and querySelector would take
+    // the start one — which single mode keeps hidden.
+    const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
     field.value = '999';
     field.dispatchEvent(new Event('change', { bubbles: true }));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -180,4 +186,120 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
   });
   expect(r.fieldValue).toBe('50'); // snapped to max
   expect(r.hostValue).toBe('50');
+});
+
+/**
+ * RANGE mode — two thumbs on one rail.
+ *
+ * There is no native two-thumb range input, so range mode stacks TWO of them and
+ * gives each one end. The browser's own dragging, keyboard stepping and a11y
+ * then come free for both thumbs.
+ */
+test('data-type="range" draws two thumbs, two fields, and a fill between them', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-slider') as HTMLElement & {
+      rendered?: Promise<void>;
+      range: [number, number];
+    };
+    el.setAttribute('data-type', 'range');
+    el.setAttribute('data-show-value', '');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
+    el.setAttribute('value-start', '20');
+    el.setAttribute('value-end', '70');
+    el.style.inlineSize = '400px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const shown = (sel: string): boolean =>
+      getComputedStyle(sr.querySelector(sel)!).display !== 'none';
+    const cs = getComputedStyle(el);
+
+    return {
+      range: el.range,
+      // The fill is ONE element offset to the range's start — in single mode the
+      // start is 0 and it is the old "fill from the head" behaviour exactly.
+      pctStart: cs.getPropertyValue('--_pct-start').trim(),
+      pct: cs.getPropertyValue('--_pct').trim(),
+      secondThumb: shown('.range-end'),
+      startField: shown('.value-start'),
+      endField: shown('.value-end'),
+      // Both inputs carry the SAME bounds, so a percentage means the same
+      // position on either rail and the two thumbs compare directly.
+      bounds: [sr.querySelector<HTMLInputElement>('.range')!.max,
+               sr.querySelector<HTMLInputElement>('.range-end')!.max],
+    };
+  });
+
+  expect(r.range).toEqual([20, 70]);
+  expect(r.pctStart).toBe('20%');
+  expect(r.pct).toBe('70%');
+  expect(r.secondThumb).toBe(true);
+  expect(r.startField).toBe(true);
+  expect(r.endField).toBe(true);
+  expect(r.bounds).toEqual(['100', '100']);
+});
+
+test('the range ends clamp against each other and always read low-first', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-slider') as HTMLElement & {
+      rendered?: Promise<void>;
+      range: [number, number];
+    };
+    el.setAttribute('data-type', 'range');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
+    el.setAttribute('value-start', '20');
+    el.setAttribute('value-end', '70');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const drag = async (sel: string, to: number): Promise<void> => {
+      const input = sr.querySelector<HTMLInputElement>(sel)!;
+      input.value = String(to);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    };
+
+    const events: unknown[] = [];
+    el.addEventListener('change', (e) => events.push((e as CustomEvent).detail));
+
+    // Push the LOW thumb past the high one.
+    await drag('.range', 90);
+    const lowPushed = el.range;
+    // …and the HIGH thumb below the low one.
+    await drag('.range-end', 5);
+    const highPushed = el.range;
+
+    // Writing the property out of order comes back ordered.
+    el.range = [90, 30];
+    const written = el.range;
+
+    // A commit reports BOTH ends, not one value.
+    sr.querySelector<HTMLInputElement>('.range-end')!.value = '80';
+    sr.querySelector<HTMLInputElement>('.range-end')!.dispatchEvent(
+      new Event('change', { bubbles: true }),
+    );
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return { lowPushed, highPushed, written, events };
+  });
+
+  // CLAMP, not swap: dragging the low thumb past the high one stops it there.
+  // Swapping would hand the user a thumb they are no longer holding, and the
+  // pointer would carry on moving the other end.
+  expect(r.lowPushed).toEqual([70, 70]);
+  expect(r.highPushed).toEqual([70, 70]);
+
+  // Ordered whichever way it is written — a range whose start is above its end
+  // is not a range, and every consumer would have to sort it again.
+  expect(r.written).toEqual([30, 90]);
+
+  expect(r.events).toEqual([{ start: 30, end: 80 }]);
 });

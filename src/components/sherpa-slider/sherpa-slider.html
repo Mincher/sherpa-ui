@@ -14,9 +14,20 @@
     value            — current value (native)
     data-show-value  — show the editable value input beside the track (boolean)
     data-value-readonly — make the value display read-only (no typing)
+    data-type        — single (default) | range — two thumbs and two value fields
+    value-start / value-end — the range ends (data-type="range" only)
     disabled         — disabled state
 
-  Events: input (while dragging / typing), change (on commit) — detail { value }.
+  Events: input (while dragging / typing), change (on commit).
+    single: detail { value }
+    range:  detail { start, end }
+
+  RANGE is two native <input type="range">s stacked on one track, not one input
+  with two thumbs — there is no such native control. Each owns one end, so the
+  browser's own dragging, keyboard stepping and a11y come free for both, and the
+  fill is drawn between them from two percentages. The inputs are laid over each
+  other and CSS gives pointer events to the THUMBS only, so a click on bare track
+  never lands on the input that happens to be on top.
 -->
 <template id="default">
   <div class="head">
@@ -24,14 +35,22 @@
   </div>
 
   <div class="slider-row">
+    <!-- The START field. Hidden outside range mode; CSS owns that. -->
+    <input class="value-input value-start" part="value-start" type="number"
+           inputmode="decimal" aria-label="Minimum" />
+
     <div class="track-area">
       <div class="track" part="track">
         <div class="fill" part="fill"></div>
       </div>
       <input class="range" id="slider-range" type="range" part="range" />
+      <!-- The second thumb. Present always, revealed by CSS in range mode, so
+           there is no createElement and no template switch. -->
+      <input class="range range-end" type="range" part="range-end"
+             aria-label="Maximum" />
     </div>
 
-    <input class="value-input" part="value" type="number"
+    <input class="value-input value-end" part="value" type="number"
            inputmode="decimal" aria-label="Value" />
   </div>
 </template>
