@@ -1,12 +1,14 @@
 # The Data Layer — plan
 
-Branch `sherpa-data-layer`. **Steps 1–4 are DONE** (see the order of work); 5 onward is plan.
+Branch `sherpa-data-layer`. **Part 1 is DONE** except the low-priority `delegate()`; Part 2 onward is plan.
 
 Three jobs:
 
 1. **Consolidate `SherpaElement`** — absorb the plumbing 31 components copy by hand.
 2. **Add a data layer** — one place that owns filter / sort / group / page, so the
-   grid, the toolbar and the app cannot disagree about them.
+   grid, the toolbar and the app cannot disagree about them, and so MANY components
+   can bind to ONE source: a sort set in a toolbar moves the grid's column header, a
+   filter set in an app header re-populates every chart on a dashboard.
 3. **Add validation** — one rule set for all five data sources, translated to the
    platform's own validity mechanism at the edge.
 
@@ -457,6 +459,114 @@ grid" stops being possible by construction.
 `sherpa-container` already has `data-loading` plus slot-driven empty/error states, so
 a bound source can drive those three states with no new CSS.
 
+## The real prize: many components, one source
+
+This is the capability the whole layer exists for, and it is worth stating plainly
+because it is bigger than "less code".
+
+### What it looks like today
+
+[`records.js:305`](../examples/views/records.js#L305) and
+[`records.js:332`](../examples/views/records.js#L332) are **two handlers for the same
+event**, doing the same thing, because the sort can arrive from two places:
+
+```js
+grid.addEventListener('sort-change', (e) => { sort = {…}; render(); });
+// …26 lines later…
+qft.addEventListener('sort-change', (e) => { sort = {…}; page = 1; render(); });
+```
+
+The comment beside the second one says the quiet part out loud:
+
+> Same event the grid's own header sort fires, so both routes land on one piece of
+> state and cannot disagree.
+
+The app is holding them together **by hand**. And it only half works — setting the
+sort from the toolbar never tells the grid, so the grid's own header arrow keeps
+showing the old column. That is exactly the backlog's known issue.
+
+The dashboard has the same shape at a larger scale: **11 separate `populate()` calls**
+in [`dashboard.js`](../examples/views/dashboard.js), each fed by hand. Filtering
+"last 30 days" from the app header would mean re-deriving and re-feeding all eleven.
+
+### What a shared source makes possible
+
+```js
+const customers = new DataSource({ store: new ArrayStore(rows), pageSize: 25 });
+
+customers.bind(grid);     // rows in, sort/group/filter out
+customers.bind(toolbar);  // chips in, sort/group/filter out
+customers.bind(pager);    // page in, total out
+```
+
+The two sort routes become one because there is only one place the sort lives. The
+grid's header arrow and the toolbar's Sort chip are both **views of the same value** —
+change either and both redraw. No `render()` to remember to call.
+
+The dashboard case is the same mechanism, fanned wider:
+
+```js
+const sales = new DataSource({ store: new ArrayStore(orders) });
+sales.bind(header);       // the date-range / segment filter writes here
+sales.bind(revenueChart); // …and every visualisation
+sales.bind(regionDonut);  // …re-populates from the SAME filtered rows
+sales.bind(topTable);
+```
+
+One filter change, eleven components updated, zero wiring per component.
+
+### Binding is TWO-WAY, and that is the point
+
+A bound component both **reads** and **writes**:
+
+| Direction | How | Example |
+|---|---|---|
+| source → component | `populate()` + `data-*` writes | rows, `data-sort-field`, `data-page` |
+| component → source | its existing `noun-verb` events | `sort-change`, `quick-filter-change`, `page-change` |
+
+Both halves already exist. The events are ratified and composed; the attributes are
+the standard names in [`CLAUDE.md`](../CLAUDE.md) — `data-sort-field`,
+`data-sort-direction`, `data-group-field`. **No component needs a new API.**
+
+This is also where `static props` pays off a second time. A `kind: style` attribute
+is declared and observable, so a source can write `data-sort-direction` onto the grid
+and the header arrow re-draws through CSS — no JS branch, exactly the "JS tells CSS
+about a data change" path the declaration was for.
+
+### Shared ATTRIBUTES, not just shared rows
+
+Two components bound to one source share more than the data:
+
+- **sort** — the toolbar's Sort chip and the grid's column header
+- **group** — the Group chip and the grid's `data-group-field`
+- **page** — the pager and the grid's visible slice
+- **filters** — the chips, and every chart reading the same rows
+- **selection** — a grid's checkboxes and a toolbar's "3 selected" action bar
+- **loading / empty / error** — every bound `sherpa-container` at once
+
+### Scoping: not everything shares everything
+
+A dashboard filter should reach every chart; a grid's page should not reach a
+sparkline. Two mechanisms, and the smaller one is usually right:
+
+1. **Separate sources.** Two `DataSource`s over the same store share the records but
+   not the view state. This is the default answer.
+2. **A scoped bind** — `source.bind(el, { reads: ['rows'], writes: [] })` — for a
+   component that should see the data but not steer it. A read-only chart beside a
+   steering grid is the case.
+
+`DataSource` extends `EventTarget`, so "notify every bound component" is the platform's
+own `dispatchEvent`, not a subscriber list to write.
+
+### The precedent is already in the repo
+
+[`render-view.ts:120`](../src/core/render-view.ts#L120) already implements exactly this
+shape: a `StateStore` where a write at a JSON pointer re-runs **every subscriber whose
+pointer overlaps**, and `renderView` binds `$state` references to `populate()`
+reactively. The fan-out model is proven here; `DataSource` is that idea applied to
+records rather than to a view blob, and the two should share the mechanism rather than
+grow a second one.
+
 ## What shrinks
 
 | File | Now | Why |
@@ -874,15 +984,17 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 | **3** ✅ | `clone()` | **DONE** `f7fa5fc3` — the 4 asserted sites; loop sites left alone |
 | **4** ✅ | `icon()` | **DONE** `fffab02b` — as `as: 'icon'` on a prop; 4 components had no FA branch |
 | 5 | `delegate()` | **RE-SCOPED — low priority.** Its bug is already fixed by step 1; see 1.5 |
-| 6 | `renderList()` | **best remaining Part-1 item** — ~96 lines, kills the last 12 `!` assertions |
+| **6** ✅ | `renderList()` | **DONE** `205a318c` — 6 components; 4 tried and left hand-written |
 | 7 | **V1** `validate.ts` — `Result`/`Issue` + the rule set | a prerequisite for step 10 |
 | 8 | **V2** accept a Standard Schema object | zero-dependency Zod/Valibot support |
 | 9 | `Store` + `ArrayStore` + `DataSource` | the core |
+| 9a | **`bind()` — two-way, many components per source** | the capability the layer exists for; see "The real prize" |
 | 10 | **V5** validate on the store | a bad response or `insert` must not reach the UI |
 | 11 | `JsonStore`, `RestStore`, `LocalStore` | remote + persistence |
 | 12 | **V3 + V4** `formAssociated` + `data-rules` | the form half; independent of 9–11 |
 | 13 | **V6** ARIA wiring | `aria-invalid` + `aria-describedby` (NOT `role="alert"` per field) |
-| 14 | Rewire `records.js` | proves it on the hardest real view |
+| 14 | Rewire `records.js` | proves ONE source steering grid + toolbar + pager |
+| 14a | Rewire `dashboard.js` | proves ONE filter fanning out to 11 visualisations |
 | 15 | Move grid sort/filter onto the source | closes the backlog's known issue |
 
 Validation is interleaved, not appended: V1–V2 must precede the store work that uses
@@ -896,7 +1008,7 @@ Each step must pass before the next:
 npm run type-check     # strict, no emit
 npm run lint            # eslint, --max-warnings 0
 npm run lint:css        # 57 files · 0 errors · 0 warnings
-npm test                # 434 passing after step 4 — must not drop
+npm test                # 437 passing after step 6 — must not drop
 ```
 
 Also run `node scripts/generate-component-spec.mjs --all --check` after touching a
