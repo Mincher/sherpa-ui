@@ -201,13 +201,28 @@ export class SherpaQuickFilter extends SherpaElement {
   #onCaret = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
     event.stopPropagation(); // opening the menu must not toggle the chip
-    this.menu?.toggle?.(this.$<HTMLElement>('.caret') ?? undefined);
+    // Anchored to the CHIP, not to the caret that was clicked. The menu belongs
+    // to the whole chip, so its leading edge lines up with the chip's — anchored
+    // to the caret it started at the little arrow on the far right and the card
+    // hung off the end of what it belonged to.
+    //
+    // NOT CSS anchor positioning. `anchor-name` resolves inside one tree, and
+    // this trigger and that card are in different shadow roots — re-probed on
+    // Chromium 153: supported, and silently places the card at the viewport's
+    // far corner. sherpa-menu measures the trigger instead.
+    this.menu?.toggle?.(this);
   };
 
   /** Mirror the menu's open state onto the caret for assistive tech. */
   #onMenuToggle = (event: Event): void => {
     const open = event.type === 'menu-open';
     this.$('.caret')?.setAttribute('aria-expanded', String(open));
+    // A chip with its menu OPEN wears the focus ring, so the bar says which
+    // chip the card belongs to. Real focus is inside the menu by then — its
+    // search field, or a row — so `:focus-visible` on the chip is false and
+    // nothing on the bar marked it. The flag is the JS→CSS path; the ring
+    // itself is entirely in the stylesheet.
+    this.toggleAttribute('data-open', open);
   };
 
   /** A menu selection sets the label, the count chip and the on-state, then relays outward. */

@@ -21,6 +21,9 @@
  * @attr {string}  data-heading  optional heading (upper-case 10/16)
  * @attr {enum}    data-select   multiple (default) | single
  * @attr {enum}    data-align    start (default) | end — which trigger edge to line up with
+ * @attr {string}  data-bounds   a CSS selector for the region the card must stay
+ *                inside (the app's content area, say). Resolved from the
+ *                document. Defaults to the viewport.
  * @attr {boolean} data-removable show a "Remove filter" footer button (after Today)
  * @attr {boolean} data-commit   show the Cancel/Apply pair and DEFER changes
  *                until Apply (without it, every row tick commits immediately).
@@ -314,6 +317,36 @@ export class SherpaMenu extends SherpaElement {
    * can move it. `getBoundingClientRect()` on the trigger gives exactly that, and
    * it works across shadow boundaries where a CSS anchor name does not.
    */
+  /**
+   * The box the card must stay inside — the viewport, or the region a host
+   * names with `data-bounds`.
+   *
+   * The selector is resolved from the DOCUMENT, so it can name a box in the
+   * app's own tree rather than one inside this component. A selector that
+   * matches nothing falls back to the viewport rather than trapping the card in
+   * a zero-sized box.
+   */
+  #bounds(): { left: number; top: number; right: number; bottom: number } {
+    const viewport = {
+      left: 0,
+      top: 0,
+      right: document.documentElement.clientWidth,
+      bottom: document.documentElement.clientHeight,
+    };
+    const sel = this.dataset['bounds'];
+    if (!sel) return viewport;
+    const box = document.querySelector(sel)?.getBoundingClientRect();
+    if (!box || box.width === 0 || box.height === 0) return viewport;
+    // Never WIDER than the viewport: a container that scrolls out of view would
+    // otherwise let the card follow it off the screen.
+    return {
+      left: Math.max(viewport.left, box.left),
+      top: Math.max(viewport.top, box.top),
+      right: Math.min(viewport.right, box.right),
+      bottom: Math.min(viewport.bottom, box.bottom),
+    };
+  }
+
   #place(): void {
     const card = this.#card();
     const trigger = this.#trigger;
@@ -322,8 +355,22 @@ export class SherpaMenu extends SherpaElement {
     const t = trigger.getBoundingClientRect();
     const c = card.getBoundingClientRect();
     const gap = SherpaMenu.OFFSET;
-    const vw = document.documentElement.clientWidth;
-    const vh = document.documentElement.clientHeight;
+    // THE BOUNDS the card must stay inside.
+    //
+    // The viewport by default, but a host can name a narrower box with
+    // `data-bounds` — a CSS selector for the region the menu belongs to, such as
+    // an app's content area. A menu that hangs over the nav or out of a panel
+    // reads as belonging to neither, and the window's edges say nothing about
+    // where the content actually stops.
+    //
+    // NOT CSS anchor positioning, whose `position-try` would do exactly this
+    // clamping for free: `anchor-name` resolves inside ONE tree, and every
+    // Sherpa trigger is in the caller's shadow root while the card is in this
+    // one. Re-probed on Chromium 153 — supported, and it silently drops the card
+    // at the viewport's far corner.
+    const bounds = this.#bounds();
+    const vw = bounds.right;
+    const vh = bounds.bottom;
 
     // Below the trigger, unless there is no room and there IS room above.
     const below = vh - t.bottom - gap * 2;
@@ -344,13 +391,13 @@ export class SherpaMenu extends SherpaElement {
     // then pull back inside the viewport if that overflows.
     let x = this.dataset['align'] === 'end' ? t.right - c.width : t.left;
     if (x + c.width > vw) x = vw - c.width - gap;
-    if (x < gap) x = gap;
+    if (x < bounds.left + gap) x = bounds.left + gap;
 
     // Never off the top either. The vertical flip above can put a tall card
-    // above the trigger and past the viewport's start edge, which is where a
-    // drilled calendar landed — taller than the list it replaced, with the same
-    // y it was placed at.
-    if (y < gap) y = gap;
+    // above the trigger and past the start edge, which is where a drilled
+    // calendar landed — taller than the list it replaced, with the same y it was
+    // placed at.
+    if (y < bounds.top + gap) y = bounds.top + gap;
 
     card.style.setProperty('--_x', `${Math.round(x)}px`);
     card.style.setProperty('--_y', `${Math.round(y)}px`);

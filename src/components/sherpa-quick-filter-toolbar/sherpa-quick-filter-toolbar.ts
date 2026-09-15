@@ -825,6 +825,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
     menu.setAttribute('data-search', '');
+    // The card stays inside the region the HOST names, not merely the window —
+    // a menu hanging over the nav or out of a panel belongs to neither. The
+    // toolbar passes its own `data-bounds` straight through; without one the
+    // menu falls back to the viewport, which is what it always used.
+    const bounds = this.dataset['bounds'];
+    if (bounds) menu.setAttribute('data-bounds', bounds);
 
     // A NUMBER chip's menu holds a Range switch over either one field or a
     // two-ended slider. Both exist from the start and CSS reveals one, so the

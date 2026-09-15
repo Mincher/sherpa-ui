@@ -152,6 +152,20 @@
    IS the heading, so showing both would say the same word twice. */
 :host([data-drill]) .heading { display: none; }
 
+/* A DRILLED header STACKS. The trail is about the menu — where you are and how
+   to get out — while anything slotted into the header belongs to the content: a
+   calendar's month stepper, for instance. Side by side in one row they competed
+   for the width and the stepper was squeezed; the trail takes its own line
+   above, which is also the order they are read in. */
+:host([data-drill]) .header {
+  flex-direction: column;
+  align-items: stretch;
+}
+/* …and the slotted control keeps the full line to itself. */
+:host([data-drill]) .header ::slotted(*) {
+  inline-size: 100%;
+}
+
 /* The heading takes the free space so a slotted control sits at the trailing
    edge beside it — and a header with ONLY a stepper still fills its row. */
 .header .heading { flex: 1 1 auto; }

@@ -8,6 +8,9 @@
 
   Two per-filter flags decide what a chip IS rather than how it looks:
 
+    data-bounds a CSS selector for the region a chip's MENU must stay inside —
+                the app's content area, say. Passed to every menu this bar
+                stamps; without one they fall back to the viewport.
     kind        values (default) | number | date — what the chip's menu holds.
                 A NUMBER chip's menu leads with a Range switch: off, one field
                 filters by a single value; on, a two-ended slider filters between
