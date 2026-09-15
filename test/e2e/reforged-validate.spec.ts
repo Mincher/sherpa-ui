@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
  * "what is wrong with this" should not be three different questions.
  */
 test.beforeEach(async ({ page }) => {
-  await page.goto('/test/harness.html');
+  await page.goto('/test/reforged/harness.html');
 });
 
 test('rules() builds a Standard Schema, and reports the first failure per field', async ({
@@ -181,4 +181,109 @@ test('a store WITHOUT a schema is unchanged', async ({ page }) => {
   });
 
   expect(r).toBe(1);
+});
+
+/**
+ * V3 / V4 / V6 — the FORM half.
+ *
+ * A field inside a shadow root is invisible to the form around it: its value is
+ * left out of FormData, `form.reset()` does not clear it, and
+ * `form.checkValidity()` reports nothing. ElementInternals is what closes that.
+ */
+test('a text field joins its form, validates itself, and announces properly', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { SherpaInputText, required, email } = (await import('/dist/index.js')) as unknown as {
+      SherpaInputText: {
+        defineRules(name: string, rules: unknown): void;
+        formAssociated: boolean;
+      };
+      required: () => unknown;
+      email: () => unknown;
+    };
+
+    // `data-rules` NAMES a rule set rather than carrying it — an attribute is a
+    // string and a rule is a function. Two fields checking the same thing then
+    // share one definition rather than two copies that can drift.
+    SherpaInputText.defineRules('email', [required(), email()]);
+
+    const form = document.createElement('form');
+    const field = document.createElement('sherpa-input-text') as HTMLElement & {
+      rendered?: Promise<void>;
+      validate(): Promise<boolean>;
+      shadowRoot: ShadowRoot;
+      dataset: DOMStringMap;
+    };
+    field.setAttribute('name', 'email');
+    field.setAttribute('data-label', 'Email');
+    field.setAttribute('data-rules', 'email');
+    form.appendChild(field);
+    document.getElementById('root')!.replaceChildren(form);
+    await field.rendered;
+
+    const control = field.shadowRoot.querySelector('.control') as HTMLInputElement;
+    const type = (value: string): void => {
+      control.value = value;
+      control.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    type('ada@example.com');
+    const formData = [...new FormData(form).entries()].map(([k, v]) => `${k}=${String(v)}`);
+
+    type('nope');
+    await field.validate();
+    const bad = {
+      error: field.dataset['error'],
+      ariaInvalid: control.getAttribute('aria-invalid'),
+      formValid: form.checkValidity(),
+    };
+
+    // Fixing it clears the message on the NEXT KEYSTROKE. Validating from the
+    // first keystroke nags someone still typing the @; once a message is already
+    // showing, it should go the moment they fix it.
+    type('ada@example.com');
+    await new Promise((res) => setTimeout(res, 50));
+    const fixed = {
+      error: field.dataset['error'] ?? null,
+      ariaInvalid: control.getAttribute('aria-invalid'),
+      formValid: form.checkValidity(),
+    };
+
+    const aria = {
+      describedby: control.getAttribute('aria-describedby'),
+      // NOT a live region — see below.
+      messageLive: field.shadowRoot.querySelector('.message')!.getAttribute('aria-live'),
+    };
+
+    type('bad');
+    await field.validate();
+    form.reset();
+    await new Promise((res) => setTimeout(res, 50));
+    const afterReset = { value: control.value, error: field.dataset['error'] ?? null };
+
+    return { formAssociated: SherpaInputText.formAssociated, formData, bad, fixed, aria, afterReset };
+  });
+
+  // IN THE FORM: the value reaches FormData under the host's own name.
+  expect(r.formAssociated).toBe(true);
+  expect(r.formData).toEqual(['email=ada@example.com']);
+
+  // A bad value BLOCKS a submit and says so.
+  expect(r.bad.error).toBe('Enter a valid email address');
+  expect(r.bad.ariaInvalid).toBe('true');
+  expect(r.bad.formValid).toBe(false);
+
+  expect(r.fixed.error).toBeNull();
+  expect(r.fixed.ariaInvalid).toBe('false');
+  expect(r.fixed.formValid).toBe(true);
+
+  // BOTH the hint and the error are described, in reading order.
+  expect(r.aria.describedby).toMatch(/-description .*-message$/);
+  // …and the message is NOT a live region. `role="alert"` or `aria-live` on the
+  // element aria-describedby points at causes DOUBLE-SPEAK in JAWS and NVDA —
+  // the live region fires, then the description fires again on focus — and has
+  // been seen to make VoiceOver drop the association entirely.
+  expect(r.aria.messageLive).toBeNull();
+
+  // form.reset() puts it back and clears the message.
+  expect(r.afterReset).toEqual({ value: '', error: null });
 });
