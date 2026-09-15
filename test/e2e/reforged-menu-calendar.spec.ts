@@ -264,8 +264,13 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
 test('a cell fills its grid track in every view — nothing clips it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
-    root.innerHTML = '<sherpa-calendar data-value="2026-08-15"></sherpa-calendar>';
-    const cal = root.firstElementChild as HTMLElement & {
+    // Sized so the seven tracks land on the node's own 32: 224 of tracks plus
+    // the grid's 8px side padding. The grid FILLS its container now, flooring
+    // at that figure rather than being fixed to it — in a wider box the seven
+    // 1fr tracks share the extra instead.
+    root.innerHTML =
+      '<div style="inline-size:240px"><sherpa-calendar data-value="2026-08-15"></sherpa-calendar></div>';
+    const cal = root.querySelector('sherpa-calendar') as HTMLElement & {
       rendered?: Promise<void>; shadowRoot: ShadowRoot; dataset: DOMStringMap;
     };
     await cal.rendered;

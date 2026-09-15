@@ -444,3 +444,12 @@
   flex: 0 0 100%;
   inline-size: 100%;
 }
+
+/* The calendar itself GROWS to fill the line. A flex item does not by default,
+   so the grid drew at its own 224 floor and left the rest of a wider card empty
+   beside it. Growing is what makes each of its seven columns a real 1fr of the
+   menu's content width. */
+:host([data-type="calendar"]) .rows > ::slotted(sherpa-calendar) {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}

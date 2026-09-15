@@ -14,7 +14,9 @@
    transparent. The per-day states — today, selected, and the three range steps —
    belong to <sherpa-calendar-cell>, which is Figma's own Calendar Cell node. */
 :host {
-  display: inline-block;
+  /* BLOCK, not inline-block: the grid inside fills its container now, and an
+     inline-block host shrink-wraps to its content and never gives it one. */
+  display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_accent: var(--sherpa-theme-surface-active-2, #c046ff);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
@@ -127,10 +129,20 @@
  * job in all three views. 7 x 32 = 224, which is the node's number. */
 .cal-grid,
 .cal-weekdays {
-  /* The content region Figma fixes at 224. Every view gets the same box, so
-     switching day → month → year cannot change the calendar's width. */
-  inline-size: calc(7 * var(--sherpa-display-mode-size-2xl, 32px));
-  box-sizing: content-box;
+  /* FILLS whatever holds it, with Figma's 224 (7 × 32) as the FLOOR.
+     Fixed at 224 the grid hugged, so a calendar in a wider menu sat in a narrow
+     column with the card's width unused beside it. Every view still shares one
+     box, so switching day → month → year cannot change the width. */
+  /* FILLS whatever holds it, flooring at the node's seven 32px tracks.
+     `border-box` with the side padding ADDED to the floor, so the tracks
+     themselves never fall below 32 — under content-box the box was 224 of
+     tracks PLUS 16 of padding and overflowed its container, and under a plain
+     border-box floor the padding ate into the tracks and a day drew 29.7. */
+  inline-size: 100%;
+  min-inline-size: calc(
+    7 * var(--sherpa-display-mode-size-2xl, 32px) + 2 * var(--sherpa-theme-padding-md, 8px)
+  );
+  box-sizing: border-box;
   column-gap: 0;
   row-gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
