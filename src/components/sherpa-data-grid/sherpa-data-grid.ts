@@ -364,8 +364,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** One group heading row, spanning every drawn column. */
   #groupRow(key: string, size: number, columnCount: number): HTMLElement {
-    const tpl = this.$<HTMLTemplateElement>('template.group-row-tpl')!;
-    const tr = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const tr = this.clone('template.group-row-tpl');
+    if (!tr) throw new Error('sherpa-data-grid: template.group-row-tpl is missing or empty');
     tr.dataset['group'] = key;
     const collapsed = this.#collapsed.has(key);
     // CSS draws the chevron rotation and hides the group's rows off this flag.

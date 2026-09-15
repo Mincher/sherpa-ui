@@ -172,8 +172,12 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #cell(): HTMLElement {
-    const tpl = this.$<HTMLTemplateElement>('.cal-cell-tpl')!;
-    return tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    // Five callers treat a cell as guaranteed, so this stays non-nullable — but it
+    // now fails HERE with the selector named, rather than handing back `null!` and
+    // crashing at whichever property the caller touches first.
+    const cell = this.clone('template.cal-cell-tpl');
+    if (!cell) throw new Error('sherpa-calendar: template.cal-cell-tpl is missing or empty');
+    return cell;
   }
 
   #renderDays(): void {

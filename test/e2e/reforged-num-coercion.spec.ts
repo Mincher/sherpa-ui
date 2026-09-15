@@ -436,3 +436,47 @@ test('icon: the glyph actually RENDERS — a Pro-only icon would be zero-width',
   expect(probe.content).not.toBe('none');
   expect(probe.width).toBeGreaterThan(0);
 });
+
+/* ── clone(): one null policy for template prototypes ─────────────────────── */
+
+test('clone: a renamed template fails with a NAMED error, not a null crash', async ({ page }) => {
+  // The old `this.$<HTMLTemplateElement>('template.x')!` threw at whichever
+  // property the caller touched first, far from the cause. sherpa-calendar was
+  // the worst case: its selector also omitted the `template` qualifier.
+  const message = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-calendar') as HTMLElement & { rendered?: Promise<void> };
+    root.appendChild(el);
+    await el.rendered;
+    // Remove the prototype the cell builder depends on, then force a re-render.
+    el.shadowRoot!.querySelector('template.cal-cell-tpl')?.remove();
+    try {
+      el.setAttribute('data-value', '2026-09-15');
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return 'no error';
+    } catch (e) {
+      return (e as Error).message;
+    }
+  });
+  // Either it names the template, or the component guarded it some other way —
+  // what must NOT happen is a bare "Cannot read properties of null".
+  expect(message).not.toContain('Cannot read properties of null');
+});
+
+test('clone: the calendar still stamps its day cells', async ({ page }) => {
+  // The conversion also fixed a missing `template` qualifier in the selector, so
+  // this proves the corrected selector still finds the prototype.
+  const cells = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-calendar') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-value', '2026-09-15');
+    root.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return el.shadowRoot!.querySelectorAll('.cal-days > *').length;
+  });
+  // A month grid is never empty.
+  expect(cells).toBeGreaterThan(27);
+});

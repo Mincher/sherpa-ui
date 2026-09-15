@@ -518,6 +518,28 @@ export abstract class SherpaElement extends HTMLElement {
     return Array.from(this.root.querySelectorAll<T>(sel));
   }
 
+  /**
+   * Clone a `<template class="…">` prototype's first element.
+   *
+   * The one way to stamp a repeating row. Three null policies were in use — an
+   * early return, a `!` on the LOOKUP (which throws the moment a template is
+   * renamed), and an unguarded optional chain — and every one of them then
+   * asserted `content.firstElementChild!` regardless. That assertion is the real
+   * hazard: a template whose first node is a comment or whitespace-only text
+   * yields `null!`, and the crash lands at the next property access, far from the
+   * cause.
+   *
+   * Returns `null` when the template is missing or empty. A caller that cannot
+   * proceed without it should return early; there is nothing to assert.
+   */
+  protected clone<T extends Element = HTMLElement>(sel: string): T | null {
+    const tpl = this.$<HTMLTemplateElement>(sel);
+    // `content` is missing on a non-<template> element — a selector that matched
+    // the wrong node fails here rather than throwing somewhere downstream.
+    const first = tpl?.content?.firstElementChild;
+    return first ? (first.cloneNode(true) as T) : null;
+  }
+
   /** Dispatch a bubbling, composed CustomEvent (crosses the shadow boundary). */
   protected emit<T = unknown>(name: string, detail?: T): void {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));

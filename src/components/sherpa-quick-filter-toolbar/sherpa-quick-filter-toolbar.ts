@@ -978,8 +978,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     icon: string,
     options: QuickFilterOption[],
   ): HTMLElement {
-    const tpl = this.$<HTMLTemplateElement>('template.qf-tpl')!;
-    const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const chip = this.clone('template.qf-tpl');
+    if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
     chip.classList.remove('chip');
     chip.classList.add('organise-chip');
     chip.dataset['id'] = id;

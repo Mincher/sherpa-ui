@@ -311,8 +311,8 @@ export class SherpaNav extends SherpaElement {
    * parent is collapsed, and hide every child in the 40px rail.
    */
   #buildRows(entry: NavEntry, depth: 1 | 2 | 3, parentId?: string): HTMLElement[] {
-    const tpl = this.$<HTMLTemplateElement>('template.item-tpl')!;
-    const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const row = this.clone('template.item-tpl');
+    if (!row) throw new Error('sherpa-nav: template.item-tpl is missing or empty');
     row.dataset['id'] = entry.id;
     row.dataset['depth'] = String(depth);
     if (parentId) row.dataset['parent'] = parentId;
