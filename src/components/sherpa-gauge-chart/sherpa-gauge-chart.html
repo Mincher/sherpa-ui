@@ -1,14 +1,15 @@
 <!--
   sherpa-gauge-chart — a half-circle gauge for a single value on a 0–100 scale.
 
-  The ring is HALF A DONUT: stroked SVG arcs, one per band, exactly as
-  sherpa-donut-chart draws its slices. With no zones there is a single arc whose
-  dash length follows data-value and whose colour follows data-status. With
-  data-zones there is one arc per threshold band (e.g. green/amber/red). A needle
-  rotates over the arc, the centre shows the value, and a caption sits beneath.
+  The ring is HALF A DONUT WITH A NEEDLE: one closed SVG path per band, four
+  corners rounded and the whole boundary stroked, exactly as sherpa-donut-chart
+  draws its slices. With no zones there is a single segment as long as data-value,
+  coloured by data-status. With data-zones there is one segment per threshold band
+  (e.g. green/amber/red). A needle rotates over the ring, the centre shows the
+  value, and a caption sits beneath.
 
-  The stroke IS the hover target, so a band's tooltip hit area matches the band
-  it describes and the hollow centre is not hittable.
+  The band IS the hover target, so a tooltip's hit area matches the band it
+  describes and the hollow centre is not hittable.
 
   Public API:
     data-value    number on the scale (drives the fill sweep + needle angle)
@@ -59,26 +60,27 @@
       centre was hittable, and its straight chords cut inside the real arc, so
       the outer edge of each band was not. Both bugs came from the same place.
 
-      Now each zone is a STROKED ARC — one <circle> whose dash exposes only its
-      own span, exactly as sherpa-donut-chart draws a slice. The stroke IS the
-      hit target, so it follows the band precisely and the hole is not hittable
-      at all.
+      Now each zone is a CLOSED PATH — a ring segment with four rounded corners
+      and a stroke right round it, exactly as sherpa-donut-chart draws a slice.
+      The band IS the hit target, so it follows the zone precisely and the hole
+      is not hittable at all. A stroked circle got the hit target right but not
+      the paint: a stroke is a thick line, with two caps and no corners, so it
+      could carry neither a full border nor any corner rounding.
 
       The viewBox is the TOP HALF of a 100×100 space (SVG's y grows DOWNWARD, so
-      the top half is y 0..50) and the circle is centred at (50,50) — its own
+      the top half is y 0..50) and the ring is centred at (50,50) — its own
       bottom edge — so only the upper half falls inside and no clipping is needed.
 
-      NO `preserveAspectRatio="none"`. The box is 2:1, so `none` stretched the
-      circle horizontally and no dash length could ever trace a true arc. The
-      default (`xMidYMid meet`) keeps it round; the viewBox is already 2:1, so it
-      fills the box without letterboxing.
+      NO `preserveAspectRatio="none"`. The box is 2:1, so `none` would stretch the
+      ring horizontally into an ellipse. The default (`xMidYMid meet`) keeps it
+      round; the viewBox is already 2:1, so it fills the box without letterboxing.
     -->
     <svg class="ring" part="ring" viewBox="0 0 100 50" aria-hidden="true">
-      <!-- Every arc, including the grey REMAINDER band, is stamped in here by
-           #renderArcs. There is deliberately no separate full-length track:
+      <!-- Every segment, including the grey REMAINDER band, is stamped in here
+           by #renderArcs. There is deliberately no separate full-length track:
            the bands already cover the gauge up to the value, so the only part
            a track ever showed was the leftover, and having it draw its own
-           half-circle meant a second copy of the dash maths. -->
+           half-circle meant a second copy of the geometry. -->
       <g class="zones"></g>
     </svg>
     <div class="hub"><div class="needle" part="needle"></div></div>
@@ -117,12 +119,12 @@
   </figure>
 
   <!--
-    One zone's ARC. Wrapped in an <svg> so the HTML parser switches to the SVG
-    namespace: a bare <circle> in an HTML template parses as HTMLUnknownElement
-    and paints absolutely nothing. JS clones the <circle> out of it.
+    One zone's SEGMENT. Wrapped in an <svg> so the HTML parser switches to the SVG
+    namespace: a bare <path> in an HTML template parses as HTMLUnknownElement and
+    paints absolutely nothing. JS clones the <path> out of it.
   -->
   <template class="zone-tpl">
-    <svg><circle class="zone" cx="50" cy="50" fill="none" /></svg>
+    <svg><path class="zone" /></svg>
   </template>
 
   <!--

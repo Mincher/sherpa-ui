@@ -1,8 +1,9 @@
 /**
  * sherpa-donut-chart.css — a donut/pie ring.
  *
- * The ring is SVG: one stroked-circle arc per slice, whose dash exposes only that
- * slice's span (see the .slice block, and the TS for the geometry). That is what
+ * The ring is SVG: one CLOSED PATH per slice — a ring segment with four rounded
+ * corners, filled and stroked (see the .slice block, and the TS for the geometry).
+ * That is what
  * carries the Figma 2px rounding, which a conic-gradient — the earlier approach —
  * could not: a gradient draws hard-edged bands with no per-slice element to round,
  * stroke or hit-test. The centre label is a sibling, sitting in the hole.
@@ -141,54 +142,41 @@
 }
 
 /* ── Slices ──────────────────────────────────────────────────────────────
-   Each slice is a STROKED CIRCLE whose dash exposes only its own span. That is
-   what carries the Figma 2px rounding: `stroke-linecap: round` rounds the visible
-   ends of a dash, so the arc geometry and its rounded caps come from one
-   primitive. The band's thickness and radius are set by the TS, because they
-   depend on the donut/pie variant.
+   Each slice is a CLOSED PATH — a ring segment with all four corners rounded,
+   built by ringSegmentPath() in the TS. It was a stroked circle whose dash
+   exposed its own span, and that could express neither thing Figma asks for: a
+   stroke is a thick LINE, so it has two caps and no corners. The border could
+   only run along the two long edges (as a second arc drawn on top), and the four
+   corners could not be rounded at all.
 
-   Figma fills each slice with its hue at 60% and strokes it 1px solid in the same
-   hue. Here the whole band IS the stroke, so it takes the 60% tint; a second solid
-   1px edge is not drawable on the same stroke, and at this scale it would read as
-   noise rather than definition. Hover lifts the slice to the full hue instead,
-   which is the same information the outline was giving. */
+   One path carries both paints at once, the way Figma draws the slice:
+     fill   — the series hue at 60%
+     stroke — the same hue, solid, 1px on a 200px chart, right round the outline
+
+   Figma aligns that stroke INSIDE. SVG has no inside stroke — it always straddles
+   the path — so the TS draws the path half a stroke in from the true band edges,
+   which lands the stroke inside. Width comes from the TS too, because it is a
+   viewBox-unit geometry value and an SVG stroke-width attribute cannot read a CSS
+   custom property.
+   
+   Slices TOUCH, with no gap. The rounding is what separates them, as in Figma. */
 .slice {
+  fill: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  fill-opacity: 0.6;
   stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
-  /* BUTT caps.
-     `round` adds a half-stroke semicircle at EACH end — 7.5 units on a 15-unit
-     band — so a small slice ballooned into a blob and overlapped its neighbours.
-     Figma's cornerRadius is 2px on a 200px chart (1 unit here): a small chamfer on
-     the arc's four CORNERS, which an SVG stroke cannot express at all — a stroke
-     has caps, not corners.
-     DIVERGENCE, recorded in the component def: the arc ends are square. Slices are
-     separated by a 1-unit gap instead (set by the TS), which is the readability
-     the rounding was providing. Drawing each arc as a real filled <path> with
-     rounded corners would match exactly, at the cost of hand-written arc maths. */
-  stroke-linecap: butt;
-  transition: opacity 100ms ease;
+  /* ROUND joins. The corner arcs already carry the rounding, but a join sits
+     where two path commands meet, and a mitre there pushes a spike out past the
+     corner on a narrow slice. */
+  stroke-linejoin: round;
+  transition: fill-opacity 100ms ease;
   cursor: pointer;
-}
-@supports (color: color-mix(in srgb, red, transparent)) {
-  .slice {
-    stroke: color-mix(in srgb, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)) 60%, transparent);
-  }
-}
-
-/* The solid outline tracing each slice's inner and outer edge — Figma strokes
-   every slice 1px in its own hue on top of the 60% fill. It is a SECOND arc on the
-   same geometry (see the TS), because one stroked circle carries one paint.
-   Not a pointer target: the fill band beneath it already is. */
-.slice-outline {
-  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
-  stroke-linecap: butt;
-  pointer-events: none;
 }
 
 /* A slice lifts to full strength on hover, so the pointer target is legible. */
-.slice:hover { opacity: 1; stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)); }
+.slice:hover { fill-opacity: 1; }
 .slice:focus-visible {
   outline: none;
-  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  fill-opacity: 1;
 }
 
 .centre {

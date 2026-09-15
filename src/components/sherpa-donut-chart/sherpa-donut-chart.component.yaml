@@ -55,12 +55,8 @@ anatomy:
       children:
         - el: svg
           children:
-            - el: circle
+            - el: path
               class: slice
-              attrs:
-                cx: "50"
-                cy: "50"
-                fill: none
 props:
   - $type: prop
     name: data-label
@@ -109,8 +105,8 @@ events:
     composed: true
 tokens:
   layout.gap: "{sherpa.display-mode-space-lg}"
+  slice.fill: "{sherpa.data-viz-series-1}"
   slice.stroke: "{sherpa.data-viz-series-1}"
-  slice-outline.stroke: "{sherpa.data-viz-series-1}"
   value.font-family: "{sherpa.font-family-mono}"
   value.font-size: "{sherpa.theme-content-size-h1}"
   value.font-weight: "{sherpa.font-weight-regular}"

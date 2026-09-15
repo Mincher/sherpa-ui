@@ -1,22 +1,25 @@
 /**
  * sherpa-gauge-chart — a half-circle gauge for one value on a 0–100 scale.
  *
- * HALF A DONUT: the ring is stroked SVG arcs, one per band, with exactly the
- * geometry sherpa-donut-chart uses for a slice — a <circle> whose stroke-dasharray
- * exposes only its own span. With data-zones there is one arc per threshold band;
- * without, a single arc whose dash follows data-value.
+ * HALF A DONUT WITH A NEEDLE. Each band is ONE CLOSED <path> — a ring segment
+ * with all four corners rounded, built by the same ringSegmentPath() that draws a
+ * donut slice, over the half circle from 9 o'clock to 3 o'clock. With data-zones
+ * there is one segment per threshold band; without, a single segment as long as
+ * the value. The leftover is one grey remainder band.
  *
- * That replaced a pair of conic-gradient divs. A gradient has no per-band element,
- * so a zone could not be hovered directly: the hit target was a separate HTML
- * wedge clipped to an 8-point polygon from the HUB to the rim. It made the hollow
- * centre hittable, and its straight chords cut inside the true arc so the band's
- * outer edge was not. Now the STROKE is the target, so it matches the band exactly
- * and the hole is not hittable at all.
+ * It was a stroked circle whose dash exposed its own span, and before that a pair
+ * of conic-gradient divs. The gradient had no per-band element at all, so a zone's
+ * hit target was a separate HTML wedge clipped to an 8-point polygon — which made
+ * the hollow centre hittable and missed the band's outer edge. The stroked circle
+ * fixed the hit target but not the paint: a stroke is a thick LINE, so it has two
+ * caps and no corners. It could carry no border round the whole band (only a
+ * second arc along the two long edges) and no corner rounding at all. A closed
+ * path does both in one element, exactly as the donut does.
  *
  * JS still hands CSS the needle angle. The big number, caption and scale are text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { radialArea } from '../../core/format-tick.js';
+import { radialArea, ringSegmentPath } from '../../core/format-tick.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -51,19 +54,37 @@ const STATUS_COLOUR: Record<string, string> = {
   info: 'var(--sherpa-theme-surface-info-2, #008bba)',
 };
 
-/**
- * Ring thickness in viewBox units. The viewBox is a 100-unit circle, and Figma
- * draws the gauge 16px thick on a 200px circle — 8 units here. Kept in TS rather
- * than CSS because the arc RADIUS depends on it (the band sits on its mid-line),
- * and an SVG `r` attribute cannot be written in terms of a CSS custom property.
- */
-const RING_WIDTH = 8;
+/** Centre of the 100-unit circle. Only its TOP half is inside the viewBox. */
+const CENTRE = 50;
 
 /**
- * Outline thickness in viewBox units — Figma strokes each band 1px on a 200px
- * chart, which is 0.5 units here. The same value sherpa-donut-chart uses.
+ * Ring thickness in viewBox units. Figma's gauge ellipse has innerRadius 0.82 on
+ * a 200px circle, so the band is the outer 18% — 9 units here. Kept in TS, not
+ * CSS, because it is path GEOMETRY: an SVG `d` cannot read a custom property.
+ */
+const RING_WIDTH = 9;
+
+/**
+ * Corner rounding, in viewBox units — the donut's 2px on a 200px chart.
+ * ringSegmentPath() clamps it down for a band too thin or too short to hold it.
+ */
+const CORNER = 1;
+
+/**
+ * Outline thickness in viewBox units — 1px on a 200px chart, ALIGNED INSIDE as
+ * in Figma. SVG has no inside stroke (it always straddles the path), so the path
+ * is drawn half a stroke in from the true band edges and the stroke lands inside.
+ * The same value and the same trick sherpa-donut-chart uses.
  */
 const OUTLINE = 0.5;
+
+/**
+ * The gauge's zero and its full span, in ringSegmentPath's degrees — CLOCKWISE
+ * from 12 o'clock. The visible half runs 9 o'clock (270) round the top to 3
+ * o'clock (270 + 180 = 450, which is 90 wrapped past the top).
+ */
+const START_DEG = 270;
+const SPAN_DEG = 180;
 
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
@@ -247,17 +268,19 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 
   /**
-   * Draw the ring: one stroked arc per band (or one for the value).
+   * Draw the ring: one closed ring-segment path per band (or one for the value).
    *
-   * Same primitive as a donut slice — a full <circle> whose stroke-dasharray
-   * shows only this band's run and hides the rest. The gap in the pair is the
-   * WHOLE circumference, so the dash never repeats and a band cannot wrap round
-   * and reappear on the far side.
+   * Same primitive as a donut slice — ringSegmentPath() over the half circle from
+   * 9 o'clock to 3 o'clock, with all four corners rounded and the band's whole
+   * boundary stroked. A band's fraction of the GAUGE maps straight onto degrees:
+   * START_DEG + fraction * SPAN_DEG, measured clockwise from 12.
    *
-   * The circle is a full 360°, but the viewBox shows only its top half, so a
-   * fraction f of the GAUGE is f/2 of the circumference. The gauge's zero (9
-   * o'clock) is baked into the dash OFFSET here rather than reached by rotating
-   * the circle in CSS — see the offset line below for why.
+   * No transform and no dash offset. The old stroked circle was a full 360° whose
+   * dash had to be pushed half a circumference along to reach the gauge's zero,
+   * because rotating it instead resolved `transform-origin` against the circle's
+   * own fill box and swung the whole ring off centre. A path is drawn where it
+   * belongs, so neither workaround is needed — and a transform would skew the
+   * rounded corners anyway.
    *
    * The last band is the grey remainder, so there is no separate track element.
    */
@@ -266,14 +289,13 @@ export class SherpaGaugeChart extends SherpaElement {
     const tpl = this.$<HTMLTemplateElement>('template.zone-tpl');
     if (!host || !tpl) return;
 
-    // Radius and stroke come from the ring thickness, so the band sits on the
-    // mid-line between its inner and outer edge — the donut's rule.
-    const width = RING_WIDTH;
-    const radius = 50 - width / 2;
-    const circumference = 2 * Math.PI * radius;
+    // The TRUE band edges. The path itself is inset half an outline inside them,
+    // so the stroke lands within the band — Figma's strokeAlign INSIDE.
+    const outer = CENTRE - OUTLINE / 2;
+    const inner = CENTRE - RING_WIDTH + OUTLINE / 2;
 
-    // With no bands the gauge is a single arc as long as the value; the colour
-    // comes from CSS (--_fill), which already resolves data-status.
+    // With no bands the gauge is a single segment as long as the value; the
+    // colour comes from CSS (--_fill), which already resolves data-status.
     const bands: Array<{ from: number; to: number; color: string | null; rest?: true }> =
       zones.length
         ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color }))
@@ -284,68 +306,37 @@ export class SherpaGaugeChart extends SherpaElement {
     // This replaced a full half-circle track drawn underneath everything. The
     // bands already cover the gauge up to their end, so the only part of that
     // track that ever showed WAS the remainder; drawing just that removes a
-    // second copy of the half-circle dash maths, which is where the geometry
-    // kept going wrong.
+    // second copy of the half-circle geometry, which is where it kept going
+    // wrong.
     const filled = bands.length ? bands[bands.length - 1]!.to : 0;
     if (filled < 1) bands.push({ from: filled, to: 1, color: null, rest: true });
 
     host.replaceChildren();
     bands.forEach((band, i) => {
-      const svg = tpl.content.firstElementChild!;
-      const arc = svg.firstElementChild!.cloneNode(true) as SVGCircleElement;
-      // HALF the circumference is the visible gauge, so every fraction halves.
-      const length = Math.max((band.to - band.from) * circumference * 0.5, 0);
-      arc.setAttribute('r', String(radius));
-      arc.setAttribute('stroke-width', String(width));
-      arc.setAttribute('stroke-dasharray', `${length} ${circumference}`);
-      // A NEGATIVE offset advances the dash along the path.
-      //
-      // The +0.5 is the gauge's zero. An unrotated <circle> path starts at 3
-      // o'clock and runs CLOCKWISE, so 9 o'clock — where the gauge begins — is
-      // exactly half the circumference along it, and clockwise from there runs
-      // up over the visible top. Baking that half-turn in here is why the arcs
-      // need no CSS rotation: rotating the circle instead meant resolving a
-      // transform-origin against the fill box, which swung the whole ring.
+      if (band.to <= band.from) return;
+      // Clone the <path> INSIDE the template's <svg> wrapper, not the wrapper —
+      // the wrapper only exists to put the clone in the SVG namespace.
+      const arc = tpl.content.querySelector('.zone')!.cloneNode(true) as SVGPathElement;
       arc.setAttribute(
-        'stroke-dashoffset',
-        String(-(0.5 + band.from * 0.5) * circumference),
+        'd',
+        ringSegmentPath({
+          cx: CENTRE,
+          cy: CENTRE,
+          inner,
+          outer,
+          startDeg: START_DEG + band.from * SPAN_DEG,
+          endDeg: START_DEG + band.to * SPAN_DEG,
+          radius: CORNER,
+        }),
       );
-      // The index pairs the arc with its tip; CSS cannot derive it.
+      arc.setAttribute('stroke-width', String(OUTLINE));
+      // The index pairs the band with its tip; CSS cannot derive it.
       arc.dataset['index'] = String(i);
       // The remainder is chrome, not data: CSS greys it and drops its pointer
       // target, so it never claims a tooltip.
       if (band.rest) arc.dataset['rest'] = '';
       if (band.color) arc.style.setProperty('--_hue', band.color);
       host.appendChild(arc);
-
-      // The OUTLINE — two thin arcs tracing this band's inner and outer edge,
-      // exactly as sherpa-donut-chart outlines a slice. It has to be separate
-      // geometry because one stroked circle carries one paint, and the band is
-      // two: a 60% tint plus a solid edge. Each edge arc sits half its own width
-      // inside the band, so the stroke lands ON the edge rather than straddling
-      // it and bleeding outside the ring.
-      if (band.rest) return;
-      const inner = radius - width / 2;
-      const outer = radius + width / 2;
-      for (const edgeRadius of [inner + OUTLINE / 2, outer - OUTLINE / 2]) {
-        const edge = svg.firstElementChild!.cloneNode(true) as SVGCircleElement;
-        edge.classList.replace('zone', 'zone-outline');
-        edge.setAttribute('r', String(edgeRadius));
-        edge.setAttribute('stroke-width', String(OUTLINE));
-        // ITS OWN circumference — a different radius means a different path
-        // length, so reusing the band's numbers would leave the outline short.
-        const edgeCircumference = 2 * Math.PI * edgeRadius;
-        edge.setAttribute(
-          'stroke-dasharray',
-          `${Math.max((band.to - band.from) * edgeCircumference * 0.5, 0)} ${edgeCircumference}`,
-        );
-        edge.setAttribute(
-          'stroke-dashoffset',
-          String(-(0.5 + band.from * 0.5) * edgeCircumference),
-        );
-        if (band.color) edge.style.setProperty('--_hue', band.color);
-        host.appendChild(edge);
-      }
     });
   }
 }

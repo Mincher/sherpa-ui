@@ -5,10 +5,15 @@
   five ELLIPSE nodes with arcData.innerRadius 0.7 (a hole at 70% of the radius),
   cornerRadius 2 and a 1px INSIDE stroke, each filled with its series hue at 60%.
 
-  So the ring is SVG, one <path> per slice, not a conic-gradient. A gradient draws
-  hard-edged bands and cannot round a band's ends, so the design's 2px rounding was
-  unreachable that way — and a gradient has no per-slice element to stroke or to
-  hover either. Slices are stamped from the .slice-tpl cloning prototype.
+  So the ring is SVG, one CLOSED <path> per slice — not a conic-gradient, and no
+  longer a stroked circle either. A stroke is a thick LINE: it has two caps and no
+  corners, so it can carry neither a border round the whole slice nor a radius on
+  all four corners. A closed path expresses both in one element: `fill` tints the
+  body, `stroke` traces the entire boundary, and the corner arcs are part of the
+  outline. Slices are stamped from the .slice-tpl cloning prototype; the geometry
+  comes from ringSegmentPath() in src/core/format-tick.ts.
+
+  Slices TOUCH, with no gap — as in Figma, where the rounding alone separates them.
 
   The viewBox is a fixed 0 0 100 100 with the arcs drawn as a stroked circle, so the
   ring scales with the element while staying perfectly circular.
@@ -52,16 +57,16 @@
   </figure>
 
   <!--
-    One arc per slice. JS sets the dash geometry, the rotation and the hue.
+    One closed path per slice. JS sets the `d` (built by ringSegmentPath) and the hue.
 
     The prototype is WRAPPED IN AN <svg>. Without that wrapper the HTML parser
-    reads `<circle>` as unknown HTML and builds an HTMLUnknownElement in the XHTML
+    reads `<path>` as unknown HTML and builds an HTMLUnknownElement in the XHTML
     namespace: it clones and appends without error, reports the right attributes,
     and paints absolutely nothing. Inside an <svg> the parser switches to the SVG
-    namespace, so the clone is a real SVGCircleElement.
+    namespace, so the clone is a real SVGPathElement.
   -->
   <template class="slice-tpl">
-    <svg><circle class="slice" cx="50" cy="50" fill="none" /></svg>
+    <svg><path class="slice" /></svg>
   </template>
 
   <!-- One slice's hover dot + tooltip. JS sets --_angle (the slice's mid-angle)

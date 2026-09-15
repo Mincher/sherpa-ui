@@ -5,22 +5,17 @@
  * its own SVG arc, matching the Figma component (five ELLIPSE arcs with
  * arcData.innerRadius 0.7, cornerRadius 2, a 1px stroke and a 60% fill).
  *
- * The arcs are drawn as ONE stroked circle per slice, using stroke-dasharray to
- * expose only that slice's span. That gives each slice a real element — so it can
- * carry its own hue, its own hit target and its own hover — which a
- * conic-gradient (the earlier approach) could not: a gradient is one paint with no
- * per-slice element at all.
+ * Each slice is ONE CLOSED <path> — a ring segment with all four corners rounded,
+ * built by ringSegmentPath(). It used to be a stroked circle whose dash exposed
+ * only its own span, which could express neither of the two things Figma asks for:
+ * a stroke is a thick LINE, so it has two caps and no corners. It could not carry
+ * a border round the whole slice (only along the two long edges, as a second arc
+ * drawn on top), and it could not round the four corners at all. A closed path
+ * does both in one element: `fill` tints the body at 60%, `stroke` traces the
+ * entire boundary, and the corner arcs are part of the outline.
  *
- * Figma gives each slice a translucent FILL and a solid 1px STROKE. One stroked
- * circle carries a single paint, so each slice is TWO arcs on the same geometry:
- * a wide translucent band (the fill) and a thin solid outline drawn over it. The
- * outline is what makes a small slice legible against its neighbour.
- *
- * DIVERGENCE: Figma's slices have a 2px cornerRadius. An SVG stroke has caps, not
- * corners, so that exact chamfer is not expressible here — `stroke-linecap: round`
- * looks like it should help but adds a HALF-STROKE dome at each end (7.5 of a
- * 15-unit band), which turns a small slice into a blob. Slices are separated by a
- * 1-unit gap instead, which is the readability the rounding was providing.
+ * Slices TOUCH — no gap, as in Figma, where the 2px rounding alone separates
+ * them. The old flat-capped 1-unit gap was standing in for that rounding.
  *
  * `setSliceHidden(index, hidden)` drops a slice so a chart legend can toggle it.
  * The remaining slices are re-shared across the FULL circle: a donut shows parts
@@ -36,7 +31,7 @@
  * @fires slice-click — a slice is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, radialArea } from '../../core/format-tick.js';
+import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.js';
 
 export interface DonutSlice {
   label: string;
@@ -47,11 +42,19 @@ export interface DonutSlice {
 /** The viewBox is 100×100, so every number below is a percentage of the box. */
 const BOX = 100;
 const CENTRE = BOX / 2;
-/** Separation between slices, in viewBox units (Figma's 2px on a 200px chart). */
-const GAP = 1;
-/** A slice never shrinks below this, so a 0.1% share is still visible. */
-const MIN_ARC = 0.5;
-/** The solid outline's width — Figma strokes each slice 1px on a 200px chart. */
+/**
+ * Corner rounding, in viewBox units — Figma's cornerRadius 2 on a 200px chart.
+ * ringSegmentPath() clamps it down for a slice too thin or too short to hold it.
+ */
+const CORNER = 1;
+/** A slice never shrinks below this SHARE, so a 0.1% slice is still visible. */
+const MIN_SHARE = 0.005;
+/**
+ * The outline's width — Figma strokes each slice 1px on a 200px chart, ALIGNED
+ * INSIDE. SVG has no inside stroke (it always straddles the path), so the path is
+ * drawn half a stroke in from the true edges and the stroke then lands inside the
+ * band, exactly as Figma paints it.
+ */
 const OUTLINE = 0.5;
 
 export class SherpaDonutChart extends SherpaElement {
@@ -118,14 +121,12 @@ export class SherpaDonutChart extends SherpaElement {
     hotspots?.replaceChildren();
 
     // Figma: innerRadius 0.7 of the radius, so the band is the outer 30%. A `pie`
-    // fills to the centre instead. The stroked-circle trick puts the stroke on the
-    // BAND'S MID-LINE, so the path radius is the midpoint of inner and outer.
+    // fills to the centre instead. These are the TRUE edges of the band; the path
+    // is inset half an outline below so the stroke lands inside them, matching
+    // Figma's strokeAlign INSIDE.
     const pie = this.dataset['variant'] === 'pie';
-    const outer = CENTRE;
-    const inner = pie ? 0 : CENTRE * 0.7;
-    const width = outer - inner;
-    const radius = inner + width / 2;
-    const circumference = 2 * Math.PI * radius;
+    const outer = CENTRE - OUTLINE / 2;
+    const inner = pie ? 0 : CENTRE * 0.7 + OUTLINE / 2;
 
     // The total covers only the VISIBLE slices, so the ring always closes.
     const visible = this.#slices.filter((_, i) => !this.#hidden.has(i));
@@ -138,54 +139,35 @@ export class SherpaDonutChart extends SherpaElement {
       // than every hue shifting along the ramp.
       if (this.#hidden.has(i)) return;
       const value = Math.max(0, slice.value);
-      const share = value / total;
+      // Floored so a near-zero slice is still a visible sliver rather than a
+      // zero-width path the browser drops entirely.
+      const share = Math.max(value / total, MIN_SHARE);
 
-      // Clone the <circle> INSIDE the template's <svg> wrapper, not the wrapper.
-      // The wrapper exists only so the HTML parser puts the circle in the SVG
+      // Clone the <path> INSIDE the template's <svg> wrapper, not the wrapper.
+      // The wrapper exists only so the HTML parser puts the path in the SVG
       // namespace — see the note on .slice-tpl in the template.
-      const arc = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGCircleElement;
+      const arc = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGPathElement;
       arc.dataset['index'] = String(i);
-      arc.setAttribute('r', String(radius));
-      arc.setAttribute('stroke-width', String(width));
-      // Expose only this slice's span: one dash of its arc length, then a gap of
-      // the whole circumference so the dash never repeats.
-      //
-      // The dash is shortened by GAP so neighbouring slices do not touch. Figma
-      // separates them with a 2px corner radius, which an SVG stroke cannot draw
-      // (a stroke has caps, not corners) — the gap gives the same readability.
-      // Clamped so a tiny slice still renders rather than vanishing.
-      const length = Math.max(share * circumference - GAP, MIN_ARC);
-      arc.setAttribute('stroke-dasharray', `${length} ${circumference}`);
-      // Rotate it into place. -90deg puts the first slice at 12 o'clock, matching
-      // Figma's startingAngle of -1.5708 rad.
+      // -90deg is not needed: ringSegmentPath measures CLOCKWISE FROM 12 O'CLOCK
+      // already, which is where Figma's startingAngle of -1.5708 rad puts the
+      // first slice. No transform, so the rounded corners stay true.
       arc.setAttribute(
-        'transform',
-        `rotate(${acc * 360 - 90} ${CENTRE} ${CENTRE})`,
+        'd',
+        ringSegmentPath({
+          cx: CENTRE,
+          cy: CENTRE,
+          inner,
+          outer,
+          startDeg: acc * 360,
+          endDeg: (acc + share) * 360,
+          radius: CORNER,
+        }),
       );
+      arc.setAttribute('stroke-width', String(OUTLINE));
       const n = ((slice.colorIndex ?? i + 1) - 1) % 11 + 1;
       arc.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
-
-      // The solid outline: the SAME dash and rotation on the band's two edges, so
-      // it traces the slice's boundary. Figma strokes each slice 1px INSIDE, so
-      // the outline sits just within the band rather than straddling its edge.
-      for (const edge of [inner, outer]) {
-        if (edge <= 0) continue; // a pie has no inner edge to trace
-        const edgeRadius = edge === inner ? inner + OUTLINE / 2 : outer - OUTLINE / 2;
-        const line = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGCircleElement;
-        line.classList.add('slice-outline');
-        line.classList.remove('slice');
-        line.setAttribute('r', String(edgeRadius));
-        line.setAttribute('stroke-width', String(OUTLINE));
-        // Its own circumference, so the dash still covers exactly this slice.
-        const edgeCircumference = 2 * Math.PI * edgeRadius;
-        const edgeLength = Math.max(share * edgeCircumference - GAP, MIN_ARC);
-        line.setAttribute('stroke-dasharray', `${edgeLength} ${edgeCircumference}`);
-        line.setAttribute('transform', `rotate(${acc * 360 - 90} ${CENTRE} ${CENTRE})`);
-        line.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
-        group.appendChild(line);
-      }
 
       // The hover dot + its tooltip. The ONLY number JS gives CSS is the slice's
       // MID-ANGLE — cos()/sin() in the CSS turn that into a position on the ring,

@@ -1,6 +1,35 @@
 import { test, expect } from '@playwright/test';
 
-/** sherpa-donut-chart — composes a conic-gradient ring from slice shares; centre label; pie variant. */
+/** sherpa-donut-chart — one closed SVG ring-segment path per slice; centre label; pie variant. */
+
+/**
+ * The SHARE of the circle a slice's path sweeps, as a rounded percentage.
+ *
+ * Read from the path's own `d` — its FIRST and LAST point are both on the
+ * slice's leading edge (the outline closes back where it started), so the angle
+ * from the centre to the first point and to the outer arc's end bracket the
+ * sweep. Deliberately not a check on the numbers the TS put in: a stroked circle
+ * could be asserted through `stroke-dasharray`, but a path has no such handle,
+ * and reading the drawn geometry back is the stronger test either way.
+ */
+const SHARE_FN = `(el) => {
+  // Every command's ENDPOINT is its last two numbers. A naive "two numbers in a
+  // row" scan is wrong: an arc command reads \\u0060A rx ry rot large sweep x y\\u0060, so
+  // its radii would be picked up as a point.
+  const ends = el.getAttribute('d').trim().split(/(?=[A-Za-z])/).map((cmd) => {
+    const n = cmd.match(/-?[\\d.]+/g);
+    return n && n.length >= 2 ? [Number(n[n.length - 2]), Number(n[n.length - 1])] : null;
+  }).filter(Boolean);
+  const angle = ([x, y]) => ((Math.atan2(x - 50, 50 - y) * 180) / Math.PI + 360) % 360;
+  // Measured across the two RADIAL EDGES, which lie exactly on the slice's start
+  // and end angle. NOT across the outer arc: the rounded corners inset that arc
+  // at each end, so it reads short. The path opens on the leading edge (command
+  // 0) and returns to the trailing edge five commands later (move, line, corner,
+  // arc, corner, line).
+  let sweep = angle(ends[5]) - angle(ends[0]);
+  if (sweep <= 0) sweep += 360;
+  return Math.round((sweep / 360) * 100);
+}`;
 
 const HARNESS = '/test/reforged/harness.html';
 
@@ -9,8 +38,9 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-test('draws one real SVG arc per slice, spanning its share', async ({ page }) => {
-  const r = await page.evaluate(async () => {
+test('draws one real SVG path per slice, spanning its share', async ({ page }) => {
+  const r = await page.evaluate(async (shareSrc) => {
+    const share = eval(shareSrc) as (el: SVGPathElement) => number;
     const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
@@ -27,44 +57,55 @@ test('draws one real SVG arc per slice, spanning its share', async ({ page }) =>
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    const arcs = Array.from(sr.querySelectorAll<SVGCircleElement>('.slice'));
-    const radius = Number(arcs[0]?.getAttribute('r'));
-    const circumference = 2 * Math.PI * radius;
+    const arcs = Array.from(sr.querySelectorAll<SVGPathElement>('.slice'));
+    const box = arcs[0]!.getBBox();
     return {
       count: arcs.length,
-      // A <circle> cloned from an HTML <template> without an <svg> wrapper is an
+      // A <path> cloned from an HTML <template> without an <svg> wrapper is an
       // HTMLUnknownElement in the XHTML namespace: it clones, appends and reports
       // attributes without error, and paints NOTHING. Assert the namespace.
       namespace: arcs[0]?.namespaceURI,
       painted: arcs.every((a) => a.getBoundingClientRect().width > 0),
-      radius,
+      // A CLOSED path, so it carries both paints Figma gives a slice — which is
+      // the whole reason it is no longer a stroked circle.
+      fill: getComputedStyle(arcs[0]!).fill,
+      fillOpacity: getComputedStyle(arcs[0]!).fillOpacity,
+      stroke: getComputedStyle(arcs[0]!).stroke,
       strokeWidth: Number(arcs[0]?.getAttribute('stroke-width')),
-      // Each dash length is its share of the circumference, less the 1-unit gap.
-      shares: arcs.map((a) =>
-        Math.round((Number(a.getAttribute('stroke-dasharray')?.split(' ')[0]) + 1) / circumference * 100),
-      ),
-      // Rotations: 0% → -90deg (12 o'clock), then 50% and 75% round.
-      rotations: arcs.map((a) => a.getAttribute('transform')),
+      // The first slice runs from 12 o'clock clockwise, so its box reaches the
+      // ring's outer edge at the top and its centre — the band's inner radius.
+      outer: Math.round(50 - box.y),
+      shares: arcs.map(share),
+      // The first slice STARTS at 12 o'clock — Figma's startingAngle -1.5708 rad.
+      // No transform any more: a rotation would skew the rounded corners.
+      transform: arcs[0]?.getAttribute('transform'),
+      startsAtTop: Math.round(Number(/M ([-\d.]+) /.exec(arcs[0]!.getAttribute('d')!)![1])),
       value: sr.querySelector('.value')!.textContent,
       sub: sr.querySelector('.sub')!.textContent,
     };
-  });
+  }, SHARE_FN);
 
   expect(r.count).toBe(3);
   // The namespace IS the test — see the comment above.
   expect(r.namespace).toBe('http://www.w3.org/2000/svg');
   expect(r.painted).toBe(true);
 
-  // Figma: arcData.innerRadius 0.7, so the band is the outer 30% of the radius.
-  // The stroke sits on the band's mid-line: inner 35 + width 15 / 2 = 42.5.
-  expect(r.radius).toBe(42.5);
-  expect(r.strokeWidth).toBe(15);
+  // Figma paints a slice as a 60% fill with a solid 1px stroke on every edge. A
+  // stroked circle could carry only ONE of those; a closed path carries both.
+  expect(r.fillOpacity).toBe('0.6');
+  expect(r.fill).toBe(r.stroke);
+  expect(r.strokeWidth).toBe(0.5);
 
-  // 50 / 25 / 25, and each arc starts where the last ended.
+  // Figma: arcData.innerRadius 0.7, so the band is the outer 30% of the radius.
+  // The path is inset half a stroke so the stroke lands INSIDE: 50 - 0.25.
+  expect(r.outer).toBe(50);
+
+  // 50 / 25 / 25, read back off the drawn paths.
   expect(r.shares).toEqual([50, 25, 25]);
-  expect(r.rotations[0]).toContain('rotate(-90');
-  expect(r.rotations[1]).toContain('rotate(90');
-  expect(r.rotations[2]).toContain('rotate(180');
+  // No rotation: the path is drawn where it belongs, starting at 12 o'clock
+  // (x = the centre, 50).
+  expect(r.transform).toBe(null);
+  expect(r.startsAtTop).toBe(50);
 
   expect(r.value).toBe('120');
   expect(r.sub).toBe('total');
@@ -80,22 +121,42 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
       if (variant) el.setAttribute('data-variant', variant);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
-      el.populate!([{ label: 'X', value: 1 }]);
+      // Four slices, so the wedge measured below is a clean quarter. A single
+      // slice would sweep the whole circle, whose path is the special-cased pair
+      // of rings and carries no radial edges at all.
+      el.populate!([
+        { label: 'A', value: 1 },
+        { label: 'B', value: 1 },
+        { label: 'C', value: 1 },
+        { label: 'D', value: 1 },
+      ]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      const arc = el.shadowRoot!.querySelector('.slice')!;
-      return { r: Number(arc.getAttribute('r')), w: Number(arc.getAttribute('stroke-width')) };
+      const d = el.shadowRoot!.querySelector<SVGPathElement>('.slice')!.getAttribute('d')!;
+      // The RADII of every arc command in the path — \u0060A rx ry rot large sweep x y\u0060.
+      // A donut segment traces an inner arc as well as an outer one and so has a
+      // second large radius; a pie wedge runs to a point and has only the outer.
+      // The corner arcs are the small ones, so they filter out by size.
+      const radii = [...d.matchAll(/A ([\d.]+) /g)]
+        .map((m) => Math.round(Number(m[1])))
+        .filter((n) => n > 2);
+      return {
+        outer: Math.max(...radii),
+        // 0 when there is no inner arc at all — the pie.
+        inner: radii.length > 1 ? Math.min(...radii) : 0,
+      };
     };
     return { donut: await build(), pie: await build('pie') };
   });
 
-  // Donut: a 15-wide band on the outer 30% of the radius (Figma innerRadius 0.7).
-  expect(r.donut['r']).toBe(42.5);
-  expect(r.donut['w']).toBe(15);
+  // Donut: the band is the outer 30% of the radius (Figma innerRadius 0.7), so
+  // the segment traces an inner arc at 35 as well as the rim at 50.
+  expect(r.donut['outer']).toBe(50);
+  expect(r.donut['inner']).toBe(35);
 
-  // Pie: the band runs all the way in, so it is the full radius wide and its
-  // mid-line sits at half the radius. No hole to mask — there is no mask any more.
-  expect(r.pie['w']).toBe(50);
-  expect(r.pie['r']).toBe(25);
+  // Pie: the wedge runs to a POINT at the centre, so there is no inner arc to
+  // trace at all. No hole — and no mask, there is no mask any more.
+  expect(r.pie['outer']).toBe(50);
+  expect(r.pie['inner']).toBe(0);
 });
 
 test('the ring scales uniformly to whichever axis runs out first', async ({ page }) => {
@@ -151,7 +212,8 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
 });
 
 test('setSliceHidden drops a slice and re-shares the whole circle', async ({ page }) => {
-  const r = await page.evaluate(async () => {
+  const r = await page.evaluate(async (shareSrc) => {
+    const share = eval(shareSrc) as (el: SVGPathElement) => number;
     const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
@@ -168,16 +230,10 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    const arcs = (): SVGCircleElement[] =>
-      Array.from(sr.querySelectorAll<SVGCircleElement>('.slice'));
-    /** Each arc's share of the circle, as a rounded percentage. */
-    const shares = (): number[] => {
-      const list = arcs();
-      const circumference = 2 * Math.PI * Number(list[0]?.getAttribute('r') ?? 1);
-      return list.map((a) =>
-        Math.round((Number(a.getAttribute('stroke-dasharray')?.split(' ')[0]) + 1) / circumference * 100),
-      );
-    };
+    const arcs = (): SVGPathElement[] =>
+      Array.from(sr.querySelectorAll<SVGPathElement>('.slice'));
+    /** Each slice's share of the circle, read back off its drawn path. */
+    const shares = (): number[] => arcs().map(share);
     const hues = (): string[] =>
       arcs().map((a) => (a as unknown as HTMLElement).style.getPropertyValue('--_hue'));
     const indices = (): (string | undefined)[] => arcs().map((a) => a.dataset['index']);
@@ -190,7 +246,7 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const restored = { shares: shares(), hues: hues(), list: el.hiddenSlices };
     return { before, hidden, restored };
-  });
+  }, SHARE_FN);
 
   expect(r.before.shares).toEqual([50, 30, 20]);
 

@@ -31,65 +31,65 @@ anatomy:
               class: title
               slot: title
         - el: div
-          class: gauge-wrap
+          class: chart-body
           children:
             - el: div
-              class: gauge
-              part: gauge
-              attrs:
-                role: img
-                aria-label: Gauge chart
+              class: gauge-wrap
               children:
-                - el: svg
-                  class: ring
-                  part: ring
+                - el: div
+                  class: gauge
+                  part: gauge
                   attrs:
-                    viewBox: 0 0 100 50
-                    aria-hidden: "true"
+                    role: img
+                    aria-label: Gauge chart
                   children:
-                    - el: g
-                      class: zones
-                - el: div
-                  class: hub
-                  children:
+                    - el: svg
+                      class: ring
+                      part: ring
+                      attrs:
+                        viewBox: 0 0 100 50
+                        aria-hidden: "true"
+                      children:
+                        - el: g
+                          class: zones
                     - el: div
-                      class: needle
-                      part: needle
+                      class: hub
+                      children:
+                        - el: div
+                          class: needle
+                          part: needle
+                    - el: div
+                      class: hub-cap
+                      part: hub
+                    - el: div
+                      class: centre
+                      children:
+                        - el: span
+                          class: value
+                          part: value
                 - el: div
-                  class: hub-cap
-                  part: hub
-                - el: div
-                  class: centre
-                  children:
-                    - el: span
-                      class: value
-                      part: value
+                  class: hotspots
+                  part: hotspots
             - el: div
-              class: hotspots
-              part: hotspots
-        - el: div
-          class: scale
-          part: scale
-          children:
-            - el: span
-              class: min
-            - el: span
-              class: max
-        - el: figcaption
-          class: caption
-          part: caption
-          slot: caption
+              class: scale
+              part: scale
+              children:
+                - el: span
+                  class: min
+                - el: span
+                  class: max
+            - el: figcaption
+              class: caption
+              part: caption
+              slot: caption
+        - slot: legend
     - el: template
       class: zone-tpl
       children:
         - el: svg
           children:
-            - el: circle
+            - el: path
               class: zone
-              attrs:
-                cx: "50"
-                cy: "50"
-                fill: none
 props:
   - $type: prop
     name: data-caption
@@ -138,6 +138,9 @@ props:
       or any CSS colour. Omit for the single-colour sweep.
 states:
   - $type: state
+    name: vertical
+    selector: ":host([data-legend=\"vertical\"])"
+  - $type: state
     name: caption
     selector: ":host([data-caption])"
   - $type: state
@@ -153,6 +156,7 @@ events:
     bubbles: true
     composed: true
 tokens:
+  chart-body.gap: "{sherpa.theme-gap-sm}"
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
   title.color: "{sherpa.theme-content-body-base}"
