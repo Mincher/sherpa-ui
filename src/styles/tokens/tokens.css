@@ -1722,16 +1722,16 @@
   --sherpa-data-viz-series-4: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-blue-green-color-5) 50%, transparent);
   --sherpa-categorical-5: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-blue-color-5) 50%, transparent);
   --sherpa-data-viz-series-5: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-blue-color-5) 50%, transparent);
-  --sherpa-categorical-6: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-orange-color-5) 50%, transparent);
-  --sherpa-data-viz-series-6: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-orange-color-5) 50%, transparent);
-  --sherpa-categorical-7: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-pink-color-5) 50%, transparent);
-  --sherpa-data-viz-series-7: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-pink-color-5) 50%, transparent);
-  --sherpa-categorical-8: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-razamatazz-color-5) 50%, transparent);
-  --sherpa-data-viz-series-8: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-razamatazz-color-5) 50%, transparent);
-  --sherpa-categorical-9: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-green-color-5) 50%, transparent);
-  --sherpa-data-viz-series-9: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-green-color-5) 50%, transparent);
-  --sherpa-categorical-10: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-greyscale-color-5) 50%, transparent);
-  --sherpa-data-viz-series-10: color-mix(in srgb, var(--sherpa-theme-data-viz-sequential-greyscale-color-5) 50%, transparent);
+  --sherpa-categorical-6: color-mix(in srgb, #a88d59 50%, transparent);
+  --sherpa-data-viz-series-6: color-mix(in srgb, #a88d59 50%, transparent);
+  --sherpa-categorical-7: color-mix(in srgb, #a778b0 50%, transparent);
+  --sherpa-data-viz-series-7: color-mix(in srgb, #a778b0 50%, transparent);
+  --sherpa-categorical-8: color-mix(in srgb, #c92e61 50%, transparent);
+  --sherpa-data-viz-series-8: color-mix(in srgb, #c92e61 50%, transparent);
+  --sherpa-categorical-9: color-mix(in srgb, #00ac43 50%, transparent);
+  --sherpa-data-viz-series-9: color-mix(in srgb, #00ac43 50%, transparent);
+  --sherpa-categorical-10: color-mix(in srgb, #8a8a9a 50%, transparent);
+  --sherpa-data-viz-series-10: color-mix(in srgb, #8a8a9a 50%, transparent);
 
     /* series BORDER — colour 5 of the active sequence, held fixed */
   --sherpa-data-viz-series-border-1: var(--sherpa-theme-data-viz-sequential-purple-color-5);
@@ -2059,6 +2059,40 @@
     --sherpa-categorical-10: color-mix(in srgb, #005222 50%, transparent);
     --sherpa-data-viz-series-10: color-mix(in srgb, #005222 50%, transparent);
     --sherpa-data-viz-series-border-10: #36de8c;
+  }
+
+  [data-palette="set-2"] {
+    --sherpa-data-viz-series-border: #a88d59;
+    --sherpa-categorical-1: color-mix(in srgb, #ffe9c1 50%, transparent);
+    --sherpa-data-viz-series-1: color-mix(in srgb, #ffe9c1 50%, transparent);
+    --sherpa-data-viz-series-border-1: #a88d59;
+    --sherpa-categorical-2: color-mix(in srgb, #ead2a5 50%, transparent);
+    --sherpa-data-viz-series-2: color-mix(in srgb, #ead2a5 50%, transparent);
+    --sherpa-data-viz-series-border-2: #a88d59;
+    --sherpa-categorical-3: color-mix(in srgb, #d4ba8a 50%, transparent);
+    --sherpa-data-viz-series-3: color-mix(in srgb, #d4ba8a 50%, transparent);
+    --sherpa-data-viz-series-border-3: #a88d59;
+    --sherpa-categorical-4: color-mix(in srgb, #bea371 50%, transparent);
+    --sherpa-data-viz-series-4: color-mix(in srgb, #bea371 50%, transparent);
+    --sherpa-data-viz-series-border-4: #a88d59;
+    --sherpa-categorical-5: color-mix(in srgb, #a88d59 50%, transparent);
+    --sherpa-data-viz-series-5: color-mix(in srgb, #a88d59 50%, transparent);
+    --sherpa-data-viz-series-border-5: #a88d59;
+    --sherpa-categorical-6: color-mix(in srgb, #927744 50%, transparent);
+    --sherpa-data-viz-series-6: color-mix(in srgb, #927744 50%, transparent);
+    --sherpa-data-viz-series-border-6: #a88d59;
+    --sherpa-categorical-7: color-mix(in srgb, #7d6331 50%, transparent);
+    --sherpa-data-viz-series-7: color-mix(in srgb, #7d6331 50%, transparent);
+    --sherpa-data-viz-series-border-7: #a88d59;
+    --sherpa-categorical-8: color-mix(in srgb, #664f21 50%, transparent);
+    --sherpa-data-viz-series-8: color-mix(in srgb, #664f21 50%, transparent);
+    --sherpa-data-viz-series-border-8: #a88d59;
+    --sherpa-categorical-9: color-mix(in srgb, #513d12 50%, transparent);
+    --sherpa-data-viz-series-9: color-mix(in srgb, #513d12 50%, transparent);
+    --sherpa-data-viz-series-border-9: #a88d59;
+    --sherpa-categorical-10: color-mix(in srgb, #3c2b05 50%, transparent);
+    --sherpa-data-viz-series-10: color-mix(in srgb, #3c2b05 50%, transparent);
+    --sherpa-data-viz-series-border-10: #a88d59;
   }
 
 }

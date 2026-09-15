@@ -1432,132 +1432,160 @@
         "sequence 2": "#fff4e1",
         "sequence 3": "#ffe6da",
         "sequence 4": "#ffdad1",
-        "sequence 5": "#d4f0ff",
-        "sequence 6": "#f0fff5",
-        "sequence 7": "#fff4e1",
-        "sequence 8": "#ffe6da",
-        "sequence 9": "#ffdad1",
-        "sequence 10": "#d4f0ff"
+        "sequence 5": "#d4f0ff"
       },
       "data-viz/series/2": {
         "sequence 1": "#9cfcc5",
         "sequence 2": "#ffe9c1",
         "sequence 3": "#ffcdb4",
         "sequence 4": "#ffb2a1",
-        "sequence 5": "#a5e1ff",
-        "sequence 6": "#9cfcc5",
-        "sequence 7": "#ffe9c1",
-        "sequence 8": "#ffcdb4",
-        "sequence 9": "#ffb2a1",
-        "sequence 10": "#a5e1ff"
+        "sequence 5": "#a5e1ff"
       },
       "data-viz/series/3": {
         "sequence 1": "#82edb1",
         "sequence 2": "#ffdda0",
         "sequence 3": "#ffb28b",
         "sequence 4": "#ff856d",
-        "sequence 5": "#6fd1ff",
-        "sequence 6": "#82edb1",
-        "sequence 7": "#ffdda0",
-        "sequence 8": "#ffb28b",
-        "sequence 9": "#ff856d",
-        "sequence 10": "#6fd1ff"
+        "sequence 5": "#6fd1ff"
       },
       "data-viz/series/4": {
         "sequence 1": "#69dd9f",
         "sequence 2": "#ffd17b",
         "sequence 3": "#ff955b",
         "sequence 4": "#fc4e2d",
-        "sequence 5": "#39bff7",
-        "sequence 6": "#69dd9f",
-        "sequence 7": "#ffd17b",
-        "sequence 8": "#ff955b",
-        "sequence 9": "#fc4e2d",
-        "sequence 10": "#39bff7"
+        "sequence 5": "#39bff7"
       },
       "data-viz/series/5": {
         "sequence 1": "#36de8c",
         "sequence 2": "#ffc44c",
         "sequence 3": "#ff7300",
         "sequence 4": "#dd2c01",
-        "sequence 5": "#16abe2",
-        "sequence 6": "#36de8c",
-        "sequence 7": "#ffc44c",
-        "sequence 8": "#ff7300",
-        "sequence 9": "#dd2c01",
-        "sequence 10": "#16abe2"
+        "sequence 5": "#16abe2"
       },
       "data-viz/series/6": {
         "sequence 1": "#00d178",
         "sequence 2": "#d39a03",
         "sequence 3": "#d05c00",
         "sequence 4": "#b72200",
-        "sequence 5": "#008bba",
-        "sequence 6": "#00d178",
-        "sequence 7": "#d39a03",
-        "sequence 8": "#d05c00",
-        "sequence 9": "#b72200",
-        "sequence 10": "#008bba"
+        "sequence 5": "#008bba"
       },
       "data-viz/series/7": {
         "sequence 1": "#00ad62",
         "sequence 2": "#a27500",
         "sequence 3": "#a24600",
         "sequence 4": "#931900",
-        "sequence 5": "#006c91",
-        "sequence 6": "#00ad62",
-        "sequence 7": "#a27500",
-        "sequence 8": "#a24600",
-        "sequence 9": "#931900",
-        "sequence 10": "#006c91"
+        "sequence 5": "#006c91"
       },
       "data-viz/series/8": {
         "sequence 1": "#008a4b",
         "sequence 2": "#735200",
         "sequence 3": "#773200",
         "sequence 4": "#701100",
-        "sequence 5": "#004e6a",
-        "sequence 6": "#008a4b",
-        "sequence 7": "#735200",
-        "sequence 8": "#773200",
-        "sequence 9": "#701100",
-        "sequence 10": "#004e6a"
+        "sequence 5": "#004e6a"
       },
       "data-viz/series/9": {
         "sequence 1": "#006b37",
         "sequence 2": "#473100",
         "sequence 3": "#4e1e00",
         "sequence 4": "#4f0900",
-        "sequence 5": "#003246",
-        "sequence 6": "#006b37",
-        "sequence 7": "#473100",
-        "sequence 8": "#4e1e00",
-        "sequence 9": "#4f0900",
-        "sequence 10": "#003246"
+        "sequence 5": "#003246"
       },
       "data-viz/series/10": {
         "sequence 1": "#005222",
         "sequence 2": "#1f1400",
         "sequence 3": "#290c00",
         "sequence 4": "#300300",
-        "sequence 5": "#001925",
-        "sequence 6": "#005222",
-        "sequence 7": "#1f1400",
-        "sequence 8": "#290c00",
-        "sequence 9": "#300300",
-        "sequence 10": "#001925"
+        "sequence 5": "#001925"
       },
       "data-viz/border": {
         "sequence 1": "#36de8c",
         "sequence 2": "#ffc44c",
         "sequence 3": "#ff7300",
         "sequence 4": "#dd2c01",
-        "sequence 5": "#16abe2",
-        "sequence 6": "#36de8c",
-        "sequence 7": "#ffc44c",
-        "sequence 8": "#ff7300",
-        "sequence 9": "#dd2c01",
-        "sequence 10": "#16abe2"
+        "sequence 5": "#16abe2"
+      }
+    }
+  },
+  "data-viz-set-2": {
+    "collectionId": "VariableCollectionId:1224:39599",
+    "defaultMode": "sequence 1",
+    "vars": {
+      "data-viz/series/1": {
+        "sequence 1": "#ffe9c1",
+        "sequence 2": "#f8d2ff",
+        "sequence 3": "#ff8aa4",
+        "sequence 4": "#9cfcc5",
+        "sequence 5": "#d8d8e8"
+      },
+      "data-viz/series/2": {
+        "sequence 1": "#ead2a5",
+        "sequence 2": "#e4bbec",
+        "sequence 3": "#f47392",
+        "sequence 4": "#37e78d",
+        "sequence 5": "#c9c9d7"
+      },
+      "data-viz/series/3": {
+        "sequence 1": "#d4ba8a",
+        "sequence 2": "#d0a3d8",
+        "sequence 3": "#e85c81",
+        "sequence 4": "#00d473",
+        "sequence 5": "#b4b4c3"
+      },
+      "data-viz/series/4": {
+        "sequence 1": "#bea371",
+        "sequence 2": "#bc8dc4",
+        "sequence 3": "#d94570",
+        "sequence 4": "#00c05a",
+        "sequence 5": "#9f9eae"
+      },
+      "data-viz/series/5": {
+        "sequence 1": "#a88d59",
+        "sequence 2": "#a778b0",
+        "sequence 3": "#c92e61",
+        "sequence 4": "#00ac43",
+        "sequence 5": "#8a8a9a"
+      },
+      "data-viz/series/6": {
+        "sequence 1": "#927744",
+        "sequence 2": "#91649a",
+        "sequence 3": "#b71653",
+        "sequence 4": "#00972e",
+        "sequence 5": "#767685"
+      },
+      "data-viz/series/7": {
+        "sequence 1": "#7d6331",
+        "sequence 2": "#7c5185",
+        "sequence 3": "#a30345",
+        "sequence 4": "#00811b",
+        "sequence 5": "#636371"
+      },
+      "data-viz/series/8": {
+        "sequence 1": "#664f21",
+        "sequence 2": "#67406e",
+        "sequence 3": "#8d0038",
+        "sequence 4": "#006c08",
+        "sequence 5": "#50505d"
+      },
+      "data-viz/series/9": {
+        "sequence 1": "#513d12",
+        "sequence 2": "#523059",
+        "sequence 3": "#77002c",
+        "sequence 4": "#005700",
+        "sequence 5": "#3e3e49"
+      },
+      "data-viz/series/10": {
+        "sequence 1": "#3c2b05",
+        "sequence 2": "#3e2044",
+        "sequence 3": "#610021",
+        "sequence 4": "#004200",
+        "sequence 5": "#2d2d36"
+      },
+      "data-viz/border": {
+        "sequence 1": "#a88d59",
+        "sequence 2": "#a778b0",
+        "sequence 3": "#c92e61",
+        "sequence 4": "#00ac43",
+        "sequence 5": "#8a8a9a"
       }
     }
   }

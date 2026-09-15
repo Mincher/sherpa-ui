@@ -187,6 +187,10 @@ const ROUTING = {
   // colouring its marks by POSITION exactly as it always does — the palette swap
   // is the one change, and no chart needs status-aware code of its own.
   'data-viz-status': { target: 'skip' },
+  // SET 2 — the second five sequences, as an extension of Data Viz. The base
+  // holds five, so every collection is five wide and the Status extension does
+  // not have to repeat itself. → [data-palette="set-2"] @layer style.
+  'data-viz-set-2': { target: 'skip' },
   'style-transparent': { target: 'skip' }, // → [data-look="transparent"] @layer style
   'style-saturated': { target: 'skip' }, // → [data-look="saturated"] @layer style
   // The BORDER collection — per-corner rounding + per-edge border width.
@@ -920,7 +924,17 @@ const seriesBorderLines = [];
       bySequence.set(mode, withOpacity(toCss(raw, leaf.type), leaf.opacity?.[mode]));
     }
   }
+  // The base holds FIVE sequences since Set 2 was split out, so it supplies only
+  // the first five picks. The rest come from the Set 2 extension's cache — the
+  // ten categorical hues span both collections.
   const picks = modeNames.map((m) => bySequence.get(m)).filter((v) => v != null);
+  const set2 = extDoc['data-viz-set-2']?.vars?.['data-viz/series/5'];
+  if (set2) {
+    for (const mode of Object.keys(set2)) {
+      const v = set2[mode];
+      if (v != null) picks.push(`color-mix(in srgb, ${v} 50%, transparent)`);
+    }
+  }
 
   for (const [n, v] of hues) {
     const pick = picks[n - 1] ?? v;
@@ -958,12 +972,13 @@ const seriesBorderLines = [];
 // series-*` aliases are re-pointed, because charts consume whichever they were
 // written against.
 const paletteBlocks = [];
-{
-  const cache = extDoc['data-viz-status']?.vars;
+for (const slug of ['data-viz-status', 'data-viz-set-2']) {
+  const cache = extDoc[slug]?.vars;
+  const palette = slug.replace(/^data-viz-/, '');
   if (!cache) {
-    warn('status palette "data-viz-status" missing from extension cache');
+    warn(`palette "${slug}" missing from extension cache`);
   } else {
-    const mode = extDoc['data-viz-status'].defaultMode ?? 'categorical';
+    const mode = extDoc[slug].defaultMode ?? 'sequence 1';
     const lines = [];
     // The BORDER first, so it is not mistaken for a series index.
     const borderVal = cache['data-viz/border']?.[mode];
@@ -987,7 +1002,7 @@ const paletteBlocks = [];
     const idx = (l) => Number(l.match(/-(\d+):/)?.[1] ?? -1);
     lines.sort((a, b) => idx(a) - idx(b) || a.localeCompare(b));
     if (lines.length) {
-      paletteBlocks.push(`  [data-palette="status"] {\n${lines.join('\n')}\n  }`);
+      paletteBlocks.push(`  [data-palette="${palette}"] {\n${lines.join('\n')}\n  }`);
     }
   }
 }
@@ -1568,7 +1583,7 @@ console.log(
     `  layout       ${layers.layout.root.length} vars + .sherpa-view\n` +
     `  structure    ${layers.structure.root.length} vars\n` +
     `  border       ${layers.border.root.length} vars, ${snapBlocks.length} group positions\n` +
-    `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length} series, ${seriesBorderLines.length} border, ${paletteBlocks.length} palette\n` +
+    `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length / 2} series, ${seriesBorderLines.length} border, ${paletteBlocks.length} palette\n` +
     `  elevation    ${layers.elevation.root.length} vars, ${shadowAliasLines.length} shadow aliases, ${layers.elevation.modeBlocks.length} [data-elevation]\n` +
     `✓ ${wrote} component token regions inlined into <comp>.css\n` +
     `${warnings.length ? `⚠ ${warnings.length} warning(s) — see above` : '✓ no warnings'}`,

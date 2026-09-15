@@ -25,24 +25,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 1}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 1}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 1}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 1}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 1}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 1}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 1}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 1}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 1}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 1}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -66,24 +56,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 2}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 2}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 2}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 2}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 2}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 2}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 2}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 2}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 2}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 2}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -107,24 +87,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 3}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 3}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 3}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 3}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 3}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 3}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 3}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 3}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 3}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 3}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -148,24 +118,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 4}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 4}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 4}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 4}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 4}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 4}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 4}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 4}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 4}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 4}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -189,24 +149,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 5}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 5}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 5}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 5}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 5}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 5}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 5}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 5}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 5}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 5}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -230,24 +180,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 6}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 6}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 6}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 6}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 6}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 6}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 6}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 6}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 6}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 6}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -271,24 +211,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 7}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 7}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 7}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 7}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 7}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 7}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 7}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 7}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 7}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 7}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -312,24 +242,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 8}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 8}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 8}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 8}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 8}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 8}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 8}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 8}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 8}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 8}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -353,24 +273,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 9}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 9}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 9}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 9}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 9}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 9}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 9}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 9}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 9}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 9}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -394,24 +304,14 @@
               "sequence 2": "{theme.data-viz.sequential.phlox.color 10}",
               "sequence 3": "{theme.data-viz.sequential.turquoise.color 10}",
               "sequence 4": "{theme.data-viz.sequential.blue green.color 10}",
-              "sequence 5": "{theme.data-viz.sequential.blue.color 10}",
-              "sequence 6": "{theme.data-viz.sequential.orange.color 10}",
-              "sequence 7": "{theme.data-viz.sequential.pink.color 10}",
-              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 10}",
-              "sequence 9": "{theme.data-viz.sequential.green.color 10}",
-              "sequence 10": "{theme.data-viz.sequential.greyscale.color 10}"
+              "sequence 5": "{theme.data-viz.sequential.blue.color 10}"
             },
             "opacity": {
               "sequence 1": "{primitives.effects.opacity.500}",
               "sequence 2": "{primitives.effects.opacity.500}",
               "sequence 3": "{primitives.effects.opacity.500}",
               "sequence 4": "{primitives.effects.opacity.500}",
-              "sequence 5": "{primitives.effects.opacity.500}",
-              "sequence 6": "{primitives.effects.opacity.500}",
-              "sequence 7": "{primitives.effects.opacity.500}",
-              "sequence 8": "{primitives.effects.opacity.500}",
-              "sequence 9": "{primitives.effects.opacity.500}",
-              "sequence 10": "{primitives.effects.opacity.500}"
+              "sequence 5": "{primitives.effects.opacity.500}"
             },
             "primaryMode": "sequence 1",
             "scopes": [
@@ -436,24 +336,14 @@
             "sequence 2": "{theme.data-viz.sequential.phlox.color 5}",
             "sequence 3": "{theme.data-viz.sequential.turquoise.color 5}",
             "sequence 4": "{theme.data-viz.sequential.blue green.color 5}",
-            "sequence 5": "{theme.data-viz.sequential.blue.color 5}",
-            "sequence 6": "{theme.data-viz.sequential.orange.color 5}",
-            "sequence 7": "{theme.data-viz.sequential.pink.color 5}",
-            "sequence 8": "{theme.data-viz.sequential.razamatazz.color 5}",
-            "sequence 9": "{theme.data-viz.sequential.green.color 5}",
-            "sequence 10": "{theme.data-viz.sequential.greyscale.color 5}"
+            "sequence 5": "{theme.data-viz.sequential.blue.color 5}"
           },
           "opacity": {
             "sequence 1": "{primitives.effects.opacity.1000}",
             "sequence 2": "{primitives.effects.opacity.1000}",
             "sequence 3": "{primitives.effects.opacity.1000}",
             "sequence 4": "{primitives.effects.opacity.1000}",
-            "sequence 5": "{primitives.effects.opacity.1000}",
-            "sequence 6": "{primitives.effects.opacity.1000}",
-            "sequence 7": "{primitives.effects.opacity.1000}",
-            "sequence 8": "{primitives.effects.opacity.1000}",
-            "sequence 9": "{primitives.effects.opacity.1000}",
-            "sequence 10": "{primitives.effects.opacity.1000}"
+            "sequence 5": "{primitives.effects.opacity.1000}"
           },
           "primaryMode": "sequence 1",
           "scopes": [
