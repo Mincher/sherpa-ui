@@ -17,6 +17,14 @@
 
 :host {
   display: block;
+  /* A FIXED 120 (Figma App Header 150:3690). Not a variable — the header is one
+     height in every mode and density, so it is a literal rather than a token
+     lookup that would imply it can change.
+
+     It has to be on the HOST: the host is what sizes the header in the shell's
+     grid, so sizing it by content meant tightening any inner gap SHRANK the whole
+     header — which is what pulled it to 112 and moved every row up with it. */
+  block-size: 120px;
   /* TWO container types on one element: `inline-size` for the layout queries
      further down, and `scroll-state` so the header can ask whether it is
      currently STUCK. One `container-type` cannot do both, so they are combined. */
@@ -39,7 +47,14 @@
 
 /* The positioning context for the loading-bar overlay, so it can sit on the
    header's bottom edge without taking any height. */
-.bar { position: relative; }
+/* Fills the host's fixed 120 and hands it on to .content, so the view block can
+   bottom-align inside it. Left to hug its content, this box stopped at 112 and
+   the whole chain below it sat 8px high. */
+.bar {
+  position: relative;
+  block-size: 100%;
+  box-sizing: border-box;
+}
 
 /* THE DROP SHADOW, only while content is scrolled under.
    `scroll-state(stuck: top)` is true exactly when a sticky element has left its
@@ -66,8 +81,31 @@
 .content {
   display: flex;
   flex-direction: column;
+  /* Gap space/sm 12 between the breadcrumb row and the view block, read from the
+     App Header (150:3690). It is the breathing room between "where you are" and
+     "what you are looking at", and the two rows read as one block without it. */
   gap: var(--sherpa-display-mode-space-sm, 12px);
   padding: var(--sherpa-display-mode-space-xs, 8px);
+  /* The header is a FIXED 120 (Figma 150:3690), not the sum of its rows. Sized by
+     content, tightening any inner gap SHRANK the whole header — which is what
+     dropped it to 112 and pulled every row up with it. Pinning the height means
+     an inner gap moves content INSIDE the header rather than resizing it.
+
+     Built from the tokens Figma composes it from rather than a literal 120,
+     because there is no 120 step in the size scale (it stops at 6xl 64):
+       8   padding-top
+       24  history row      (size/lg)
+       12  gap              (space/sm)
+       24  title row        (size/lg)
+       4   gap              (space/2xs)
+       32  filter toolbar   (size/2xl)
+       8   padding-bottom
+     The two paddings are already on this element, so the min-height covers the
+     rows and the gaps between them. */
+  /* Fills the host's fixed height, so the view block below can bottom-align
+     inside it rather than the header shrinking to fit. */
+  block-size: 100%;
+  box-sizing: border-box;
 }
 
 /* ── Row 1: history + actions ───────────────────────────────────────── */
@@ -204,11 +242,20 @@
 }
 :host([data-notifications]) .notif-badge { display: block; }
 
-/* ── Row 2: view details ────────────────────────────────────────────── */
+/* ── Row 2: view details ──────────────────────────────────────────────
+   Gap space/2xs 4, re-read from the App Header (150:3690): the View Details
+   frame is itemSpacing 4 and starts at y=52, which puts the Title Row at 52-76.
+   That is what centres it on the nav's search field (48-80) — both midpoints
+   land on 64. At 12 the row sat at 44-68 and read 8px high of the search. */
 .row-view {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* Pushed to the BOTTOM of the header's fixed 120. Figma pins the block's lower
+     edge at 112 (120 less the 8px padding) and lets its top float — at gap 4 it
+     starts at 52, which is what centres the Title Row on the nav's search field
+     (48-80, both midpoints on 64). */
+  margin-block-start: auto;
 }
 
 /* Figma Title Row: gap space/xs 8, 24 tall. */
