@@ -161,8 +161,10 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
   // is the FIELD around the glyph: no border, no padding, no input.
   expect(r.search).toBe('flex');
   expect(r.searchInput).toBe('none');
-  // Square, and the same 24 as every other row in the rail.
-  expect(r.searchBox).toEqual({ h: 24, w: 24 });
+  // 32 tall — the SAME height the expanded field has, not 24 like a nav row.
+  // Hovering the rail swaps collapsed → hover, and a row that changed height
+  // between the two shifted everything below it as the panel opened.
+  expect(r.searchBox).toEqual({ h: 32, w: 24 });
   expect(r.sectionLabel).toBe('none');
 });
 

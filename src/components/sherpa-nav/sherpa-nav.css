@@ -292,7 +292,11 @@
   display: flex;
   justify-content: center;
   padding-inline: 0;
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  /* 32, the SAME height the expanded field has — not 24 like a nav row.
+     Hovering the rail swaps collapsed → hover, and a row that changed height
+     between the two shifted everything below it as the panel opened. Matching
+     the expanded height means only the WIDTH animates. */
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
   border: none;
   background: none;
 }

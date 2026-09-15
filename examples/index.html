@@ -33,6 +33,23 @@
     <main id="view-root"></main>
   </sherpa-app-shell>
 
+  <!-- The ASSISTANT, as a right-pinned overlay over the content.
+
+       sherpa-overlay-panel is already a right-hand floating panel — a <dialog>
+       opened with show() (not showModal()), so the page behind stays live and a
+       person can keep working while it is open. That is what makes it the right
+       home for an assistant, and it is why the Assistant NAV ITEM is gone: a
+       whole page you have to navigate away to reach cannot answer a question
+       about the page you left.
+
+       It lives OUTSIDE the app-shell so a view swap cannot take it with it, and
+       its content is fetched from the same chat template the view used, so the
+       two can never drift apart. -->
+  <sherpa-overlay-panel id="assistant"
+                        data-title="Assistant"
+                        data-icon="fa-solid fa-wand-magic-sparkles"
+                        data-dismissible></sherpa-overlay-panel>
+
   <script type="module">
     import { installIcons } from '../dist/index.js';
 
@@ -67,7 +84,6 @@
         { label: 'Views', items: [
           { id: 'view-dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge-high', href: '?view=dashboard' },
           { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
-          { id: 'view-chat',      label: 'Assistant', icon: 'fa-solid fa-comments',    href: '?view=chat' },
         ] },
       ],
       // SETTINGS mode — the settings BUTTON in the nav header swaps the rail to
@@ -183,6 +199,26 @@
       const saved = localStorage.getItem(MODE_KEY);
       if (saved === 'light' || saved === 'dark') document.documentElement.dataset.mode = saved;
     } catch { /* storage unavailable — the markup's own data-mode stands */ }
+
+    /* Ask N-zo opens the assistant panel.
+       Its markup is the CHAT template, fetched on first open and kept — a person
+       re-opening the panel should find the thread they left, not a blank one. The
+       chat module is imported once too, so the composer is wired the same way it
+       is in the full-page view. */
+    const assistant = document.getElementById('assistant');
+    let assistantReady = null;
+    document.addEventListener('ai-click', () => {
+      assistantReady ??= (async () => {
+        assistant.innerHTML = await (await fetch('/template/view/chat')).text();
+        await customElements.whenDefined('sherpa-overlay-panel');
+        const mod = await import('./views/chat.js');
+        // The chat view hides the app header for its full-page form; inside a
+        // panel the header must stay, so its shell tweak is undone straight away.
+        const cleanup = await mod.init(assistant);
+        cleanup?.();
+      })();
+      void assistantReady.then(() => assistant.show());
+    });
 
     document.addEventListener('theme-toggle', () => {
       setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');

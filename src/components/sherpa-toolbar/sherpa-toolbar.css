@@ -10,14 +10,16 @@
  * Figma bindings (visual-diff 2026-09-08): the toolbar is a TRANSPARENT bare
  * strip — no fill, no radius. Under a [data-status] ancestor it takes the status
  * surface via the cascade (--_status-surface), otherwise transparent. Block
- * padding = Theme padding/md (8px); inline padding = Theme padding/sm (4px);
- * zone gap = space/xs (8px). Text
+ * padding = Theme padding/md (8px); inline padding = Theme padding/MD (8px too —
+ * Will's call: at sm 4 the leading control sat closer to the card edge than
+ * anything below it, so the bar read as narrower than the content it heads).
+ * Zone gap = space/xs (8px). Text
  * ink = content/secondary/base.
  */
 
 :host {
   --_py: var(--sherpa-theme-padding-md, 8px);
-  --_px: var(--sherpa-theme-padding-sm, 4px);
+  --_px: var(--sherpa-theme-padding-md, 8px);
   --_gap: var(--sherpa-display-mode-space-xs, 8px);
   display: block;
   inline-size: 100%;
