@@ -618,12 +618,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *
    * A tri-state control has to say which state it is in — the chip's on/off tint
    * alone cannot tell ascending from descending.
+   *
+   * The CHIP says "Sort" and never moves; the picked COLUMN reads in the caret
+   * button, the same split every other menu chip uses since Figma's State=menu
+   * made the caret a Button with its own label (150:3408). This used to fold
+   * them together as "Sort: Region", which re-flowed the whole bar on every pick.
    */
   #syncSortLabel(chip: HTMLElement): void {
     const live = chip.hasAttribute('data-current');
     const desc = chip.dataset['direction'] === 'desc';
     const column = this.#organise.sort?.find((c) => c.field === this.#menuValue('sort'));
-    chip.setAttribute('data-label', column ? `Sort: ${column.label}` : 'Sort');
+    chip.setAttribute('data-label', 'Sort');
+    const target = chip as HTMLElement & { valueLabel?: string };
+    // A SUSPENDED sort keeps its column — it is off temporarily, not reset — so
+    // the caret still names it and only the icon says the sort is not running.
+    if ('valueLabel' in target) target.valueLabel = column?.label ?? '';
     const { sortNone, sortAsc, sortDesc } = SherpaQuickFilterToolbar.#icons;
     // OFF gets its OWN glyph. It used to wear the ascending arrow, so a
     // suspended sort looked identical to an active ascending one — the whole

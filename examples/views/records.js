@@ -1,16 +1,22 @@
 /**
  * examples/views/records.js — the records / CRUD-table view's logic.
  *
- * Exported as init(root): builds 100 customers, populates the grid / quick-filter
- * toolbar / pagination / dialog that live inside `root`, and wires filter/sort/
- * page + the add-customer dialog → toast flow. The shared nav/header live once in
- * index.html.
+ * Exported as init(root): builds 100 customers, puts them in a store, and binds
+ * the grid / quick-filter toolbar / pagination inside `root` to ONE DataSource.
+ * The shared nav/header live once in index.html.
+ *
+ * This view is the data layer's proof. It used to hand-wire the whole pipeline —
+ * applyFilter, a compare function, applySort, currentRows, render — plus six
+ * event handlers, INCLUDING two rival `sort-change` listeners whose own comment
+ * admitted they were being held together by hand. All of that is now three
+ * bind() calls: the grid's column header and the toolbar's Sort chip read and
+ * write one shared value, so they cannot disagree.
  *
  * 100 rows over 10 pages is the point: it exercises pagination, the grid's own
  * internal scroll inside a fixed-height panel, and grouping across a row count
  * that no longer fits on one screen.
  */
-import { SherpaToast } from '../../dist/index.js';
+import { ArrayStore, DataSource, SherpaToast } from '../../dist/index.js';
 
 export async function init(root) {
   /* ── Data: 100 customers ──────────────────────────────────────────── */
@@ -87,86 +93,45 @@ export async function init(root) {
     { field: 'lastSeen',    header: 'Last seen', sortable: true, type: 'date' },
   ];
 
-  /* ── Live view state: filtered → sorted → paged ──────────────────── */
-  let activeFilters = [];         // status ids from the quick-filter TOGGLE chips
-  let filterValues = {};          // { plan: ['pro'], owner: ['me'] } from the MENU chips
-  let sort = { field: null, direction: 'asc' };
-  let group = null;               // the column the toolbar's Group chip picked
-  let page = 1;
-  // Read from the pager rather than hardcoded: sherpa-pagination defaults to 25,
-  // and a number written here would silently disagree with the select beside it.
-  let pageSize = 25;
+  /* ── The data layer ───────────────────────────────────────────────── */
 
-  /* A chip's id IS its column. It used to be looked up in a hardcoded map of the
-     four chips the bar happened to start with — so a filter ADDED through the Add
-     control (seats, health, open tickets) was not in the map and did nothing at
-     all. The chips are built from the column list, so the id is the field name by
-     construction; matching on the column set instead means any chip works, added
-     or not. */
-  const columnFields = new Set(columns.map((c) => c.field));
-  // Columns holding an ISO date — a two-pick filter on one of these is a range,
-  // where two picks on any other column means "either of these values".
+  /* One store holds the records; ONE source holds how they are being viewed.
+     This replaces ~80 lines of hand-wired pipeline — applyFilter, compare,
+     applySort, currentRows and render — and, more importantly, replaces the two
+     separate `sort-change` handlers this file used to carry. The grid's column
+     header and the toolbar's Sort chip now read and write the SAME value, so
+     they cannot disagree; the comment that used to sit here admitting they were
+     being held together by hand is gone with them. */
+  const store = new ArrayStore(customers, { key: 'email' });
+  const source = new DataSource({
+    store,
+    // 25 to match sherpa-pagination's own default — a different number here
+    // would silently disagree with the select beside it.
+    pageSize: 25,
+    searchFields: ['name', 'email', 'owner'],
+  });
+
+  /* Columns holding an ISO date — two picks on one of these is a RANGE, where
+     two picks on any other column means "either of these values". */
   const dateFields = new Set(['created', 'lastSeen']);
 
-  const applyFilter = (rows) => {
-    let out = activeFilters.length
-      ? rows.filter((r) => activeFilters.includes(r.status))
-      : rows;
-    // Each menu chip narrows by its own column: a row must match ONE of the
-    // picked values (OR within a chip), and every active chip (AND across chips).
-    for (const [field, picked] of Object.entries(filterValues)) {
-      // A chip whose id names no column is deliberately inert rather than
-      // silently filtering everything away.
-      if (!columnFields.has(field) || !picked.length) continue;
-      // TWO picks on a date column is a RANGE (inclusive) — the shape a
-      // date-range chip will report. One pick is an exact day.
+  /* The toolbar reports its chips as `{ values: { field: [picked] } }`, and the
+     source turns that into a filter on its own. The one thing it cannot guess is
+     that two picks on a DATE column mean a range rather than an either/or, so
+     that is translated here and handed over as a real filter. */
+  const filterFromChips = (values) => {
+    const clauses = [];
+    for (const [field, picked] of Object.entries(values ?? {})) {
+      if (!picked?.length) continue;
       if (picked.length === 2 && dateFields.has(field)) {
-        const [from, to] = [...picked].sort();
-        out = out.filter((r) => String(r[field]) >= from && String(r[field]) <= to);
-        continue;
+        clauses.push([field, 'between', [...picked].sort()]);
+      } else if (picked.length === 1) {
+        clauses.push([field, 'eq', picked[0]]);
+      } else {
+        clauses.push([field, 'in', picked]);
       }
-      const wanted = new Set(picked.map((v) => String(v).toLowerCase()));
-      out = out.filter((r) => wanted.has(String(r[field]).toLowerCase()));
     }
-    return out;
-  };
-
-  /* Numbers compare as numbers, everything else as text — the same rule the grid
-     uses internally, so the toolbar's Sort chip and the grid's own header sort
-     can never disagree about the order. */
-  const compare = (a, b, field, dir) => {
-    const av = a[field];
-    const bv = b[field];
-    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir;
-    return String(av).localeCompare(String(bv), undefined, { numeric: true }) * dir;
-  };
-
-  /* Grouping runs BEFORE the sort key, so rows of the same group stay together
-     and the sort orders them WITHIN their group. */
-  const applySort = (rows) => {
-    if (!sort.field && !group) return rows;
-    const dir = sort.direction === 'desc' ? -1 : 1;
-    return [...rows].sort((a, b) =>
-      (group ? compare(a, b, group, 1) : 0) ||
-      (sort.field ? compare(a, b, sort.field, dir) : 0));
-  };
-
-  const currentRows = () => applySort(applyFilter(customers));
-
-  const render = () => {
-    const rows = currentRows();
-    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-    if (page > totalPages) page = totalPages;
-    const start = (page - 1) * pageSize;
-    const slice = rows.slice(start, start + pageSize);
-    /* Rows go in RAW. `spend` stays a number so both sorts — this view's Sort
-       chip and the grid's own internal #sortRows — compare it numerically. A
-       pre-formatted '$1,234' would send the grid's header sort back to a lexical
-       compare, putting $90 after $1,000. The number columns are right-aligned
-       mono via `type: 'number'`, which is the alignment the money needed. */
-    grid.populate({ columns, rows: slice });
-    pager.dataset.totalPages = String(totalPages);
-    pager.dataset.page = String(page);
+    return clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined;
   };
 
   /* ── Cache view refs (scoped to root) ────────────────────────────── */
@@ -298,53 +263,36 @@ export async function init(root) {
   /* Plan radio group in the dialog. */
   planGroup.populate(plans.map((p) => ({ value: p.toLowerCase(), label: p })));
 
-  render();
+  /* ── Binding ─────────────────────────────────────────────────────── */
 
-  /* ── Wiring ──────────────────────────────────────────────────────── */
+  /* Three components, ONE source. Each one both READS (the source populates it
+     and writes the view state onto it as data-*) and WRITES (its own noun-verb
+     events steer the source). Neither half needed a new component API — the
+     events were already ratified and composed, and data-sort-field /
+     data-sort-direction / data-group-field are the standard attribute names.
 
-  // Sort: re-sort + re-populate.
-  grid.addEventListener('sort-change', (e) => {
-    sort = { field: e.detail.field, direction: e.detail.direction };
-    render();
-  });
+     What used to be six hand-written handlers below is now three bind() calls,
+     and the two rival `sort-change` listeners collapse into one shared value. */
 
-  // Quick filters: filter the rows, reset to page 1.
+  // The grid takes { columns, rows }, not a bare array — so the shape is adapted
+  // AT THE BINDING, which is where the mismatch actually is.
+  source.bind(grid, { as: (rows) => ({ columns, rows }) });
+  source.bind(pager);
+
+  /* The toolbar steers filters, sort and grouping. Its chips are translated by
+     hand because only this view knows that two picks on `created` mean a RANGE;
+     everything else the source reads straight off the event. */
+  source.bind(qft, { readonly: true });
   qft.addEventListener('quick-filter-change', (e) => {
-    activeFilters = e.detail.active || [];
-    filterValues = e.detail.values || {};
-    page = 1;
-    render();
+    source.setFilter(filterFromChips(e.detail.values));
   });
+  qft.addEventListener('sort-change', (e) => source.setSort(e.detail.field, e.detail.direction));
+  qft.addEventListener('group-change', (e) => source.setGroup(e.detail.field || null));
+  // The GRID does the grouping — data-group-field makes it drop that column and
+  // draw a collapsible group row per value. The source writes that attribute on
+  // every bound component, so the grid gets it without this view wiring it.
 
-  // The toolbar's Group chip: cluster rows by a column. The GRID does the
-  // grouping — data-group-field makes it drop that column and draw a collapsible
-  // group row per value, which is what the design calls for.
-  qft.addEventListener('group-change', (e) => {
-    group = e.detail.field;
-    if (group) grid.dataset.groupField = group;
-    else delete grid.dataset.groupField;
-    page = 1;
-    render();
-  });
-
-  // The toolbar's Sort chip. Same event the grid's own header sort fires, so both
-  // routes land on one piece of state and cannot disagree.
-  qft.addEventListener('sort-change', (e) => {
-    sort = { field: e.detail.field, direction: e.detail.direction };
-    page = 1;
-    render();
-  });
-
-  // Pagination: swap the visible slice.
-  pager.addEventListener('page-change', (e) => {
-    page = e.detail.page;
-    render();
-  });
-  pager.addEventListener('page-size-change', (e) => {
-    pageSize = e.detail.pageSize;
-    page = 1;
-    render();
-  });
+  await source.load();
 
   // Dialog open/close + save → toast.
   root.querySelector('#add-btn').addEventListener('button-click', () => {
@@ -356,8 +304,36 @@ export async function init(root) {
   });
   root.querySelector('#cancel-btn').addEventListener('button-click', () => dialog.close());
 
-  root.querySelector('#save-btn').addEventListener('button-click', () => {
+  root.querySelector('#save-btn').addEventListener('button-click', async () => {
     const name = root.querySelector('#f-name').value || 'New customer';
+    const email = root.querySelector('#f-email').value;
+    const plan = root.querySelector('#f-plan').value;
+
+    /* This ACTUALLY ADDS THE RECORD now. It used to close the dialog and show a
+       success toast having written nothing — the backlog's "Add Customer does
+       not add data". The store is the fix, and it is the whole fix: inserting
+       announces a change, the source reloads, and every bound component
+       re-populates. Where the new row lands against the active sort, whether an
+       active filter hides it, and what the page totals become are all the
+       source's existing work, not five separate things to remember here. */
+    const created = new Date().toISOString().slice(0, 10);
+    await store.insert({
+      name,
+      // The key is the email, so a blank one would collide with the next blank.
+      email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      status: 'trial',
+      plan: plan ? plan[0].toUpperCase() + plan.slice(1) : 'Free',
+      region: 'EMEA',
+      tier: 'Bronze',
+      owner: 'Unassigned',
+      seats: 1,
+      spend: 0,
+      openTickets: 0,
+      health: 100,
+      created,
+      lastSeen: created,
+    });
+
     dialog.close();
     // The FACTORY, not a hand-built element: it owns the shared top-right stack
     // (so a second toast pushes the first down rather than covering it), the
