@@ -499,3 +499,64 @@ test('source: a failed load is a STATE, not a throw', async ({ page }) => {
   expect(got.loadingFlips).toBe(2);
   expect(got.rows).toBe(0);
 });
+
+/**
+ * steerOnly — the component's events reach the source, but no rows come back.
+ *
+ * The quick-filter toolbar's case: its populate() means "here are your CHIPS",
+ * not "here are your rows", so a plain bind overwrote the bar with records and
+ * it came back holding only Group and Sort. Without this it had to be
+ * hand-wired with a listener per event — the tangle the layer exists to remove.
+ */
+test('source: steerOnly sends events but never pushes rows', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = (await import('/dist/index.js')) as unknown as {
+      ArrayStore: new (rows: unknown[]) => never;
+      DataSource: new (o: unknown) => {
+        load(): Promise<void>;
+        bind(el: unknown, o?: unknown): void;
+        state: { sort: { field: string }[] };
+        rows: unknown[];
+      };
+    };
+
+    const rows = [{ name: 'B', seats: 2 }, { name: 'A', seats: 9 }];
+    const source = new DataSource({ store: new ArrayStore(rows) });
+
+    // Two consumers: one ordinary, one steer-only.
+    const fed: unknown[] = [];
+    const grid = document.createElement('div') as HTMLElement & { populate(d: unknown): void };
+    grid.populate = (d) => fed.push(d);
+
+    const steererFed: unknown[] = [];
+    const toolbar = document.createElement('div') as HTMLElement & { populate(d: unknown): void };
+    toolbar.populate = (d) => steererFed.push(d);
+
+    document.getElementById('root')!.replaceChildren(grid, toolbar);
+    source.bind(grid);
+    source.bind(toolbar, { steerOnly: true });
+    await source.load();
+
+    // The steer-only component STEERS.
+    toolbar.dispatchEvent(
+      new CustomEvent('sort-change', { bubbles: true, detail: { field: 'seats', direction: 'asc' } }),
+    );
+    await new Promise((res) => setTimeout(res, 50));
+
+    return {
+      // …and the source acted on it.
+      sortField: source.state.sort[0]?.field,
+      gridFed: fed.length > 0,
+      // The state attributes still reach it, which is what keeps its Sort chip
+      // and the grid's header arrow two views of ONE value.
+      toolbarSortAttr: toolbar.getAttribute('data-sort-field'),
+      // But it was never handed rows.
+      toolbarFed: steererFed.length,
+    };
+  });
+
+  expect(r.sortField).toBe('seats');
+  expect(r.gridFed).toBe(true);
+  expect(r.toolbarSortAttr).toBe('seats');
+  expect(r.toolbarFed).toBe(0);
+});

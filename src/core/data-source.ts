@@ -73,6 +73,22 @@ export interface BindOptions {
    */
   readonly?: boolean;
   /**
+   * STEER ONLY — the component's events reach the source, but no rows are ever
+   * pushed back to it.
+   *
+   * The mirror of `readonly`, and the case the quick-filter toolbar needs: its
+   * `populate()` means "here are your CHIPS", not "here are your rows", so a
+   * plain bind overwrote the bar with records and it came back holding only
+   * Group and Sort. Without this, such a component has to be hand-wired with a
+   * listener per event — which is the six-handler tangle the whole layer exists
+   * to remove.
+   *
+   * It still receives the STATE attributes (data-sort-field and the rest), so
+   * the toolbar's Sort chip and the grid's header arrow stay two views of one
+   * value.
+   */
+  steerOnly?: boolean;
+  /**
    * Reshape the rows before they reach this component.
    *
    * Components ask for different shapes: a chart wants `[{ label, value }]`, the
@@ -121,7 +137,10 @@ export class DataSource extends EventTarget {
   readonly store: Store;
   #state: ViewState;
   #searchFields: string[] | undefined;
-  #bound = new Map<Populatable, { readonly: boolean; off: () => void; as?: BindOptions['as'] }>();
+  #bound = new Map<
+    Populatable,
+    { readonly: boolean; steerOnly: boolean; off: () => void; as?: BindOptions['as'] }
+  >();
   #result: LoadResult = { rows: [], total: 0 };
   #autoLoad: boolean;
   /**
@@ -316,7 +335,12 @@ export class DataSource extends EventTarget {
     const off = (): void => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
     };
-    this.#bound.set(el, { readonly: readonlyBind, off, ...(options.as ? { as: options.as } : {}) });
+    this.#bound.set(el, {
+      readonly: readonlyBind,
+      steerOnly: options.steerOnly ?? false,
+      off,
+      ...(options.as ? { as: options.as } : {}),
+    });
 
     // Populate straight away with whatever is already loaded, so a component
     // bound late is not blank until the next change.
@@ -416,9 +440,17 @@ export class DataSource extends EventTarget {
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
     setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);
 
+    // …but the ROWS are pushed only where they mean something. A steer-only
+    // component's populate() takes something else entirely — the quick-filter
+    // toolbar's means "here are your CHIPS" — so feeding it records replaced the
+    // bar with data. The state attributes above still reach it, which is what
+    // keeps its Sort chip and the grid's header arrow one value.
+    const entry = this.#bound.get(el);
+    if (entry?.steerOnly) return;
+
     // populate() waits for the first render itself, so a component bound before
     // it has upgraded still gets its rows.
-    const adapt = this.#bound.get(el)?.as;
+    const adapt = entry?.as;
     el.populate?.(adapt ? adapt(this.#result.rows, this) : this.#result.rows);
   }
 }

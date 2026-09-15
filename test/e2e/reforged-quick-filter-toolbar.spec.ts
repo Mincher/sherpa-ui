@@ -1761,3 +1761,61 @@ test('data-reset-on-populate drops live picks; without it they survive', async (
   // resetting every other.
   expect(r.keeping.after).toEqual(['emea']);
 });
+
+/**
+ * An ORGANISE chip's raw event must never reach the host.
+ *
+ * A chip emits `quick-filter-change` with `{ values: ['name'] }` — a bare array
+ * — where a host reading the TOOLBAR's event of the same name expects
+ * `{ values: {id: [...]}, active }`. A view that turned the first into a filter
+ * matched nothing, and the grid emptied on every sort from the Sort chip.
+ *
+ * stopImmediatePropagation alone did not do it: that stops only listeners
+ * registered AFTER, and a host that wired its handler before the toolbar had
+ * rendered still ran first. The toolbar listens in the CAPTURE phase, which runs
+ * before every bubble listener whenever it was added.
+ */
+test('a sort from the organise chip never reaches the host as a filter change', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      organise(d: unknown): void;
+    };
+
+    // The host wires its listener FIRST — before the toolbar has rendered, which
+    // is the ordering that broke. A real view does exactly this.
+    const filterChanges: unknown[] = [];
+    const sortChanges: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => filterChanges.push((e as CustomEvent).detail));
+    el.addEventListener('sort-change', (e) => sortChanges.push((e as CustomEvent).detail));
+
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    el.organise({
+      sort: [{ field: 'name', label: 'Name' }, { field: 'spend', label: 'Spend' }],
+      group: [{ field: 'status', label: 'Status' }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const menu = el.shadowRoot!.querySelector(
+      '.organise-chip[data-id="sort"] sherpa-menu',
+    ) as HTMLElement & { rendered?: Promise<void> };
+    await menu.rendered;
+    const radio = [...menu.querySelectorAll<HTMLInputElement>('label input')].find(
+      (i) => i.value === 'spend',
+    )!;
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return { filterChanges, sortChanges };
+  });
+
+  // The host hears a SORT, and only a sort.
+  expect(r.sortChanges).toEqual([{ field: 'spend', direction: 'asc' }]);
+  expect(r.filterChanges).toEqual([]);
+});

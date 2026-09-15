@@ -313,19 +313,21 @@ export async function init(root) {
   source.bind(grid, { as: (rows) => ({ columns, rows }) });
   source.bind(pager);
 
-  /* The toolbar is NOT bound. Its populate() means "here are your CHIPS", not
-     "here are your rows" — binding it overwrote the chips with records and the
-     bar came back holding only Group and Sort. A component whose populate()
-     takes something other than rows steers the source through its events and is
-     fed by hand, which is what these three listeners are.
+  /* STEER-ONLY. The toolbar's populate() means "here are your CHIPS", not "here
+     are your rows" — a plain bind() overwrote the bar with records and it came
+     back holding only Group and Sort. `steerOnly` sends its events to the source
+     and pushes no rows back, while the STATE attributes still arrive: that is
+     what keeps its Sort chip and the grid's header arrow two views of one value
+     rather than two rival listeners racing to set it.
 
-     Its chips are translated here rather than by the source because only this
-     view knows that two picks on `created` mean a RANGE, not an either/or. */
+     Sort and group need no listener at all now — the source understands both
+     events. Only the FILTER stays hand-written, because translating chips is
+     view knowledge: only this page knows two picks on `created` mean a RANGE
+     rather than an either/or. */
+  source.bind(qft, { steerOnly: true });
   qft.addEventListener('quick-filter-change', (e) => {
     source.setFilter(filterFromChips(e.detail.values, e.detail.active));
   });
-  qft.addEventListener('sort-change', (e) => source.setSort(e.detail.field, e.detail.direction));
-  qft.addEventListener('group-change', (e) => source.setGroup(e.detail.field || null));
   // The GRID does the grouping — data-group-field makes it drop that column and
   // draw a collapsible group row per value. The source writes that attribute on
   // every bound component, so the grid gets it without this view wiring it.

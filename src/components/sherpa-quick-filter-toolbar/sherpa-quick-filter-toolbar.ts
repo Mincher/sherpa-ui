@@ -571,7 +571,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
     // The organise chips carry MENUS, so their selection arrives as the chip's
     // own quick-filter-change (relayed from <sherpa-menu>), not as a body click.
-    this.addEventListener('quick-filter-change', this.#onOrganiseChange);
+    // CAPTURE. An organise chip's raw quick-filter-change must never reach the
+    // host — its detail is `{ values: ['name'] }`, a bare array, where a host
+    // reading the TOOLBAR's event expects `{ values: {id: [...]}, active }`. A
+    // view that turned that into a filter matched nothing and the grid emptied
+    // on every sort.
+    //
+    // stopImmediatePropagation alone was not enough, because it only stops
+    // listeners registered AFTER this one: a host that wired its handler before
+    // the toolbar had rendered still ran first and saw the raw event. Capture
+    // runs before EVERY bubble listener whenever it was added, so the order the
+    // host happened to use stops mattering.
+    this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
     // A folded filter's badge counts what it holds, and that moves without the
     // rows doing — a value ticked while drilled, or the filter's own menu
     // applied. Re-read on every change rather than re-stamping the list, which
