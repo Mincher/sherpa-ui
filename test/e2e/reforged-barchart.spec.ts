@@ -78,6 +78,7 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
         // never existed, so it resolved to nothing and the fill fell back to the
         // property's initial value — black bars.
         hue: s.getPropertyValue('--_hue').trim(),
+        border: s.getPropertyValue('--_border').trim(),
         background: s.backgroundColor,
         borderColor: s.borderTopColor,
         borderWidth: s.borderTopWidth,
@@ -87,16 +88,33 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
 
   expect(r).toHaveLength(2);
 
-  // Figma Data Field: each Bar is the series hue at 60% with a solid 1px stroke in
-  // the SAME hue, so overlapping marks stay readable and a thin bar still shows.
+  // Figma Data Field: each Bar is the series hue at 60%, with a solid 1px stroke
+  // in the series' BORDER token — colour 5 of its sequence, held at full strength.
+  // The border does NOT track the fill: a mark's fill moves along its ramp, its
+  // outline is the series' identity and stays put.
+  //
+  // The RELATIONSHIPS are asserted, not the hexes: the palette is a design
+  // decision that has changed twice, and pinning hexes only re-states the token
+  // file. (`getPropertyValue` returns a custom property RESOLVED, so the var name
+  // itself is not observable here — but a resolved value proves it resolved.)
   const [a, b] = r as Array<Record<string, string>>;
-  expect(a!['hue']).toBe('#7b1ce6'); // data-viz series 1
-  expect(b!['hue']).toBe('#c046ff'); // data-viz series 2
-  expect(a!['borderColor']).toBe('rgb(123, 28, 230)');
+  // Each series is a DIFFERENT hue…
+  expect(a!['hue']).not.toBe(b!['hue']);
+  // …carrying the 50% the token layer composes it at…
+  expect(a!['hue']).toContain('50%');
+  // …and its border is a SEPARATE value, not the fill.
+  expect(a!['border']).not.toBe(a!['hue']);
+  expect(a!['border']).not.toContain('50%');
   expect(a!['borderWidth']).toBe('1px');
-  // A translucent fill: 60% alpha, and NOT the initial black.
+  // Both must RESOLVE — an undefined custom property paints nothing at all, with
+  // no error, so a wrong name shows up as the property's initial value.
   expect(a!['background']).not.toBe('rgb(0, 0, 0)');
-  expect(a!['background']).toMatch(/0\.6\)/);
+  expect(a!['borderColor']).not.toBe('rgb(0, 0, 0)');
+  // A translucent fill at the TOKEN's 50% — the component adds no tint of its
+  // own. It used to apply a further 60%, which multiplied down to 30%.
+  expect(a!['background']).toMatch(/0\.5\)/);
+  // …and a SOLID border. `/ 0.` would mean an alpha slipped into the stroke.
+  expect(a!['borderColor']).not.toMatch(/\/ 0\./);
 });
 
 test('the y axis labels its gridlines and lines up with the plot', async ({ page }) => {

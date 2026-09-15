@@ -27,8 +27,10 @@ test('renders a row per item with label + value and categorical swatches', async
       count: rows.length,
       firstLabel: rows[0]!.querySelector('.label')!.textContent,
       firstValue: rows[0]!.querySelector('.value')!.textContent,
-      // Figma Legend Item swatch: the series hue as a SOLID 1px ring, with a 60%
-      // tint of the same hue as the fill.
+      // Figma Legend Item swatch: a SOLID 1px ring in the series' BORDER token,
+      // with a 60% tint of the series HUE as the fill.
+      hue1: getComputedStyle(rows[0]!.querySelector('.swatch')!).getPropertyValue('--_hue').trim(),
+      hue5: getComputedStyle(rows[1]!.querySelector('.swatch')!).getPropertyValue('--_hue').trim(),
       ring1: getComputedStyle(rows[0]!.querySelector('.swatch')!).borderTopColor,
       ring5: getComputedStyle(rows[1]!.querySelector('.swatch')!).borderTopColor,
       fill1: getComputedStyle(rows[0]!.querySelector('.swatch')!).backgroundColor,
@@ -37,9 +39,21 @@ test('renders a row per item with label + value and categorical swatches', async
   expect(r.count).toBe(2);
   expect(r.firstLabel).toBe('Revenue');
   expect(r.firstValue).toBe('48k');
-  expect(r.ring1).toBe('rgb(123, 28, 230)'); // categorical-1 #7b1ce6
-  expect(r.ring5).toBe('rgb(65, 65, 239)'); // categorical-5 #4141ef
-  expect(r.fill1).toContain('0.6'); // the 60% tint (color-mix → color(srgb … / 0.6))
+  // colorIndex picks the series by POSITION. The RELATIONSHIPS are asserted, not
+  // the hexes — the palette is a design decision and has changed twice.
+  expect(r.hue1).not.toBe(r.hue5);
+  expect(r.hue1).toContain('50%');
+  // Both must RESOLVE: an undefined custom property paints nothing, with no error.
+  expect(r.ring1).not.toBe('rgb(0, 0, 0)');
+  expect(r.ring5).not.toBe('rgb(0, 0, 0)');
+  // The rings MATCH, and that is the design: every series in a chart shares ONE
+  // border — colour 5 of the active sequence. The fills differ, the outline does
+  // not. It is the ramp's identity, not the series'.
+  expect(r.ring1).toBe(r.ring5);
+  // …and the ring is SOLID, where the fill is translucent.
+  expect(r.ring1).not.toMatch(/\/ 0\./);
+  // The TOKEN's 50%, not a component tint — the swatch adds none of its own.
+  expect(r.fill1).toContain('0.5');
 });
 
 test('clicking an entry fires legend-item-click and toggles aria-pressed', async ({ page }) => {

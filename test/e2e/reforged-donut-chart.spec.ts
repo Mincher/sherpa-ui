@@ -92,8 +92,18 @@ test('draws one real SVG path per slice, spanning its share', async ({ page }) =
 
   // Figma paints a slice as a 60% fill with a solid 1px stroke on every edge. A
   // stroked circle could carry only ONE of those; a closed path carries both.
-  expect(r.fillOpacity).toBe('0.6');
-  expect(r.fill).toBe(r.stroke);
+  // fill-opacity is 1: the 50% lives in the series TOKEN, and a fill-opacity
+  // here would multiply it down.
+  expect(r.fillOpacity).toBe('1');
+  // The stroke is the series' BORDER token, NOT the fill — a slice's fill moves
+  // along its ramp while its outline stays put, which is what keeps a translucent
+  // mark legible on any surface. They used to be the same value.
+  expect(r.fill).not.toBe(r.stroke);
+  // Both must RESOLVE: an undefined custom property paints nothing, with no error.
+  expect(r.fill).not.toBe('rgb(0, 0, 0)');
+  expect(r.stroke).not.toBe('rgb(0, 0, 0)');
+  // The fill carries the 60% tint; the border is SOLID.
+  expect(r.stroke).not.toMatch(/\/ 0\./);
   expect(r.strokeWidth).toBe(0.5);
 
   // Figma: arcData.innerRadius 0.7, so the band is the outer 30% of the radius.

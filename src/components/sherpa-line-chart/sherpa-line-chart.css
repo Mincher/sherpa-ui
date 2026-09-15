@@ -140,7 +140,10 @@
 }
 
 .line {
-  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  /* A LINE is the mark itself, not a filled shape with an outline — so it takes
+     the series' BORDER token at full strength. `--_hue` would give it the fill's
+     50% and the line would read as a ghost. */
+  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -373,7 +376,8 @@
     block-size: var(--sherpa-display-mode-space-xs, 8px);
     translate: -50% -50%;
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+    /* A dot is a SOLID mark, like the line — the border token, not the 50% fill. */
+    background: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
     opacity: 0;
     transition: opacity 120ms ease;
   }

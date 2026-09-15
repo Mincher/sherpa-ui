@@ -166,7 +166,9 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
   // …and there is no second element competing for the pointer, because the band
   // now carries its own border.
   expect(r.outlines).toBe(0);
-  expect(r.fillOpacity).toBe('0.6');
+  // fill-opacity is 1: the 50% lives in the series TOKEN, and a fill-opacity here
+  // would multiply it down.
+  expect(r.fillOpacity).toBe('1');
   expect(r.stroked).toBe(true);
   // Only the band group — no background rect, no full-circle track over the hole.
   expect(r.hostChildren).toEqual(['g']);

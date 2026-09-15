@@ -288,7 +288,8 @@
    geometry, and an SVG stroke-width attribute cannot read a custom property. */
 .zone {
   fill: var(--_hue, var(--_fill));
-  fill-opacity: 0.6;
+  /* NO fill-opacity. The series token already carries its 50%, and a
+     fill-opacity here MULTIPLIES it — marks painted at 30%. */
   /* The OUTLINE has its own token and does NOT track the fill — see the same
      rule on sherpa-donut-chart's .slice. */
   stroke: var(--_border, var(--_hue, var(--_fill)));

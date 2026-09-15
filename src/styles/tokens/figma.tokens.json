@@ -19,80 +19,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 1}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{primitives.color.basic.blue-green.500}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{primitives.color.basic.purple.500}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{primitives.color.extended.turquoise.500}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 1}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 1}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 1}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 1}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 1}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 1}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 1}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 1}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 1}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 1}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 1}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 1}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 1}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 1}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 1}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 1}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 1}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 1}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 1}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 1}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 1}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 1}",
-              "divergent/purple-yellow": "{primitives.color.basic.purple.500}",
-              "divergent/blue-green-pink": "{primitives.color.basic.blue-green.500}",
-              "divergent/turquoise-razamatazz": "{primitives.color.extended.turquoise.500}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 1}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 1}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 1}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 1}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 1}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 1}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 1}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 1}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 1}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 1}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41690"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 1}"
+        "$value": "{theme.data-viz.sequential.purple.color 1}"
       },
       "2": {
         "$description": "Design value.",
@@ -100,78 +60,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 2}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:951}"
-              },
-              "divergent/purple-yellow": "#422772",
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:962}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 2}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 2}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 2}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 2}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 2}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 2}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 2}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 2}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 2}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 2}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 2}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 2}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 2}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 2}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 2}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 2}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 2}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 2}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 2}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 2}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 2}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 2}",
-              "divergent/purple-yellow": "#422772",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 2}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 2}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 2}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 2}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 2}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 2}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 2}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 2}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 2}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 2}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 2}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 2}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41691"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 2}"
+        "$value": "{theme.data-viz.sequential.purple.color 2}"
       },
       "3": {
         "$description": "Design value.",
@@ -179,78 +101,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 3}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:952}"
-              },
-              "divergent/purple-yellow": "#503287",
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:963}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 3}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 3}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 3}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 3}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 3}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 3}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 3}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 3}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 3}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 3}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 3}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 3}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 3}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 3}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 3}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 3}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 3}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 3}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 3}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 3}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 3}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 3}",
-              "divergent/purple-yellow": "#503287",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 3}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 3}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 3}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 3}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 3}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 3}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 3}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 3}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 3}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 3}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 3}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 3}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41692"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 3}"
+        "$value": "{theme.data-viz.sequential.purple.color 3}"
       },
       "4": {
         "$description": "Design value.",
@@ -258,80 +142,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 4}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:953}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:942}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:964}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 4}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 4}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 4}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 4}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 4}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 4}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 4}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 4}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 4}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 4}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 4}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 4}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 4}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 4}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 4}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 4}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 4}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 4}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 4}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 4}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 4}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 4}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 4}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 4}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 4}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 4}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 4}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 4}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 4}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 4}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 4}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 4}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 4}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 4}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 4}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41693"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 4}"
+        "$value": "{theme.data-viz.sequential.purple.color 4}"
       },
       "5": {
         "$description": "Design value.",
@@ -339,80 +183,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 5}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:954}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:943}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:965}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 5}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 5}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 5}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 5}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 5}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 5}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 5}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 5}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 5}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 5}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 5}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 5}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 5}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 5}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 5}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 5}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 5}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 5}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 5}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 5}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 5}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 5}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 5}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 5}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 5}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 5}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 5}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 5}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 5}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 5}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 5}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 5}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 5}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 5}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 5}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41694"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 5}"
+        "$value": "{theme.data-viz.sequential.purple.color 5}"
       },
       "6": {
         "$description": "Design value.",
@@ -420,80 +224,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 6}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:955}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:944}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:966}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 6}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 6}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 6}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 6}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 6}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 6}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 6}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 6}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 6}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 6}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 6}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 6}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 6}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 6}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 6}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 6}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 6}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 6}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 6}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 6}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 6}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 6}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 6}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 6}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 6}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 6}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 6}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 6}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 6}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 6}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 6}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 6}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 6}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 6}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 6}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41695"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 6}"
+        "$value": "{theme.data-viz.sequential.purple.color 6}"
       },
       "7": {
         "$description": "Design value.",
@@ -501,80 +265,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 7}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:956}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:945}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:967}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 7}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 7}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 7}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 7}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 7}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 7}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 7}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 7}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 7}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 7}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 7}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 7}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 7}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 7}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 7}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 7}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 7}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 7}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 7}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 7}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 7}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 7}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 7}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 7}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 7}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 7}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 7}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 7}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 7}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 7}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 7}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 7}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 7}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 7}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 7}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41696"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 7}"
+        "$value": "{theme.data-viz.sequential.purple.color 7}"
       },
       "8": {
         "$description": "Design value.",
@@ -582,80 +306,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 8}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:957}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:946}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:968}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 8}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 8}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 8}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 8}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 8}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 8}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 8}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 8}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 8}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 8}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 8}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 8}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 8}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 8}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 8}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 8}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 8}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 8}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 8}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 8}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 8}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 8}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 8}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 8}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 8}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 8}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 8}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 8}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 8}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 8}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 8}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 8}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 8}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 8}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 8}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41697"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 8}"
+        "$value": "{theme.data-viz.sequential.purple.color 8}"
       },
       "9": {
         "$description": "Design value.",
@@ -663,80 +347,40 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 9}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:958}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:947}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:969}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 9}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 9}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 9}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 9}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 9}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 9}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 9}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 9}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 9}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 9}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 9}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 9}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 9}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 9}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 9}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 9}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 9}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 9}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 9}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 9}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 9}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 9}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 9}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 9}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 9}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 9}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 9}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 9}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 9}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 9}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 9}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 9}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 9}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 9}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 9}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41698"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 9}"
+        "$value": "{theme.data-viz.sequential.purple.color 9}"
       },
       "10": {
         "$description": "Design value.",
@@ -744,162 +388,83 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:426:41689",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-09T09:43:47.990Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 10}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{__library:VariableID:7:959}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{__library:VariableID:7:948}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{__library:VariableID:7:970}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 10}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 10}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 10}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 10}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 10}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 10}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 10}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 10}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 10}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 10}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 10}"
-              }
-            },
+            "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
             "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 10}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 10}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 10}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 10}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 10}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 10}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 10}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 10}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 10}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 10}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 10}",
-              "divergent/purple-yellow": "{theme.data-viz.divergent.purple -> yellow.color 10}",
-              "divergent/blue-green-pink": "{theme.data-viz.divergent.blue green -> pink.color 10}",
-              "divergent/turquoise-razamatazz": "{theme.data-viz.divergent.turquoise -> razamatazz.color 10}"
+              "sequence 1": "{theme.data-viz.sequential.purple.color 10}",
+              "sequence 2": "{theme.data-viz.sequential.phlox.color 10}",
+              "sequence 3": "{theme.data-viz.sequential.turquoise.color 10}",
+              "sequence 4": "{theme.data-viz.sequential.blue green.color 10}",
+              "sequence 5": "{theme.data-viz.sequential.blue.color 10}",
+              "sequence 6": "{theme.data-viz.sequential.orange.color 10}",
+              "sequence 7": "{theme.data-viz.sequential.pink.color 10}",
+              "sequence 8": "{theme.data-viz.sequential.razamatazz.color 10}",
+              "sequence 9": "{theme.data-viz.sequential.green.color 10}",
+              "sequence 10": "{theme.data-viz.sequential.greyscale.color 10}"
             },
-            "primaryMode": "categorical",
+            "opacity": {
+              "sequence 1": "{primitives.effects.opacity.500}",
+              "sequence 2": "{primitives.effects.opacity.500}",
+              "sequence 3": "{primitives.effects.opacity.500}",
+              "sequence 4": "{primitives.effects.opacity.500}",
+              "sequence 5": "{primitives.effects.opacity.500}",
+              "sequence 6": "{primitives.effects.opacity.500}",
+              "sequence 7": "{primitives.effects.opacity.500}",
+              "sequence 8": "{primitives.effects.opacity.500}",
+              "sequence 9": "{primitives.effects.opacity.500}",
+              "sequence 10": "{primitives.effects.opacity.500}"
+            },
+            "primaryMode": "sequence 1",
             "scopes": [
               "ALL_FILLS",
               "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41699"
+            ]
           }
         },
         "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 10}"
-      },
-      "11": {
-        "$description": "Design value.",
-        "$extensions": {
-          "figma-console-mcp": {
-            "collectionId": "VariableCollectionId:426:41689",
-            "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-11T09:38:53.686Z",
-            "lastSyncedValue": {
-              "categorical": {
-                "reference": "{theme.data-viz.categorical.color 11}"
-              },
-              "divergent/blue-green-pink": {
-                "reference": "{primitives.color.basic.pink.500}"
-              },
-              "divergent/purple-yellow": {
-                "reference": "{primitives.color.extended.warm-yellow.500}"
-              },
-              "divergent/turquoise-razamatazz": {
-                "reference": "{primitives.color.extended.razamatazz.500}"
-              },
-              "sequential/blue": {
-                "reference": "{theme.data-viz.sequential.blue.color 11}"
-              },
-              "sequential/blue-green": {
-                "reference": "{theme.data-viz.sequential.blue green.color 11}"
-              },
-              "sequential/green": {
-                "reference": "{theme.data-viz.sequential.green.color 11}"
-              },
-              "sequential/greyscale": {
-                "reference": "{theme.data-viz.sequential.greyscale.color 11}"
-              },
-              "sequential/neon-blue": {
-                "reference": "{theme.data-viz.sequential.neon blue.color 11}"
-              },
-              "sequential/orange": {
-                "reference": "{theme.data-viz.sequential.orange.color 11}"
-              },
-              "sequential/phlox": {
-                "reference": "{theme.data-viz.sequential.phlox.color 11}"
-              },
-              "sequential/pink": {
-                "reference": "{theme.data-viz.sequential.pink.color 11}"
-              },
-              "sequential/purple": {
-                "reference": "{theme.data-viz.sequential.purple.color 11}"
-              },
-              "sequential/razamatazz": {
-                "reference": "{theme.data-viz.sequential.razamatazz.color 11}"
-              },
-              "sequential/turquoise": {
-                "reference": "{theme.data-viz.sequential.turquoise.color 11}"
-              }
-            },
-            "modes": {
-              "sequential/purple": "{theme.data-viz.sequential.purple.color 11}",
-              "sequential/phlox": "{theme.data-viz.sequential.phlox.color 11}",
-              "sequential/turquoise": "{theme.data-viz.sequential.turquoise.color 11}",
-              "sequential/blue-green": "{theme.data-viz.sequential.blue green.color 11}",
-              "sequential/blue": "{theme.data-viz.sequential.blue.color 11}",
-              "sequential/neon-blue": "{theme.data-viz.sequential.neon blue.color 11}",
-              "sequential/orange": "{theme.data-viz.sequential.orange.color 11}",
-              "sequential/pink": "{theme.data-viz.sequential.pink.color 11}",
-              "sequential/razamatazz": "{theme.data-viz.sequential.razamatazz.color 11}",
-              "sequential/green": "{theme.data-viz.sequential.green.color 11}",
-              "sequential/greyscale": "{theme.data-viz.sequential.greyscale.color 11}",
-              "divergent/purple-yellow": "{primitives.color.extended.warm-yellow.500}",
-              "divergent/blue-green-pink": "{primitives.color.basic.pink.500}",
-              "divergent/turquoise-razamatazz": "{primitives.color.extended.razamatazz.500}"
-            },
-            "primaryMode": "categorical",
-            "scopes": [
-              "ALL_FILLS",
-              "STROKE_COLOR"
-            ],
-            "variableId": "VariableID:426:41700"
-          }
-        },
-        "$type": "color",
-        "$value": "{theme.data-viz.categorical.color 11}"
+        "$value": "{theme.data-viz.sequential.purple.color 10}"
       }
+    },
+    "border": {
+      "$description": "Design value.",
+      "$extensions": {
+        "figma-console-mcp": {
+          "collectionId": "VariableCollectionId:426:41689",
+          "figmaResolvedType": "COLOR",
+          "lastSyncedAt": "2026-09-15T12:55:10.097763Z",
+          "modes": {
+            "sequence 1": "{theme.data-viz.sequential.purple.color 5}",
+            "sequence 2": "{theme.data-viz.sequential.phlox.color 5}",
+            "sequence 3": "{theme.data-viz.sequential.turquoise.color 5}",
+            "sequence 4": "{theme.data-viz.sequential.blue green.color 5}",
+            "sequence 5": "{theme.data-viz.sequential.blue.color 5}",
+            "sequence 6": "{theme.data-viz.sequential.orange.color 5}",
+            "sequence 7": "{theme.data-viz.sequential.pink.color 5}",
+            "sequence 8": "{theme.data-viz.sequential.razamatazz.color 5}",
+            "sequence 9": "{theme.data-viz.sequential.green.color 5}",
+            "sequence 10": "{theme.data-viz.sequential.greyscale.color 5}"
+          },
+          "opacity": {
+            "sequence 1": "{primitives.effects.opacity.1000}",
+            "sequence 2": "{primitives.effects.opacity.1000}",
+            "sequence 3": "{primitives.effects.opacity.1000}",
+            "sequence 4": "{primitives.effects.opacity.1000}",
+            "sequence 5": "{primitives.effects.opacity.1000}",
+            "sequence 6": "{primitives.effects.opacity.1000}",
+            "sequence 7": "{primitives.effects.opacity.1000}",
+            "sequence 8": "{primitives.effects.opacity.1000}",
+            "sequence 9": "{primitives.effects.opacity.1000}",
+            "sequence 10": "{primitives.effects.opacity.1000}"
+          },
+          "primaryMode": "sequence 1",
+          "scopes": [
+            "FRAME_FILL",
+            "SHAPE_FILL",
+            "STROKE_COLOR"
+          ]
+        }
+      },
+      "$type": "color",
+      "$value": "{theme.data-viz.sequential.purple.color 5}"
     }
   },
   "display-mode": {
@@ -13699,424 +13264,6 @@
       }
     },
     "data-viz": {
-      "categorical": {
-        "color 1": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.basic.purple.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1027"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.basic.purple.500}"
-        },
-        "color 10": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.basic.green.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1036"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.basic.green.500}"
-        },
-        "color 11": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.basic.greyscale.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1037"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.basic.greyscale.500}"
-        },
-        "color 2": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.phlox.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1028"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.phlox.500}"
-        },
-        "color 3": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.turquoise.600}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1029"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.turquoise.600}"
-        },
-        "color 4": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.basic.blue-green.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1030"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.basic.blue-green.500}"
-        },
-        "color 5": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.basic.blue.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1031"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.basic.blue.500}"
-        },
-        "color 6": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.neon-blue.400}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1032"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.neon-blue.400}"
-        },
-        "color 7": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.chrome-orange.500}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1033"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.chrome-orange.500}"
-        },
-        "color 8": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.razamatazz.400}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1034"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.razamatazz.400}"
-        },
-        "color 9": {
-          "$description": "Chart series colour (fill + stroke).",
-          "$extensions": {
-            "figma-console-mcp": {
-              "collectionId": "VariableCollectionId:7:714",
-              "figmaResolvedType": "COLOR",
-              "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-              "lastSyncedValue": {
-                "Sherpa": {
-                  "reference": "{primitives.color.extended.razamatazz.600}"
-                }
-              },
-              "primaryMode": "Sherpa",
-              "scopes": [
-                "FRAME_FILL",
-                "SHAPE_FILL",
-                "STROKE_COLOR"
-              ],
-              "variableId": "VariableID:7:1035"
-            }
-          },
-          "$type": "color",
-          "$value": "{primitives.color.extended.razamatazz.600}"
-        }
-      },
-      "divergent": {
-        "blue green -> pink": {
-          "color 1": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.basic.blue-green.800}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:950"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.basic.blue-green.800}"
-          },
-          "color 2": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.basic.pink.700}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:960"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.basic.pink.700}"
-          }
-        },
-        "purple -> yellow": {
-          "color 1": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.basic.purple.700}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:939"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.basic.purple.700}"
-          },
-          "color 2": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.extended.warm-yellow.1000}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:949"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.extended.warm-yellow.1000}"
-          }
-        },
-        "turquoise -> razamatazz": {
-          "color 1": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.extended.turquoise.700}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:961"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.extended.turquoise.700}"
-          },
-          "color 2": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.extended.razamatazz.700}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:971"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.extended.razamatazz.700}"
-          }
-        }
-      },
       "sequential": {
         "blue": {
           "color 1": {
@@ -14141,7 +13288,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.blue.200}"
+            "$value": "#a9baff"
           },
           "color 10": {
             "$extensions": {
@@ -14164,30 +13311,7 @@
               }
             },
             "$type": "color",
-            "$value": "#293273"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#1F265F"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36105"
-              }
-            },
-            "$type": "color",
-            "$value": "#1F265F"
+            "$value": "#1f265f"
           },
           "color 2": {
             "$extensions": {
@@ -14210,7 +13334,7 @@
               }
             },
             "$type": "color",
-            "$value": "#97A9F5"
+            "$value": "#95a7f4"
           },
           "color 3": {
             "$extensions": {
@@ -14233,7 +13357,7 @@
               }
             },
             "$type": "color",
-            "$value": "#8799EA"
+            "$value": "#8395e7"
           },
           "color 4": {
             "$extensions": {
@@ -14256,7 +13380,7 @@
               }
             },
             "$type": "color",
-            "$value": "#7688DD"
+            "$value": "#7183d8"
           },
           "color 5": {
             "$extensions": {
@@ -14279,7 +13403,7 @@
               }
             },
             "$type": "color",
-            "$value": "#6779CF"
+            "$value": "#6172c8"
           },
           "color 6": {
             "$extensions": {
@@ -14302,7 +13426,7 @@
               }
             },
             "$type": "color",
-            "$value": "#5969C0"
+            "$value": "#5261b6"
           },
           "color 7": {
             "$extensions": {
@@ -14325,7 +13449,7 @@
               }
             },
             "$type": "color",
-            "$value": "#4C5AAE"
+            "$value": "#4451a1"
           },
           "color 8": {
             "$extensions": {
@@ -14348,7 +13472,7 @@
               }
             },
             "$type": "color",
-            "$value": "#404C9B"
+            "$value": "#37428b"
           },
           "color 9": {
             "$extensions": {
@@ -14371,7 +13495,7 @@
               }
             },
             "$type": "color",
-            "$value": "#343F87"
+            "$value": "#2a3375"
           }
         },
         "blue green": {
@@ -14397,7 +13521,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.blue-green.200}"
+            "$value": "#a5e1ff"
           },
           "color 10": {
             "$extensions": {
@@ -14420,30 +13544,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00446D"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#00355C"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36095"
-              }
-            },
-            "$type": "color",
-            "$value": "#00355C"
+            "$value": "#00355c"
           },
           "color 2": {
             "$extensions": {
@@ -14466,7 +13567,7 @@
               }
             },
             "$type": "color",
-            "$value": "#8CCFF0"
+            "$value": "#89cdee"
           },
           "color 3": {
             "$extensions": {
@@ -14489,7 +13590,7 @@
               }
             },
             "$type": "color",
-            "$value": "#73BDE1"
+            "$value": "#6eb9de"
           },
           "color 4": {
             "$extensions": {
@@ -14512,7 +13613,7 @@
               }
             },
             "$type": "color",
-            "$value": "#5AABD2"
+            "$value": "#52a5cd"
           },
           "color 5": {
             "$extensions": {
@@ -14535,7 +13636,7 @@
               }
             },
             "$type": "color",
-            "$value": "#4199C2"
+            "$value": "#3691bb"
           },
           "color 6": {
             "$extensions": {
@@ -14558,7 +13659,7 @@
               }
             },
             "$type": "color",
-            "$value": "#2887B2"
+            "$value": "#1c7ea9"
           },
           "color 7": {
             "$extensions": {
@@ -14581,7 +13682,7 @@
               }
             },
             "$type": "color",
-            "$value": "#0F76A2"
+            "$value": "#046b97"
           },
           "color 8": {
             "$extensions": {
@@ -14604,7 +13705,7 @@
               }
             },
             "$type": "color",
-            "$value": "#006591"
+            "$value": "#005883"
           },
           "color 9": {
             "$extensions": {
@@ -14627,7 +13728,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00547F"
+            "$value": "#00466f"
           }
         },
         "green": {
@@ -14653,7 +13754,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.green.200}"
+            "$value": "#9cfcc5"
           },
           "color 10": {
             "$extensions": {
@@ -14673,29 +13774,6 @@
                   "STROKE_COLOR"
                 ],
                 "variableId": "VariableID:930:36154"
-              }
-            },
-            "$type": "color",
-            "$value": "#005500"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#004200"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36155"
               }
             },
             "$type": "color",
@@ -14722,7 +13800,7 @@
               }
             },
             "$type": "color",
-            "$value": "#3BE990"
+            "$value": "#37e78d"
           },
           "color 3": {
             "$extensions": {
@@ -14745,7 +13823,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00D878"
+            "$value": "#00d473"
           },
           "color 4": {
             "$extensions": {
@@ -14768,7 +13846,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00C661"
+            "$value": "#00c05a"
           },
           "color 5": {
             "$extensions": {
@@ -14791,7 +13869,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00B44C"
+            "$value": "#00ac43"
           },
           "color 6": {
             "$extensions": {
@@ -14814,7 +13892,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00A238"
+            "$value": "#00972e"
           },
           "color 7": {
             "$extensions": {
@@ -14837,7 +13915,7 @@
               }
             },
             "$type": "color",
-            "$value": "#008E26"
+            "$value": "#00811b"
           },
           "color 8": {
             "$extensions": {
@@ -14860,7 +13938,7 @@
               }
             },
             "$type": "color",
-            "$value": "#007B15"
+            "$value": "#006c08"
           },
           "color 9": {
             "$extensions": {
@@ -14883,7 +13961,7 @@
               }
             },
             "$type": "color",
-            "$value": "#006804"
+            "$value": "#005700"
           }
         },
         "greyscale": {
@@ -14909,7 +13987,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.greyscale.200}"
+            "$value": "#d8d8e8"
           },
           "color 10": {
             "$extensions": {
@@ -14932,30 +14010,7 @@
               }
             },
             "$type": "color",
-            "$value": "#3C3C47"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#2D2D36"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36165"
-              }
-            },
-            "$type": "color",
-            "$value": "#2D2D36"
+            "$value": "#2d2d36"
           },
           "color 2": {
             "$extensions": {
@@ -14978,7 +14033,7 @@
               }
             },
             "$type": "color",
-            "$value": "#CBCBD9"
+            "$value": "#c9c9d7"
           },
           "color 3": {
             "$extensions": {
@@ -15001,7 +14056,7 @@
               }
             },
             "$type": "color",
-            "$value": "#B8B8C7"
+            "$value": "#b4b4c3"
           },
           "color 4": {
             "$extensions": {
@@ -15024,7 +14079,7 @@
               }
             },
             "$type": "color",
-            "$value": "#A5A4B4"
+            "$value": "#9f9eae"
           },
           "color 5": {
             "$extensions": {
@@ -15047,7 +14102,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9292A2"
+            "$value": "#8a8a9a"
           },
           "color 6": {
             "$extensions": {
@@ -15070,7 +14125,7 @@
               }
             },
             "$type": "color",
-            "$value": "#80808F"
+            "$value": "#767685"
           },
           "color 7": {
             "$extensions": {
@@ -15093,7 +14148,7 @@
               }
             },
             "$type": "color",
-            "$value": "#6E6E7D"
+            "$value": "#636371"
           },
           "color 8": {
             "$extensions": {
@@ -15116,7 +14171,7 @@
               }
             },
             "$type": "color",
-            "$value": "#5D5D6B"
+            "$value": "#50505d"
           },
           "color 9": {
             "$extensions": {
@@ -15139,263 +14194,7 @@
               }
             },
             "$type": "color",
-            "$value": "#4C4C59"
-          }
-        },
-        "neon blue": {
-          "color 1": {
-            "$description": "Chart series colour (fill + stroke).",
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.986Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "reference": "{primitives.color.extended.neon-blue.300}"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:7:997"
-              }
-            },
-            "$type": "color",
-            "$value": "{primitives.color.extended.neon-blue.300}"
-          },
-          "color 10": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#202A85"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36114"
-              }
-            },
-            "$type": "color",
-            "$value": "#202A85"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#192070"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36115"
-              }
-            },
-            "$type": "color",
-            "$value": "#192070"
-          },
-          "color 2": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#7A94F9"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36106"
-              }
-            },
-            "$type": "color",
-            "$value": "#7A94F9"
-          },
-          "color 3": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#6B85F2"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36107"
-              }
-            },
-            "$type": "color",
-            "$value": "#6B85F2"
-          },
-          "color 4": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#5D76E9"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36108"
-              }
-            },
-            "$type": "color",
-            "$value": "#5D76E9"
-          },
-          "color 5": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#5067DE"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36109"
-              }
-            },
-            "$type": "color",
-            "$value": "#5067DE"
-          },
-          "color 6": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#4559D0"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36110"
-              }
-            },
-            "$type": "color",
-            "$value": "#4559D0"
-          },
-          "color 7": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#3A4CC0"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36111"
-              }
-            },
-            "$type": "color",
-            "$value": "#3A4CC0"
-          },
-          "color 8": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#313FAE"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36112"
-              }
-            },
-            "$type": "color",
-            "$value": "#313FAE"
-          },
-          "color 9": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#28349A"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36113"
-              }
-            },
-            "$type": "color",
-            "$value": "#28349A"
+            "$value": "#3e3e49"
           }
         },
         "orange": {
@@ -15421,7 +14220,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.extended.warm-yellow.200}"
+            "$value": "#ffe9c1"
           },
           "color 10": {
             "$extensions": {
@@ -15444,30 +14243,7 @@
               }
             },
             "$type": "color",
-            "$value": "#4F3B11"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#3C2B05"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36125"
-              }
-            },
-            "$type": "color",
-            "$value": "#3C2B05"
+            "$value": "#3c2b05"
           },
           "color 2": {
             "$extensions": {
@@ -15490,7 +14266,7 @@
               }
             },
             "$type": "color",
-            "$value": "#ECD4A8"
+            "$value": "#ead2a5"
           },
           "color 3": {
             "$extensions": {
@@ -15513,7 +14289,7 @@
               }
             },
             "$type": "color",
-            "$value": "#D8BE8F"
+            "$value": "#d4ba8a"
           },
           "color 4": {
             "$extensions": {
@@ -15536,7 +14312,7 @@
               }
             },
             "$type": "color",
-            "$value": "#C5AA78"
+            "$value": "#bea371"
           },
           "color 5": {
             "$extensions": {
@@ -15559,7 +14335,7 @@
               }
             },
             "$type": "color",
-            "$value": "#B19662"
+            "$value": "#a88d59"
           },
           "color 6": {
             "$extensions": {
@@ -15582,7 +14358,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9D824E"
+            "$value": "#927744"
           },
           "color 7": {
             "$extensions": {
@@ -15605,7 +14381,7 @@
               }
             },
             "$type": "color",
-            "$value": "#8A6F3C"
+            "$value": "#7d6331"
           },
           "color 8": {
             "$extensions": {
@@ -15628,7 +14404,7 @@
               }
             },
             "$type": "color",
-            "$value": "#765D2C"
+            "$value": "#664f21"
           },
           "color 9": {
             "$extensions": {
@@ -15651,7 +14427,7 @@
               }
             },
             "$type": "color",
-            "$value": "#624B1E"
+            "$value": "#513d12"
           }
         },
         "phlox": {
@@ -15677,7 +14453,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.extended.phlox.400}"
+            "$value": "#cc76ff"
           },
           "color 10": {
             "$extensions": {
@@ -15700,30 +14476,7 @@
               }
             },
             "$type": "color",
-            "$value": "#5D008A"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#4E0075"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36075"
-              }
-            },
-            "$type": "color",
-            "$value": "#4E0075"
+            "$value": "#4e0075"
           },
           "color 2": {
             "$extensions": {
@@ -15746,7 +14499,7 @@
               }
             },
             "$type": "color",
-            "$value": "#C361FA"
+            "$value": "#c25ff9"
           },
           "color 3": {
             "$extensions": {
@@ -15769,7 +14522,7 @@
               }
             },
             "$type": "color",
-            "$value": "#B94AF4"
+            "$value": "#b745f2"
           },
           "color 4": {
             "$extensions": {
@@ -15792,7 +14545,7 @@
               }
             },
             "$type": "color",
-            "$value": "#AF2FEC"
+            "$value": "#ab25e8"
           },
           "color 5": {
             "$extensions": {
@@ -15815,7 +14568,7 @@
               }
             },
             "$type": "color",
-            "$value": "#A305E1"
+            "$value": "#9e03db"
           },
           "color 6": {
             "$extensions": {
@@ -15838,7 +14591,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9700D4"
+            "$value": "#8f00cc"
           },
           "color 7": {
             "$extensions": {
@@ -15861,7 +14614,7 @@
               }
             },
             "$type": "color",
-            "$value": "#8900C5"
+            "$value": "#8000b9"
           },
           "color 8": {
             "$extensions": {
@@ -15884,7 +14637,7 @@
               }
             },
             "$type": "color",
-            "$value": "#7B00B3"
+            "$value": "#6f00a3"
           },
           "color 9": {
             "$extensions": {
@@ -15907,7 +14660,7 @@
               }
             },
             "$type": "color",
-            "$value": "#6C009F"
+            "$value": "#5f008c"
           }
         },
         "pink": {
@@ -15933,7 +14686,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.pink.100}"
+            "$value": "#f8d2ff"
           },
           "color 10": {
             "$extensions": {
@@ -15956,30 +14709,7 @@
               }
             },
             "$type": "color",
-            "$value": "#502E57"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#3E2044"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36135"
-              }
-            },
-            "$type": "color",
-            "$value": "#3E2044"
+            "$value": "#3e2044"
           },
           "color 2": {
             "$extensions": {
@@ -16002,7 +14732,7 @@
               }
             },
             "$type": "color",
-            "$value": "#E6BDEE"
+            "$value": "#e4bbec"
           },
           "color 3": {
             "$extensions": {
@@ -16025,7 +14755,7 @@
               }
             },
             "$type": "color",
-            "$value": "#D4A8DC"
+            "$value": "#d0a3d8"
           },
           "color 4": {
             "$extensions": {
@@ -16048,7 +14778,7 @@
               }
             },
             "$type": "color",
-            "$value": "#C293CA"
+            "$value": "#bc8dc4"
           },
           "color 5": {
             "$extensions": {
@@ -16071,7 +14801,7 @@
               }
             },
             "$type": "color",
-            "$value": "#AF80B8"
+            "$value": "#a778b0"
           },
           "color 6": {
             "$extensions": {
@@ -16094,7 +14824,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9C6EA5"
+            "$value": "#91649a"
           },
           "color 7": {
             "$extensions": {
@@ -16117,7 +14847,7 @@
               }
             },
             "$type": "color",
-            "$value": "#895C92"
+            "$value": "#7c5185"
           },
           "color 8": {
             "$extensions": {
@@ -16140,7 +14870,7 @@
               }
             },
             "$type": "color",
-            "$value": "#764C7E"
+            "$value": "#67406e"
           },
           "color 9": {
             "$extensions": {
@@ -16163,7 +14893,7 @@
               }
             },
             "$type": "color",
-            "$value": "#633C6A"
+            "$value": "#523059"
           }
         },
         "purple": {
@@ -16189,7 +14919,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.basic.purple.200}"
+            "$value": "#c5b0ff"
           },
           "color 10": {
             "$extensions": {
@@ -16212,30 +14942,7 @@
               }
             },
             "$type": "color",
-            "$value": "#422772"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#341C5E"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36065"
-              }
-            },
-            "$type": "color",
-            "$value": "#341C5E"
+            "$value": "#341c5e"
           },
           "color 2": {
             "$extensions": {
@@ -16258,7 +14965,7 @@
               }
             },
             "$type": "color",
-            "$value": "#B69EF4"
+            "$value": "#b49cf3"
           },
           "color 3": {
             "$extensions": {
@@ -16281,7 +14988,7 @@
               }
             },
             "$type": "color",
-            "$value": "#A78CE9"
+            "$value": "#a488e6"
           },
           "color 4": {
             "$extensions": {
@@ -16304,7 +15011,7 @@
               }
             },
             "$type": "color",
-            "$value": "#987BDD"
+            "$value": "#9376d8"
           },
           "color 5": {
             "$extensions": {
@@ -16327,7 +15034,7 @@
               }
             },
             "$type": "color",
-            "$value": "#8A6BCF"
+            "$value": "#8364c8"
           },
           "color 6": {
             "$extensions": {
@@ -16350,7 +15057,7 @@
               }
             },
             "$type": "color",
-            "$value": "#7B5BBF"
+            "$value": "#7353b5"
           },
           "color 7": {
             "$extensions": {
@@ -16373,7 +15080,7 @@
               }
             },
             "$type": "color",
-            "$value": "#6D4DAD"
+            "$value": "#6344a1"
           },
           "color 8": {
             "$extensions": {
@@ -16396,7 +15103,7 @@
               }
             },
             "$type": "color",
-            "$value": "#5E3F9B"
+            "$value": "#53358b"
           },
           "color 9": {
             "$extensions": {
@@ -16419,7 +15126,7 @@
               }
             },
             "$type": "color",
-            "$value": "#503287"
+            "$value": "#442874"
           }
         },
         "razamatazz": {
@@ -16445,7 +15152,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.extended.razamatazz.300}"
+            "$value": "#ff8aa4"
           },
           "color 10": {
             "$extensions": {
@@ -16465,29 +15172,6 @@
                   "STROKE_COLOR"
                 ],
                 "variableId": "VariableID:930:36144"
-              }
-            },
-            "$type": "color",
-            "$value": "#75002B"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#610021"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36145"
               }
             },
             "$type": "color",
@@ -16514,7 +15198,7 @@
               }
             },
             "$type": "color",
-            "$value": "#F57594"
+            "$value": "#f47392"
           },
           "color 3": {
             "$extensions": {
@@ -16537,7 +15221,7 @@
               }
             },
             "$type": "color",
-            "$value": "#EB6184"
+            "$value": "#e85c81"
           },
           "color 4": {
             "$extensions": {
@@ -16560,7 +15244,7 @@
               }
             },
             "$type": "color",
-            "$value": "#DE4C75"
+            "$value": "#d94570"
           },
           "color 5": {
             "$extensions": {
@@ -16583,7 +15267,7 @@
               }
             },
             "$type": "color",
-            "$value": "#D03767"
+            "$value": "#c92e61"
           },
           "color 6": {
             "$extensions": {
@@ -16606,7 +15290,7 @@
               }
             },
             "$type": "color",
-            "$value": "#C1225A"
+            "$value": "#b71653"
           },
           "color 7": {
             "$extensions": {
@@ -16629,7 +15313,7 @@
               }
             },
             "$type": "color",
-            "$value": "#AF094D"
+            "$value": "#a30345"
           },
           "color 8": {
             "$extensions": {
@@ -16652,7 +15336,7 @@
               }
             },
             "$type": "color",
-            "$value": "#9D0041"
+            "$value": "#8d0038"
           },
           "color 9": {
             "$extensions": {
@@ -16675,7 +15359,7 @@
               }
             },
             "$type": "color",
-            "$value": "#890036"
+            "$value": "#77002c"
           }
         },
         "turquoise": {
@@ -16701,7 +15385,7 @@
               }
             },
             "$type": "color",
-            "$value": "{primitives.color.extended.turquoise.300}"
+            "$value": "#5df5e0"
           },
           "color 10": {
             "$extensions": {
@@ -16721,29 +15405,6 @@
                   "STROKE_COLOR"
                 ],
                 "variableId": "VariableID:930:36084"
-              }
-            },
-            "$type": "color",
-            "$value": "#005243"
-          },
-          "color 11": {
-            "$extensions": {
-              "figma-console-mcp": {
-                "collectionId": "VariableCollectionId:7:714",
-                "figmaResolvedType": "COLOR",
-                "lastSyncedAt": "2026-09-09T09:43:47.987Z",
-                "lastSyncedValue": {
-                  "Sherpa": {
-                    "literal": "#004033"
-                  }
-                },
-                "primaryMode": "Sherpa",
-                "scopes": [
-                  "FRAME_FILL",
-                  "SHAPE_FILL",
-                  "STROKE_COLOR"
-                ],
-                "variableId": "VariableID:930:36085"
               }
             },
             "$type": "color",
@@ -16770,7 +15431,7 @@
               }
             },
             "$type": "color",
-            "$value": "#12E4CE"
+            "$value": "#10e2cc"
           },
           "color 3": {
             "$extensions": {
@@ -16793,7 +15454,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00D3BC"
+            "$value": "#00cfb8"
           },
           "color 4": {
             "$extensions": {
@@ -16816,7 +15477,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00C1AA"
+            "$value": "#00bba4"
           },
           "color 5": {
             "$extensions": {
@@ -16839,7 +15500,7 @@
               }
             },
             "$type": "color",
-            "$value": "#00AF98"
+            "$value": "#00a790"
           },
           "color 6": {
             "$extensions": {
@@ -16862,7 +15523,7 @@
               }
             },
             "$type": "color",
-            "$value": "#009D87"
+            "$value": "#00927d"
           },
           "color 7": {
             "$extensions": {
@@ -16885,7 +15546,7 @@
               }
             },
             "$type": "color",
-            "$value": "#008A75"
+            "$value": "#007d6a"
           },
           "color 8": {
             "$extensions": {
@@ -16908,7 +15569,7 @@
               }
             },
             "$type": "color",
-            "$value": "#007764"
+            "$value": "#006857"
           },
           "color 9": {
             "$extensions": {
@@ -16931,7 +15592,7 @@
               }
             },
             "$type": "color",
-            "$value": "#006453"
+            "$value": "#005445"
           }
         }
       }

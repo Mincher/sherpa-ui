@@ -162,7 +162,8 @@
    Slices TOUCH, with no gap. The rounding is what separates them, as in Figma. */
 .slice {
   fill: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
-  fill-opacity: 0.6;
+  /* NO fill-opacity. The series token already carries its 50%, and a
+     fill-opacity here MULTIPLIES it — marks painted at 30%. */
   /* The OUTLINE has its own token — colour 5 of the series' sequence, at full
      strength — so it does NOT track the fill. A slice's fill moves along its
      ramp; its border is the series' identity and stays put, which is what keeps

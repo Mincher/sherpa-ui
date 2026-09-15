@@ -894,14 +894,52 @@ const seriesBorderLines = [];
     if (/(^|\/)border$/.test(leaf.rawPath)) border = v;
   }
   hues.sort((a, b) => a[0] - b[0]);
+
+  // DEFAULT = one hue per series, taken from COLOUR 5 of each SEQUENCE.
+  //
+  // The collection's own primary mode is `sequence 1`, so series/1..10 all read
+  // the purple ramp — ten purples, which is a SEQUENTIAL reading. A chart with
+  // several series needs ten DISTINCT hues, and that is what the retired
+  // `categorical` mode used to give. Colour 5 of each sequence is the set that
+  // replaced it (see the ramp study), so the default is assembled from the
+  // per-mode values rather than from the primary mode alone.
+  //
+  // A chart that genuinely wants one ramp sets [data-palette] and gets the
+  // sequential reading instead.
+  const modeNames = [];
+  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
+    for (const m of Object.keys(leaf.modes ?? {})) if (!modeNames.includes(m)) modeNames.push(m);
+  }
+  const bySequence = new Map();
+  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
+    const m = leaf.rawPath.match(/series\/(\d+)$/);
+    if (!m || Number(m[1]) !== 5) continue;          // colour 5 only
+    for (const mode of modeNames) {
+      const raw = leaf.modes?.[mode];
+      if (raw == null) continue;
+      bySequence.set(mode, withOpacity(toCss(raw, leaf.type), leaf.opacity?.[mode]));
+    }
+  }
+  const picks = modeNames.map((m) => bySequence.get(m)).filter((v) => v != null);
+
   for (const [n, v] of hues) {
-    categoricalLines.push(`  --sherpa-categorical-${n}: ${v};`);
+    const pick = picks[n - 1] ?? v;
+    categoricalLines.push(`  --sherpa-categorical-${n}: ${pick};`);
+    // …and RE-POINT the series name at the same pick. The generic leaf emit gives
+    // `--sherpa-data-viz-series-N` the collection's PRIMARY mode, which is one
+    // sequence — ten shades of purple. Charts read this name, so a categorical
+    // chart came out monochrome. A chart that genuinely wants one ramp sets
+    // [data-palette] and gets the sequential reading back.
+    categoricalLines.push(`  --sherpa-data-viz-series-${n}: ${pick};`);
     // One border per series name, so a chart can ask for its own index without
-    // knowing that they all currently resolve to the same value.
+    // knowing how the borders happen to be wired.
     if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${border};`);
   }
   if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border: ${border};`);
   if (!hues.length) warn('data-viz: no series/N leaves found in the dump');
+  if (picks.length && picks.length < hues.length) {
+    warn(`data-viz: ${picks.length} sequence picks for ${hues.length} series — some will repeat a ramp step`);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -927,18 +965,27 @@ const paletteBlocks = [];
   } else {
     const mode = extDoc['data-viz-status'].defaultMode ?? 'categorical';
     const lines = [];
+    // The BORDER first, so it is not mistaken for a series index.
+    const borderVal = cache['data-viz/border']?.[mode];
+    if (borderVal != null) lines.push(`    --sherpa-data-viz-series-border: ${borderVal};`);
     for (const [path, byMode] of Object.entries(cache)) {
       const n = path.match(/series\/(\d+)$/)?.[1];
       const val = byMode[mode];
       if (!n || val == null) continue;
-      lines.push(`    --sherpa-categorical-${n}: ${val};`);
-      lines.push(`    --sherpa-data-viz-series-${n}: ${val};`);
+      // The 50% is applied HERE, not inherited. Overriding a leaf in a Figma
+      // extension replaces the whole composed value, so the cached override is a
+      // flat colour — and the plugin API cannot write a replacement composition
+      // ("Composed color variable values are not supported").
+      const tinted = `color-mix(in srgb, ${val} 50%, transparent)`;
+      lines.push(`    --sherpa-categorical-${n}: ${tinted};`);
+      lines.push(`    --sherpa-data-viz-series-${n}: ${tinted};`);
+      // Every series shares the mode's ONE border — the ramp's saturated mid.
+      if (borderVal != null) lines.push(`    --sherpa-data-viz-series-border-${n}: ${borderVal};`);
     }
-    lines.sort((a, b) => {
-      const an = Number(a.match(/-(\d+):/)[1]);
-      const bn = Number(b.match(/-(\d+):/)[1]);
-      return an - bn || a.localeCompare(b);
-    });
+    // Sort by series index. The unnumbered `--sherpa-data-viz-series-border`
+    // has none, so it sorts to the top rather than throwing on a null match.
+    const idx = (l) => Number(l.match(/-(\d+):/)?.[1] ?? -1);
+    lines.sort((a, b) => idx(a) - idx(b) || a.localeCompare(b));
     if (lines.length) {
       paletteBlocks.push(`  [data-palette="status"] {\n${lines.join('\n')}\n  }`);
     }
