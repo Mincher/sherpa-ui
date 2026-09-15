@@ -23,21 +23,48 @@
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
+/* The scrim: a tint over everything behind the panel.
+
+   `pointer-events: none` is what keeps this a NON-MODAL panel — the page behind
+   stays live and clickable, which is why an assistant belongs in one. It is
+   purely a visual layer telling the reader where their attention is.
+
+   Shown only while the panel is open; :host([open]) reflects the dialog. */
+.scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--_z, 100);
+  pointer-events: none;
+  background: color-mix(in srgb, #101014 20%, transparent);
+}
+:host([open]) .scrim { display: block; }
+
 .root {
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
   inline-size: min(92vw, 30rem);
-  max-block-size: 85vh;
   padding: 0;
   overflow: auto;
 
-  /* Docked to the right edge of the viewport (non-modal → page stays live).
-     Figma pins Structure: snap-right-edge → the right-hand corners are square. */
+  /* Docked to the right edge and FULL HEIGHT — a side panel that stopped short
+     of the viewport left a strip of page under it and read as a floating card
+     rather than a docked region. `inset-block` pins both ends, so the height
+     follows the window with no 85vh guess. */
   position: fixed;
-  inset-block-start: var(--sherpa-theme-gap-lg, 12px);
+  inset-block: 0;
   inset-inline-end: 0;
   inset-inline-start: auto;
+  /* A <dialog> carries UA `margin: auto`, which CENTRES it against the inset box
+     — with both block edges pinned that made the element taller than the window
+     and hung it off the top. Zero margin lets inset-block mean what it says. */
+  margin: 0;
+  block-size: auto;
+  /* ABOVE everything the app draws — the nav rail is z-index 2, and a panel the
+     rail covered would be worse than no panel. One step above the scrim so the
+     tint never lands on top of the card it is tinting behind. */
+  z-index: calc(var(--_z, 100) + 1);
 
   background: var(--_surface);
   border-style: solid;
@@ -46,10 +73,9 @@
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-start-end-radius: 0;
-  border-end-end-radius: 0;
+  /* Square: the panel now spans the full height and touches three viewport
+     edges, so a rounded corner would float it off an edge it is docked to. */
+  border-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg (Theme elevation "large" tokens). */
   box-shadow:

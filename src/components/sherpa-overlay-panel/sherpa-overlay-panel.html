@@ -40,6 +40,12 @@
     close            (detail: { })
 -->
 <template id="default">
+  <!-- The SCRIM. A non-modal <dialog> (show(), not showModal()) gets no
+       ::backdrop at all — that pseudo-element only paints for a modal — so the
+       tint behind the panel has to be a real element. It is pointer-transparent,
+       which is the whole point of a non-modal panel: the page behind stays live
+       and clickable while the assistant is open. -->
+  <div class="scrim" part="scrim" aria-hidden="true"></div>
   <dialog class="root" part="root">
     <header class="header" part="header">
       <div class="row" part="row">
