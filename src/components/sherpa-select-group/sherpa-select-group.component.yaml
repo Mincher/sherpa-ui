@@ -99,9 +99,6 @@ states:
     name: description
     selector: ":host([data-description])"
   - $type: state
-    name: horizontal
-    selector: ":host([data-orientation=\"horizontal\"])"
-  - $type: state
     name: error
     selector: ":host([data-error])"
   - $type: state
@@ -123,17 +120,20 @@ events:
       "on": change
       node: .options
 tokens:
-  group.gap: "{sherpa.display-space-xs}"
-  legend.gap: "{sherpa.display-space-2xs}"
+  group.padding: "{sherpa.structure-space-padding}"
+  group.gap: "{sherpa.display-mode-space-xs}"
   label.color: "{sherpa.theme-content-body-base}"
-  label.font-size: "{sherpa.font-size-body-large}"
-  label.font-weight: "{sherpa.font-weight-semibold}"
+  label.font-size: "{sherpa.font-size-body-base}"
+  label.font-weight: "{sherpa.font-weight-medium}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
-  description.font-size: "{sherpa.font-size-body-base}"
-  divider.border-block-start: "{sherpa.border-width-sm}"
-  options.gap: "{sherpa.display-space-xs}"
+  description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
+  divider.border-block-start: "{sherpa.border-top}"
+  options.gap: "{sherpa.display-mode-space-xs}"
   validation.color: "{sherpa.theme-content-body-1}"
   validation.font-size: "{sherpa.font-size-body-small}"
+  validation.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
     figmaName: Fieldset

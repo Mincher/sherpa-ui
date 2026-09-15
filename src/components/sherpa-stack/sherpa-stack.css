@@ -1,0 +1,173 @@
+/**
+ * sherpa-stack.css — a run of items in one direction, with a token gap.
+ *
+ * Pure layout. No fill, no border, no radius, no padding — the same contract
+ * sherpa-toolbar keeps. Everything is a [data-*] selector; there is no JS.
+ *
+ * The gap comes from the Theme `gap/*` scale (sm 4 / md 8 / lg 12 / xl 16), which
+ * is the semantic scale a Figma auto-layout frame's spacing binds to. The 2xl
+ * step reaches past it to space/xl 24 for the gap BETWEEN whole sections of a
+ * page, which the gap scale does not cover.
+ */
+
+:host {
+  /* lg (12) is the default because it is the field-to-field rhythm inside a form
+     — the most common run in an app. */
+  --_gap: var(--sherpa-theme-gap-lg, 12px);
+  /* The floor an item may shrink to before a wrapping row breaks. */
+  --_min-item: 200px;
+
+  /* `flex`, not `block`. A block host is as tall as its content, so `.run`'s
+     `block-size: 100%` resolved against nothing: a stack in a 200px box measured
+     1000px tall and neither data-scroll nor data-grow could work, because there
+     was no fixed height for either to divide up.
+
+     A flex host with `align-items: stretch` (the default) makes .run take the
+     host's own height, whatever gave it one — a fixed-height parent, a grid cell,
+     or a data-grow from an outer stack. */
+  display: flex;
+  flex-direction: column;
+  /* Fill a SIZED parent, and stay content-height in an unsized one. `100%` needs
+     the parent to have a resolved height; `align-self: stretch` does not, which is
+     why a stack inside a plain flex column still fills it. */
+  align-self: stretch;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+.run {
+  display: flex;
+  /* A column by default: the vertical run is the one nothing else covered
+     (sherpa-toolbar is the horizontal strip). */
+  flex-direction: column;
+  gap: var(--_gap);
+  min-inline-size: 0;
+  /* Takes the host's height — which is what makes a stack inside a fixed-height
+     card able to scroll, or to hand that height to a data-grow child. In an
+     unsized host there is nothing to take and it keeps its natural height. */
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+/* ── Direction ──────────────────────────────────────────────────────────── */
+:host([data-direction="inline"]) .run {
+  flex-direction: row;
+  /* A row is as tall as its tallest item; filling the parent's height would
+     stretch a button strip down a whole card. */
+  block-size: auto;
+}
+
+/* ── Gap scale — the Theme gap/* tokens ─────────────────────────────────── */
+:host([data-gap="sm"]) { --_gap: var(--sherpa-theme-gap-sm, 4px); }
+:host([data-gap="md"]) { --_gap: var(--sherpa-theme-gap-md, 8px); }
+:host([data-gap="lg"]) { --_gap: var(--sherpa-theme-gap-lg, 12px); }
+:host([data-gap="xl"]) { --_gap: var(--sherpa-theme-gap-xl, 16px); }
+/* Section-to-section spacing, past the top of the gap scale. */
+:host([data-gap="2xl"]) { --_gap: var(--sherpa-display-mode-space-xl, 24px); }
+:host([data-gap="none"]) { --_gap: var(--sherpa-display-mode-space-none, 0); }
+
+/* ── Alignment ───────────────────────────────────────────────────────────
+   `align` is the CROSS axis — how an item sits across the run. In a column that
+   is its width, in a row its height. `stretch` (the default) is what makes every
+   field in a form the same width without each one being told to be.
+
+   `between` is the exception: it spreads items ALONG the run, which is the
+   "label on the left, control on the right" row a settings page is made of. It
+   also centres them across, because that row is what a reader expects to be
+   level. */
+:host([data-align="start"]) .run { align-items: flex-start; }
+:host([data-align="center"]) .run { align-items: center; }
+:host([data-align="end"]) .run { align-items: flex-end; }
+:host([data-align="stretch"]) .run { align-items: stretch; }
+:host([data-align="between"]) .run {
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Scrolling ───────────────────────────────────────────────────────────
+   A stack that is TALLER than the room it was given scrolls instead of pushing
+   the page. Pair it with data-grow inside a fixed-height card: the card sets the
+   height, data-grow hands it to this stack, and the overflow scrolls here.
+
+   `overscroll-behavior: contain` stops the scroll chaining to the page when the
+   run reaches its end, so reading to the bottom of a chat thread does not then
+   start scrolling whatever is behind it. */
+:host([data-scroll]) {
+  /* The HOST must be capped, not just the run. A block parent does not constrain
+     a child's height — it lets it spill — so a stack in a 200px box measured
+     1000px tall and there was nothing to scroll: the content had already pushed
+     the page instead.
+
+     `block-size: 100%` caps it at the parent's height where the parent has one
+     (a fixed-height box, a grid cell), and `min-block-size: 0` lets it shrink
+     inside a flex parent that is handing it a share. */
+  block-size: 100%;
+  min-block-size: 0;
+}
+:host([data-scroll]) .run {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-block-size: 0;
+}
+/* Nothing in a scrolling run may grow to fill it — an item that did would size
+   itself to the scroll box and there would be nothing left to scroll. */
+:host([data-scroll]) ::slotted(*) { flex: 0 0 auto; }
+
+/* ── A reading measure ───────────────────────────────────────────────────
+   Long lines are hard to read: the eye loses the start of the next one. A
+   `data-measure` run caps its width and centres itself, so a chat thread or an
+   article stays readable on a wide screen while the card behind it still fills
+   the view. The cap is in `ch` (character widths), because a measure is about
+   characters per line, not pixels. */
+:host([data-measure]) .run {
+  max-inline-size: var(--_measure, 90ch);
+  margin-inline: auto;
+  inline-size: 100%;
+}
+
+/* ── Wrapping rows ───────────────────────────────────────────────────────
+   For a row of CARDS rather than buttons. Items wrap and each one grows to share
+   the line, floored at --_min-item — so three cards on a desktop become one per
+   line on a phone with no media query and no grid.
+
+   `flex-basis: --_min-item` with `flex-grow: 1` is the whole mechanism: the
+   basis is the width an item asks for, growth shares out whatever is left, and
+   wrapping moves an item down as soon as its basis no longer fits. */
+:host([data-wrap]) .run { flex-wrap: wrap; }
+:host([data-wrap]) ::slotted(*) {
+  flex: 1 1 var(--_min-item);
+  min-inline-size: 0;
+}
+
+/* ── Filling a sized parent ──────────────────────────────────────────────
+   A stack inside a fixed-height card (sherpa-container[data-rows]) hands that
+   height on to ONE item: the one marked `data-grow`. Everything else keeps its
+   natural height.
+
+   The marker is on the ITEM, not a position, because the grower is rarely last.
+   A records card is a toolbar, a filter bar, the GRID, and then the pager — the
+   grid grows and the pager stays put at the bottom. A "last child wins" rule
+   would have grown the pager and left the grid at its content height.
+
+   `min-block-size: 0` is the half that matters: a flex child's default floor is
+   its own content, so without it the grower refuses to shrink into the card and
+   overflows it. At a floor of 0 it takes the height it is given and its own
+   scroll box (a grid) or ratio box (a chart) takes over. */
+/* `data-fill` on the STACK, `data-grow` on the ITEM. Two attributes rather than
+   one, because a stack cannot see its own children from CSS:
+
+     • `:host(:has(…))` does not PARSE at all — `:has()` is not a valid argument
+       to `:host()`, and the browser silently drops the whole rule.
+     • the chained `:host:has(…)` parses but matches EVERY host, ignoring the
+       `:has()` — the same shadow-DOM trap the chained `:host:not()` form has.
+
+   So the height has to be declared, not detected. `data-fill` takes the parent's
+   height (a block parent lets a child spill rather than constraining it, which is
+   why the host needs its own cap) and `data-grow` says which item gets the spare. */
+:host([data-fill]) {
+  block-size: 100%;
+  min-block-size: 0;
+}
+::slotted(*) { min-block-size: 0; }
+::slotted([data-grow]) { flex: 1 1 auto; }
+:host([data-fill]) ::slotted(*:not([data-grow])) { flex: 0 0 auto; }

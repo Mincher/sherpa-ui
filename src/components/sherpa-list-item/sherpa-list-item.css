@@ -20,7 +20,10 @@
   align-items: flex-start;
   gap: var(--sherpa-structure-space-gap, 8px);
   padding: var(--sherpa-structure-space-padding, 8px);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--_status-surface, transparent);
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   transition: background-color 100ms ease, color 100ms ease;
@@ -55,7 +58,10 @@
 .expand {
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 :host([data-draggable]) .drag { display: inline-flex; cursor: grab; }
 .drag:active { cursor: grabbing; }
@@ -67,7 +73,7 @@
 .control { display: none; align-items: center; flex-shrink: 0; }
 :host([data-selectable]) .control { display: inline-flex; }
 /* Figma Checkbox (Atom) as the leading control: 20×20, 1px style-border/base ring,
-   structure-rounding 4, white face. */
+   rounding 4, white face. */
 .checkbox {
   appearance: none;
   position: relative;
@@ -76,7 +82,10 @@
   block-size: var(--sherpa-display-mode-size-md, 20px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   box-sizing: border-box;
   cursor: pointer;

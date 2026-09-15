@@ -69,3 +69,48 @@ test('data-align controls the row justification', async ({ page }) => {
   expect(r.start).toBe('flex-start');
   expect(r.between).toBe('space-between');
 });
+
+test('data-align="stretch" lets ONE wide control fill the row', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const box = document.createElement('div');
+    box.style.cssText = 'inline-size:600px';
+    const el = document.createElement('sherpa-container-footer') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-align', 'stretch');
+    el.innerHTML = '<div id="wide">x</div>';
+    box.appendChild(el);
+    root.appendChild(box);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return {
+      row: Math.round(el.shadowRoot!.querySelector('.row')!.getBoundingClientRect().width),
+      child: Math.round(document.getElementById('wide')!.getBoundingClientRect().width),
+    };
+  });
+  // A chat composer or a search field takes the whole row rather than hugging
+  // its content at one end the way a button cluster does.
+  expect(r.child).toBe(r.row);
+});
+
+test('the default still hugs its content at the end', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const box = document.createElement('div');
+    box.style.cssText = 'inline-size:600px';
+    const el = document.createElement('sherpa-container-footer') as HTMLElement & { rendered?: Promise<void> };
+    el.innerHTML = '<div id="btn">x</div>';
+    box.appendChild(el);
+    root.appendChild(box);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const row = el.shadowRoot!.querySelector('.row')!.getBoundingClientRect();
+    const child = document.getElementById('btn')!.getBoundingClientRect();
+    return { rowW: Math.round(row.width), childW: Math.round(child.width),
+             flushRight: Math.abs(row.right - child.right) < 2 };
+  });
+  // stretch is opt-in: without it a control keeps its own width, at the end.
+  expect(r.childW).toBeLessThan(r.rowW / 2);
+  expect(r.flushRight).toBe(true);
+});

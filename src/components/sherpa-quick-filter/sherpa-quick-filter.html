@@ -8,8 +8,8 @@
       State=menu     [ count ][ icon ] Label │ ▾
 
   In State=menu the chip and the caret button are two separately-bordered boxes
-  SNAPPED together: a negative `space/snapped` gap (−0.5px) laps their 0.5px rings
-  into one hairline, and the Structure snap extensions flatten the corners that
+  SNAPPED together: a `structure-space/snapped` gap (0) butts their 0.5px rings
+  flush, and the Structure snap extensions flatten the corners that
   meet (chip = snap-right-edge, button = snap-left-edge at the sm size). The caret
   button is Style=default, so it keeps its own white face and ring — it is not a
   transparent affordance floating inside the chip.
@@ -49,6 +49,11 @@
                     lives in this shadow root, so a light-DOM wrapper component
                     cannot reach it. Reveal is pure CSS on .count-wrap:hover.
     data-menu       Figma State=menu — snap on the caret button
+    data-persistent a SELECTOR rather than a toggle: always on, and never
+                    "empty". Set by sherpa-quick-filter-toolbar from a filter
+                    definition's `persistent` flag. The view chip is the case —
+                    you are always in SOME view, so the amber "on but filtering
+                    by nothing" state is one it cannot be in.
 
   Slots:
     (default)  the chip label

@@ -24,8 +24,13 @@
 
   background: var(--_surface);
   /* Figma Panel: strokes on the LEFT and RIGHT edges only (0.5), none top/bottom —
-     it sits flush between other in-flow surfaces. */
-  border-inline: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+     it sits flush between other in-flow surfaces. Per-edge widths come from the
+     Border collection so a [data-border] tier can zero them. */
+  border-block-style: none;
+  border-inline-style: solid;
+  border-inline-color: var(--_border);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   /* Figma: panel is a square in-flow surface (border/rounding/none). */
   border-radius: var(--sherpa-display-mode-border-rounding-none, 0);
   color: var(--sherpa-style-content-base, #0c0b11);

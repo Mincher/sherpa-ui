@@ -46,7 +46,12 @@
   gap: var(--sherpa-theme-gap-sm, 4px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0 var(--sherpa-theme-padding-sm, 4px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
   background: var(--_surface);
   color: var(--_content);

@@ -1,19 +1,4 @@
 {
-  "AI": {
-    "type": "COMPONENT",
-    "nodeId": "17:4638",
-    "variantAxes": [
-      {
-        "name": "brand",
-        "values": [
-          "Apex 2.0"
-        ]
-      }
-    ],
-    "booleanProps": [],
-    "textProps": [],
-    "instanceProps": []
-  },
   "Button": {
     "type": "COMPONENT",
     "nodeId": "11:2463",
@@ -64,7 +49,9 @@
     "textProps": [
       "label"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "icon"
+    ]
   },
   "Switch": {
     "type": "COMPONENT",
@@ -123,7 +110,10 @@
       "hasActions"
     ],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "iconLeading",
+      "iconTrailing"
+    ]
   },
   "Input Text": {
     "type": "COMPONENT",
@@ -273,7 +263,9 @@
     "textProps": [
       "label"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "statusOk"
+    ]
   },
   "Filter Toolbar": {
     "type": "COMPONENT",
@@ -308,8 +300,9 @@
       {
         "name": "Variant",
         "values": [
-          "Default",
-          "Panel"
+          "Panel",
+          "accordion",
+          "default"
         ]
       }
     ],
@@ -392,7 +385,9 @@
       "timestamp",
       "message"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "avatar"
+    ]
   },
   "Calendar": {
     "type": "COMPONENT",
@@ -468,7 +463,9 @@
     "textProps": [
       "label"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "chevron"
+    ]
   },
   "Icon": {
     "type": "COMPONENT",
@@ -488,7 +485,9 @@
       "isChecked"
     ],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "checkmark"
+    ]
   },
   "Select Checkbox": {
     "type": "COMPONENT",
@@ -601,7 +600,9 @@
     "textProps": [
       "message"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "statusIcon"
+    ]
   },
   "Chip": {
     "type": "COMPONENT",
@@ -614,7 +615,9 @@
     "textProps": [
       "label"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "icon"
+    ]
   },
   "Key Value Pair": {
     "type": "COMPONENT",
@@ -643,7 +646,9 @@
     "variantAxes": [],
     "booleanProps": [],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "upload"
+    ]
   },
   "File Item": {
     "type": "COMPONENT",
@@ -651,7 +656,9 @@
     "variantAxes": [],
     "booleanProps": [],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "doc"
+    ]
   },
   "Progress Steps": {
     "type": "COMPONENT",
@@ -688,7 +695,9 @@
     "textProps": [
       "heading"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "statusInfo"
+    ]
   },
   "Toast": {
     "type": "COMPONENT",
@@ -702,7 +711,10 @@
       "heading",
       "value"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "statusInfo",
+      "close"
+    ]
   },
   "Tab Group": {
     "type": "COMPONENT",
@@ -757,7 +769,9 @@
       "heading",
       "description"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "folder"
+    ]
   },
   "Breadcrumbs": {
     "type": "COMPONENT",
@@ -765,7 +779,9 @@
     "variantAxes": [],
     "booleanProps": [],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "separator"
+    ]
   },
   "Toolbar": {
     "type": "COMPONENT",
@@ -784,9 +800,17 @@
     "instanceProps": []
   },
   "Menu": {
-    "type": "COMPONENT",
-    "nodeId": "49:66174",
-    "variantAxes": [],
+    "type": "COMPONENT_SET",
+    "nodeId": "1156:29240",
+    "variantAxes": [
+      {
+        "name": "Type",
+        "values": [
+          "List",
+          "Calendar"
+        ]
+      }
+    ],
     "booleanProps": [],
     "textProps": [],
     "instanceProps": []
@@ -801,7 +825,9 @@
       "value",
       "delta"
     ],
-    "instanceProps": []
+    "instanceProps": [
+      "trendIcon"
+    ]
   },
   "View Header": {
     "type": "COMPONENT",
@@ -838,9 +864,17 @@
     "instanceProps": []
   },
   "Chart Legend": {
-    "type": "COMPONENT",
-    "nodeId": "430:43129",
-    "variantAxes": [],
+    "type": "COMPONENT_SET",
+    "nodeId": "1099:37879",
+    "variantAxes": [
+      {
+        "name": "Orientation",
+        "values": [
+          "vertical",
+          "horizontal"
+        ]
+      }
+    ],
     "booleanProps": [],
     "textProps": [],
     "instanceProps": []
@@ -911,7 +945,10 @@
       "isMaximised"
     ],
     "textProps": [],
-    "instanceProps": []
+    "instanceProps": [
+      "icon",
+      "chevron"
+    ]
   },
   "Primary Navigation": {
     "type": "COMPONENT",
@@ -971,5 +1008,24 @@
     "booleanProps": [],
     "textProps": [],
     "instanceProps": []
+  },
+  "Navigation Header": {
+    "type": "COMPONENT_SET",
+    "nodeId": "1051:7815",
+    "variantAxes": [
+      {
+        "name": "State",
+        "values": [
+          "Default",
+          "Pinned",
+          "Settings"
+        ]
+      }
+    ],
+    "booleanProps": [],
+    "textProps": [],
+    "instanceProps": [
+      "productIcon"
+    ]
   }
 }

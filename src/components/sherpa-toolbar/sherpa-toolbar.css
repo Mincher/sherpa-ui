@@ -10,12 +10,14 @@
  * Figma bindings (visual-diff 2026-09-08): the toolbar is a TRANSPARENT bare
  * strip — no fill, no radius. Under a [data-status] ancestor it takes the status
  * surface via the cascade (--_status-surface), otherwise transparent. Block
- * padding = space/xs (8px); inline padding = 0; zone gap = space/xs (8px). Text
+ * padding = Theme padding/md (8px); inline padding = Theme padding/sm (4px);
+ * zone gap = space/xs (8px). Text
  * ink = content/secondary/base.
  */
 
 :host {
   --_py: var(--sherpa-theme-padding-md, 8px);
+  --_px: var(--sherpa-theme-padding-sm, 4px);
   --_gap: var(--sherpa-display-mode-space-xs, 8px);
   display: block;
   inline-size: 100%;
@@ -36,7 +38,7 @@
   inline-size: 100%;
   gap: var(--_gap);
   padding-block: var(--_py);
-  padding-inline: 0;
+  padding-inline: var(--_px);
 }
 
 /* Bordered variant adds the Figma toolbar's bottom rule — status-border cascade. */

@@ -45,10 +45,10 @@ anatomy:
 props:
   - $type: prop
     name: data-divider
-    type: boolean
+    type: string
     kind: style
     default: false
-    description: show a bottom divider
+    description: bottom divider; shown by DEFAULT — set data-divider="none" to hide it
   - $type: prop
     name: data-heading
     type: string
@@ -80,25 +80,26 @@ states:
     name: lg
     selector: ":host([data-size=\"lg\"])"
   - $type: state
-    name: divider
-    selector: ":host([data-divider])"
+    name: none
+    selector: ":host([data-divider=\"none\"])"
 events:
   - $type: event
     name: nothing
     bubbles: true
     composed: true
 tokens:
-  row.gap: "{sherpa.display-space-xs}"
-  lead.gap: "{sherpa.display-space-xs}"
+  row.gap: "{sherpa.display-mode-space-xs}"
   title.color: "{sherpa.theme-content-body-base}"
   title.font-family: "{sherpa.font-family-body}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
+  title.font-weight: "{sherpa.font-weight-medium}"
+  title.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
   description.font-family: "{sherpa.font-family-body}"
-  description.font-size: "{sherpa.font-size-body-base}"
-  actions.gap: "{sherpa.display-space-xs}"
-  divider.margin-block-start: "{sherpa.display-space-xs}"
-  divider.border-block-start: "{sherpa.display-border-width-base}"
+  description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
+  actions.gap: "{sherpa.display-mode-space-xs}"
+  divider.margin-block-start: "{sherpa.theme-padding-md}"
+  divider.border-block-start: "{sherpa.border-top}"
 $extensions:
   sherpa:
     figmaName: Section Header

@@ -88,7 +88,7 @@
   margin-block-start: var(--sherpa-theme-padding-md, 8px);
   border: none;
   /* Figma: border/width/sm (0.5px) hairline in border/default/+2. */
-  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host([data-divider="none"]) .divider { display: none; }

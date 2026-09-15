@@ -7,6 +7,15 @@
     data-elevation  none (default) | sm | md | lg
     data-loading    show the loading overlay (ratified boolean-verb state)
     data-padding    none | sm | base (default) | lg
+    data-rows       4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows.
+                    The body's content fills it, so a chart draws into the whole
+                    card and a data grid scrolls inside it instead of the card
+                    growing with the data.
+    data-fill       with data-rows AND several body children: only the child
+                    marked data-grow takes the spare height; the rest keep their
+                    natural size. A records card is a toolbar, a filter bar, the
+                    GRID, then the pager — the grid grows, the pager stays put.
+                    Not needed for the common one-child card.
 
   The empty and error overlays are SLOT-DRIVEN (ratified D6): slot content into
   the empty / error slot and the matching overlay shows automatically. There is

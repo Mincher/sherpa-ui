@@ -71,9 +71,6 @@ props:
     description: submitted value when checked
 states:
   - $type: state
-    name: minimal
-    selector: ":host([data-variant=\"minimal\"])"
-  - $type: state
     name: status
     selector: ":host([data-status])"
   - $type: state
@@ -100,15 +97,18 @@ events:
     bubbles: true
     composed: true
 tokens:
-  field.gap: "{sherpa.display-space-xs}"
+  field.gap: "{sherpa.display-mode-space-xs}"
   field.color: "{sherpa.theme-content-body-base}"
-  control.border-width: "{sherpa.display-border-width-sm}"
-  control.border-radius: "{sherpa.display-border-rounding-sm}"
-  text.gap: "{sherpa.display-space-3xs}"
-  label.color: "{sherpa.theme-content-body-base}"
+  control.border-width: "{sherpa.display-mode-border-width-base}"
+  control.border-radius: "{sherpa.border-rounding-top-left}"
+  text.gap: "{sherpa.display-mode-space-2xs}"
+  label.color: "{sherpa.theme-content-body-1}"
   label.font-size: "{sherpa.font-size-body-base}"
-  description.color: "{sherpa.theme-content-body-1}"
+  label.font-weight: "{sherpa.font-weight-medium}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
+  description.color: "{sherpa.theme-content-body-2}"
   description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
     figmaName: Select Checkbox

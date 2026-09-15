@@ -103,11 +103,50 @@ function parseAttrs(s) {
   while ((m = re.exec(s))) { if (m[1]) attrs[m[1]] = m[2] ?? ''; }
   return attrs;
 }
+/**
+ * The byte range each `<!-- … -->` occupies, so tag scanning can ignore them.
+ *
+ * parseNodes already skips comments; findMatchingClose did NOT, and it is the one
+ * that COUNTS tags. A comment that merely MENTIONS a tag — "a bare <span> with an
+ * aria-label is ignored by AT" — therefore pushed the depth one too deep, the true
+ * close was never matched, and the element swallowed every sibling after it to the
+ * end of the source. In sherpa-quick-filter that put .icon and .label inside
+ * .count-wrap and emitted a phantom `/span` node from the unconsumed close tag.
+ */
+function commentRanges(src) {
+  const out = [];
+  let i = 0;
+  for (;;) {
+    const start = src.indexOf('<!--', i);
+    if (start === -1) return out;
+    const close = src.indexOf('-->', start + 4);
+    const end = close === -1 ? src.length : close + 3;
+    out.push([start, end]);
+    i = end;
+  }
+}
 function findMatchingClose(src, from, tag, endTag) {
+  const comments = commentRanges(src);
+  // A hit inside a comment is TEXT, not markup — step past the whole comment and
+  // look again, rather than counting it.
+  const skip = (at) => {
+    for (const [start, end] of comments) if (at >= start && at < end) return end;
+    return -1;
+  };
+  const find = (needle, at) => {
+    let k = at;
+    for (;;) {
+      const hit = src.indexOf(needle, k);
+      if (hit === -1) return -1;
+      const past = skip(hit);
+      if (past === -1) return hit;
+      k = past;
+    }
+  };
   let depth = 1, i = from;
   while (i < src.length) {
-    const nextOpen = src.indexOf(`<${tag}`, i);
-    const nextClose = src.indexOf(endTag, i);
+    const nextOpen = find(`<${tag}`, i);
+    const nextClose = find(endTag, i);
     if (nextClose === -1) return src.length;
     if (nextOpen !== -1 && nextOpen < nextClose && /[\s>/]/.test(src[nextOpen + 1 + tag.length] || '>')) {
       depth++; i = nextOpen + 1;

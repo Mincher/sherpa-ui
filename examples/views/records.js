@@ -10,6 +10,8 @@
  * internal scroll inside a fixed-height panel, and grouping across a row count
  * that no longer fits on one screen.
  */
+import { SherpaToast } from '../../dist/index.js';
+
 export async function init(root) {
   /* ── Data: 100 customers ──────────────────────────────────────────── */
   const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
@@ -173,7 +175,6 @@ export async function init(root) {
   const pager     = root.querySelector('#pager');
   const dialog    = root.querySelector('#dialog');
   const planGroup = root.querySelector('#f-plan');
-  const toasts    = root.querySelector('#toasts');
 
   /* Shared nav + header (live in index.html). */
   const header = document.querySelector('sherpa-app-shell sherpa-app-header');
@@ -231,6 +232,18 @@ export async function init(root) {
   const valuesOf = (field) => [...new Set(customers.map((c) => c[field]))].sort();
   const asOptions = (field) =>
     valuesOf(field).map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
+  /* `removable: true` on the menu chips — the DATA bar is the user's own to
+     arrange, so each of these offers "Remove filter" at the foot of its menu and
+     returns to the Add list. It is opt-in: the view SELECTOR in the header does
+     not take it, because "no view" is not a state the page can be in.
+
+     `commit: true` on TWO of them — Owner and Created. Chips AUTO-APPLY by
+     default: a tick changes the filter there and then, with no footer and no
+     second click, which is what a filter chip should feel like. Committing is
+     the opt-out, for a field whose query is genuinely expensive — a person
+     lookup or a date scan — where applying per tick would fire three or four
+     requests for a selection the user had not finished building. These two are
+     here so both behaviours are visible side by side in one bar. */
   qft.populate([
     { id: 'active',    label: 'Active',    type: 'data' },
     { id: 'trial',     label: 'Trial',     type: 'data' },
@@ -239,19 +252,23 @@ export async function init(root) {
     // MULTI-select: any number of plans / regions / tiers. Picking exactly one
     // reads back as "Plan: Pro" on the chip; two or more show the count badge.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
-      select: 'multiple', options: asOptions('plan') },
+      select: 'multiple', removable: true, options: asOptions('plan') },
     { id: 'region', label: 'Region', type: 'data', icon: 'fa-solid fa-globe',
-      select: 'multiple', options: asOptions('region') },
+      select: 'multiple', removable: true, options: asOptions('region') },
     { id: 'tier', label: 'Tier', type: 'data', icon: 'fa-solid fa-award',
-      select: 'multiple', options: asOptions('tier') },
-    // SINGLE-select: one owner at a time.
+      select: 'multiple', removable: true, options: asOptions('tier') },
+    // SINGLE-select: one owner at a time. COMMITTING — a person lookup stands in
+    // for the expensive server-side query, so its rows are a draft behind an
+    // Apply/Cancel footer and Cancel throws them away.
     { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
-      select: 'single', options: asOptions('owner') },
+      select: 'single', removable: true, commit: true, options: asOptions('owner') },
     // A DATE chip: its menu is a calendar rather than a list of values, and its
     // label carries the chosen day. `kind` is what picks the menu's content —
     // date-range and time will be values here, not new chip types.
+    // Also COMMITTING: a date scan is the other expensive case, and its footer
+    // shows the full four-button row (Today · Remove · Cancel · Apply).
     { id: 'created', label: 'Created', type: 'data', kind: 'date',
-      icon: 'fa-solid fa-calendar' },
+      removable: true, commit: true, icon: 'fa-solid fa-calendar' },
   ]);
 
   /* What the ADD chip offers — filters a user can put on the bar OVER AND ABOVE
@@ -342,12 +359,13 @@ export async function init(root) {
   root.querySelector('#save-btn').addEventListener('button-click', () => {
     const name = root.querySelector('#f-name').value || 'New customer';
     dialog.close();
-    const toast = document.createElement('sherpa-toast');
-    toast.dataset.status = 'success';
-    toast.dataset.heading = `${name} saved`;
-    toast.dataset.value = 'The customer record was created.';
-    toast.dataset.duration = '5000';
-    toast.addEventListener('toast-dismiss', () => toast.remove());
-    toasts.appendChild(toast);
+    // The FACTORY, not a hand-built element: it owns the shared top-right stack
+    // (so a second toast pushes the first down rather than covering it), the
+    // auto-dismiss timer and the removal. The view used to build the node itself
+    // and append it to a hand-made `.toast-region` div — a second stack, in a
+    // different corner, that the component knew nothing about.
+    SherpaToast.success(`${name} saved`, {
+      value: 'The customer record was created.',
+    });
   });
 }

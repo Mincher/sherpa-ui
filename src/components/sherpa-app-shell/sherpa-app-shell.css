@@ -141,6 +141,22 @@
 .view {
   padding: var(--sherpa-layout-grid-padding, 16px);
   min-inline-size: 0;
+  /* A COLUMN, so a view that fills the screen (a chat thread, a scrolling data
+     grid) has an unbroken height to resolve against.
+
+     A percentage height resolves against the PARENT's height, so one `auto`
+     anywhere in the chain collapses everything below it to content height. The
+     app used to patch this from outside with `#view-root { height: 100% }` in
+     its own <style> block — which every app then had to know to write. */
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+}
+/* Whatever the app slots in — a <main> wrapper, a view element — takes the
+   column's spare height and hands it on. */
+.view ::slotted(*) {
+  flex: 1 1 auto;
+  min-block-size: 0;
 }
 
 /* No header — the content spans the whole frame. */

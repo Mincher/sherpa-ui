@@ -17,12 +17,30 @@
  *   elevation    — shadow styling ([data-elevation]).
  *   components   — each component's own scoped partial (last → last word).
  */
-@layer core, display-mode, theme, layout, structure, style, elevation, components;
+@layer core, display-mode, theme, layout, structure, border, style, elevation, components;
 
 
 
 @layer core {
 
+
+  /* The page itself — see the note above the layer. */
+  html,
+  body {
+    margin: 0;
+    block-size: 100%;
+  }
+  body {
+    font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+    color: var(--sherpa-theme-content-body-base, #0c0b11);
+    background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  }
+  /* The shell is the page's frame, so it inherits the full height rather than
+     each app re-declaring it. :is() keeps this at class specificity. */
+  body > sherpa-app-shell,
+  body > :is(div, main) > sherpa-app-shell {
+    block-size: 100%;
+  }
 }
 
 @layer display-mode {
@@ -144,7 +162,6 @@
   --sherpa-display-mode-space-lg: 20px;
   --sherpa-display-mode-space-none: 0px;
   --sherpa-display-mode-space-sm: 12px;
-  --sherpa-display-mode-space-snapped: -0.5px;
   --sherpa-display-mode-space-xl: 24px;
   --sherpa-display-mode-space-xs: 8px;
   }
@@ -303,7 +320,6 @@
     --sherpa-display-mode-size-4xl: 40px;
     --sherpa-display-mode-size-5xl: 48px;
     --sherpa-display-mode-size-6xl: 56px;
-    --sherpa-display-mode-space-snapped: -0.5px;
     --sherpa-display-mode-space-none: 0px;
     --sherpa-display-mode-space-3xs: 2px;
     --sherpa-display-mode-space-2xs: 2px;
@@ -425,7 +441,6 @@
     --sherpa-display-mode-size-4xl: 56px;
     --sherpa-display-mode-size-5xl: 64px;
     --sherpa-display-mode-size-6xl: 64px;
-    --sherpa-display-mode-space-snapped: -0.5px;
     --sherpa-display-mode-space-none: 0px;
     --sherpa-display-mode-space-3xs: 4px;
     --sherpa-display-mode-space-2xs: 8px;
@@ -1408,12 +1423,9 @@
   --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
   --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-base);
   --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
-  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
-  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
-  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
   --sherpa-structure-space-gap: var(--sherpa-display-mode-space-xs);
   --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
+  --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
   }
 
   /* structure — the 2xs size mode ([data-size]). */
@@ -1423,12 +1435,9 @@
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-sm);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-2xs);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-sm);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-sm);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-sm);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-sm);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-3xs);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-3xs);
+    --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
   }
 
   /* structure — the xs size mode ([data-size]). */
@@ -1438,12 +1447,9 @@
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xs);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-2xs);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-2xs);
+    --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
   }
 
   /* structure — the sm size mode ([data-size]). */
@@ -1453,12 +1459,9 @@
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-base);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-xs);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-xs);
+    --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
   }
 
   /* structure — the lg size mode ([data-size]). */
@@ -1468,12 +1471,9 @@
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-lg);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
   }
 
   /* structure — the xl size mode ([data-size]). */
@@ -1483,48 +1483,243 @@
     --sherpa-structure-font-line-height: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-size: var(--sherpa-display-mode-fonts-scale-xl);
     --sherpa-structure-font-weight: var(--sherpa-display-mode-fonts-weight-400);
-    --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-lg);
-    --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-lg);
-    --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-lg);
-    --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-lg);
     --sherpa-structure-space-gap: var(--sherpa-display-mode-space-sm);
     --sherpa-structure-space-padding: var(--sherpa-display-mode-space-sm);
+    --sherpa-structure-space-snapped: var(--sherpa-display-mode-space-none);
+  }
+}
+
+@layer border {
+  :root {
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
   }
 
-  /* Snap — per-edge corner rounding ([data-snap]). */
-  [data-snap="all"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 0px;
+  [data-group="solo"] {
+    --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-left: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-right: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
   }
 
-  [data-snap="right"] {
-    --sherpa-structure-rounding-top-left: 4px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 4px;
-    --sherpa-structure-rounding-bottom-right: 0px;
+  [data-group="start"] {
+    --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-left: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-right: var(--sherpa-display-mode-border-width-xs);
+    --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-none);
   }
 
-  [data-snap="left"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 4px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 4px;
+  [data-group="mid"] {
+    --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-left: var(--sherpa-display-mode-border-width-xs);
+    --sherpa-border-right: var(--sherpa-display-mode-border-width-xs);
+    --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-none);
   }
 
-  [data-snap="bottom"] {
-    --sherpa-structure-rounding-top-left: 4px;
-    --sherpa-structure-rounding-top-right: 4px;
-    --sherpa-structure-rounding-bottom-left: 0px;
-    --sherpa-structure-rounding-bottom-right: 0px;
+  [data-group="end"] {
+    --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-left: var(--sherpa-display-mode-border-width-xs);
+    --sherpa-border-right: var(--sherpa-display-mode-border-width-sm);
+    --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base);
+    --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-none);
+    --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
   }
 
-  [data-snap="top"] {
-    --sherpa-structure-rounding-top-left: 0px;
-    --sherpa-structure-rounding-top-right: 0px;
-    --sherpa-structure-rounding-bottom-left: 4px;
-    --sherpa-structure-rounding-bottom-right: 4px;
+  /* Grouping — per-position borders + rounding ([data-group]). */
+  [data-group="vertical-solo"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 4px;
+    --sherpa-border-rounding-top-right: 4px;
+    --sherpa-border-rounding-bottom-left: 4px;
+    --sherpa-border-rounding-bottom-right: 4px;
+  }
+
+  [data-group="vertical-start"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 4px;
+    --sherpa-border-rounding-top-right: 4px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="vertical-mid"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="vertical-end"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 4px;
+    --sherpa-border-rounding-bottom-right: 4px;
+  }
+
+  [data-group="grid-top-solo"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 4px;
+    --sherpa-border-rounding-top-right: 4px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-top-start"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 4px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-top-mid"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-top-end"] {
+    --sherpa-border-top: 0.5px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 4px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-mid-solo"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-mid-start"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-mid-mid"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-mid-end"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.25px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-bottom-solo"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 4px;
+    --sherpa-border-rounding-bottom-right: 4px;
+  }
+
+  [data-group="grid-bottom-start"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.5px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 4px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-bottom-mid"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.25px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 0px;
+  }
+
+  [data-group="grid-bottom-end"] {
+    --sherpa-border-top: 0.25px;
+    --sherpa-border-bottom: 0.5px;
+    --sherpa-border-left: 0.25px;
+    --sherpa-border-right: 0.5px;
+    --sherpa-border-rounding-top-left: 0px;
+    --sherpa-border-rounding-top-right: 0px;
+    --sherpa-border-rounding-bottom-left: 0px;
+    --sherpa-border-rounding-bottom-right: 4px;
   }
 }
 
@@ -1656,22 +1851,22 @@
   /* Look tiers — [data-look] re-points the status cascade per status mode. */
   [data-look="transparent"] {
     --_status-surface: #ffffff00;
-    --_status-surface-subtle: #ffffff;
-    --_status-surface-strong: #e8e8f6;
-    --_status-shadow: #ffffff00;
-    --_status-border: #ffffff00;
-    --_status-border-strong: #e8e8f6;
+    --_status-surface-subtle: #e8e8f64d;
+    --_status-surface-strong: #b3b3c34d;
+    --_status-shadow: #0c0b114d;
+    --_status-border: #e8e8f6;
+    --_status-border-strong: #b3b3c3;
     --_status-text: #35353d;
     --_status-text-on-color: #ffffff;
     --_status-icon: #3b4ccd;
   }
 
   [data-look="transparent"][data-status="info"] {
-    --_status-surface: #008bba4d;
-    --_status-surface-subtle: #d4f0ff;
-    --_status-surface-strong: #6fd1ff;
-    --_status-shadow: #d4f0ff1a;
-    --_status-border: #ffffff00;
+    --_status-surface: #ffffff00;
+    --_status-surface-subtle: #d4f0ff4d;
+    --_status-surface-strong: #6fd1ff4d;
+    --_status-shadow: #0032464d;
+    --_status-border: #b3b3c3;
     --_status-border-strong: #008bba;
     --_status-text: #006c91;
     --_status-text-on-color: #ffffff;
@@ -1679,11 +1874,11 @@
   }
 
   [data-look="transparent"][data-status="critical"] {
-    --_status-surface: #fc4e2d4d;
-    --_status-surface-subtle: #ffdad1;
-    --_status-surface-strong: #ff856d;
-    --_status-shadow: #ffdad11a;
-    --_status-border: #ffffff00;
+    --_status-surface: #ffffff00;
+    --_status-surface-subtle: #ffdad14d;
+    --_status-surface-strong: #ff856d4d;
+    --_status-shadow: #7011004d;
+    --_status-border: #b3b3c3;
     --_status-border-strong: #dd2c01;
     --_status-text: #701100;
     --_status-text-on-color: #ffffff;
@@ -1691,11 +1886,11 @@
   }
 
   [data-look="transparent"][data-status="warning"] {
-    --_status-surface: #ffc44c4d;
-    --_status-surface-subtle: #fff4e1;
-    --_status-surface-strong: #ffdda0;
-    --_status-shadow: #fff4e11a;
-    --_status-border: #ffffff00;
+    --_status-surface: #ffffff00;
+    --_status-surface-subtle: #fff4e14d;
+    --_status-surface-strong: #ffdda04d;
+    --_status-shadow: #4731004d;
+    --_status-border: #b3b3c3;
     --_status-border-strong: #ffc44c;
     --_status-text: #a27500;
     --_status-text-on-color: #ffffff;
@@ -1703,11 +1898,11 @@
   }
 
   [data-look="transparent"][data-status="urgent"] {
-    --_status-surface: #ff73004d;
-    --_status-surface-subtle: #ffe6da;
-    --_status-surface-strong: #ff955b;
-    --_status-shadow: #ffe6da1a;
-    --_status-border: #ffffff00;
+    --_status-surface: #ffffff00;
+    --_status-surface-subtle: #ffe6da4d;
+    --_status-surface-strong: #ff955b4d;
+    --_status-shadow: #4e1e004d;
+    --_status-border: #b3b3c3;
     --_status-border-strong: #ff7300;
     --_status-text: #a24600;
     --_status-text-on-color: #ffffff;
@@ -1715,22 +1910,22 @@
   }
 
   [data-look="transparent"][data-status="success"] {
-    --_status-surface: #20c1734d;
-    --_status-surface-subtle: #bbffd2;
-    --_status-surface-strong: #56e796;
-    --_status-shadow: #bbffd21a;
-    --_status-border: #ffffff00;
-    --_status-border-strong: #20c173;
-    --_status-text: #007a45;
+    --_status-surface: #ffffff00;
+    --_status-surface-subtle: #f0fff54d;
+    --_status-surface-strong: #82edb14d;
+    --_status-shadow: #006b374d;
+    --_status-border: #b3b3c3;
+    --_status-border-strong: #00ad62;
+    --_status-text: #00ad62;
     --_status-text-on-color: #ffffff;
-    --_status-icon: #00391d;
+    --_status-icon: #006b37;
   }
 
   [data-look="transparent"][data-status="active"] {
-    --_status-surface: #c046ff4d;
-    --_status-surface-subtle: #f2dfff;
-    --_status-surface-strong: #d89cff;
-    --_status-shadow: #d89cff1a;
+    --_status-surface: #f2dfff00;
+    --_status-surface-subtle: #f2dfff4d;
+    --_status-surface-strong: #d89cff4d;
+    --_status-shadow: #2400364d;
     --_status-border: #c046ff;
     --_status-border-strong: #c046ff;
     --_status-text: #8300b6;
@@ -1739,10 +1934,10 @@
   }
 
   [data-look="transparent"][data-status="inactive"] {
-    --_status-surface: #b3b3c3;
-    --_status-surface-subtle: #b3b3c3;
-    --_status-surface-strong: #b3b3c3;
-    --_status-shadow: #ffffff00;
+    --_status-surface: #b3b3c300;
+    --_status-surface-subtle: #b3b3c34d;
+    --_status-surface-strong: #b3b3c34d;
+    --_status-shadow: #0c0b114d;
     --_status-border: #b3b3c3;
     --_status-border-strong: #b3b3c3;
     --_status-text: #35353d;

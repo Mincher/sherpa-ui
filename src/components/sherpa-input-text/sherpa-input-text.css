@@ -79,8 +79,16 @@
   inline-size: 100%;
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding-inline: var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
@@ -188,7 +196,7 @@ textarea.control {
 .message {
   display: none;
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
-  border-radius: 0 0 var(--sherpa-structure-rounding-bottom-right, 4px) var(--sherpa-structure-rounding-bottom-left, 4px);
+  border-radius: 0 0 var(--sherpa-border-rounding-bottom-right, 4px) var(--sherpa-border-rounding-bottom-left, 4px);
   background: var(--_surface-error);
   color: var(--_text-on-error);
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -232,8 +240,16 @@ textarea.control {
   min-inline-size: 0;
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
 }
 .field-minimal .control:focus-visible {

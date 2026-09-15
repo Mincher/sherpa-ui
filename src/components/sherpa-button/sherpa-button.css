@@ -79,10 +79,10 @@
   inline-size: fit-content;
 
   /* Per-corner radius so [data-snap] can join buttons into a seamless group. */
-  border-start-start-radius: var(--sherpa-structure-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-structure-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 
   /* DEFAULT appearance ("secondary"): neutral Style surface + a visible grey border
      + dark ink. When a look tier is active the cascade re-points --_status-* and the
@@ -92,6 +92,14 @@
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* Border WIDTH comes per-edge from the Grouping collection, so a [data-group]
+     position can drop just the edge it shares with a neighbour. The tertiary look
+     zeroes all four (below) rather than painting a transparent colour, so the
+     Transparent Style tier can keep the default Style border colour. */
+  --_border-top: var(--sherpa-border-top, 0.5px);
+  --_border-bottom: var(--sherpa-border-bottom, 0.5px);
+  --_border-left: var(--sherpa-border-left, 0.5px);
+  --_border-right: var(--sherpa-border-right, 0.5px);
 }
 
 .trigger {
@@ -102,7 +110,12 @@
   inline-size: 100%;
   min-block-size: var(--sherpa-button-size-height, 32px);
   padding-inline: var(--sherpa-button-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--_border-top);
+  border-block-end-width: var(--_border-bottom);
+  border-inline-start-width: var(--_border-left);
+  border-inline-end-width: var(--_border-right);
   border-radius: inherit;
   margin: 0;
   font-family: inherit;
@@ -153,7 +166,13 @@
 :host([data-look="transparent"]) {
   --_surface: var(--_status-surface, transparent);
   --_content: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  --_border: var(--_status-border, transparent);
+  /* Tertiary = NO border. The Transparent Style tier carries the DEFAULT Style
+     border colour, so the border is removed by WIDTH (→ none/0px) on all four
+     edges, not by painting the stroke transparent. */
+  --_border-top: var(--sherpa-display-mode-border-width-none, 0px);
+  --_border-bottom: var(--sherpa-display-mode-border-width-none, 0px);
+  --_border-left: var(--sherpa-display-mode-border-width-none, 0px);
+  --_border-right: var(--sherpa-display-mode-border-width-none, 0px);
 }
 
 :host(:focus-visible) { outline: none; }
@@ -234,7 +253,7 @@
    covers the glyph. */
 :host([data-look="transparent"][disabled]) .trigger {
   background: transparent;
-  border-color: transparent;
+  border-width: var(--sherpa-display-mode-border-width-none, 0px);
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 :host([data-look="transparent"][disabled]) .icon {

@@ -9,7 +9,7 @@
  * pre. When data-line-numbers is set, a left gutter column of line numbers is
  * shown (JS fills .gutter with one number per line; CSS reveals it). The copy
  * button's "Copied" confirmation is driven purely by data-copied. Corner radii
- * bind the snapping/grouping radius vars.
+ * bind the border/grouping radius vars.
  */
 
 :host {
@@ -18,10 +18,10 @@
   background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
   overflow: hidden;
 }
 
@@ -59,7 +59,10 @@
   block-size: var(--sherpa-structure-height, 32px);
   padding: 0;
   border: 0;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-theme-content-size-base, 14px);

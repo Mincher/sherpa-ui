@@ -92,8 +92,16 @@
 .page-input {
   block-size: var(--_control);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
@@ -142,7 +150,7 @@
 /* The negative snapped gap laps the two rings into one hairline. CSS `gap`
    cannot go negative, so it has to be a margin. */
 .pair > :not(:first-child) {
-  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
 /* The snapped CORNERS, set here rather than left to `data-snap`.
@@ -154,18 +162,18 @@
 
    By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
 .pair > * {
-  --sherpa-structure-rounding-top-left: 0px;
-  --sherpa-structure-rounding-top-right: 0px;
-  --sherpa-structure-rounding-bottom-left: 0px;
-  --sherpa-structure-rounding-bottom-right: 0px;
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
 }
 .pair > :first-child {
-  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 .pair > :last-child {
-  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 /* ── Disabled fields ──────────────────────────────────────────────────── */

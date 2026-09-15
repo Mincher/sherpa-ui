@@ -6,13 +6,13 @@
  *
  * State=simple — ONE box, 63×24 hug/fill:
  *   padding 0 × space/2xs 4 · gap space/2xs 4 · all four corners bound to
- *   Structure `structure-rounding/*` in the DEFAULT mode → 4 · 0.5
+ *   Snapping `rounding/*` in the DEFAULT mode → 4 · 0.5
  *   `border/width/sm` style-border/base ring · style-surface/base face
  *   children: [count][icon] Label
  *
  * State=menu — TWO boxes SNAPPED into one 87×24 unit:
  *   the wrapper has NO fill and NO ring of its own; it only sets the gap to
- *   `space/snapped` (−0.5px) so the two rings overlap into a single hairline.
+ *   `structure-space/snapped` (0) so the two rings meet as one flush joint.
  *   "Left"  = the simple chip, pinned Structure ext `snap-right-edge` / default
  *             → rounding 4/0/0/4. Its own 0.5 ring and white face.
  *   "Button"= a Button/Type=icon, pinned Structure ext `snap-left-edge` / SM and
@@ -40,8 +40,8 @@
 }
 
 /* The chip shell is a SNAP WRAPPER, not a box. In Figma State=menu the wrapper
-   carries no fill and no stroke — only the negative `space/snapped` gap that laps
-   the two children's rings over each other. In State=simple there is only one
+   carries no fill and no stroke — only the `structure-space/snapped` gap that
+   butts the two children's rings together. In State=simple there is only one
    child, so the gap never applies and the wrapper stays invisible either way. */
 .chip {
   display: inline-flex;
@@ -50,14 +50,14 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
 
-/* The snap itself. Figma's `space/snapped` is a NEGATIVE gap (−0.5px), and CSS
-   `gap` cannot be negative — Chromium silently computes it back to `normal`, so
-   the two 0.5px rings sat side by side as a 1px double line. A negative inline
-   margin on the second box is the CSS way to say the same thing: it pulls the
-   caret left by exactly one ring width so the two rings become one hairline. */
+/* The snap itself. Figma's `structure-space/snapped` is the single source for
+   every snapped pair in the system; it aliases space/none, so the two halves sit
+   FLUSH rather than overlapping. It is an inline margin rather than a `gap`
+   because the token is free to go negative later and CSS `gap` cannot —
+   Chromium silently computes a negative gap back to `normal`. */
 :host([data-menu]) .caret {
   display: inline-flex;
-  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
 /* ── The chip body — Figma "Left", the whole box in State=simple ──────────
@@ -69,9 +69,12 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   block-size: 100%;
   padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
@@ -175,7 +178,12 @@
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
+  border-style: solid;
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-style-content-base, #0c0b11);
@@ -280,12 +288,12 @@
   /* Figma padding 8 all round on a 24 box with a 14 glyph — the glyph is centred
      and the box is fixed, so the padding is what sizes the hit area, not layout. */
   padding: 0;
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
   border-start-start-radius: 0;
   border-end-start-radius: 0;
-  border-start-end-radius: var(--sherpa-structure-rounding-top-right, 4px);
-  border-end-end-radius: var(--sherpa-structure-rounding-bottom-right, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   /* Structure `icon-size` in the SM mode → content/size/base 14 (it was

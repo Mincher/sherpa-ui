@@ -5,21 +5,21 @@
     "vars": {
       "style-surface/base": {
         "default": "#ffffff00",
-        "info": "#008bba4d",
-        "critical": "#fc4e2d4d",
-        "warning": "#ffc44c4d",
-        "urgent": "#ff73004d",
-        "success": "#20c1734d",
-        "active": "#c046ff4d",
-        "inactive": "#b3b3c3"
-      },
-      "style-border/base": {
-        "default": "#ffffff00",
         "info": "#ffffff00",
         "critical": "#ffffff00",
         "warning": "#ffffff00",
         "urgent": "#ffffff00",
         "success": "#ffffff00",
+        "active": "#f2dfff00",
+        "inactive": "#b3b3c300"
+      },
+      "style-border/base": {
+        "default": "#e8e8f6",
+        "info": "#b3b3c3",
+        "critical": "#b3b3c3",
+        "warning": "#b3b3c3",
+        "urgent": "#b3b3c3",
+        "success": "#b3b3c3",
         "active": "#c046ff",
         "inactive": "#b3b3c3"
       },
@@ -39,7 +39,7 @@
         "critical": "#701100",
         "warning": "#a27500",
         "urgent": "#a24600",
-        "success": "#007a45",
+        "success": "#00ad62",
         "active": "#8300b6",
         "inactive": "#35353d"
       },
@@ -49,7 +49,7 @@
         "critical": "#701100",
         "warning": "#473100",
         "urgent": "#4e1e00",
-        "success": "#00391d",
+        "success": "#006b37",
         "active": "#240036",
         "inactive": "#b3b3c3"
       },
@@ -64,27 +64,27 @@
         "inactive": "#35353d"
       },
       "style-surface/base +1": {
-        "default": "#ffffff",
-        "info": "#d4f0ff",
-        "critical": "#ffdad1",
-        "warning": "#fff4e1",
-        "urgent": "#ffe6da",
-        "success": "#bbffd2",
-        "active": "#f2dfff",
-        "inactive": "#b3b3c3"
+        "default": "#e8e8f64d",
+        "info": "#d4f0ff4d",
+        "critical": "#ffdad14d",
+        "warning": "#fff4e14d",
+        "urgent": "#ffe6da4d",
+        "success": "#f0fff54d",
+        "active": "#f2dfff4d",
+        "inactive": "#b3b3c34d"
       },
       "style-surface/base +2": {
-        "default": "#e8e8f6",
-        "info": "#6fd1ff",
-        "critical": "#ff856d",
-        "warning": "#ffdda0",
-        "urgent": "#ff955b",
-        "success": "#56e796",
-        "active": "#d89cff",
-        "inactive": "#b3b3c3"
+        "default": "#b3b3c34d",
+        "info": "#6fd1ff4d",
+        "critical": "#ff856d4d",
+        "warning": "#ffdda04d",
+        "urgent": "#ff955b4d",
+        "success": "#82edb14d",
+        "active": "#d89cff4d",
+        "inactive": "#b3b3c34d"
       },
       "style-content/secondary": {
-        "default": "#b3b3c3",
+        "default": "#35353d",
         "info": "#35353d",
         "critical": "#35353d",
         "warning": "#35353d",
@@ -104,22 +104,22 @@
         "inactive": "#35353d"
       },
       "style-surface/shadow": {
-        "default": "#ffffff00",
-        "info": "#d4f0ff1a",
-        "critical": "#ffdad11a",
-        "warning": "#fff4e11a",
-        "urgent": "#ffe6da1a",
-        "success": "#bbffd21a",
-        "active": "#d89cff1a",
-        "inactive": "#ffffff00"
+        "default": "#0c0b114d",
+        "info": "#0032464d",
+        "critical": "#7011004d",
+        "warning": "#4731004d",
+        "urgent": "#4e1e004d",
+        "success": "#006b374d",
+        "active": "#2400364d",
+        "inactive": "#0c0b114d"
       },
       "style-border/base +1": {
-        "default": "#e8e8f6",
+        "default": "#b3b3c3",
         "info": "#008bba",
         "critical": "#dd2c01",
         "warning": "#ffc44c",
         "urgent": "#ff7300",
-        "success": "#20c173",
+        "success": "#00ad62",
         "active": "#c046ff",
         "inactive": "#b3b3c3"
       }
@@ -248,476 +248,6 @@
         "success": "#20c173",
         "active": "#c046ff",
         "inactive": "#b3b3c3"
-      }
-    }
-  },
-  "structure-snap-all-edges": {
-    "collectionId": "VariableCollectionId:955:36419",
-    "defaultMode": "default",
-    "vars": {
-      "structure-font/weight": {
-        "default": 400,
-        "2xs": 400,
-        "xs": 400,
-        "sm": 400,
-        "lg": 400,
-        "xl": 400
-      },
-      "height": {
-        "default": 32,
-        "2xs": 12,
-        "xs": 16,
-        "sm": 24,
-        "lg": 32,
-        "xl": 40
-      },
-      "structure-space/padding": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-space/gap": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-font/size": {
-        "default": 14,
-        "2xs": 8,
-        "xs": 10,
-        "sm": 14,
-        "lg": 16,
-        "xl": 20
-      },
-      "structure-font/line-height": {
-        "default": 20,
-        "2xs": 12,
-        "xs": 20,
-        "sm": 20,
-        "lg": 20,
-        "xl": 20
-      },
-      "icon-size": {
-        "default": 14,
-        "2xs": 10,
-        "xs": 10,
-        "sm": 12,
-        "lg": 16,
-        "xl": 16
-      },
-      "structure-rounding/top-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/top-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      }
-    }
-  },
-  "structure-snap-right-edge": {
-    "collectionId": "VariableCollectionId:955:36414",
-    "defaultMode": "default",
-    "vars": {
-      "structure-font/weight": {
-        "default": 400,
-        "2xs": 400,
-        "xs": 400,
-        "sm": 400,
-        "lg": 400,
-        "xl": 400
-      },
-      "height": {
-        "default": 32,
-        "2xs": 12,
-        "xs": 16,
-        "sm": 24,
-        "lg": 32,
-        "xl": 40
-      },
-      "structure-space/padding": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-space/gap": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-font/size": {
-        "default": 14,
-        "2xs": 8,
-        "xs": 10,
-        "sm": 14,
-        "lg": 16,
-        "xl": 20
-      },
-      "structure-font/line-height": {
-        "default": 20,
-        "2xs": 12,
-        "xs": 20,
-        "sm": 20,
-        "lg": 20,
-        "xl": 20
-      },
-      "icon-size": {
-        "default": 14,
-        "2xs": 10,
-        "xs": 10,
-        "sm": 12,
-        "lg": 16,
-        "xl": 16
-      },
-      "structure-rounding/top-left": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/top-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-left": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/bottom-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      }
-    }
-  },
-  "structure-snap-left-edge": {
-    "collectionId": "VariableCollectionId:955:36424",
-    "defaultMode": "default",
-    "vars": {
-      "structure-font/weight": {
-        "default": 400,
-        "2xs": 400,
-        "xs": 400,
-        "sm": 400,
-        "lg": 400,
-        "xl": 400
-      },
-      "height": {
-        "default": 32,
-        "2xs": 12,
-        "xs": 16,
-        "sm": 24,
-        "lg": 32,
-        "xl": 40
-      },
-      "structure-space/padding": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-space/gap": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-font/size": {
-        "default": 14,
-        "2xs": 8,
-        "xs": 10,
-        "sm": 14,
-        "lg": 16,
-        "xl": 20
-      },
-      "structure-font/line-height": {
-        "default": 20,
-        "2xs": 12,
-        "xs": 20,
-        "sm": 20,
-        "lg": 20,
-        "xl": 20
-      },
-      "icon-size": {
-        "default": 14,
-        "2xs": 10,
-        "xs": 10,
-        "sm": 12,
-        "lg": 16,
-        "xl": 16
-      },
-      "structure-rounding/top-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/top-right": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/bottom-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-right": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      }
-    }
-  },
-  "structure-snap-bottom-edge": {
-    "collectionId": "VariableCollectionId:955:36429",
-    "defaultMode": "default",
-    "vars": {
-      "structure-font/weight": {
-        "default": 400,
-        "2xs": 400,
-        "xs": 400,
-        "sm": 400,
-        "lg": 400,
-        "xl": 400
-      },
-      "height": {
-        "default": 32,
-        "2xs": 12,
-        "xs": 16,
-        "sm": 24,
-        "lg": 32,
-        "xl": 40
-      },
-      "structure-space/padding": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-space/gap": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-font/size": {
-        "default": 14,
-        "2xs": 8,
-        "xs": 10,
-        "sm": 14,
-        "lg": 16,
-        "xl": 20
-      },
-      "structure-font/line-height": {
-        "default": 20,
-        "2xs": 12,
-        "xs": 20,
-        "sm": 20,
-        "lg": 20,
-        "xl": 20
-      },
-      "icon-size": {
-        "default": 14,
-        "2xs": 10,
-        "xs": 10,
-        "sm": 12,
-        "lg": 16,
-        "xl": 16
-      },
-      "structure-rounding/top-left": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/top-right": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/bottom-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      }
-    }
-  },
-  "structure-snap-top-edge": {
-    "collectionId": "VariableCollectionId:955:36434",
-    "defaultMode": "default",
-    "vars": {
-      "structure-font/weight": {
-        "default": 400,
-        "2xs": 400,
-        "xs": 400,
-        "sm": 400,
-        "lg": 400,
-        "xl": 400
-      },
-      "height": {
-        "default": 32,
-        "2xs": 12,
-        "xs": 16,
-        "sm": 24,
-        "lg": 32,
-        "xl": 40
-      },
-      "structure-space/padding": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-space/gap": {
-        "default": 8,
-        "2xs": 2,
-        "xs": 4,
-        "sm": 8,
-        "lg": 12,
-        "xl": 12
-      },
-      "structure-font/size": {
-        "default": 14,
-        "2xs": 8,
-        "xs": 10,
-        "sm": 14,
-        "lg": 16,
-        "xl": 20
-      },
-      "structure-font/line-height": {
-        "default": 20,
-        "2xs": 12,
-        "xs": 20,
-        "sm": 20,
-        "lg": 20,
-        "xl": 20
-      },
-      "icon-size": {
-        "default": 14,
-        "2xs": 10,
-        "xs": 10,
-        "sm": 12,
-        "lg": 16,
-        "xl": 16
-      },
-      "structure-rounding/top-left": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/top-right": {
-        "default": 0,
-        "2xs": 0,
-        "xs": 0,
-        "sm": 0,
-        "lg": 0,
-        "xl": 0
-      },
-      "structure-rounding/bottom-left": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
-      },
-      "structure-rounding/bottom-right": {
-        "default": 4,
-        "2xs": 4,
-        "xs": 4,
-        "sm": 4,
-        "lg": 4,
-        "xl": 4
       }
     }
   },
@@ -940,10 +470,6 @@
       "size/6xl": {
         "light": 56,
         "dark": 56
-      },
-      "space/snapped": {
-        "light": -0.5,
-        "dark": -0.5
       },
       "space/none": {
         "light": 0,
@@ -1423,10 +949,6 @@
         "light": 64,
         "dark": 64
       },
-      "space/snapped": {
-        "light": -0.5,
-        "dark": -0.5
-      },
       "space/none": {
         "light": 0,
         "dark": 0
@@ -1682,6 +1204,222 @@
       "color/app/color 1": {
         "light": "#e8e8f6",
         "dark": "#15151d"
+      }
+    }
+  },
+  "vertical": {
+    "collectionId": "VariableCollectionId:1200:30198",
+    "defaultMode": "solo",
+    "vars": {
+      "border/top": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/bottom": {
+        "solo": 0.5,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.5
+      },
+      "border/left": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.5,
+        "end": 0.5
+      },
+      "border/right": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.5,
+        "end": 0.5
+      },
+      "rounding/top-left": {
+        "solo": 4,
+        "start": 4,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/top-right": {
+        "solo": 4,
+        "start": 4,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-left": {
+        "solo": 4,
+        "start": 0,
+        "mid": 0,
+        "end": 4
+      },
+      "rounding/bottom-right": {
+        "solo": 4,
+        "start": 0,
+        "mid": 0,
+        "end": 4
+      }
+    }
+  },
+  "grid-top": {
+    "collectionId": "VariableCollectionId:1200:30207",
+    "defaultMode": "solo",
+    "vars": {
+      "border/top": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.5,
+        "end": 0.5
+      },
+      "border/bottom": {
+        "solo": 0.25,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/left": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/right": {
+        "solo": 0.5,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.5
+      },
+      "rounding/top-left": {
+        "solo": 4,
+        "start": 4,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/top-right": {
+        "solo": 4,
+        "start": 0,
+        "mid": 0,
+        "end": 4
+      },
+      "rounding/bottom-left": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-right": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      }
+    }
+  },
+  "grid-mid": {
+    "collectionId": "VariableCollectionId:1200:30216",
+    "defaultMode": "solo",
+    "vars": {
+      "border/top": {
+        "solo": 0.25,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/bottom": {
+        "solo": 0.25,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/left": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/right": {
+        "solo": 0.5,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.5
+      },
+      "rounding/top-left": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/top-right": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-left": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-right": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      }
+    }
+  },
+  "grid-bottom": {
+    "collectionId": "VariableCollectionId:1200:30225",
+    "defaultMode": "solo",
+    "vars": {
+      "border/top": {
+        "solo": 0.25,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/bottom": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.5,
+        "end": 0.5
+      },
+      "border/left": {
+        "solo": 0.5,
+        "start": 0.5,
+        "mid": 0.25,
+        "end": 0.25
+      },
+      "border/right": {
+        "solo": 0.5,
+        "start": 0.25,
+        "mid": 0.25,
+        "end": 0.5
+      },
+      "rounding/top-left": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/top-right": {
+        "solo": 0,
+        "start": 0,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-left": {
+        "solo": 4,
+        "start": 4,
+        "mid": 0,
+        "end": 0
+      },
+      "rounding/bottom-right": {
+        "solo": 4,
+        "start": 0,
+        "mid": 0,
+        "end": 4
       }
     }
   }

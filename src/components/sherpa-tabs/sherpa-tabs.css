@@ -25,7 +25,7 @@
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  border-block-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 

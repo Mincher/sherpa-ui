@@ -53,7 +53,7 @@ async function openCalendarMenu(page: import('@playwright/test').Page) {
       return { w: Math.round(r.width), h: Math.round(r.height), l: Math.round(r.left), r: Math.round(r.right) };
     };
     const corner = (e: HTMLElement, side: string) =>
-      getComputedStyle(e).getPropertyValue(`--sherpa-structure-rounding-${side}`).trim();
+      getComputedStyle(e).getPropertyValue(`--sherpa-border-rounding-${side}`).trim();
 
     const footer = menu.shadowRoot.querySelector('.footer') as HTMLElement;
     const footerRow = footer.shadowRoot?.querySelector('.row') as HTMLElement | null;
@@ -131,9 +131,12 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    // `removable: true` is the OPT-IN for the "Remove filter" affordance —
+    // without it a chip offers no way off the bar, which is what the view
+    // SELECTOR wants and what a data filter does not.
     el.populate([
-      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
-      { id: 'created', label: 'Created', kind: 'date' },
+      { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'created', label: 'Created', kind: 'date', removable: true },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -462,9 +465,16 @@ test('Remove filter is a footer button after Today, and the card widens to hold 
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    // `removable: true` is the OPT-IN for the "Remove filter" affordance —
+    // without it a chip offers no way off the bar, which is what the view
+    // SELECTOR wants and what a data filter does not.
+    // `commit: true` so all FOUR footer buttons are up at once — this test is
+    // about their ORDER and the card width that has to hold them. A chip left on
+    // the auto-apply default shows only Today and Remove (asserted below), which
+    // would not exercise either.
     el.populate([
-      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
-      { id: 'created', label: 'Created', kind: 'date' },
+      { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'created', label: 'Created', kind: 'date', removable: true, commit: true },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -511,7 +521,7 @@ test('Remove filter is a footer button after Today, and the card widens to hold 
     };
   });
 
-  // All four are present on a date chip's menu.
+  // All four are present on a COMMITTING date chip's menu.
   expect(r.before.shown).toEqual([true, true, true, true]);
 
   // Today, then Remove filter, then the committing pair — Will's order.
@@ -529,4 +539,73 @@ test('Remove filter is a footer button after Today, and the card widens to hold 
   // And it removes the filter.
   expect(r.before.chips).toEqual(['plan', 'created']);
   expect(r.chipsAfter).toEqual(['plan']);
+});
+
+/**
+ * The footer is NOT the Apply/Cancel pair alone.
+ *
+ * Chips auto-apply by default, so `data-commit` is usually absent — and the row
+ * used to be gated on that one attribute. A date chip therefore lost Today and
+ * Remove filter along with the Apply button, and a calendar has no list for an
+ * action ROW to sit in instead, so the chip became one a reader could add and
+ * never take away.
+ *
+ * Each control hides on its OWN flag; the row shows when any of them is in it.
+ */
+test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/Apply', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // NO `commit` — the default. A plain value chip rides along so the case with
+    // nothing to put in the row is covered too.
+    el.populate([
+      { id: 'created', label: 'Created', kind: 'date', removable: true },
+      { id: 'plain', label: 'Plain', options: [{ value: 'a', label: 'A' }] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const menuOf = (id: string) =>
+      el.shadowRoot.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as HTMLElement & {
+        rendered?: Promise<void>; shadowRoot: ShadowRoot;
+      };
+    const date = menuOf('created');
+    const plain = menuOf('plain');
+    await date.rendered;
+    await plain.rendered;
+
+    const shown = (menu: { shadowRoot: ShadowRoot }, sel: string) =>
+      getComputedStyle(menu.shadowRoot.querySelector(sel)!).display !== 'none';
+
+    return {
+      date: {
+        commits: date.hasAttribute('data-commit'),
+        footer: shown(date, '.footer'),
+        today: shown(date, '.today'),
+        remove: shown(date, '.remove'),
+        cancel: shown(date, '.cancel'),
+        apply: shown(date, '.apply'),
+      },
+      plain: { commits: plain.hasAttribute('data-commit'), footer: shown(plain, '.footer') },
+    };
+  });
+
+  // Auto-apply: no data-commit anywhere.
+  expect(r.date.commits).toBe(false);
+  expect(r.plain.commits).toBe(false);
+
+  // The date chip KEEPS its row, because Today and Remove still live in it.
+  expect(r.date.footer).toBe(true);
+  expect(r.date.today).toBe(true);
+  expect(r.date.remove).toBe(true);
+
+  // …and loses exactly the commit pair, which would otherwise offer to apply a
+  // selection that has already applied.
+  expect(r.date.cancel).toBe(false);
+  expect(r.date.apply).toBe(false);
+
+  // A menu with nothing for the row shows no row.
+  expect(r.plain.footer).toBe(false);
 });

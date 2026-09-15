@@ -36,10 +36,10 @@
   background: var(--_surface);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus-within {
@@ -102,7 +102,10 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
   cursor: pointer;
@@ -138,7 +141,10 @@
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   border: none;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   /* Strong accent disc so the white glyph stays legible. surface-accent-base
      resolves to the PALE accent (#8aa3ff) — too light under a white glyph — so the
      send binds the strong step (surface-accent/+2 = #3b4ccd). */

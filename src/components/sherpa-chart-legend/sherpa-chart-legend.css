@@ -77,7 +77,10 @@
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   /* The ROW's ink is the CATEGORY's, because the label is the row's own text and
      the value overrides it below. Read from the Figma node's bindings
@@ -143,7 +146,10 @@
 .swatch {
   inline-size: var(--sherpa-display-mode-size-xs, 12px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
   /* Solid hue where color-mix is unavailable — the swatch must never vanish. */

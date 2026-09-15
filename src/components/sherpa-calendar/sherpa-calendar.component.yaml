@@ -129,9 +129,8 @@ anatomy:
                 data-type: icon
                 data-snap: right
                 style: >-
-                  --sherpa-structure-rounding-top-left:
-                  var(--sherpa-display-mode-border-rounding-base, 4px);
-                  --sherpa-structure-rounding-bottom-left:
+                  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base,
+                  4px); --sherpa-border-rounding-bottom-left:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
                 data-icon-start: fa-solid fa-chevron-left
                 aria-label: Previous
@@ -140,19 +139,17 @@ anatomy:
               attrs:
                 data-snap: all
                 aria-live: polite
-                style: >-
-                  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px); flex: 1 1
-                  auto;
+                style: "margin-inline-start: var(--sherpa-structure-space-snapped, 0px); flex: 1 1 auto;"
             - el: sherpa-button
               class: cal-nav cal-next
               attrs:
                 data-type: icon
                 data-snap: left
                 style: >-
-                  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
-                  --sherpa-structure-rounding-top-right:
+                  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
+                  --sherpa-border-rounding-top-right:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
-                  --sherpa-structure-rounding-bottom-right:
+                  --sherpa-border-rounding-bottom-right:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
                 data-icon-start: fa-solid fa-chevron-right
                 aria-label: Next
@@ -269,7 +266,7 @@ tokens:
   cal.gap: "{sherpa.theme-gap-sm}"
   cal.border-width: "{sherpa.display-mode-border-width-base}"
   cal.border-color: "{sherpa.theme-border-default-2}"
-  cal.border-radius: "{sherpa.structure-rounding-top-left}"
+  cal.border-radius: "{sherpa.border-rounding-top-left}"
   cal.background: "{sherpa.style-surface-base}"
   cal-grid.inline-size: "{sherpa.display-mode-size-2xl}"
   cal-grid.row-gap: "{sherpa.display-mode-space-3xs}"

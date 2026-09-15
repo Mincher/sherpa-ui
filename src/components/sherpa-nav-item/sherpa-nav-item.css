@@ -61,7 +61,10 @@
      in the 40px collapsed state — see the collapsed block in sherpa-nav.css. */
   padding-inline: var(--_indent, var(--sherpa-navigation-nav-item-tier-1, 8px))
     var(--_pad-end, var(--sherpa-display-mode-space-xs, 8px));
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
   /* Figma Item Name: content/size/base 14 · weight/light 300 · line-height/base 20.
@@ -214,7 +217,7 @@
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
-  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-theme-border-active-2, #c046ff);
 }
 /* The dot sits OUTSIDE `content` in Figma, so it does NOT take the isVisible flag:
@@ -296,8 +299,12 @@
   gap: var(--sherpa-structure-space-gap, 8px);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-display-mode-space-xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-style: solid;
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: inherit;

@@ -271,8 +271,8 @@
      `size-base` 16, not 24: the box is also the tooltip's ANCHOR, so an oversized
      one pushes the tip away from the dot it is meant to point at. 16 is twice the
      dot and still an easy target. */
-  inline-size: var(--sherpa-display-mode-size-base, 16px);
-  block-size: var(--sherpa-display-mode-size-base, 16px);
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: 0;
   background: none;

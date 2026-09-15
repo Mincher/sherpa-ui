@@ -23,6 +23,8 @@
 
   Slots:
     title    — heading above the gauge (data-accepts: text, inline)
+    legend   — a <sherpa-chart-legend> naming the zones. Horizontal → below the
+               gauge; vertical → beside it. (data-accepts: chart-legend)
     caption  — rich caption below the gauge; overrides data-caption
                (data-accepts: text, inline)
 
@@ -33,6 +35,12 @@
   <div class="chart-header" part="header">
     <span class="title"><slot name="title"></slot></span>
   </div>
+
+  <!-- The gauge's own three stacked pieces (ring, scale, caption) as ONE column.
+       Without this wrapper a vertical legend would become a fourth sibling of the
+       host's flex column and land UNDER the caption rather than beside the gauge:
+       the grid can only place items it actually owns. -->
+  <div class="chart-body">
   <!--
     The wrapper is the positioning context for the tooltip layer. It is a SIBLING
     of the ring rather than its parent's only child, because a tip must be able to
@@ -96,6 +104,16 @@
     <span class="max"></span>
   </div>
   <figcaption class="caption" part="caption"><slot name="caption"></slot></figcaption>
+  </div>
+
+  <!-- The legend belongs to the CHART, not to the card around it — the same rule
+       sherpa-donut-chart already follows for its own. A HORIZONTAL legend sits
+       BELOW the gauge (this slot, in the host's flex column); a VERTICAL one sits
+       BESIDE it, which the CSS switches to a two-column grid on.
+
+       A gauge legend names its ZONES rather than a data series, so it is usually
+       data-readonly: there is one value, and no series to switch off. -->
+  <slot name="legend"></slot>
   </figure>
 
   <!--

@@ -109,10 +109,10 @@ test('data-menu snaps a bordered caret button onto the chip, flattening the join
   expect(r.menu.caretHasRing).toBe(true);
   expect(r.menu.caretBg).toBe('rgb(255, 255, 255)');
 
-  // The joint is a single hairline, not a double line. CSS `gap` cannot go
-  // negative (Chromium computes it back to `normal`), so the snap is a negative
-  // margin — this assertion is what proves it actually applied.
-  expect(r.menu.overlap).toBeCloseTo(0.5, 2);
+  // The joint is flush: Structure `structure-space/snapped` is 0, so the two
+  // halves BUTT rather than overlap. This assertion is what proves the snap
+  // margin resolved to the token rather than to some stray default.
+  expect(r.menu.overlap).toBeCloseTo(0, 2);
 });
 
 test('the caret opens the slotted menu without toggling the chip', async ({ page }) => {

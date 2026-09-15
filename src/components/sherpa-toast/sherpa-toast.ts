@@ -23,6 +23,14 @@ export interface ToastOptions {
   duration?: number;
   /** Where to append the toast. Defaults to the shared top-right stack. */
   container?: HTMLElement;
+  /**
+   * The second line, under the heading (data-value). The toast has always
+   * rendered it; only the factory had no way to pass it, so an app wanting both
+   * lines had to build the element by hand and lose the shared stack with it.
+   */
+  value?: string;
+  /** An action link in the toast (data-action). Fires toast-action when clicked. */
+  action?: string;
 }
 
 /** How long the leave animation runs — keep in step with sherpa-toast-out. */
@@ -102,6 +110,8 @@ export class SherpaToast extends SherpaElement {
     toast.dataset['status'] = status;
     toast.dataset['message'] = message;
     if (options.duration !== undefined) toast.dataset['duration'] = String(options.duration);
+    if (options.value !== undefined) toast.dataset['value'] = options.value;
+    if (options.action !== undefined) toast.dataset['action'] = options.action;
     const host = options.container ?? SherpaToast.#stack();
     // Inside the shared stack the container owns the corner, so the toast returns
     // to normal flow and the column spaces them.

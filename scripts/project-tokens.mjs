@@ -97,8 +97,12 @@ const warn = (msg) => {
 //                  scoped [data-theme="<name>"] (default also on :root) so a second
 //                  named theme is just another block. + font atoms + text classes.
 //   layout       — grid layout properties (Layout Grid) + the .sherpa-view utility.
-//   structure    — bound sizes / content sizes / per-corner rounding for anchoring
-//                  components + SNAP ([data-snap] per-edge rounding extensions).
+//   structure    — bound SIZES and SPACING only ([data-size]). Split 2026-09-14:
+//                  rounding and border width moved to `border`.
+//   border       — everything an edge-JOIN affects: per-corner rounding + per-edge
+//                  border width, as a t-shirt range ([data-border]), the SNAP
+//                  extensions ([data-snap]) and a `none` mode that nulls the
+//                  border ([data-border="none"]).
 //   style        — default + status styling ([data-status]) + look tiers ([data-look])
 //                  + the categorical data-viz series (all "styling").
 //   elevation    — shadow styling ([data-elevation]) + convenience shadow aliases.
@@ -109,6 +113,7 @@ const LAYER_ORDER = [
   'theme',
   'layout',
   'structure',
+  'border',
   'style',
   'elevation',
   'components',
@@ -179,7 +184,47 @@ const ROUTING = {
   // (hero/mono collections deleted 2026-09-07 — families now in content/font/*.)
   'style-transparent': { target: 'skip' }, // → [data-look="transparent"] @layer style
   'style-saturated': { target: 'skip' }, // → [data-look="saturated"] @layer style
-  'structure-snap-all-edges': { target: 'skip' }, // → [data-snap] @layer structure
+  // The BORDER collection — per-corner rounding + per-edge border width.
+  // Its size modes ride their OWN attribute: a component picks its border scale
+  // independently of its Structure size, and `none` (which nulls the border)
+  // must not compete with the real sizes on one attribute.
+  // Renamed Border → GROUPING (2026-09-14). Its 3 modes are DIRECTION
+  // (solo / horizontal / vertical), not size — size modes were retired, and
+  // `none` became a direct bind to display-mode/border/width/none.
+  // `publicSlug` keeps the EMITTED variable names stable across a Figma rename.
+  // leafName() strips the leading group only when it matches the collection slug
+  // (`border/top` under `border` → `--sherpa-border-top`). Renaming the collection
+  // to Grouping would otherwise emit `--sherpa-grouping-border-top` and every
+  // component — which reads `--sherpa-border-top` — would silently lose its border.
+  // Its modes are POSITION along an axis (solo / start / mid / end), and the parent
+  // IS a row — so they project as [data-group="start"] etc. The 4 extensions add
+  // the column and grid-cell cases as [data-group="<collection>-<mode>"].
+  grouping: { target: 'border', attr: 'data-group', publicSlug: 'border' },
+  // Pre-rename slug. An older dump can still carry it.
+  border: { target: 'border', attr: 'data-border' },
+
+  // The 4 POSITION extensions of Grouping → [data-group] blocks in @layer border.
+  // `vertical` runs a COLUMN; the 3 `grid-*` each fix a grid ROW and let the MODE
+  // pick the column. A plain ROW needs no extension — the parent Grouping IS a row.
+  'vertical': { target: 'skip' },
+  'grid-top': { target: 'skip' },
+  'grid-mid': { target: 'skip' },
+  'grid-bottom': { target: 'skip' },
+
+  // RETIRED snap extensions — kept routed so an older cache does not warn.
+  'snap-all-edges': { target: 'skip' },
+  'snap-right-edge': { target: 'skip' },
+  'snap-left-edge': { target: 'skip' },
+  'snap-top-edge': { target: 'skip' },
+  'snap-bottom-edge': { target: 'skip' },
+  // Pre-rename slugs. Kept routed because an unrouted slug warns, and an older
+  // extension CACHE can still carry them.
+  'snapping-snap-all-edges': { target: 'skip' },
+  'snapping-snap-right-edge': { target: 'skip' },
+  'snapping-snap-left-edge': { target: 'skip' },
+  'snapping-snap-top-edge': { target: 'skip' },
+  'snapping-snap-bottom-edge': { target: 'skip' },
+  'structure-snap-all-edges': { target: 'skip' },
   'structure-snap-right-edge': { target: 'skip' },
   'structure-snap-left-edge': { target: 'skip' },
   'structure-snap-top-edge': { target: 'skip' },
@@ -365,10 +410,17 @@ function withOpacity(css, opacityRef) {
 
 /** A leaf's public var name: drop a redundant repeated collection segment (e.g.
  * style/style-surface/base → --sherpa-style-surface-base) so emitted global names
- * match what refName() produces for refs pointing at the same leaf. */
+ * match what refName() produces for refs pointing at the same leaf.
+ *
+ * TWO shapes of repetition, and the second only appeared with the Border
+ * collection: the group either PREFIXES the collection name (style/style-surface)
+ * or IS it (border/border/top), which would otherwise emit
+ * `--sherpa-border-border-top`. */
 function leafName(path) {
   let segs = path;
-  if (segs[1] && segs[1].startsWith(segs[0] + '-')) segs = segs.slice(1);
+  if (segs[1] && (segs[1] === segs[0] || segs[1].startsWith(segs[0] + '-'))) {
+    segs = segs.slice(1);
+  }
   return `--${PREFIX}${toIdent(segs)}`;
 }
 
@@ -472,7 +524,7 @@ const propertyRegistrations = '';
 // `rootDark` (light-dark re-point), and `modeBlocks` ([attr="mode"] strings). The
 // bespoke sections (status/look/viz/snap/density/shadow/theme-scope/text) are slotted
 // into their assigned layer at write time.
-const GLOBAL_LAYERS = ['core', 'display-mode', 'theme', 'layout', 'structure', 'style', 'elevation'];
+const GLOBAL_LAYERS = ['core', 'display-mode', 'theme', 'layout', 'structure', 'border', 'style', 'elevation'];
 const layers = {};
 for (const name of GLOBAL_LAYERS) layers[name] = { root: [], rootDark: [], modeBlocks: [] };
 const scopedPartials = []; // { comp, css }
@@ -486,7 +538,7 @@ for (const slug of Object.keys(doc)) {
   }
   if (route.target === 'skip') continue;
 
-  const leaves = [...walkLeaves(doc[slug], [slug])];
+  const leaves = [...walkLeaves(doc[slug], [route.publicSlug ?? slug])];
   for (const leaf of leaves) scopeCheck(leaf);
 
   // ── global target: `route.target` is a layer name ──
@@ -555,9 +607,20 @@ for (const slug of Object.keys(doc)) {
           lines.push(`    ${leaf.name}: ${v};`);
         }
         if (!lines.length) continue;
+        // `passthrough` is NOT a size. It is the mode that NULLS a structure
+        // value — today the four structure-border/* widths, so a snapped or
+        // borderless surface can switch them off without a per-component rule.
+        // Emitting it as `[data-size="passthrough"]` would have made it compete
+        // with the real sizes on one attribute, so a passthrough element could
+        // not also be sm. It gets its own attribute instead.
+        const isPassthrough = mode === 'passthrough';
+        const sel = isPassthrough ? '[data-structure="passthrough"]' : `[data-size="${mode}"]`;
+        const label = isPassthrough
+          ? `the passthrough mode ([data-structure]) — nulls the border widths`
+          : `the ${mode} size mode ([data-size])`;
         L.modeBlocks.push(
-          `  /* ${route.target.alsoGlobal} — the ${mode} size mode ([data-size]). */\n` +
-            `  [data-size="${mode}"] {\n${lines.join('\n')}\n  }`,
+          `  /* ${route.target.alsoGlobal} — ${label}. */\n` +
+            `  ${sel} {\n${lines.join('\n')}\n  }`,
         );
       }
     }
@@ -892,31 +955,55 @@ for (const look of ['transparent', 'saturated']) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Snap — per-edge corner rounding ([data-snap]) from the extension cache.
+// Grouping — per-position borders ([data-group]) from the extension cache.
 // ════════════════════════════════════════════════════════════════════════════
-// Each structure-snap-<edge> extension overrides the 4 structure-rounding corners.
-// Emit one [data-snap="<edge>"] block re-pointing the 4 public corner radius vars
-// (primary/`default` size step — the component's own size mode still applies to
-// non-corner geometry). Edge slug 'all-edges' → 'all'.
-const CORNER_VARS = {
-  'structure-rounding/top-left': '--sherpa-structure-rounding-top-left',
-  'structure-rounding/top-right': '--sherpa-structure-rounding-top-right',
-  'structure-rounding/bottom-left': '--sherpa-structure-rounding-bottom-left',
-  'structure-rounding/bottom-right': '--sherpa-structure-rounding-bottom-right',
+// The GROUPING collection (renamed from Border, 2026-09-14) carries 3 DIRECTION
+// modes: solo / horizontal / vertical. Position lives in 15 EXTENSION collections,
+// because a Figma extension inherits its parent's modes and cannot add its own —
+// so the position has to be the COLLECTION, not a mode.
+//
+//   group-h-{left,mid,right}      a ROW     → [data-group="h-left"] …
+//   group-v-{top,mid,bottom}      a COLUMN  → [data-group="v-top"] …
+//   group-{left,mid,right}-{top,mid,bottom}  a GRID CELL → [data-group="left-top"] …
+//
+// ONE SIDE OWNS the shared edge: an item with a neighbour to its right drops its
+// own right edge; with a neighbour below, its bottom edge. No halving, so no
+// 0.25px values and no negative overlap.
+//
+// Each block re-points the 4 per-edge WIDTH vars and the 4 corner RADIUS vars.
+// The public names must match what leafName() emits for the same leaf — the
+// `rounding/*` group does NOT repeat the collection name, so it keeps the
+// `border-` prefix, unlike `border/top` where the group IS the collection name
+// and the duplicate is stripped. Getting this wrong writes `--sherpa-rounding-*`
+// while every consumer reads `--sherpa-border-rounding-*`, and grouping silently
+// stops squaring corners.
+const GROUP_VARS = {
+  'border/top': '--sherpa-border-top',
+  'border/bottom': '--sherpa-border-bottom',
+  'border/left': '--sherpa-border-left',
+  'border/right': '--sherpa-border-right',
+  'rounding/top-left': '--sherpa-border-rounding-top-left',
+  'rounding/top-right': '--sherpa-border-rounding-top-right',
+  'rounding/bottom-left': '--sherpa-border-rounding-bottom-left',
+  'rounding/bottom-right': '--sherpa-border-rounding-bottom-right',
 };
 const snapBlocks = [];
+// A position is COLLECTION + MODE: `grid-top` at mode `start` is the top-left cell.
+// Emitted as [data-group="<collection>-<mode>"], plus the parent's own modes as
+// [data-group="<mode>"] for a plain row.
 for (const slug of Object.keys(extDoc)) {
-  const m = slug.match(/^structure-snap-(.+)$/);
-  if (!m) continue;
-  const edge = m[1] === 'all-edges' ? 'all' : m[1].replace(/-edge$/, '');
+  if (!/^(vertical|grid-)/.test(slug)) continue;
   const cache = extDoc[slug].vars;
-  const lines = [];
-  for (const [key, publicVar] of Object.entries(CORNER_VARS)) {
-    const val = cache[key]?.default;
-    if (val == null) continue;
-    lines.push(`    ${publicVar}: ${literal(val, 'dimension')};`);
+  const modes = Object.keys(cache['border/top'] ?? {});
+  for (const mode of modes) {
+    const lines = [];
+    for (const [key, publicVar] of Object.entries(GROUP_VARS)) {
+      const val = cache[key]?.[mode];
+      if (val == null) continue;
+      lines.push(`    ${publicVar}: ${literal(val, 'dimension')};`);
+    }
+    if (lines.length) snapBlocks.push(`  [data-group="${slug}-${mode}"] {\n${lines.join('\n')}\n  }`);
   }
-  if (lines.length) snapBlocks.push(`  [data-snap="${edge}"] {\n${lines.join('\n')}\n  }`);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1076,9 +1163,43 @@ ${darkLines.map((l) => '  ' + l).join('\n')}
 const joinBlocks = (arr) => arr.filter(Boolean).join('\n\n');
 
 // ── per-layer bodies ─────────────────────────────────────────────────────────
-// core — shared base geometry only.
+// The DOCUMENT reset. Every Sherpa app was hand-writing this in its own <style>
+// block — margin, height, page font, page colour, page background — because
+// nothing in the system owned the page itself. A component cannot: `html` and
+// `body` are outside every shadow root, so only a light-DOM sheet can reach them
+// and tokens.css is the only light-DOM sheet Sherpa ships.
+//
+// It is in `core` (the FIRST layer) on purpose: an app that wants a different
+// page background writes one unlayered rule and wins, because any unlayered
+// declaration beats every layer.
+//
+// The height chain matters. A view that fills the screen (the chat thread, a
+// scrolling data grid) needs an unbroken 100% from `html` down to the shell, and
+// a percentage height resolves against the PARENT's height — so one `height:auto`
+// anywhere in the chain collapses everything below it to content height.
+const documentResetBlock = `  /* The page itself — see the note above the layer. */
+  html,
+  body {
+    margin: 0;
+    block-size: 100%;
+  }
+  body {
+    font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+    color: var(--sherpa-theme-content-body-base, #0c0b11);
+    background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  }
+  /* The shell is the page's frame, so it inherits the full height rather than
+     each app re-declaring it. :is() keeps this at class specificity. */
+  body > sherpa-app-shell,
+  body > :is(div, main) > sherpa-app-shell {
+    block-size: 100%;
+  }`;
+
+// core — shared base geometry + the document reset.
 const coreLayer = `@layer core {
 ${rootBlock(layers.core.root)}
+
+${documentResetBlock}
 }`;
 
 // display-mode — the ramp (light) + dark re-point + density ([data-density]).
@@ -1225,11 +1346,18 @@ ${gridUtilityBlock}
 ${viewFrameBlock}
 }`;
 
-// structure — bound sizes / content sizes / per-corner rounding + snap ([data-snap]).
+// structure — bound sizes and spacing only ([data-size]). Rounding and border
+// width moved to @layer border in the 2026-09-14 split.
 const structureLayer = `@layer structure {
 ${rootBlock(layers.structure.root)}
-${layers.structure.modeBlocks.length ? '\n' + joinBlocks(layers.structure.modeBlocks) + '\n' : ''}
-  /* Snap — per-edge corner rounding ([data-snap]). */
+${layers.structure.modeBlocks.length ? '\n' + joinBlocks(layers.structure.modeBlocks) + '\n' : ''}}`;
+
+// border — per-corner rounding + per-edge border width, the snap extensions
+// ([data-snap]) and the `none` mode that nulls the border.
+const borderLayer = `@layer border {
+${rootBlock(layers.border.root)}
+${layers.border.modeBlocks.length ? '\n' + joinBlocks(layers.border.modeBlocks) + '\n' : ''}
+  /* Grouping — per-position borders + rounding ([data-group]). */
 ${joinBlocks(snapBlocks)}
 }`;
 
@@ -1276,6 +1404,8 @@ ${layoutLayer}
 
 ${structureLayer}
 
+${borderLayer}
+
 ${styleLayer}
 
 ${elevationLayer}
@@ -1306,7 +1436,8 @@ console.log(
     `  display-mode ${layers['display-mode'].root.length} vars (+${layers['display-mode'].rootDark.length} dark) + density (compact+comfortable)\n` +
     `  theme        ${layers.theme.root.length} vars, ${fontAtomLines.length} font atoms, ${textClassBlocks.length} text classes\n` +
     `  layout       ${layers.layout.root.length} vars + .sherpa-view\n` +
-    `  structure    ${layers.structure.root.length} vars, ${snapBlocks.length} snap\n` +
+    `  structure    ${layers.structure.root.length} vars\n` +
+    `  border       ${layers.border.root.length} vars, ${snapBlocks.length} group positions\n` +
     `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length} categorical\n` +
     `  elevation    ${layers.elevation.root.length} vars, ${shadowAliasLines.length} shadow aliases, ${layers.elevation.modeBlocks.length} [data-elevation]\n` +
     `✓ ${wrote} component token regions inlined into <comp>.css\n` +

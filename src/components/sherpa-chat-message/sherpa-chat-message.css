@@ -95,7 +95,7 @@
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
 /* Figma bubble: padding space/xs 8 × space/sm 12, gap 4 (meta → message), radius
-   structure-rounding 4, message 14/20. */
+   rounding 4, message 14/20. */
 .bubble {
   display: flex;
   flex-direction: column;
@@ -104,10 +104,10 @@
   background: var(--_surface);
   color: var(--_ink);
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   word-wrap: break-word;
   overflow-wrap: anywhere;

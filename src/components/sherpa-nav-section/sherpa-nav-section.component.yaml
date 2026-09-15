@@ -56,7 +56,8 @@ tokens:
   label.color: "{sherpa.theme-content-body-1}"
   label.font-size: "{sherpa.font-size-body-xs}"
   label.font-weight: "{sherpa.font-weight-regular}"
-  rule.border-block-start: "{sherpa.display-border-width-sm}"
+  label.line-height: "{sherpa.theme-content-line-height-xs}"
+  rule.border-block-start: "{sherpa.border-top}"
 $extensions:
   sherpa:
     figmaName: Navigation Section/default

@@ -29,15 +29,32 @@
      popover menu's `:popover-open` rule is. */
   display: none;
   flex-direction: column;
-  min-inline-size: 0;
+  /* A dialog has BOTH bounds. It had only the max, so it hugged its content: a
+     two-field form drew a 176px-wide card and the example propped it up from the
+     outside with `min-width: 380px` on its own form div — which meant every app
+     had to know to do that.
+
+     `min(24rem, 92vw)` is the floor and `min(32rem, 92vw)` the cap, so the card
+     is a comfortable reading width on a desktop and still fits a phone: at any
+     viewport under ~26rem both collapse to 92vw and the two agree. */
+  inline-size: max-content;
+  min-inline-size: min(24rem, 92vw);
   max-inline-size: min(92vw, 32rem);
   max-block-size: 85vh;
   padding: 0;
   overflow: auto;
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg on the Dialog (Theme elevation "large" tokens). */
   box-shadow:

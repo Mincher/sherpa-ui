@@ -99,10 +99,16 @@ events:
     composed: true
 tokens:
   header.gap: "{sherpa.theme-gap-sm}"
+  header.padding: "{sherpa.theme-padding-md}"
   header.color: "{sherpa.style-content-base}"
-  titles.gap: "{sherpa.theme-gap-sm}"
-  heading.font-weight: "{sherpa.font-weight-semibold}"
-  description.color: "{sherpa.style-content-subtle}"
+  titles.gap: "{sherpa.display-mode-space-3xs}"
+  heading.color: "{sherpa.theme-content-body-base}"
+  heading.font-size: "{sherpa.font-size-body-base}"
+  heading.font-weight: "{sherpa.font-weight-medium}"
+  heading.line-height: "{sherpa.theme-content-line-height-base}"
+  description.color: "{sherpa.theme-content-body-1}"
+  description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
   body.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:

@@ -186,3 +186,33 @@ test('static helper creates, appends, and returns a toast', async ({ page }) => 
   expect(r.status).toBe('critical');
   expect(r.message).toBe('Boom');
 });
+
+test('the factory passes the detail line and the action through', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { SherpaToast } = await import('/dist/index.js') as {
+      SherpaToast: { success: (m: string, o?: Record<string, unknown>) => HTMLElement & { rendered?: Promise<void> } };
+    };
+    const toast = SherpaToast.success('Jane saved', {
+      value: 'The customer record was created.',
+      action: 'Undo',
+      duration: 0,
+    });
+    await toast.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const sr = toast.shadowRoot!;
+    return {
+      heading: sr.querySelector('.heading')?.textContent,
+      value: sr.querySelector('.value')?.textContent,
+      action: sr.querySelector('.action')?.textContent,
+      stacked: toast.hasAttribute('data-stacked'),
+      inSharedStack: toast.parentElement?.classList.contains('sherpa-toast-stack'),
+    };
+  });
+  // Before this the factory could only set the heading, so an app wanting both
+  // lines had to build the element by hand — and lost the shared stack with it.
+  expect(r.heading).toBe('Jane saved');
+  expect(r.value).toBe('The customer record was created.');
+  expect(r.action).toBe('Undo');
+  expect(r.inSharedStack).toBe(true);
+  expect(r.stacked).toBe(true);
+});

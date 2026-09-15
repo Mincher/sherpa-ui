@@ -23,8 +23,12 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-sm, 4px);
   min-block-size: var(--sherpa-structure-height, 32px);
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-style: solid;
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: var(--sherpa-style-surface-base, #ffffff);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
@@ -62,7 +66,10 @@
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -93,7 +100,10 @@
   block-size: var(--sherpa-theme-size-icon-xs, 14px);
   padding: 0;
   border: none;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   /* Figma sort/menu: Transparent icon buttons in style-content/base ink. */
   color: var(--sherpa-style-content-base, #0c0b11);

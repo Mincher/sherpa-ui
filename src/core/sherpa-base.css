@@ -24,8 +24,8 @@
 
   /* Inheritable typographic ground — tokens resolve from the light DOM. */
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-core-fonts-scale-lg, 16px);
-  color: var(--sherpa-content-primary-base, #2e2e33);
+  font-size: var(--sherpa-display-mode-fonts-scale-lg, 16px);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -117,12 +117,17 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  /* Elevation=md, the tooltip atom's pin. */
+  /* Elevation=md, the tooltip atom's pin. Spelled out from Display Mode primitives
+     rather than read from `--sherpa-elevation-*`: those resolve to the `passthrough`
+     step (0) at :root, and the [data-elevation="md"] block that re-points them is a
+     bare attribute selector in tokens.css, which reaches the DOCUMENT only — never
+     inside a shadow root. Values mirror [data-elevation="md"] exactly (8/8/16/-4).
+     Same idiom as sherpa-menu. */
   box-shadow:
-    var(--sherpa-theme-elevation-offset-x-base, 2px)
-    var(--sherpa-theme-elevation-offset-y-base, 2px)
-    var(--sherpa-theme-elevation-blur-base, 16px)
-    var(--sherpa-theme-elevation-spread-base, -8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px)
+    -4px
     var(--sherpa-style-surface-shadow, #15151e80);
   /* The tip must never eat the hover it depends on. */
   pointer-events: none;

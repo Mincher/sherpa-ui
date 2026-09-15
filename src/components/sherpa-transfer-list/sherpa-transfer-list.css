@@ -4,7 +4,7 @@
  * A three-column grid: available pane | move buttons | selected pane. Each pane
  * fills status-surface via the [data-status] cascade (--_status-surface, neutral
  * surface/primary/base fallback) with a status-border (--_status-border); its
- * outer corners bind the snapping/grouping radii. Rows are native checkbox fields
+ * outer corners bind the border/grouping radii. Rows are native checkbox fields
  * with control-scoped radii. Empty panes swap their list for a placeholder via
  * data-empty (CSS owns visibility). Disabled uses inactive tokens; focus is a
  * box-shadow ring. JS never styles.
@@ -36,10 +36,10 @@
   min-inline-size: 0;
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
   background: var(--_surface);
   overflow: hidden;
 }
@@ -78,10 +78,10 @@
 /* ── A row ────────────────────────────────────────────────────────── */
 .row {
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
 }
 /* Rows are sherpa-list-item instances — they own their own look/selection. */
 .row sherpa-list-item { display: block; }

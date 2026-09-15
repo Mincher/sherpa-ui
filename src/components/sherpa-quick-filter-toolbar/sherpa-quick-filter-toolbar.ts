@@ -89,8 +89,37 @@ export interface QuickFilterDef {
    * The view chip is the case this exists for: you are always looking at some
    * view, so "no view" is not a state the page can be in. Its menu changes
    * WHICH one; its body has nothing to turn off.
+   *
+   * A persistent chip is also never REMOVABLE and never EMPTY — see `removable`
+   * and `#addRemoveRow`.
    */
   persistent?: boolean;
+  /**
+   * Offer "Remove filter" at the foot of this chip's menu.
+   *
+   * OPT-IN, because removability is a property of the chip and not of the bar.
+   * A filter a user ADDED can be taken off again; a chip the host put there on
+   * purpose — above all the view SELECTOR, where "no view" is not a state the
+   * page can be in — must not offer a row that would delete it.
+   *
+   * `addFilter()` sets it on anything picked from the Add menu, so a chip the
+   * user added is removable without the host saying so.
+   */
+  removable?: boolean;
+  /**
+   * Make this chip's menu DEFER its picks until Apply, behind an Apply/Cancel
+   * footer, instead of applying each tick as it is made.
+   *
+   * OPT-IN, and off by default. Auto-apply is what a filter chip should feel
+   * like: you tick a value and the view answers. Making every chip commit put a
+   * footer and two extra clicks in front of a selection that was usually free —
+   * the view chip worst of all, where picking a view is the whole interaction.
+   *
+   * Turn it ON for a field whose query is genuinely expensive — a server-side
+   * scan, a wide date range — where running one query per tick would fire three
+   * or four requests for a selection the user had not finished building.
+   */
+  commit?: boolean;
 }
 
 interface ChipEl extends HTMLElement {
@@ -340,18 +369,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // same slot, so the one prototype serves both.
     menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
-    // A filter menu COMMITS on Apply. Filtering a table or chart is expensive and
-    // a partly-built selection is rarely a query anyone wants run, so the rows are
-    // a draft until Apply and Cancel discards them. The menu shows the footer and
-    // withholds menu-change until then; nothing else here has to change.
-    menu.setAttribute('data-commit', '');
+    // AUTO-APPLY by default: a tick changes the filter there and then, with no
+    // footer. That is what a filter chip should feel like, and it is the whole
+    // interaction for a selector like the view chip.
+    //
+    // `commit: true` opts a chip into the deferred behaviour instead — the rows
+    // become a draft behind an Apply/Cancel footer, and Cancel discards them.
+    // Worth it only where the query is genuinely expensive, since otherwise it
+    // charges two extra clicks for a selection that was free. The menu owns both
+    // modes already; nothing else here has to change.
+    if (def.commit) menu.setAttribute('data-commit', '');
     // EVERY value menu gets a search. A filter's values are the user's own data
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
     menu.setAttribute('data-search', '');
 
     // A DATE chip's menu holds a CALENDAR instead of value rows. Everything
-    // above — the heading, the commit footer — is the same, so a date filter
+    // above — the heading, the commit mode — is the same, so a date filter
     // applies exactly like any other chip.
     if (def.kind === 'date') {
       const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
@@ -372,14 +406,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
       // A DATE chip's remove is a FOOTER BUTTON, not a row — a calendar menu
       // has no list for a row to sit in. It sits after Today and emits the same
-      // menu-select value="remove", so #onMenuSelect catches both shapes.
-      if (chip.classList.contains('chip')) menu.setAttribute('data-removable', '');
+      // menu-select value="remove", so #onMenuSelect catches both shapes. Gated
+      // on the SAME opt-in as the row, so the two shapes agree.
+      if (chip.classList.contains('chip') && def.removable && !def.persistent) {
+        menu.setAttribute('data-removable', '');
+      }
       chip.setAttribute('data-menu', '');
       chip.appendChild(menu);
       return;
     }
 
-    for (const option of def.options ?? []) {
+    // A PERSISTENT chip is a SELECTOR: it always holds exactly one value, so
+    // "nothing picked" is not a state it can be in. If neither the live picks
+    // nor the definition names one, the FIRST option is the default.
+    //
+    // Without this the view chip could load with no radio checked — on at 0
+    // values — which the chip reads as "on but filtering by nothing" and paints
+    // WARNING. That is the intermittent amber view chip: whether it appeared
+    // depended only on whether the host remembered to mark an option `selected`.
+    const options = def.options ?? [];
+    const hasPick = picked ? picked.size > 0 : options.some((o) => o.selected);
+    const fallback = def.persistent && !hasPick ? options[0]?.value : undefined;
+
+    for (const option of options) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const input = row.querySelector('input')!;
       input.type = single ? 'radio' : 'checkbox';
@@ -388,12 +437,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A LIVE pick beats the definition's `selected`: the set is what the user
       // has ticked since, and is absent only for a chip being built for the
       // first time.
-      input.checked = picked ? picked.has(option.value) : !!option.selected;
+      // The fallback is the LAST word only where there is no pick at all — a
+      // live set that the user has emptied is still an answer for an ordinary
+      // chip, and `fallback` is undefined there because it is persistent-only.
+      input.checked = picked
+        ? picked.has(option.value) || option.value === fallback
+        : !!option.selected || option.value === fallback;
       row.querySelector('.qf-row-label')!.textContent = option.label;
       menu.appendChild(row);
     }
 
-    this.#addRemoveRow(chip, menu);
+    this.#addRemoveRow(chip, menu, def);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
@@ -402,16 +456,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Give a chip's menu its "Remove filter" row.
    *
-   * FILTER chips only. Not the organise chips (Group and Sort are fixed parts
-   * of the bar, not filters a user put there) and not the Add chip itself,
-   * whose menu IS the list of things to add.
+   * FILTER chips only, and only those the definition marks `removable`. Not the
+   * organise chips (Group and Sort are fixed parts of the bar, not filters a
+   * user put there), not the Add chip itself (whose menu IS the list of things
+   * to add), and not a chip the host did not say may go.
+   *
+   * The flag is OPT-IN rather than opt-out because the row DELETES the chip: the
+   * safe default when a host says nothing is to keep it. The view chip is the
+   * case this exists for — it is persistent, so removing it would leave the page
+   * in a state it has no way to be in.
    *
    * Shared rather than written inline because BOTH menu shapes need it — a
    * value menu and a date menu — and the date branch returns early, which is
    * exactly how it came to be missing from date chips.
    */
-  #addRemoveRow(chip: HTMLElement, menu: HTMLElement): void {
+  #addRemoveRow(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
     if (!chip.classList.contains('chip')) return;
+    if (!def.removable || def.persistent) return;
     const removeTpl = this.$<HTMLTemplateElement>('template.qf-remove-tpl');
     if (removeTpl) menu.appendChild(removeTpl.content.firstElementChild!.cloneNode(true));
   }
@@ -597,6 +658,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // wants three of them, and a single-select menu made that three separate
       // open-pick-apply rounds.
       select: 'multiple',
+      // …and the one menu that KEEPS its Apply footer now that chips auto-apply.
+      // Each tick here STAMPS A CHIP onto the bar, so applying per tick would
+      // rebuild the run three times mid-selection and close the list out from
+      // under the user. Batching is the whole point of the control.
+      commit: true,
       options: this.#available.map((f) => ({ value: f.id, label: f.label })),
     });
     // A long field list is what a search is for.
@@ -610,8 +676,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const i = this.#available.findIndex((f) => f.id === id);
       if (i < 0) continue;
       const [def] = this.#available.splice(i, 1);
-      // ON on arrival: a filter you just chose should be doing something.
-      added.push({ ...def!, active: true });
+      // ON on arrival: a filter you just chose should be doing something. And
+      // REMOVABLE: a chip the user put on the bar is one they may take off
+      // again, so the Add path grants the opt-in the host did not have to.
+      added.push({ ...def!, active: true, removable: true });
     }
     if (!added.length) return;
     this.#filters = [...this.#filters, ...added];

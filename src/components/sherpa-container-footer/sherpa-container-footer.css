@@ -47,3 +47,11 @@
 :host([data-align="start"]) .row { justify-content: flex-start; }
 :host([data-align="end"]) .row { justify-content: flex-end; }
 :host([data-align="between"]) .row { justify-content: space-between; }
+/* `stretch` is for a footer holding ONE wide control rather than a button row —
+   a chat composer, a search field. The control takes the whole width instead of
+   hugging its content at one end. `min-inline-size: 0` lets it shrink below its
+   own content, which is what stops a long placeholder widening the card. */
+:host([data-align="stretch"]) ::slotted(*) {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}

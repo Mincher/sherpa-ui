@@ -3,8 +3,25 @@
      the app-shell's default (content) slot by the SPA router in index.html.
      views/chat.js wires the composer/thread. The router toggles the shell's
      data-no-header for this view (chat wants a full-height content region). -->
-<div class="chat">
-  <div class="thread" id="thread" role="log" aria-live="polite" aria-label="Conversation">
+<!-- The chat view as ONE card that fills the content region.
+
+     data-rows="12" gives it a real height in layout-grid rows, which is what lets
+     the thread scroll inside it rather than the page scrolling as a whole; the
+     footer then stays pinned at the bottom because it is the CARD's footer, not
+     an element the page positions.
+
+     The composer dock was a hand-drawn `border-block-start` + padding. That IS
+     sherpa-container's footer region: it already carries the 0.5px
+     border/default/+1 divider and the Figma 8x16 padding.
+
+     data-padding="none": each message carries its own spacing, so a card inset
+     would be a second one. -->
+<sherpa-container data-rows="12" data-padding="none">
+  <!-- data-grow takes the card's spare height, data-scroll makes the overflow
+       scroll here rather than moving the page, and data-measure caps the line
+       length so a wide screen does not make the text hard to read. -->
+  <sherpa-stack id="thread" data-gap="xl" data-grow data-scroll data-measure
+                role="log" aria-live="polite" aria-label="Conversation">
 
     <sherpa-chat-message
       data-type="system"
@@ -71,18 +88,18 @@ input.addEventListener('input', (e) => search(e.target.value));">
     </sherpa-chat-message>
 
     <!-- Typing indicator — toggled via [hidden] from JS. -->
-    <sherpa-loader class="typing" id="typing" data-size="sm" hidden>
+    <sherpa-loader id="typing" data-size="sm" hidden>
       <span slot="label">Assistant is typing…</span>
     </sherpa-loader>
 
-  </div>
+  </sherpa-stack>
 
-  <div class="composer-dock">
-    <div class="composer-inner">
-      <sherpa-prompt-composer
-        id="composer"
-        data-placeholder="Message the assistant… (Enter to send, Shift+Enter for a newline)">
-      </sherpa-prompt-composer>
-    </div>
-  </div>
-</div>
+  <sherpa-container-footer slot="footer" data-align="stretch">
+    <!-- The composer takes the SAME measure as the thread above it, or the
+         messages sit in a centred column while the input runs edge to edge. -->
+    <sherpa-prompt-composer
+      id="composer"
+      data-placeholder="Message the assistant… (Enter to send, Shift+Enter for a newline)">
+    </sherpa-prompt-composer>
+  </sherpa-container-footer>
+</sherpa-container>

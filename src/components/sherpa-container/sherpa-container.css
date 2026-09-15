@@ -29,8 +29,19 @@
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
 
   background: var(--_surface);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  /* Per-edge widths from the Border collection (Figma: custom borders), so a
+     [data-border] tier or a snap extension can zero an individual edge. Colour
+     still comes from Style. */
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
 
   --_pad: var(--sherpa-theme-padding-lg, 16px);
@@ -71,6 +82,75 @@
 :host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
 :host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
+
+/* ── data-rows — a card sized in LAYOUT GRID ROWS ─────────────────────────
+   A card with no height is as tall as whatever is inside it, which is wrong for
+   two common cases: a chart hugs its own minimum and leaves the card part empty,
+   and a data grid grows with its row count until "rows per page = 50" pushes the
+   page metres long and the pager off the bottom of the screen.
+
+   `data-rows="N"` makes the card exactly N grid rows tall — N row heights plus
+   the (N-1) vertical gutters between them, both projected layout tokens. So a
+   card lines up with the grid it sits on rather than with an invented pixel
+   number, and it re-sizes at each breakpoint for free.
+
+   Its content then FILLS that height: the body is already `flex: 1 1 auto`, and
+   the rule below hands the body's own height to whatever is in it. A grid
+   scrolls inside its box; a chart draws into the space it is given. */
+:host([data-rows]) {
+  block-size: calc(
+    var(--_rows, 6) * var(--sherpa-layout-grid-row-height, 64px)
+    + (var(--_rows, 6) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)
+  );
+}
+:host([data-rows="4"]) { --_rows: 4; }
+:host([data-rows="6"]) { --_rows: 6; }
+:host([data-rows="8"]) { --_rows: 8; }
+:host([data-rows="10"]) { --_rows: 10; }
+:host([data-rows="12"]) { --_rows: 12; }
+
+/* The body of a SIZED card is a column whose content fills it.
+
+   `min-block-size: 0` is the part that matters: a flex item's default floor is
+   its min-content size, so without it a tall data grid or a wide chart refuses
+   to shrink below its own content and overflows the card it was told to fit
+   inside. At a floor of 0 the item takes the height it is given and its own
+   scroll box (a grid) or ratio box (a chart) takes over. */
+:host([data-rows]) .body {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow: hidden;
+}
+:host([data-rows]) .body ::slotted(*) {
+  min-block-size: 0;
+}
+/* Everything in the body GROWS by default, so a single chart or grid fills the
+   card it was told to fit.
+
+   `:only-child` cannot be used here. It counts every LIGHT-DOM sibling, and a
+   card almost always has a `slot="header"` sibling — so a chart beside a header
+   was never an only child, took `flex: 0 0 auto`, and a line chart drew itself
+   1342px tall inside a 464px card. The slot an element is assigned to is
+   invisible to `:only-child`.
+
+   Growing by default is also the right way round: the common card holds ONE
+   thing, and `data-grow` is only needed to pick between several. */
+:host([data-rows]) .body ::slotted(*) {
+  flex: 1 1 auto;
+}
+/* With a grower named, everything else keeps its natural height.
+
+   Written without `:has()` on purpose: `:host(:has(…))` does not PARSE (`:has()`
+   is not a valid argument to `:host()` and the whole rule is dropped silently),
+   and the chained `:host:has(…)` parses but matches every host, ignoring the
+   `:has()`. So the card is told which item grows rather than working it out.
+
+   `data-fill` is the switch. Without it every child grows (the line above); with
+   it only the `data-grow` child does. */
+:host([data-rows][data-fill]) .body ::slotted(*:not([data-grow])) {
+  flex: 0 0 auto;
+}
 
 /* ── Regions ───────────────────────────────────────────────────────────
    Figma Container = Container Header instance + content slot (padding/lg 16) +

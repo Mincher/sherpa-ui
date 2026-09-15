@@ -63,7 +63,7 @@
   block-size: 0;
   margin: 0;
   border: 0;
-  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 /* Only draw the rule when there is a head to divide from the options. */

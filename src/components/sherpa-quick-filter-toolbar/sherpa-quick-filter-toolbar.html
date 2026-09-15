@@ -6,6 +6,27 @@
   the full set of active filter ids. A trailing actions slot holds add / clear
   controls; an optional leading view slot (data-type="view") holds a view chip.
 
+  Two per-filter flags decide what a chip IS rather than how it looks:
+
+    removable   offer "Remove filter" in its menu. OPT-IN, because the row
+                DELETES the chip — the safe default when a host says nothing is
+                to keep it. addFilter() grants it to anything the user added.
+    persistent  a SELECTOR, not a toggle: always on, never removable, and never
+                "empty". Given no pick, it defaults to its FIRST option, so it
+                always holds exactly one value. The view chip is the case.
+    commit      DEFER this chip's picks behind an Apply/Cancel footer instead of
+                applying each tick as it is made. OPT-IN. Chips auto-apply by
+                default — a tick changes the filter there and then, which is what
+                a filter chip should feel like. Turn it on for a field whose
+                query is genuinely expensive (a server-side scan, a wide date
+                range), where applying per tick would fire several requests for
+                one unfinished selection.
+
+  The menu FOOTER is not the Apply/Cancel pair alone: Today (calendar), Clear
+  (data-clearable) and Remove filter (data-removable) live in the same row, and
+  any one of them raises it. An auto-applying date chip therefore keeps Today and
+  Remove and drops only Cancel/Apply.
+
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
     data-no-actions  hide the built-in cluster entirely (host owns the trailing end)

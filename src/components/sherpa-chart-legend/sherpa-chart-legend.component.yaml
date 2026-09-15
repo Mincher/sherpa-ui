@@ -86,7 +86,7 @@ tokens:
   legend.column-gap: "{sherpa.display-mode-space-xs}"
   legend.row-gap: "{sherpa.display-mode-space-2xs}"
   legend.padding: "{sherpa.display-mode-space-xs}"
-  item.border-radius: "{sherpa.structure-rounding-top-left}"
+  item.border-radius: "{sherpa.border-rounding-top-left}"
   item.color: "{sherpa.theme-content-body-1}"
   item.font-family: "{sherpa.font-family-mono}"
   item.font-size: "{sherpa.theme-content-size-small}"
@@ -94,7 +94,7 @@ tokens:
   item.line-height: "{sherpa.theme-content-line-height-xs}"
   swatch.inline-size: "{sherpa.display-mode-size-xs}"
   swatch.block-size: "{sherpa.display-mode-size-xs}"
-  swatch.border-radius: "{sherpa.structure-rounding-top-left}"
+  swatch.border-radius: "{sherpa.border-rounding-top-left}"
   swatch.border-width: "{sherpa.display-mode-border-width-base}"
   swatch.border-color: "{sherpa.data-viz-series-1}"
   swatch.background: "{sherpa.data-viz-series-1}"
@@ -105,5 +105,20 @@ $extensions:
     figmaName: Chart Legend
     figmaNodeId: "1099:37879"
     category: chart
-    booleanProps:
-      - hasValue
+    variantAxes:
+      - name: Orientation
+        values:
+          - vertical
+          - horizontal
+    _divergence:
+      hasValueLivesOnTheRow: >-
+        `hasValue` is a property of Figma's `Legend Item` (186:4667), the ROW, not of the Chart
+        Legend that holds them — the spec used to claim it at the legend level, which is one tier
+        too high and read as drift against the live set. The code matches Figma: `populate([{ label,
+        value?, colorIndex }])` takes an optional per-ENTRY value and the row's `.value` span
+        carries it, so the option is per row on both sides.
+      orientationIsFrameWidthOnly: >-
+        The Figma set's `Orientation` axis distinguishes only the FRAME WIDTH of its two variants
+        (394 vs 153) — both lay their slot out the same way. The code has no data-orientation: the
+        legend is a CSS grid that wraps to its container, so one element covers both, and a
+        container query does what the variant switch does in Figma.

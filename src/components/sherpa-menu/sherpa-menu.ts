@@ -22,8 +22,12 @@
  * @attr {enum}    data-select   multiple (default) | single
  * @attr {enum}    data-align    start (default) | end — which trigger edge to line up with
  * @attr {boolean} data-removable show a "Remove filter" footer button (after Today)
- * @attr {boolean} data-commit   show the Apply/Cancel footer and DEFER changes
- *                until Apply (without it, every row tick commits immediately)
+ * @attr {boolean} data-commit   show the Cancel/Apply pair and DEFER changes
+ *                until Apply (without it, every row tick commits immediately).
+ *                It does NOT alone decide whether the footer ROW appears —
+ *                Today, Clear and Remove filter share that row and each raises
+ *                it on its own flag, so an auto-applying calendar menu still has
+ *                a footer holding Today and Remove.
  * @attr {boolean} open          reflects/controls the popover
  *
  * @slot (default) — the rows

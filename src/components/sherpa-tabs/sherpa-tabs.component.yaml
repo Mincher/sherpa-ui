@@ -56,7 +56,7 @@ props:
     name: data-current-id
     type: string
     kind: content
-    description: id of the currently active tab / panel
+    description: — id of the currently active tab / panel
 states:
   - $type: state
     name: has-detail
@@ -77,16 +77,18 @@ events:
       "on": click
       node: .tabs
 tokens:
-  detail.gap: "{sherpa.display-space-sm}"
-  detail.padding-inline: "{sherpa.display-space-sm}"
-  tab.gap: "{sherpa.display-space-sm}"
-  tab.padding: "{sherpa.display-space-sm}"
-  tab.border-block-end: "{sherpa.display-border-width-sm}"
+  strip.border-block-end: "{sherpa.border-bottom}"
+  detail.gap: "{sherpa.display-mode-space-sm}"
+  detail.padding-inline: "{sherpa.display-mode-space-sm}"
+  tab.gap: "{sherpa.display-mode-space-xs}"
+  tab.padding: "{sherpa.display-mode-space-sm}"
+  tab.border-block-end: "{sherpa.display-mode-border-width-lg}"
+  tab.margin-block-end: "{sherpa.display-mode-border-width-sm}"
   tab.font-size: "{sherpa.font-size-body-base}"
-  tab.font-weight: "{sherpa.font-weight-semibold}"
-  tab.line-height: "{sherpa.display-fonts-scale-xl}"
+  tab.font-weight: "{sherpa.font-weight-regular}"
+  tab.line-height: "{sherpa.display-mode-fonts-scale-xl}"
   tab.color: "{sherpa.theme-content-body-1}"
-  panels.padding-block-start: "{sherpa.display-space-base}"
+  panels.padding-block-start: "{sherpa.display-mode-space-base}"
 $extensions:
   sherpa:
     figmaName: Tab Group

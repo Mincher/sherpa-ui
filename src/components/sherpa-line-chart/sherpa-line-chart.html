@@ -20,6 +20,11 @@
     data-x-axis-label  x-axis caption (shown when set)
     data-ticks       number of y gridlines/values (default 4)
 
+  Slots:
+    title   — heading above the chart (data-accepts: text, inline)
+    legend  — a <sherpa-chart-legend> for the series. Horizontal → below the plot;
+              vertical → beside it. (data-accepts: chart-legend)
+
   Fires: nothing — display only.
 -->
 <template id="default">
@@ -54,6 +59,12 @@
         <span class="axis-label axis-label-x" part="x-axis-label"></span>
       </div>
     </div>
+
+    <!-- The legend belongs to the CHART, not to the card around it — the same
+         rule sherpa-donut-chart already follows for its own. A HORIZONTAL legend
+         sits BELOW the plot (this slot, in the host's flex column); a VERTICAL one
+         sits BESIDE it, which the CSS switches to a two-column grid on. -->
+    <slot name="legend"></slot>
   </figure>
 
   <!-- One y value + its tick rule (see the barchart for the same prototype). -->

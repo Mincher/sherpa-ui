@@ -2,100 +2,95 @@
      Served by the template server (GET /template/view/dashboard) and injected
      into the app-shell's default (content) slot by the SPA router in index.html.
      The shell + nav + header live ONCE in index.html; this is JUST the content.
-     views/dashboard.js populates the metrics/charts and wires events. -->
-<div class="view">
-  <!-- NO section header. The APP HEADER owns the view's name (views/dashboard.js
-       sets data-heading="Dashboard"), so a heading here repeated it a second time
-       a few pixels lower. A view's content starts with its content. -->
+     views/dashboard.js populates the metrics/charts and wires events.
+
+     EVERY box here is a Sherpa component or the projected layout grid. There is
+     no view-level CSS: the grid places the cards, sherpa-container draws them,
+     and each chart owns the split with its own legend. -->
+
+<!--
+  ONE GRID for the whole view.
+
+  The metrics, the charts and the summary were three separate .sherpa-grid
+  elements, which meant three independent column systems stacked on top of each
+  other: a metric's left edge and a chart card's left edge only lined up because
+  both happened to start at column 1. Any span that did not divide evenly would
+  have drifted out of step, and the gap BETWEEN the groups was the wrapper's
+  margin rather than the grid's own row gap.
+
+  One grid puts every item on the same 12 columns, so the edges line up by
+  construction and the vertical rhythm is the grid's throughout. `data-span`
+  still wraps each row: 3+3+3+3 fills a row of metrics, 4+4+4 a row of charts,
+  then 12 and finally full.
+
+  NO section header. The APP HEADER owns the view's name (views/dashboard.js
+  sets data-heading="Dashboard"), so a heading here repeated it a second time a
+  few pixels lower. A view's content starts with its content.
+-->
+<div class="sherpa-grid">
+  <!-- Metric tiles: 3 of 12 on desktop (so four fit a row), 4 of 8 on tablet (two
+       per row), full width on mobile. The span is clamped to the breakpoint's
+       column count, so nothing overflows. -->
+  <sherpa-metric id="m-endpoints" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-alerts" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-uptime" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-patch" data-span="3"></sherpa-metric>
 
   <!--
-    ONE GRID for the whole view.
+    Chart cards.
 
-    The metrics, the charts and the summary were three separate .sherpa-grid
-    elements, which meant three independent column systems stacked on top of each
-    other: a metric's left edge and a chart card's left edge only lined up because
-    both happened to start at column 1. Any span that did not divide evenly would
-    have drifted out of step, and the gap BETWEEN the groups was the wrapper's
-    margin rather than the grid's own row gap.
+    `data-rows` sizes the card in LAYOUT GRID ROWS (sherpa-container reads it), so
+    a card is a fixed height and its content fills it. That is what stops a card
+    growing with its data, and what gives a chart a real height to draw into
+    rather than hugging its own minimum and leaving the card part empty.
 
-    One grid puts every item on the same 12 columns, so the edges line up by
-    construction and the vertical rhythm is the grid's throughout. `data-span`
-    still wraps each row: 3+3+3+3 fills a row of metrics, 4+4+4 a row of charts,
-    then 8 and finally full.
-
-    Metric tiles: 3 of 12 on desktop (so four fit a row), 4 of 8 on tablet (two
-    per row), full width on mobile. The span is clamped to the breakpoint's
-    column count, so nothing overflows.
+    The legend is SLOTTED INTO THE CHART, not placed beside it by this page: a
+    categorical series is only readable if the reader can name the colours, so
+    the pair is one thing and the ratio between them is the chart's business.
+    Horizontal → the chart puts it below the plot; vertical → beside it.
   -->
-  <div class="sherpa-grid">
-    <sherpa-metric id="m-endpoints" data-span="3"></sherpa-metric>
-    <sherpa-metric id="m-alerts" data-span="3"></sherpa-metric>
-    <sherpa-metric id="m-uptime" data-span="3"></sherpa-metric>
-    <sherpa-metric id="m-patch" data-span="3"></sherpa-metric>
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="Alerts by category"></sherpa-container-header>
+    <sherpa-barchart id="bar" data-label="Alerts by category" data-legend="horizontal">
+      <sherpa-chart-legend slot="legend" id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
+    </sherpa-barchart>
+  </sherpa-container>
 
-    <!-- data-chart="stacked" + data-rows="6": the chart AREA is a 70/30 two-row
-         grid that FILLS the panel's content area, rather than the chart and the
-         legend each hugging their own content and leaving the card part empty.
-         The panel needs a real height for "fill" to mean anything, which is what
-         data-rows gives it (the same layout-grid row unit the data-grid panel
-         uses). -->
-    <div class="panel" data-span="4" data-chart="stacked" data-rows="6">
-      <sherpa-container-header data-heading="Alerts by category"></sherpa-container-header>
-      <!-- Every chart carries a legend: a categorical series is only readable if
-           the reader can name the colours. Horizontal, so it sits BELOW the chart
-           (vertical legends go beside one) — which is what makes this the ROW
-           split rather than the column one. -->
-      <div class="chart-area">
-        <sherpa-barchart id="bar" data-label="Alerts by category"></sherpa-barchart>
-        <sherpa-chart-legend id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
-      </div>
-    </div>
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="Endpoints by OS"></sherpa-container-header>
+    <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
+      <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
+    </sherpa-donut-chart>
+  </sherpa-container>
 
-    <!-- NO data-chart here. The donut's legend is a real slot="legend", so it is
-         a CHILD of the chart rather than a sibling, and sherpa-donut-chart owns
-         the 60/40 column split internally. Wrapping it in a chart-area too would
-         be two layouts competing over the same pair. It still takes data-rows, so
-         the donut fills the same card height as its neighbours. -->
-    <div class="panel" data-span="4" data-chart="slotted" data-rows="6">
-      <sherpa-container-header data-heading="Endpoints by OS"></sherpa-container-header>
-      <div class="chart-area">
-        <sherpa-donut-chart id="donut" data-label="1,284" data-sublabel="endpoints">
-          <sherpa-chart-legend slot="legend" id="donut-legend" data-orientation="vertical"></sherpa-chart-legend>
-        </sherpa-donut-chart>
-      </div>
-    </div>
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="Storage used"></sherpa-container-header>
+    <!-- The gauge's legend names its ZONES rather than a data series — the bands
+         are meaningless without the thresholds they stand for. READ-ONLY: a gauge
+         shows one value, so there is no series to toggle off. -->
+    <sherpa-gauge-chart
+      id="gauge"
+      data-min="0"
+      data-max="100"
+      data-caption="4.2 TB of 6 TB used"
+      data-zones="0-60:success,60-85:warning,85-100:critical"
+      data-legend="horizontal">
+      <sherpa-chart-legend slot="legend" id="gauge-legend" data-orientation="horizontal" data-readonly></sherpa-chart-legend>
+    </sherpa-gauge-chart>
+  </sherpa-container>
 
-    <div class="panel" data-span="4" data-chart="stacked" data-rows="6">
-      <sherpa-container-header data-heading="Storage used"></sherpa-container-header>
-      <!-- The gauge's legend names its ZONES rather than a data series — the
-           bands are meaningless without the thresholds they stand for. READ-ONLY:
-           a gauge shows one value, so there is no series to toggle off. -->
-      <div class="chart-area">
-        <sherpa-gauge-chart
-          id="gauge"
-          data-min="0"
-          data-max="100"
-          data-caption="4.2 TB of 6 TB used"
-          data-zones="0-60:success,60-85:warning,85-100:critical"></sherpa-gauge-chart>
-        <sherpa-chart-legend id="gauge-legend" data-orientation="horizontal" data-readonly></sherpa-chart-legend>
-      </div>
-    </div>
+  <!-- A time series needs horizontal room, so it takes 12 of 12. -->
+  <sherpa-container data-span="12" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="Sessions vs. incidents"></sherpa-container-header>
+    <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents" data-legend="horizontal">
+      <sherpa-chart-legend slot="legend" id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
+    </sherpa-line-chart>
+  </sherpa-container>
 
-    <!-- A time series needs horizontal room, so it takes 12 of 12. -->
-    <div class="panel" data-span="12" data-chart="stacked" data-rows="6">
-      <sherpa-container-header data-heading="Sessions vs. incidents"></sherpa-container-header>
-      <!-- Horizontal legends go BELOW their chart (vertical ones go beside it), so
-           this one is a sibling after the chart rather than a slotted child. -->
-      <div class="chart-area">
-        <sherpa-line-chart id="line" data-variant="area" data-label="Sessions vs. incidents"></sherpa-line-chart>
-        <sherpa-chart-legend id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
-      </div>
-    </div>
-
-    <!-- Summary spans the full width, whatever the breakpoint. -->
-    <div class="panel" data-span="full">
-      <sherpa-container-header data-heading="Summary"></sherpa-container-header>
-      <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
-    </div>
-  </div>
+  <!-- Summary spans the full width, whatever the breakpoint. It has no data-rows:
+       a key-value list is as tall as its content and has nothing to fill. -->
+  <sherpa-container data-span="full">
+    <sherpa-container-header slot="header" data-heading="Summary"></sherpa-container-header>
+    <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
+  </sherpa-container>
 </div>

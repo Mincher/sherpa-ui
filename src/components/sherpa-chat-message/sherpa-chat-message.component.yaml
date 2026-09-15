@@ -34,19 +34,19 @@ anatomy:
         class: stack
         children:
           - el: div
-            class: meta
-            part: meta
-            children:
-              - el: span
-                class: author
-                part: author
-              - el: time
-                class: time
-                part: time
-          - el: div
             class: bubble
             part: bubble
             children:
+              - el: div
+                class: meta
+                part: meta
+                children:
+                  - el: span
+                    class: author
+                    part: author
+                  - el: time
+                    class: time
+                    part: time
               - el: span
                 class: content
               - slot: ""
@@ -104,14 +104,14 @@ states:
     name: time
     selector: ":host([data-time])"
   - $type: state
+    name: user
+    selector: ":host([data-type=\"user\"])"
+  - $type: state
     name: has-content
     selector: ":host([data-has-content])"
   - $type: state
     name: assistant
     selector: ":host([data-type=\"assistant\"])"
-  - $type: state
-    name: user
-    selector: ":host([data-type=\"user\"])"
   - $type: state
     name: system
     selector: ":host([data-type=\"system\"])"
@@ -121,25 +121,24 @@ events:
     bubbles: true
     composed: true
 tokens:
-  message.grid-template-columns: "{sherpa.display-size-lg}"
-  message.gap: "{sherpa.display-space-xs}"
-  stack.gap: "{sherpa.display-space-2xs}"
-  avatar.width: "{sherpa.display-size-lg}"
-  avatar.height: "{sherpa.display-size-lg}"
-  avatar.border-radius: "{sherpa.display-border-rounding-full}"
-  avatar.color: "{sherpa.theme-content-body-base-fixed}"
-  avatar.font-size: "{sherpa.font-size-body-small}"
-  avatar.font-weight: "{sherpa.font-weight-semibold}"
-  avatar-glyph.width: "{sherpa.theme-size-icon-2xs}"
-  avatar-glyph.height: "{sherpa.theme-size-icon-2xs}"
-  avatar-glyph.border-radius: "{sherpa.display-border-rounding-full}"
-  meta.gap: "{sherpa.display-space-2xs}"
+  message.grid-template-columns: "{sherpa.theme-content-size-base}"
+  message.gap: "{sherpa.display-mode-space-xs}"
+  avatar.inline-size: "{sherpa.theme-content-size-base}"
+  avatar.block-size: "{sherpa.theme-content-size-base}"
+  avatar.margin-block-start: "{sherpa.display-mode-space-xs}"
+  avatar.color: "{sherpa.theme-content-body-1}"
+  avatar.font-size: "{sherpa.theme-content-size-base}"
+  meta.gap: "{sherpa.display-mode-space-xs}"
   meta.font-size: "{sherpa.font-size-body-small}"
+  meta.line-height: "{sherpa.theme-content-line-height-small}"
   meta.color: "{sherpa.theme-content-body-1}"
-  author.font-weight: "{sherpa.font-weight-medium}"
-  time.color: "{sherpa.theme-content-body-1}"
-  bubble.padding: "{sherpa.display-space-2xs}"
-  bubble.border-radius: "{sherpa.structure-rounding-top-left}"
+  author.font-weight: "{sherpa.font-weight-regular}"
+  time.font-size: "{sherpa.theme-content-size-xs}"
+  time.line-height: "{sherpa.theme-content-line-height-xs}"
+  bubble.gap: "{sherpa.display-mode-space-2xs}"
+  bubble.padding: "{sherpa.display-mode-space-xs}"
+  bubble.border-radius: "{sherpa.border-rounding-top-left}"
+  bubble.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Chat Message

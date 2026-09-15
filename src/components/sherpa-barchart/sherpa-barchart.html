@@ -17,6 +17,11 @@
     data-axis-label  y-axis caption (shown when set)
     data-ticks       number of y gridlines/values (default 4)
 
+  Slots:
+    title   — heading above the chart (data-accepts: text, inline)
+    legend  — a <sherpa-chart-legend> for the series. Horizontal → below the plot;
+              vertical → beside it. (data-accepts: chart-legend)
+
   Fires: bar-click — detail: { index, label, value }
 -->
 <template id="default">
@@ -44,6 +49,16 @@
            via `subgrid`, so label N is always exactly under bar N. -->
       <div class="x-axis-row" part="x-axis" aria-hidden="true"></div>
     </div>
+
+    <!-- The legend belongs to the CHART, not to the card around it. A categorical
+         series is only readable if the reader can name the colours, so the pair is
+         one thing and the ratio between them is this component's business — the
+         same rule sherpa-donut-chart already follows for its own legend.
+
+         A HORIZONTAL legend sits BELOW the plot (this slot, in the host's flex
+         column); a VERTICAL one sits BESIDE it, which the CSS switches to a two
+         column grid on. -->
+    <slot name="legend"></slot>
   </figure>
 
   <!-- One y value + its tick rule. The rule is the cell's own border, so the tick

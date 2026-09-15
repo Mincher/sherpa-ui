@@ -31,6 +31,69 @@
   margin: 0;
 }
 
+/* ── The legend ──────────────────────────────────────────────────────────
+   The chart owns the split with its own legend, exactly as sherpa-donut-chart
+   does. The card around it used to: every panel wrapped the chart and the legend
+   in a `.chart-area` div and wrote the ratio there, which meant the page had to
+   know which orientation a legend was and the pair could never move between
+   cards without carrying its rules along.
+
+   The ORIENTATION decides the axis, because the two constrain different things.
+   A legend BELOW runs the full width and needs only height; one BESIDE has to fit
+   its longest label into its own column, so it gets a share of the width.
+
+     horizontal (default) → the host's flex COLUMN, legend under the plot
+     vertical             → a 70/30 GRID, legend beside the plot
+
+   `minmax(0, Nfr)`, not a bare `fr`: a bare fr floors at the item's min-content
+   width, so a long label would push its track past its share and break the ratio.
+   At the floor of 0 it truncates instead, and the plot keeps its 70%. */
+::slotted([slot="legend"]) {
+  /* The plot takes the spare height (.chart-body is `flex: 1 1 auto`); the legend
+     keeps its natural size in both orientations. */
+  flex: 0 0 auto;
+  min-inline-size: 0;
+}
+
+/* Legend BESIDE — two columns.
+   `:has()` on :host reaches the host's LIGHT-DOM children, so the chart reads the
+   legend's own data-orientation directly. No JS mirrors it onto the host — the
+   legend already declares what it is, and a second copy of that fact is a second
+   thing to keep in step. */
+/* The chart reads the SPLIT from its own `data-legend`, not from the legend's
+   `data-orientation`. CSS cannot see it there: `:host(:has(…))` does not PARSE
+   (`:has()` is not a valid argument to `:host()`, and the rule is dropped
+   silently) and the chained `:host:has(…)` parses but matches every host,
+   ignoring the `:has()` — the same shadow-DOM trap the chained `:host:not()`
+   form has. So the split is declared on the chart:
+
+     (absent, or "horizontal") → the host's flex COLUMN, legend under the plot
+     "vertical"                → a 70/30 GRID, legend beside the plot
+
+   The legend still carries its own data-orientation for its own layout; this
+   attribute says what the CHART does about it. */
+:host([data-legend="vertical"]) {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: center;
+}
+/* `display: contents` on .chart-figure means the title, body and legend are the
+   grid's real items, so they are placed directly. */
+:host([data-legend="vertical"]) .chart-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+:host([data-legend="vertical"]) .chart-body {
+  grid-column: 1;
+  grid-row: 2;
+}
+:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
@@ -194,7 +257,7 @@
      matters — the one on the far side of the rule was removed, because it pushed
      the line away from the plot it bounds. */
   padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
-  border-inline-end: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-inline-end: var(--sherpa-border-right, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
   /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
      the digits jittering between gridlines as a value changes. Figma's Chart Axis
@@ -292,8 +355,8 @@
 
   /* Twice the visible dot: an easy target without pushing the tooltip away from
      the mark it points at (the box is also the anchor). */
-  inline-size: var(--sherpa-display-mode-size-base, 16px);
-  block-size: var(--sherpa-display-mode-size-base, 16px);
+  inline-size: var(--sherpa-display-mode-size-sm, 16px);
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
   border: 0;
   background: none;

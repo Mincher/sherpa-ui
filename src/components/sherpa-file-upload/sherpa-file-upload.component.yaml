@@ -31,9 +31,6 @@ anatomy:
         - el: div
           class: drop-zone
           part: drop-zone
-          attrs:
-            role: button
-            tabindex: "0"
           children:
             - el: span
               class: drop-icon
@@ -42,8 +39,11 @@ anatomy:
             - el: span
               class: drop-text
               children:
-                - el: span
+                - el: button
                   class: browse
+                  part: browse
+                  attrs:
+                    type: button
         - el: div
           class: details
           part: details
@@ -57,8 +57,6 @@ anatomy:
         - el: ul
           class: file-list
           part: file-list
-          attrs:
-            role: list
         - el: div
           class: actions
           part: actions
@@ -88,8 +86,6 @@ anatomy:
       children:
         - el: li
           class: file-item
-          attrs:
-            role: listitem
           children:
             - el: span
               class: file-icon
@@ -171,7 +167,7 @@ states:
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: .drop-zone:focus-visible
+    selector: .browse:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -217,64 +213,73 @@ events:
       "on": change
       node: .file-input
 tokens:
-  field.gap: "{sherpa.display-space-2xs}"
+  field.gap: "{sherpa.display-mode-space-sm}"
   label.font-size: "{sherpa.font-size-body-base}"
   label.font-weight: "{sherpa.font-weight-semibold}"
   label.color: "{sherpa.theme-content-body-base}"
   helper.font-size: "{sherpa.font-size-body-small}"
   helper.color: "{sherpa.theme-content-body-1}"
-  drop-zone.gap: "{sherpa.display-space-xs}"
-  drop-zone.padding: "{sherpa.display-space-xl}"
-  drop-zone.border-width: "{sherpa.style-border-width}"
+  drop-zone.gap: "{sherpa.display-mode-space-xs}"
+  drop-zone.padding: "{sherpa.display-mode-space-lg}"
+  drop-zone.border-width: "{sherpa.display-mode-border-width-base}"
   drop-zone.border-color: "{sherpa.theme-border-active-2}"
-  drop-zone.border-radius: "{sherpa.display-border-rounding-base}"
-  drop-zone.background: "{sherpa.theme-surface-default-2}"
-  drop-zone.color: "{sherpa.style-content-base}"
+  drop-zone.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  drop-zone.color: "{sherpa.theme-content-body-1}"
   drop-zone.font-size: "{sherpa.font-size-body-base}"
-  drop-icon.font-size: "{sherpa.font-size-heading-h1}"
+  drop-icon.font-size: "{sherpa.theme-content-size-base}"
   drop-icon.color: "{sherpa.theme-content-body-1}"
-  browse.color: "{sherpa.style-content-base}"
+  browse.color: "{sherpa.theme-content-body-1}"
   browse.font-weight: "{sherpa.font-weight-medium}"
-  file-list.gap: "{sherpa.display-space-2xs}"
-  file-item.gap: "{sherpa.display-space-sm}"
-  file-item.padding: "{sherpa.display-space-xs}"
-  file-item.border-width: "{sherpa.style-border-width}"
-  file-item.border-radius: "{sherpa.display-border-rounding-sm}"
+  file-list.gap: "{sherpa.display-mode-space-2xs}"
+  file-item.gap: "{sherpa.display-mode-space-xs}"
   file-item.font-size: "{sherpa.font-size-body-base}"
+  file-item.line-height: "{sherpa.theme-content-line-height-base}"
+  file-icon.inline-size: "{sherpa.theme-size-icon-xl}"
+  file-icon.block-size: "{sherpa.theme-size-icon-xl}"
+  file-icon.margin-inline-end: "{sherpa.display-mode-space-2xs}"
+  file-icon.border-width: "{sherpa.display-mode-border-width-base}"
+  file-icon.border-radius: "{sherpa.border-rounding-top-left}"
   file-icon.color: "{sherpa.theme-content-body-1}"
-  file-body.gap: "{sherpa.display-space-3xs}"
-  file-line.gap: "{sherpa.display-space-xs}"
+  file-icon.font-size: "{sherpa.theme-content-size-base}"
+  file-body.gap: "{sherpa.display-mode-space-3xs}"
+  file-line.gap: "{sherpa.display-mode-space-xs}"
   file-size.color: "{sherpa.theme-content-body-1}"
   file-size.font-size: "{sherpa.font-size-body-small}"
+  file-size.line-height: "{sherpa.theme-content-line-height-small}"
   file-status.font-size: "{sherpa.font-size-body-small}"
+  file-status.line-height: "{sherpa.theme-content-line-height-small}"
   file-status.color: "{sherpa.theme-content-body-1}"
   file-remove.inline-size: "{sherpa.structure-height}"
   file-remove.block-size: "{sherpa.structure-height}"
-  file-remove.border-radius: "{sherpa.display-border-rounding-sm}"
+  file-remove.border-width: "{sherpa.style-border-width}"
+  file-remove.border-color: "{sherpa.style-border-base}"
+  file-remove.border-radius: "{sherpa.border-rounding-top-left}"
+  file-remove.background: "{sherpa.style-surface-base}"
   file-remove.color: "{sherpa.theme-content-body-1}"
-  file-remove.font-size: "{sherpa.font-size-body-large}"
-  details.gap: "{sherpa.display-space-3xs}"
+  file-remove.font-size: "{sherpa.theme-content-size-base}"
   max-size.font-size: "{sherpa.font-size-body-small}"
+  max-size.line-height: "{sherpa.theme-content-line-height-small}"
   max-size.color: "{sherpa.theme-content-body-1}"
   allowed-types.font-size: "{sherpa.font-size-body-small}"
+  allowed-types.line-height: "{sherpa.theme-content-line-height-small}"
   allowed-types.color: "{sherpa.theme-content-body-1}"
-  actions.gap: "{sherpa.display-space-base}"
-  clear-all.gap: "{sherpa.display-space-xs}"
-  clear-all.min-block-size: "{sherpa.display-size-2xl}"
-  clear-all.padding-inline: "{sherpa.display-space-sm}"
-  clear-all.border-radius: "{sherpa.display-border-rounding-base}"
+  actions.gap: "{sherpa.display-mode-space-base}"
+  clear-all.gap: "{sherpa.display-mode-space-xs}"
+  clear-all.min-block-size: "{sherpa.display-mode-size-2xl}"
+  clear-all.padding-inline: "{sherpa.display-mode-space-sm}"
+  clear-all.border-radius: "{sherpa.display-mode-border-rounding-base}"
   clear-all.font-size: "{sherpa.font-size-body-base}"
   clear-all.font-weight: "{sherpa.font-weight-medium}"
-  upload.gap: "{sherpa.display-space-xs}"
-  upload.min-block-size: "{sherpa.display-size-2xl}"
-  upload.padding-inline: "{sherpa.display-space-sm}"
-  upload.border-radius: "{sherpa.display-border-rounding-base}"
+  upload.gap: "{sherpa.display-mode-space-xs}"
+  upload.min-block-size: "{sherpa.display-mode-size-2xl}"
+  upload.padding-inline: "{sherpa.display-mode-space-sm}"
+  upload.border-radius: "{sherpa.display-mode-border-rounding-base}"
   upload.font-size: "{sherpa.font-size-body-base}"
   upload.font-weight: "{sherpa.font-weight-medium}"
   clear-all.border-width: "{sherpa.style-border-width}"
   clear-all.border-color: "{sherpa.theme-border-default-2}"
-  clear-all.color: "{sherpa.style-content-base}"
-  upload.background: "{sherpa.theme-surface-accent-base}"
+  clear-all.color: "{sherpa.theme-content-body-1}"
+  upload.background: "{sherpa.style-indicator-accent}"
   upload.color: "{sherpa.theme-content-body-base-fixed}"
 $extensions:
   sherpa:

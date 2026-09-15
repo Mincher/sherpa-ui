@@ -1,4 +1,3 @@
-AI	17:4638	brand=Apex 2.0			
 Button	11:2463	Type=icon/label|State=Default	hasIconStart,hasIconEnd,hasBadge	label	iconStart,iconEnd
 Tag	10:2187	Type=dot/full	hasIcon,hasDismiss	label	
 Switch	18:146	Value=off/on	hasLabel		

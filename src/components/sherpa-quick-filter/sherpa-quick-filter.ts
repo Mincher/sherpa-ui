@@ -43,6 +43,8 @@
  *                                 above the badge (pure CSS; see the .count-tip part).
  * @attr {boolean} data-menu       Figma State=menu — snap on the caret button
  * @attr {boolean} data-empty      set by the chip: it is ON but holds no values
+ * @attr {boolean} data-persistent  a SELECTOR, not a toggle — always on, never
+ *                                  empty. Set by the toolbar.
  *
  * @slot (default) — the chip label
  * @slot menu      — a <sherpa-menu> of values for this field
@@ -173,8 +175,18 @@ export class SherpaQuickFilter extends SherpaElement {
    * Reads the menu's checked rows rather than the last event's detail, because a
    * chip can be switched on from OUTSIDE (the toolbar's `active: true`) with no
    * menu event ever having fired.
+   *
+   * A PERSISTENT chip is exempt. It is a selector, not a filter: it is on
+   * because you are always in some state it names (a view), so "on with nothing
+   * picked" is a chip still waiting for its rows, not a contradiction. Painting
+   * it amber was the intermittent warning on the view chip — the flag was read
+   * before the menu's rows were there to be counted.
    */
   #syncEmpty(): void {
+    if (this.hasAttribute('data-persistent')) {
+      this.removeAttribute('data-empty');
+      return;
+    }
     const menu = this.menu;
     const empty = !!menu && this.current && (menu.values?.length ?? 0) === 0;
     this.toggleAttribute('data-empty', empty);

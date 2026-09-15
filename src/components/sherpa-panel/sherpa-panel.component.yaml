@@ -73,7 +73,10 @@ events:
     bubbles: true
     composed: true
 tokens:
-  heading-text.font-weight: "{sherpa.font-weight-semibold}"
+  heading-text.color: "{sherpa.theme-content-body-base}"
+  heading-text.font-size: "{sherpa.font-size-body-base}"
+  heading-text.font-weight: "{sherpa.font-weight-medium}"
+  heading-text.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Panel

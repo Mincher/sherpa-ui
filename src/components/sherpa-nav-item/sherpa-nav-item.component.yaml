@@ -230,7 +230,7 @@ tokens:
   dot.block-size: "{sherpa.display-mode-size-2xs}"
   dot.border-radius: "{sherpa.display-mode-border-rounding-full}"
   dot.background: "{sherpa.theme-surface-active-base}"
-  dot.border-width: "{sherpa.display-mode-border-width-sm}"
+  dot.border-width: "{sherpa.border-top}"
   dot.border-color: "{sherpa.theme-border-active-2}"
   promo.gap: "{sherpa.structure-space-gap}"
   promo.padding: "{sherpa.theme-padding-sm}"

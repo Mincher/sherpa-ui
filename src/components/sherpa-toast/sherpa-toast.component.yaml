@@ -98,6 +98,12 @@ props:
     description: the supporting detail line (shown when present)
 states:
   - $type: state
+    name: stacked
+    selector: ":host([data-stacked])"
+  - $type: state
+    name: leaving
+    selector: ":host([data-leaving])"
+  - $type: state
     name: info
     selector: ":host([data-status=\"info\"])"
   - $type: state
@@ -137,24 +143,32 @@ events:
     bubbles: true
     composed: true
 tokens:
-  toast.gap: "{sherpa.display-space-sm}"
+  toast.gap: "{sherpa.display-mode-space-sm}"
   toast.padding: "{sherpa.theme-padding-lg}"
-  toast.border-width: "{sherpa.style-border-width}"
-  toast.border-radius: "{sherpa.structure-rounding-top-left}"
-  toast.box-shadow: "{sherpa.shadow-md}"
-  icon.inline-size: "{sherpa.theme-size-icon-md}"
-  icon.block-size: "{sherpa.theme-size-icon-md}"
-  icon.color: "{sherpa.theme-content-body-base-fixed}"
-  icon.font-size: "{sherpa.font-size-body-small}"
-  icon.font-weight: "{sherpa.font-weight-bold}"
+  toast.border-block-start-width: "{sherpa.border-top}"
+  toast.border-block-end-width: "{sherpa.border-bottom}"
+  toast.border-inline-start-width: "{sherpa.border-left}"
+  toast.border-inline-end-width: "{sherpa.border-right}"
+  toast.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  toast.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  toast.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  toast.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
+  toast.box-shadow: "{sherpa.display-mode-size-2xs}"
+  icon.inline-size: "{sherpa.theme-content-size-base}"
+  icon.block-size: "{sherpa.theme-content-size-base}"
+  icon.margin-block-start: "{sherpa.display-mode-space-3xs}"
+  icon.font-size: "{sherpa.theme-content-size-base}"
   content.gap: "{sherpa.theme-gap-sm}"
+  heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.font-size-body-base}"
   heading.font-weight: "{sherpa.font-weight-semibold}"
-  close.inline-size: "{sherpa.display-size-md}"
-  close.block-size: "{sherpa.display-size-md}"
-  close.margin-inline-start: "{sherpa.display-space-2xs}"
-  close.border-radius: "{sherpa.display-border-rounding-full}"
-  close.font-size: "{sherpa.font-size-body-large}"
+  heading.line-height: "{sherpa.theme-content-line-height-base}"
+  close.inline-size: "{sherpa.theme-size-icon-2xs}"
+  close.block-size: "{sherpa.theme-size-icon-2xs}"
+  close.margin-block-start: "{sherpa.display-mode-space-2xs}"
+  close.border-radius: "{sherpa.display-mode-border-rounding-full}"
+  close.color: "{sherpa.theme-content-body-1}"
+  close.font-size: "{sherpa.font-size-body-base}"
 $extensions:
   sherpa:
     figmaName: Toast

@@ -13,24 +13,16 @@ $name: sherpa-list
 $description: a vertical container for a homogeneous row list.
 element:
   $type: element
-  tag: div
-  attributes:
-    role: list
+  tag: ul
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: div
+    - el: ul
       class: body
       part: body
-      attrs:
-        role: list
-      children:
-        - el: div
-          class: rows
-          part: rows
-        - slot: ""
+      slot: ""
     - el: div
       class: empty
       part: empty
@@ -40,7 +32,10 @@ anatomy:
     - el: template
       class: row-tpl
       children:
-        - el: sherpa-list-item
+        - el: li
+          class: row-item
+          children:
+            - el: sherpa-list-item
 props:
   - $type: prop
     name: data-empty
@@ -56,9 +51,6 @@ props:
     default: — dividers between rows
     description: "| bordered | plain (no dividers)"
 states:
-  - $type: state
-    name: bordered
-    selector: ":host([data-variant=\"bordered\"])"
   - $type: state
     name: plain
     selector: ":host([data-variant=\"plain\"])"

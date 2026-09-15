@@ -66,3 +66,45 @@ test('closing the dialog fires a composed close event', async ({ page }) => {
   });
   expect(fired).toBe(1);
 });
+
+test('the card has a MINIMUM width, so a short form does not shrink it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-dialog') as HTMLElement & {
+      rendered?: Promise<void>; show?: () => void;
+    };
+    el.setAttribute('data-heading', 'Add customer');
+    // Two narrow fields — the exact case that used to draw a 176px card.
+    el.innerHTML = '<div>a</div><div>b</div>';
+    root.appendChild(el);
+    await el.rendered;
+    el.show?.();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const card = el.shadowRoot!.querySelector('.root') as HTMLElement;
+    return { w: Math.round(card.getBoundingClientRect().width), viewport: window.innerWidth };
+  });
+  // 24rem = 384px, or 92vw on a narrow screen. The example app used to prop this
+  // up from the outside with `min-width: 380px` on its own form div — which meant
+  // every app had to know to do it.
+  expect(r.w).toBeGreaterThanOrEqual(Math.min(384, Math.round(r.viewport * 0.92)) - 1);
+});
+
+test('the card still has a MAXIMUM, so a long form does not fill the screen', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-dialog') as HTMLElement & {
+      rendered?: Promise<void>; show?: () => void;
+    };
+    el.innerHTML = '<div style="inline-size:3000px">very wide</div>';
+    root.appendChild(el);
+    await el.rendered;
+    el.show?.();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const card = el.shadowRoot!.querySelector('.root') as HTMLElement;
+    return { w: Math.round(card.getBoundingClientRect().width), viewport: window.innerWidth };
+  });
+  // 32rem = 512px, or 92vw.
+  expect(r.w).toBeLessThanOrEqual(Math.min(512, Math.round(r.viewport * 0.92)) + 1);
+});

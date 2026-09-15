@@ -1,0 +1,55 @@
+<!--
+  sherpa-stack — a run of controls in one direction, with a token gap.
+
+  The system already had the HORIZONTAL strip (sherpa-toolbar: two zones, a
+  primary action leading and a trailing cluster). It had no plain run, so every
+  app hand-wrote `display: flex; flex-direction: column; gap: …` in its own
+  stylesheet — a form's fields, a settings page's sections, a dialog's footer
+  buttons, a row of cards. That is this component.
+
+  It is a LAYOUT surface, like sherpa-toolbar: no chrome, no fill, no border, no
+  padding. It only places what it is given. For a bordered box use
+  sherpa-container; for a two-zone action strip use sherpa-toolbar.
+
+  data-wrap is what makes the horizontal direction useful for CARDS rather than
+  buttons: items wrap onto the next line and each one grows to share the row,
+  floored at data-min-item. So a row of three option cards becomes a column of
+  three on a phone with no media query and no grid definition.
+
+  Public API:
+    data-direction  block (default, a column) | inline (a row)
+    data-gap        sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)
+    data-align      start | center | end | stretch (default) | between
+                    — how items sit ACROSS the run (the cross axis), except
+                    `between`, which spreads them ALONG it
+    data-wrap       inline only: items wrap and share the line
+    data-min-item   with data-wrap: the floor an item may shrink to (default 200px)
+    data-scroll     the run scrolls when it is taller than its room, instead of
+                    pushing the page. It caps the stack at its parent's height,
+                    so the parent must have one.
+    data-fill       take the parent's height and hand the spare space to the child
+                    marked data-grow. Without it the stack is content-height and
+                    there is no spare space to give.
+    data-measure    cap the run's width at a reading measure (90ch) and centre it
+
+  On a CHILD (not on the stack):
+    data-grow       with data-fill on the stack, this item takes the spare space
+                    and the others keep their natural size. For a stack inside a
+                    fixed-height card — the grid grows, the toolbar above and the
+                    pager below stay put.
+
+                    TWO attributes rather than one because a stack cannot see its
+                    own children from CSS: `:host(:has(…))` does not parse, and
+                    the chained `:host:has(…)` matches every host regardless. So
+                    the height is declared on the stack, not detected from it.
+
+  Slots:
+    (default) — the items (data-accepts: any)
+
+  Fires: nothing — it is a layout surface; slotted controls emit their own events.
+-->
+<template id="default">
+  <div class="run" part="run">
+    <slot data-accepts="any"></slot>
+  </div>
+</template>

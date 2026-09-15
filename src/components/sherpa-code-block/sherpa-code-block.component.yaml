@@ -33,10 +33,14 @@ anatomy:
             type: button
             aria-label: Copy code
           children:
-            - el: span
-              class: copy-label
-            - el: span
-              class: copied-label
+            - el: i
+              class: copy-label fa-solid fa-copy
+              attrs:
+                aria-hidden: "true"
+            - el: i
+              class: copied-label fa-solid fa-circle-check
+              attrs:
+                aria-hidden: "true"
     - el: pre
       class: pre
       part: pre
@@ -95,32 +99,29 @@ events:
       "on": click
       node: .copy
 tokens:
-  header.gap: "{sherpa.display-space-sm}"
-  header.min-block-size: "{sherpa.display-size-xl}"
-  header.padding: "{sherpa.display-space-2xs}"
+  header.gap: "{sherpa.display-mode-space-sm}"
+  header.padding: "{sherpa.display-mode-space-xs}"
   header.background: "{sherpa.style-surface-base}"
-  header.border-block-end: "{sherpa.style-border-width}"
+  header.border-block-end: "{sherpa.display-mode-border-width-base}"
   language.font-family: "{sherpa.font-family-mono}"
   language.font-size: "{sherpa.font-size-body-base}"
   language.font-weight: "{sherpa.font-weight-regular}"
   language.letter-spacing: "{sherpa.theme-content-letter-spacing-base}"
   language.color: "{sherpa.theme-content-body-1}"
-  copy.gap: "{sherpa.structure-space-gap}"
-  copy.padding: "{sherpa.structure-space-padding}"
-  copy.border-width: "{sherpa.style-border-width}"
-  copy.border-color: "{sherpa.theme-border-default-2}"
-  copy.border-radius: "{sherpa.display-border-rounding-sm}"
-  copy.background: "{sherpa.theme-surface-default-base}"
-  copy.color: "{sherpa.style-content-base}"
-  copy.font-size: "{sherpa.font-size-body-small}"
-  copied-label.color: "{sherpa.theme-surface-success-3}"
-  pre.padding: "{sherpa.display-space-sm}"
+  copy.inline-size: "{sherpa.structure-height}"
+  copy.block-size: "{sherpa.structure-height}"
+  copy.border-radius: "{sherpa.border-rounding-top-left}"
+  copy.color: "{sherpa.theme-content-body-1}"
+  copy.font-size: "{sherpa.theme-content-size-base}"
+  copied-label.color: "{sherpa.theme-content-success-1}"
+  pre.padding: "{sherpa.display-mode-space-sm}"
   pre.background: "{sherpa.theme-surface-default-1}"
   code.font-family: "{sherpa.font-family-mono}"
   code.font-size: "{sherpa.font-size-body-base}"
-  code.color: "{sherpa.style-content-base}"
-  gutter.padding-inline-end: "{sherpa.display-space-sm}"
-  gutter.color: "{sherpa.theme-content-body-3}"
+  code.line-height: "{sherpa.theme-content-line-height-base}"
+  code.color: "{sherpa.theme-content-body-1}"
+  gutter.padding-inline-end: "{sherpa.display-mode-space-sm}"
+  gutter.color: "{sherpa.theme-content-body-1}"
 $extensions:
   sherpa:
     figmaName: Code Block

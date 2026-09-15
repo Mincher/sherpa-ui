@@ -33,10 +33,10 @@
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius:
-    var(--sherpa-structure-rounding-top-left, 4px)
-    var(--sherpa-structure-rounding-top-right, 4px)
-    var(--sherpa-structure-rounding-bottom-right, 4px)
-    var(--sherpa-structure-rounding-bottom-left, 4px);
+    var(--sherpa-border-rounding-top-left, 4px)
+    var(--sherpa-border-rounding-top-right, 4px)
+    var(--sherpa-border-rounding-bottom-right, 4px)
+    var(--sherpa-border-rounding-bottom-left, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   overflow: hidden;
 }
@@ -60,7 +60,7 @@
    negative, so the overlap is a negative margin on the followers — the same
    idiom every other snapped group in the system uses. */
 .cal-header > :not(:first-child) {
-  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
 /* The month button takes the free width (Figma: prev/next hug at 32, month
@@ -86,18 +86,18 @@
 
    By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
 .cal-header > * {
-  --sherpa-structure-rounding-top-left: 0px;
-  --sherpa-structure-rounding-top-right: 0px;
-  --sherpa-structure-rounding-bottom-left: 0px;
-  --sherpa-structure-rounding-bottom-right: 0px;
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
 }
 .cal-header > :first-child {
-  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 .cal-header > :last-child {
-  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 /* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
@@ -221,7 +221,12 @@
   min-inline-size: 0;
   padding-block: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-display-mode-space-xs, 8px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353D);
@@ -314,7 +319,12 @@
   block-size: var(--sherpa-structure-height, 32px);
   padding-block: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-theme-padding-lg, 16px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
+  border-style: solid;
+  border-color: var(--_border);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353D);

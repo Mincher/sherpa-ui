@@ -26,7 +26,7 @@
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
-  --_radius: var(--sherpa-structure-rounding-top-left, 4px);
+  --_radius: var(--sherpa-border-rounding-top-left, 4px);
 }
 
 /* ── The card box ─────────────────────────────────────────────────── */

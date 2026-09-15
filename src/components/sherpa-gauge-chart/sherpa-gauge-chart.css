@@ -54,6 +54,89 @@
   margin: 0;
 }
 
+/* The gauge's own stack: ring + scale + caption as ONE centred column, so a
+   vertical legend sits beside the whole gauge rather than beside only the ring.
+   It repeats the host's centring because it is now the box those three live in —
+   the host centres IT, and it centres them. */
+.chart-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
+  min-inline-size: 0;
+  min-block-size: 0;
+  /* Takes the host's spare height, so the gauge grows into a tall card and the
+     legend below keeps its natural size. */
+  flex: 1 1 auto;
+}
+
+/* ── The legend ──────────────────────────────────────────────────────────
+   The chart owns the split with its own legend, exactly as sherpa-donut-chart
+   does. The card around it used to: every panel wrapped the chart and the legend
+   in a `.chart-area` div and wrote the ratio there, which meant the page had to
+   know which orientation a legend was and the pair could never move between
+   cards without carrying its rules along.
+
+   The ORIENTATION decides the axis, because the two constrain different things.
+   A legend BELOW runs the full width and needs only height; one BESIDE has to fit
+   its longest label into its own column, so it gets a share of the width. */
+::slotted([slot="legend"]) {
+  flex: 0 0 auto;
+  min-inline-size: 0;
+  /* The host is a CENTRED column (`align-items: center`), which makes every child
+     hug its own content — so a horizontal legend measured 145px inside a 600px
+     chart and its items bunched in the middle instead of spreading across.
+
+     `align-self: stretch` opts this one child back out, so the legend spans the
+     chart's width the way it does in the bar and line charts. The gauge's own
+     ring stays centred, because it is a different child. */
+  align-self: stretch;
+}
+
+/* Legend BESIDE — two columns.
+   `align-items` and `justify-items` are reset from the host's flex centring:
+   as a grid the host must let each cell fill, and the centring is the cell's own
+   business (.chart-body already centres its column). */
+/* The chart reads the SPLIT from its own `data-legend`, not from the legend's
+   `data-orientation`. CSS cannot see it there: `:host(:has(…))` does not PARSE
+   (`:has()` is not a valid argument to `:host()`, and the rule is dropped
+   silently) and the chained `:host:has(…)` parses but matches every host,
+   ignoring the `:has()` — the same shadow-DOM trap the chained `:host:not()`
+   form has. So the split is declared on the chart:
+
+     (absent, or "horizontal") → the host's flex COLUMN, legend under the plot
+     "vertical"                → a 70/30 GRID, legend beside the plot
+
+   The legend still carries its own data-orientation for its own layout; this
+   attribute says what the CHART does about it. */
+:host([data-legend="vertical"]) {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+}
+/* `display: contents` on .chart-figure means the header, body and legend are the
+   grid's real items, so they are placed directly. */
+:host([data-legend="vertical"]) .chart-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+:host([data-legend="vertical"]) .chart-body {
+  grid-column: 1;
+  grid-row: 2;
+  /* In the grid the body is a CELL, not a flex item — `flex` means nothing here
+     and the cell already has its track. Filling it is what makes the ring size
+     against the card rather than against itself. */
+  inline-size: 100%;
+  block-size: 100%;
+}
+:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);

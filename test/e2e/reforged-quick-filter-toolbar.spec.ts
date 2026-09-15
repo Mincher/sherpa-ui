@@ -120,7 +120,9 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       sortRadios: sortChip.querySelector('input')!.getAttribute('type'),
     };
 
-    // Pick the sort column from the MENU, then commit.
+    // Pick a value from the MENU. These menus AUTO-APPLY — a chip only defers
+    // behind an Apply footer when its definition asks for `commit: true` — so
+    // the tick IS the commit and clicking Apply as well would fire twice.
     const pick = async (chip: HTMLElement, value: string) => {
       const menu = chip.querySelector('sherpa-menu')!;
       const input = Array.from(menu.querySelectorAll<HTMLInputElement>('input')).find(
@@ -128,7 +130,9 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
       )!;
       input.checked = true;
       input.dispatchEvent(new Event('change', { bubbles: true }));
-      (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
+      if (menu.hasAttribute('data-commit')) {
+        (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
+      }
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
@@ -568,8 +572,8 @@ test('the view group is snapped: outer corners round, inner ones square', async 
     });
   }, MOUNT);
 
-  // Figma's "Frame 1" joins the three at gap -0.5 so their borders overlap and
-  // they read as ONE control. The rounding is set in the toolbar's own CSS, not
+  // Figma's "Frame 1" joins the three at `structure-space/snapped` (0) so they sit
+  // flush and read as ONE control. The rounding is set in the toolbar's own CSS, not
   // by [data-snap]: that selector lives in tokens.css, which is loaded into the
   // DOCUMENT and is deliberately not in sharedStyles, so it never reaches a
   // button inside this shadow root.
@@ -581,9 +585,13 @@ test('the view group is snapped: outer corners round, inner ones square', async 
   expect(r[2]!.tl).toBe(0);
   expect(r[2]!.tr).toBeGreaterThan(0); // trailing edge stays round
 
-  // …and they actually touch, rather than merely looking square.
-  expect(r[1]!.left).toBeLessThan(r[0]!.right);
-  expect(r[2]!.left).toBeLessThan(r[1]!.right);
+  // …and they actually TOUCH, rather than merely looking square. The snap gap is
+  // `--sherpa-structure-space-snapped`, which resolves to space/none = 0, so each
+  // button starts exactly where the one before it ended — no gap, no overlap.
+  // Compare with a tolerance, not `===`: sub-pixel layout makes the shared edge
+  // tie only approximately.
+  expect(r[1]!.left).toBeCloseTo(r[0]!.right, 2);
+  expect(r[2]!.left).toBeCloseTo(r[1]!.right, 2);
 });
 
 test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page }) => {
@@ -639,6 +647,89 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
 
   // Reset clears the filters and leaves the view in place.
   expect(r.afterReset).toEqual({ view: true, trial: false });
+});
+
+/**
+ * The view chip is a SELECTOR, and the three things that follow from that are
+ * all one idea: it is never removable, it always holds a value, and it is
+ * therefore never "on with nothing picked".
+ *
+ * The last one is what shipped as a bug: the amber WARNING look appeared on the
+ * view chip at load, intermittently. It was intermittent because it depended on
+ * whether the host had remembered to mark an option `selected` — nothing in the
+ * chip made sure a selector had a selection.
+ *
+ * NOTE the definition below deliberately marks NO option `selected`, and asks
+ * for no `removable`. That is the failing shape.
+ */
+test('the view chip offers no remove, defaults to its first option, and never goes amber', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = (await mountToolbar('view')) as HTMLElement & {
+      populate?: (d: unknown) => void;
+      values: Record<string, string[]>;
+    };
+    el.populate!([
+      {
+        id: 'view',
+        label: 'Fleet overview',
+        persistent: true,
+        select: 'single',
+        // NO `selected`, and NO `removable`.
+        options: [
+          { value: 'fleet', label: 'Fleet overview' },
+          { value: 'critical', label: 'Critical only' },
+        ],
+      },
+      // An ordinary chip that DOES opt in, so "no remove row" is proved to be
+      // the persistent chip's doing and not the row being broken outright.
+      {
+        id: 'plan',
+        label: 'Plan',
+        removable: true,
+        options: [{ value: 'pro', label: 'Pro' }],
+      },
+      // …and one that opts OUT, which is the new default.
+      { id: 'region', label: 'Region', options: [{ value: 'emea', label: 'EMEA' }] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const chip = (id: string) => sr.querySelector(`.chip[data-id="${id}"]`) as HTMLElement;
+    const view = chip('view');
+    const checked = [...view.querySelectorAll('input')]
+      .filter((i) => (i as HTMLInputElement).checked)
+      .map((i) => (i as HTMLInputElement).value);
+
+    return {
+      // The first option stands in for the pick the host did not name.
+      checked,
+      viewOn: view.hasAttribute('data-current'),
+      // …so the chip is never ON-with-nothing, and never wears the warning tint.
+      viewEmpty: view.hasAttribute('data-empty'),
+      // The bar reports it like any other applied filter.
+      values: JSON.parse(JSON.stringify(el.values)),
+      remove: {
+        view: !!view.querySelector('.qf-remove'),
+        plan: !!chip('plan').querySelector('.qf-remove'),
+        region: !!chip('region').querySelector('.qf-remove'),
+      },
+    };
+  }, MOUNT);
+
+  // ONE value, the first, without the host having said so.
+  expect(r.checked).toEqual(['fleet']);
+  expect(r.viewOn).toBe(true);
+
+  // The amber state is a contradiction a selector cannot be in.
+  expect(r.viewEmpty).toBe(false);
+
+  expect(r.values).toEqual({ view: ['fleet'] });
+
+  // "Remove filter" is OPT-IN. The selector never offers it; a chip that asked
+  // for it gets it; a chip that did not, does not.
+  expect(r.remove).toEqual({ view: false, plan: true, region: false });
 });
 
 test('the Add button puts an available filter on the bar and drops it from its menu', async ({ page }) => {
@@ -771,9 +862,10 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       available?: (d: unknown) => void;
       values?: Record<string, string[]>;
     };
+    // `removable: true` — the opt-in that puts "Remove filter" in the menu.
     el.populate!([
-      { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
-      { id: 'region', label: 'Region', options: [{ value: 'emea', label: 'EMEA' }] },
+      { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
+      { id: 'region', label: 'Region', removable: true, options: [{ value: 'emea', label: 'EMEA' }] },
       { id: 'trial', label: 'Trial' },
     ]);
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
@@ -839,7 +931,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
     };
     el.populate!([
       { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
-      { id: 'created', label: 'Created', kind: 'date' },
+      { id: 'created', label: 'Created', kind: 'date', removable: true },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 

@@ -3,7 +3,7 @@
  *
  * Bindings mirror the Figma "Select Checkbox" + "Checkbox (Atom)" (data-extracted):
  *   box      16×16 · fill style-surface/base · stroke style-border/base 1px (border/width/base)
- *            radius structure-rounding/* (4)
+ *            radius rounding/* (4)
  *   checked  the box KEEPS its white face + neutral ring; a 10×10 accent indicator
  *            (checkmark instance, radius 1, fill style-indicator/accent) sits inset 2px
  *            (space/3xs) with a white tick (style-content/inverse) inside it.
@@ -55,7 +55,10 @@
   padding: 0;
   position: relative;
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;

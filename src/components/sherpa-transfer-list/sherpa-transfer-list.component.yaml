@@ -146,18 +146,19 @@ events:
     bubbles: true
     composed: true
 tokens:
-  pane.border-width: "{sherpa.style-border-width}"
-  pane.border-radius: "{sherpa.structure-rounding-top-left}"
-  pane-heading.padding: "{sherpa.display-space-xs}"
-  pane-heading.border-block-end: "{sherpa.style-border-width}"
-  pane-heading.color: "{sherpa.theme-content-body-base}"
+  pane.border-width: "{sherpa.display-mode-border-width-base}"
+  pane.border-radius: "{sherpa.border-rounding-top-left}"
+  pane-heading.padding: "{sherpa.display-mode-space-xs}"
+  pane-heading.border-block-end: "{sherpa.display-mode-border-width-base}"
+  pane-heading.background: "{sherpa.theme-surface-default-1}"
+  pane-heading.color: "{sherpa.theme-content-body-1}"
   pane-heading.font-size: "{sherpa.font-size-body-small}"
-  pane-heading.font-weight: "{sherpa.font-weight-semibold}"
-  pane-list.padding: "{sherpa.structure-space-padding}"
-  pane-empty.padding: "{sherpa.display-space-base}"
+  pane-heading.font-weight: "{sherpa.font-weight-regular}"
+  pane-heading.line-height: "{sherpa.theme-content-line-height-small}"
+  pane-empty.padding: "{sherpa.display-mode-space-base}"
   pane-empty.color: "{sherpa.theme-content-body-1}"
-  row.border-radius: "{sherpa.structure-rounding-top-left}"
-  moves.gap: "{sherpa.display-space-xs}"
+  row.border-radius: "{sherpa.border-rounding-top-left}"
+  moves.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Transfer List

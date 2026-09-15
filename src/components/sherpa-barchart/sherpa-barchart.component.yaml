@@ -61,6 +61,7 @@ anatomy:
               part: x-axis
               attrs:
                 aria-hidden: "true"
+        - slot: legend
     - el: template
       class: ytick-tpl
       children:
@@ -92,6 +93,9 @@ props:
     default: "4"
     description: number of y gridlines/values
 states:
+  - $type: state
+    name: vertical
+    selector: ":host([data-legend=\"vertical\"])"
   - $type: state
     name: has-y-axis
     selector: ":host([data-has-y-axis])"
@@ -142,10 +146,10 @@ tokens:
   bar-label.color: "{sherpa.theme-content-body-1}"
   axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   gridlines.background-image: "{sherpa.style-border-base}"
-  gridlines.border-block-start: "{sherpa.display-mode-border-width-sm}"
+  gridlines.border-block-start: "{sherpa.border-top}"
   y-axis.inline-size: "{sherpa.display-mode-size-lg}"
   y-axis.padding-inline-end: "{sherpa.display-mode-space-sm}"
-  y-axis.border-inline-end: "{sherpa.display-mode-border-width-sm}"
+  y-axis.border-inline-end: "{sherpa.border-right}"
   y-axis.font-family: "{sherpa.font-family-mono}"
   y-axis.font-size: "{sherpa.font-size-body-small}"
   y-axis.font-weight: "{sherpa.font-weight-regular}"

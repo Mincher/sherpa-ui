@@ -38,6 +38,6 @@
   flex: 1 1 auto;
   min-inline-size: 0;
   block-size: 0;
-  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }

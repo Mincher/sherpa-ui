@@ -42,7 +42,7 @@ anatomy:
         class: checkbox
         part: checkbox
         children:
-          - slot: checkbox
+          - slot: selection
       - el: span
         class: content
         part: content
@@ -83,15 +83,21 @@ props:
     type: boolean
     kind: style
     default: false
-    description: >-
-      show the trailing sort + menu buttons  data-sort-direction asc | desc   (header sort state;
-      drives the caret)
+    description: show the trailing sort + menu buttons
   - $type: prop
     name: data-has-checkbox
     type: boolean
     kind: style
     default: false
     description: show the leading selection checkbox
+  - $type: prop
+    name: data-sort-direction
+    type: enum
+    kind: style
+    values:
+      - asc
+      - desc
+    description: asc | desc   (header sort state; drives the caret)
   - $type: prop
     name: data-type
     type: enum
@@ -145,17 +151,21 @@ events:
     bubbles: true
     composed: true
 tokens:
-  cell.gap: "{sherpa.theme-gap-sm}"
+  cell.gap: "{sherpa.display-mode-space-xs}"
   cell.padding: "{sherpa.theme-padding-sm}"
   cell.min-block-size: "{sherpa.structure-height}"
-  cell.border-block-end: "{sherpa.style-border-width}"
+  cell.border-width: "{sherpa.style-border-width}"
+  cell.border-color: "{sherpa.theme-border-default-2}"
   cell.background: "{sherpa.style-surface-base}"
-  sort.inline-size: "{sherpa.theme-size-icon-sm}"
-  sort.block-size: "{sherpa.theme-size-icon-sm}"
-  sort.color: "{sherpa.style-content-secondary}"
-  menu.inline-size: "{sherpa.theme-size-icon-sm}"
-  menu.block-size: "{sherpa.theme-size-icon-sm}"
-  menu.color: "{sherpa.style-content-secondary}"
+  cell.line-height: "{sherpa.theme-content-line-height-base}"
+  sort.inline-size: "{sherpa.theme-size-icon-xs}"
+  sort.block-size: "{sherpa.theme-size-icon-xs}"
+  sort.border-radius: "{sherpa.border-rounding-top-left}"
+  sort.color: "{sherpa.style-content-base}"
+  menu.inline-size: "{sherpa.theme-size-icon-xs}"
+  menu.block-size: "{sherpa.theme-size-icon-xs}"
+  menu.border-radius: "{sherpa.border-rounding-top-left}"
+  menu.color: "{sherpa.style-content-base}"
 $extensions:
   sherpa:
     figmaName: Grid Cell

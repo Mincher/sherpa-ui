@@ -36,7 +36,7 @@
 }
 
 /* ── Default = the Figma List (49:66025): a BORDERED, rounded surface (style-
-   surface/base fill, 0.5 style-border/base ring, structure-rounding 4) with 1px
+   surface/base fill, 0.5 style-border/base ring, rounding 4) with 1px
    border/default/+2 dividers between rows. `bordered` is kept as an alias; only
    data-variant="plain" opts out of the box + dividers. ───────────────────── */
 :host(:not([data-variant="plain"])) {
@@ -44,9 +44,16 @@
 }
 :host(:not([data-variant="plain"])) .body {
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   overflow: hidden;
 }
 

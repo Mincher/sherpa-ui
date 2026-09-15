@@ -102,10 +102,10 @@
 }
 
 /* ── The view-scope group ────────────────────────────────────────────
- * Figma's "Frame 1": ★ · Save · ▾ at gap -0.5 — their borders OVERLAP so the
- * three read as one control. `gap` cannot be negative in CSS, so the overlap is
- * a negative margin on the followers, which is the same idiom the snapped
- * control pairs elsewhere use.
+ * Figma's "Frame 1": ★ · Save · ▾ at `structure-space/snapped` — they sit FLUSH
+ * so the three read as one control. It is a margin on the followers rather than
+ * a `gap` because the token is free to go negative later and CSS `gap` cannot;
+ * this is the same idiom the snapped control pairs elsewhere use.
  *
  * Only the `view` type has it. Figma's Type=data cluster ends at the divider. */
 .view-group { display: none; }
@@ -115,7 +115,7 @@
   flex: 0 0 auto;
 }
 .view-group > :not(:first-child) {
-  margin-inline-start: var(--sherpa-display-mode-space-snapped, -0.5px);
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
 /* The snapped corners, set HERE rather than left to `data-snap`.
@@ -131,18 +131,18 @@
    and anything between is square all round. Written by position rather than by
    `[data-snap="…"]` so the rule survives a re-order of the group. */
 .view-group > * {
-  --sherpa-structure-rounding-top-left: 0px;
-  --sherpa-structure-rounding-top-right: 0px;
-  --sherpa-structure-rounding-bottom-left: 0px;
-  --sherpa-structure-rounding-bottom-right: 0px;
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
 }
 .view-group > :first-child {
-  --sherpa-structure-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 .view-group > :last-child {
-  --sherpa-structure-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-structure-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 /* The lit star takes the ACTIVE Style mode, set as data-status on the button

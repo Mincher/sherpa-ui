@@ -1,18 +1,27 @@
 <!-- Content-only markup for the "records" view.
      Served by the template server (GET /template/view/records) and injected into
      the app-shell's default (content) slot by the SPA router in index.html.
-     views/records.js builds the data and populates the grid / toolbar / dialog. -->
-<div class="view">
-  <!-- NO section header. The APP HEADER owns the view's name (views/records.js
-       sets data-heading="Customers"), so a heading here repeated it. Page actions
-       already moved into the GRID's own toolbar, where they sit with the data
-       they act on. -->
+     views/records.js builds the data and populates the grid / toolbar / dialog.
 
-  <div class="sherpa-grid">
-    <!-- A data table always wants every column it can get. `data-rows="8"` fixes
-         the panel at 8 layout-grid rows tall, so the grid SCROLLS inside it rather
-         than the panel growing with the row count and pushing the pager away. -->
-    <div class="panel" data-span="full" data-rows="8">
+     EVERY box here is a Sherpa component or the projected layout grid. There is
+     no view-level CSS.
+
+     NO section header. The APP HEADER owns the view's name (views/records.js sets
+     data-heading="Customers"), so a heading here repeated it. Page actions live in
+     the GRID's own toolbar, with the data they act on. -->
+<div class="sherpa-grid">
+  <!-- A data table always wants every column it can get. `data-rows="8"` fixes the
+       card at 8 layout-grid rows tall, so the grid SCROLLS inside it rather than
+       the card growing with the row count and pushing the pager off the screen.
+
+       data-padding="none": the toolbars, the grid and the pager each carry their
+       own Figma padding, so a second inset from the card would double it. -->
+  <sherpa-container data-span="full" data-rows="8" data-padding="none">
+    <!-- The card's content as ONE run, with no gap: each part carries its own
+         Figma padding and its own divider, so a gap between them would be a
+         second, competing rhythm. The card's fixed height goes to the item marked
+         data-grow (the grid). -->
+    <sherpa-stack data-gap="none" data-grow data-fill>
       <!-- The ACTIONS toolbar, ABOVE the quick-filter toolbar. Page-level actions
            on this grid's data live here — Add customer moved out of the section
            header, so it sits with the data it acts on. -->
@@ -28,32 +37,40 @@
         </sherpa-button>
       </sherpa-toolbar>
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <sherpa-data-grid id="grid" data-selectable data-filterable></sherpa-data-grid>
-      <!-- NO data-page-size: the component defaults to 25, and naming a size
-           here would override it for no reason. 100 rows / 25 = 4 pages;
-           records.js overwrites data-total-pages on every render, so this is
-           only the pre-JS value. -->
+      <!-- data-grow: this is the item that takes the card's leftover height. The
+           two toolbars above and the pager below keep their natural size, so the
+           grid scrolls INSIDE the card and the pager stays put at the bottom. -->
+      <sherpa-data-grid id="grid" data-grow data-selectable data-filterable></sherpa-data-grid>
+      <!-- NO data-page-size: the component defaults to 25, and naming a size here
+           would override it for no reason. 100 rows / 25 = 4 pages; records.js
+           overwrites data-total-pages on every render, so this is only the
+           pre-JS value. -->
       <sherpa-pagination
         id="pager"
         data-page="1"
         data-total-pages="4"
         data-rows-options="10,25,50,100"></sherpa-pagination>
-    </div>
-  </div>
+    </sherpa-stack>
+  </sherpa-container>
 </div>
 
 <!-- Add / edit customer dialog. -->
 <sherpa-dialog id="dialog" data-heading="Add customer">
-  <div class="form">
+  <sherpa-stack>
     <sherpa-input-text id="f-name" data-label="Name" placeholder="Jane Doe" required></sherpa-input-text>
     <sherpa-input-text id="f-email" data-label="Email" type="email" placeholder="jane@acme.com" required></sherpa-input-text>
     <sherpa-select-group id="f-plan" data-label="Plan"></sherpa-select-group>
-  </div>
-  <div slot="footer" class="dialog-footer">
+  </sherpa-stack>
+
+  <!-- The footer is a Container Footer, which brings its own 8×16 padding, its
+       0.5px divider and its end alignment — the dialog's CSS already knows not to
+       add a second set around a composed one. -->
+  <sherpa-container-footer slot="footer">
     <sherpa-button id="cancel-btn">Cancel</sherpa-button>
     <sherpa-button id="save-btn" data-look="saturated">Save</sherpa-button>
-  </div>
+  </sherpa-container-footer>
 </sherpa-dialog>
 
-<!-- Toast feedback region. -->
-<div class="toast-region" id="toasts"></div>
+<!-- NO toast region. sherpa-toast makes its own `.sherpa-toast-stack` in the
+     top-right corner on first use (SherpaToast.success(…)), so a hand-made
+     region was a second stack in a different corner. -->

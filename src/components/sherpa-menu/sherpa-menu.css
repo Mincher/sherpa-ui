@@ -69,9 +69,16 @@
   padding-block-end: var(--sherpa-theme-padding-none, 0px);
   /* The default 0.5px ring — the card is a surface on a surface, so it needs the
      border to separate itself from what it floats over. */
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
@@ -158,10 +165,10 @@
   /* Squared all round; the two ends take their outer corners back below. The
      values mirror the [data-snap] block in tokens.css, which is a bare selector
      in a DOCUMENT sheet and so never reaches a shadow root. */
-  --sherpa-structure-rounding-top-left: 0px;
-  --sherpa-structure-rounding-top-right: 0px;
-  --sherpa-structure-rounding-bottom-left: 0px;
-  --sherpa-structure-rounding-bottom-right: 0px;
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
 }
 
 /* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
@@ -279,7 +286,10 @@
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-theme-padding-md, 8px);
   border: 0;
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: inherit;
@@ -307,22 +317,48 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── Apply / Cancel footer ───────────────────────────────────────────────
+/* ── The footer ──────────────────────────────────────────────────────────
  * A composed <sherpa-container-footer> — Figma's `Container Footer`
  * (Type=action-bar), which BOTH Menu variants hold in their `footer` slot. That
  * component owns the row's padding (8 block, 0 inline), gap and top stroke, so
  * nothing here restyles it; this only says WHEN it appears.
  *
- * `display: none` beats the component's own `[data-has-content]` rule, so a
- * non-committing menu has no footer even though buttons are slotted into it. */
+ * `display: none` beats the component's own `[data-has-content]` rule, so a menu
+ * with nothing to put there has no footer even though buttons are slotted in.
+ *
+ * It is NOT the Apply/Cancel footer alone. Four things can live in this row and
+ * any ONE of them earns it:
+ *
+ *   data-commit     Cancel · Apply   (the deferred-selection pair)
+ *   data-removable  Remove filter    (a date chip's only way off the bar)
+ *   data-clearable  Clear
+ *   Type=calendar   Today
+ *
+ * Tying the row to data-commit ALONE was wrong once auto-apply became the
+ * default: an auto-applying date chip lost Today and Remove filter with the
+ * Apply button, and a calendar has no list for an action ROW to sit in instead,
+ * so the chip became one a reader could add and never take away. Each control
+ * hides itself on its own flag (see the rules above), so listing every case here
+ * shows the row exactly when something is in it. */
 .footer { display: none; }
-:host([data-commit]) .footer { display: block; }
+:host([data-commit]) .footer,
+:host([data-removable]) .footer,
+:host([data-clearable]) .footer,
+:host([data-type="calendar"]) .footer { display: block; }
+
+/* Cancel and Apply are the COMMIT pair, so they hide with it. They used to need
+   no rule of their own — the footer was only ever shown for data-commit, so
+   gating the row gated them. Now that Today and Remove can raise the row on
+   their own, an auto-applying menu would otherwise offer an Apply button for a
+   selection that has already applied. */
+.cancel, .apply { display: none; }
+:host([data-commit]) :is(.cancel, .apply) { display: inline-flex; }
 
 /* A separator row between groups. */
 ::slotted(hr) {
   margin: var(--sherpa-display-mode-space-3xs, 2px) 0;
   border: 0;
-  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+  border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-theme-border-default-1, #e8e8f6);
 }
 

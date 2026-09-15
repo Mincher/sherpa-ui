@@ -69,8 +69,20 @@ anatomy:
                 class: icon
                 part: icon
               - slot: leading
+      - el: button
+        class: content content-button
+        part: content
+        attrs:
+          type: button
+        children:
+          - el: span
+            class: title
+            part: title
+          - el: span
+            class: description
+            part: description
       - el: span
-        class: content
+        class: content content-static
         part: content
         children:
           - el: span
@@ -124,7 +136,7 @@ props:
   - $type: prop
     name: data-interactive
     type: string
-    kind: content
+    kind: style
     default: false
     description: hover + click behaviour
   - $type: prop
@@ -140,7 +152,7 @@ props:
   - $type: prop
     name: data-selected
     type: string
-    kind: style
+    kind: content
     default: false
     description: selection state (for the leading control)
   - $type: prop
@@ -172,11 +184,11 @@ states:
     name: has-leading
     selector: ":host([data-has-leading])"
   - $type: state
-    name: has-trailing
-    selector: ":host([data-has-trailing])"
-  - $type: state
     name: interactive
     selector: ":host([data-interactive])"
+  - $type: state
+    name: has-trailing
+    selector: ":host([data-has-trailing])"
   - $type: state
     name: current
     selector: ":host([data-current])"
@@ -188,7 +200,7 @@ states:
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .content-button:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -225,29 +237,34 @@ events:
 tokens:
   row.gap: "{sherpa.structure-space-gap}"
   row.padding: "{sherpa.structure-space-padding}"
-  row.border-radius: "{sherpa.structure-rounding-top-left}"
-  row.color: "{sherpa.style-content-base}"
+  row.border-radius: "{sherpa.border-rounding-top-left}"
+  row.color: "{sherpa.theme-content-body-base}"
   lead.gap: "{sherpa.structure-space-gap}"
   lead.min-block-size: "{sherpa.font-size-body-large}"
-  drag.inline-size: "{sherpa.theme-size-icon-xs}"
-  drag.block-size: "{sherpa.theme-size-icon-xs}"
   drag.color: "{sherpa.theme-content-body-1}"
-  expand.inline-size: "{sherpa.theme-size-icon-xs}"
-  expand.block-size: "{sherpa.theme-size-icon-xs}"
   expand.color: "{sherpa.theme-content-body-1}"
-  checkbox.inline-size: "{sherpa.theme-size-icon-xs}"
-  checkbox.block-size: "{sherpa.theme-size-icon-xs}"
-  checkbox.border-width: "{sherpa.style-border-width}"
-  checkbox.border-color: "{sherpa.style-border-base}"
-  checkbox.border-radius: "{sherpa.display-border-rounding-sm}"
-  leading.color: "{sherpa.style-content-base}"
-  content.gap: "{sherpa.display-space-3xs}"
-  title.color: "{sherpa.style-content-base}"
-  title.font-size: "{sherpa.font-size-body-large}"
+  drag.inline-size: "{sherpa.theme-size-icon-2xs}"
+  drag.block-size: "{sherpa.theme-size-icon-2xs}"
+  expand.inline-size: "{sherpa.structure-height}"
+  expand.block-size: "{sherpa.structure-height}"
+  expand.border-radius: "{sherpa.border-rounding-top-left}"
+  checkbox.inline-size: "{sherpa.display-mode-size-md}"
+  checkbox.block-size: "{sherpa.display-mode-size-md}"
+  checkbox.border-width: "{sherpa.display-mode-border-width-base}"
+  checkbox.border-color: "{sherpa.theme-border-default-2}"
+  checkbox.border-radius: "{sherpa.border-rounding-top-left}"
+  checkbox.background: "{sherpa.style-surface-base}"
+  leading.color: "{sherpa.theme-content-body-base}"
+  leading.font-size: "{sherpa.theme-size-icon-2xs}"
+  content.gap: "{sherpa.display-mode-space-3xs}"
+  title.color: "{sherpa.theme-content-body-base}"
+  title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-medium}"
+  title.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
-  description.font-size: "{sherpa.font-size-body-base}"
-  trailing.gap: "{sherpa.structure-space-gap}"
+  description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
+  trailing.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Menu List Item

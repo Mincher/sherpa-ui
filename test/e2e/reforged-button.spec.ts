@@ -126,26 +126,38 @@ test('slot presence reflects to data-has-content on the host', async ({ page }) 
   expect(r.empty).toBe(false);
 });
 
-test('data-snap joins buttons into a seamless group (per-corner radius)', async ({ page }) => {
+test('data-group joins buttons into a seamless group (per-corner radius)', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const mk = async (snap: string) => {
+    const mk = async (pos: string) => {
       const b = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
-      b.setAttribute('data-snap', snap);
+      b.setAttribute('data-group', pos);
       b.textContent = 'x';
       document.getElementById('root')!.appendChild(b);
       await b.rendered;
       const cs = getComputedStyle(b);
-      return { tl: cs.borderStartStartRadius, tr: cs.borderStartEndRadius };
+      // Read the TOKENS, not the rendered widths: Chrome floors any sub-pixel border
+      // to one device pixel, so 0.25px and 0.5px both report as "1px" and the halving
+      // would be invisible to a borderLeftWidth assertion.
+      return { tl: cs.borderStartStartRadius, tr: cs.borderStartEndRadius,
+               left: cs.getPropertyValue('--sherpa-border-left').trim(),
+               right: cs.getPropertyValue('--sherpa-border-right').trim() };
     };
-    return { left: await mk('left'), all: await mk('all') };
+    return { start: await mk('start'), mid: await mk('mid'), end: await mk('end') };
   });
-  // Figma snap semantics: data-snap="<edge>" = snapped AGAINST that edge, so THAT
-  // edge's corners go flat. "left" squares the left (top-left) corner but keeps the
-  // right (top-right) rounded; "all" squares every corner (fully seamless join).
-  expect(parseFloat(r.left.tl)).toBe(0);
-  expect(parseFloat(r.left.tr)).toBeGreaterThan(0);
-  expect(parseFloat(r.all.tl)).toBe(0);
-  expect(parseFloat(r.all.tr)).toBe(0);
+  // Grouping semantics: `data-group` names the item's POSITION along the row. A
+  // corner is round only when both of its edges are outer, so a three-item row
+  // rounds only at the two ends.
+  expect(parseFloat(r.start.tl)).toBeGreaterThan(0);
+  expect(parseFloat(r.start.tr)).toBe(0);
+  expect(parseFloat(r.mid.tl)).toBe(0);
+  expect(parseFloat(r.mid.tr)).toBe(0);
+  expect(parseFloat(r.end.tl)).toBe(0);
+  expect(parseFloat(r.end.tr)).toBeGreaterThan(0);
+  // A SHARED edge is halved, not dropped — the two halves meet as one full stroke.
+  expect(parseFloat(r.start.left)).toBeCloseTo(0.5);    // outer
+  expect(parseFloat(r.start.right) + parseFloat(r.mid.left)).toBeCloseTo(0.5);
+  expect(parseFloat(r.mid.right) + parseFloat(r.end.left)).toBeCloseTo(0.5);
+  expect(parseFloat(r.end.right)).toBeCloseTo(0.5);     // outer
 });
 
 test('a disabled TRANSPARENT button dims its ink instead of growing a grey box', async ({ page }) => {
@@ -158,7 +170,7 @@ test('a disabled TRANSPARENT button dims its ink instead of growing a grey box',
       document.getElementById('root')!.appendChild(b);
       await b.rendered;
       const t = getComputedStyle(b.shadowRoot!.querySelector('.trigger')!);
-      return { bg: t.backgroundColor, border: t.borderTopColor, ink: t.color };
+      return { bg: t.backgroundColor, borderWidth: t.borderTopWidth, ink: t.color };
     };
     return { transparent: await mk('transparent'), plain: await mk(null) };
   });
@@ -168,7 +180,10 @@ test('a disabled TRANSPARENT button dims its ink instead of growing a grey box',
   // to #ffffff at 0% alpha). Filling it on disable made a borderless control
   // suddenly grow a slab: the disabled pagination arrows painted one.
   expect(r.transparent.bg).toBe('rgba(0, 0, 0, 0)');
-  expect(r.transparent.border).toBe('rgba(0, 0, 0, 0)');
+  // NO border — carried by the Border passthrough (width → none/0px), not by a
+  // transparent stroke colour: the Transparent Style tier now resolves
+  // style-border/base to the DEFAULT Style border colour.
+  expect(r.transparent.borderWidth).toBe('0px');
   // It still says "off" — by dimming the ink, which is all it has.
   expect(r.transparent.ink).toBe('rgb(179, 179, 195)');
 

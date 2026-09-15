@@ -144,7 +144,10 @@
   block-size: var(--sherpa-theme-size-icon-xl, 24px);
   margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); /* 8 + 4 = Figma gap 12 */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_file-border);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
@@ -186,8 +189,16 @@
   justify-content: center;
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
-  border: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-structure-rounding-top-left, 4px);
+  border-style: solid;
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353D);
   font-size: var(--sherpa-theme-content-size-base, 14px);
@@ -257,8 +268,12 @@
 }
 /* Clear all — secondary (outline) button */
 .clear-all {
-  border: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #B3B3C3);
+  border-style: solid;
+  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353D);
 
