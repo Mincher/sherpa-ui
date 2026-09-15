@@ -43,6 +43,15 @@
        the grid can only place items it actually owns. -->
   <div class="chart-body">
   <!--
+    The VALUE, above the arc. A ROW of the body's column, not an absolute box
+    inside .gauge: Figma stacks label → arc → scale with a 4px gap, and the arc
+    is inset from the top by exactly the label's height. Positioned over the ring
+    it either sat on the crown or, pinned to the other edge, on the needle's hub.
+  -->
+  <div class="centre">
+    <span class="value" part="value"></span>
+  </div>
+  <!--
     The wrapper is the positioning context for the tooltip layer. It is a SIBLING
     of the ring rather than its parent's only child, because a tip must be able to
     escape the ring's own box.
@@ -85,9 +94,6 @@
     </svg>
     <div class="hub"><div class="needle" part="needle"></div></div>
     <div class="hub-cap" part="hub"></div>
-    <div class="centre">
-      <span class="value" part="value"></span>
-    </div>
   </div>
 
   <!--
@@ -101,11 +107,17 @@
   -->
   <div class="hotspots" part="hotspots"></div>
   </div>
+  <!--
+    ONE ROW: min, caption, max. Figma puts all three on the same line beneath the
+    arc (y 124), with the caption centred between the two bounds — the caption
+    used to be a fourth row of its own, which pushed the gauge up and left a band
+    of dead space under it.
+  -->
   <div class="scale" part="scale">
     <span class="min"></span>
+    <figcaption class="caption" part="caption"><slot name="caption"></slot></figcaption>
     <span class="max"></span>
   </div>
-  <figcaption class="caption" part="caption"><slot name="caption"></slot></figcaption>
   </div>
 
   <!-- The legend belongs to the CHART, not to the card around it — the same rule

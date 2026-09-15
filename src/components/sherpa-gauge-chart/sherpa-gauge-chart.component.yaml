@@ -34,6 +34,12 @@ anatomy:
           class: chart-body
           children:
             - el: div
+              class: centre
+              children:
+                - el: span
+                  class: value
+                  part: value
+            - el: div
               class: gauge-wrap
               children:
                 - el: div
@@ -61,12 +67,6 @@ anatomy:
                     - el: div
                       class: hub-cap
                       part: hub
-                    - el: div
-                      class: centre
-                      children:
-                        - el: span
-                          class: value
-                          part: value
                 - el: div
                   class: hotspots
                   part: hotspots
@@ -76,12 +76,12 @@ anatomy:
               children:
                 - el: span
                   class: min
+                - el: figcaption
+                  class: caption
+                  part: caption
+                  slot: caption
                 - el: span
                   class: max
-            - el: figcaption
-              class: caption
-              part: caption
-              slot: caption
         - slot: legend
     - el: template
       class: zone-tpl
@@ -168,6 +168,7 @@ tokens:
   value.font-weight: "{sherpa.font-weight-regular}"
   value.line-height: "{sherpa.theme-content-line-height-xs}"
   value.color: "{sherpa.theme-content-body-1}"
+  scale.gap: "{sherpa.theme-gap-sm}"
   scale.font-family: "{sherpa.font-family-mono}"
   scale.font-size: "{sherpa.font-size-body-xs}"
   scale.line-height: "{sherpa.theme-content-line-height-xs}"

@@ -34,18 +34,6 @@ interface Zone {
 }
 
 /**
- * A zone as it was actually DRAWN — the zone plus the span that reached the
- * screen. `drawnFrom`/`drawnTo` are the zone's own bounds clipped at the value,
- * so a band straddling the value is cut and its dot still sits on the coloured
- * part. The zone's untouched `from`/`to` and raw bounds ride along for the
- * tooltip, which names what the band MEANS rather than how full it is.
- */
-interface DrawnZone extends Zone {
-  drawnFrom: number;
-  drawnTo: number;
-}
-
-/**
  * Status name → the band's colour.
  *
  * The `-2` step is the SATURATED middle of each status ramp — the one a chart
@@ -138,10 +126,10 @@ export class SherpaGaugeChart extends SherpaElement {
 
     // One arc per threshold band; with no bands, one arc as long as the value.
     const zones = this.#parseZones(min, max);
-    // The arcs decide which zones are actually on screen — a zone entirely past
-    // the value is not drawn — so the hotspots are stamped from what was drawn,
-    // never from the full zone list. Otherwise tip 2 would point at a band that
-    // does not exist and the indices would slip out of step.
+    // The arcs decide which zones reach the screen — a zero-width zone is
+    // skipped — so the hotspots are stamped from what was drawn, never from the
+    // declared list. Otherwise a tip would point at a band that does not exist
+    // and the indices would slip out of step.
     this.#renderHotspots(this.#renderArcs(zones, frac));
 
     const value = this.$('.value');
@@ -217,15 +205,15 @@ export class SherpaGaugeChart extends SherpaElement {
   /**
    * Stamp one hover dot per DRAWN zone band, on that band's mid-angle.
    *
-   * Takes what #renderArcs actually drew rather than the full zone list: a zone
-   * entirely past the value has no band, so a tip for it would point at nothing
-   * and every later index would slip by one.
+   * Takes what #renderArcs actually drew rather than the declared zone list. A
+   * zone of zero width is skipped, so a tip stamped from the declared list would
+   * point at nothing and every later index would slip by one.
    *
    * The ONLY numbers JS gives CSS are the angle and the colour — cos()/sin() in
    * the CSS turn the angle into a position on the ring, so the dots follow the
    * gauge at any size with nothing measured here.
    */
-  #renderHotspots(zones: DrawnZone[]): void {
+  #renderHotspots(zones: Zone[]): void {
     const host = this.$('.hotspots');
     const tpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
     if (!host || !tpl) return;
@@ -246,9 +234,8 @@ export class SherpaGaugeChart extends SherpaElement {
 
       // The visible half runs -90deg (left) → +90deg (right), matching the
       // needle's own mapping, so a band's midpoint fraction lands on the same arc
-      // the fill paints it on. Measured across the DRAWN span, so a clipped
-      // band's dot sits on the part that is actually there.
-      const mid = (zone.drawnFrom + zone.drawnTo) / 2;
+      // the fill paints it on.
+      const mid = (zone.from + zone.to) / 2;
       // -90deg (left) → +90deg (right) across the visible half.
       const angle = -90 + mid * 180;
       dot.style.setProperty('--_dot-angle', `${angle}deg`);
@@ -265,9 +252,8 @@ export class SherpaGaugeChart extends SherpaElement {
       // showing, so that row falls back to the range alone.
       const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
-      // The zone's FULL range, not the drawn span: the reader wants to know what
-      // the band MEANS ("Warning 60–85"), not how much of it the value has
-      // reached — the fill already shows that.
+      // The zone's range on the scale the reader sees ("60–85"), not a 0–1
+      // fraction of it.
       tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
       // The accessible name goes on the ARC, which is the thing a pointer (and a
       // screen reader's virtual cursor) actually lands on. The <svg> itself is
@@ -306,12 +292,12 @@ export class SherpaGaugeChart extends SherpaElement {
    * belongs, so neither workaround is needed — and a transform would skew the
    * rounded corners anyway.
    *
-   * The last band is the grey remainder, so there is no separate track element.
+   * The last band is the grey filler, so there is no separate track element.
    *
    * Returns the zones it actually drew, in the order it drew them, so the hover
    * layer can stamp one dot per real band rather than one per declared zone.
    */
-  #renderArcs(zones: Zone[], frac: number): DrawnZone[] {
+  #renderArcs(zones: Zone[], frac: number): Zone[] {
     const host = this.$('.zones');
     const tpl = this.$<HTMLTemplateElement>('template.zone-tpl');
     if (!host || !tpl) return [];
@@ -321,17 +307,15 @@ export class SherpaGaugeChart extends SherpaElement {
     const outer = CENTRE - OUTLINE / 2;
     const inner = CENTRE - RING_WIDTH + OUTLINE / 2;
 
-    // The coloured bands, CLIPPED AT THE VALUE. A gauge reads as "how full", so
-    // the colour has to stop where the value does: a zone past the value says
-    // what the reading WOULD mean, not what it does. A zone straddling the value
-    // is cut, and one entirely past it is dropped.
-    //
-    // Zones used to paint full-length whatever the value, leaving the needle as
-    // the only thing that moved — so a gauge at 20 and one at 90 drew the same
-    // three full bands.
+    // ZONES PAINT IN FULL, whatever the value. A zone is a THRESHOLD — it says
+    // what a reading in that range would mean — so it is part of the scale, not
+    // part of the reading. The NEEDLE says where the value falls. Clipping the
+    // colour at the value would grey out the very band the reader is about to
+    // enter, which is the one they most need to see.
     //
     // With no zones there is a single band as long as the value; its colour comes
-    // from CSS (--_fill), which already resolves data-status.
+    // from CSS (--_fill), which already resolves data-status. THAT is a reading,
+    // not a scale, so it does stop at the value.
     const bands: Array<{
       from: number;
       to: number;
@@ -339,23 +323,23 @@ export class SherpaGaugeChart extends SherpaElement {
       rest?: true;
       zone?: Zone;
     }> = zones.length
-      ? zones
-          .filter((z) => z.from < frac)
-          .map((z) => ({ from: z.from, to: Math.min(z.to, frac), color: z.color, zone: z }))
+      ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color, zone: z }))
       : [{ from: 0, to: frac, color: null }];
 
-    // The REMAINDER — one grey band covering everything past the value, so the
-    // gauge always reads full-width and the unfilled part is visible rather than
-    // blank. Skipped only at 100%, where there is no arc left to draw.
+    // The FILLER — one grey band over whatever the bands leave uncovered, so the
+    // gauge always reads full width rather than stopping short. Zones covering
+    // the whole scale need none; zones stopping at 80, or a bare value of 25, get
+    // grey for the rest.
     //
     // It replaced a full half-circle track drawn underneath everything. The bands
-    // already cover the gauge up to the value, so the only part of that track
-    // that ever showed WAS the remainder; drawing just that removes a second copy
+    // already cover the gauge up to their end, so the only part of that track
+    // that ever showed WAS the leftover; drawing just that removes a second copy
     // of the half-circle geometry, which is where it kept going wrong.
-    if (frac < 1) bands.push({ from: frac, to: 1, color: null, rest: true });
+    const covered = bands.length ? bands[bands.length - 1]!.to : 0;
+    if (covered < 1) bands.push({ from: covered, to: 1, color: null, rest: true });
 
     host.replaceChildren();
-    const drawn: DrawnZone[] = [];
+    const drawn: Zone[] = [];
     // Counts only bands that REACHED the screen. `forEach`'s own index would leave
     // a hole wherever a zero-width band was skipped, and the hover layer indexes
     // its dots from 0 with no holes — so tip N would pair with band N+1.
@@ -387,7 +371,7 @@ export class SherpaGaugeChart extends SherpaElement {
       if (band.color) arc.style.setProperty('--_hue', band.color);
       host.appendChild(arc);
       // The remainder is chrome and names no zone, so it gets no hover dot.
-      if (band.zone) drawn.push({ ...band.zone, drawnFrom: band.from, drawnTo: band.to });
+      if (band.zone) drawn.push(band.zone);
     });
     return drawn;
   }

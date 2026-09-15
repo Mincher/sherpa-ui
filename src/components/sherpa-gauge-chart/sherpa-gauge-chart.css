@@ -36,7 +36,11 @@
   justify-content: center;
   gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  --_size: 200px; /* Figma arcs: 200px circle — the size it draws at unconstrained */
+  /* NO --_size. It was a fixed 200px (the Figma chart's own size) that the
+     needle, the scale row and the tooltip anchors all measured themselves
+     against — so none of them scaled when the gauge grew past 200. Every one of
+     them is now a fraction of the gauge's real box. --_max-size is the only size
+     the component declares. */
   /* The gauge never draws wider than this however roomy the cell. The arc is
      2:1, so the height caps at half of it. Will's number, matching the donut. */
   --_max-size: 320px;
@@ -179,6 +183,13 @@
 .gauge-wrap {
   position: relative;
   aspect-ratio: 2;
+  /* A SIZE container, so the hotspot layer can express the ring's radius as
+     `cqh` — one length that means the same thing on BOTH axes. A percentage
+     cannot: `inset-inline-start` resolves against the width and
+     `inset-block-start` against the height, and on a 2:1 box those differ by a
+     factor of two, so a dot's two offsets described different radii and the dots
+     scattered off the ring. */
+  container: sherpa-gauge / size;
   /* Cap BOTH axes and let the ratio pick the binding one — no measuring, and no
      custom property a parent has to remember to set.
 
@@ -344,11 +355,18 @@
 }
 
 /* ── Centre value ────────────────────────────────────────────────── */
+/* The value label — the body column's FIRST row, above the arc.
+
+   NOT absolutely positioned inside .gauge. Figma stacks label → arc → scale and
+   insets the arc from the top by exactly the label's height, so the label has
+   its own space. Over the ring it either sat on the crown (`inset-block-start`)
+   or on the needle's hub (`inset-block-end`), and both collided with something. */
 .centre {
-  position: absolute;
-  inset-block-end: 0;
   inline-size: 100%;
   text-align: center;
+  /* Never shrinks: it is one line of small type, and a flex column would
+     otherwise squeeze it before the arc when the card is short. */
+  flex: 0 0 auto;
 }
 /* Figma value-label: content/size/xs 10 on 16, regular, content/body/+1 — the gauge
    reads its value as a small label, not display type. */
@@ -366,8 +384,16 @@
 /* ── Scale — min/max 10/16 regular ─────────────────────────────────── */
 .scale {
   display: flex;
+  /* min · caption · max on ONE line, the bounds pinned to the ends and the
+     caption centred between them — Figma's single row at y 124. */
+  align-items: baseline;
   justify-content: space-between;
-  inline-size: var(--_size);
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  /* FULL WIDTH, so min and max sit under the arc's own ends however large the
+     gauge draws. It was `var(--_size)` — a fixed 200px mirroring the old fixed
+     chart size — so on a 320px gauge both labels sat 60px inside the arc. */
+  inline-size: 100%;
+  flex: 0 0 auto;
   /* MONOSPACED — the gauge's readings are NUMBERS, on the same scale as a 2D
      chart's axis, so they take the same face. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
@@ -380,8 +406,14 @@
 /* ── Caption — 12/16 regular ─────────────────────────────────────────
  * Hidden by default; shown when data-caption is set OR the caption slot is filled
  * (SherpaElement mirrors slot presence to data-has-caption on the host). */
+/* The caption sits BETWEEN min and max on the scale row, centred. It takes the
+   middle track so the two bounds stay pinned to the arc's ends whatever the
+   caption says — `space-between` alone would let a long caption shove them. */
 .caption {
   display: none;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0; /* <figcaption> carries a UA margin */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353D);
@@ -416,8 +448,19 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* The OUTER radius. A tip pushed outward from here clears the ring. */
-  --_ring-r: calc(var(--_size) / 2);
+  /* The OUTER radius. A tip pushed outward from here clears the ring.
+
+     `100cqh` — the full HEIGHT of the 2:1 wrapper, which is the ring's radius.
+     Not a percentage: `inset-inline-start` resolves a percentage against the
+     width and `inset-block-start` against the height, so on a 2:1 box one dot's
+     two offsets would describe radii a factor of two apart and the dots would
+     scatter off the ring. A container unit is the same length whichever axis
+     consumes it.
+
+     It was `calc(var(--_size) / 2)` — a fixed 100px from the old fixed chart
+     size — so on a 320px gauge every dot sat well inside the ring and its
+     tooltip pointed at empty space. */
+  --_ring-r: 100cqh;
 }
 
 .hotspot {

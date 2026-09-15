@@ -119,19 +119,17 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
 
     const all = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
     const bands = all.filter((b) => b.dataset['rest'] === undefined);
-    const rest = all.filter((b) => b.dataset['rest'] !== undefined);
     const tips = [...el.shadowRoot!.querySelectorAll('.chart-tip')] as HTMLElement[];
 
     return {
       bands: bands.length,
-      rest: rest.length,
+      // These zones cover the whole scale, so there is nothing left to fill.
+      filler: all.length - bands.length,
       tips: tips.length,
       tipText: tips.map((t) => t.textContent?.replace(/\s+/g, ' ').trim()),
       // The band is the pointer target — that is the whole point of drawing the
       // ring as real shapes rather than a gradient with a fake wedge over it.
       bandHits: bands.map((b) => getComputedStyle(b).pointerEvents),
-      // The remainder is chrome, not data: nothing to hover, nothing to explain.
-      restHits: rest.map((b) => getComputedStyle(b).pointerEvents),
       // ONE element per band, carrying BOTH paints. It used to be three — a
       // tinted arc plus two outline arcs — because a stroke holds one paint and
       // cannot round a corner. Any .zone-outline left would be that old model.
@@ -146,29 +144,22 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
     };
   });
 
-  // TWO coloured bands, not three. A gauge reads as "how full", so the colour
-  // stops where the value does: at 70 the success band draws whole, the warning
-  // band is cut at 70, and the critical band (85–100) is entirely past the value
-  // and is not drawn at all. Zones used to paint full-length whatever the value,
-  // leaving the needle as the only thing that moved.
-  expect(r.bands).toBe(2);
-  // …and ONE grey remainder covering 70–100, so the gauge always reads full
-  // width and the unfilled part is visible rather than blank.
-  expect(r.rest).toBe(1);
+  // ALL THREE zones draw, in full, at a value of 70. A zone is a THRESHOLD — it
+  // says what a reading in that range would mean — so it belongs to the scale,
+  // not to the reading. The needle says where the value falls. Clipping the
+  // colour at the value would grey out the very band the reader is about to
+  // enter, which is the one they most need to see.
+  expect(r.bands).toBe(3);
+  // …and these zones cover 0–100, so no grey filler is drawn.
+  expect(r.filler).toBe(0);
 
-  // One tip per DRAWN band. A tip for the undrawn critical zone would point at a
-  // band that does not exist and would slip every later index by one.
-  expect(r.tips).toBe(2);
-  // Each names the zone's FULL range, not the part that was drawn: the reader
-  // wants to know what the band MEANS, and the fill already shows how far it got.
-  expect(r.tipText).toEqual(['Success 0–60', 'Warning 60–85']);
+  expect(r.tips).toBe(3);
+  expect(r.tipText).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
 
   // Every band is hittable…
-  expect(r.bandHits).toEqual(['auto', 'auto']);
-  // …and the remainder is not.
-  expect(r.restHits).toEqual(['none']);
-  // There is no second element competing for the pointer, because the band now
-  // carries its own border.
+  expect(r.bandHits).toEqual(['auto', 'auto', 'auto']);
+  // …and there is no second element competing for the pointer, because the band
+  // now carries its own border.
   expect(r.outlines).toBe(0);
   expect(r.fillOpacity).toBe('0.6');
   expect(r.stroked).toBe(true);
@@ -176,7 +167,7 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
   expect(r.hostChildren).toEqual(['g']);
 });
 
-test('the grey remainder always pads what the value leaves over', async ({ page }) => {
+test('grey fills only the scale the bands leave uncovered', async ({ page }) => {
   const r = await page.evaluate(async (fracSrc) => {
     const sweep = eval(fracSrc) as (el: SVGPathElement) => number;
     const read = async (attrs: Record<string, string>) => {
@@ -189,32 +180,38 @@ test('the grey remainder always pads what the value leaves over', async ({ page 
       const rest = all.find((b) => b.dataset['rest'] !== undefined);
       return {
         coloured: all.filter((b) => b.dataset['rest'] === undefined).length,
-        restFrac: rest ? sweep(rest) : null,
+        fillerFrac: rest ? sweep(rest) : null,
       };
     };
-    const ZONES = '0-60:success,60-85:warning,85-100:critical';
     return {
-      empty: await read({ 'data-value': '0', 'data-zones': ZONES }),
-      part: await read({ 'data-value': '40', 'data-zones': ZONES }),
-      full: await read({ 'data-value': '100', 'data-zones': ZONES }),
+      // Zones covering the whole scale — nothing to fill, at ANY value.
+      fullLow: await read({ 'data-value': '10', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
+      fullHigh: await read({ 'data-value': '95', 'data-zones': '0-60:success,60-85:warning,85-100:critical' }),
+      // Zones stopping short — grey covers 80–100 whatever the value.
+      short: await read({ 'data-value': '30', 'data-zones': '0-50:success,50-80:warning' }),
+      // No zones at all: the single band IS the reading, so it stops at the
+      // value and grey pads the rest.
       bare: await read({ 'data-value': '25' }),
+      bareFull: await read({ 'data-value': '100' }),
     };
   }, FRAC_FN);
 
-  // At ZERO the whole gauge is grey — there is no coloured band to draw, and the
-  // remainder covers the lot rather than leaving the ring blank.
-  expect(r.empty.coloured).toBe(0);
-  expect(r.empty.restFrac).toBe(1);
+  // Zones are the SCALE, so they do not move with the value: the same three
+  // bands and the same (absent) filler at 10 as at 95.
+  expect(r.fullLow.coloured).toBe(3);
+  expect(r.fullLow.fillerFrac).toBeNull();
+  expect(r.fullHigh.coloured).toBe(3);
+  expect(r.fullHigh.fillerFrac).toBeNull();
 
-  // Part full: one band (success, cut at 40) plus grey over the rest.
-  expect(r.part.coloured).toBe(1);
-  expect(r.part.restFrac).toBe(0.6);
+  // Zones stopping at 80 leave a fifth of the scale, whatever the value.
+  expect(r.short.coloured).toBe(2);
+  expect(r.short.fillerFrac).toBe(0.2);
 
-  // FULL is the one case with no remainder: there is no arc left to draw.
-  expect(r.full.coloured).toBe(3);
-  expect(r.full.restFrac).toBeNull();
-
-  // The same holds with NO zones — the single value band plus its grey pad.
+  // With NO zones the band is the READING, so it stops at the value and the
+  // grey pads what is left.
   expect(r.bare.coloured).toBe(1);
-  expect(r.bare.restFrac).toBe(0.75);
+  expect(r.bare.fillerFrac).toBe(0.75);
+  // …and at 100 there is nothing left to pad.
+  expect(r.bareFull.coloured).toBe(1);
+  expect(r.bareFull.fillerFrac).toBeNull();
 });

@@ -186,14 +186,11 @@ test('a donut anchors its tips to invisible points, hovered from the SLICE', asy
 });
 
 test('gauge zone dots ride the ring and name their threshold', async ({ page }) => {
-  // value 100, so every zone is drawn and every one has a dot. A zone past the
-  // value has no band, so it gets no dot — that is covered in the gauge's own
-  // spec; here the subject is where the dots SIT and what they say.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-value', '100');
+    el.setAttribute('data-value', '70');
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
@@ -207,8 +204,12 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
     const hub = { x: box.left + box.width / 2, y: box.bottom };
     return {
       count: dots.length,
-      // The OUTER radius on a 200px gauge = 100, so a dot half-hangs over the
-      // ring's edge instead of sitting buried in the band.
+      // The gauge's own radius, to measure the dots against. Not a fixed number:
+      // the gauge SCALES to its card, so a hardcoded 100 only ever described one
+      // particular width.
+      radius: Math.round(box.height),
+      // Each dot sits on the ring's OUTER radius, so it half-hangs over the
+      // edge rather than sitting buried in the band.
       radii: dots.map((d) => {
         const b = d.getBoundingClientRect();
         return Math.round(Math.hypot(b.left + b.width / 2 - hub.x, b.top + b.height / 2 - hub.y));
@@ -223,7 +224,12 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
   });
 
   expect(r.count).toBe(3);
-  expect(r.radii).toEqual([100, 100, 100]);
+  // Every dot at the SAME distance from the hub, and that distance is the ring's
+  // outer radius. They used to scatter: `--_ring-r` was a percentage, and
+  // `inset-inline-start` resolves one against the width while `inset-block-start`
+  // resolves it against the height — a factor of two apart on this 2:1 box. It is
+  // a container unit now, which means the same length on either axis.
+  expect(r.radii).toEqual([r.radius, r.radius, r.radius]);
   expect(r.tips).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
   // Each dot names its own status ramp directly. NOT `--sherpa-style-surface-*`:
   // that set is status-MODED (one [data-status] pin re-points the whole set) and
