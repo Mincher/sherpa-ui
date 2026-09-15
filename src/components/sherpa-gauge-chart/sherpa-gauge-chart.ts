@@ -84,16 +84,16 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 
   get value(): number {
-    return Number(this.dataset['value'] ?? 0);
+    return this.num('data-value', 0);
   }
   set value(v: number) {
     this.dataset['value'] = String(v);
   }
 
   #sync(): void {
-    const min = Number(this.dataset['min'] ?? 0);
-    const max = Number(this.dataset['max'] ?? 100);
-    const raw = Number(this.dataset['value'] ?? 0);
+    const min = this.num('data-min', 0);
+    const max = this.num('data-max', 100);
+    const raw = this.num('data-value', 0);
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 
     // Needle: -90deg (left) → +90deg (right) across the half.

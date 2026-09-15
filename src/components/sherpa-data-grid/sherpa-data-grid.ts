@@ -32,7 +32,7 @@
  * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
  * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
 export interface GridColumn {
   field: string;
@@ -490,7 +490,7 @@ export class SherpaDataGrid extends SherpaElement {
   #syncFocused(): void {
     const rows = this.#visibleRows();
     for (const tr of this.$$<HTMLElement>('.row')) {
-      const i = Number(tr.dataset['index']);
+      const i = coerceNum(tr.dataset['index'], -1, { int: true });
       tr.toggleAttribute('data-focused', !!this.#focused && rows[i] === this.#focused);
     }
   }

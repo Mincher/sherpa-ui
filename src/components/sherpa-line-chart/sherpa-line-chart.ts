@@ -91,8 +91,12 @@ export class SherpaLineChart extends SherpaElement {
     const all = this.#series
       .filter((_, i) => !this.#hidden.has(i))
       .flatMap((s) => s.values);
-    const explicitMin = Number(this.dataset['min']);
-    const explicitMax = Number(this.dataset['max']);
+    // NaN is the "not given" sentinel: an absent bound is DERIVED from the data,
+    // so there is no static default to fall back to. num() treats an EMPTY
+    // attribute as absent too — `Number('')` is 0, which used to pin the floor
+    // to 0 the moment a template emitted `data-min=""`.
+    const explicitMin = this.num('data-min', NaN);
+    const explicitMax = this.num('data-max', NaN);
     const min = Number.isFinite(explicitMin) ? explicitMin : Math.min(0, ...all);
     const max = Number.isFinite(explicitMax) ? explicitMax : Math.max(1, ...all);
     const span = max - min || 1;
@@ -209,8 +213,9 @@ export class SherpaLineChart extends SherpaElement {
    */
   /** The number of value divisions — shared by the axis and the gridlines. */
   #tickSteps(): number {
-    const requested = Number(this.dataset['ticks']);
-    return Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+    // min: 0 rather than a >= 0 test, so a NEGATIVE count clamps to "no ticks"
+    // instead of silently falling back to the default.
+    return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
   }
 
   #renderYAxis(min: number, max: number): void {

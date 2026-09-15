@@ -82,7 +82,8 @@ export class SherpaBarchart extends SherpaElement {
       .map((d, i) => ({ d, i }))
       .filter(({ i }) => !this.#hidden.has(i));
 
-    const explicitMax = Number(this.dataset['max']);
+    // NaN is the "not given" sentinel — an absent max is DERIVED from the bars.
+    const explicitMax = this.num('data-max', NaN);
     const max = Number.isFinite(explicitMax) && explicitMax > 0
       ? explicitMax
       : Math.max(1, ...shown.map(({ d }) => d.value));
@@ -134,8 +135,7 @@ export class SherpaBarchart extends SherpaElement {
     if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
     if (!axis || !tpl) return;
 
-    const requested = Number(this.dataset['ticks']);
-    const steps = Number.isFinite(requested) && requested >= 0 ? requested : DEFAULT_TICKS;
+    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
     axis.replaceChildren();
     // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
     // data-ticks="0" must, so the state has to be written rather than inferred.

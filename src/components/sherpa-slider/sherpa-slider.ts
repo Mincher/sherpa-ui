@@ -21,7 +21,7 @@
  * @fires input  bubbles+composed, detail { value: number } — while dragging
  * @fires change bubbles+composed, detail { value: number } — on commit
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
 interface SliderData {
   /** Current value. */
@@ -93,21 +93,25 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Bounds ──────────────────────────────────────────────────────────── */
 
+  // Native attribute names (min/max/step), un-prefixed per the naming contract.
+  // num() is STRICTER than the parseFloat these used to use: parseFloat('12px')
+  // reads 12, num() rejects it. A bound that is not a number is an author error,
+  // and quietly reading half of it hides the mistake.
   get #min(): number {
-    const n = parseFloat(this.getAttribute('min') ?? '');
-    return Number.isFinite(n) ? n : 0;
+    return this.num('min', 0);
   }
   get #max(): number {
-    const n = parseFloat(this.getAttribute('max') ?? '');
-    return Number.isFinite(n) ? n : 100;
+    return this.num('max', 100);
   }
   get #step(): number {
-    const n = parseFloat(this.getAttribute('step') ?? '');
+    const n = this.num('step', 1);
+    // A step of 0 or less cannot advance the slider, so it falls back rather
+    // than clamping — clamping would silently pick a step the author never named.
     return n > 0 ? n : 1;
   }
 
   #clamp(raw: number | string | undefined | null): number {
-    const n = typeof raw === 'number' ? raw : parseFloat(raw ?? '');
+    const n = typeof raw === 'number' ? raw : coerceNum(raw, NaN);
     const value = Number.isFinite(n) ? n : this.#min;
     return Math.min(this.#max, Math.max(this.#min, value));
   }

@@ -47,16 +47,17 @@ export class SherpaPagination extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
+  // Pages are 1-BASED, so 1 is both the default and the floor: 0 and a negative
+  // are not "a page" at all, and clamping them up is the only sane reading.
   get totalPages(): number {
-    return Math.max(1, parseInt(this.dataset['totalPages'] ?? '', 10) || 1);
+    return this.num('data-total-pages', 1, { min: 1, int: true });
   }
   set totalPages(value: number) {
     this.setAttribute('data-total-pages', String(Math.max(1, Math.trunc(value) || 1)));
   }
 
   get page(): number {
-    const raw = parseInt(this.dataset['page'] ?? '', 10) || 1;
-    return Math.min(this.totalPages, Math.max(1, raw));
+    return this.num('data-page', 1, { min: 1, max: this.totalPages, int: true });
   }
   set page(value: number) {
     this.setAttribute('data-page', String(this.#clamp(value)));
@@ -67,8 +68,12 @@ export class SherpaPagination extends SherpaElement {
 
   get pageSize(): number {
     const opts = this.#rowsOptions();
-    const raw = parseInt(this.dataset['pageSize'] ?? '', 10);
-    if (!Number.isNaN(raw)) return raw;
+    // NaN is the "not given" sentinel — an absent size is chosen from the options
+    // below, so there is no static default to hand num(). min: 1 because a page
+    // of 0 rows is not a page: `data-page-size="0"` used to read back as 0 and
+    // hand the caller a divide-by-zero.
+    const raw = this.num('data-page-size', NaN, { min: 1, int: true });
+    if (Number.isFinite(raw)) return raw;
     // 25 by default, not the first option. 10 rows is a thin slice of a real
     // table — it fills less than half a panel and makes paging the main way to
     // read the data. A host can still name any size with data-page-size, and a

@@ -80,6 +80,45 @@ export function parseTemplates(html: string): TemplateMap {
   return map;
 }
 
+/** How `num()` narrows a parsed value. */
+export interface NumOptions {
+  /** Clamp the result to at least this. */
+  min?: number;
+  /** Clamp the result to at most this. */
+  max?: number;
+  /** Truncate toward zero, so `"3.7"` reads as 3. */
+  int?: boolean;
+}
+
+/**
+ * Coerce a raw attribute string to a number, or return `fallback`.
+ *
+ * Exported so the data layer can parse a record field by exactly the same rule a
+ * component parses an attribute — the `format-tick.ts` precedent: one shared
+ * function so two callers cannot read the same value two different ways.
+ *
+ * ABSENT means: null, undefined, empty, whitespace-only, or unparseable. A real
+ * 0 is a value, not an absence. The clamp runs only on a value that parsed — a
+ * fallback is returned as given, so a caller's chosen default is never silently
+ * moved by its own bounds.
+ */
+export function coerceNum(raw: string | null | undefined, fallback: number, opts?: NumOptions): number {
+  // Trim first: ' ' is not absent to Number() — it coerces to 0.
+  const text = raw?.trim();
+  if (!text) return fallback;
+  const parsed = Number(text);
+  if (!Number.isFinite(parsed)) return fallback;
+  return clampNum(opts?.int === true ? Math.trunc(parsed) : parsed, opts);
+}
+
+/** Apply the min/max bounds from `opts`, if any. */
+function clampNum(value: number, opts?: NumOptions): number {
+  let out = value;
+  if (opts?.min !== undefined) out = Math.max(opts.min, out);
+  if (opts?.max !== undefined) out = Math.min(opts.max, out);
+  return out;
+}
+
 /** Base class for every `sherpa-*` component. */
 export abstract class SherpaElement extends HTMLElement {
   /**
@@ -245,6 +284,35 @@ export abstract class SherpaElement extends HTMLElement {
   /** Override to render a data payload. Default is a no-op (attribute-only components). */
   protected renderData(_data: unknown): void {
     /* no-op by default */
+  }
+
+  /* ── Attribute coercion ──────────────────────────────────────────── */
+
+  /**
+   * Read a NUMBER from an attribute, with a fallback and an optional clamp.
+   *
+   * The one place the library parses a numeric attribute, because doing it by
+   * hand went wrong four different ways:
+   *
+   *   Number('')        === 0     — NOT NaN. An EMPTY attribute (which template
+   *                                 engines emit freely) read as a real 0, so
+   *                                 `data-min=""` pinned a chart's y-floor to 0
+   *                                 and `data-ticks=""` silently meant "no axis".
+   *   Number('' ?? 100) === 0     — `??` only catches undefined, never ''. A
+   *                                 gauge's `data-max=""` read 0, not 100.
+   *   parseInt('0') || 1 === 1    — `||` folds "0", "" and garbage together, so a
+   *                                 legitimate 0 was indistinguishable from absent.
+   *   Number(null)      === 0     — an absent attribute read as index 0, which
+   *                                 would act on the FIRST row rather than none.
+   *
+   * So: anything that is not a finite number — absent, empty, whitespace, or
+   * unparseable — is treated as ABSENT and returns `fallback`. A real 0 survives.
+   *
+   * Accepts the attribute name in either form (`data-max` or `max`); native
+   * attributes work unprefixed, matching the naming contract.
+   */
+  protected num(attr: string, fallback: number, opts?: NumOptions): number {
+    return coerceNum(this.getAttribute(attr), fallback, opts);
   }
 
   /* ── Shadow queries + events ─────────────────────────────────────── */

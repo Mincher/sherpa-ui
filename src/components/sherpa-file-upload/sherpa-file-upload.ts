@@ -13,7 +13,7 @@
  * @fires file-upload-start detail: { files: File[] }
  * @fires files-change      detail: { files: File[] }   (kept for back-compat)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
@@ -140,8 +140,11 @@ export class SherpaFileUpload extends SherpaElement {
     const btn = (event.target as HTMLElement).closest('.file-remove');
     if (!btn) return;
     const row = btn.closest<HTMLElement>('.file-item');
-    const idx = Number(row?.dataset['index']);
-    if (Number.isNaN(idx)) return;
+    // -1 as the "no index" sentinel, NOT Number(): `Number(null)` is 0, so a row
+    // that had lost its data-index would have spliced the FIRST file instead of
+    // none. coerceNum treats absent, empty and unparseable alike.
+    const idx = coerceNum(row?.dataset['index'], -1, { int: true });
+    if (idx < 0 || idx >= this.#files.length) return;
     const [removed] = this.#files.splice(idx, 1);
     this.#render();
     if (removed) this.emit('file-remove', { removed, files: this.#files });
@@ -163,7 +166,9 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** Set a per-file status line (e.g. "Uploading…", "Uploaded", "Failed"). */
   setFileStatus(index: number, status: string): void {
-    const row = this.$$('.file-item').find((r) => Number((r as HTMLElement).dataset['index']) === index);
+    const row = this.$$('.file-item').find(
+      (r) => coerceNum((r as HTMLElement).dataset['index'], -1, { int: true }) === index,
+    );
     const el = row?.querySelector('.file-status');
     if (el) el.textContent = status;
   }

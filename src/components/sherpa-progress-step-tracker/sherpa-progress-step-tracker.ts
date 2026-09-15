@@ -8,7 +8,7 @@
  *
  * @fires step-click  detail: { index: number, label: string }
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
 export interface Step {
   label: string;
@@ -49,7 +49,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
   /** 0-based index of the active step. */
   get currentStep(): number {
-    return Number(this.dataset['currentStep'] ?? '0') || 0;
+    return this.num('data-current-step', 0, { int: true });
   }
   set currentStep(index: number) {
     this.dataset['currentStep'] = String(index);
@@ -81,7 +81,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
   #applyStates(): void {
     const current = this.currentStep;
     for (const node of this.$$('.step')) {
-      const i = Number(node.dataset['index']);
+      const i = coerceNum(node.dataset['index'], -1, { int: true });
       node.dataset['state'] = i < current ? 'done' : i === current ? 'active' : 'todo';
       // Expose the active step to assistive tech (WAI-ARIA current step).
       if (i === current) node.setAttribute('aria-current', 'step');
@@ -92,7 +92,10 @@ export class SherpaProgressStepTracker extends SherpaElement {
   #onClick = (event: Event): void => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('.step');
     if (!node) return;
-    const index = Number(node.dataset['index']);
+    // A .step without a data-index used to emit `index: NaN`. -1 is the sentinel,
+    // and a step that names no index is not a click worth reporting.
+    const index = coerceNum(node.dataset['index'], -1, { int: true });
+    if (index < 0 || index >= this.#steps.length) return;
     this.emit('step-click', { index, label: this.#steps[index]?.label ?? '' });
   };
 }
