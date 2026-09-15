@@ -30,7 +30,13 @@ test('renders a 7-column weekday header and the month label', async ({ page }) =
     await el.rendered;
     const s = el.shadowRoot!;
     return {
-      weekdays: s.querySelectorAll('.cal-weekdays span').length,
+      // VISIBLE captions. A range calendar draws two months in one 15-track
+      // grid, so a second set of seven and the divider spacer exist in the
+      // template from the start and CSS reveals them — a single calendar still
+      // shows the seven it always did.
+      weekdays: [...s.querySelectorAll('.cal-weekdays span')].filter(
+        (n) => getComputedStyle(n).display !== 'none',
+      ).length,
       label: s.querySelector('.cal-label')!.textContent,
     };
   });
@@ -389,4 +395,99 @@ test('single mode (default) selection is unchanged by the new features', async (
   expect(r.selected).toBe(1);
   expect(r.band).toBe(0);
   expect(r.timeHidden).toBe('none');
+});
+
+/**
+ * A RANGE calendar draws TWO months side by side.
+ *
+ * Figma's Type=range (268:13874) is a 15-track grid — seven day columns, a
+ * divider, seven more. A range is a span between two dates, and picking one
+ * whose ends fall in different months through a single month that has to be
+ * stepped is the case the second month exists for.
+ */
+test('data-type="range" draws two months in one 15-track grid', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.inlineSize = '480px';
+    document.getElementById('root')!.replaceChildren(box);
+
+    const el = document.createElement('sherpa-calendar') as CalEl;
+    el.setAttribute('data-type', 'range');
+    el.setAttribute('data-value-start', '2026-09-10');
+    el.setAttribute('data-value-end', '2026-10-05');
+    box.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const s = el.shadowRoot!;
+    const grid = s.querySelector('.cal-days') as HTMLElement;
+    const gb = grid.getBoundingClientRect();
+    const cells = [...grid.querySelectorAll('sherpa-calendar-cell')] as HTMLElement[];
+    const days = cells.filter((c) => !c.hasAttribute('data-blank'));
+    const track = gb.width / 15;
+    const colOf = (iso: string): number | null => {
+      const c = days.find((x) => x.dataset['iso'] === iso);
+      return c ? Math.round((c.getBoundingClientRect().x - gb.x) / track) + 1 : null;
+    };
+
+    // Both months must share the SAME rows. Left to auto-flow they stacked —
+    // September's five rows then October's five, nine deep instead of five
+    // across — so each cell states its row as well as its column.
+    const rows = new Set(cells.map((c) => Math.round(c.getBoundingClientRect().y)));
+
+    // …and nothing may overlap, which is what a wrong column would cause.
+    const boxes = cells.map((c) => c.getBoundingClientRect());
+    let overlaps = 0;
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]!;
+        const b = boxes[j]!;
+        if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) {
+          overlaps++;
+        }
+      }
+    }
+
+    return {
+      label: s.querySelector('.cal-label')!.textContent,
+      tracks: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
+      weekdays: [...s.querySelectorAll('.cal-weekdays span')].filter(
+        (n) => getComputedStyle(n).display !== 'none',
+      ).length,
+      september: days.filter((c) => c.dataset['iso']?.startsWith('2026-09')).length,
+      october: days.filter((c) => c.dataset['iso']?.startsWith('2026-10')).length,
+      // September occupies tracks 1..7 and October 9..15, leaving 8 as the rule.
+      sep1Col: colOf('2026-09-01'),
+      oct1Col: colOf('2026-10-01'),
+      rowCount: rows.size,
+      overlaps,
+      // The range bands ACROSS the two months, which is the whole point.
+      startState: days.find((c) => c.dataset['iso'] === '2026-09-10')?.getAttribute('data-state'),
+      endState: days.find((c) => c.dataset['iso'] === '2026-10-05')?.getAttribute('data-state'),
+      banded: days.filter((c) => c.getAttribute('data-state') === 'range-mid').length,
+    };
+  });
+
+  // The stepper names BOTH months — it moves the pair, so a header reading only
+  // the left one would say the wrong thing about half of what is on screen. The
+  // year is stated once when the two share it.
+  expect(r.label).toBe('September – October 2026');
+
+  expect(r.tracks).toBe(15);
+  expect(r.weekdays).toBe(15);
+
+  expect(r.september).toBe(30);
+  expect(r.october).toBe(31);
+
+  // Each month in its own seven tracks, track 8 the divider between them.
+  expect(r.sep1Col).toBeLessThanOrEqual(7);
+  expect(r.oct1Col).toBeGreaterThanOrEqual(9);
+
+  expect(r.rowCount).toBe(5);
+  expect(r.overlaps).toBe(0);
+
+  expect(r.startState).toBe('range-start');
+  expect(r.endState).toBe('range-end');
+  // 10 Sep → 5 Oct: 20 remaining days of September plus 4 of October.
+  expect(r.banded).toBe(24);
 });

@@ -162,13 +162,31 @@ export class SherpaCalendar extends SherpaElement {
   #render(): void {
     for (const label of this.#headerEls('.cal-label')) {
       label.textContent =
-        this.#view === 'day' ? `${MONTHS[this.#viewMonth]} ${this.#viewYear}`
+        this.#view === 'day' ? this.#dayLabel()
         : this.#view === 'month' ? String(this.#viewYear)
         : `${this.#decadeStart()}–${this.#decadeStart() + 11}`;
     }
     if (this.#view === 'day') this.#renderDays();
     else if (this.#view === 'month') this.#renderMonths();
     else this.#renderYears();
+  }
+
+  /**
+   * What the stepper says in day view.
+   *
+   * A RANGE calendar shows two months, so the label names both — stepping it
+   * moves the pair, and a header reading only the left one would say the wrong
+   * thing about half of what is on screen. The year is stated once when the two
+   * share it, which is eleven months in twelve.
+   */
+  #dayLabel(): string {
+    const left = `${MONTHS[this.#viewMonth]}`;
+    if (this.#type !== 'range') return `${left} ${this.#viewYear}`;
+    const next = new Date(this.#viewYear, this.#viewMonth + 1, 1);
+    const right = `${MONTHS[next.getMonth()]} ${next.getFullYear()}`;
+    return next.getFullYear() === this.#viewYear
+      ? `${left} – ${right}`
+      : `${left} ${this.#viewYear} – ${right}`;
   }
 
   #cell(): HTMLElement {
@@ -180,10 +198,50 @@ export class SherpaCalendar extends SherpaElement {
     return cell;
   }
 
+  /**
+   * Stamp the day grid.
+   *
+   * A RANGE calendar draws TWO months side by side — Figma's Type=range
+   * (268:13874) is a 15-track grid: seven day columns, a divider, seven more. A
+   * range is a span between two dates, and picking one whose ends fall in
+   * different months through a single month that has to be stepped is the case
+   * the second month exists for.
+   *
+   * Both months go into ONE grid rather than two, so every cell is a real 1fr of
+   * the same track set and the two halves cannot drift apart by a pixel. Each
+   * month is stamped into its own columns by `#stampMonth`.
+   */
   #renderDays(): void {
     const grid = this.$('.cal-days');
     if (!grid) return;
-    const y = this.#viewYear, m = this.#viewMonth;
+    grid.replaceChildren();
+
+    const twoUp = this.#type === 'range';
+    // `data-two-up` is what CSS reads for the 15-track template. Written on the
+    // GRID and the caption row rather than the host, so the month and year
+    // views — which share the host — are untouched by it.
+    grid.toggleAttribute('data-two-up', twoUp);
+    this.$('.cal-weekdays')?.toggleAttribute('data-two-up', twoUp);
+
+    this.#stampMonth(grid, this.#viewYear, this.#viewMonth, 1);
+    if (!twoUp) return;
+
+    // The month AFTER the one in view, which is what a range reads forward into.
+    // Date normalises December + 1 to January of the next year on its own.
+    const next = new Date(this.#viewYear, this.#viewMonth + 1, 1);
+    this.#stampMonth(grid, next.getFullYear(), next.getMonth(), 9);
+  }
+
+  /**
+   * Stamp one month's cells into the grid, starting at `column`.
+   *
+   * `column` is the 1-based grid column its Mondays sit in: 1 for the left month
+   * and 9 for the right, leaving track 8 as the divider Figma draws between them.
+   * Only the FIRST cell of each week needs placing — the rest flow after it — but
+   * every cell states its column so a month with a blank-led first week cannot
+   * slide into its neighbour.
+   */
+  #stampMonth(grid: HTMLElement, y: number, m: number, column: number): void {
     // Monday-first grid: convert JS getDay() (0=Sun) to a Mon=0…Sun=6 index so
     // the first column is Monday, matching the Figma weekday header.
     const firstWeekday = (new Date(y, m, 1).getDay() + 6) % 7;
@@ -198,11 +256,28 @@ export class SherpaCalendar extends SherpaElement {
     const start = this.#type === 'range' ? datePart(this.dataset['valueStart']) : '';
     const end = this.#type === 'range' ? datePart(this.dataset['valueEnd']) : '';
 
-    grid.replaceChildren();
+    // Where each cell lands. `slot` walks 0..6 and wraps into the next ROW, so a
+    // cell is always in its own month's seven tracks — and the two months start
+    // on row 1 together rather than the second flowing on after the first. Left
+    // to auto-flow they stacked: September's five rows then October's five,
+    // nine deep instead of five across.
+    let slot = 0;
+    let row = 1;
+    const place = (cell: HTMLElement): void => {
+      cell.style.gridColumn = String(column + slot);
+      cell.style.gridRow = String(row);
+      slot += 1;
+      if (slot === 7) {
+        slot = 0;
+        row += 1;
+      }
+    };
+
     for (let i = 0; i < firstWeekday; i++) {
       const blank = this.#cell();
       blank.setAttribute('data-blank', '');
       blank.setAttribute('disabled', '');
+      place(blank);
       grid.appendChild(blank);
     }
     for (let d = 1; d <= daysInMonth; d++) {
@@ -248,6 +323,7 @@ export class SherpaCalendar extends SherpaElement {
           cell.setAttribute('aria-selected', 'true');
         }
       }
+      place(cell);
       grid.appendChild(cell);
     }
   }

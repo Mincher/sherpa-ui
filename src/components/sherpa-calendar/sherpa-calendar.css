@@ -154,6 +154,46 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
+
+/* ── RANGE: two months side by side ─────────────────────────────────
+ * Figma's Type=range (268:13874) is a 15-track grid — seven day columns, a
+ * DIVIDER track, then seven more. A range is a span between two dates, and
+ * picking one whose ends fall in different months through a single month that
+ * has to be stepped is the case the second month exists for.
+ *
+ * Both months share ONE grid, so every cell is a real 1fr of the same track set
+ * and the two halves cannot drift apart by a pixel. The middle track takes the
+ * same 1fr as a day so the two months are symmetrical about it.
+ */
+.cal-days[data-two-up],
+.cal-weekdays[data-two-up] {
+  grid-template-columns: repeat(15, 1fr);
+}
+
+/* The divider itself — a hairline down track 8, drawn on the grid rather than as
+   a cell, so it spans every row without a stamped element per row. */
+.cal-days[data-two-up] {
+  position: relative;
+}
+.cal-days[data-two-up]::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  /* Centred on the middle of the 15 tracks: seven columns plus half of the
+     eighth, as a fraction of the whole. */
+  inset-inline-start: calc(100% * 7.5 / 15);
+  inline-size: var(--sherpa-border-left, 0.5px);
+  background: var(--sherpa-theme-border-default-2, #b3b3c3);
+  pointer-events: none;
+}
+
+/* The second month's weekday captions. Hidden until a range needs them, so a
+   single calendar's header row is the seven it always was. */
+.cal-weekdays .wd-2 { display: none; }
+.cal-weekdays[data-two-up] .wd-2 { display: block; }
+/* …and the spacer that holds the divider track open in the caption row. */
+.cal-weekdays .wd-gap { display: none; }
+.cal-weekdays[data-two-up] .wd-gap { display: block; }
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
