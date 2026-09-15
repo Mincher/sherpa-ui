@@ -28,7 +28,11 @@ export async function init(root) {
     filters: [
       {
         id: 'view',
-        label: 'Fleet overview',
+        // The FIELD name, not the picked view. Figma's Type=view toolbar reads
+        // Label "View" with the value in the caret (150:3688), so a loaded
+        // dashboard says "View | Fleet overview" rather than repeating the view
+        // name on both sides of the divider.
+        label: 'View',
         // A SELECTOR, not a toggle: you are always in some view.
         persistent: true,
         icon: 'fa-solid fa-gauge-high',
@@ -220,13 +224,11 @@ export async function init(root) {
     if (!picked) return;
     const view = savedViews[picked];
     if (!view) return;
-    // The chip carries the view's NAME, so the bar says which arrangement is on
-    // screen. This is what a persistent selector chip is for: it is never off,
-    // it just says which one.
-    const chip = header
-      .querySelector('sherpa-quick-filter-toolbar')
-      ?.shadowRoot?.querySelector('.chip[data-id="view"]');
-    chip?.setAttribute('data-label', view.label);
+    // The chip labels ITSELF now: the field name stays "View" and the picked
+    // view reads in the caret button. This used to overwrite data-label with the
+    // view's name, which was right under the old design — where the chip carried
+    // the value — but now fights the chip and left the bar reading
+    // "EMEA operations | EMEA operations" the moment anyone changed view.
     console.log('view-change', picked, view);
   });
 
