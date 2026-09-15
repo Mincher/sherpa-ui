@@ -65,21 +65,19 @@ export class SherpaList extends SherpaElement {
   }
 
   #render(): void {
-    const container = this.$('.body');
-    const tpl = this.$<HTMLTemplateElement>('template.row-tpl');
-    if (!container || !tpl) return;
-
-    // Clear only the previously-stamped <li> rows, leaving the <slot> in place.
-    for (const li of this.$$('.body > .row-item')) li.remove();
-    for (const row of this.#rows) {
-      const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      const item = li.querySelector('sherpa-list-item') as HTMLElement;
-      item.dataset['label'] = row.title;
-      if (row.description) item.dataset['description'] = row.description;
-      if (row.active) item.setAttribute('data-current', '');
-      if (row.interactive) item.setAttribute('data-interactive', '');
-      container.appendChild(li);
-    }
+    // `own-children`: clear only the previously-stamped rows. A blanket
+    // replaceChildren() would take the <slot> beside them with it.
+    this.renderList(
+      '.body', 'template.row-tpl', this.#rows,
+      (li, row) => {
+        const item = li.querySelector('sherpa-list-item') as HTMLElement;
+        item.dataset['label'] = row.title;
+        if (row.description) item.dataset['description'] = row.description;
+        if (row.active) item.setAttribute('data-current', '');
+        if (row.interactive) item.setAttribute('data-interactive', '');
+      },
+      { clear: 'own-children', ownSel: '.body > .row-item' },
+    );
     this.#syncEmpty();
   }
 

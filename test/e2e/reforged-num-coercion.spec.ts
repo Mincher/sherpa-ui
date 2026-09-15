@@ -480,3 +480,72 @@ test('clone: the calendar still stamps its day cells', async ({ page }) => {
   // A month grid is never empty.
   expect(cells).toBeGreaterThan(27);
 });
+
+/* ── renderList(): the clearing modes ─────────────────────────────────────── */
+
+test('renderList: `own-children` clears only the stamped rows, never the <slot>', async ({ page }) => {
+  // sherpa-list stamps rows BESIDE a <slot>. A blanket replaceChildren() would
+  // take the slot with them, and every slotted row would vanish on the next
+  // populate() — silently, because the stamped rows would still look right.
+  const got = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-list') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate: (d: unknown) => void;
+    };
+    root.appendChild(el);
+    await el.rendered;
+    el.populate([{ title: 'one' }, { title: 'two' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const first = el.shadowRoot!.querySelectorAll('.body > .row-item').length;
+    // Re-populate: the rows must be REPLACED, not appended to.
+    el.populate([{ title: 'only' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return {
+      first,
+      second: el.shadowRoot!.querySelectorAll('.body > .row-item').length,
+      slotSurvived: !!el.shadowRoot!.querySelector('.body slot'),
+    };
+  });
+  expect(got).toEqual({ first: 2, second: 1, slotSurvived: true });
+});
+
+test('renderList: the default mode replaces the container contents', async ({ page }) => {
+  const got = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-tabs') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate: (d: unknown) => void;
+    };
+    root.appendChild(el);
+    await el.rendered;
+    el.populate([{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const first = el.shadowRoot!.querySelectorAll('.tabs > *').length;
+    el.populate([{ id: 'x', label: 'X' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return { first, second: el.shadowRoot!.querySelectorAll('.tabs > *').length };
+  });
+  expect(got).toEqual({ first: 3, second: 1 });
+});
+
+test('renderList: an empty list clears what was there', async ({ page }) => {
+  const remaining = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-breadcrumbs') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate: (d: unknown) => void;
+    };
+    root.appendChild(el);
+    await el.rendered;
+    el.populate([{ label: 'Home' }, { label: 'Here' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    el.populate([]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return el.shadowRoot!.querySelectorAll('.crumbs > *').length;
+  });
+  expect(remaining).toBe(0);
+});

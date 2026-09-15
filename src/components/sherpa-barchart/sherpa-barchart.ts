@@ -138,6 +138,9 @@ export class SherpaBarchart extends SherpaElement {
     if (!axis || !tpl) return;
 
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
+    // Clear FIRST, before the early return below: turning the axis off has to take
+    // the old ticks with it, or a data-ticks="0" would leave the previous scale
+    // on screen labelling nothing.
     axis.replaceChildren();
     // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
     // data-ticks="0" must, so the state has to be written rather than inferred.
@@ -149,14 +152,13 @@ export class SherpaBarchart extends SherpaElement {
     this.style.setProperty('--_bands', String(steps));
     if (steps <= 0 || shownCount <= 0) return;
 
-    // One label per division boundary, each positioned at the SAME percentage its
-    // gridline is drawn at (tickPercent), so the two cannot drift apart.
-    for (let i = 0; i <= steps; i++) {
-      const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    // One label per division BOUNDARY — steps+1 of them, positioned at the SAME
+    // percentage its gridline is drawn at (tickPercent), so the two cannot drift.
+    const boundaries = Array.from({ length: steps + 1 }, (_, i) => i);
+    this.renderList('.y-axis', 'template.ytick-tpl', boundaries, (tick, i) => {
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
       tick.querySelector('.y-value')!.textContent = formatTick((max * i) / steps);
-      axis.appendChild(tick);
-    }
+    });
     // The axis width is FIXED in CSS and long labels truncate — nothing measured
     // here. Sizing it from the data made the plot wiggle whenever a value crossed
     // a digit boundary.

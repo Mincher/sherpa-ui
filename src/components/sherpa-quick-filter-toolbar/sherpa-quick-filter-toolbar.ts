@@ -358,12 +358,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * structural innerHTML is written.
    */
   #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
-    const menuTpl = this.$<HTMLTemplateElement>('template.qf-menu-tpl');
     const rowTpl = this.$<HTMLTemplateElement>('template.qf-row-tpl');
-    if (!menuTpl || !rowTpl) return;
+    const menu = this.clone('template.qf-menu-tpl');
+    if (!rowTpl || !menu) return;
 
     const single = def.select === 'single';
-    const menu = menuTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
     menu.setAttribute('data-heading', def.label);
     // The prototype carries slot="menu" for a CHIP; a sherpa-button names the
     // same slot, so the one prototype serves both.
@@ -473,8 +472,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #addRemoveRow(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
     if (!chip.classList.contains('chip')) return;
     if (!def.removable || def.persistent) return;
-    const removeTpl = this.$<HTMLTemplateElement>('template.qf-remove-tpl');
-    if (removeTpl) menu.appendChild(removeTpl.content.firstElementChild!.cloneNode(true));
+    const remove = this.clone('template.qf-remove-tpl');
+    if (remove) menu.appendChild(remove);
   }
 
   /**

@@ -40,13 +40,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
   }
 
   #render(): void {
-    const list = this.$('.crumbs');
-    const tpl = this.$<HTMLTemplateElement>('template.crumb-tpl');
-    if (!list || !tpl) return;
-
-    list.replaceChildren();
-    this.#crumbs.forEach((crumb, i) => {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    this.renderList('.crumbs', 'template.crumb-tpl', this.#crumbs, (row, crumb, i) => {
       row.dataset['index'] = String(i);
       const link = row.querySelector<HTMLAnchorElement>('.link')!;
       link.textContent = crumb.label;
@@ -57,7 +51,6 @@ export class SherpaBreadcrumbs extends SherpaElement {
       } else if (crumb.href) {
         link.setAttribute('href', crumb.href);
       }
-      list.appendChild(row);
     });
   }
 

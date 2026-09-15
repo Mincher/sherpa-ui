@@ -150,10 +150,10 @@ export class SherpaChartLegend extends SherpaElement {
       // wrapper, not a bare button: a menu button nested inside a button is
       // invalid HTML and the browser un-nests it).
       const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
-      const proto = isRollup
-        ? this.$<HTMLTemplateElement>('template.rollup-tpl')
-        : tpl;
-      const wrapper = proto!.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      // The prototype VARIES per row, so this one keeps its own clone rather than
+      // going through renderList — the roll-up row comes from a different template.
+      const wrapper = isRollup ? this.clone('template.rollup-tpl') : this.clone('template.item-tpl');
+      if (!wrapper) return;
       // In a roll-up the toggle is a CHILD of the wrapper; otherwise it IS the
       // wrapper. Everything below writes to the button, so resolve it once.
       const entry = isRollup

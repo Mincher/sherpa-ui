@@ -122,16 +122,10 @@ export class SherpaFileUpload extends SherpaElement {
   }
 
   #render(): void {
-    const list = this.$('.file-list');
-    const tpl = this.$<HTMLTemplateElement>('template.file-item-tpl');
-    if (!list || !tpl) return;
-    list.replaceChildren();
-    this.#files.forEach((file, i) => {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    this.renderList('.file-list', 'template.file-item-tpl', this.#files, (row, file, i) => {
       row.dataset['index'] = String(i);
       row.querySelector('.file-name')!.textContent = file.name;
       row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
-      list.appendChild(row);
     });
     this.toggleAttribute('data-has-files', this.#files.length > 0);
   }

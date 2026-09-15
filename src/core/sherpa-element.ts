@@ -540,6 +540,49 @@ export abstract class SherpaElement extends HTMLElement {
     return first ? (first.cloneNode(true) as T) : null;
   }
 
+  /**
+   * Stamp a list: clear the container, clone the prototype per item, fill, append.
+   *
+   * The four steps every data-driven list repeats. What each row then BECOMES is
+   * the caller's business and stays in `fill` — a roving tabindex, an aria-current,
+   * a per-column type. Only the plumbing is shared.
+   *
+   * The template is looked up ONCE and reused for the whole run, so a long list
+   * costs one shadow query rather than one per row.
+   *
+   * `clear: 'own-children'` removes only nodes matching `ownSel` instead of
+   * emptying the container. sherpa-list needs it: its rows sit beside a `<slot>`,
+   * and `replaceChildren()` would take the slot with them.
+   *
+   * The index passed to `fill` is the loop position. A component stamping a
+   * DIFFERENT index — sherpa-barchart writes each datum's original position while
+   * iterating a filtered list — writes it inside `fill` from its own data.
+   */
+  protected renderList<T>(
+    containerSel: string,
+    tplSel: string,
+    items: readonly T[],
+    fill: (node: HTMLElement, item: T, index: number) => void,
+    opts?: { clear?: 'replace' | 'own-children'; ownSel?: string },
+  ): void {
+    const container = this.$(containerSel);
+    const tpl = this.$<HTMLTemplateElement>(tplSel);
+    const proto = tpl?.content?.firstElementChild;
+    if (!container || !proto) return;
+
+    if (opts?.clear === 'own-children') {
+      for (const node of this.$$(opts.ownSel ?? `${containerSel} > *`)) node.remove();
+    } else {
+      container.replaceChildren();
+    }
+
+    items.forEach((item, i) => {
+      const node = proto.cloneNode(true) as HTMLElement;
+      fill(node, item, i);
+      container.appendChild(node);
+    });
+  }
+
   /** Dispatch a bubbling, composed CustomEvent (crosses the shadow boundary). */
   protected emit<T = unknown>(name: string, detail?: T): void {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));

@@ -114,17 +114,11 @@ export class SherpaPagination extends SherpaElement {
 
   /** Stamp the rows-per-page <option>s from a cloning prototype. */
   #renderOptions(): void {
-    const select = this.$<HTMLSelectElement>('.rows');
-    const optTpl = this.$<HTMLTemplateElement>('template.rows-opt-tpl');
-    if (!select || !optTpl) return;
-
-    select.replaceChildren();
-    for (const n of this.#rowsOptions()) {
-      const opt = optTpl.content.firstElementChild!.cloneNode(true) as HTMLOptionElement;
+    this.renderList('.rows', 'template.rows-opt-tpl', this.#rowsOptions(), (node, n) => {
+      const opt = node as HTMLOptionElement;
       opt.value = String(n);
       opt.textContent = String(n);
-      select.appendChild(opt);
-    }
+    });
   }
 
   #render(): void {

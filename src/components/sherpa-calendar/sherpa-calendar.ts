@@ -148,15 +148,15 @@ export class SherpaCalendar extends SherpaElement {
    * Idempotent: a re-render must not stack a second stepper.
    */
   #projectHeader(): void {
-    const tpl = this.$<HTMLTemplateElement>('template.cal-header-tpl');
-    if (!tpl) return;
+    const header = this.clone('template.cal-header-tpl');
+    if (!header) return;
     // Into the PARENT, not into this element. `slot="header"` only assigns a
     // DIRECT child of the slot's own host — a node one level deeper (inside the
     // calendar, inside the menu) is never assigned, which is exactly what
     // happened: the stepper existed, worked, and rendered nowhere.
     const host = this.parentElement ?? this;
     if (host.querySelector(':scope > .cal-header-projected')) return;
-    host.appendChild(tpl.content.firstElementChild!.cloneNode(true));
+    host.appendChild(header);
   }
 
   #render(): void {

@@ -79,20 +79,13 @@ export class SherpaTabs extends SherpaElement {
   /* ── Private ─────────────────────────────────────────────────────────── */
 
   #render(): void {
-    const strip = this.$('.tabs');
-    const tpl = this.$<HTMLTemplateElement>('template.tab-tpl');
-    if (!strip || !tpl) return;
-
-    strip.replaceChildren();
-    this.#tabs.forEach((tab, i) => {
-      const btn = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    this.renderList('.tabs', 'template.tab-tpl', this.#tabs, (btn, tab, i) => {
       btn.dataset['id'] = tab.id;
       btn.id = `tab-${tab.id}`;
       btn.setAttribute('aria-controls', `panel-${tab.id}`);
       btn.querySelector('.label')!.textContent = tab.label;
       // Roving tabindex — only the first tab is tab-reachable until active applies.
       btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
-      strip.appendChild(btn);
     });
     this.#applyCurrent();
   }
