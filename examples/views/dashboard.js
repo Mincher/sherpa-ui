@@ -11,8 +11,10 @@ export async function init(root) {
   // ── Header config: breadcrumb trail + a couple of quick filters. ──────
   const headerConfig = {
     breadcrumb: [
-      { label: 'Home', href: '#home' },
-      { label: 'Monitoring', href: '#monitoring' },
+      // Every crumb links to a REAL page. The trail used to name sections
+      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
+      // anchors, so clicking one went nowhere.
+      { label: 'Home', href: '?view=dashboard' },
       { label: 'Dashboard' },
     ],
     // The header's toolbar is the VIEW-level one (data-type="view" in

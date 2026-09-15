@@ -24,7 +24,10 @@ export async function init(root) {
   const header = document.querySelector('sherpa-app-shell sherpa-app-header');
   header?.populate({
     breadcrumb: [
-      { label: 'Workspace', href: '#' },
+      // Every crumb links to a REAL page. The trail used to name sections
+      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
+      // anchors, so clicking one went nowhere.
+      { label: 'Home', href: '?view=dashboard' },
       { label: 'Assistant' },
     ],
   });

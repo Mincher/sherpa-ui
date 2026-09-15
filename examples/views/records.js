@@ -158,9 +158,11 @@ export async function init(root) {
   /* App header breadcrumb. */
   header?.populate({
     breadcrumb: [
-      { label: 'Home', href: '#' },
-      { label: 'Workspace', href: '#' },
-      { label: 'Customers' },
+      // Every crumb links to a REAL page. The trail used to name sections
+      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
+      // anchors, so clicking one went nowhere.
+      { label: 'Home', href: '?view=dashboard' },
+      { label: 'Records' },
     ],
     // The header's toolbar is the VIEW-level one (data-type="view" in
     // index.html), so its chips are SAVED VIEWS, not the grid's column filters.
