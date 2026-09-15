@@ -245,11 +245,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const chips = this.$('.chips');
     if (!bar || !chips) return;
 
-    // A RESIZE CLOSES THE OVERFLOW MENU. The reflow can fold away the very chip
-    // whose rows are currently drilled into it, or unfold one whose rows are
-    // sitting somewhere else — either way the list the reader is looking at is
-    // about to be rebuilt under them. Closing first puts the rows home and
-    // leaves nothing half-moved.
+    // UN-DRILL FIRST. sherpa-menu closes itself on a viewport resize, but this
+    // reflow also runs when only the BAR changed — a panel opening, the nav
+    // collapsing — and the fold about to happen can take away the very chip
+    // whose rows are drilled into the overflow menu. The rows are moved, not
+    // copied, so a chip that folds mid-drill would carry another filter's rows
+    // off with it.
     this.#closeOverflow();
 
     // Start from nothing folded and add back only what the measurements demand.

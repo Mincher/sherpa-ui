@@ -412,11 +412,18 @@ export class SherpaMenu extends SherpaElement {
       // Snapshot for Cancel. On OPEN, so a tick-untick-cancel round trip lands
       // back at the original selection rather than at the first edit.
       this.#baseline = this.values;
+      // SCROLL repositions — the trigger moved, and the card should follow it.
       window.addEventListener('scroll', this.#reposition, { capture: true, passive: true });
-      window.addEventListener('resize', this.#reposition, { passive: true });
+      // RESIZE CLOSES. A repositioned card is fine when only the trigger moved,
+      // but a resize can rebuild what is underneath it: a toolbar folds chips
+      // away, a grid re-columns, a container query swaps a layout. The card
+      // would then be pointing at something that is no longer there, or holding
+      // rows that have been moved out from under it. Closing is honest and puts
+      // everything back where it belongs.
+      window.addEventListener('resize', this.#onViewportResize, { passive: true });
     } else {
       window.removeEventListener('scroll', this.#reposition, { capture: true });
-      window.removeEventListener('resize', this.#reposition);
+      window.removeEventListener('resize', this.#onViewportResize);
       this.#trigger = null;
     }
     this.emit(open ? 'menu-open' : 'menu-close', {});
@@ -426,9 +433,13 @@ export class SherpaMenu extends SherpaElement {
     this.#place();
   };
 
+  #onViewportResize = (): void => {
+    this.hide();
+  };
+
   override onDisconnect(): void {
     window.removeEventListener('scroll', this.#reposition, { capture: true });
-    window.removeEventListener('resize', this.#reposition);
+    window.removeEventListener('resize', this.#onViewportResize);
   }
 
   /** The label a select-all row wears, given whether everything is already on. */
