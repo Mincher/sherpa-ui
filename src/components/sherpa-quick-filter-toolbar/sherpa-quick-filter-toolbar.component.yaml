@@ -228,7 +228,8 @@ events:
     composed: true
 tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
-  bar.padding: "{sherpa.display-mode-space-2xs}"
+  bar.padding-block: "{sherpa.display-mode-space-2xs}"
+  bar.padding-inline: "{sherpa.theme-padding-none}"
   chips.gap: "{sherpa.display-mode-space-xs}"
   actions-zone.gap: "{sherpa.display-mode-space-xs}"
   act-divider.inline-size: "{sherpa.display-mode-border-width-base}"

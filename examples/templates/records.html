@@ -42,10 +42,13 @@
       </sherpa-button>
     </sherpa-toolbar>
 
-    <!-- CONTENT — the filter toolbar and the grid it filters, as ONE run with no
-         gap: each carries its own padding and divider, so a gap between them
-         would be a second, competing rhythm. -->
-    <sherpa-stack data-gap="none" data-grow data-fill>
+    <!-- CONTENT — the filter toolbar and the grid it filters.
+         data-gap="md": the two need real space between them. This was "none" on
+         the assumption each part carried its own divider, which is true of the
+         HEADER toolbar and the pager but NOT of the filter toolbar — Figma's
+         Type=data bar (150:3688) binds a bottom stroke WEIGHT but paints no
+         stroke, so it has no rule of its own and the grid sat flush against it. -->
+    <sherpa-stack data-gap="md" data-grow data-fill>
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
       <!-- data-grow: this is the item that takes the card's leftover height, so
            the grid scrolls INSIDE the card while the header and footer stay put. -->

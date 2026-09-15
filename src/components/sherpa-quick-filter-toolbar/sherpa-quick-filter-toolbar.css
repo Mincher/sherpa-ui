@@ -13,18 +13,25 @@
   font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
 }
 
-/* Figma Filter Toolbar: padding space/2xs 4, gap space/xs 8. Zone dividers are
-   1×16 rectangles (border/default/+2) sitting in the 8px gap — not full-height
-   borders.
+/* Figma Filter Toolbar (150:3688, both Type=view and Type=data): padding
+   space/2xs 4 on the BLOCK axis and padding/none on the INLINE one, gap
+   space/xs 8. Zone dividers are 1×16 rectangles (border/default/+2) sitting in
+   the 8px gap — not full-height borders.
+
+   NO INLINE PADDING. The bar's own edges line up with whatever it sits above —
+   a grid, a list — rather than insetting the first chip from them. Its container
+   owns any horizontal breathing room.
 
    NO BOTTOM RULE. It was drawn here and it is not wanted: the bar sits directly
    above a grid that already has its own hairline frame, so the two stacked and
-   read as one thick grey line under the chips. */
+   read as one thick grey line under the chips. (Figma binds a bottom stroke
+   WEIGHT but paints no stroke, so it draws nothing there either.) */
 .bar {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  padding-block: var(--sherpa-display-mode-space-2xs, 4px);
+  padding-inline: var(--sherpa-theme-padding-none, 0);
 }
 
 .view-zone { display: none; }
