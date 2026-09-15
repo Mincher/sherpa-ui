@@ -97,7 +97,16 @@ All components extend this. It handles template fetching (with class-level cache
 export class SherpaFoo extends SherpaElement {
   static override css = new URL('./sherpa-foo.css', import.meta.url);
   static override html = new URL('./sherpa-foo.html', import.meta.url);
-  static override observed = ['data-variant'];
+
+  // The public attribute surface, DECLARED. Every key is observed automatically.
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-status':  { type: 'enum', kind: 'style',
+                      values: ['info', 'success', 'warning', 'critical', 'urgent'] },
+  } as const;
+
+  // For native attributes, and for attributes the component handles itself.
+  static override observed = ['disabled'];
 
   override onRender()  { /* shadow DOM ready — cache refs, set defaults, wire host listeners */ }
   override onConnect() { /* fires once after first render — for one-time setup needing DOM */ }
@@ -112,6 +121,45 @@ customElements.define('sherpa-foo', SherpaFoo);
 Shadow root queries: `this.$('.sel')` (querySelector) and `this.$$('.sel')` (querySelectorAll). Never use `this.shadowRoot.querySelector` directly.
 
 `onRender()` is guarded by a `#rendered` flag — it fires exactly once. Event listeners registered there will not double-bind.
+
+### Declared attributes — `static props`
+
+**Declare an attribute; do not hand-sync it.** A `kind: content` entry with a `to`
+selector is written into the shadow DOM by the base class — replacing the `#syncX()`
+method, its call in `onRender`, and its branch of the `onChange` if-chain. Props are
+written BEFORE `onRender`, and `onChange` still fires afterwards so a component can do
+extra work for the same attribute.
+
+The `kind` vocabulary matches the generated `.component.yaml`, so the code and the
+contract agree:
+
+| `kind` | Meaning | What the base class does |
+|---|---|---|
+| `content` | JS writes text into the shadow DOM | writes it |
+| `style` | CSS selects on it | **nothing** — declared only |
+| `visibility` | presence toggles a CSS rule | **nothing** — declared only |
+
+Declare the CSS-only ones too. They generate no DOM writes; the declaration gives JS a
+typed door (`this.set(attr, value)` — the JS→CSS write path) and a place to hang later
+use. **`kind: style` must stay CSS-only in behaviour** — declaring `data-status` is not
+licence to add a JS status branch.
+
+Four options exist to preserve real behaviour. Do not add a fifth without evidence of
+three or more uses:
+
+| Option | For |
+|---|---|
+| `all` | the target repeats in the template (list-item writes `.title` twice) |
+| `skipWhen` | content the component owns — a filled `<slot>`, a search `<mark>` |
+| `fallbackAttr` | a legacy alias (`data-label` → `data-heading`) |
+| `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
+
+`skipWhen` on a `<slot>` guards only when the slot is **filled** — a `<slot>` in the
+template is the normal state, not an override.
+
+Keep it hand-written when the write is not a plain attribute→text mapping: a runtime
+selector choice (`nav-item`), a text template (`file-upload`'s `"Maximum file size: …"`),
+or a value derived from something other than the attribute (`sherpa-list`'s row count).
 
 ### `data-*` attributes as the public API
 

@@ -62,7 +62,14 @@ interface MenuLike extends HTMLElement {
 export class SherpaQuickFilter extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter.css', import.meta.url);
   static override html = new URL('./sherpa-quick-filter.html', import.meta.url);
-  static override observed = ['data-label', 'data-count', 'data-icon-start', 'data-current'];
+  static override props = {
+    'data-count': { type: 'string', kind: 'content', to: '.count' },
+  } as const;
+
+  // data-label keeps its own handling: the write is SKIPPED when the attribute is
+  // absent, so the template's own default label survives. data-icon-start is the
+  // Font Awesome case and belongs to icon().
+  static override observed = ['data-label', 'data-icon-start', 'data-current'];
 
   override onRender(): void {
     this.#syncText();
@@ -114,8 +121,6 @@ export class SherpaQuickFilter extends SherpaElement {
     const label = this.$('.label');
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
-    const count = this.$('.count');
-    if (count) count.textContent = this.dataset['count'] ?? '';
     // The leading icon is a Font Awesome class list; render it as an <i>, not text.
     const icon = this.$('.icon');
     const glyph = this.dataset['iconStart'];
