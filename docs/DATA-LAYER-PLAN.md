@@ -498,10 +498,24 @@ The spec-sanctioned escape hatch is the one Sherpa should use:
 `setValidity({ customError: true }, message)` recomputed on the events the rule
 actually depends on — which is exactly what a `validate` module feeds.
 
-**Precedent.** Shoelace / Web Awesome — the closest comparable library — does exactly
-this: native Constraint Validation, `setCustomValidity()`, and it exposes
-`data-user-invalid` / `data-user-valid` for styling. It ships **no** validator
-component and **no** schema validation. Sherpa is already on the same path.
+**Precedent — four libraries, one answer.** All of them anchor on native constraint
+validation. None invents a validation vocabulary of its own.
+
+| Library | Approach |
+|---|---|
+| **Web Awesome 3** (Shoelace's successor) | Rebuilt on `ElementInternals`. Controls are "first-class citizens": `new FormData(form)`, `form.checkValidity()` and `form.reset()` just work. Styles via `:state(user-invalid)`. |
+| **Microsoft FAST / Fluent** | A first-party `FormAssociated` base class, with `supportsElementInternals` capability detection. The most standards-aligned. |
+| **Adobe Spectrum** | A native `<input>` inside the shadow DOM as the engine, patched with JS where native falls short (e.g. `pattern` does not fire on `<textarea>`). |
+| **Lit** | Ships nothing. The team **explicitly declined**: not enough "opinions or bandwidth for a fully bespoke forms package." |
+
+Two details worth copying:
+
+- **Legacy Shoelace 2.x hand-rolled all of this** — its own source says *"Since we're
+  not yet using ElementInternals…"* — and Web Awesome 3 **replaced** that with the
+  native API. That is the migration Sherpa would be doing, with the benefit of
+  skipping the hand-rolled stage entirely.
+- Web Awesome moved from `data-user-invalid` to the real CSS custom-state
+  `:state(user-invalid)`. Worth considering once `ElementInternals` is in.
 
 ## The non-form half — nothing native exists
 
@@ -540,7 +554,31 @@ The reasoning:
 - **Shadow DOM makes nesting worse, not better.** A nested element's error would
   have to cross a shadow boundary to reach the field that caused it — the exact
   problem recorded in [[sherpa-projected-slot-content-crosses-two-shadow-boundaries]].
-- **No prior art.** No major web-component library ships a validator element.
+- **The prior art that exists confirms the limit.** The pattern is real but a
+  minority one — see below.
+
+### The prior art, honestly
+
+A validator-as-element is **not** unprecedented. Two real examples:
+
+- **D2L (Brightspace) `<d2l-validation-custom>`** — a *sibling* element, not a
+  wrapper, referencing its field the way `<label for>` does:
+  ```html
+  <d2l-input-text id="name" label="Name"></d2l-input-text>
+  <d2l-validation-custom for="name" failure-text="…"></d2l-validation-custom>
+  ```
+- **Polymer's `iron-validator-behavior`** (now `ValidatableMixin`) — the same idea
+  as a mixin rather than an element.
+
+So the idea has pedigree. But note what D2L's shape tells us: it is a **sibling with
+a `for` attribute**, *not* a nested wrapper — because nesting is what the shadow
+boundary punishes. And the modern libraries surveyed above all went the other way.
+
+The decisive argument is the one the prior art itself runs into: **a JSON response, a
+WebSocket payload or an MCP tool result has no element to attach to.** Expressing a
+rule only as an element's behaviour makes it unusable outside a live DOM — so the
+rule would have to be written twice, once for fields and once for data. That is the
+duplication this whole plan exists to remove.
 
 **What the element idea gets right, and how to keep it:** the desire is for
 validation to be *declarative and co-located with the markup*. That is better served
@@ -590,6 +628,14 @@ new ArrayStore(rows, { schema: rules({...}) }) // Sherpa's own tiny built-in
 
 Users who already have Zod bring it. Users who want nothing extra use the built-in.
 **Sherpa's `package.json` gains no dependency either way.**
+
+Two contract details to honour:
+
+- `validate()` may return **either a result or a `Promise` of one**. Every caller must
+  handle both — which is also what makes async rules ("is this username taken?")
+  work through the same door.
+- Its `Issue` shape is `{ message, path? }`. Sherpa's own `Issue` should stay
+  compatible with it rather than inventing a different one.
 
 ### 5. Accessibility — avoid the known trap
 
@@ -641,7 +687,7 @@ most often validated, and there is no workaround from the library side.
 | Not this | Why |
 |---|---|
 | A full JSON Schema implementation | Large, and Standard Schema already delegates it |
-| A `<sherpa-data-validator>` element | No visual output; cannot serve the pre-DOM path |
+| A `<sherpa-data-validator>` element | No visual output; cannot serve the pre-DOM path (a JSON/MCP payload has no element to attach to) |
 | A second validation mechanism for forms | The platform's is better; finish wiring it |
 | Anything using `Temporal` | Safari has not shipped it |
 | `aria-errormessage` as the only wiring | macOS VoiceOver + TalkBack gaps remain |
