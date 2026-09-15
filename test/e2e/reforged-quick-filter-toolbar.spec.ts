@@ -1893,3 +1893,69 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
     expect.objectContaining({ id: r.id, active: true, source: 'overflow' }),
   );
 });
+
+/**
+ * Ticking a folded boolean must not re-point the MORE chip.
+ *
+ * "More" is CHROME, not a filter: it stands for "these filters are folded in
+ * here", its badge counts FOLDED FILTERS, and the rows in its menu belong to
+ * other chips. A chip normally derives `data-current` and `data-count` from its
+ * own menu — so without `data-locked` the first tick turned More OFF and wiped
+ * its badge.
+ */
+test('a locked chip keeps its own state when its menu changes', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(defs: unknown): void;
+    };
+    el.setAttribute('data-type', 'data');
+    el.style.cssText = 'max-inline-size: 300px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'active', label: 'Active', type: 'data' },
+      { id: 'trial', label: 'Trial', type: 'data' },
+      { id: 'churned', label: 'Churned', type: 'data' },
+      { id: 'plan', label: 'Plan', type: 'data', options: [{ value: 'pro', label: 'Pro' }] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const sr = el.shadowRoot!;
+    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    // RE-QUERY every time. A row can be re-stamped when the fold is recomputed,
+    // and a handle held across that reports the OLD element's state.
+    const more = (): HTMLElement => sr.querySelector<HTMLElement>('.overflow-chip')!;
+    const id = sr.querySelector<HTMLElement>('.qf-toggle')!.dataset['for']!;
+    const box = (): HTMLInputElement =>
+      sr.querySelector<HTMLInputElement>(`.qf-toggle[data-for="${id}"] input`)!;
+    const chip = (): HTMLElement =>
+      sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    const snap = () => ({
+      locked: more().hasAttribute('data-locked'),
+      moreCurrent: more().hasAttribute('data-current'),
+      moreCount: more().dataset['count'] ?? null,
+      chip: chip().hasAttribute('data-current'),
+    });
+    const start = snap();
+    box().click();
+    await new Promise((res) => setTimeout(res, 300));
+    const ticked = snap();
+    box().click();
+    await new Promise((res) => setTimeout(res, 300));
+    return { start, ticked, unticked: snap() };
+  });
+
+  expect(r.start.locked).toBe(true);
+  // The MORE chip never moves: on throughout, badge unchanged.
+  expect(r.start.moreCurrent).toBe(true);
+  expect(r.ticked.moreCurrent).toBe(true);
+  expect(r.unticked.moreCurrent).toBe(true);
+  expect(r.ticked.moreCount).toBe(r.start.moreCount);
+  expect(r.unticked.moreCount).toBe(r.start.moreCount);
+  // …while the chip the row stands for does exactly what was asked of it.
+  expect(r.start.chip).toBe(false);
+  expect(r.ticked.chip).toBe(true);
+  expect(r.unticked.chip).toBe(false);
+});

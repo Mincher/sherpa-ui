@@ -47,6 +47,17 @@
  *                lists other filters rather than values (the toolbar's More chip)
  * @attr {boolean} data-persistent  a SELECTOR, not a toggle — always on, never
  *                                  empty. Set by the toolbar.
+ * @attr {boolean} data-locked   the chip's ON/OFF state is not its own to change.
+ *                Clicking the body and ticking rows in its menu both leave
+ *                `data-current` exactly as the host set it.
+ *
+ *                For a chip that is CHROME rather than a filter: the toolbar's
+ *                More chip stands for "these filters are folded in here", so its
+ *                menu's rows belong to other chips and must not re-point it, and
+ *                its count badge counts FOLDED FILTERS rather than picked values.
+ *                A locked chip still opens its menu, still reports what happened
+ *                inside it, and is still styled by whatever `data-current` the
+ *                host chose — it simply never sets that itself.
  *
  * @slot (default) — the chip label
  * @slot menu      — a <sherpa-menu> of values for this field
@@ -170,7 +181,10 @@ export class SherpaQuickFilter extends SherpaElement {
 
   #onClick = (): void => {
     if (this.hasAttribute('disabled')) return;
-    this.current = !this.current;
+    // A LOCKED chip reports the click but does not flip itself — its state is
+    // the host's to set. It still emits, so a host that wants the click can act
+    // on it (opening the menu, say) without the chip having guessed first.
+    if (!this.hasAttribute('data-locked')) this.current = !this.current;
     this.emit('quick-filter-click', { active: this.current });
   };
 
@@ -204,6 +218,14 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A menu selection sets the label, the count chip and the on-state, then relays outward. */
   #onMenuChange = (event: Event): void => {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+    // A LOCKED chip's menu is not a list of ITS values — the More chip's rows
+    // stand for other filters — so nothing in there may re-point its label, its
+    // badge or its on/off state. It still relays the event, because the toolbar
+    // is listening for exactly that.
+    if (this.hasAttribute('data-locked')) {
+      this.emit('quick-filter-change', { values });
+      return;
+    }
     // The badge needs TWO or more picks to say anything. At one pick the label
     // already names the value ("Region: EMEA"), so a "1" beside it is pure noise
     // — and on a single-select chip the badge could never read anything else.
