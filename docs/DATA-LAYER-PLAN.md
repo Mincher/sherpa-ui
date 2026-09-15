@@ -1,6 +1,6 @@
 # The Data Layer — plan
 
-Branch `sherpa-data-layer`. Step 1 is done (`5a34c3a6`); the rest is plan.
+Branch `sherpa-data-layer`. **Steps 1–4 are DONE** (see the order of work); 5 onward is plan.
 
 Three jobs:
 
@@ -223,37 +223,114 @@ gives all four working icons for free.
 
 ## 1.5 `delegate()` — row clicks
 
-Eight components; the copies disagree, and one is a real bug:
+**Re-scoped after a closer look. The bug half is already fixed; what remains is
+smaller and more delicate than first written.**
+
+### The index bug — DONE
+
+The original finding was that three components parsed a row index three ways, and
+`Number(null)` is `0`, so a row that had lost its `data-index` would act on **row 0**.
+That is fixed: `coerceNum(raw, -1)` with a range check, in step 1 (`5a34c3a6`).
+A `delegate()` helper is no longer needed for it.
+
+### What is actually left: TWO populations, not one pattern
+
+A re-count found the sites split cleanly, and they are **not interchangeable**:
+
+| | Sites | Listener is on | Finds the row with | Why |
+|---|---|---|---|---|
+| **A** | 11 | a shadow element (`.bars`, `.head-row`) | `event.target.closest()` | native event, same tree — `closest()` is correct |
+| **B** | 8 | the **host** | `event.composedPath()` | a *composed* event from a child component — `event.target` is **retargeted to the host**, so `closest()` finds nothing |
+
+Only `sherpa-tabs` uses both, for two different listeners.
+
+Population B is not a gap to close — it is already right, and each site carries a
+comment saying why, e.g. [`sherpa-list.ts:102`](../src/components/sherpa-list/sherpa-list.ts#L102):
+
+> item-click is composed: crossing into this list's shadow tree retargets
+> event.target to the list host, so find the real item via composedPath().
+
+### So the helper must choose, not impose
+
+A single `delegate()` that always used `closest()` would break all 8 of population B.
+One that always used `composedPath()` would work but is slower and less direct for
+the 11 in A. The helper has to pick the right lookup for the listener it is attached
+to — which is knowable: a listener on `this` needs `composedPath`, one on a shadow
+element does not.
 
 ```ts
-// barchart.ts:163 — guards, then indexes (safe)
-const raw = col?.dataset['index']; if (raw == null) return;
-// file-upload.ts:140 — NO null guard
-const idx = Number(row?.dataset['index']); if (Number.isNaN(idx)) return;
-// progress-step-tracker.ts:93 — no guard at all; can emit index: NaN
-const index = Number(node.dataset['index']);
+protected delegate(
+  hostSel: string | null,          // null = listen on the host → composedPath
+  rowSel: string,
+  type: string,
+  handler: (row: HTMLElement, index: number, ev: Event) => void,
+): void
 ```
 
-`Number(undefined)` is `NaN` so file-upload survives by luck — but `Number(null)` is
-**`0`**, which would **splice row 0**.
+### Verdict: LOW priority, and possibly not worth it
 
-Two components also carry comments about `closest()` failing after shadow-boundary
-retargeting. [`sherpa-list.ts:98`](../src/components/sherpa-list/sherpa-list.ts#L98)
-already solves it with `composedPath()`. One helper fixes that class everywhere.
+The data-grid alone has six delegation sites and each has its own early returns
+(`.select-cell` and `.group-select` bail out before the row lookup, a group row is
+handled differently from a data row). Those are genuine behaviour, not boilerplate,
+and a helper that had to express all of them would be longer than what it replaced.
+
+**Recommend: do this only if a third population appears, or skip it.** The bug it was
+queued for is gone; what is left is a modest tidy with real risk of flattening a
+correct distinction. `renderList()` (1.6) is the better use of the same effort.
 
 ## 1.6 `renderList()` — rebuild a list
 
-16 components share the skeleton: clear, clone per item, set a key, append.
+**Re-measured. This is now the best remaining item in Part 1 — take it before
+`delegate()`.**
 
-Two real behaviours must survive as **explicit options**, not be flattened:
+12 components clear a container and stamp a cloned row per item. The shared part is
+exactly four steps:
 
-- [`sherpa-list.ts:69`](../src/components/sherpa-list/sherpa-list.ts#L69) must **not**
-  use `replaceChildren()` — it would destroy the `<slot>`.
-- [`sherpa-barchart.ts:96`](../src/components/sherpa-barchart/sherpa-barchart.ts#L96)
-  stamps the **original** index, not the loop index, because hidden series shift
-  positions.
+```
+look up container + template → guard both → clear → clone per item → append
+```
 
-Do this one last — it needs the most design care.
+Everything else is unique per component and belongs in a callback anyway: tabs wires a
+roving tabindex, breadcrumbs marks the last crumb `aria-current`, the grid sets a
+per-column type.
+
+### What it is worth
+
+Measured against the real `sherpa-tabs` body: **9 boilerplate lines become 3**, so
+~6 per site and **~96 lines across 12 components**. More importantly it removes the
+**last 12 `content.firstElementChild!` assertions** — `clone()` (1.3) fixed the four
+standalone ones, and these are the rest.
+
+```ts
+protected renderList<T>(
+  containerSel: string,
+  tplSel: string,
+  items: readonly T[],
+  fill: (node: HTMLElement, item: T, i: number) => void,
+  opts?: { clear?: 'replace' | 'own-children'; ownSel?: string },
+): void
+```
+
+### Three behaviours that must survive as options, not be flattened
+
+- **`sherpa-list` must NOT use `replaceChildren()`.**
+  [`sherpa-list.ts:72`](../src/components/sherpa-list/sherpa-list.ts#L72) removes only
+  `.body > .row-item` — a blanket clear would destroy the `<slot>` beside the stamped
+  rows. Hence `clear: 'own-children'`.
+- **`sherpa-barchart` stamps the ORIGINAL index.**
+  [`sherpa-barchart.ts:101`](../src/components/sherpa-barchart/sherpa-barchart.ts#L101)
+  iterates a *filtered* list but writes the datum's real position, so `bar-click` still
+  names the right bar when a legend has hidden earlier categories. The `fill` callback
+  must therefore stay free-form — the helper must not impose the loop index.
+- **Some components clear TWO containers.** barchart clears `.bars` and `.x-axis-row`
+  in one pass. The helper covers one container; the second stays hand-written rather
+  than growing a `containers: []` parameter for a single case.
+
+### The bar for a new option
+
+The same rule `static props` settled on: **three or more uses, or it stays
+hand-written.** `clear: 'own-children'` has one use today — it is in only because the
+alternative is a silent slot-destroying bug, not because it is tidy.
 
 ## Leave alone
 
@@ -792,12 +869,12 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 
 | Step | Work | Why here |
 |---|---|---|
-| **1** ✅ | `num()` | **DONE** (`5a34c3a6`) — fixed 4 live bugs, 15 specs, 416 passing |
-| 2 | `static props` + reflection | biggest win; removes ~30 methods and every if-chain |
-| 3 | `clone()` | trivial; unifies 3 null policies |
-| 4 | `icon()` | gives 4 components working icons |
-| 5 | `delegate()` | fixes the `Number(null)` → row 0 bug |
-| 6 | `renderList()` | most design care; do last |
+| **1** ✅ | `num()` | **DONE** `5a34c3a6` — 4 live bugs, 15 specs |
+| **2** ✅ | `static props` | **DONE** — 26 components; `fd30d49c` `5c742777` `4880a80d` `7818d325` `4171a2dd` `5a531870` |
+| **3** ✅ | `clone()` | **DONE** `f7fa5fc3` — the 4 asserted sites; loop sites left alone |
+| **4** ✅ | `icon()` | **DONE** `fffab02b` — as `as: 'icon'` on a prop; 4 components had no FA branch |
+| 5 | `delegate()` | **RE-SCOPED — low priority.** Its bug is already fixed by step 1; see 1.5 |
+| 6 | `renderList()` | **best remaining Part-1 item** — ~96 lines, kills the last 12 `!` assertions |
 | 7 | **V1** `validate.ts` — `Result`/`Issue` + the rule set | a prerequisite for step 10 |
 | 8 | **V2** accept a Standard Schema object | zero-dependency Zod/Valibot support |
 | 9 | `Store` + `ArrayStore` + `DataSource` | the core |
@@ -819,7 +896,7 @@ Each step must pass before the next:
 npm run type-check     # strict, no emit
 npm run lint            # eslint, --max-warnings 0
 npm run lint:css        # 57 files · 0 errors · 0 warnings
-npm test                # 416 passing after step 1 — must not drop
+npm test                # 434 passing after step 4 — must not drop
 ```
 
 Also run `node scripts/generate-component-spec.mjs --all --check` after touching a
