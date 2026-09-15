@@ -1072,6 +1072,16 @@ const STATUS_ROLE_MAP = {
   // The STRONG border step — a status-tinted rule/stroke (chart lines, tinted
   // dividers). The neutral `_status-border` cannot express these.
   'style-border/base +1': '_status-border-strong',
+  // A DATA MARK under a status pin — a sparkline's line, a metric's trend fill.
+  // The fill is that status's ramp mid at 50%, the border the same colour solid.
+  //
+  // These exist because the status cascade and the data-viz palette answer
+  // different questions: a cascade says "what is THIS thing's status" and drives
+  // everything from one [data-status] pin, while a multi-series chart picks ten
+  // colours at once and cannot pin ten modes. A sparkline is the first case and
+  // was reading `_status-border-strong` — a CARD's border step, not a data colour.
+  'style-surface/data-viz': '_status-data-viz',
+  'style-border/data-viz': '_status-data-viz-border',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',
   'style-indicator/accent': '_status-icon',
@@ -1111,6 +1121,16 @@ const LOOK_ROLE_MAP = {
   // The STRONG border step — a status-tinted rule/stroke (chart lines, tinted
   // dividers). The neutral `_status-border` cannot express these.
   'style-border/base +1': '_status-border-strong',
+  // A DATA MARK under a status pin — a sparkline's line, a metric's trend fill.
+  // The fill is that status's ramp mid at 50%, the border the same colour solid.
+  //
+  // These exist because the status cascade and the data-viz palette answer
+  // different questions: a cascade says "what is THIS thing's status" and drives
+  // everything from one [data-status] pin, while a multi-series chart picks ten
+  // colours at once and cannot pin ten modes. A sparkline is the first case and
+  // was reading `_status-border-strong` — a CARD's border step, not a data colour.
+  'style-surface/data-viz': '_status-data-viz',
+  'style-border/data-viz': '_status-data-viz-border',
   'style-content/base': '_status-text',
   'style-content/inverse': '_status-text-on-color',
   'style-indicator/accent': '_status-icon',

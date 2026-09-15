@@ -72,6 +72,21 @@ export interface BindOptions {
    * filter changes, but clicking a bar must not re-sort the grid.
    */
   readonly?: boolean;
+  /**
+   * Reshape the rows before they reach this component.
+   *
+   * Components ask for different shapes: a chart wants `[{ label, value }]`, the
+   * data grid wants `{ columns, rows }`. Rather than force one shape on every
+   * component — which would mean changing 21 of them — the ADAPTER lives at the
+   * binding, where the mismatch actually is.
+   *
+   *   source.bind(grid,  { as: (rows) => ({ columns, rows }) });
+   *   source.bind(chart, { as: (rows) => rows.map(toSlice) });
+   *
+   * It also receives the source, so an adapter can read the total or the state —
+   * a "N of M" summary needs both.
+   */
+  as?: (rows: Row[], source: DataSource) => unknown;
 }
 
 /** A populatable element — every Sherpa data component answers this. */
@@ -106,7 +121,7 @@ export class DataSource extends EventTarget {
   readonly store: Store;
   #state: ViewState;
   #searchFields: string[] | undefined;
-  #bound = new Map<Populatable, { readonly: boolean; off: () => void }>();
+  #bound = new Map<Populatable, { readonly: boolean; off: () => void; as?: BindOptions['as'] }>();
   #result: LoadResult = { rows: [], total: 0 };
   #autoLoad: boolean;
   /**
@@ -301,7 +316,7 @@ export class DataSource extends EventTarget {
     const off = (): void => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
     };
-    this.#bound.set(el, { readonly: readonlyBind, off });
+    this.#bound.set(el, { readonly: readonlyBind, off, ...(options.as ? { as: options.as } : {}) });
 
     // Populate straight away with whatever is already loaded, so a component
     // bound late is not blank until the next change.
@@ -403,7 +418,8 @@ export class DataSource extends EventTarget {
 
     // populate() waits for the first render itself, so a component bound before
     // it has upgraded still gets its rows.
-    el.populate?.(this.#result.rows);
+    const adapt = this.#bound.get(el)?.as;
+    el.populate?.(adapt ? adapt(this.#result.rows, this) : this.#result.rows);
   }
 }
 

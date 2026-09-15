@@ -33,11 +33,18 @@
   min-inline-size: 40px;
   block-size: var(--sherpa-display-mode-size-xl, 28px);
 
-  /* Trend colour. Figma binds the line to style-border/base +1 — the STRONG step of
-     the current status ramp (Will corrected this: under the Metric's Style=success pin
-     it resolves to #36de8c, not a neutral grey). The status cascade supplies it; the
-     fallback is the same strong step for the default (neutral) mode. */
-  --_line: var(--_status-border-strong, var(--sherpa-style-border-base-1, #35353d));
+  /* Trend colour — the DATA-VIZ role of the current status, not a card's border
+     step. `style-border/data-viz` is a Style variable with the same 8 status
+     modes as every other, so a sparkline inside a [data-status="warning"] Metric
+     picks up amber through the ordinary cascade with no chart-specific code.
+
+     It read `--_status-border-strong` (style-border/base +1) before: a CARD's
+     strong border step, which happened to be status-tinted but is not a data
+     colour — so a sparkline and a chart mark of the same status did not match.
+
+     The fallback is the default mode's own data-viz colour (sequence 1). */
+  --_line: var(--_status-data-viz-border, var(--sherpa-style-border-data-viz,
+    var(--sherpa-theme-data-viz-sequence-1, #8364c8)));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;

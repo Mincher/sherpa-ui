@@ -9767,6 +9767,34 @@
         },
         "$type": "dimension",
         "$value": "{display-mode.border.width.sm}"
+      },
+      "data-viz": {
+        "$description": "Design value.",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:18:187",
+            "figmaResolvedType": "COLOR",
+            "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+            "modes": {
+              "default": "{theme.data-viz.sequence.1}",
+              "info": "{theme.data-viz.status.info.color 5}",
+              "critical": "{theme.data-viz.status.critical.color 5}",
+              "warning": "{theme.data-viz.status.warning.color 5}",
+              "urgent": "{theme.data-viz.status.urgent.color 5}",
+              "success": "{theme.data-viz.status.success.color 5}",
+              "active": "{theme.data-viz.sequence.1}",
+              "inactive": "{theme.data-viz.sequence.10}"
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "FRAME_FILL",
+              "SHAPE_FILL",
+              "STROKE_COLOR"
+            ]
+          }
+        },
+        "$type": "color",
+        "$value": "{theme.data-viz.sequence.1}"
       }
     },
     "style-content": {
@@ -10239,6 +10267,33 @@
         },
         "$type": "color",
         "$value": "{display-mode.color.neutral.fixed.color 4}"
+      },
+      "data-viz": {
+        "$description": "Design value.",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:18:187",
+            "figmaResolvedType": "COLOR",
+            "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+            "modes": {
+              "default": "{theme.data-viz.sequence.1}",
+              "info": "{theme.data-viz.status.info.color 5}",
+              "critical": "{theme.data-viz.status.critical.color 5}",
+              "warning": "{theme.data-viz.status.warning.color 5}",
+              "urgent": "{theme.data-viz.status.urgent.color 5}",
+              "success": "{theme.data-viz.status.success.color 5}",
+              "active": "{theme.data-viz.sequence.1}",
+              "inactive": "{theme.data-viz.sequence.10}"
+            },
+            "primaryMode": "default",
+            "scopes": [
+              "FRAME_FILL",
+              "SHAPE_FILL"
+            ]
+          }
+        },
+        "$type": "color",
+        "$value": "{theme.data-viz.sequence.1}"
       }
     }
   },
@@ -15483,6 +15538,1482 @@
             },
             "$type": "color",
             "$value": "#005445"
+          }
+        }
+      },
+      "sequence": {
+        "1": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.purple.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.purple.color 5}"
+        },
+        "2": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.phlox.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.phlox.color 5}"
+        },
+        "3": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.turquoise.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.turquoise.color 5}"
+        },
+        "4": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.blue green.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.blue green.color 5}"
+        },
+        "5": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.blue.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.blue.color 5}"
+        },
+        "6": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.orange.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.orange.color 5}"
+        },
+        "7": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.pink.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.pink.color 5}"
+        },
+        "8": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.razamatazz.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.razamatazz.color 5}"
+        },
+        "9": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.green.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.green.color 5}"
+        },
+        "10": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.greyscale.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.greyscale.color 5}"
+        }
+      },
+      "sequence-border": {
+        "1": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.purple.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.purple.color 5}"
+        },
+        "2": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.phlox.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.phlox.color 5}"
+        },
+        "3": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.turquoise.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.turquoise.color 5}"
+        },
+        "4": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.blue green.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.blue green.color 5}"
+        },
+        "5": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.blue.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.blue.color 5}"
+        },
+        "6": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.orange.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.orange.color 5}"
+        },
+        "7": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.pink.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.pink.color 5}"
+        },
+        "8": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.razamatazz.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.razamatazz.color 5}"
+        },
+        "9": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.green.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.green.color 5}"
+        },
+        "10": {
+          "$description": "Design value.",
+          "$extensions": {
+            "figma-console-mcp": {
+              "collectionId": "VariableCollectionId:7:714",
+              "figmaResolvedType": "COLOR",
+              "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+              "modes": {
+                "Sherpa": "{theme.data-viz.sequential.greyscale.color 5}"
+              },
+              "primaryMode": "Sherpa",
+              "scopes": [
+                "FRAME_FILL",
+                "SHAPE_FILL",
+                "STROKE_COLOR"
+              ]
+            }
+          },
+          "$type": "color",
+          "$value": "{theme.data-viz.sequential.greyscale.color 5}"
+        }
+      },
+      "status": {
+        "success": {
+          "color 1": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.100}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.100}"
+          },
+          "color 2": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.200}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.200}"
+          },
+          "color 3": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.300}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.300}"
+          },
+          "color 4": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.400}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.400}"
+          },
+          "color 5": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.500}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.500}"
+          },
+          "color 6": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.600}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.600}"
+          },
+          "color 7": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.700}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.700}"
+          },
+          "color 8": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.800}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.800}"
+          },
+          "color 9": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.900}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.900}"
+          },
+          "color 10": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.green.1000}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.green.1000}"
+          }
+        },
+        "warning": {
+          "color 1": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.100}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.100}"
+          },
+          "color 2": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.200}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.200}"
+          },
+          "color 3": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.300}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.300}"
+          },
+          "color 4": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.400}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.400}"
+          },
+          "color 5": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.500}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.500}"
+          },
+          "color 6": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.600}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.600}"
+          },
+          "color 7": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.700}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.700}"
+          },
+          "color 8": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.800}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.800}"
+          },
+          "color 9": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.900}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.900}"
+          },
+          "color 10": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.extended.warm-yellow.1000}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.extended.warm-yellow.1000}"
+          }
+        },
+        "urgent": {
+          "color 1": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.100}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.100}"
+          },
+          "color 2": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.200}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.200}"
+          },
+          "color 3": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.300}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.300}"
+          },
+          "color 4": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.400}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.400}"
+          },
+          "color 5": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.500}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.500}"
+          },
+          "color 6": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.600}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.600}"
+          },
+          "color 7": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.700}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.700}"
+          },
+          "color 8": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.800}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.800}"
+          },
+          "color 9": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.900}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.900}"
+          },
+          "color 10": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.orange.1000}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.orange.1000}"
+          }
+        },
+        "critical": {
+          "color 1": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.100}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.100}"
+          },
+          "color 2": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.200}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.200}"
+          },
+          "color 3": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.300}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.300}"
+          },
+          "color 4": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.400}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.400}"
+          },
+          "color 5": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.500}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.500}"
+          },
+          "color 6": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.600}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.600}"
+          },
+          "color 7": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.700}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.700}"
+          },
+          "color 8": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.800}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.800}"
+          },
+          "color 9": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.900}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.900}"
+          },
+          "color 10": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.red.1000}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.red.1000}"
+          }
+        },
+        "info": {
+          "color 1": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.100}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.100}"
+          },
+          "color 2": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.200}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.200}"
+          },
+          "color 3": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.300}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.300}"
+          },
+          "color 4": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.400}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.400}"
+          },
+          "color 5": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.500}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.500}"
+          },
+          "color 6": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.600}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.600}"
+          },
+          "color 7": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.700}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.700}"
+          },
+          "color 8": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.800}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.800}"
+          },
+          "color 9": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.900}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.900}"
+          },
+          "color 10": {
+            "$description": "Design value.",
+            "$extensions": {
+              "figma-console-mcp": {
+                "collectionId": "VariableCollectionId:7:714",
+                "figmaResolvedType": "COLOR",
+                "lastSyncedAt": "2026-09-15T13:28:26.040151Z",
+                "modes": {
+                  "Sherpa": "{primitives.color.basic.blue-green.1000}"
+                },
+                "primaryMode": "Sherpa",
+                "scopes": [
+                  "FRAME_FILL",
+                  "SHAPE_FILL",
+                  "STROKE_COLOR"
+                ]
+              }
+            },
+            "$type": "color",
+            "$value": "{primitives.color.basic.blue-green.1000}"
           }
         }
       }
