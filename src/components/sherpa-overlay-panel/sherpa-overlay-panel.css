@@ -89,135 +89,36 @@
 /* No backdrop — a non-modal panel must leave the page behind interactive. */
 .root::backdrop { background: transparent; }
 
-/* ── Header ────────────────────────────────────────────────────────────── */
-.header {
+/* ── Regions ───────────────────────────────────────────────────────────
+   The header and footer are COMPOSED components now (sherpa-container-header /
+   sherpa-container-footer), exactly as Figma's Overlay Panel instances them, so
+   they own their own padding, dividers, typography and controls. What used to be
+   here — a hand-drawn row, labels, title, four buttons and their hover, focus and
+   glyph rules — was a second copy of all of that, and the copy is gone.
+
+   Only the panel's own layout remains: which region flexes, and which is fixed. */
+.header,
+.footer {
   flex-shrink: 0;
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
-/* Figma Container Header/Variant=Panel: padding/md 8 all round, gap/sm 4. */
-.row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-md, 8px);
-}
-
-.icon {
-  display: none;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  /* Figma icon: content/size/base → 14. */
-  inline-size: var(--sherpa-theme-content-size-base, 14px);
-  block-size: var(--sherpa-theme-content-size-base, 14px);
-  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-}
-:host([data-icon]) .icon,
-:host([data-has-icon]) .icon { display: inline-flex; }
-
-.labels {
-  flex: 1 1 0;
-  min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  overflow: hidden;
-}
-
-/* Title: content/link/+1, 14/20 medium. */
-.title {
-  display: none;
-  color: var(--_status-text, var(--sherpa-theme-content-link-1, #2b34b4));
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-:host([data-title]) .title { display: block; }
-
-/* Metadata row: blocks 12px apart, each 12/16 regular content/body/+1. */
-.description {
-  display: none;
-  align-items: center;
-  gap: var(--sherpa-theme-gap-lg, 12px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-}
-:host([data-has-description]) .description { display: flex; }
-
-/* ── Toolbar (icon-glyph action buttons) — Figma actions slot gap/sm 4; each
-   button is Button/Type=icon at Structure xs (16×16) in the Transparent look. ── */
-.toolbar {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
-  margin-inline-start: auto;
-}
-
-.collapse,
-.expand,
-.external,
-.close {
-  display: none;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  padding: 0;
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: transparent;
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  cursor: pointer;
-  transition: background-color 100ms ease;
-}
-.collapse:hover,
-.expand:hover,
-.external:hover,
-.close:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
-.collapse:focus-visible,
-.expand:focus-visible,
-.external:focus-visible,
-.close:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-}
-
-:host([data-collapsible]) .collapse { display: inline-flex; }
-:host([data-expandable]) .expand { display: inline-flex; }
-:host([data-external]) .external { display: inline-flex; }
-:host([data-dismissible]) .close { display: inline-flex; }
-
-/* Collapsed rotates the toggle chevron. */
-.collapse-glyph { transition: transform 120ms ease; }
-:host([data-collapsed]) .collapse-glyph { transform: rotate(180deg); }
-
-/* ── Body + footer ─────────────────────────────────────────────────────── */
 .body {
-  padding: var(--_pad);
   flex: 1 1 auto;
   min-block-size: 0;
+  overflow: auto;
+  padding: var(--_pad);
 }
 
-/* Figma Container Footer/action-bar: padding 8×16, gap/sm 4, end-aligned. */
-.footer {
-  display: none;
+/* The two controls specific to a FLOATING panel, sitting in the composed
+   header's `actions` slot. Each is a sherpa-button, so only their arrangement
+   is described here. */
+.toolbar {
+  display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-md, 8px) var(--_pad);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
-:host([data-has-footer]) .footer { display: flex; }
+:host(:not([data-expandable])) .expand { display: none; }
+:host(:not([data-external])) .external { display: none; }
 
 /* Collapsed → only the header shows (body + footer fold away). */
 :host([data-collapsed]) .body,

@@ -33,18 +33,20 @@
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// COMPOSED, as Figma instances them (Overlay Panel 1003:33705 = Container Header
+// + content + Container Footer). Imported for their side effect: the custom
+// elements must be defined before this template stamps them.
+import '../sherpa-container-header/sherpa-container-header.js';
+import '../sherpa-container-footer/sherpa-container-footer.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
-  static override props = {
-    'data-title': { type: 'string', kind: 'content', to: '.title' },
-    // CSS-only: `:host([data-icon]) .icon` reveals the icon area. Declared so the
-    // attribute is typed and observable; no JS writes it.
-    'data-icon': { type: 'string', kind: 'visibility' },
-  } as const;
-
-  static override observed = ['data-collapsed', 'open'];
+  // The title and icon are MIRRORED onto the composed header rather than written
+  // into this shadow tree — the header owns those elements now, and one component
+  // must not reach into another's internals.
+  static override observed = ['data-title', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
@@ -53,18 +55,24 @@ export class SherpaOverlayPanel extends SherpaElement {
   override onRender(): void {
     const dialog = this.#dialog();
     if (!dialog) return;
-    this.#syncCollapsed();
+    this.#syncHeader();
     if (this.hasAttribute('open')) dialog.show();
     dialog.addEventListener('close', this.#onClose);
-    this.$('.collapse')?.addEventListener('click', this.#onCollapse);
-    this.$('.expand')?.addEventListener('click', this.#onExpand);
-    this.$('.external')?.addEventListener('click', this.#onExternal);
-    this.$('.close')?.addEventListener('click', this.#onCloseClick);
+    // The composed header owns the collapse toggle and the close button, and
+    // announces both with its OWN events. They are re-emitted here under the
+    // panel's names, so this component's public API is unchanged by the fact
+    // that its internals are now composed.
+    this.$('.header')?.addEventListener('header-collapse', this.#onCollapse);
+    this.$('.header')?.addEventListener('header-dismiss', this.#onCloseClick);
+    // `button-click`, not `click` — a sherpa-button suppresses its own event when
+    // disabled, where a raw click listener would still fire on the host.
+    this.$('.expand')?.addEventListener('button-click', this.#onExpand);
+    this.$('.external')?.addEventListener('button-click', this.#onExternal);
   }
 
   override onChange(name: string): void {
-    if (name === 'data-collapsed') this.#syncCollapsed();
-    else if (name === 'open') {
+    if (name !== 'open') this.#syncHeader();
+    if (name === 'open') {
       if (this.hasAttribute('open')) this.show();
       else this.close();
     }
@@ -96,9 +104,22 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  #syncCollapsed(): void {
-    const collapsed = this.hasAttribute('data-collapsed');
-    this.$('.collapse')?.setAttribute('aria-expanded', String(!collapsed));
+  /**
+   * Mirror the panel's own attributes onto the composed header.
+   *
+   * The header is a component, not markup this file owns, so it is configured
+   * through its public `data-*` API exactly as an app would configure it.
+   */
+  #syncHeader(): void {
+    const header = this.$('.header');
+    if (!header) return;
+    for (const name of ['data-title', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible'] as const) {
+      const value = this.getAttribute(name);
+      // data-title is the panel's name for it; the header calls it data-heading.
+      const target = name === 'data-title' ? 'data-heading' : name;
+      if (value == null) header.removeAttribute(target);
+      else header.setAttribute(target, value);
+    }
   }
 
   #onClose = (): void => {
