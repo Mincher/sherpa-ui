@@ -426,9 +426,21 @@
 }
 
 /* The list region runs ACROSS for a calendar — Figma's `list` frame is
-   HORIZONTAL there (gap 4), holding the Grid and the Time picker as siblings. */
+   HORIZONTAL there (gap 4), holding the Grid and the Time picker as siblings.
+
+   `wrap` plus a full-width first row is what lets a MODE row sit above them: a
+   Range switch is a setting FOR the calendar, not a panel beside it, and in a
+   plain row it became a narrow column squeezed against the day grid. Anything
+   marked `data-row` takes the whole line and pushes the grids onto the next. */
 :host([data-type="calendar"]) .rows {
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
+
+/* A full-width row inside the horizontal list region — see above. */
+:host([data-type="calendar"]) .rows > ::slotted([data-row]) {
+  flex: 0 0 100%;
+  inline-size: 100%;
 }

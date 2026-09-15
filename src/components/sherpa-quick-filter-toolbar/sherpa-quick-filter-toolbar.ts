@@ -42,7 +42,7 @@
  * @fires view-favorite — the star toggled (view type). bubbles + composed. detail: { favourite: boolean }
  * @fires view-menu-open — the Save group's caret was clicked (view type). bubbles + composed. detail: {}
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
@@ -50,6 +50,10 @@ import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
 // A `date` chip's menu holds a calendar, so it must be defined.
 import '../sherpa-calendar/sherpa-calendar.js';
+// A number chip's menu holds a two-ended slider, and both number and date chips
+// lead with a Range switch.
+import '../sherpa-slider/sherpa-slider.js';
+import '../sherpa-switch/sherpa-switch.js';
 
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
@@ -90,13 +94,34 @@ export interface QuickFilterDef {
    * What the chip's menu holds.
    *
    *   values (default)  checkbox / radio rows built from `options`
-   *   date              a calendar — one day
+   *   number            a value field, or a two-ended slider when Range is on
+   *   date              a calendar — one day, or two when Range is on
    *
-   * `date-range` and `time` will join this list; they are the same calendar with
-   * data-type="range" and data-has-time, so they are a value here rather than a
-   * new template.
+   * NUMBER and DATE both lead with a Range switch, because each is really one
+   * filter with two shapes: "equals this" or "between these two". Two separate
+   * chips would make the user choose the shape before they know which they want,
+   * and choosing again would mean taking one off the bar and adding the other.
+   *
+   * `time` will join this list; it is the same calendar with data-has-time, so
+   * it is a value here rather than a new template.
    */
-  kind?: 'values' | 'date';
+  kind?: 'values' | 'number' | 'date';
+  /**
+   * A number filter's bounds — the ends of its slider, and the clamp on its
+   * single field. Both default to the slider's own 0..100.
+   */
+  min?: number;
+  max?: number;
+  /** The slider's increment. Defaults to 1. */
+  step?: number;
+  /**
+   * Start a number or date chip in RANGE mode rather than single.
+   *
+   * The switch is the user's to flip either way; this only says which side it
+   * starts on. Off by default: "equals this" is the simpler question and the one
+   * a reader can answer without deciding on two numbers first.
+   */
+  range?: boolean;
   /**
    * A chip that cannot be switched OFF — a SELECTOR rather than a toggle.
    *
@@ -183,6 +208,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
     // Action rows (the "Remove filter" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
+    // The RANGE switch on a number or date menu. sherpa-switch re-dispatches its
+    // native change as a COMPOSED one, so this reaches here where a bare
+    // checkbox's would not.
+    this.addEventListener('change', this.#onRangeToggle);
     // The ADD menu hangs off a sherpa-BUTTON, which — unlike a chip — does not
     // relay menu-change as quick-filter-change. So its commit is heard directly.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
@@ -274,6 +303,32 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * reason.
    */
   #chipPicks(chip: HTMLElement): string[] {
+    // A NUMBER chip reports either one value or the two ends of its range,
+    // matching the shape its Range switch is in. Both are strings, like every
+    // other chip's picks, so a host reads one array whatever the filter is.
+    const num = chip.querySelector<HTMLElement>('.qf-number');
+    if (num) {
+      const ranged = chip.querySelector('sherpa-menu')?.hasAttribute('data-range');
+      if (ranged) {
+        const slider = num.querySelector<HTMLElement & { range: [number, number] }>(
+          'sherpa-slider',
+        );
+        // A range spanning the WHOLE of its bounds excludes nothing, so it is
+        // reported as no pick at all — otherwise the chip would paint as an
+        // active filter that is not filtering.
+        if (!slider) return [];
+        const [lo, hi] = slider.range;
+        // The slider's own defaults, read off its attributes — it clamps to
+        // these, so a full-span range is exactly these two numbers.
+        const min = coerceNum(slider.getAttribute('min'), 0);
+        const max = coerceNum(slider.getAttribute('max'), 100);
+        return lo === min && hi === max ? [] : [String(lo), String(hi)];
+      }
+      const one = num.querySelector<HTMLInputElement>('.qf-number-one');
+      const raw = one?.value.trim() ?? '';
+      return raw === '' ? [] : [raw];
+    }
+
     const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
     if (cal) {
       const start = cal.dataset['valueStart'];
@@ -372,9 +427,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
-      // A DATE chip has no `options` — its menu is a calendar — so the menu is
-      // stamped on kind as well as on having values to list.
-      if (f.options?.length || f.kind === 'date') this.#addMenu(chip, f, prior?.picked);
+      // A DATE chip's menu is a calendar and a NUMBER chip's is a field or a
+      // slider, so neither carries `options` — the menu is stamped on kind as
+      // well as on having values to list.
+      const hasOwnContent = f.kind === 'date' || f.kind === 'number';
+      if (f.options?.length || hasOwnContent) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
       // A date chip's label carries its chosen day, so it has to be re-derived
       // after a rebuild like everything else.
@@ -416,20 +473,62 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     //
     // `commit` on the definition overrides it either way. The menu owns both
     // modes already; nothing else here has to change.
-    const defers = def.commit ?? (!single && def.kind !== 'date');
+    const picksOne = def.kind === 'date' || def.kind === 'number';
+    const defers = def.commit ?? (!single && !picksOne);
     if (defers) menu.setAttribute('data-commit', '');
     // EVERY value menu gets a search. A filter's values are the user's own data
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
     menu.setAttribute('data-search', '');
 
+    // A NUMBER chip's menu holds a Range switch over either one field or a
+    // two-ended slider. Both exist from the start and CSS reveals one, so the
+    // switch is an attribute write rather than a rebuild — and whatever was
+    // typed on the other side survives a flip back.
+    if (def.kind === 'number') {
+      // Nothing to search: there is no list, only a value to type or drag.
+      menu.removeAttribute('data-search');
+      this.#addRangeSwitch(menu, def);
+      const box = this.clone('template.qf-number-tpl');
+      if (box) {
+        const slider = box.querySelector('sherpa-slider');
+        const field = box.querySelector('input');
+        // The bounds are the SLIDER's ends and the field's clamp, so typing 500
+        // into a 0..100 filter cannot ask for a row that cannot exist.
+        const min = def.min ?? 0;
+        const max = def.max ?? 100;
+        for (const el of [slider, field]) {
+          if (!el) continue;
+          el.setAttribute('min', String(min));
+          el.setAttribute('max', String(max));
+          if (def.step != null) el.setAttribute('step', String(def.step));
+        }
+        // A fresh range spans the WHOLE span, so the filter starts by excluding
+        // nothing — a slider that opened at 0..0 would empty the view before the
+        // user had asked it anything.
+        slider?.setAttribute('value-start', String(min));
+        slider?.setAttribute('value-end', String(max));
+        menu.appendChild(box);
+      }
+      this.#addRemove(chip, menu, def);
+      chip.setAttribute('data-menu', '');
+      chip.appendChild(menu);
+      return;
+    }
+
     // A DATE chip's menu holds a CALENDAR instead of value rows. Everything
     // above — the heading, the commit mode — is the same, so a date filter
     // applies exactly like any other chip.
     if (def.kind === 'date') {
+      // The RANGE switch comes FIRST, above the calendar — it decides what the
+      // calendar below it is, so reading it after the grid would be backwards.
+      this.#addRangeSwitch(menu, def);
       const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
       if (calTpl) {
         const cal = calTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        // The calendar's own two-ended mode, which it already has: `range` is a
+        // two-click start→end selection with the days between banded.
+        if (def.range) cal.setAttribute('data-type', 'range');
         // A calendar is not a list to search, and the search would filter
         // nothing — so it is not offered here.
         menu.removeAttribute('data-search');
@@ -517,6 +616,62 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
   }
+
+  /**
+   * Put the RANGE switch at the top of a number or date menu.
+   *
+   * The switch flips ONE filter between its two shapes — "equals this" and
+   * "between these two" — rather than the bar carrying two chips for the same
+   * field. Choosing between two chips would make the user pick the shape before
+   * they know which they want, and changing their mind would mean taking one off
+   * the bar and adding the other.
+   *
+   * `data-range` on the MENU is what the flip writes; CSS below it swaps the
+   * single field for the slider, and the calendar reads it as its own
+   * `data-type`. Nothing is rebuilt, so a value typed on one side is still there
+   * after a flip back.
+   */
+  #addRangeSwitch(menu: HTMLElement, def: QuickFilterDef): void {
+    const row = this.clone('template.qf-range-tpl');
+    if (!row) return;
+    const sw = row.querySelector('sherpa-switch');
+    if (def.range) {
+      sw?.setAttribute('checked', '');
+      menu.setAttribute('data-range', '');
+    }
+    menu.appendChild(row);
+  }
+
+  /**
+   * The Range switch was flipped — swap the menu between its two shapes.
+   *
+   * sherpa-switch re-dispatches its native change as a COMPOSED one, so unlike
+   * the value rows this does cross the shadow boundary and can be heard here.
+   */
+  #onRangeToggle = (event: Event): void => {
+    // composedPath, not `event.target`. The change starts on the switch's own
+    // inner <input> and is RETARGETED at each shadow boundary it crosses — by
+    // the time it reaches this listener `target` is the toolbar itself, and
+    // `closest` from there finds no switch at all.
+    const sw = event
+      .composedPath()
+      .find(
+        (n): n is HTMLElement =>
+          n instanceof HTMLElement && n.classList.contains('qf-range-switch'),
+      );
+    if (!sw) return;
+    const on = (sw as HTMLElement & { checked: boolean }).checked;
+    const menu = sw.closest('sherpa-menu');
+    if (!menu) return;
+    menu.toggleAttribute('data-range', on);
+    // A CALENDAR reads the mode as its own type: `range` is a two-click
+    // start→end selection with the days between banded. Its previous single
+    // pick is left alone — re-picking is how a range is started anyway.
+    menu.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
+    // The filter's SHAPE changed, so what it means changed with it — a host
+    // reading `values` needs to hear that even though no value moved.
+    this.#emitChange();
+  };
 
   /**
    * Put a "Select all / Clear all" row at the top of a MULTI-select menu.

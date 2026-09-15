@@ -8,6 +8,10 @@
 
   Two per-filter flags decide what a chip IS rather than how it looks:
 
+    kind        values (default) | number | date — what the chip's menu holds.
+                A NUMBER chip's menu leads with a Range switch: off, one field
+                filters by a single value; on, a two-ended slider filters between
+                two. A DATE chip gets the same switch over its calendar.
     removable   offer "Remove filter" in its menu. OPT-IN, because the row
                 DELETES the chip — the safe default when a host says nothing is
                 to keep it. addFilter() grants it to anything the user added.
@@ -232,6 +236,45 @@
   -->
   <template class="qf-calendar-tpl">
     <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
+  </template>
+
+  <!--
+    THE RANGE SWITCH — the first row of a number or date menu.
+
+    A number filter is "equals this" or "between these two", and a date filter is
+    "on this day" or "between these two days". That is ONE menu with a mode, not
+    two chips a user has to know to choose between: the switch flips what the
+    rows below it are, and the chip keeps its place on the bar either way.
+
+    Shaped as a row rather than as chrome so it reads as part of the list, with
+    the label first and the control at the trailing edge — the Menu's own row
+    layout, with the switch where a checkbox would sit.
+  -->
+  <template class="qf-range-tpl">
+    <div class="qf-range-row" data-row>
+      <span class="qf-row-label">Range</span>
+      <sherpa-switch class="qf-range-switch" data-style="simple"></sherpa-switch>
+    </div>
+  </template>
+
+  <!--
+    A NUMBER filter's content: one field when Range is off, a two-ended slider
+    when it is on. BOTH exist from the start and CSS reveals one, so flipping the
+    switch is an attribute write rather than a rebuild — and whatever the user
+    typed on the other side is still there when they flip back.
+
+    The single field is a bare number input rather than a sherpa-input-text: it
+    has to sit in the CHIP's light DOM to be slotted into the menu, where neither
+    component's stylesheet reaches it, and a composed component there would carry
+    its own shadow tree for a box this file cannot style anyway.
+  -->
+  <template class="qf-number-tpl">
+    <div class="qf-number">
+      <input class="qf-number-one" type="number" inputmode="decimal"
+             aria-label="Value" placeholder="Any" />
+      <sherpa-slider class="qf-number-range" data-type="range"
+                     data-show-value></sherpa-slider>
+    </div>
   </template>
 
 </template>

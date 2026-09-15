@@ -220,3 +220,65 @@
 .chip label[data-unavailable] .qf-row-label {
   color: var(--sherpa-content-inactive-default, #5c5c66);
 }
+
+/* ── The RANGE switch, and a number filter's two shapes ──────────────
+ * Both live in the CHIP's light DOM and are slotted into the menu, so a plain
+ * descendant selector from here reaches them.
+ */
+
+/* The switch row reads as part of the list — label first, control at the
+   trailing edge, where a value row puts its checkbox. */
+.chip .qf-range-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+.chip .qf-number {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* ONE of the two shapes shows. Both are in the DOM from the start, so flipping
+   the switch is an attribute write rather than a rebuild — and whatever the user
+   typed on the other side is still there when they flip back. */
+.chip .qf-number-range { display: none; }
+.chip sherpa-menu[data-range] .qf-number-one { display: none; }
+.chip sherpa-menu[data-range] .qf-number-range { display: flex; }
+
+/* The single field. A bare number input: it sits in the chip's light DOM where
+   neither component's sheet reaches it, so a composed sherpa-input-text would
+   carry a shadow tree for a box this file could not style anyway. */
+.chip .qf-number-one {
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+  border-style: solid;
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Numeric values are mono and right-aligned, per the system's convention. */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  text-align: right;
+  box-sizing: border-box;
+}
+.chip .qf-number-one:focus-visible {
+  outline: none;
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}

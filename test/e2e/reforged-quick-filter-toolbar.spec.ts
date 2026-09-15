@@ -1166,3 +1166,162 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
   expect(got.plain.caret).toBe('');
   expect(got.plain.reported).toEqual({});
 });
+
+/**
+ * A NUMBER filter is one chip with two shapes — "equals this" and "between these
+ * two" — flipped by a Range switch at the top of its menu.
+ *
+ * Two separate chips would make the user choose the shape before they know which
+ * they want, and changing their mind would mean taking one off the bar and adding
+ * the other.
+ */
+test('a NUMBER chip flips between a single field and a two-ended slider', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      pickedValues: Record<string, string[]>;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, step: 10, active: true },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const menu = el.shadowRoot!.querySelector('.chip[data-id="spend"] sherpa-menu')!;
+    const shown = (sel: string): boolean => {
+      const node = menu.querySelector(sel);
+      return !!node && getComputedStyle(node).display !== 'none';
+    };
+    const slider = menu.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider')!;
+    const field = menu.querySelector<HTMLInputElement>('.qf-number-one')!;
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const flip = async (): Promise<void> => {
+      const sw = menu.querySelector('.qf-range-switch') as HTMLElement & {
+        rendered?: Promise<void>;
+        shadowRoot: ShadowRoot;
+      };
+      await sw.rendered;
+      sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
+      await settle();
+    };
+
+    const snap = (): Record<string, unknown> => ({
+      ranged: menu.hasAttribute('data-range'),
+      field: shown('.qf-number-one'),
+      slider: shown('sherpa-slider'),
+      picks: el.pickedValues['spend'] ?? null,
+    });
+
+    const opened = snap();
+    // The bounds reach BOTH shapes, so typing 5000 into a 0..1000 filter cannot
+    // ask for a row that cannot exist.
+    const bounds = {
+      slider: [slider.getAttribute('min'), slider.getAttribute('max'), slider.getAttribute('step')],
+      field: [field.getAttribute('min'), field.getAttribute('max')],
+    };
+
+    field.value = '250';
+    field.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    const typed = snap();
+
+    await flip();
+    const ranged = snap();
+
+    slider.range = [200, 600];
+    await settle();
+    const dragged = snap();
+
+    await flip();
+    const back = snap();
+
+    return { opened, bounds, typed, ranged, dragged, back };
+  });
+
+  // Opens SINGLE: the simpler question, and the one a reader can answer without
+  // deciding on two numbers first.
+  expect(r.opened).toEqual({ ranged: false, field: true, slider: false, picks: null });
+  expect(r.bounds.slider).toEqual(['0', '1000', '10']);
+  expect(r.bounds.field).toEqual(['0', '1000']);
+
+  expect(r.typed.picks).toEqual(['250']);
+
+  // Flipped ON, a FULL-SPAN range excludes nothing, so it reports no pick at all
+  // — otherwise the chip would paint as an active filter that is not filtering.
+  expect(r.ranged).toEqual({ ranged: true, field: false, slider: true, picks: null });
+
+  // Both ends, in order.
+  expect(r.dragged.picks).toEqual(['200', '600']);
+
+  // Flipping BACK restores what was typed. Both shapes are in the DOM from the
+  // start and CSS reveals one, so a flip is an attribute write, not a rebuild.
+  expect(r.back).toEqual({ ranged: false, field: true, slider: false, picks: ['250'] });
+});
+
+/** A DATE chip gets the same switch, over its calendar rather than beside it. */
+test('a DATE chip carries the Range switch as a full-width row above its calendar', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([{ id: 'created', label: 'Created', kind: 'date', active: true }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const menu = el.shadowRoot!.querySelector('.chip[data-id="created"] sherpa-menu') as HTMLElement & {
+      show(): void;
+      shadowRoot: ShadowRoot;
+    };
+    menu.show();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+    const cal = menu.querySelector('sherpa-calendar')!;
+    const row = menu.querySelector('.qf-range-row')!.getBoundingClientRect();
+    const rows = menu.shadowRoot.querySelector('.rows')!.getBoundingClientRect();
+    const calBox = cal.getBoundingClientRect();
+
+    const flip = async (): Promise<void> => {
+      const sw = menu.querySelector('.qf-range-switch') as HTMLElement & {
+        rendered?: Promise<void>;
+        shadowRoot: ShadowRoot;
+      };
+      await sw.rendered;
+      sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    };
+
+    const before = (cal as HTMLElement).dataset['type'] ?? null;
+    await flip();
+    const on = (cal as HTMLElement).dataset['type'];
+    await flip();
+    const off = (cal as HTMLElement).dataset['type'];
+
+    return {
+      // A calendar menu's list region runs ACROSS, so without a full-width rule
+      // the switch became a narrow column squeezed against the day grid.
+      fullWidth: Math.abs(row.width - rows.width) < 2,
+      above: row.bottom <= calBox.top + 1,
+      before,
+      on,
+      off,
+    };
+  });
+
+  expect(r.fullWidth).toBe(true);
+  expect(r.above).toBe(true);
+
+  // The calendar's own two-ended mode, which it already had: a two-click
+  // start→end selection with the days between banded.
+  expect(r.before).toBeNull();
+  expect(r.on).toBe('range');
+  expect(r.off).toBe('single');
+});
