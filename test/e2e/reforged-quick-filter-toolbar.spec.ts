@@ -1061,3 +1061,44 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   expect(r.before.removable).toBe(true);
   expect(r.before.removeShown).not.toBe('none');
 });
+
+test('the VIEW selector keeps its own icon, whatever the app passes', async ({ page }) => {
+  // "You are looking at a saved view" is the same statement on every screen, so
+  // the glyph must not borrow whatever page the bar happens to sit on. The
+  // examples each passed their own nav icon — a table for records, a gauge for
+  // the dashboard — which made one control look like several.
+  const got = await page.evaluate(async () => {
+    const read = async (icon?: string) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate: (d: unknown) => void;
+      };
+      root.appendChild(bar);
+      await bar.rendered;
+      bar.populate([
+        { id: 'view', label: 'View', persistent: true, active: true, select: 'single',
+          ...(icon ? { icon } : {}),
+          options: [{ value: 'all', label: 'All', selected: true }] },
+        // A normal chip beside it still takes the icon it was given.
+        { id: 'plan', label: 'Plan', icon: 'fa-solid fa-tag', options: [{ value: 'pro', label: 'Pro' }] },
+      ]);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const chips = [...bar.shadowRoot!.querySelectorAll('sherpa-quick-filter')];
+      return chips.map((c) => c.getAttribute('data-icon-start'));
+    };
+    return {
+      // An app passing its own page icon must NOT override the view glyph…
+      overridden: await read('fa-solid fa-gauge-high'),
+      // …and passing none gets it anyway.
+      absent: await read(),
+    };
+  });
+
+  for (const pair of [got.overridden, got.absent]) {
+    expect(pair[0]).toBe('fa-solid fa-desktop');
+    // The neighbouring chip is untouched.
+    expect(pair[1]).toBe('fa-solid fa-tag');
+  }
+});

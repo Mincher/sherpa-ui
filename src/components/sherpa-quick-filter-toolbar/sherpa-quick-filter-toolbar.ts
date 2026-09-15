@@ -344,7 +344,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // The chip's LIVE state wins over its definition's; a chip the user has
       // never touched has no live entry and falls back to `active`.
       if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
-      if (f.icon) chip.setAttribute('data-icon-start', f.icon);
+      // The view selector's glyph is the toolbar's to decide, not the app's —
+      // see #icons.view. Any other chip takes whatever icon it was given.
+      const glyph = f.id === 'view' ? SherpaQuickFilterToolbar.#icons.view : f.icon;
+      if (glyph) chip.setAttribute('data-icon-start', glyph);
       // A selector, not a toggle: always on, and its body does not flip it.
       if (f.persistent) {
         chip.setAttribute('data-persistent', '');
@@ -896,6 +899,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * where an A-Z badge reads as wrong.
    */
   static readonly #icons = {
+    /**
+     * The VIEW selector's icon is fixed, like Group's and Sort's.
+     *
+     * It reads "you are looking at a saved view", which is the same statement on
+     * every screen — so it must not borrow the icon of whatever page it happens
+     * to sit on. The examples each passed their own nav glyph (a table for
+     * records, a gauge for the dashboard), which made one control look like five.
+     */
+    view: 'fa-solid fa-desktop',
     group: 'fa-solid fa-layer-group',
     sortNone: 'fa-solid fa-bars',
     sortAsc: 'fa-solid fa-arrow-up-wide-short',

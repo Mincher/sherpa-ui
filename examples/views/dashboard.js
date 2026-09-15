@@ -35,7 +35,7 @@ export async function init(root) {
         label: 'View',
         // A SELECTOR, not a toggle: you are always in some view.
         persistent: true,
-        icon: 'fa-solid fa-gauge-high',
+        // No icon here — the toolbar fixes the view selector's glyph itself.
         active: true,
         select: 'single',
         options: [
