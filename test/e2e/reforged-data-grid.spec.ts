@@ -718,3 +718,120 @@ test('the scroller FILLS a sized host, and still scrolls inside it', async ({ pa
   expect(r.canScroll).toBe(true);
   expect(r.scrolled).toBe(120);
 });
+
+/**
+ * Columns are a SET width, not a measured one.
+ *
+ * Under the old `table-layout: auto` the longest value in a column set that
+ * column's size, so one long customer name pushed every other column out and the
+ * grid scrolled sideways for a single row. The fix is a <colgroup> read under
+ * `table-layout: fixed`, which makes the label truncate inside its column instead.
+ */
+test('a long value truncates inside its column instead of widening it', async ({ page }) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const el = await window.__buildGrid({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'note', header: 'Note' }],
+      rows: [
+        { name: 'Jo', note: 'short' },
+        { name: 'A name far longer than any column should ever grow to fit', note: 'x' },
+      ],
+    });
+    const sr = el.shadowRoot!;
+    const heads = Array.from(sr.querySelectorAll('.head-cell')).map((h) =>
+      Math.round(h.getBoundingClientRect().width),
+    );
+    const long = Array.from(sr.querySelectorAll<HTMLElement>('.row .cell')).find((c) =>
+      (c.textContent ?? '').startsWith('A name far'),
+    )!;
+    return {
+      heads,
+      tableLayout: getComputedStyle(sr.querySelector('.grid')!).tableLayout,
+      // The value overflows its box — which is exactly what an ellipsis means.
+      clipped: long.scrollWidth > long.clientWidth,
+      ellipsis: getComputedStyle(long).textOverflow,
+      // `clip`, not `hidden`: the last pinned cell paints its scroll shadow as an
+      // ::after standing OUTSIDE its trailing edge, and `hidden` clipped it away.
+      overflow: getComputedStyle(long).overflow,
+    };
+  });
+
+  expect(r.tableLayout).toBe('fixed');
+  // Both columns are the default width — the long value changed nothing.
+  expect(r.heads).toEqual([160, 160]);
+  expect(r.clipped).toBe(true);
+  expect(r.ellipsis).toBe('ellipsis');
+  expect(r.overflow).toBe('clip');
+});
+
+/**
+ * Dragging a header's trailing grip resizes that column, clamped to the 8px-grid
+ * bounds — and does NOT sort it. The grip sits on top of the sort button, so the
+ * browser synthesises a click on pointerup that the header would otherwise read
+ * as a sort; #onGripUp swallows exactly one.
+ */
+test('the header grip resizes a column, clamps it, and does not sort', async ({ page }) => {
+  await installBuilder(page);
+  await page.evaluate(async () => {
+    await window.__buildGrid({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'note', header: 'Note' }],
+      rows: [{ name: 'Jo', note: 'x' }],
+    });
+  });
+
+  const gripCentre = async (i: number): Promise<{ x: number; y: number }> =>
+    page.evaluate((n) => {
+      const th = Array.from(
+        document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.head-cell'),
+      )[n]!;
+      const r = th.querySelector('.resize-grip')!.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, i);
+
+  const width = async (i: number): Promise<number> =>
+    page.evaluate(
+      (n) =>
+        Math.round(
+          Array.from(
+            document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.head-cell'),
+          )[n]!.getBoundingClientRect().width,
+        ),
+      i,
+    );
+
+  const sortField = async (): Promise<string | null> =>
+    page.evaluate(() => document.querySelector('sherpa-data-grid')!.getAttribute('data-sort-field'));
+
+  const drag = async (i: number, dx: number): Promise<void> => {
+    const g = await gripCentre(i);
+    await page.mouse.move(g.x, g.y);
+    await page.mouse.down();
+    await page.mouse.move(g.x + dx, g.y, { steps: 10 });
+    await page.mouse.up();
+    await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+  };
+
+  expect(await width(0)).toBe(160);
+
+  await drag(0, 80);
+  expect(await width(0)).toBe(240);
+  // The drag must NOT have sorted the column it grabbed.
+  expect(await sortField()).toBeNull();
+
+  // Clamped at both ends, on the 8px grid.
+  await drag(0, -500);
+  expect(await width(0)).toBe(96);
+  await drag(0, 900);
+  expect(await width(0)).toBe(480);
+
+  // …and a REAL header click straight after a resize still sorts. The click
+  // suppressor is `once`, so it eats the synthesised click and nothing more.
+  await page.evaluate(() => {
+    const th = Array.from(
+      document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.head-cell'),
+    )[0]!;
+    th.querySelector<HTMLElement>('.head-btn')!.click();
+  });
+  await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
+  expect(await sortField()).toBe('name');
+});

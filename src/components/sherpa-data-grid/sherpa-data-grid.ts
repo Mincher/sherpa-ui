@@ -31,6 +31,7 @@
  * @fires selection-change — a selection checkbox toggles. bubbles + composed. detail: { selected: string[] }
  * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
  * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
+ * @fires column-resize    — a column header grip is dragged. bubbles + composed. detail: { field: string, width: number }
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -40,6 +41,11 @@ export interface GridColumn {
   /** number → right-aligned mono cells; anything else → default text. */
   type?: string;
   sortable?: boolean;
+  /**
+   * Drawn width in px, clamped to MIN_COL_WIDTH..MAX_COL_WIDTH. Absent means
+   * DEFAULT_COL_WIDTH. A user drag overrides it for the life of the grid.
+   */
+  width?: number;
 }
 
 type GridRow = Record<string, unknown>;
@@ -62,8 +68,27 @@ export class SherpaDataGrid extends SherpaElement {
     'data-selectable',
   ];
 
+  /* ── Column widths ───────────────────────────────────────────────
+   * All three are on the 8px grid. 96 is about six characters of the 14px body
+   * face plus its padding — narrower than that and a heading is pure ellipsis.
+   * 480 is wide enough for a long address without one column owning the panel.
+   * 160 is the default: it fits a name, a date or a mid-length status without
+   * clipping, which is most of what a grid holds.
+   */
+  static readonly MIN_COL_WIDTH = 96;
+  static readonly MAX_COL_WIDTH = 480;
+  static readonly DEFAULT_COL_WIDTH = 160;
+
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
+  /**
+   * Widths the USER has dragged, keyed by field.
+   *
+   * Kept apart from the column config so a re-populate with the same columns
+   * does not throw away a resize, and so #widthFor() can state the precedence
+   * in one place: drag beats config beats default.
+   */
+  #widths = new Map<string, number>();
   /** Active per-column filter text, keyed by field. Empty entries are removed. */
   #filters = new Map<string, string>();
   /**
@@ -102,6 +127,10 @@ export class SherpaDataGrid extends SherpaElement {
     // Filter: delegate both the typing and the clear button from the filter row.
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
     this.$('.filter-row')?.addEventListener('click', this.#onFilterClick);
+    // Resize starts on the header row; the move/up pair is captured on the
+    // POINTER itself in #onGripDown, so a fast drag that outruns the cursor does
+    // not drop out of the gesture.
+    this.$('.head-row')?.addEventListener('pointerdown', this.#onGripDown);
     if (this.#columns.length) this.#render();
   }
 
@@ -211,7 +240,55 @@ export class SherpaDataGrid extends SherpaElement {
     sortDesc: 'fa-solid fa-arrow-down-wide-short',
   } as const;
 
+  /**
+   * The width one column is drawn at.
+   *
+   * Precedence, stated once: a width the USER dragged wins, then the one the
+   * caller configured, then the default. Every route is clamped, so a config
+   * of `width: 4` cannot produce a column too thin to read.
+   */
+  #widthFor(col: GridColumn): number {
+    const dragged = this.#widths.get(col.field);
+    const raw = dragged ?? col.width ?? SherpaDataGrid.DEFAULT_COL_WIDTH;
+    return this.#clampWidth(raw);
+  }
+
+  #clampWidth(n: number): number {
+    const { MIN_COL_WIDTH, MAX_COL_WIDTH, DEFAULT_COL_WIDTH } = SherpaDataGrid;
+    if (!Number.isFinite(n)) return DEFAULT_COL_WIDTH;
+    return Math.min(MAX_COL_WIDTH, Math.max(MIN_COL_WIDTH, Math.round(n)));
+  }
+
+  /**
+   * Stamp one <col> per drawn column.
+   *
+   * This is what `table-layout: fixed` reads, so it must run BEFORE the header
+   * cells are rebuilt — the browser sizes the table from the colgroup and a
+   * stale one would size the new columns by the old widths for a frame.
+   */
+  #renderCols(): void {
+    // `own-children`, not `replace`: the leading `.select-col` is a fixed part of
+    // the template (it sizes the selection column) and emptying the colgroup
+    // would take it with the dynamic ones.
+    this.renderList(
+      '.cols',
+      'template.col-tpl',
+      this.#shownColumns(),
+      (node, col) => {
+        const el = node as HTMLElement;
+        el.dataset['field'] = col.field;
+        // `width`, NOT `inline-size`. A fixed table sizes its columns from the
+        // <col>'s used WIDTH, and Chromium does not feed the logical property
+        // into that calculation — a <col> styled with inline-size measured 381px against
+        // a set 160px. The physical property is the one tables read.
+        el.style.width = `${this.#widthFor(col)}px`;
+      },
+      { clear: 'own-children', ownSel: '.cols > .col' },
+    );
+  }
+
   #renderHead(): void {
+    this.#renderCols();
     const headRow = this.$('.head-row');
     const tpl = this.$<HTMLTemplateElement>('template.head-cell-tpl');
     if (!headRow || !tpl) return;
@@ -534,6 +611,81 @@ export class SherpaDataGrid extends SherpaElement {
       row.toggleAttribute('data-hidden', key != null && this.#collapsed.has(key));
     }
   }
+
+  /* ── Column resize ──────────────────────────────────────────────── */
+
+  /**
+   * A drag in flight. Held as one object so a stray pointermove that arrives
+   * outside a gesture has a single thing to test, rather than three loose
+   * fields that could disagree.
+   */
+  #drag: { field: string; startX: number; startWidth: number } | null = null;
+
+  #onGripDown = (event: PointerEvent): void => {
+    const grip = (event.target as HTMLElement | null)?.closest?.('.resize-grip');
+    if (!grip) return;
+    const th = grip.closest<HTMLElement>('.head-cell');
+    const field = th?.dataset['field'];
+    if (!field) return;
+
+    // preventDefault stops the text-selection drag; stopPropagation keeps the
+    // pointerdown off the header. Neither stops the CLICK — the browser still
+    // synthesises one on pointerup, and the <th>'s sort handler listens for
+    // that — so #onGripUp swallows the next click as well.
+    event.preventDefault();
+    event.stopPropagation();
+
+    // The MEASURED width, not the configured one: a column can be wider than
+    // its <col> says when the table has slack to share, and starting the drag
+    // from the config value made the column jump on the first pixel of movement.
+    const startWidth = th!.getBoundingClientRect().width;
+    this.#drag = { field, startX: event.clientX, startWidth };
+    this.toggleAttribute('data-resizing', true);
+
+    // Captured on the GRIP, so the gesture follows the pointer even when it
+    // outruns the 8px strip or leaves the grid entirely. Without capture a fast
+    // drag dropped the column at whatever width it had when the cursor escaped.
+    (grip as HTMLElement).setPointerCapture(event.pointerId);
+    grip.addEventListener('pointermove', this.#onGripMove as EventListener);
+    grip.addEventListener('pointerup', this.#onGripUp as EventListener, { once: true });
+    grip.addEventListener('pointercancel', this.#onGripUp as EventListener, { once: true });
+  };
+
+  #onGripMove = (event: PointerEvent): void => {
+    if (!this.#drag) return;
+    const { field, startX, startWidth } = this.#drag;
+    const next = this.#clampWidth(startWidth + (event.clientX - startX));
+    this.#widths.set(field, next);
+    // Write the <col> DIRECTLY rather than re-rendering. A full #render() on
+    // every pointermove would rebuild every row of the body sixty times a
+    // second; the colgroup is the only thing a width changes.
+    const col = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(field)}"]`);
+    if (col) col.style.width = `${next}px`;
+  };
+
+  #onGripUp = (event: PointerEvent): void => {
+    const drag = this.#drag;
+    this.#drag = null;
+    this.toggleAttribute('data-resizing', false);
+
+    // Swallow the click the browser is about to synthesise on this pointerup.
+    // Capture phase on the head row, `once`, so it eats exactly one event and
+    // a real header click straight after a resize still sorts.
+    this.$('.head-row')?.addEventListener(
+      'click',
+      (e: Event) => { e.stopPropagation(); e.preventDefault(); },
+      { capture: true, once: true },
+    );
+    (event.target as HTMLElement | null)?.removeEventListener?.(
+      'pointermove',
+      this.#onGripMove as EventListener,
+    );
+    if (!drag) return;
+    // The frozen first column's offset is a MEASURED width, so a resize of it
+    // moves where every later pinned column starts.
+    this.#syncPinned();
+    this.emit('column-resize', { field: drag.field, width: this.#widths.get(drag.field) });
+  };
 
   /* ── Selection ──────────────────────────────────────────────────── */
 

@@ -33,7 +33,13 @@
     data-selectable                          show a leading checkbox column (select-all + per-row)
     data-filterable                          show a secondary header row of filter inputs
 
+  Column widths: each column is drawn at a fixed width so long labels TRUNCATE
+  rather than stretch the column. A column takes `width` from its config, else the
+  default; dragging the grip on a header's trailing edge resizes it, clamped
+  between SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
+
   Fires:
+    column-resize    — detail: { field, width }
     sort-change      — detail: { field, direction }
     row-click        — detail: { index, row }
     selection-change — detail: { selected: string[] }   (row indices as strings)
@@ -50,6 +56,18 @@
   -->
   <div class="scroller" part="scroller">
   <table class="grid" part="grid">
+    <!--
+      The <colgroup> is what makes a column's width a SETTING rather than a
+      measurement. With `table-layout: fixed` the browser reads each column's
+      size from its <col> and stops sizing to the widest cell, so a long label
+      truncates inside its column instead of stretching it.
+
+      The leading <col> matches the fixed select column; JS stamps one more per
+      drawn column from the prototype below.
+    -->
+    <colgroup class="cols">
+      <col class="select-col" />
+    </colgroup>
     <thead class="head" part="head">
       <tr class="head-row">
         <th class="select-cell select-head" scope="col">
@@ -86,7 +104,24 @@
         -->
         <i class="sort-icon" aria-hidden="true"></i>
       </button>
+      <!--
+        The resize grip. It sits on the header's TRAILING edge and drags that
+        column wider or narrower. A <th> cannot take `resize` (that property only
+        works on a scroll container), so the grip is its own box and JS does the
+        arithmetic on pointer move.
+
+        It is a plain <span>, not a <button>: it has no keyboard action and
+        announcing "button" on every column would add one useless stop per column
+        to the tab order. Keyboard users resize nothing here; the column already
+        truncates rather than hides.
+      -->
+      <span class="resize-grip" part="resize-grip" aria-hidden="true"></span>
     </th>
+  </template>
+
+  <!-- One per drawn column. JS sets its inline-size; see .cols in the CSS. -->
+  <template class="col-tpl">
+    <col class="col" />
   </template>
 
   <!--

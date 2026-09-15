@@ -54,7 +54,30 @@
 }
 
 .grid {
-  inline-size: 100%;
+  /* MAX-CONTENT, so the table is exactly the sum of the widths the <colgroup>
+     names and the scroller handles the overflow.
+
+     Not `auto`, and not `min-inline-size: 100%`: under either, a table narrower
+     than its box has slack, and `table-layout: fixed` shares that slack out
+     across EVERY column. A drag then wrote 289px into a <col> and the column
+     still measured 213, because the browser had re-divided the row.
+
+     Not `min-content` either, which is the same trap from the other side: in a
+     container with no width of its own the table collapsed to its smallest
+     possible size and a 160px column drew 18px wide.
+
+     `0` is what actually holds. A fixed table whose own width is smaller than
+     its columns lays each column out at exactly the width its <col> names and
+     grows to their sum — there is no slack to share and no floor to collapse
+     to, in a sized container or an unsized one. `max-content` read as auto here
+     and a 160px column drew 381px. */
+  inline-size: 0;
+  /* FIXED, so a column's width is what the <colgroup> says and NOT the width of
+     its widest cell. Under `auto` the longest label in a column set that
+     column's size, so one long customer name pushed every other column out and
+     the grid scrolled sideways for a single row. Fixed means the label
+     truncates inside the column instead. */
+  table-layout: fixed;
   /* SEPARATE, not collapse — and this is a correctness fix, not a preference.
      In the COLLAPSED border model the browser paints cell backgrounds and borders
      in a fixed table order that IGNORES z-index on cells, so scrolling rows drew
@@ -131,6 +154,24 @@
 /* The checkbox <th>/<td> exist in the template always; CSS reveals them. */
 .select-cell { display: none; }
 :host([data-selectable]) .select-cell { display: table-cell; }
+
+/* The selection column's <col>, which is what `table-layout: fixed` actually
+   reads — the 32px on `.select-cell` below sizes the CELL, and a fixed table
+   ignores a cell's own width.
+
+   It must also come and go WITH its cells. Hiding only the cells left a third
+   <col> against two columns of content, so the browser matched the first <col>
+   to the first drawn column: `select-col` carried no width, took every spare
+   pixel, and the grid drew 381 + 172 instead of 160 + 160. `display: none` on a
+   <col> removes the column from the table's sizing, so the <col>s and the
+   columns stay one-to-one either way. */
+.select-col {
+  display: none;
+  /* `width`, not `inline-size`: a fixed table reads the <col>'s used WIDTH and
+     Chromium does not feed the logical property into that calculation. */
+  width: var(--sherpa-display-mode-space-2xl, 32px);
+}
+:host([data-selectable]) .select-col { display: table-column; }
 
 .select-cell {
   inline-size: var(--sherpa-display-mode-space-2xl, 32px);
@@ -360,6 +401,45 @@
      label 14px short of a sortable column's and the headings would not line up. */
   &[data-sortable="false"] .sort-icon { display: none; }
 }
+/* ── Column widths + the resize grip ─────────────────────────────────
+ * A column is drawn at the width its <col> carries, so its content has to fold
+ * back into that box. Both the header label and the body cells clip with an
+ * ellipsis; `min-inline-size: 0` is what lets a flex/table child shrink below
+ * its content at all.
+ */
+.head-label {
+  min-inline-size: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The grip straddles the header's trailing edge, so it is grabbable from either
+   side of the divider — 8px total, centred on the boundary. It spans the full
+   header height and sits above the sort button so a drag that starts on it is
+   never read as a sort click. */
+.resize-grip {
+  position: absolute;
+  z-index: 1;
+  inset-block: 0;
+  /* FLUSH with the edge, not straddling it. A negative inset put half the strip
+     past the cell's boundary, and the browser hit-tests the neighbouring cell
+     there — a pointerdown on the visual centre of the grip reported `.head-cell`
+     and the drag never started. Wholly inside, every pixel of it is grabbable. */
+  inset-inline-end: 0;
+  inline-size: var(--sherpa-display-mode-space-xs, 8px);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+/* While a drag is live the whole grid takes the resize cursor, so the pointer
+   does not flicker back to a text caret the moment it leaves the 8px strip. */
+:host([data-resizing]) {
+  cursor: col-resize;
+  user-select: none;
+}
+:host([data-resizing]) .head-btn { cursor: col-resize; }
+
 .head-btn {
   display: flex;
   align-items: center;
@@ -371,7 +451,12 @@
   justify-content: space-between;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
-  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  /* WIDER inline padding than block. The resize grip is an 8px strip on the
+     header's trailing edge, and the sort button covered it right up to that
+     edge — the label and the sort glyph ran under the grip, so a user aiming
+     for the grip hit the sort. 8px each side holds the button's content clear
+     of the strip and leaves the whole grip grabbable. */
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   border: none;
   background: none;
   /* Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
@@ -639,6 +724,19 @@
 .cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   white-space: nowrap;
+  /* The column is a fixed width now, so a long value has to clip rather than
+     widen it. `nowrap` above keeps the value on one line; these two cut it off
+     with an ellipsis at the column's edge.
+
+     `overflow: clip` rather than `hidden`. A cell can be the LAST PINNED one,
+     and that cell paints the scroll shadow as an ::after standing 12px outside
+     its own trailing edge — `hidden` clipped it away and the depth cue was
+     lost. `clip` takes an axis: `overflow-clip-margin` is honoured, so the
+     inline overflow is still cut at the column edge while the pseudo-element
+     is free to paint past it. */
+  overflow: clip;
+  overflow-clip-margin: content-box;
+  text-overflow: ellipsis;
   /* Figma binds every Grid Cell label to line-height/base 20 — a 32-tall row with
      4px padding needs exactly that. Unset, it fell back to `normal`, which the font
      resolves near 17 and left the text sitting high in the row. */
