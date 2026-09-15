@@ -73,11 +73,14 @@ const ACTIONS: ReadonlyArray<readonly [string, string]> = [
 export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);
   static override html = new URL('./sherpa-app-header.html', import.meta.url);
+  static override props = {
+    // data-title is the legacy alias for data-heading.
+    'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
+    'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
+  } as const;
+
   static override observed = [
-    'data-heading',
-    'data-title',
     'data-icon',
-    'data-ai-label',
     'data-notifications',
   ];
 
@@ -118,9 +121,6 @@ export class SherpaAppHeader extends SherpaElement {
   /* ── Sync data-* → DOM ──────────────────────────────────────────── */
 
   #sync(): void {
-    const title = this.$('.title');
-    if (title) title.textContent = this.dataset['heading'] ?? this.dataset['title'] ?? '';
-
     // The view icon is a Font Awesome class list; render it as an <i>, never as text.
     const icon = this.$('.view-icon');
     const glyph = this.dataset['icon'];
@@ -134,9 +134,6 @@ export class SherpaAppHeader extends SherpaElement {
         icon.textContent = glyph ?? '';
       }
     }
-
-    const aiLabel = this.$('.ai-label');
-    if (aiLabel) aiLabel.textContent = this.dataset['aiLabel'] ?? 'Ask N-zo';
 
     // Notification count → badge text; CSS shows/hides via [data-notifications].
     const count = this.dataset['notifications'];

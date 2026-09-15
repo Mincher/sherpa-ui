@@ -59,6 +59,10 @@ import '../sherpa-container-footer/sherpa-container-footer.js';
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.heading' },
+  } as const;
+
   static override observed = [
     'data-heading',
     'data-align',
@@ -195,9 +199,8 @@ export class SherpaMenu extends SherpaElement {
   }
 
   #sync(): void {
-    const heading = this.$('.heading');
-    if (heading) heading.textContent = this.dataset['heading'] ?? '';
-
+    // The heading TEXT is a declared prop. data-heading stays observed because it
+    // also names the card for a screen reader and the radio group below.
     // A CALENDAR shows no heading — its header holds the month stepper and
     // nothing else (Figma 1156:29240: the two variants' headers are exclusive).
     // The name still has to reach a screen reader, so it moves to the card's

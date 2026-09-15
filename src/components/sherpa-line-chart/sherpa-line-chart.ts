@@ -30,7 +30,12 @@ interface LineData {
 export class SherpaLineChart extends SherpaElement {
   static override css = new URL('./sherpa-line-chart.css', import.meta.url);
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
-  static override observed = ['data-variant', 'data-min', 'data-max', 'data-ticks', 'data-axis-label', 'data-x-axis-label'];
+  static override props = {
+    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
+    'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },
+  } as const;
+
+  static override observed = ['data-variant', 'data-min', 'data-max', 'data-ticks'];
 
   #labels: string[] = [];
   #series: Series[] = [];
@@ -199,8 +204,6 @@ export class SherpaLineChart extends SherpaElement {
       xAxis.appendChild(span);
     }
 
-    const xCaption = this.$('.axis-label-x');
-    if (xCaption) xCaption.textContent = this.dataset['xAxisLabel'] ?? '';
   }
 
   /**
@@ -221,8 +224,6 @@ export class SherpaLineChart extends SherpaElement {
   #renderYAxis(min: number, max: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
-    const caption = this.$('.axis-label-y');
-    if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
     if (!axis || !tpl) return;
 
     const steps = this.#tickSteps();

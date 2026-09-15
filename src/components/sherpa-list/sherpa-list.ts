@@ -27,6 +27,10 @@ type ListItemEl = HTMLElement & { current?: boolean };
 export class SherpaList extends SherpaElement {
   static override css = new URL('./sherpa-list.css', import.meta.url);
   static override html = new URL('./sherpa-list.html', import.meta.url);
+  static override props = {
+    'data-empty': { type: 'string', kind: 'content', to: '.empty' },
+  } as const;
+
   static override observed = ['data-empty'];
 
   #rows: ListRow[] = [];
@@ -86,9 +90,9 @@ export class SherpaList extends SherpaElement {
     return slotted + stamped;
   }
 
+  // The TEXT is a declared prop; this toggles the VISIBILITY flag, which depends
+  // on the row count and so cannot be expressed as an attribute write.
   #syncEmpty = (): void => {
-    const el = this.$('.empty');
-    if (el) el.textContent = this.dataset['empty'] ?? '';
     const empty = this.#rowCount() === 0 && !!this.dataset['empty'];
     this.toggleAttribute('data-empty-visible', empty);
   };

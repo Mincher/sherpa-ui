@@ -26,7 +26,11 @@ export interface BarDatum {
 export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
-  static override observed = ['data-max', 'data-ticks', 'data-axis-label'];
+  static override props = {
+    'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
+  } as const;
+
+  static override observed = ['data-max', 'data-ticks'];
 
   #data: BarDatum[] = [];
   /** Bars a chart legend has switched off. */
@@ -131,8 +135,6 @@ export class SherpaBarchart extends SherpaElement {
   #renderYAxis(max: number, shownCount: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
-    const caption = this.$('.axis-label-y');
-    if (caption) caption.textContent = this.dataset['axisLabel'] ?? '';
     if (!axis || !tpl) return;
 
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });

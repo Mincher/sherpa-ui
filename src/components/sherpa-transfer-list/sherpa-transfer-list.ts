@@ -26,22 +26,20 @@ interface Item {
 export class SherpaTransferList extends SherpaElement {
   static override css = new URL('./sherpa-transfer-list.css', import.meta.url);
   static override html = new URL('./sherpa-transfer-list.html', import.meta.url);
-  static override observed = ['data-source-heading', 'data-target-heading'];
+  static override props = {
+    'data-source-heading': { type: 'string', kind: 'content', to: '.source .pane-heading', default: 'Available' },
+    'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading', default: 'Selected' },
+  } as const;
 
   #items: Item[] = [];
   /** Values staged (checked) for the next move, in either pane. */
   #staged = new Set<string>();
 
   override onRender(): void {
-    this.#syncHeadings();
     this.$('.moves')?.addEventListener('click', this.#onMoveClick);
     // A row's leading control fires item-select; stage/unstage on it.
     this.$('.panes')?.addEventListener('item-select', this.#onRowSelect as EventListener);
     this.#render();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-source-heading' || name === 'data-target-heading') this.#syncHeadings();
   }
 
   /** populate([{ value, label, selected? }]) — the full item pool. */
@@ -70,13 +68,6 @@ export class SherpaTransferList extends SherpaElement {
   }
 
   /* ── Rendering ─────────────────────────────────────────────────────── */
-
-  #syncHeadings(): void {
-    const src = this.$('.source .pane-heading');
-    if (src) src.textContent = this.dataset['sourceHeading'] ?? 'Available';
-    const tgt = this.$('.target .pane-heading');
-    if (tgt) tgt.textContent = this.dataset['targetHeading'] ?? 'Selected';
-  }
 
   #render(): void {
     const sourceList = this.$('.source .pane-list');
