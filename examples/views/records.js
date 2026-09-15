@@ -119,8 +119,22 @@ export async function init(root) {
      source turns that into a filter on its own. The one thing it cannot guess is
      that two picks on a DATE column mean a range rather than an either/or, so
      that is translated here and handed over as a real filter. */
-  const filterFromChips = (values) => {
+  /* The four TOGGLE chips are status values, not fields: their ids are `active`,
+     `trial`, `suspended`, `churned`, and turning one on means "show me customers
+     in that status". Only this view knows that — a chip id is a field name for
+     every MENU chip, so the source cannot guess which column a toggle names. They
+     arrive in `active`, separately from the menu chips' `values`, and used to be
+     dropped on the floor here, which is why clicking them did nothing. */
+  const statusChips = new Set(['active', 'trial', 'suspended', 'churned']);
+
+  const filterFromChips = (values, active = []) => {
     const clauses = [];
+    const statuses = active.filter((id) => statusChips.has(id));
+    // Several statuses on at once is an OR — "active OR trial" — and the whole
+    // set ANDs with whatever the menu chips narrow to.
+    if (statuses.length === 1) clauses.push(['status', 'eq', statuses[0]]);
+    else if (statuses.length > 1) clauses.push(['status', 'in', statuses]);
+
     for (const [field, picked] of Object.entries(values ?? {})) {
       if (!picked?.length) continue;
       if (picked.length === 2 && dateFields.has(field)) {
@@ -293,7 +307,7 @@ export async function init(root) {
      Its chips are translated here rather than by the source because only this
      view knows that two picks on `created` mean a RANGE, not an either/or. */
   qft.addEventListener('quick-filter-change', (e) => {
-    source.setFilter(filterFromChips(e.detail.values));
+    source.setFilter(filterFromChips(e.detail.values, e.detail.active));
   });
   qft.addEventListener('sort-change', (e) => source.setSort(e.detail.field, e.detail.direction));
   qft.addEventListener('group-change', (e) => source.setGroup(e.detail.field || null));
