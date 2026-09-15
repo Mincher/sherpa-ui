@@ -34,6 +34,11 @@
 .bubble {
   position: absolute;
   z-index: 10;
+  /* The UA gives a popover a border, a background and its own inset. None of
+     them belong to this bubble, which paints its own. */
+  margin: 0;
+  border: 0;
+  overflow: visible;
   inset-inline-start: 50%;
   inset-block-end: calc(100% + var(--_gap));
   transform: translateX(-50%);
@@ -147,4 +152,43 @@ slot[name="tip"] { display: none; }
   transform: translateY(-50%);
   border-width: 6px 6px 6px 0;
   border-color: transparent var(--_bg) transparent transparent;
+}
+
+/* ── Floating mode: the bubble lives in the TOP LAYER ────────────────
+ * A tooltip stands outside the box it belongs to by definition, so any ancestor
+ * with `overflow` cuts it off — a filter toolbar's chip run clips, and the tip
+ * above a chip's count badge was lost entirely.
+ *
+ * `popover` puts it in the top layer, past every clip and stacking context. A
+ * popover is `position: fixed` there, so the host's own offsets mean nothing and
+ * JS supplies measured viewport coordinates instead — the same --_x / --_y
+ * bridge sherpa-menu uses, and for the same reason: CSS anchor positioning
+ * cannot cross a shadow boundary.
+ */
+:host([data-floating]) .bubble {
+  position: fixed;
+  inset: auto;
+  inset-block-start: var(--_y, 0);
+  inset-inline-start: var(--_x, 0);
+  /* Centred on the trigger by JS, which measures both boxes — the 50% + translate
+     pair below places against the HOST, which a fixed box no longer sits in. */
+  transform: none;
+}
+
+/* VISIBLE whenever it is open. Ordinary mode reveals on :hover / :focus-within
+   of the wrapped trigger — but a floating tooltip may not wrap anything at all
+   (see data-anchor), so there is no hover state here to key off. Its JS opens
+   and closes the popover, and `:popover-open` is the state that follows. */
+:host([data-floating]) .bubble:popover-open {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* The arrow points DOWN from a bubble sitting above its trigger, which is where
+   floating mode always puts it. */
+:host([data-floating]) .arrow {
+  inset-block-start: 100%;
+  inset-block-end: auto;
+  inset-inline-start: 50%;
+  translate: -50% 0;
 }

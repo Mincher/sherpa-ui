@@ -65,16 +65,29 @@
 -->
 <template id="default">
   <div class="chip" part="chip">
+    <!--
+      THE VALUE TOOLTIP — a composed <sherpa-tooltip>, not a hand-rolled bubble.
+
+      It sits INSIDE the chip as a sibling of the two buttons, with nothing
+      slotted into it: `data-anchor` points it at the chip, so hovering ANY part
+      of the chip shows the tip centred above the whole thing rather than over a
+      16px badge. Wrapping the chip instead would put this element between the
+      host and `.chip`, and every `:host(…) .body` rule in this file stops
+      matching.
+
+      `data-floating` puts the bubble in the TOP LAYER. The bar's chip run clips
+      (it must, so a chip half out of view is never drawn mid-reflow), and a
+      tooltip stands outside the box it belongs to by definition — an
+      absolutely-positioned one was cut off entirely, however high the chip was
+      raised, because a clip is not a stacking question.
+    -->
+    <sherpa-tooltip class="count-wrap" data-floating data-anchor=".chip"></sherpa-tooltip>
     <button class="body" part="body" type="button">
       <span class="indicator" part="indicator" aria-hidden="true"></span>
-      <span class="count-wrap">
-        <!-- role=img so the aria-label is actually announced: a bare <span> with
-             an aria-label is ignored by AT (no role = no accessible name). The
-             label is the only route to the value list, since .count-tip is a
-             CSS-only bubble and therefore aria-hidden. -->
-        <span class="count" part="count" role="img"></span>
-        <span class="count-tip" part="count-tip" role="tooltip" aria-hidden="true"></span>
-      </span>
+      <!-- role=img so the aria-label is announced: a bare <span> with an
+           aria-label is ignored by AT (no role = no accessible name). The
+           tooltip carries the same list visually. -->
+      <span class="count" part="count" role="img"></span>
       <span class="icon" part="icon" aria-hidden="true"></span>
       <span class="label" part="label"><slot></slot></span>
     </button>

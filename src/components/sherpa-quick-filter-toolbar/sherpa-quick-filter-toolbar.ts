@@ -332,14 +332,34 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const glyph = source.dataset['iconStart'];
       if (glyph) row.dataset['icon'] = glyph;
 
-      // How many values this filter carries. The same figure its own chip wears,
-      // read from the same place, so the two can never disagree.
+      menu.appendChild(row);
+    }
+
+    this.#syncFoldedBadges();
+  }
+
+  /**
+   * Re-read every folded row's value count.
+   *
+   * Separate from the row STAMPING, because the counts move without the rows
+   * doing: a value ticked while drilled into that filter, or the filter's own
+   * menu applied. Stamping again on every change would rebuild the list the
+   * reader is looking at.
+   */
+  #syncFoldedBadges(): void {
+    const chip = this.$<HTMLElement>('.overflow-chip');
+    const menu = chip?.querySelector('sherpa-menu');
+    if (!menu) return;
+    for (const row of menu.querySelectorAll<HTMLElement>('.qf-folded')) {
+      const id = row.dataset['for'];
+      const source = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
+      const badge = row.querySelector<HTMLElement>('.qf-folded-count');
+      if (!source || !badge) continue;
+      // The same figure the filter's own chip wears, read from the same place,
+      // so the two can never disagree.
       const count = this.#chipPicks(source).length;
-      const badge = row.querySelector<HTMLElement>('.qf-folded-count')!;
       badge.textContent = String(count);
       badge.hidden = count === 0;
-
-      menu.appendChild(row);
     }
   }
 
@@ -429,6 +449,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   };
 
+  #onFoldedCountsChanged = (): void => {
+    this.#syncFoldedBadges();
+  };
+
   #drillOutHandler = (): void => {
     this.#drillOut();
   };
@@ -462,6 +486,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     menu.removeAttribute('data-drill');
     delete menu.dataset['drillFrom'];
+    // The rows are home now, so every count reads from its own chip again.
+    // Deferred, because the badges are stamped back into the menu on the line
+    // below and would otherwise be read before they exist.
+    queueMicrotask(() => this.#syncFoldedBadges());
     menu.setAttribute('data-heading', 'More filters');
     // Hand every mode back to the filter's own menu — it is where they belong,
     // and a calendar left without its data-type is a crushed grid.
@@ -518,6 +546,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The organise chips carry MENUS, so their selection arrives as the chip's
     // own quick-filter-change (relayed from <sherpa-menu>), not as a body click.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange);
+    // A folded filter's badge counts what it holds, and that moves without the
+    // rows doing — a value ticked while drilled, or the filter's own menu
+    // applied. Re-read on every change rather than re-stamping the list, which
+    // would rebuild what the reader is looking at.
+    this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
+    this.addEventListener('menu-change', this.#onFoldedCountsChanged);
+    // A COMMITTING menu fires nothing while its rows are being ticked — the set
+    // is a draft until Apply — so a value picked inside a drill reaches no
+    // listener at all. `change` is the native one from the row itself, which
+    // does bubble this far: the rows are in the CHIP's light DOM, not behind a
+    // second shadow boundary.
+    this.addEventListener('change', this.#onFoldedCountsChanged);
     // Action rows (the "Remove filter" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
     // The RANGE switch on a number or date menu. sherpa-switch re-dispatches its

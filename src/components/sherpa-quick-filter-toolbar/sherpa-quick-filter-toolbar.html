@@ -261,8 +261,23 @@
   <template class="qf-folded-tpl">
     <sherpa-list-item class="qf-folded" data-interactive>
       <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
-      <i class="fa-solid fa-chevron-right qf-folded-caret" slot="trailing"
-         aria-hidden="true"></i>
+      <!--
+        The drill affordance. A composed transparent icon <sherpa-button>, which
+        is what every other chevron in the system is — a bare <i> would be a
+        glyph this file then had to size and colour itself.
+
+        `data-expandable` on the list item is the wrong thing: its toggle sits
+        on the LEADING side and fires item-expand, and this row navigates rather
+        than expanding in place.
+
+        It is decorative — the whole ROW is the click target, and the list item
+        already exposes a real button for that — so it takes no tab stop of its
+        own and no label to announce twice.
+      -->
+      <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
+                     data-size="xs" data-look="transparent" tabindex="-1"
+                     aria-hidden="true"
+                     data-icon-start="fa-solid fa-chevron-right"></sherpa-button>
     </sherpa-list-item>
   </template>
 

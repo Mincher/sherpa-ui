@@ -185,13 +185,22 @@
    16-tall chip (white face, 0.5 grey ring, dark ink, radius sm), LEADING the label.
    It is deliberately NOT the active tint — that was the bug.
 
-   The badge sits in .count-wrap, a position:relative box that exists ONLY to be
-   the positioning parent for the hover bubble. Without it the bubble would
-   anchor to .body and sit centred over the whole chip. */
-.count-wrap { display: none; }
-:host([data-count]) .count-wrap {
-  display: inline-flex;
-  position: relative;
+   .count-wrap is the <sherpa-tooltip>. It holds NO trigger of its own — it sits
+   beside the chip's buttons and anchors to the whole chip, so hovering any part
+   shows the value list. It draws nothing itself; only its bubble, in the top
+   layer, is ever visible. */
+.count-wrap {
+  /* ALWAYS laid out, and zero-sized: it draws nothing itself and only its
+     bubble, in the top layer, is ever seen. `display: none` would take its
+     anchor's listeners out with it, and they are wired once at render — a chip
+     that gained a count later would never show a tip again.
+
+     What comes and goes is the TIP TEXT: the tooltip has nothing to show until
+     a count exists, and an empty bubble is suppressed below. */
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
 }
 
 .count { display: none; }
@@ -216,84 +225,11 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 
-/* ── The badge's value tooltip — pure CSS on hover/focus ─────────────────────
-   A count alone says HOW MANY but never WHICH, so hovering the badge lists the
-   chosen values above it.
-
-   This is a local copy of the sherpa-tooltip look, not a nested instance: the
-   badge lives inside THIS shadow root, and sherpa-tooltip works by wrapping a
-   light-DOM trigger, so it cannot reach in here. The fills, the 12/16 text and
-   the Elevation=md shadow are the same Theme tokens the tooltip binds, so the
-   two bubbles stay identical without a component boundary between them.
-
-   Reveal is CSS only — JS never toggles visibility. */
-.count-tip {
-  position: absolute;
-  z-index: 10;
-  /* Above the badge, the tooltip's own space/2xs clear of it. */
-  inset-block-end: calc(100% + var(--sherpa-display-mode-space-2xs, 4px));
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: 16rem;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  background: var(--sherpa-style-content-base, #0c0b11);
-  color: var(--sherpa-theme-content-body-4, #ffffff);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  text-align: start;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  /* Elevation=md, written out because a [data-elevation] pin is not inherited
-     into a shadow root (same reason sherpa-tooltip writes it longhand). */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--sherpa-style-surface-shadow, #35353d4c);
-
-  /* Hidden: no layout shift, no pointer capture, unreadable to AT. */
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 120ms ease, visibility 120ms ease;
-}
-
-/* The down-pointing tail, same border-triangle geometry as sherpa-tooltip's
-   .arrow at placement=top. Physical offsets on purpose: the point direction is
-   welded to the coloured physical border edge, so logical insets would desync
-   it in RTL. Geometry, not spacing. */
-.count-tip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 6px 6px 0 6px; /* off-grid-ok — drawn glyph, 12×6 tail */
-  border-color: var(--sherpa-style-content-base, #0c0b11) transparent transparent transparent;
-}
-
-/* THE LIFT. The chip rises above its neighbours — and above the toolbars around
-   it — for exactly as long as the tip is showing, then drops back. Permanently
-   lifted, it would paint over a menu opened from the chip beside it.
-
-   `data-tip` is written by JS on pointerenter/leave. A pure-CSS `:host(:has(…))`
-   cannot do this: `:has()` inside `:host()` matches against the element's LIGHT
-   children, not into its own shadow tree, so it never saw the hovered badge. */
-:host([data-tip]) {
-  z-index: var(--sherpa-z-overlay, 100);
-}
-
-.count-wrap:hover .count-tip,
-.count-wrap:focus-within .count-tip {
-  visibility: visible;
-  opacity: 1;
-}
+/* The value tooltip is a composed <sherpa-tooltip> in FLOATING mode — its
+   bubble lives in the top layer, past the toolbar's clipping chip run. There is
+   no bubble to style here and no lift for the chip to take: a hand-rolled
+   absolute one was cut off by `.chips { overflow: clip }` however high the chip
+   was raised, because a clip is not a stacking question.
 
 /* Leading icon — shown only with data-icon-start (Figma "Icon", a funnel default). */
 .icon { display: none; }

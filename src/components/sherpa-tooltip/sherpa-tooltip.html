@@ -8,6 +8,10 @@
   Public API:
     data-text       tip text (or use the `tip` slot)
     data-placement  top (default) | bottom | left | right
+    data-floating   place the bubble in the TOP LAYER from measured coordinates
+                    rather than relative to the host. For a tooltip inside a box
+                    that clips — a toolbar's chip run, a scroller — where the
+                    ordinary absolute bubble is cut off.
 
   Slots:
     (default) — the trigger element the tooltip describes
@@ -19,7 +23,19 @@
   <span class="anchor" part="anchor">
     <slot></slot>
   </span>
-  <span class="bubble" part="bubble" role="tooltip">
+  <!--
+    `popover=manual` puts the bubble in the TOP LAYER, above every ancestor's
+    clip and stacking context — a tooltip stands outside the box it belongs to
+    by definition, and any ancestor with `overflow` cut it off. `manual` because
+    the visibility is still CSS's off :hover / :focus-within; nothing here
+    dismisses it, and `auto` would close it on any outside click.
+
+    A popover is `position: fixed` in that layer, so `data-floating` mode places
+    it from measured viewport coordinates (--_x / --_y) the way sherpa-menu
+    does. Without that flag the bubble is positioned relative to the host
+    exactly as it always was.
+  -->
+  <span class="bubble" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>
     <slot name="tip"></slot>
     <span class="arrow" part="arrow" aria-hidden="true"></span>

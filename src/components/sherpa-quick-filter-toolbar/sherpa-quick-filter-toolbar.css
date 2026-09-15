@@ -413,8 +413,7 @@
    not display:none by default. */
 :is(.chip, .overflow-chip) .qf-folded-count[hidden] { display: none; }
 
-/* The drill affordance, at the trailing edge after the badge. */
-:is(.chip, .overflow-chip) .qf-folded-caret {
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+/* The drill affordance is a composed transparent icon button — it owns its own
+   size and ink, so there is nothing to style here. It is decorative (the ROW is
+   the click target), so it must not swallow the click that drills. */
+:is(.chip, .overflow-chip) .qf-folded-caret { pointer-events: none; }

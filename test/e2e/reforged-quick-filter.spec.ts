@@ -264,8 +264,11 @@ test('a single-select chip names its one value in the caret, with no count badge
   expect(r.second).toEqual({ chip: 'Group', caret: 'Operating System', count: undefined });
 });
 
-test('hovering the count badge reveals a bubble ABOVE it listing the chosen values', async ({ page }) => {
+test('hovering the chip reveals a bubble ABOVE it listing the chosen values', async ({ page }) => {
   await page.evaluate(async () => {
+    // Pushed down the page, so there is room ABOVE for the bubble. At the very
+    // top it correctly flips below, which is a different assertion.
+    document.getElementById('root')!.style.paddingBlockStart = '120px';
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
     el.id = 'qf';
     el.setAttribute('data-label', 'Region');
@@ -292,24 +295,38 @@ test('hovering the count badge reveals a bubble ABOVE it listing the chosen valu
   });
 
   const badge = page.locator('#qf').locator('.count');
-  const tip = page.locator('#qf').locator('.count-tip');
+  // The bubble belongs to a composed <sherpa-tooltip> wrapping the WHOLE CHIP,
+  // so hovering any part of it shows the list — a 16px badge is a small target
+  // to demand. It runs in FLOATING mode: the bar's chip run clips, and a
+  // tooltip stands outside the box it belongs to by definition, so an absolute
+  // bubble was cut off entirely.
+  const chip = page.locator('#qf').locator('.chip');
+  const tip = page.locator('#qf').locator('.count-wrap').locator('.bubble');
 
   // The bubble carries the value TEXT, not the raw values.
   await expect(tip).toHaveText('EMEA, Americas');
-  // ...and the same list reaches AT, because the bubble itself is aria-hidden.
+  // ...and the same list reaches AT through the badge's own label.
   await expect(badge).toHaveAttribute('aria-label', '2 selected: EMEA, Americas');
-  await expect(tip).toHaveAttribute('aria-hidden', 'true');
 
-  // Hidden until hovered — and hidden by CSS visibility, not by JS.
+  // Hidden until hovered.
   await expect(tip).toBeHidden();
 
-  await badge.hover();
+  // ANY part of the chip triggers it — this hovers the label, well away from
+  // the badge. `force`, because Playwright's actionability check reads the
+  // element's own hit target and the label is a zero-margin span inside a
+  // button; the pointer lands on it either way, which is what the tooltip
+  // listens for.
+  await page.locator('#qf').locator('.chip > .body > .label').hover({ force: true });
   await expect(tip).toBeVisible();
 
-  // It sits ABOVE the badge: the bubble's bottom edge is at or above the badge's top.
+  // TOP LAYER, so no ancestor's overflow can cut it off.
+  expect(await tip.evaluate((n) => n.matches(':popover-open'))).toBe(true);
+
+  // ABOVE the chip, and CENTRED on it.
   const t = (await tip.boundingBox())!;
-  const b = (await badge.boundingBox())!;
-  expect(t.y + t.height).toBeLessThanOrEqual(b.y + 1);
+  const c = (await chip.boundingBox())!;
+  expect(t.y + t.height).toBeLessThanOrEqual(c.y + 1);
+  expect(Math.abs(t.x + t.width / 2 - (c.x + c.width / 2))).toBeLessThan(3);
 
   // Moving away hides it again.
   await page.mouse.move(0, 0);

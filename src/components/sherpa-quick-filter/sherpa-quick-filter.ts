@@ -55,6 +55,9 @@
  * @fires quick-filter-change — the menu selection changed. detail: { values: string[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The count badge's value list is a composed tooltip, in floating mode so it
+// escapes the toolbar's clipping chip run.
+import '../sherpa-tooltip/sherpa-tooltip.js';
 
 interface MenuLike extends HTMLElement {
   toggle?: (trigger?: HTMLElement) => void;
@@ -81,34 +84,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
-
-    // THE VALUE TOOLTIP'S LIFT. The tip stands above the chip and out of the
-    // bar, so the chip has to outrank whatever is painted after it — the
-    // toolbar above this one, which comes later in the document and won every
-    // tie, clipping 20px off the top of the tip.
-    //
-    // `data-tip` is the flag; the z-index is CSS's. It is the JS→CSS attribute
-    // path rather than a pure-CSS rule because `:has()` inside `:host()` matches
-    // the element's LIGHT children and cannot see into its own shadow tree.
-    //
-    // Raised only while the tip is UP: a permanently lifted chip would paint
-    // over a menu opened from the chip beside it.
-    const wrap = this.$('.count-wrap');
-    wrap?.addEventListener('pointerenter', this.#showTip);
-    wrap?.addEventListener('pointerleave', this.#hideTip);
-    // focusin/out, not focus: the badge itself is not focusable, so the events
-    // that matter come from whatever inside the wrapper takes focus.
-    wrap?.addEventListener('focusin', this.#showTip);
-    wrap?.addEventListener('focusout', this.#hideTip);
   }
-
-  #showTip = (): void => {
-    this.toggleAttribute('data-tip', true);
-  };
-
-  #hideTip = (): void => {
-    this.toggleAttribute('data-tip', false);
-  };
 
   /**
    * The empty check reads the SLOTTED menu, which is a light-DOM child — so it
@@ -270,14 +246,14 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * A count says HOW MANY but never WHICH, so the badge's hover bubble lists the
-   * chosen values. The same list goes on the badge's aria-label, because the
-   * bubble is aria-hidden — a CSS-only tooltip is invisible to a screen reader,
-   * so the text has to reach AT by a second route.
+   * chosen values. The same list goes on the badge's aria-label: the tooltip
+   * carries it visually, and this is the route to AT.
    */
   #syncCountTip(values: string[]): void {
     const labels = values.map((v) => this.#valueLabel(v));
-    const tip = this.$('.count-tip');
-    if (tip) tip.textContent = labels.join(', ');
+    // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
+    const tip = this.$<HTMLElement>('.count-wrap');
+    if (tip) tip.dataset['text'] = labels.join(', ');
     const badge = this.$('.count');
     if (!badge) return;
     if (labels.length > 1) badge.setAttribute('aria-label', `${labels.length} selected: ${labels.join(', ')}`);
