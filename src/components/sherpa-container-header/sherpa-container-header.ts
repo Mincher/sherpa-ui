@@ -43,6 +43,8 @@
  * @fires header-drag     — the drag handle is pressed. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The drag / collapse / close controls are composed sherpa-buttons.
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaContainerHeader extends SherpaElement {
   static override tier = 'sub-component' as const;
@@ -60,8 +62,10 @@ export class SherpaContainerHeader extends SherpaElement {
 
   override onRender(): void {
     this.#syncCollapsed();
-    this.$('.close')?.addEventListener('click', this.#onDismiss);
-    this.$('.toggle')?.addEventListener('click', this.#onToggle);
+    // `button-click`, not `click` — a sherpa-button suppresses its own event when
+    // disabled, where a raw click listener would still fire on the host element.
+    this.$('.close')?.addEventListener('button-click', this.#onDismiss);
+    this.$('.toggle')?.addEventListener('button-click', this.#onToggle);
     this.$('.drag')?.addEventListener('pointerdown', this.#onDrag);
   }
 

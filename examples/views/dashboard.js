@@ -10,13 +10,11 @@
 export async function init(root) {
   // ── Header config: breadcrumb trail + a couple of quick filters. ──────
   const headerConfig = {
-    breadcrumb: [
-      // Every crumb links to a REAL page. The trail used to name sections
-      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
-      // anchors, so clicking one went nowhere.
-      { label: 'Home', href: '?view=dashboard' },
-      { label: 'Dashboard' },
-    ],
+    /* NO BREADCRUMB. This view IS home — the Home nav item opens it — so a trail
+       would have to start and end in the same place ("Home > Dashboard" named
+       one page twice). A crumb trail says how you got somewhere; at the root
+       there is no path to show. The view's own name is on the heading. */
+    breadcrumb: [],
     // The header's toolbar is the VIEW-level one (data-type="view" in
     // index.html), so it carries SAVED VIEWS — the preset arrangements of this
     // page — not the data filters that narrow what a chart shows.

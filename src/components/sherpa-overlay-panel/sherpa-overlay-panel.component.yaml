@@ -170,8 +170,6 @@ tokens:
   root.border-inline-end-width: "{sherpa.border-right}"
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  root.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  root.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   root.color: "{sherpa.style-content-base}"
   root.box-shadow: "{sherpa.display-mode-size-2xs}"
   toolbar.gap: "{sherpa.theme-gap-sm}"

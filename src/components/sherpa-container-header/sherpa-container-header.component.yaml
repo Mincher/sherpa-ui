@@ -29,17 +29,15 @@ anatomy:
         class: row
         part: row
         children:
-          - el: button
+          - el: sherpa-button
             class: drag
             part: drag
             attrs:
-              type: button
+              data-type: icon
+              data-size: xs
+              data-look: transparent
+              data-icon-start: fa-solid fa-grip-vertical
               aria-label: Drag to reorder
-            children:
-              - el: span
-                class: drag-glyph
-                attrs:
-                  aria-hidden: "true"
           - el: span
             class: icon
             part: icon
@@ -61,29 +59,25 @@ anatomy:
               - slot: actions
                 attrs:
                   data-accepts: control,input
-              - el: button
+              - el: sherpa-button
                 class: toggle
                 part: toggle
                 attrs:
-                  type: button
+                  data-type: icon
+                  data-size: xs
+                  data-look: transparent
+                  data-icon-start: fa-solid fa-chevron-up
                   aria-expanded: "true"
                   aria-label: Collapse
-                children:
-                  - el: span
-                    class: toggle-glyph
-                    attrs:
-                      aria-hidden: "true"
-              - el: button
+              - el: sherpa-button
                 class: close
                 part: close
                 attrs:
-                  type: button
+                  data-type: icon
+                  data-size: xs
+                  data-look: transparent
+                  data-icon-start: fa-solid fa-xmark
                   aria-label: Close
-                children:
-                  - el: span
-                    class: close-glyph
-                    attrs:
-                      aria-hidden: "true"
       - el: div
         class: metadata
         part: metadata
@@ -106,7 +100,7 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: secondary text (rendered into .description)
   - $type: prop
     name: data-dismissible
@@ -121,12 +115,12 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: heading text (rendered into .title)
   - $type: prop
     name: data-icon
     type: string
-    kind: content
+    kind: style
     description: a glyph before the title (shows the icon slot)
   - $type: prop
     name: data-variant
@@ -168,9 +162,6 @@ states:
   - $type: state
     name: panel
     selector: ":host([data-variant=\"panel\"])"
-  - $type: state
-    name: focus-visible
-    selector: .toggle:focus-visible
 events:
   - $type: event
     name: header-dismiss
@@ -186,36 +177,31 @@ events:
     composed: true
 tokens:
   header.gap: "{sherpa.theme-gap-md}"
-  row.gap: "{sherpa.theme-gap-md}"
+  row.gap: "{sherpa.theme-gap-sm}"
   row.padding: "{sherpa.theme-padding-md}"
-  labels.gap: "{sherpa.display-space-3xs}"
-  drag.inline-size: "{sherpa.display-size-sm}"
-  drag.block-size: "{sherpa.display-size-sm}"
+  labels.gap: "{sherpa.display-mode-space-3xs}"
+  drag.inline-size: "{sherpa.display-mode-size-sm}"
+  drag.block-size: "{sherpa.display-mode-size-sm}"
   drag.color: "{sherpa.theme-content-body-1}"
-  icon.inline-size: "{sherpa.display-size-sm}"
-  icon.block-size: "{sherpa.display-size-sm}"
-  icon.color: "{sherpa.theme-content-body-base}"
+  icon.inline-size: "{sherpa.theme-content-size-base}"
+  icon.block-size: "{sherpa.theme-content-size-base}"
+  icon.color: "{sherpa.theme-content-body-1}"
   title.color: "{sherpa.theme-content-body-base}"
   title.font-family: "{sherpa.font-family-body}"
-  title.font-size: "{sherpa.font-size-body-large}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
+  title.font-size: "{sherpa.font-size-body-base}"
+  title.font-weight: "{sherpa.font-weight-medium}"
+  title.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
   description.font-family: "{sherpa.font-family-body}"
-  description.font-size: "{sherpa.font-size-body-base}"
-  actions.gap: "{sherpa.theme-gap-md}"
-  toggle.inline-size: "{sherpa.display-size-2xl}"
-  toggle.block-size: "{sherpa.display-size-2xl}"
-  toggle.border-radius: "{sherpa.display-border-rounding-base}"
-  toggle.color: "{sherpa.theme-content-body-1}"
-  close.inline-size: "{sherpa.display-size-2xl}"
-  close.block-size: "{sherpa.display-size-2xl}"
-  close.border-radius: "{sherpa.display-border-rounding-base}"
-  close.color: "{sherpa.theme-content-body-1}"
-  metadata.gap: "{sherpa.theme-gap-md}"
-  metadata.padding: "{sherpa.theme-padding-lg}"
+  description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
+  actions.gap: "{sherpa.theme-gap-sm}"
+  metadata.gap: "{sherpa.theme-gap-lg}"
+  metadata.padding: "{sherpa.theme-padding-md}"
   metadata.color: "{sherpa.theme-content-body-1}"
   metadata.font-family: "{sherpa.font-family-body}"
-  metadata.font-size: "{sherpa.font-size-body-base}"
+  metadata.font-size: "{sherpa.font-size-body-small}"
+  metadata.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
     figmaName: Container Header
@@ -233,15 +219,12 @@ $extensions:
       - hasMetadata
     _divergence:
       accordionVariant: >-
-        Figma's Container Header set has three Variant values
-        (default / accordion / Panel). Code data-variant exposes only
-        `default` and `panel`. The `accordion` variant is the default
-        skeleton whose trailing affordance is a disclosure chevron
-        (iconStart 17:4752) instead of the close X (iconStart 17:4120) —
-        i.e. exactly the existing `data-collapsible` state (shows .toggle,
-        fires header-collapse, rotates on data-collapsed). It is therefore
-        represented as a boolean state, not a data-variant value, to avoid a
-        redundant second path to the same chevron affordance. A fully
-        standalone disclosure card (native <details>/<summary>, own chevron)
-        is the separate `sherpa-accordion` component. No `accordion`
-        data-variant value is planned.
+        Figma's Container Header set has three Variant values (default / accordion / Panel). Code
+        data-variant exposes only `default` and `panel`. The `accordion` variant is the default
+        skeleton whose trailing affordance is a disclosure chevron (iconStart 17:4752) instead of
+        the close X (iconStart 17:4120) — i.e. exactly the existing `data-collapsible` state (shows
+        .toggle, fires header-collapse, rotates on data-collapsed). It is therefore represented as a
+        boolean state, not a data-variant value, to avoid a redundant second path to the same
+        chevron affordance. A fully standalone disclosure card (native <details>/<summary>, own
+        chevron) is the separate `sherpa-accordion` component. No `accordion` data-variant value is
+        planned.

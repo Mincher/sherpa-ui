@@ -18,7 +18,7 @@
     <sherpa-app-header slot="header"
                        data-heading="Dashboard"
                        data-icon="fa-solid fa-gauge-high"
-                       data-back data-ai data-labs data-theme-toggle
+                       data-ai data-labs data-theme-toggle
                        data-account data-help data-menu
                        data-notifications="4">
       <!-- app-header.populate() stamps into these empty children by slot name. -->
@@ -70,8 +70,11 @@
     // ── Shared nav config: the "Views" section links the 4 views. ──────
     // Icons are Font Awesome class lists (Sherpa's icon system) — never unicode
     // glyphs, which render at the wrong size and weight.
-    // quickItems is left OUT so the rail shows its Figma default trio:
-    // Home · Recent · Favorites.
+    // quickItems names the Figma default trio (Home · Recent · Favorites), but
+    // gives HOME a real destination: it opens the dashboard, because the
+    // dashboard IS this product's home. That makes a separate Dashboard row
+    // redundant, so the Views section carries only Records now — the same
+    // reasoning that removed the Assistant row when Ask N-zo opened the panel.
     //
     // EVERY ROW LINKS TO A REAL PAGE. The rail used to carry a fuller tree —
     // Monitor / Manage / Admin, nested children, badges — to exercise the nav
@@ -80,9 +83,15 @@
     // component; the nav's own tests cover nesting, badges and indicators.
     const navConfig = {
       product: { name: 'N-central', icon: 'fa-solid fa-cubes' },
+      quickItems: [
+        // Home IS the dashboard. The component's own default carries no href —
+        // it cannot know where a product's home lives — so the app supplies it.
+        { id: 'home', label: 'Home', icon: 'fa-solid fa-house', href: '?view=dashboard' },
+        { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
+        { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
+      ],
       sections: [
         { label: 'Views', items: [
-          { id: 'view-dashboard', label: 'Dashboard', icon: 'fa-solid fa-gauge-high', href: '?view=dashboard' },
           { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
         ] },
       ],
@@ -95,9 +104,26 @@
       ],
     };
 
-    // Which nav id maps to which view, and back.
+    /* Which nav row maps to which view.
+
+       Read from the row's HREF, not from a `view-` id prefix. The prefix was a
+       naming convention the router depended on, so the moment a row that is NOT
+       called `view-…` needed a destination — Home, which opens the dashboard —
+       it was silently ignored. The href is the thing that actually says where a
+       row goes, and it is already there for right-click and deep-linking. */
+    const viewForHref = (href) => {
+      if (!href?.startsWith('?view=')) return null;
+      const v = new URLSearchParams(href.slice(1)).get('view');
+      return VIEWS.includes(v) ? v : null;
+    };
     const idForView  = (v) => `view-${v}`;
-    const viewForId  = (id) => (id?.startsWith('view-') ? id.slice('view-'.length) : null);
+
+    /** The id of whichever nav row points at this view. */
+    const navRowIdForView = (view) => {
+      const all = [...(navConfig.quickItems ?? []),
+                   ...(navConfig.sections ?? []).flatMap((s) => s.items ?? [])];
+      return all.find((i) => viewForHref(i.href) === view)?.id ?? null;
+    };
 
     // Read the current view from the URL (?view=<v>), defaulting to dashboard.
     const viewFromURL = () => {
@@ -116,7 +142,9 @@
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
 
       // Keep the nav active-state synced to the current view.
-      nav.dataset.activeId = idForView(name);
+      // The row that OWNS this view — found by href, so Home lights up for the
+      // dashboard rather than a `view-dashboard` row that no longer exists.
+      nav.dataset.activeId = navRowIdForView(name) ?? idForView(name);
 
       // The settings view lives behind the nav header's settings button, so landing
       // on it (or leaving it) switches the rail's mode — which swaps the whole
@@ -133,6 +161,12 @@
       // 1) Fetch the bespoke content-only markup for the view.
       const markup = await (await fetch(`/template/view/${name}`)).text();
       if (token !== loadToken) return;   // a newer navigation superseded us
+
+      /* The BACK button belongs to a view you can go back FROM. Home is the root,
+         so it has nothing behind it — and a control that does nothing is worse
+         than no control. Every other view gets one. */
+      const header = document.querySelector('sherpa-app-header');
+      header?.toggleAttribute('data-back', name !== DEFAULT_VIEW);
 
       // 2) Inject into the app-shell content slot.
       viewRoot.innerHTML = markup;
@@ -157,10 +191,10 @@
     // synthetic nav-select. A modified click (new tab / middle) is left alone.
     nav.addEventListener('click', (e) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const row = e.composedPath().find((n) => n.dataset && n.dataset.id?.startsWith('view-'));
+      const row = e.composedPath().find((n) => n.dataset && n.dataset.href);
       if (!row) return;
-      const view = viewForId(row.dataset.id);
-      if (!VIEWS.includes(view)) return;
+      const view = viewForHref(row.dataset.href);
+      if (!view) return;
       e.preventDefault();
       if (view === viewFromURL() && viewRoot.children.length) return;
       history.pushState({ view }, '', `?view=${view}`);

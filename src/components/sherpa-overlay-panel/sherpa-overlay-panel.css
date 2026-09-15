@@ -94,12 +94,15 @@
      so a change to the rounding scale reaches here too. They cannot come from
      tokens.css's own [data-snap] rules — a bare attribute selector there matches
      the DOCUMENT only and never crosses into a shadow root. */
-  --sherpa-border-rounding-top-right: 0;
-  --sherpa-border-rounding-bottom-right: 0;
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 0);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 0);
+  /* The trailing corners are squared DIRECTLY, not by re-pointing
+     --sherpa-border-rounding-*-right. Those are inherited custom properties, so
+     zeroing them here reached every descendant — the composer and each chat
+     message lost their own right-hand rounding because they read the same vars.
+     A panel's own shape must not travel into its content. */
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg (Theme elevation "large" tokens). */
   box-shadow:

@@ -112,36 +112,24 @@ slot[name="heading"] { display: contents; }
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
 
-/* Icon-glyph action buttons (toggle, close) — Figma: Button/Type=icon pinned
-   Structure xs (16×16, padding 4) + Transparent look. */
+/* The toggle and close are composed sherpa-buttons (Figma: Button/Type=icon at
+   Structure xs + the Transparent look), so the box, padding, hover, focus ring
+   and disabled inking are the COMPONENT's. Only visibility is described here —
+   what used to sit in this place was a second copy of all of it. */
 .toggle,
 .close {
   display: none;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-sm, 16px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  padding: 0;
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: transparent;
-  color: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  cursor: pointer;
-  transition: background-color 100ms ease;
-
-  &:hover { background: color-mix(in oklab, var(--_status-surface, #ffffff) 92%, currentColor); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-  }
 }
 :host([data-collapsible]) .toggle { display: inline-flex; }
 :host([data-dismissible]) .close { display: inline-flex; }
 
-/* Collapsed rotates the toggle chevron. */
-.toggle-glyph { transition: transform 120ms ease; }
-:host([data-collapsed]) .toggle-glyph { transform: rotate(180deg); }
+/* Collapsed rotates the chevron. The glyph lives inside the button's own shadow
+   root, so the rotation goes on the HOST — ::part would reach the inner <button>
+   but not the <i>, and a transform on the host turns the whole control, which is
+   the same picture. */
+.toggle { transition: transform 120ms ease; }
+:host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
 /* Hide the whole actions region only when it truly has nothing. */
 :host(:not([data-has-actions]):not([data-dismissible]):not([data-collapsible])) .actions { display: none; }

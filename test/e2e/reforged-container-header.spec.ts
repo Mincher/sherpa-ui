@@ -139,8 +139,18 @@ test('data-dismissible close button fires dismiss', async ({ page }) => {
     el.setAttribute('data-dismissible', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const close = el.shadowRoot!.querySelector('.close') as HTMLElement;
-    const closeVisible = getComputedStyle(close).display !== 'none';
+    // The close is a composed sherpa-button now, so the click has to land on its
+    // own inner <button> — clicking the HOST produces no button-click, which is
+    // exactly the point of listening for that event rather than a raw click.
+    // `el.rendered` only covers the HEADER; the button is a child component with
+    // its own render to wait for.
+    const closeHost = el.shadowRoot!.querySelector('.close') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void>;
+    };
+    await closeHost.rendered;
+    const close = closeHost.shadowRoot.querySelector('button') as HTMLElement;
+    // Visibility is the HOST's business — CSS reveals it off data-dismissible.
+    const closeVisible = getComputedStyle(closeHost).display !== 'none';
     let dismissed = false;
     el.addEventListener('header-dismiss', () => (dismissed = true));
     close.click();
@@ -158,7 +168,11 @@ test('data-collapsible toggle flips data-collapsed and fires toggle', async ({ p
     el.setAttribute('data-collapsible', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const toggle = el.shadowRoot!.querySelector('.toggle') as HTMLElement;
+    const toggleHost = el.shadowRoot!.querySelector('.toggle') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void>;
+    };
+    await toggleHost.rendered;
+    const toggle = toggleHost.shadowRoot.querySelector('button') as HTMLElement;
     let detail: unknown = null;
     el.addEventListener('header-collapse', (e) => (detail = (e as CustomEvent).detail));
     toggle.click();
