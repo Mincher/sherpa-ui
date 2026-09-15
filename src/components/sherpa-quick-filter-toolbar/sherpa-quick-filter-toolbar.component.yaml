@@ -153,6 +153,9 @@ props:
     description: data  | view   (view adds the ★/Save/▾ group)
 states:
   - $type: state
+    name: view
+    selector: ":host([data-type=\"view\"])"
+  - $type: state
     name: has-view
     selector: ":host([data-has-view])"
   - $type: state
@@ -161,9 +164,6 @@ states:
   - $type: state
     name: no-actions
     selector: ":host([data-no-actions])"
-  - $type: state
-    name: view
-    selector: ":host([data-type=\"view\"])"
   - $type: state
     name: favourite
     selector: ":host([data-favourite])"

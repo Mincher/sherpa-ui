@@ -34,6 +34,22 @@
   padding-inline: var(--sherpa-theme-padding-none, 0);
 }
 
+/* The VIEW bar bottom-aligns; the DATA bar centres.
+   Read from the set (150:3688): Type=view is padding-bottom NONE with
+   counterAxisAlignItems MAX, where Type=data keeps 4 and CENTER. The view bar
+   sits in the app header directly opposite the nav's first quick row, and that
+   row's bottom edge is what it lines up with — with 4px underneath, its chips sat
+   4px high of Home. */
+:host([data-type="view"]) .bar {
+  align-items: flex-end;
+  padding-block-end: var(--sherpa-theme-padding-none, 0);
+  /* Figma fixes the bar at 32 in BOTH variants. Without that, dropping the
+     bottom padding shrank the bar to 28 and the chips stayed put — the bar has
+     to keep its height and move its content down inside it. */
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  box-sizing: border-box;
+}
+
 .view-zone { display: none; }
 :host([data-has-view]) .view-zone {
   display: flex;
