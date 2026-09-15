@@ -531,10 +531,59 @@ validator. Checked and confirmed:
 | `JSON.parse` with source | Stage 4, but about **precision/round-tripping**, not validation. |
 | `structuredClone()` | Not a validator — it clones. A value can clone cleanly and still violate every rule. |
 | `URL.canParse()` | ✅ **Baseline Dec 2023** — a real, free URL validator. Use it. |
-| `Temporal` | ⚠️ Stage 4 and shipped in Chrome 144 / Firefox 139 / Node 26 — but **Safari ships it only in Technology Preview**. Not Baseline. Polyfill breaks zero-dependency. **Do not use.** |
+| `Temporal` | ✅ **USE IT.** Stage 4; Chrome 144, Firefox 139, Node 26. Safari is Tech Preview only — **Will's ruling: Temporal matters more to Sherpa than Safari does.** See below. |
 | `Number.isInteger`, `Number.isFinite` | ✅ fine, already used by `coerceNum`. |
 
 So this half must be written. It should be **small**.
+
+### Temporal — a deliberate, recorded exception
+
+`Temporal` is Stage 4 and ships unflagged in **Chrome 144, Firefox 139 and Node 26**.
+Safari has it in Technology Preview only, so it is not yet Baseline.
+
+**Will's ruling (2026-09-15): use it. Temporal matters more to Sherpa than Safari
+does.** This is a deliberate trade, recorded here so nobody "fixes" it later by
+ripping Temporal out.
+
+What that decision does and does not mean:
+
+- **It does not touch the CSS build.** `browserslist` in `package.json` still says
+  `Safari >= 16`, and it should — that entry drives only `postcss-preset-env` and
+  `autoprefixer` for CSS. Styling stays cross-browser. This is a JS-only trade.
+- **It costs nothing in tests today.** Playwright runs `chromium` only; the
+  `webkit` project is commented out in `playwright.config.ts`. So nothing in CI
+  breaks, and nothing in CI would have caught it either way.
+- **No polyfill.** Adding one would break the zero-dependency rule, which is a
+  harder rule than the browser matrix. On a browser without Temporal, a date rule
+  fails loudly rather than silently — that is the correct failure mode.
+- **Where it earns its place:** date validation and date-range filtering. `Date` has
+  no sane parsing, no plain-date type and no comparison that survives a timezone.
+  A `created` between two days — which the records example already does by string
+  comparison — is exactly what `Temporal.PlainDate` is for.
+
+If Safari support is ever needed, the escape is a capability check at the one place
+dates are parsed, not a polyfill and not a rewrite.
+
+**Verified, not assumed** — probed in the real test browser:
+
+```
+chromium 153 · typeof Temporal → "object"
+Temporal.PlainDate.from('2026-09-15') → "2026-09-15"
+Temporal.PlainDate.compare('2026-01-02','2026-01-10') → -1
+```
+
+**Two things must change before any Temporal code compiles or runs:**
+
+1. **TypeScript rejects it today.** `tsconfig.reforged.json` has
+   `"lib": ["ES2022", "DOM", "DOM.Iterable"]`, so `Temporal` is
+   `error TS2304: Cannot find name 'Temporal'`. Add `"ESNext.Temporal"` — the
+   **old** `tsconfig.json` already carries it, so this is restoring a precedent,
+   not inventing one.
+2. **Node 24 does not have Temporal** (it landed in Node 26), and this project runs
+   Node 24. So date rules **cannot** be unit-tested under `node:test` — they must be
+   exercised in the browser harness, where Temporal is present. This settles the
+   open "how do we test the data layer" question for anything date-shaped: the
+   harness, not Node.
 
 ## Recommended shape
 
@@ -689,7 +738,6 @@ most often validated, and there is no workaround from the library side.
 | A full JSON Schema implementation | Large, and Standard Schema already delegates it |
 | A `<sherpa-data-validator>` element | No visual output; cannot serve the pre-DOM path (a JSON/MCP payload has no element to attach to) |
 | A second validation mechanism for forms | The platform's is better; finish wiring it |
-| Anything using `Temporal` | Safari has not shipped it |
 | `aria-errormessage` as the only wiring | macOS VoiceOver + TalkBack gaps remain |
 | `role="alert"` on a per-field error | double-speak in JAWS/NVDA; summaries only |
 
@@ -784,8 +832,19 @@ test and did not, run `npm run build` and re-run.
 ## Testing the data layer
 
 Playwright is E2E-only (`test/e2e/*.spec.ts`, real browsers against a harness). The
-store and data source are plain modules with no DOM, so they need either a `node:test`
-runner or a harness page. **Decide before step 7.**
+store and data source are plain modules with no DOM, so a `node:test` runner looked
+like the natural fit.
+
+**The Temporal decision settles it: use the browser harness.** Node 24 has no
+`Temporal`, so a date rule tested under `node:test` would fail on the runner while
+working perfectly in every browser the library targets — the worst kind of false
+negative. The harness has Temporal (verified above) and is already the house
+pattern.
+
+The `coerceNum` spec in
+[`reforged-num-coercion.spec.ts`](../test/e2e/reforged-num-coercion.spec.ts) already
+shows the shape: `await import('/dist/core/…')` inside `page.evaluate`, then assert on
+plain return values. A DOM-free module tests fine that way.
 
 ## Docs owed
 
