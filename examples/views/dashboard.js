@@ -7,6 +7,8 @@
  * own content + wires a couple of demo listeners. Behaviour is identical to
  * the old standalone dashboard.html.
  */
+import { globalFilters } from './global-filters.js';
+
 export async function init(root) {
   // ── Header config: breadcrumb trail + a couple of quick filters. ──────
   const headerConfig = {
@@ -25,27 +27,15 @@ export async function init(root) {
     // every setting it remembers. Data filters live with the data they filter.
     //
     // ONE chip, single-select: you are looking at exactly one view at a time.
-    filters: [
-      {
-        id: 'view',
-        // The FIELD name, not the picked view. Figma's Type=view toolbar reads
-        // Label "View" with the value in the caret (150:3688), so a loaded
-        // dashboard says "View | Fleet overview" rather than repeating the view
-        // name on both sides of the divider.
-        label: 'View',
-        // A SELECTOR, not a toggle: you are always in some view.
-        persistent: true,
-        // No icon here — the toolbar fixes the view selector's glyph itself.
-        active: true,
-        select: 'single',
-        options: [
-          { value: 'fleet',    label: 'Fleet overview', selected: true },
-          { value: 'critical', label: 'Critical only' },
-          { value: 'emea',     label: 'EMEA operations' },
-          { value: 'capacity', label: 'Capacity planning' },
-        ],
-      },
-    ],
+    // THE GLOBAL FILTERS — View, Customer, Region and Date range. They sit
+    // above every page and trickle DOWN: whatever they narrow to is the
+    // population this dashboard's charts then work within. See global-filters.js.
+    filters: globalFilters([
+      { value: 'fleet',    label: 'Fleet overview', selected: true },
+      { value: 'critical', label: 'Critical only' },
+      { value: 'emea',     label: 'EMEA operations' },
+      { value: 'capacity', label: 'Capacity planning' },
+    ]),
   };
 
   /**

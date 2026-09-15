@@ -17,6 +17,7 @@
  * that no longer fits on one screen.
  */
 import { ArrayStore, DataSource, SherpaToast } from '../../dist/index.js';
+import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
   /* ── Data: 100 customers ──────────────────────────────────────────── */
@@ -192,26 +193,16 @@ export async function init(root) {
     // index.html), so its chips are SAVED VIEWS, not the grid's column filters.
     // A view is a whole saved arrangement — which is why this bar, and not the
     // data bar below it, is the one that carries Save / favourite.
-    filters: [
-      {
-        id: 'view',
-        // The FIELD name, not the picked view — Figma's Type=view toolbar reads
-        // Label "View" with the value in the caret (150:3688). It said
-        // "All customers" here, which is a VALUE sitting in the field's place.
-        label: 'View',
-        // A SELECTOR, not a toggle: you are always in some view.
-        persistent: true,
-        // No icon here — the toolbar fixes the view selector's glyph itself.
-        active: true,
-        select: 'single',
-        options: [
-          { value: 'all', label: 'All customers', selected: true },
-          { value: 'mine', label: 'My accounts' },
-          { value: 'risk', label: 'At risk' },
-          { value: 'renewals', label: 'Renewals this quarter' },
-        ],
-      },
-    ],
+    // THE GLOBAL FILTERS — View, Customer, Region and Date range. They sit
+    // above every page and trickle DOWN: whatever they narrow to is the
+    // population this grid then works within, and the bar BELOW narrows further
+    // inside that. See global-filters.js.
+    filters: globalFilters([
+      { value: 'all', label: 'All customers', selected: true },
+      { value: 'mine', label: 'My accounts' },
+      { value: 'risk', label: 'At risk' },
+      { value: 'renewals', label: 'Renewals this quarter' },
+    ]),
   });
   header?.setAttribute('data-heading', 'Customers');
   header?.setAttribute('data-icon', 'fa-solid fa-users');
@@ -247,8 +238,9 @@ export async function init(root) {
     // reads back as "Plan: Pro" on the chip; two or more show the count badge.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
       select: 'multiple', removable: true, options: asOptions('plan') },
-    { id: 'region', label: 'Region', type: 'data', icon: 'fa-solid fa-globe',
-      select: 'multiple', removable: true, options: asOptions('region') },
+    // NO Region chip here. It is a GLOBAL filter now, in the app header — it
+    // narrows every page, not just this grid, and two chips for one field would
+    // make the reader guess which one was in force.
     { id: 'tier', label: 'Tier', type: 'data', icon: 'fa-solid fa-award',
       select: 'multiple', removable: true, options: asOptions('tier') },
     // SINGLE-select: one owner at a time. COMMITTING — a person lookup stands in
