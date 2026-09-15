@@ -33,8 +33,6 @@ anatomy:
         - el: sherpa-container-header
           class: header
           part: header
-          attrs:
-            data-variant: panel
           children:
             - slot: icon
               attrs:

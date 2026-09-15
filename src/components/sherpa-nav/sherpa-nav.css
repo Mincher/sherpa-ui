@@ -146,7 +146,13 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* NO gap between the brand row and the quick-nav zone. Re-read from Figma
+     (Primary Navigation 32:43161): the Header frame's itemSpacing is 0, and the
+     quick zone supplies its own 8px top padding. The extra 8 here pushed every
+     quick row down by one step, so the first of them sat 8px below where the app
+     header's view toolbar ends — the misalignment Will spotted between Home and
+     that bar. */
+  gap: var(--sherpa-display-mode-space-none, 0);
   padding-block-end: var(--sherpa-display-mode-space-xs, 8px);
   flex: 0 0 auto;
 }

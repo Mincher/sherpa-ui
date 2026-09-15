@@ -51,12 +51,16 @@
          Container Header and a Container Footer around a content slot, and that
          component already owns the heading, icon, description, collapse toggle
          and close button — plus the `actions` slot the expand / external buttons
-         sit in. data-variant="panel" is what inks the title link-blue.
+         sit in.
+
+         The DEFAULT variant (Will's call), not data-variant="panel": that one
+         inks the title link-blue, which reads as something you can click when it
+         is only a name.
 
          Its own events (header-collapse, header-dismiss) are re-emitted by this
          file as panel-collapse / panel-close, so the panel's public API does not
          change with its internals. -->
-    <sherpa-container-header class="header" part="header" data-variant="panel">
+    <sherpa-container-header class="header" part="header">
       <slot name="icon" slot="icon"></slot>
       <slot name="description" slot="metadata" data-accepts="content,control"></slot>
 
