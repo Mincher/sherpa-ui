@@ -246,14 +246,15 @@
     two chips a user has to know to choose between: the switch flips what the
     rows below it are, and the chip keeps its place on the bar either way.
 
-    Shaped as a row rather than as chrome so it reads as part of the list, with
-    the label first and the control at the trailing edge — the Menu's own row
-    layout, with the switch where a checkbox would sit.
+    Shaped as a row rather than as chrome so it reads as part of the list: the
+    switch LEADS and the label follows, which is where a value row puts its
+    checkbox and its text. That keeps every control in the menu on one left edge
+    rather than the mode row alone reaching for the far side.
   -->
   <template class="qf-range-tpl">
     <div class="qf-range-row" data-row>
-      <span class="qf-row-label">Range</span>
       <sherpa-switch class="qf-range-switch" data-style="simple"></sherpa-switch>
+      <span class="qf-row-label">Range</span>
     </div>
   </template>
 

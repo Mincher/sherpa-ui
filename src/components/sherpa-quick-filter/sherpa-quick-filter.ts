@@ -79,7 +79,34 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
+
+    // THE VALUE TOOLTIP'S LIFT. The tip stands above the chip and out of the
+    // bar, so the chip has to outrank whatever is painted after it — the
+    // toolbar above this one, which comes later in the document and won every
+    // tie, clipping 20px off the top of the tip.
+    //
+    // `data-tip` is the flag; the z-index is CSS's. It is the JS→CSS attribute
+    // path rather than a pure-CSS rule because `:has()` inside `:host()` matches
+    // the element's LIGHT children and cannot see into its own shadow tree.
+    //
+    // Raised only while the tip is UP: a permanently lifted chip would paint
+    // over a menu opened from the chip beside it.
+    const wrap = this.$('.count-wrap');
+    wrap?.addEventListener('pointerenter', this.#showTip);
+    wrap?.addEventListener('pointerleave', this.#hideTip);
+    // focusin/out, not focus: the badge itself is not focusable, so the events
+    // that matter come from whatever inside the wrapper takes focus.
+    wrap?.addEventListener('focusin', this.#showTip);
+    wrap?.addEventListener('focusout', this.#hideTip);
   }
+
+  #showTip = (): void => {
+    this.toggleAttribute('data-tip', true);
+  };
+
+  #hideTip = (): void => {
+    this.toggleAttribute('data-tip', false);
+  };
 
   /**
    * The empty check reads the SLOTTED menu, which is a light-DOM child — so it

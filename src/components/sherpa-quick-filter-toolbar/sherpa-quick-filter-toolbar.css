@@ -226,12 +226,12 @@
  * descendant selector from here reaches them.
  */
 
-/* The switch row reads as part of the list — label first, control at the
-   trailing edge, where a value row puts its checkbox. */
+/* The switch row reads as part of the list — the control LEADS and the label
+   follows, exactly where a value row puts its checkbox and its text, so every
+   control in the menu shares one left edge. */
 .chip .qf-range-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-2xs, 4px)
     var(--sherpa-display-mode-space-xs, 8px);

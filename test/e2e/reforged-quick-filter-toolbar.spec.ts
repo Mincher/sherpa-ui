@@ -1325,3 +1325,80 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
   expect(r.on).toBe('range');
   expect(r.off).toBe('single');
 });
+
+/**
+ * A RANGE has two ends, so the pick is not finished on the first one — applying
+ * there would filter to a span the user has not named yet. The Range switch
+ * moves the menu between auto-apply and Apply/Cancel at runtime.
+ */
+test('the Range switch brings Apply/Cancel, and leads its own label', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (def: unknown, id: string): Promise<Record<string, unknown>> => {
+      const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate(d: unknown): void;
+      };
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate([def]);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+      const menu = el.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as HTMLElement & {
+        show(): void;
+        shadowRoot: ShadowRoot;
+      };
+      menu.show();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+      const shown = (sel: string): boolean => {
+        const n = menu.shadowRoot.querySelector(sel);
+        return !!n && getComputedStyle(n).display !== 'none';
+      };
+      const row = menu.querySelector('.qf-range-row')!;
+      const sw = row.querySelector('sherpa-switch') as HTMLElement & {
+        rendered?: Promise<void>;
+        shadowRoot: ShadowRoot;
+      };
+      await sw.rendered;
+
+      // The CONTROL leads and the label follows, exactly where a value row puts
+      // its checkbox and its text — so every control shares one left edge.
+      const leads =
+        sw.getBoundingClientRect().left < row.querySelector('.qf-row-label')!.getBoundingClientRect().left;
+
+      const single = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') };
+      sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const ranged = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') };
+      // …and back, so the flip is not one-way.
+      sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const back = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply') };
+
+      return { leads, single, ranged, back };
+    };
+
+    return {
+      number: await read({ id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 100, active: true }, 'spend'),
+      date: await read({ id: 'created', label: 'Created', kind: 'date', active: true }, 'created'),
+      // A chip whose DEFINITION named `commit` keeps what it asked for — the
+      // switch supplies the default a host left out, it does not overrule one.
+      pinned: await read(
+        { id: 'pinned', label: 'Pinned', kind: 'number', min: 0, max: 100, commit: false, active: true },
+        'pinned',
+      ),
+    };
+  });
+
+  for (const kind of ['number', 'date'] as const) {
+    expect(r[kind].leads, `${kind}: switch leads its label`).toBe(true);
+    // SINGLE applies on the tick: one value is the whole answer.
+    expect(r[kind].single, `${kind} single`).toEqual({ commits: false, apply: false, cancel: false });
+    // RANGE defers: a span is not named until both ends are.
+    expect(r[kind].ranged, `${kind} ranged`).toEqual({ commits: true, apply: true, cancel: true });
+    expect(r[kind].back, `${kind} back`).toEqual({ commits: false, apply: false });
+  }
+
+  expect(r.pinned.single).toEqual({ commits: false, apply: false, cancel: false });
+  expect(r.pinned.ranged).toEqual({ commits: false, apply: false, cancel: false });
+});

@@ -17,6 +17,12 @@
     data-value-end    range end, ISO YYYY-MM-DD (range mode)
     data-min        earliest selectable day (ISO); earlier days are disabled
     data-max        latest selectable day (ISO); later days are disabled
+    data-available  comma-separated ISO days that EXIST in the data; every other
+                    day is disabled. A SET, not a span — a column of dates is a
+                    scatter, and min/max would leave the empty days between them
+                    selectable. Omit it and every day is selectable, which is the
+                    override: a host that wants a picker unconstrained by its own
+                    data simply does not supply one.
     data-has-time   (boolean) show a native <input type=time> in the footer
     data-embedded   (boolean) the HOST owns the card's chrome — see the note below
 

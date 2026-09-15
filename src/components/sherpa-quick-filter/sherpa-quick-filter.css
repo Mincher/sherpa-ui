@@ -33,6 +33,14 @@
   display: inline-flex;
   vertical-align: middle;
   inline-size: fit-content;
+  /* The value tooltip stands ABOVE the chip and out of the bar, so the chip has
+     to outrank whatever is painted after it — the toolbar above this one, which
+     comes later in the document and won every tie. A z-index needs a position
+     to act on, and `relative` changes no layout.
+
+     Raised only while the tip is UP: a permanently lifted chip would paint over
+     a menu opened from the chip beside it. */
+  position: relative;
 
   /* The strong brand accent (ramp step 2 = #C046FF), not the light surface. */
   --_accent: var(--_status-border, var(--sherpa-theme-border-active-2, #c046ff));
@@ -252,6 +260,17 @@
   border-style: solid;
   border-width: 6px 6px 0 6px; /* off-grid-ok — drawn glyph, 12×6 tail */
   border-color: var(--sherpa-style-content-base, #0c0b11) transparent transparent transparent;
+}
+
+/* THE LIFT. The chip rises above its neighbours — and above the toolbars around
+   it — for exactly as long as the tip is showing, then drops back. Permanently
+   lifted, it would paint over a menu opened from the chip beside it.
+
+   `data-tip` is written by JS on pointerenter/leave. A pure-CSS `:host(:has(…))`
+   cannot do this: `:has()` inside `:host()` matches against the element's LIGHT
+   children, not into its own shadow tree, so it never saw the hovered badge. */
+:host([data-tip]) {
+  z-index: var(--sherpa-z-overlay, 100);
 }
 
 .count-wrap:hover .count-tip,

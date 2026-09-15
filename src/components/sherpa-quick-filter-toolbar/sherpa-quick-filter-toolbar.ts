@@ -115,6 +115,18 @@ export interface QuickFilterDef {
   /** The slider's increment. Defaults to 1. */
   step?: number;
   /**
+   * The days a DATE chip's calendar may pick — the ones that exist in the data.
+   *
+   * ISO strings. Every other day is drawn inactive, so a reader cannot pick a
+   * date no record carries and get an empty view back. OMIT IT to leave the
+   * calendar unconstrained, which is the override: a host that does not compute
+   * availability, or deliberately wants a free picker, simply says nothing.
+   *
+   * A SET rather than a min/max span, because a column of dates is a scatter —
+   * a span would leave every empty day between the first and the last pickable.
+   */
+  availableDates?: string[];
+  /**
    * Start a number or date chip in RANGE mode rather than single.
    *
    * The switch is the user's to flip either way; this only says which side it
@@ -450,12 +462,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // has not reached yet, and Cancel gives them a way back out of a half-built
     // set.
     //
-    // A DATE chip counts as single whatever its `select` says: a calendar picks
-    // ONE day, so the pick is finished the moment it is made.
+    // A DATE or NUMBER chip counts as single whatever its `select` says — a
+    // calendar picks one day and a field holds one number, so the pick is
+    // finished the moment it is made. IN RANGE MODE it is not: a span has two
+    // ends, and applying on the first would filter to a range the user has not
+    // finished naming. So a range defers, and the Range switch moves the menu
+    // between the two modes at runtime — see #onRangeToggle.
     //
     // `commit` on the definition overrides it either way. The menu owns both
     // modes already; nothing else here has to change.
-    const picksOne = def.kind === 'date' || def.kind === 'number';
+    const picksOne = (def.kind === 'date' || def.kind === 'number') && !def.range;
     const defers = def.commit ?? (!single && !picksOne);
     if (defers) menu.setAttribute('data-commit', '');
     // EVERY value menu gets a search. A filter's values are the user's own data
@@ -511,6 +527,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // The calendar's own two-ended mode, which it already has: `range` is a
         // two-click start→end selection with the days between banded.
         if (def.range) cal.setAttribute('data-type', 'range');
+        // The days that exist in the data. Absent leaves every day pickable —
+        // see `availableDates`.
+        if (def.availableDates) {
+          cal.setAttribute('data-available', def.availableDates.join(','));
+        }
         // A calendar is not a list to search, and the search would filter
         // nothing — so it is not offered here.
         menu.removeAttribute('data-search');
@@ -600,6 +621,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * Whether this chip's commit mode was PINNED by its definition.
+   *
+   * A host that named `commit` meant it either way, so the Range switch must not
+   * move it — the switch only supplies the default the definition left out.
+   */
+  #chipDefers(sw: HTMLElement): boolean {
+    const id = sw.closest<HTMLElement>('.chip')?.dataset['id'];
+    if (!id) return false;
+    return this.#filters.some((f) => f.id === id && f.commit != null);
+  }
+
+  /**
    * Put the RANGE switch at the top of a number or date menu.
    *
    * The switch flips ONE filter between its two shapes — "equals this" and
@@ -646,6 +679,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const menu = sw.closest('sherpa-menu');
     if (!menu) return;
     menu.toggleAttribute('data-range', on);
+    // A RANGE has two ends, so the pick is not finished on the first one —
+    // applying there would filter to a span the user has not named yet. Single
+    // mode holds one value and applies on the tick, as it always did. A chip
+    // whose definition named `commit` keeps what it asked for.
+    if (!this.#chipDefers(sw)) menu.toggleAttribute('data-commit', on);
     // A CALENDAR reads the mode as its own type: `range` is a two-click
     // start→end selection with the days between banded. Its previous single
     // pick is left alone — re-picking is how a range is started anyway.

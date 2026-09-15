@@ -491,3 +491,52 @@ test('data-type="range" draws two months in one 15-track grid', async ({ page })
   // 10 Sep → 5 Oct: 20 remaining days of September plus 4 of October.
   expect(r.banded).toBe(24);
 });
+
+/**
+ * data-available names the days that EXIST in the data; every other day is drawn
+ * inactive, so a reader cannot pick a date no record carries and get an empty
+ * view back.
+ *
+ * A SET rather than a min/max span, because a column of dates is a scatter — a
+ * span would leave every empty day between the first and the last pickable.
+ */
+test('data-available disables every day the data does not carry', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (available?: string): Promise<{ enabled: string[]; disabled: number }> => {
+      const el = document.createElement('sherpa-calendar') as CalEl;
+      el.setAttribute('data-value', '2026-09-15');
+      if (available != null) el.setAttribute('data-available', available);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const days = [...el.shadowRoot!.querySelectorAll('sherpa-calendar-cell')].filter(
+        (c) => !c.hasAttribute('data-blank'),
+      ) as HTMLElement[];
+      return {
+        enabled: days.filter((c) => !c.hasAttribute('disabled')).map((c) => c.dataset['iso'] ?? ''),
+        disabled: days.filter((c) => c.hasAttribute('disabled')).length,
+      };
+    };
+
+    return {
+      absent: await read(),
+      set: await read('2026-09-03,2026-09-11,2026-09-20'),
+      empty: await read(''),
+    };
+  });
+
+  // ABSENT is the OVERRIDE: a host that does not compute availability, or that
+  // deliberately wants a free picker, simply says nothing and every day is
+  // selectable — which is the behaviour the calendar always had.
+  expect(r.absent.enabled).toHaveLength(30);
+  expect(r.absent.disabled).toBe(0);
+
+  // Named days only — the ones between them stay inactive, which a min/max span
+  // could not express.
+  expect(r.set.enabled).toEqual(['2026-09-03', '2026-09-11', '2026-09-20']);
+  expect(r.set.disabled).toBe(27);
+
+  // EMPTY is not the same as absent: "nothing has records" is an answer.
+  expect(r.empty.enabled).toEqual([]);
+  expect(r.empty.disabled).toBe(30);
+});

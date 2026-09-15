@@ -4,7 +4,8 @@
  * It has three views: days, months, and years. Clicking the header label zooms
  * out (day → month → year); picking a month or year zooms back in. The prev/next
  * arrows move by a month in the day view, a year in the month view, and a decade
- * in the year view. data-min / data-max set the range of days you can pick.
+ * in the year view. data-min / data-max set the range of days you can pick, and
+ * data-available narrows that to the days a host says exist in its data.
  *
  * TYPE (data-type = single | range) mirrors the Figma Calendar `Type` axis:
  *   single (default) — one day. data-value holds it as YYYY-MM-DD.
@@ -65,7 +66,7 @@ export class SherpaCalendar extends SherpaElement {
   static override html = new URL('./sherpa-calendar.html', import.meta.url);
   static override observed = [
     'data-value', 'data-value-start', 'data-value-end',
-    'data-min', 'data-max', 'data-view', 'data-type', 'data-has-time',
+    'data-min', 'data-max', 'data-available', 'data-view', 'data-type', 'data-has-time',
   ];
 
   /** Currently viewed year / 0-indexed month (drives the grids). */
@@ -241,6 +242,29 @@ export class SherpaCalendar extends SherpaElement {
    * every cell states its column so a month with a blank-led first week cannot
    * slide into its neighbour.
    */
+  /**
+   * The days that EXIST in the data, when a host has named them.
+   *
+   * `data-min`/`data-max` describe a SPAN, which is the wrong shape for "only
+   * these days have records": a column of order dates is a scatter, not a range,
+   * and a span would leave every empty day in between selectable. This is the
+   * set, as a comma-separated ISO list.
+   *
+   * Absent means EVERY day is selectable — a host that does not compute
+   * availability gets the behaviour it always had, and `data-available=""`
+   * (empty, not missing) genuinely means nothing is selectable.
+   */
+  #availableDays(): Set<string> | null {
+    const raw = this.dataset['available'];
+    if (raw == null) return null;
+    return new Set(
+      raw
+        .split(',')
+        .map((d) => d.trim())
+        .filter(Boolean),
+    );
+  }
+
   #stampMonth(grid: HTMLElement, y: number, m: number, column: number): void {
     // Monday-first grid: convert JS getDay() (0=Sun) to a Mon=0…Sun=6 index so
     // the first column is Monday, matching the Figma weekday header.
@@ -248,6 +272,7 @@ export class SherpaCalendar extends SherpaElement {
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const min = this.dataset['min'] ?? '';
     const max = this.dataset['max'] ?? '';
+    const available = this.#availableDays();
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
     // Selection depends on type. In single mode a lone selected day; in range
@@ -294,7 +319,11 @@ export class SherpaCalendar extends SherpaElement {
         cell.setAttribute('data-state', 'today');
         cell.setAttribute('aria-current', 'date');
       }
-      if ((min && iso < min) || (max && iso > max)) cell.setAttribute('disabled', '');
+      // Out of the allowed SPAN, or not in the available SET. Both disable the
+      // cell; the set is checked only when a host supplied one.
+      const outOfSpan = (min && iso < min) || (max && iso > max);
+      const notInData = available != null && !available.has(iso);
+      if (outOfSpan || notInData) cell.setAttribute('disabled', '');
 
       if (this.#type === 'single') {
         if (iso === single) {
