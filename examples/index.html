@@ -165,6 +165,29 @@
       loadView(view);
     });
 
+    /* The moon button flips light ↔ dark.
+       The header already FIRES theme-toggle; nothing was listening, so the button
+       did nothing. The whole switch is one attribute on <html>: the display-mode
+       layer owns light/dark and re-points every semantic token from there, so no
+       component knows a mode exists.
+
+       The choice is remembered in localStorage — a theme a user has to re-pick on
+       every page load is not a preference. Wrapped, because storage throws in a
+       private window and a failed WRITE must not stop the theme changing. */
+    const MODE_KEY = 'sherpa-examples-mode';
+    const setMode = (mode) => {
+      document.documentElement.dataset.mode = mode;
+      try { localStorage.setItem(MODE_KEY, mode); } catch { /* storage unavailable */ }
+    };
+    try {
+      const saved = localStorage.getItem(MODE_KEY);
+      if (saved === 'light' || saved === 'dark') document.documentElement.dataset.mode = saved;
+    } catch { /* storage unavailable — the markup's own data-mode stands */ }
+
+    document.addEventListener('theme-toggle', () => {
+      setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+    });
+
     // Back/forward → load without pushing.
     window.addEventListener('popstate', () => loadView(viewFromURL()));
 

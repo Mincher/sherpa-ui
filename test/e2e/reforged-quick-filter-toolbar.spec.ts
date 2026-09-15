@@ -1102,3 +1102,47 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
     expect(pair[1]).toBe('fa-solid fa-tag');
   }
 });
+
+test('a PERSISTENT chip selects its first option on init; a plain filter chip does not', async ({ page }) => {
+  // A view selector is never "off" — you are always looking at some view — so it
+  // must arrive with a value picked and its caret naming that value, without the
+  // app having to mark an option `selected`. A plain FILTER chip is the opposite:
+  // "no filter" is a real state, so it must arrive holding nothing.
+  const got = await page.evaluate(async () => {
+    const build = async (def: Record<string, unknown>) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '';
+      const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate: (d: unknown) => void;
+        values: Record<string, string[]>;
+      };
+      root.appendChild(bar);
+      await bar.rendered;
+      // NOTE: no `selected` on any option — the chip decides.
+      bar.populate([{ ...def, options: [{ value: 'a', label: 'First' }, { value: 'b', label: 'Second' }] }]);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const chip = bar.shadowRoot!.querySelector('sherpa-quick-filter')!;
+      return {
+        caret: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
+        checked: [...chip.querySelectorAll('input')].filter((i) => (i as HTMLInputElement).checked)
+          .map((i) => (i as HTMLInputElement).value),
+        reported: bar.values,
+      };
+    };
+    return {
+      persistent: await build({ id: 'view', label: 'View', persistent: true, active: true, select: 'single' }),
+      plain: await build({ id: 'plan', label: 'Plan', select: 'single' }),
+    };
+  });
+
+  // Picked, named in the caret, and readable by the app without an event.
+  expect(got.persistent.checked).toEqual(['a']);
+  expect(got.persistent.caret).toBe('First');
+  expect(got.persistent.reported).toEqual({ view: ['a'] });
+
+  // A filter chip holds nothing until someone picks.
+  expect(got.plain.checked).toEqual([]);
+  expect(got.plain.caret).toBe('');
+  expect(got.plain.reported).toEqual({});
+});

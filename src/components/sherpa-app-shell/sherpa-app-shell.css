@@ -136,10 +136,15 @@
   --_content-inset: var(--_nav-open);
 }
 
-/* The view's own inset. On .view rather than on .content, so the sticky header
-   above it spans the full width while the content stays on the layout grid. */
+/* NO PADDING HERE. The LAYOUT GRID owns the view's inset — `.sherpa-grid` already
+   applies --sherpa-layout-grid-padding, and applying it here too inset the content
+   TWICE: 16 from the shell plus 16 from the grid, so a card sat 32px off the rail
+   instead of 16.
+
+   The grid is the right owner of the two: it is projected straight from Figma's
+   layout collection, so the inset stays in step with the columns and gutters it
+   was designed against. A view that does not use the grid supplies its own. */
 .view {
-  padding: var(--sherpa-layout-grid-padding, 16px);
   min-inline-size: 0;
   /* A COLUMN, so a view that fills the screen (a chat thread, a scrolling data
      grid) has an unbroken height to resolve against.

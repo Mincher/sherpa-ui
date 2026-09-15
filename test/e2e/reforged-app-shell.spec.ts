@@ -63,8 +63,11 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
   expect(r.headerInsideScroller).toBe(true);
   expect(r.headerSticky).toBe('sticky');
   expect(r.headerIsScrollState).toContain('scroll-state');
+  // NEITHER region pads. The LAYOUT GRID owns the view's inset — `.sherpa-grid`
+  // already applies --sherpa-layout-grid-padding, and the shell applying it too
+  // inset the content TWICE, so a card sat 32px off the rail instead of 16.
   expect(r.contentPadding).toBe('0px');
-  expect(r.viewPadding).not.toBe('0px');
+  expect(r.viewPadding).toBe('0px');
   expect(r.fullHeight).toBe(true);
   expect(r.frameDisplay).toBe('grid');
   // ONE row, not two. The header moved INSIDE the scrolling content, so the frame
