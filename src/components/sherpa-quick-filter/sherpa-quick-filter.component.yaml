@@ -66,6 +66,9 @@ anatomy:
           aria-expanded: "false"
           aria-label: Choose values
         children:
+          - el: span
+            class: caret-label
+            part: caret-label
           - el: i
             class: fa-solid fa-caret-down
             attrs:
@@ -77,7 +80,7 @@ props:
   - $type: prop
     name: data-count
     type: string
-    kind: visibility
+    kind: style
     description: >-
       leading count chip (shown when present). A menu sets it only at TWO or more picked values — at
       one the label already names the value, so a "1" badge would be noise. Hovering the badge
@@ -165,7 +168,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (current, menu). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current, valueLabel, menu). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: quick-filter-click
@@ -184,7 +187,10 @@ tokens:
   body.padding-inline: "{sherpa.display-mode-space-2xs}"
   body.border-width: "{sherpa.border-top}"
   body.border-color: "{sherpa.style-border-base}"
-  body.border-radius: "{sherpa.border-rounding-top-left}"
+  body.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  body.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  body.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  body.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   body.background: "{sherpa.style-surface-base}"
   body.color: "{sherpa.theme-content-body-1}"
   body.font-size: "{sherpa.font-size-body-base}"
@@ -200,7 +206,8 @@ tokens:
   count-tip.line-height: "{sherpa.theme-content-line-height-small}"
   count-tip.border-radius: "{sherpa.display-mode-border-rounding-base}"
   count-tip.box-shadow: "{sherpa.display-mode-size-2xs}"
-  caret.inline-size: "{sherpa.display-mode-size-lg}"
+  caret.min-inline-size: "{sherpa.display-mode-size-lg}"
+  caret.gap: "{sherpa.display-mode-space-2xs}"
   caret.border-width: "{sherpa.border-top}"
   caret.border-color: "{sherpa.style-border-base}"
   caret.border-start-end-radius: "{sherpa.border-rounding-top-right}"
@@ -208,6 +215,7 @@ tokens:
   caret.background: "{sherpa.style-surface-base}"
   caret.color: "{sherpa.theme-content-body-1}"
   caret.font-size: "{sherpa.theme-content-size-base}"
+  caret-label.font-size: "{sherpa.theme-content-size-base}"
 $extensions:
   sherpa:
     figmaName: Filter Chip (atom)
@@ -223,6 +231,9 @@ $extensions:
       - hasLabel
     jsProps:
       - name: current
+        type: string
+        access: read-write
+      - name: valueLabel
         type: string
         access: read-write
       - name: menu

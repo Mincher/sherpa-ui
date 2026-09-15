@@ -283,10 +283,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  /* HUGS its content, as Figma's Button instance does (layoutSizingHorizontal =
+     HUG). With no picked value the label is empty and the button collapses back to
+     the bare 24-square caret; with one it grows to hold the value. A fixed width
+     would either clip the label or leave a gap when there is none. */
+  min-inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: 100%;
-  /* Figma padding 8 all round on a 24 box with a 14 glyph — the glyph is centred
-     and the box is fixed, so the padding is what sizes the hit area, not layout. */
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   padding: 0;
   border: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
@@ -313,6 +316,29 @@
     outline: none;
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
+}
+
+/* The picked VALUE, inside the caret button (Figma State=menu makes the caret a
+   Button instance with a `label` text property). Empty means nothing is picked, and
+   `:empty` collapses it so the button returns to a bare caret — no JS visibility
+   write, and no stray padding around a zero-width span. */
+.caret-label {
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: 1;
+  white-space: nowrap;
+  /* A long value truncates rather than stretching the bar — the full list is on
+     the badge's hover tip and in its aria-label. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 12ch;
+}
+.caret-label:empty {
+  display: none;
+}
+/* With a value beside it the caret needs real side padding; bare, the 24-square
+   centring already spaces the glyph. */
+.caret:has(.caret-label:not(:empty)) {
+  padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 /* The slotted menu is a popover in the top layer — the wrapper is a positioning

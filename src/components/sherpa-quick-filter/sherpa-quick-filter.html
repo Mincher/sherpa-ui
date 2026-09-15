@@ -81,6 +81,11 @@
 
     <button class="caret" part="caret" type="button" aria-haspopup="menu" aria-expanded="false"
             aria-label="Choose values">
+      <!-- The SELECTED value, not the field. Figma State=menu makes this caret a
+           Button instance with a `label` text property, so the field name stays on
+           the chip and the value reads here. Empty when nothing is picked — the
+           button hugs its content, so it collapses back to the bare caret. -->
+      <span class="caret-label" part="caret-label"></span>
       <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
     </button>
 

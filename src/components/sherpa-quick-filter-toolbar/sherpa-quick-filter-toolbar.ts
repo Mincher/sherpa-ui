@@ -285,10 +285,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #syncDateLabel(chip: HTMLElement): void {
     const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
     if (!cal) return;
-    const base = (chip.dataset['baseLabel'] ??= chip.getAttribute('data-label') ?? '');
     const picked = this.#chipPicks(chip);
+    const target = chip as HTMLElement & { valueLabel?: string };
     if (!picked.length) {
-      chip.setAttribute('data-label', base);
+      if ('valueLabel' in target) target.valueLabel = '';
       return;
     }
     const fmt = (iso: string): string => {
@@ -299,7 +299,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         ? iso
         : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' });
     };
-    chip.setAttribute('data-label', `${base}: ${picked.map(fmt).join(' – ')}`);
+    // The FIRST day plus an ellipsis, matching a value chip: the field name stays
+    // on the chip and never moves, and the caret carries what was picked. A range
+    // reads "12 Sep…" with the count badge saying 2 — the full range is on the
+    // badge's hover tip.
+    const first = fmt(picked[0]!);
+    if ('valueLabel' in target) target.valueLabel = picked.length > 1 ? `${first}…` : first;
+    // The badge carries the number, same rule as a value chip: two or more only.
+    if (picked.length > 1) chip.dataset['count'] = String(picked.length);
+    else delete chip.dataset['count'];
   }
 
   #chips(): ChipEl[] {

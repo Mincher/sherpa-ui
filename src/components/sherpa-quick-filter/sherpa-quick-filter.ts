@@ -89,6 +89,15 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   override onConnect(): void {
     this.#syncEmpty();
+    // A chip can arrive with values ALREADY ticked (markup, or the toolbar's own
+    // `options: [{ selected: true }]`), and no menu event ever fires for those.
+    // Without this the caret label would stay blank until the user opened the menu.
+    const initial = this.menu?.values ?? [];
+    if (initial.length) {
+      this.#syncLabelForSelection(initial);
+      this.#syncCountTip(initial);
+      if (initial.length > 1) this.dataset['count'] = String(initial.length);
+    }
   }
 
   override onChange(name: string): void {
@@ -102,6 +111,24 @@ export class SherpaQuickFilter extends SherpaElement {
   set current(v: boolean) {
     this.toggleAttribute('data-current', v);
     this.#syncEmpty();
+  }
+
+  /**
+   * The text shown in the caret button — the chip's PICKED VALUE.
+   *
+   * Public because the value is not always the chip's own to derive: a DATE chip's
+   * pick is an ISO string that has to be formatted to the reader's locale, and the
+   * toolbar owns that formatting. The chip owns the element; the caller owns the
+   * words.
+   *
+   * Empty collapses the button back to a bare caret (`.caret-label:empty` in CSS).
+   */
+  set valueLabel(text: string) {
+    const caret = this.$('.caret-label');
+    if (caret) caret.textContent = text;
+  }
+  get valueLabel(): string {
+    return this.$('.caret-label')?.textContent ?? '';
   }
 
   /** The chip's slotted value menu, if it has one. */
@@ -214,17 +241,30 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
-   * Exactly ONE picked value reads better as "Field: Value" than as a bare field
-   * name — the chip can say what it filters TO, not just what it filters ON, and
-   * the count badge is redundant at one anyway. Two or more values will not fit,
-   * so those fall back to the field name plus the count badge.
+   * The chip keeps the FIELD name; the picked value reads in the caret button.
+   *
+   * Figma's State=menu makes the caret a Button instance with its own `label` text
+   * property, so the two are separate places (150:3408). The chip used to fold them
+   * together as "Field: Value", which meant the field name moved and re-flowed the
+   * whole bar every time a value was picked.
+   *
+   *   nothing picked   caret label empty → the button collapses to a bare caret
+   *   one value        caret label is that value
+   *   two or more      caret label is the FIRST value plus an ellipsis, and the
+   *                    count badge carries the number
+   *
+   * The ellipsis says "there is more here" without guessing how many values fit —
+   * the exact list is on the badge's hover tip and in its aria-label.
    */
   #syncLabelForSelection(values: string[]): void {
     this.#field ??= this.dataset['label'] ?? null;
     const field = this.#field;
     if (field == null) return;
-    const text = values.length === 1 ? this.#valueLabel(values[0]!) : null;
-    this.dataset['label'] = text ? `${field}: ${text}` : field;
+    // The chip label is now ALWAYS the field name — it no longer moves.
+    this.dataset['label'] = field;
+
+    const first = values.length ? this.#valueLabel(values[0]!) : '';
+    this.valueLabel = values.length > 1 ? `${first}…` : first;
   }
 
   /**

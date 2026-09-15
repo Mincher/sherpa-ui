@@ -166,7 +166,7 @@ test('the caret opens the slotted menu without toggling the chip', async ({ page
   expect(r.changes).toEqual([['emea']]);
 });
 
-test('exactly one picked value reads "Field: Value"; two or more fall back to the field name', async ({ page }) => {
+test('the chip keeps the FIELD name; the caret button carries the picked VALUE', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-label', 'Region');
@@ -189,33 +189,41 @@ test('exactly one picked value reads "Field: Value"; two or more fall back to th
     await menu.rendered;
 
     const rows = menu.querySelectorAll<HTMLInputElement>('input');
-    const shown = (): string => el.shadowRoot!.querySelector('.label')!.textContent!.trim();
+    const read = () => ({
+      // The chip's own label — must NOT move.
+      chip: el.shadowRoot!.querySelector('.label')!.textContent!.trim(),
+      // The caret button's label — the picked value lives here now.
+      caret: el.shadowRoot!.querySelector('.caret-label')!.textContent!.trim(),
+      count: el.dataset['count'],
+    });
 
     rows[0]!.click();
-    const one = { label: el.dataset['label'], shown: shown(), count: el.dataset['count'] };
+    const one = read();
 
     rows[1]!.click();
-    const two = { label: el.dataset['label'], shown: shown(), count: el.dataset['count'] };
+    const two = read();
 
-    // Back down to one: the label must re-form, not stay stuck on the field name.
+    // Back down to one: the caret must re-form, not stay stuck on the ellipsis.
     rows[0]!.click();
-    const backToOne = { label: el.dataset['label'], shown: shown(), count: el.dataset['count'] };
+    const backToOne = read();
 
-    // Back to none: the bare field name returns.
+    // Back to none: the caret empties and the chip is unchanged throughout.
     rows[1]!.click();
-    const none = { label: el.dataset['label'], shown: shown(), count: el.dataset['count'] };
+    const none = read();
 
     return { one, two, backToOne, none };
   });
 
-  // One pick: the label carries the value, so the badge stays away.
-  expect(r.one).toEqual({ label: 'Region: EMEA', shown: 'Region: EMEA', count: undefined });
-  expect(r.two).toEqual({ label: 'Region', shown: 'Region', count: '2' });
-  expect(r.backToOne).toEqual({ label: 'Region: APAC', shown: 'Region: APAC', count: undefined });
-  expect(r.none).toEqual({ label: 'Region', shown: 'Region', count: undefined });
+  // One pick: the caret names the value, so the badge stays away.
+  expect(r.one).toEqual({ chip: 'Region', caret: 'EMEA', count: undefined });
+  // Two or more: the caret shows the FIRST plus an ellipsis, the badge the number.
+  expect(r.two).toEqual({ chip: 'Region', caret: 'EMEA…', count: '2' });
+  expect(r.backToOne).toEqual({ chip: 'Region', caret: 'APAC', count: undefined });
+  // Nothing picked: an EMPTY caret label, which CSS collapses to a bare caret.
+  expect(r.none).toEqual({ chip: 'Region', caret: '', count: undefined });
 });
 
-test('a single-select chip reads "Field: Value" with no count badge', async ({ page }) => {
+test('a single-select chip names its one value in the caret, with no count badge', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
     el.setAttribute('data-label', 'Group');
@@ -238,16 +246,22 @@ test('a single-select chip reads "Field: Value" with no count badge', async ({ p
     await menu.rendered;
 
     const rows = menu.querySelectorAll<HTMLInputElement>('input');
+    const read = () => ({
+      chip: el.dataset['label'],
+      caret: el.shadowRoot!.querySelector('.caret-label')!.textContent!.trim(),
+      count: el.dataset['count'],
+    });
     rows[0]!.click();
-    const first = { label: el.dataset['label'], count: el.dataset['count'] };
-    // A radio swap replaces the value, so the label must follow the NEW pick.
+    const first = read();
+    // A radio swap REPLACES the value, so the caret must follow the new pick.
     rows[1]!.click();
-    const second = { label: el.dataset['label'], count: el.dataset['count'] };
+    const second = read();
     return { first, second };
   });
 
-  expect(r.first).toEqual({ label: 'Group: Site', count: undefined });
-  expect(r.second).toEqual({ label: 'Group: Operating System', count: undefined });
+  // Single-select can never reach two, so the badge can never say anything.
+  expect(r.first).toEqual({ chip: 'Group', caret: 'Site', count: undefined });
+  expect(r.second).toEqual({ chip: 'Group', caret: 'Operating System', count: undefined });
 });
 
 test('hovering the count badge reveals a bubble ABOVE it listing the chosen values', async ({ page }) => {

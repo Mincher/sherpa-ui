@@ -995,6 +995,8 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
 
     const after = {
       label: chip.getAttribute('data-label'),
+      // The day now reads in the CARET button, not folded into the chip label.
+      caret: (chip.shadowRoot?.querySelector('.caret-label')?.textContent ?? '').trim(),
       on: chip.hasAttribute('data-current'),
       values: JSON.parse(JSON.stringify(el.values)),
     };
@@ -1027,9 +1029,12 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   expect(r.after.on).toBe(true);
   expect(r.after.values).toEqual({ created: ['2024-06-15'] });
 
-  // …and the chip carries the day, formatted, rather than an ISO string.
-  expect(r.after.label).toMatch(/^Created: /);
-  expect(r.after.label).not.toContain('2024-06-15');
+  // The chip label NEVER moves — the field name stays put so the bar does not
+  // re-flow every time a day is picked.
+  expect(r.after.label).toBe('Created');
+  // …and the CARET carries the day, formatted, rather than an ISO string.
+  expect(r.after.caret).not.toBe('');
+  expect(r.after.caret).not.toContain('2024-06-15');
 
   // ONE HEADER, and it is the MENU's. The Calendar node is a card of three
   // regions whose first is a `header` slot holding ‹ · "August 2026" · › — so a
