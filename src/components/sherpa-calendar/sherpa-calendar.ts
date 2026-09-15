@@ -367,8 +367,21 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
-      if (sel && sel[0] === this.#viewYear && sel[1] === i) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
-      if (now.getFullYear() === this.#viewYear && now.getMonth() === i) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
+      // TODAY first, SELECTED second — the same order the day grid uses, so a
+      // month that is both reads as selected. `data-state` is the cell
+      // component's own API and the only thing it paints from; `data-today` and
+      // `data-selected` alone set no state and the cell drew plain, which is why
+      // the current month and year looked like every other.
+      if (now.getFullYear() === this.#viewYear && now.getMonth() === i) {
+        cell.setAttribute('data-today', '');
+        cell.setAttribute('data-state', 'today');
+        cell.setAttribute('aria-current', 'date');
+      }
+      if (sel && sel[0] === this.#viewYear && sel[1] === i) {
+        cell.setAttribute('data-selected', '');
+        cell.setAttribute('data-state', 'selected');
+        cell.setAttribute('aria-selected', 'true');
+      }
       grid.appendChild(cell);
     });
   }
@@ -385,8 +398,17 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
-      if (sel && sel[0] === year) { cell.setAttribute('data-selected', ''); cell.setAttribute('aria-selected', 'true'); }
-      if (year === nowY) { cell.setAttribute('data-today', ''); cell.setAttribute('aria-current', 'date'); }
+      // TODAY first, SELECTED second — see #renderMonths.
+      if (year === nowY) {
+        cell.setAttribute('data-today', '');
+        cell.setAttribute('data-state', 'today');
+        cell.setAttribute('aria-current', 'date');
+      }
+      if (sel && sel[0] === year) {
+        cell.setAttribute('data-selected', '');
+        cell.setAttribute('data-state', 'selected');
+        cell.setAttribute('aria-selected', 'true');
+      }
       grid.appendChild(cell);
     }
   }

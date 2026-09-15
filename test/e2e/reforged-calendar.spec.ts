@@ -540,3 +540,98 @@ test('data-available disables every day the data does not carry', async ({ page 
   expect(r.empty.enabled).toEqual([]);
   expect(r.empty.disabled).toBe(30);
 });
+
+/**
+ * The current month and year wear the SAME today styling a current day does.
+ *
+ * They carried `data-today` only. `data-state` is the cell component's own API
+ * and the only thing it paints from, so the flag alone set no state and the
+ * current month and year drew like every other cell.
+ */
+test('the current month and year cells take the today state', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const now = new Date();
+    const pad = (n: number): string => String(n).padStart(2, '0');
+    const iso = (y: number, m: number, d: number): string => `${y}-${pad(m + 1)}-${pad(d)}`;
+
+    const build = async (value: string): Promise<HTMLElement & { shadowRoot: ShadowRoot; dataset: DOMStringMap }> => {
+      const el = document.createElement('sherpa-calendar') as CalEl;
+      el.setAttribute('data-value', value);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return el as HTMLElement & { shadowRoot: ShadowRoot; dataset: DOMStringMap };
+    };
+
+    const inspect = async (
+      el: HTMLElement & { shadowRoot: ShadowRoot; dataset: DOMStringMap },
+      view: string,
+      sel: string,
+    ): Promise<{ state: string | null; fill: string | null; marked: number }> => {
+      el.dataset['view'] = view;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const cells = [
+        ...el.shadowRoot.querySelectorAll(`${sel} sherpa-calendar-cell`),
+      ] as (HTMLElement & { rendered?: Promise<void>; shadowRoot: ShadowRoot })[];
+      const today = cells.find((c) => c.hasAttribute('data-today'));
+      if (!today) return { state: null, fill: null, marked: 0 };
+      await today.rendered;
+      const content = today.shadowRoot.querySelector('.content')!;
+      return {
+        state: today.getAttribute('data-state'),
+        fill: getComputedStyle(content).backgroundColor,
+        marked: cells.filter((c) => c.hasAttribute('data-today')).length,
+      };
+    };
+
+    // Today and selected must be DIFFERENT cells, but both grids still have to
+    // be SHOWING the current month and year — the month grid draws one year and
+    // the year grid one decade, so a value far in the past scrolls today off
+    // the screen entirely. A different month of the same year does both.
+    const other = (now.getMonth() + 3) % 12;
+    const apart = await build(iso(now.getFullYear(), other, 5));
+    const month = await inspect(apart, 'month', '.cal-months');
+    const year = await inspect(apart, 'year', '.cal-years');
+
+    // …and a value that IS today's month and year, so one cell is both — and so
+    // the DAY grid is showing today at all, which is where the reference fill
+    // comes from. The fixture above opens on the selected month, three ahead,
+    // which has no today cell in it.
+    const same = await build(iso(now.getFullYear(), now.getMonth(), 15));
+    const bothMonth = await inspect(same, 'month', '.cal-months');
+    const bothYear = await inspect(same, 'year', '.cal-years');
+
+    // The reference fill, from a bare cell asked for the state directly. Read
+    // off a live DAY cell it depends on which day the fixture selected, and a
+    // day that is both today and selected paints the selected fill.
+    const ref = document.createElement('sherpa-calendar-cell') as HTMLElement & {
+      rendered?: Promise<void>;
+      shadowRoot: ShadowRoot;
+    };
+    ref.setAttribute('data-state', 'today');
+    ref.setAttribute('data-label', '1');
+    document.getElementById('root')!.appendChild(ref);
+    await ref.rendered;
+    const todayFill = getComputedStyle(ref.shadowRoot.querySelector('.content')!).backgroundColor;
+
+    return { todayFill, month, year, bothMonth, bothYear };
+  });
+
+  // Exactly one cell per grid is today. The MONTH proves the state, because the
+  // selected month is a different cell from the current one.
+  expect(r.month.marked).toBe(1);
+  expect(r.year.marked).toBe(1);
+  expect(r.month.state).toBe('today');
+
+  // …and it takes the SAME fill a current day gets, which is the whole ask: one
+  // today treatment across the views rather than a different one per grid.
+  expect(r.month.fill).toBe(r.todayFill);
+
+  // The YEAR cell here is both today AND selected — the fixture picks another
+  // month of the same year — so it reads SELECTED. That is the precedence: the
+  // day grid's order, written by setting today first and letting selected
+  // overwrite it, so a cell that is both says the one the user chose.
+  expect(r.year.state).toBe('selected');
+  expect(r.bothMonth.state).toBe('selected');
+  expect(r.bothYear.state).toBe('selected');
+});
