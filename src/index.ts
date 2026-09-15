@@ -57,6 +57,48 @@ export {
   type ViewElement,
   type RenderedView,
 } from './core/render-view.js';
+/* ── Data layer ──────────────────────────────────────────────────────── */
+export {
+  applyOptions,
+  compareValues,
+  filterRows,
+  groupRows,
+  matchesFilter,
+  readField,
+  searchRows,
+  sortRows,
+  type Filter,
+  type FilterClause,
+  type FilterGroup,
+  type FilterOp,
+  type LoadOptions,
+  type LoadResult,
+  type Row,
+  type RowGroup,
+  type SortDirection,
+  type SortSpec,
+  type Store,
+  type StoreChangeDetail,
+} from './core/store.js';
+export {
+  ArrayStore,
+  HttpError,
+  JsonStore,
+  LocalStore,
+  RestStore,
+  type JsonStoreOptions,
+  type LocalStoreOptions,
+  type RestStoreOptions,
+  type StoreOptions,
+} from './core/stores.js';
+export {
+  DataSource,
+  type BindOptions,
+  type DataChangeDetail,
+  type DataSourceOptions,
+  type ViewState,
+} from './core/data-source.js';
+
 export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaChip } from './components/sherpa-chip/sherpa-chip.js';
