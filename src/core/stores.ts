@@ -21,11 +21,26 @@ import {
   type Store,
   type StoreChangeDetail,
 } from './store.js';
+import { validate, type Issue, type StandardSchema } from './validate.js';
 
 /** Options every store shares. */
 export interface StoreOptions {
   /** The field holding each row's identity. Default `'id'`. */
   key?: string;
+  /**
+   * Check every row the store WRITES, and refuse the ones that fail.
+   *
+   * A Standard Schema — `rules({...})` from validate.ts, or a Zod / Valibot /
+   * ArkType schema. It is duck-typed, so passing one adds no dependency here.
+   *
+   * The guard belongs at the STORE rather than at the form, because a form is
+   * not the only way a record arrives: a REST response, a paste, a script and a
+   * second UI all reach the same records, and a rule enforced in one screen is
+   * not a rule. The form should still validate — it is where a person can be
+   * told what is wrong while they can still fix it — but this is the line
+   * nothing crosses.
+   */
+  schema?: StandardSchema;
 }
 
 /**
@@ -36,10 +51,13 @@ export interface StoreOptions {
  */
 abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
+  /** The write guard, if the caller gave one — see StoreOptions.schema. */
+  protected readonly schema: StandardSchema | undefined;
 
   constructor(options: StoreOptions = {}) {
     super();
     this.key = options.key ?? 'id';
+    this.schema = options.schema;
   }
 
   abstract load(options?: LoadOptions): Promise<LoadResult>;
@@ -56,9 +74,47 @@ abstract class BaseStore extends EventTarget implements Store {
     return result.total;
   }
 
+  /**
+   * Check a row against the schema, THROWING if it fails.
+   *
+   * A throw, not a `false`: an invalid write is an error the caller has to
+   * handle, and a boolean return is the kind of thing a caller forgets to read —
+   * the record would then silently not be saved while the UI said it was.
+   *
+   * Returns the schema's own PARSED value, because a schema may coerce ("42" →
+   * 42) and the store should record what the schema settled on rather than what
+   * arrived.
+   *
+   * No schema means no check: a store without one behaves exactly as it always
+   * did, so this cannot break an existing caller.
+   */
+  protected async check(values: Row): Promise<Row> {
+    if (!this.schema) return values;
+    const result = await validate(this.schema, values);
+    if (result.issues) throw new ValidationError(result.issues);
+    return (result.value ?? values) as Row;
+  }
+
   /** Tell every listener the records changed. */
   protected announce(detail: StoreChangeDetail): void {
     this.dispatchEvent(new CustomEvent('change', { detail }));
+  }
+}
+
+/**
+ * A write the schema refused.
+ *
+ * Carries the ISSUES, not just a message, so a form can put each one beside the
+ * field it belongs to — a single "invalid" string would force the UI to guess.
+ */
+export class ValidationError extends Error {
+  readonly issues: ReadonlyArray<Issue>;
+
+  constructor(issues: ReadonlyArray<Issue>) {
+    // The message is for a log or an unhandled throw; `issues` is what a UI reads.
+    super(issues.map((i) => `${String(i.path?.[0] ?? '')}: ${i.message}`.trim()).join('; '));
+    this.name = 'ValidationError';
+    this.issues = issues;
   }
 }
 
@@ -97,22 +153,27 @@ export class ArrayStore extends BaseStore {
     return Promise.resolve(row ? { ...row } : undefined);
   }
 
-  insert(values: Row): Promise<Row> {
-    const row = { ...values };
+  async insert(values: Row): Promise<Row> {
+    // CHECKED FIRST, so a refused row is never pushed and never announced.
+    const row = { ...(await this.check(values)) };
     this.#rows.push(row);
     this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
-    return Promise.resolve({ ...row });
+    return { ...row };
   }
 
-  update(key: unknown, values: Row): Promise<Row> {
+  async update(key: unknown, values: Row): Promise<Row> {
     const i = this.#rows.findIndex((r) => sameKey(readField(r, this.key), key));
-    if (i < 0) return Promise.reject(new Error(`ArrayStore: no row with ${this.key} ${String(key)}`));
+    if (i < 0) throw new Error(`ArrayStore: no row with ${this.key} ${String(key)}`);
     // MERGE, not replace: an update carries the fields that changed, and a caller
     // sending one field must not blank the rest.
-    const row = { ...this.#rows[i]!, ...values };
+    //
+    // The MERGED row is what gets checked, not the patch. A schema sees whole
+    // records, so checking `{ seats: 4 }` alone would fail every `required` rule
+    // for a field the update simply did not mention.
+    const row = await this.check({ ...this.#rows[i]!, ...values });
     this.#rows[i] = row;
     this.announce({ type: 'update', key, row: { ...row } });
-    return Promise.resolve({ ...row });
+    return { ...row };
   }
 
   remove(key: unknown): Promise<void> {
@@ -301,13 +362,22 @@ export class RestStore extends BaseStore {
   }
 
   async insert(values: Row): Promise<Row> {
+    // CHECKED BEFORE SENDING. A round trip to learn what the client already knew
+    // is a wasted request, and a server that accepts a bad row leaves the UI
+    // showing something the rules forbid.
+    const checked = await this.check(values);
     const row = await this.#request<Row>(this.#options.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(values),
+      body: JSON.stringify(checked),
     });
-    this.announce({ type: 'insert', key: readField(row ?? values, this.key), row: row ?? values });
-    return row ?? values;
+    // …and CHECKED AGAIN on the way back. A response is data from somewhere
+    // else: the server may return a shape this app does not accept, and a bad
+    // record reaching the UI is the failure the guard exists to stop. The
+    // server's own row wins when it sends one, since it may have filled in an id.
+    const saved = row ? await this.check(row) : checked;
+    this.announce({ type: 'insert', key: readField(saved, this.key), row: saved });
+    return saved;
   }
 
   async update(key: unknown, values: Row): Promise<Row> {
@@ -319,8 +389,13 @@ export class RestStore extends BaseStore {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(values),
     });
-    this.announce({ type: 'update', key, row: row ?? values });
-    return row ?? values;
+    // The RESPONSE is checked, the patch is not. A PATCH body is a fragment — a
+    // schema sees whole records, so checking `{ seats: 4 }` would fail every
+    // `required` rule for a field this update simply did not mention. What comes
+    // back IS the whole record, and that is what reaches the UI.
+    const saved = row ? await this.check(row) : values;
+    this.announce({ type: 'update', key, row: saved });
+    return saved;
   }
 
   async remove(key: unknown): Promise<void> {
@@ -450,23 +525,26 @@ export class LocalStore extends BaseStore {
     return Promise.resolve(this.#read().find((r) => sameKey(readField(r, this.key), key)));
   }
 
-  insert(values: Row): Promise<Row> {
+  async insert(values: Row): Promise<Row> {
+    // CHECKED FIRST, so a refused row never reaches storage.
+    const checked = await this.check(values);
     const rows = this.#read();
-    rows.push({ ...values });
+    rows.push({ ...checked });
     this.#write(rows);
-    this.announce({ type: 'insert', key: readField(values, this.key), row: { ...values } });
-    return Promise.resolve({ ...values });
+    this.announce({ type: 'insert', key: readField(checked, this.key), row: { ...checked } });
+    return { ...checked };
   }
 
-  update(key: unknown, values: Row): Promise<Row> {
+  async update(key: unknown, values: Row): Promise<Row> {
     const rows = this.#read();
     const i = rows.findIndex((r) => sameKey(readField(r, this.key), key));
-    if (i < 0) return Promise.reject(new Error(`LocalStore: no row with ${this.key} ${String(key)}`));
-    const row = { ...rows[i]!, ...values };
+    if (i < 0) throw new Error(`LocalStore: no row with ${this.key} ${String(key)}`);
+    // The MERGED row is checked, not the patch — see ArrayStore.update.
+    const row = await this.check({ ...rows[i]!, ...values });
     rows[i] = row;
     this.#write(rows);
     this.announce({ type: 'update', key, row: { ...row } });
-    return Promise.resolve({ ...row });
+    return { ...row };
   }
 
   remove(key: unknown): Promise<void> {

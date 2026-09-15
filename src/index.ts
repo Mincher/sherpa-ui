@@ -86,6 +86,7 @@ export {
   JsonStore,
   LocalStore,
   RestStore,
+  ValidationError,
   type JsonStoreOptions,
   type LocalStoreOptions,
   type RestStoreOptions,
@@ -98,6 +99,29 @@ export {
   type DataSourceOptions,
   type ViewState,
 } from './core/data-source.js';
+export {
+  custom,
+  email,
+  issuesFor,
+  isSchema,
+  isValid,
+  max,
+  min,
+  number,
+  oneOf,
+  pattern,
+  required,
+  rules,
+  url,
+  validate,
+  validateField,
+  type FieldRules,
+  type Issue,
+  type Result,
+  type Rule,
+  type RuleMap,
+  type StandardSchema,
+} from './core/validate.js';
 
 export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
