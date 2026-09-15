@@ -190,6 +190,35 @@
   </template>
 
   <!--
+    SELECT ALL — the first row of a MULTI-select menu.
+
+    It is the same label+checkbox shape as a value row, so it reads as part of
+    the list rather than as chrome above it, and its box shows the set's own
+    state: ticked when every value is on, INDETERMINATE when only some are.
+    Clicking it turns everything on, or everything off when all are already on —
+    which is why one row serves as both "Select all" and "Clear all" and the
+    label says which it will do.
+
+    A SINGLE-select menu never gets one: you cannot pick all of a set of radios.
+  -->
+  <template class="qf-all-tpl">
+    <label class="qf-all">
+      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
+      <span class="qf-row-label"></span>
+    </label>
+  </template>
+
+  <!--
+    The rule between the values a filter can currently reach and the ones it
+    cannot. A <hr> rather than a styled div: it IS a thematic break between two
+    groups of rows, so the semantics are free and a screen reader announces the
+    split without an ARIA attribute.
+  -->
+  <template class="qf-divider-tpl">
+    <hr class="qf-divider" />
+  </template>
+
+  <!--
     A DATE filter's menu content: the calendar itself, in place of value rows.
 
     `data-embedded` drops the calendar's own Apply/Cancel — the MENU owns the

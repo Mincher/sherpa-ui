@@ -559,11 +559,14 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // NO `commit` — the default. A plain value chip rides along so the case with
-    // nothing to put in the row is covered too.
+    // NO `commit`, so each chip falls to the default for its own select mode.
+    // A DATE chip picks one day, so it applies on the tick; the plain chip is
+    // SINGLE-select for the same reason, and rides along so the case with
+    // nothing to put in the row is covered too. (A MULTI chip defers behind
+    // Apply/Cancel — that is a different test.)
     el.populate([
       { id: 'created', label: 'Created', kind: 'date', removable: true },
-      { id: 'plain', label: 'Plain', options: [{ value: 'a', label: 'A' }] },
+      { id: 'plain', label: 'Plain', select: 'single', options: [{ value: 'a', label: 'A' }] },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 

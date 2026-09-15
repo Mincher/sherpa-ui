@@ -443,3 +443,78 @@ test('data-type="calendar" is a MENU variant: wider card, horizontal list region
   expect(r.list.direction).toBe('column');
   expect(r.calendar.direction).toBe('row');
 });
+
+/**
+ * SELECT ALL / CLEAR ALL — one row that does the whole set.
+ *
+ * The logic lives in sherpa-menu, not in whatever stamps the row, so it behaves
+ * the same in a filter chip's menu and in the Add-filter menu that hangs off a
+ * button. A native `change` is not composed: it stops at this element, which is
+ * the host the rows are slotted into, and never reaches the component that built
+ * them — so the menu is the only place it CAN live.
+ */
+test('the select-all row cycles ALL → NONE, and reads the set rather than the box', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>;
+      values: string[];
+      show(): void;
+    };
+    // The select-all row is the same label+checkbox shape as a value row, marked
+    // `qf-all`. Exactly what a host stamps above the values.
+    menu.innerHTML =
+      '<label class="qf-all"><input type="checkbox" /><span class="qf-row-label"></span></label>' +
+      ['a', 'b', 'c']
+        .map((v) => `<label><input type="checkbox" value="${v}" /><span>${v}</span></label>`)
+        .join('');
+    document.getElementById('root')!.replaceChildren(menu);
+    await menu.rendered;
+    menu.show();
+
+    const all = menu.querySelector<HTMLInputElement>('.qf-all input')!;
+    const label = (): string => menu.querySelector('.qf-all .qf-row-label')!.textContent ?? '';
+    const state = (): string => (all.checked ? 'all' : all.indeterminate ? 'some' : 'none');
+    const snap = (): { state: string; label: string; values: string[] } => ({
+      state: state(),
+      label: label(),
+      values: menu.values,
+    });
+
+    const opened = snap();
+
+    // Tick ONE value by hand — the row must follow the set into "some".
+    menu.querySelector<HTMLInputElement>('label:not(.qf-all) input')!.click();
+    const partial = snap();
+
+    // From "some", a click must SELECT the rest. A native checkbox that is
+    // indeterminate reports `checked === false` after a click, so a handler that
+    // trusts the box clears instead — and then sticks at none, because clearing
+    // an empty set is a no-op the next click repeats.
+    all.click();
+    const fromSome = snap();
+    all.click();
+    const cleared = snap();
+    all.click();
+    const again = snap();
+
+    return { opened, partial, fromSome, cleared, again };
+  });
+
+  // Opens reading the set it describes, not blank.
+  expect(r.opened).toEqual({ state: 'none', label: 'Select all', values: [] });
+
+  // One value ticked = "some", and the label still offers the useful action.
+  expect(r.partial).toEqual({ state: 'some', label: 'Select all', values: ['a'] });
+
+  // some → ALL → none → ALL. The set is never left stuck.
+  expect(r.fromSome).toEqual({ state: 'all', label: 'Clear all', values: ['a', 'b', 'c'] });
+  expect(r.cleared).toEqual({ state: 'none', label: 'Select all', values: [] });
+  expect(r.again.state).toBe('all');
+
+  // `values` never carries the select-all box. It is a control OVER the set, not
+  // a member of it — counted in, it reports its own default "on" as a picked
+  // value and every count reads one too high.
+  expect(r.fromSome.values).not.toContain('on');
+});

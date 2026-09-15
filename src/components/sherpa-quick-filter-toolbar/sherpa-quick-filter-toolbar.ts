@@ -56,6 +56,20 @@ export interface QuickFilterOption {
   value: string;
   label: string;
   selected?: boolean;
+  /**
+   * Whether this value is reachable under the filters ALREADY applied.
+   *
+   * `false` means the value is still selectable but no row currently carries it,
+   * so ticking it changes nothing you can see. Those are sorted BELOW a divider,
+   * after the values that would actually narrow the view, so the useful picks
+   * come first and the dead ones are still there rather than silently dropped —
+   * a value that vanishes reads as a bug, and a user cannot broaden a filter
+   * back out through a list that has hidden the way.
+   *
+   * Absent means available. A host that does not compute reachability gets one
+   * flat list, exactly as before.
+   */
+  available?: boolean;
 }
 
 export interface QuickFilterDef {
@@ -107,17 +121,19 @@ export interface QuickFilterDef {
    */
   removable?: boolean;
   /**
-   * Make this chip's menu DEFER its picks until Apply, behind an Apply/Cancel
-   * footer, instead of applying each tick as it is made.
+   * Override whether this chip's menu DEFERS its picks behind an Apply/Cancel
+   * footer instead of applying each tick as it is made.
    *
-   * OPT-IN, and off by default. Auto-apply is what a filter chip should feel
-   * like: you tick a value and the view answers. Making every chip commit put a
-   * footer and two extra clicks in front of a selection that was usually free —
-   * the view chip worst of all, where picking a view is the whole interaction.
+   * It follows the SELECT MODE by default, because the mode is what decides
+   * whether a pick is finished. A SINGLE-select menu is done the moment a radio
+   * is chosen — there is no second pick coming, so a footer puts two clicks in
+   * front of a selection that was free, the view chip worst of all. A MULTI
+   * menu is a set the user is still building, and applying each tick fires a
+   * query per box on the way to an answer they had not reached.
    *
-   * Turn it ON for a field whose query is genuinely expensive — a server-side
-   * scan, a wide date range — where running one query per tick would fire three
-   * or four requests for a selection the user had not finished building.
+   * Set it only to go against that: `false` on a multi menu whose query is
+   * cheap and whose feedback is worth having live, `true` on a single menu
+   * whose query is genuinely expensive.
    */
   commit?: boolean;
 }
@@ -266,9 +282,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const value = cal.dataset['value'];
       return value ? [value] : [];
     }
-    return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked')).map(
-      (i) => i.value,
-    );
+    // The SELECT-ALL row is excluded. It is a control OVER the set, not a member
+    // of it — counted in, its box reports its own default "on" as a picked value
+    // and the count badge reads one too high with everything ticked.
+    return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked'))
+      .filter((i) => !i.closest('.qf-all'))
+      .map((i) => i.value);
   }
 
   /**
@@ -379,16 +398,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // same slot, so the one prototype serves both.
     menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
-    // AUTO-APPLY by default: a tick changes the filter there and then, with no
-    // footer. That is what a filter chip should feel like, and it is the whole
-    // interaction for a selector like the view chip.
+    // COMMIT FOLLOWS THE SELECT MODE, because the mode is what decides whether a
+    // pick is finished.
     //
-    // `commit: true` opts a chip into the deferred behaviour instead — the rows
-    // become a draft behind an Apply/Cancel footer, and Cancel discards them.
-    // Worth it only where the query is genuinely expensive, since otherwise it
-    // charges two extra clicks for a selection that was free. The menu owns both
+    // A SINGLE menu applies on the tick: one radio IS the answer, there is no
+    // second pick coming, and a footer charges two clicks for a selection that
+    // was free — the view chip worst of all, where picking a view is the whole
+    // interaction.
+    //
+    // A MULTI menu defers behind Apply/Cancel: the set is still being built, so
+    // applying each tick fires a query per box on the way to an answer the user
+    // has not reached yet, and Cancel gives them a way back out of a half-built
+    // set.
+    //
+    // A DATE chip counts as single whatever its `select` says: a calendar picks
+    // ONE day, so the pick is finished the moment it is made.
+    //
+    // `commit` on the definition overrides it either way. The menu owns both
     // modes already; nothing else here has to change.
-    if (def.commit) menu.setAttribute('data-commit', '');
+    const defers = def.commit ?? (!single && def.kind !== 'date');
+    if (defers) menu.setAttribute('data-commit', '');
     // EVERY value menu gets a search. A filter's values are the user's own data
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
@@ -432,7 +461,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const hasPick = picked ? picked.size > 0 : options.some((o) => o.selected);
     const fallback = def.persistent && !hasPick ? options[0]?.value : undefined;
 
-    for (const option of options) {
+    const isOn = (option: QuickFilterOption): boolean =>
+      picked
+        ? picked.has(option.value) || option.value === fallback
+        : !!option.selected || option.value === fallback;
+
+    const addRow = (option: QuickFilterOption): void => {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const input = row.querySelector('input')!;
       input.type = single ? 'radio' : 'checkbox';
@@ -444,17 +478,63 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // The fallback is the LAST word only where there is no pick at all — a
       // live set that the user has emptied is still an answer for an ordinary
       // chip, and `fallback` is undefined there because it is persistent-only.
-      input.checked = picked
-        ? picked.has(option.value) || option.value === fallback
-        : !!option.selected || option.value === fallback;
+      input.checked = isOn(option);
+      // Marks the row as one the current filters cannot reach. CSS dims it; the
+      // row stays selectable, because a user broadening a filter back out needs
+      // the way through.
+      if (option.available === false) row.setAttribute('data-unavailable', '');
       row.querySelector('.qf-row-label')!.textContent = option.label;
       menu.appendChild(row);
+    };
+
+    // THE ORDER, and the reason for each part:
+    //
+    //   Select all / Clear all   a multi menu only — one row that does the whole
+    //                            set, at the top where a user reaches first
+    //   available values         the picks that would actually narrow the view
+    //   ── divider ──
+    //   unavailable values       still selectable, but no row carries them now,
+    //                            so ticking one changes nothing visible
+    //
+    // Splitting rather than sorting a flag: two groups with a rule between them
+    // says "these are different" in a way a dimmed row scattered through the
+    // list does not.
+    if (!single) this.#addSelectAll(menu, options);
+
+    const reachable = options.filter((o) => o.available !== false);
+    const unreachable = options.filter((o) => o.available === false);
+    for (const option of reachable) addRow(option);
+    // The divider only earns its place when there is something on BOTH sides —
+    // a rule above an empty group, or below one, is a line to nowhere.
+    if (reachable.length && unreachable.length) {
+      const hr = this.clone('template.qf-divider-tpl');
+      if (hr) menu.appendChild(hr);
     }
+    for (const option of unreachable) addRow(option);
 
     this.#addRemove(chip, menu, def);
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
+  }
+
+  /**
+   * Put a "Select all / Clear all" row at the top of a MULTI-select menu.
+   *
+   * One row, not two. What it does is decided by the set's current state — with
+   * everything already on the only useful action is to clear it — so a second
+   * button would always be the one you did not want.
+   *
+   * The toolbar only STAMPS it. The menu owns what it does, because a native
+   * `change` is not composed: it stops at the <sherpa-menu> the rows are slotted
+   * into and never reaches this component. See SherpaMenu#onSelectAll.
+   *
+   * A SINGLE menu gets none — you cannot select all of a set of radios.
+   */
+  #addSelectAll(menu: HTMLElement, options: readonly QuickFilterOption[]): void {
+    if (!options.length) return;
+    const row = this.clone('template.qf-all-tpl');
+    if (row) menu.appendChild(row);
   }
 
   /**

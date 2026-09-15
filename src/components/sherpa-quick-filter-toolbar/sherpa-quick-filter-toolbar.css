@@ -194,3 +194,29 @@
   --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
 }
 
+/* ── Menu row groups ─────────────────────────────────────────────────
+ * The rows live in the CHIP's light DOM and are slotted into the menu, so they
+ * sit in neither component's shadow tree — which is exactly why a plain
+ * descendant selector from here reaches them and `::slotted()` from the menu
+ * cannot reach their children.
+ */
+
+/* The rule between the values the current filters can reach and the ones they
+   cannot. `border-block-start` rather than the <hr>'s own UA border, which is a
+   3D groove nothing else in the system uses. */
+.chip .qf-divider {
+  margin: var(--sherpa-display-mode-space-2xs, 4px) 0;
+  border: 0;
+  border-block-start: var(--sherpa-border-top, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+}
+
+/* A value no current row carries. DIMMED, not disabled: ticking it is still how
+   a user broadens a filter back out, so it stays selectable and keeps its
+   pointer — only the ink says it would change nothing right now.
+
+   The INK, not opacity: opacity compounds in dark mode, and the inactive content
+   token is how the system says "reachable but not active" everywhere else. */
+.chip label[data-unavailable] .qf-row-label {
+  color: var(--sherpa-content-inactive-default, #5c5c66);
+}

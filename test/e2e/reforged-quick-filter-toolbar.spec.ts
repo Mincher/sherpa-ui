@@ -222,7 +222,12 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
 
     const chip = el.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="plan"]')!;
     const menu = chip.querySelector('sherpa-menu')!;
-    const boxes = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
+    // `label:not(.qf-all)` skips the select-all row a multi menu now leads with —
+    // it is a control OVER the set, not a member of it, and indexing past it
+    // would tick "all" instead of the first value.
+    const boxes = Array.from(
+      menu.querySelectorAll<HTMLInputElement>('label:not(.qf-all) input'),
+    );
 
     // Tick two values and Apply.
     for (const b of [boxes[0]!, boxes[1]!]) {
@@ -236,7 +241,11 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
       on: chip.hasAttribute('data-current'),
       values: el.values,
       picked: el.pickedValues,
-      ticked: Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked')).map((i) => i.value),
+      // `label:not(.qf-all)` again: with both values ticked the select-all row is
+      // ticked too, and its box reports its own default "on" rather than a value.
+      ticked: Array.from(
+        chip.querySelectorAll<HTMLInputElement>('label:not(.qf-all) input:checked'),
+      ).map((i) => i.value),
     });
     const applied = snap();
 
@@ -753,7 +762,9 @@ test('the Add button puts an available filter on the bar and drops it from its m
     const sr = el.shadowRoot!;
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
     const add = sr.querySelector('.add-btn') as HTMLElement;
-    const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
+    // Skips the select-all row the multi menu leads with; it carries no filter id.
+    const offered = () =>
+      [...add.querySelectorAll('label:not(.qf-all) input')].map((i) => (i as HTMLInputElement).value);
 
     const before = { chips: chips(), offered: offered() };
 
@@ -805,7 +816,9 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
     const add = sr.querySelector('.add-btn') as HTMLElement;
     const addMenu = add.querySelector('sherpa-menu') as HTMLElement;
-    const offered = () => [...add.querySelectorAll('input')].map((i) => (i as HTMLInputElement).value);
+    // Skips the select-all row the multi menu leads with; it carries no filter id.
+    const offered = () =>
+      [...add.querySelectorAll('label:not(.qf-all) input')].map((i) => (i as HTMLInputElement).value);
     const apply = async (host: HTMLElement) => {
       const menu = host.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
       (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();

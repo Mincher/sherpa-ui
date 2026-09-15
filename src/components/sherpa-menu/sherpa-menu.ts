@@ -154,6 +154,11 @@ export class SherpaMenu extends SherpaElement {
   /** Open the menu. Pass the trigger to place it under (and to measure against). */
   show(trigger?: HTMLElement): void {
     if (trigger) this.#trigger = trigger;
+    // Point the select-all row at the set BEFORE the card is painted, so a menu
+    // opens reading "Select all" or "Clear all" rather than blank. The rows are
+    // slotted light DOM that a host stamps, so there is no render pass of ours
+    // to hang this on — opening is the moment the set is known.
+    this.#syncSelectAll();
     // Show FIRST, then measure. A closed popover is `display: none`, so its own
     // size reads as 0 and a pre-show measurement cannot flip correctly.
     this.#card()?.showPopover();
@@ -193,9 +198,18 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────── */
 
-  /** Every value row's control (light DOM — the rows are slotted). */
+  /**
+   * Every value row's control (light DOM — the rows are slotted).
+   *
+   * The SELECT-ALL row is excluded. It is a control OVER the set, not a member
+   * of it: counted in, `values` would carry a phantom "qf-all" entry, Apply
+   * would commit it as a picked value, and the count badge would be one too
+   * high with everything ticked.
+   */
   #inputs(): HTMLInputElement[] {
-    return Array.from(this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'));
+    return Array.from(
+      this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
+    ).filter((i) => !i.closest('.qf-all'));
   }
 
   #sync(): void {
@@ -293,9 +307,78 @@ export class SherpaMenu extends SherpaElement {
     window.removeEventListener('resize', this.#reposition);
   }
 
+  /** The label a select-all row wears, given whether everything is already on. */
+  static readonly ALL_LABELS = { select: 'Select all', clear: 'Clear all' } as const;
+
+  /** A slotted row marked as the select-all control (class `qf-all`). */
+  #allRow(): HTMLInputElement | null {
+    return this.querySelector<HTMLInputElement>('.qf-all input');
+  }
+
+  /**
+   * Tick or clear every value row, and relabel the select-all row.
+   *
+   * Handled HERE rather than in the toolbar that stamps the row, because a
+   * native `change` is not composed: it stops at this element, which is the
+   * shadow host the rows are slotted into, and never reaches the toolbar.
+   *
+   * It writes the other rows' checked state and lets the ordinary change path
+   * carry it, rather than setting `values` directly: a committing menu holds a
+   * DRAFT, and writing the set here would commit a selection the user has not
+   * applied. Ticking the boxes is what the user would have done by hand, so the
+   * draft, the count and Cancel all behave as they always did.
+   */
+  #onSelectAll(input: HTMLInputElement): void {
+    // Read the SET, not the box.
+    //
+    // A native checkbox that is indeterminate reports `checked === false` after
+    // a click, so trusting the box turned "some are picked" into "clear them" —
+    // and the row then stuck at NONE, because clearing an already-empty set is a
+    // no-op the next click repeats. The set is the truth: anything short of all
+    // means the useful action is to select the rest.
+    const boxes = this.#inputs();
+    const on = boxes.some((b) => !b.checked);
+    for (const box of boxes) box.checked = on;
+    input.indeterminate = false;
+    this.#syncSelectAll();
+    if (!this.#commits) this.emit('menu-change', { values: this.values });
+  }
+
+  /**
+   * Point the select-all row at the set it describes: ticked for all, INDETERMINATE
+   * for some, empty for none — and labelled with what a click would do next.
+   *
+   * `indeterminate` is a PROPERTY, not an attribute: there is no
+   * `indeterminate=""` in HTML, so it has to be written on the element every
+   * time the set moves.
+   */
+  #syncSelectAll(): void {
+    const all = this.#allRow();
+    if (!all) return;
+    const boxes = this.#inputs();
+    const on = boxes.filter((b) => b.checked).length;
+    all.checked = boxes.length > 0 && on === boxes.length;
+    all.indeterminate = on > 0 && on < boxes.length;
+    const label = all.parentElement?.querySelector('.qf-row-label');
+    if (label) {
+      label.textContent = all.checked
+        ? SherpaMenu.ALL_LABELS.clear
+        : SherpaMenu.ALL_LABELS.select;
+    }
+  }
+
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
+    // The SELECT-ALL row drives every other row, so it is handled before the
+    // ordinary path and reports for itself.
+    if (input.closest('.qf-all')) {
+      this.#onSelectAll(input);
+      return;
+    }
+    // A value row moved, so the select-all row's own state has moved with it —
+    // ticking the last unticked box makes it "all", not "some".
+    this.#syncSelectAll();
     // A COMMITTING menu holds the change as a draft — the row is ticked in the UI,
     // but nothing downstream hears about it until Apply. Otherwise every tick is a
     // commit, which is the behaviour a menu without a footer has always had.
