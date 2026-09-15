@@ -42,7 +42,7 @@
  * @fires view-favorite — the star toggled (view type). bubbles + composed. detail: { favourite: boolean }
  * @fires view-menu-open — the Save group's caret was clicked (view type). bubbles + composed. detail: {}
  */
-import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
@@ -303,30 +303,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * reason.
    */
   #chipPicks(chip: HTMLElement): string[] {
-    // A NUMBER chip reports either one value or the two ends of its range,
-    // matching the shape its Range switch is in. Both are strings, like every
-    // other chip's picks, so a host reads one array whatever the filter is.
-    const num = chip.querySelector<HTMLElement>('.qf-number');
-    if (num) {
-      const ranged = chip.querySelector('sherpa-menu')?.hasAttribute('data-range');
-      if (ranged) {
-        const slider = num.querySelector<HTMLElement & { range: [number, number] }>(
-          'sherpa-slider',
-        );
-        // A range spanning the WHOLE of its bounds excludes nothing, so it is
-        // reported as no pick at all — otherwise the chip would paint as an
-        // active filter that is not filtering.
-        if (!slider) return [];
-        const [lo, hi] = slider.range;
-        // The slider's own defaults, read off its attributes — it clamps to
-        // these, so a full-span range is exactly these two numbers.
-        const min = coerceNum(slider.getAttribute('min'), 0);
-        const max = coerceNum(slider.getAttribute('max'), 100);
-        return lo === min && hi === max ? [] : [String(lo), String(hi)];
-      }
-      const one = num.querySelector<HTMLInputElement>('.qf-number-one');
-      const raw = one?.value.trim() ?? '';
-      return raw === '' ? [] : [raw];
+    // A NUMBER chip's menu reports its own value — one number, or the two ends
+    // of its range — because the menu is what knows which shape its Range switch
+    // has it in. Reading it here as well would be the same rule written twice.
+    if (chip.querySelector('.qf-number')) {
+      const menu = chip.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
+      return menu?.values ?? [];
     }
 
     const cal = chip.querySelector<HTMLElement>('sherpa-calendar');

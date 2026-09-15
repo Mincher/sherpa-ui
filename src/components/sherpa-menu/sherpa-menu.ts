@@ -185,11 +185,41 @@ export class SherpaMenu extends SherpaElement {
     else this.hide();
   }
 
-  /** The checked row values. */
+  /**
+   * What the menu currently holds.
+   *
+   * Usually the checked rows. A NUMBER menu has no rows — its content is one
+   * field, or a two-ended slider when its Range switch is on — so it reports
+   * that instead: one value, or the two ends. Both are strings, like every row
+   * value, so a consumer reads one array whatever the menu is.
+   */
   get values(): string[] {
+    const numeric = this.#numericValues();
+    if (numeric) return numeric;
     return this.#inputs()
       .filter((i) => i.checked)
       .map((i) => i.value);
+  }
+
+  /**
+   * A NUMBER menu's value, or null when this is not one.
+   *
+   * A range spanning the WHOLE of its bounds excludes nothing, so it reports no
+   * value at all — otherwise a filter that is not filtering would read as active.
+   */
+  #numericValues(): string[] | null {
+    const field = this.querySelector<HTMLInputElement>('input[type="number"]');
+    const slider = this.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider');
+    if (!field && !slider) return null;
+    if (this.hasAttribute('data-range')) {
+      if (!slider) return [];
+      const [lo, hi] = slider.range;
+      const min = Number(slider.getAttribute('min') ?? 0);
+      const max = Number(slider.getAttribute('max') ?? 100);
+      return lo === min && hi === max ? [] : [String(lo), String(hi)];
+    }
+    const raw = field?.value.trim() ?? '';
+    return raw === '' ? [] : [raw];
   }
   set values(next: string[]) {
     const wanted = new Set(next);
@@ -369,7 +399,13 @@ export class SherpaMenu extends SherpaElement {
 
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
-    if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
+    if (!input) return;
+    // A menu's content is not always a list of boxes. A NUMBER filter slots a
+    // plain <input type="number"> and a range slider, and their native change is
+    // not composed either — it stops at this element just as a checkbox's does.
+    // Without this, typing a value moved nothing downstream at all.
+    const numeric = input.type === 'number' || input.tagName === 'SHERPA-SLIDER';
+    if (!numeric && input.type !== 'checkbox' && input.type !== 'radio') return;
     // The SELECT-ALL row drives every other row, so it is handled before the
     // ordinary path and reports for itself.
     if (input.closest('.qf-all')) {

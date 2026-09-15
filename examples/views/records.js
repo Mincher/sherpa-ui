@@ -114,6 +114,9 @@ export async function init(root) {
   /* Columns holding an ISO date — two picks on one of these is a RANGE, where
      two picks on any other column means "either of these values". */
   const dateFields = new Set(['created', 'lastSeen']);
+  /* The NUMBER columns. Their chips are `kind: 'number'`, so two picks mean the
+     two ends of a range exactly as two dates do — and one pick is one value. */
+  const numberFields = new Set(['seats', 'spend', 'openTickets', 'health']);
 
   /* The toolbar reports its chips as `{ values: { field: [picked] } }`, and the
      source turns that into a filter on its own. The one thing it cannot guess is
@@ -139,6 +142,13 @@ export async function init(root) {
       if (!picked?.length) continue;
       if (picked.length === 2 && dateFields.has(field)) {
         clauses.push([field, 'between', [...picked].sort()]);
+      } else if (picked.length === 2 && numberFields.has(field)) {
+        // NUMERIC, so the ends are compared as numbers — a lexical sort would
+        // put "1000" below "9" and the range would match nothing.
+        const ends = picked.map(Number).sort((a, b) => a - b);
+        clauses.push([field, 'between', ends]);
+      } else if (picked.length === 1 && numberFields.has(field)) {
+        clauses.push([field, 'eq', Number(picked[0])]);
       } else if (picked.length === 1) {
         clauses.push([field, 'eq', picked[0]]);
       } else {
@@ -263,13 +273,20 @@ export async function init(root) {
 
      These are the columns the default set leaves out, so the bar starts with the
      common ones and the rest are a click away rather than crowding it. */
+  /* The four NUMERIC columns are `kind: 'number'`, not value lists. A column of
+     240 distinct seat counts is not a set anybody picks from — the question is
+     "how many" or "between what and what", which is what the Range switch on a
+     number menu asks. The bounds are the data's own, so the slider spans exactly
+     what exists rather than an arbitrary 0..100. */
   qft.available([
     { id: 'seats', label: 'Seats', type: 'data', icon: 'fa-solid fa-chair',
-      select: 'multiple', options: asOptions('seats').slice(0, 8) },
+      kind: 'number', min: 1, max: 240, step: 1 },
+    { id: 'spend', label: 'Spend', type: 'data', icon: 'fa-solid fa-sterling-sign',
+      kind: 'number', min: 120, max: 10000, step: 20 },
     { id: 'health', label: 'Health', type: 'data', icon: 'fa-solid fa-heart-pulse',
-      select: 'multiple', options: asOptions('health') },
+      kind: 'number', min: 40, max: 100, step: 1 },
     { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'fa-solid fa-ticket',
-      select: 'multiple', options: asOptions('openTickets').slice(0, 8) },
+      kind: 'number', min: 0, max: 8, step: 1 },
   ]);
 
   /* The leading Group and Sort chips — how the grid is ARRANGED, at the start of
