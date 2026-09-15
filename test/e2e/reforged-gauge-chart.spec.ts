@@ -117,16 +117,21 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
 
-    const bands = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
+    const all = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
+    const bands = all.filter((b) => b.dataset['rest'] === undefined);
+    const rest = all.filter((b) => b.dataset['rest'] !== undefined);
     const tips = [...el.shadowRoot!.querySelectorAll('.chart-tip')] as HTMLElement[];
 
     return {
       bands: bands.length,
+      rest: rest.length,
       tips: tips.length,
       tipText: tips.map((t) => t.textContent?.replace(/\s+/g, ' ').trim()),
       // The band is the pointer target — that is the whole point of drawing the
       // ring as real shapes rather than a gradient with a fake wedge over it.
       bandHits: bands.map((b) => getComputedStyle(b).pointerEvents),
+      // The remainder is chrome, not data: nothing to hover, nothing to explain.
+      restHits: rest.map((b) => getComputedStyle(b).pointerEvents),
       // ONE element per band, carrying BOTH paints. It used to be three — a
       // tinted arc plus two outline arcs — because a stroke holds one paint and
       // cannot round a corner. Any .zone-outline left would be that old model.
@@ -134,23 +139,82 @@ test('a zone tooltip is triggered by the BAND itself; the hollow centre triggers
       // Each band fills at 60% and strokes its own outline solid, like a donut
       // slice, so the reader sees a bordered shape rather than a bare band.
       fillOpacity: getComputedStyle(bands[0]!).fillOpacity,
-      stroked: bands.slice(0, 3).every((b) => Number(b.getAttribute('stroke-width')) > 0),
+      stroked: bands.every((b) => Number(b.getAttribute('stroke-width')) > 0),
       // The <svg> has no background and no full-circle track, so there is
       // nothing covering the hole. Anything BUT the bands would be a hit target.
       hostChildren: [...el.shadowRoot!.querySelectorAll('svg.ring > *')].map((n) => n.tagName),
     };
   });
 
-  expect(r.bands).toBe(3);
-  expect(r.tips).toBe(3);
-  expect(r.tipText).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
+  // TWO coloured bands, not three. A gauge reads as "how full", so the colour
+  // stops where the value does: at 70 the success band draws whole, the warning
+  // band is cut at 70, and the critical band (85–100) is entirely past the value
+  // and is not drawn at all. Zones used to paint full-length whatever the value,
+  // leaving the needle as the only thing that moved.
+  expect(r.bands).toBe(2);
+  // …and ONE grey remainder covering 70–100, so the gauge always reads full
+  // width and the unfilled part is visible rather than blank.
+  expect(r.rest).toBe(1);
+
+  // One tip per DRAWN band. A tip for the undrawn critical zone would point at a
+  // band that does not exist and would slip every later index by one.
+  expect(r.tips).toBe(2);
+  // Each names the zone's FULL range, not the part that was drawn: the reader
+  // wants to know what the band MEANS, and the fill already shows how far it got.
+  expect(r.tipText).toEqual(['Success 0–60', 'Warning 60–85']);
+
   // Every band is hittable…
-  expect(r.bandHits).toEqual(['auto', 'auto', 'auto']);
-  // …and there is no second element competing for the pointer, because the band
-  // now carries its own border.
+  expect(r.bandHits).toEqual(['auto', 'auto']);
+  // …and the remainder is not.
+  expect(r.restHits).toEqual(['none']);
+  // There is no second element competing for the pointer, because the band now
+  // carries its own border.
   expect(r.outlines).toBe(0);
   expect(r.fillOpacity).toBe('0.6');
   expect(r.stroked).toBe(true);
   // Only the band group — no background rect, no full-circle track over the hole.
   expect(r.hostChildren).toEqual(['g']);
+});
+
+test('the grey remainder always pads what the value leaves over', async ({ page }) => {
+  const r = await page.evaluate(async (fracSrc) => {
+    const sweep = eval(fracSrc) as (el: SVGPathElement) => number;
+    const read = async (attrs: Record<string, string>) => {
+      const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const all = [...el.shadowRoot!.querySelectorAll('.zone')] as SVGPathElement[];
+      const rest = all.find((b) => b.dataset['rest'] !== undefined);
+      return {
+        coloured: all.filter((b) => b.dataset['rest'] === undefined).length,
+        restFrac: rest ? sweep(rest) : null,
+      };
+    };
+    const ZONES = '0-60:success,60-85:warning,85-100:critical';
+    return {
+      empty: await read({ 'data-value': '0', 'data-zones': ZONES }),
+      part: await read({ 'data-value': '40', 'data-zones': ZONES }),
+      full: await read({ 'data-value': '100', 'data-zones': ZONES }),
+      bare: await read({ 'data-value': '25' }),
+    };
+  }, FRAC_FN);
+
+  // At ZERO the whole gauge is grey — there is no coloured band to draw, and the
+  // remainder covers the lot rather than leaving the ring blank.
+  expect(r.empty.coloured).toBe(0);
+  expect(r.empty.restFrac).toBe(1);
+
+  // Part full: one band (success, cut at 40) plus grey over the rest.
+  expect(r.part.coloured).toBe(1);
+  expect(r.part.restFrac).toBe(0.6);
+
+  // FULL is the one case with no remainder: there is no arc left to draw.
+  expect(r.full.coloured).toBe(3);
+  expect(r.full.restFrac).toBeNull();
+
+  // The same holds with NO zones — the single value band plus its grey pad.
+  expect(r.bare.coloured).toBe(1);
+  expect(r.bare.restFrac).toBe(0.75);
 });

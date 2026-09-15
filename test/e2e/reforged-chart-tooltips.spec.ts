@@ -186,11 +186,14 @@ test('a donut anchors its tips to invisible points, hovered from the SLICE', asy
 });
 
 test('gauge zone dots ride the ring and name their threshold', async ({ page }) => {
+  // value 100, so every zone is drawn and every one has a dot. A zone past the
+  // value has no band, so it gets no dot — that is covered in the gauge's own
+  // spec; here the subject is where the dots SIT and what they say.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-gauge-chart') as HTMLElement & {
       rendered?: Promise<void>;
     };
-    el.setAttribute('data-value', '70');
+    el.setAttribute('data-value', '100');
     el.setAttribute('data-zones', '0-60:success,60-85:warning,85-100:critical');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;

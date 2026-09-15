@@ -40,7 +40,14 @@
   /* The gauge never draws wider than this however roomy the cell. The arc is
      2:1, so the height caps at half of it. Will's number, matching the donut. */
   --_max-size: 320px;
-  --_ring: 16px;
+  /* The band's thickness as a FRACTION OF THE RADIUS — the CSS mirror of
+     RING_WIDTH in the TS, which draws a 15-unit band on a 50-unit radius.
+
+     A ratio, not a px: the gauge SCALES. `--_ring: 16px` was a fixed mirror of a
+     fixed `--_size`, so the needle kept its 200px-chart length however large the
+     gauge actually drew. Unitless, so it cannot pick up the wrong percentage
+     basis — a `%` here would resolve against whichever box it landed in. */
+  --_ring: 0.3;
   /* Strong status colour when a status is set; else the Saturated accent. */
   --_fill: var(--_status-surface-strong, #3b4ccd);
   --_fill-pct: 0%;
@@ -66,6 +73,15 @@
   gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
   min-inline-size: 0;
   min-block-size: 0;
+  /* FILLS the host's width.
+     `align-items: center` on a flex COLUMN makes the column shrink-wrap its
+     widest child, so without this the body measured exactly the gauge's own
+     200px and `max-inline-size: 100%` on .gauge-wrap then resolved against that
+     — the gauge could never grow, however wide the card. It sat at 200 in a
+     400px cell beside a donut drawing at 320.
+     The vertical-legend branch below already set this for its grid cell; the
+     horizontal case was the one left hugging. */
+  inline-size: 100%;
   /* Takes the host's spare height, so the gauge grows into a tall card and the
      legend below keeps its natural size. */
   flex: 1 1 auto;
@@ -229,8 +245,10 @@
    covering the leftover span, drawn by the same code path (and so with the same
    geometry) as every coloured band.
 
-   Its colour: the Figma track binds a legacy _old_border/base token (Figma-side
-   drift); the nearest live token matching its value is theme-border-default-2. */
+   Its colour is theme-border-default-2 — a neutral rule, not a data hue. (Figma
+   had a separate `track` ellipse bound to a legacy _old_border/base token; it was
+   deleted once the remainder band replaced it, and this was the nearest live
+   token matching its value.) */
 .zone[data-rest] {
   fill: var(--sherpa-theme-border-default-2, #b3b3c3);
   fill-opacity: 1;
@@ -276,20 +294,31 @@
 }
 
 /* ── Needle ──────────────────────────────────────────────────────── */
+/* The needle's PIVOT. It spans the gauge box rather than collapsing to a point,
+   so the needle can size itself as a percentage of the gauge: a percentage
+   resolves against the containing block, and a zero-size hub would make every
+   percentage zero. Centred on the gauge's bottom edge, which is the ring's
+   centre, so `transform-origin: bottom center` on the needle turns about it. */
 .hub {
   position: absolute;
-  inset-block-end: 0;
-  inset-inline-start: 50%;
-  inline-size: 0;
-  block-size: 0;
+  inset: 0;
+  pointer-events: none;
 }
 .needle {
   position: absolute;
   inset-block-end: 0;
-  inset-inline-start: 0;
+  /* Centred on the hub's width, which is the gauge's — the ring's centre. */
+  inset-inline-start: 50%;
   /* Figma needle: a 1px content/body/+2 stroke. */
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
-  block-size: calc(var(--_size) / 2 - var(--_ring) / 2);
+  /* Reaches from the hub to the MIDDLE of the band, so its tip sits ON the value
+     rather than short of it or out past the rim.
+
+     `100%` of the hub's HEIGHT is the gauge's radius (the box is 2:1 and the hub
+     spans it), so the needle is the radius less half the band. `--_ring` is a
+     unitless ratio of that radius, which is why it can be multiplied here
+     without picking up a percentage basis of its own. */
+  block-size: calc(100% - 100% * var(--_ring) / 2);
   background: var(--sherpa-theme-content-body-2, #B3B3C3);
   transform-origin: bottom center;
   transform: rotate(var(--_angle));
