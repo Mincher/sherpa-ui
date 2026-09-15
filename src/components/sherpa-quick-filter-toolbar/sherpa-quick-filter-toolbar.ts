@@ -909,7 +909,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
      */
     view: 'fa-solid fa-desktop',
     group: 'fa-solid fa-layer-group',
-    sortNone: 'fa-solid fa-bars',
+    /* fa-sort, NOT fa-bars — that is the hamburger-menu glyph (three equal
+       rules), which reads as a menu affordance rather than "sortable". Must stay
+       in step with sherpa-data-grid's own map; a spec guards the pair. */
+    sortNone: 'fa-solid fa-sort',
     sortAsc: 'fa-solid fa-arrow-up-wide-short',
     sortDesc: 'fa-solid fa-arrow-down-wide-short',
   } as const;

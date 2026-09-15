@@ -81,7 +81,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
 
   // THE THIRD STATE, which the border triangle could not express: a sortable
   // column that is not the current sort still says so.
-  expect(name(r.unsorted).cls).toContain('fa-bars');
+  expect(name(r.unsorted).cls).toContain('fa-sort');
   expect(name(r.asc).cls).toContain('fa-arrow-up-wide-short');
   expect(name(r.desc).cls).toContain('fa-arrow-down-wide-short');
 
@@ -98,7 +98,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
   }
 
   // A column that is not the current sort stays on sort-none while another sorts.
-  expect(other(r.asc).cls).toContain('fa-bars');
+  expect(other(r.asc).cls).toContain('fa-sort');
 
   // A NON-sortable column carries no glyph AND no box — an empty 14px square
   // would hold its label short of every sortable column's and the headings
@@ -121,7 +121,7 @@ test('the grid and the toolbar have not drifted to different glyphs', async ({ p
   // never disagree about what "descending" looks like.
   expect(r.grid).toEqual({
     group: 'fa-solid fa-layer-group',
-    sortNone: 'fa-solid fa-bars',
+    sortNone: 'fa-solid fa-sort',
     sortAsc: 'fa-solid fa-arrow-up-wide-short',
     sortDesc: 'fa-solid fa-arrow-down-wide-short',
   });

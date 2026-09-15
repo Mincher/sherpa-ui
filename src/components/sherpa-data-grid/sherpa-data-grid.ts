@@ -196,13 +196,17 @@ export class SherpaDataGrid extends SherpaElement {
    * state — which is the whole reason the map exists.
    *
    *   group            fa-layer-group
-   *   sort-none        fa-bars
+   *   sort-none        fa-sort
    *   sort-ascending   fa-arrow-up-wide-short
    *   sort-descending  fa-arrow-down-wide-short
+   *
+   * `sort-none` was fa-bars, which IS the hamburger-menu glyph — three equal
+   * rules. On a column header that reads as a menu affordance, not "this column
+   * can be sorted". fa-sort is the neutral up/down pair the state actually means.
    */
   static readonly icons = {
     group: 'fa-solid fa-layer-group',
-    sortNone: 'fa-solid fa-bars',
+    sortNone: 'fa-solid fa-sort',
     sortAsc: 'fa-solid fa-arrow-up-wide-short',
     sortDesc: 'fa-solid fa-arrow-down-wide-short',
   } as const;

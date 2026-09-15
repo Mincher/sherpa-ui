@@ -363,6 +363,12 @@
 .head-btn {
   display: flex;
   align-items: center;
+  /* The sort glyph sits at the header's TRAILING edge, not tucked against the
+     label. `space-between` pushes it there whatever the label's length, so the
+     glyphs line up down the header row instead of stepping in and out with the
+     text. The gap is the MINIMUM space kept when a label is long enough to reach
+     the icon. */
+  justify-content: space-between;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
   padding: var(--sherpa-display-mode-space-2xs, 4px);
