@@ -231,12 +231,21 @@ test('gauge zone dots ride the ring and name their threshold', async ({ page }) 
   // a container unit now, which means the same length on either axis.
   expect(r.radii).toEqual([r.radius, r.radius, r.radius]);
   expect(r.tips).toEqual(['Success 0–60', 'Warning 60–85', 'Critical 85–100']);
-  // Each dot names its own status ramp directly. NOT `--sherpa-style-surface-*`:
-  // that set is status-MODED (one [data-status] pin re-points the whole set) and
-  // has no per-status names, so a gauge painting several statuses at once cannot
-  // use it. The old assertion passed only because the nonexistent token fell
-  // through to its hardcoded hex.
-  for (const hue of r.hues) expect(hue).toMatch(/--sherpa-theme-surface-\w+-2/);
+  // A status name picks a data-viz series BY POSITION — success → series 1,
+  // warning → 2, urgent → 3, critical → 4, info → 5 — which is the same variable
+  // a donut slice uses. `data-palette="status"` on an ancestor is what re-points
+  // those five onto the status ramps (tokens.css), so one attribute switches a
+  // chart between categorical hues and status colours without the component
+  // knowing either set.
+  //
+  // NOT `--sherpa-style-surface-*`: that set is status-MODED — one [data-status]
+  // pin re-points the whole set and it has no per-status names — so a gauge
+  // painting several statuses at once could never use it.
+  expect(r.hues).toEqual([
+    'var(--sherpa-data-viz-series-1)',
+    'var(--sherpa-data-viz-series-2)',
+    'var(--sherpa-data-viz-series-4)',
+  ]);
   expect(r.outsideClip).toBe('gauge-wrap');
 });
 

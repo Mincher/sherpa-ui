@@ -82,7 +82,12 @@ test('data-value sets the band sweep and needle angle', async ({ page }) => {
   // Nothing left over at 100%, so no remainder band is drawn at all.
   expect(r.full.restFrac).toBeNull();
   expect(r.full.angle).toBe('90deg');
-  expect(r.full.value).toBe('100');
+  // `.value` is the SCALE's midpoint, not the reading — Figma's 3x3 grid puts
+  // "value% (top), 0% / caption / 100% (bottom row)", so the three labels are one
+  // axis: 0 at the left, the midpoint above, the max at the right. All three are
+  // the same 10px Regular. On a 0-100 scale the midpoint is 50 whatever the
+  // needle reads, which is why this assertion does not move with data-value.
+  expect(r.full.value).toBe('50');
 });
 
 test('data-status re-points the fill colour and a custom min/max scales', async ({ page }) => {
