@@ -427,10 +427,27 @@
 /* Collapsed: the NAME goes, the rule stays. A section is still a grouping when
    the rail is 40px wide — the divider is the only thing left saying where one
    group ends and the next begins. Hiding the text rather than the row is also
-   what keeps the height stable through the hover transition. */
+   what keeps the height stable through the hover transition.
+
+   `font-size: 0` as well as the transparent ink. Transparent alone left the word
+   still occupying its full width: the label row is 24px inside the 40px rail
+   once its 8px side padding is taken, "Views" filled all 24, and the rule — a
+   `flex: 1 1 auto` ::after — was handed nothing. The divider was 0px wide and
+   read as missing. At `font-size: 0` the text measures nothing and the whole 24
+   goes to the rule. The row's own `block-size` holds the height, so nothing
+   moves. */
 :host([data-nav-state="collapsed"]) .section-label {
   color: transparent;
+  font-size: 0;
   gap: 0;
+  /* HALF the inline padding. Figma's Navigation Section is padded 8 on each side
+     (32:43134) and there is no collapsed variant designed, so the 8 is the open
+     rail's figure: on a 40px rail whose content box is already 24, a second 8px
+     gutter each side leaves the rule 8px of the 24 and it reads as a hairline
+     rather than a divider. 4 leaves 16 — a rule that is clearly a rule, still
+     inset from the rail's edge. The block padding is untouched, so the row keeps
+     its fixed 24 height through the hover transition. */
+  padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
 /* The rule after the label (Figma: a 0.5px border/default/+2 rectangle). */
