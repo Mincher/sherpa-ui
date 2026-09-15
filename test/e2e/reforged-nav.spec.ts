@@ -128,7 +128,7 @@ test('typing in search fires nav-search with the query', async ({ page }) => {
   expect(r.query).toBe('rep');
 });
 
-test('the rail starts collapsed: 40px, no product name, search or section labels', async ({ page }) => {
+test('the rail starts collapsed: 40px, no product name or section labels, search as an icon', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {
       rendered?: Promise<void>;
@@ -144,6 +144,10 @@ test('the rail starts collapsed: 40px, no product name, search or section labels
       width: getComputedStyle(nav).getPropertyValue('--sherpa-navigation-nav-layout-width').trim(),
       product: getComputedStyle(s.querySelector('.product')!).display,
       search: getComputedStyle(s.querySelector('.search')!).display,
+      // The FIELD collapses to its glyph, but the row itself stays — see below.
+      searchInput: getComputedStyle(s.querySelector('.search-input')!).display,
+      searchBox: (() => { const r = s.querySelector('.search')!.getBoundingClientRect();
+        return { h: Math.round(r.height), w: Math.round(r.width) }; })(),
       sectionLabel: getComputedStyle(s.querySelector('.section-label')!).display,
     };
   });
@@ -151,7 +155,14 @@ test('the rail starts collapsed: 40px, no product name, search or section labels
   expect(r.state).toBe('collapsed');
   expect(r.width).toBe('40px');
   expect(r.product).toBe('none');
-  expect(r.search).toBe('none');
+  // The search SURVIVES as an icon row — Figma's Primary Navigation keeps a search
+  // in the quick-nav slot above the content items in every state, and the rail's
+  // whole job when collapsed is to be a column of reachable icons. What collapses
+  // is the FIELD around the glyph: no border, no padding, no input.
+  expect(r.search).toBe('flex');
+  expect(r.searchInput).toBe('none');
+  // Square, and the same 24 as every other row in the rail.
+  expect(r.searchBox).toEqual({ h: 24, w: 24 });
   expect(r.sectionLabel).toBe('none');
 });
 

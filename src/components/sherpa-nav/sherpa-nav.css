@@ -281,6 +281,25 @@
 }
 :host(:not([data-searchable])) .search { display: none; }
 
+/* COLLAPSED: the search survives as an ICON ROW, it does not vanish.
+   Figma's Primary Navigation keeps a search in the quick-nav slot above the
+   content items in every state, and the rail's whole job when collapsed is to be
+   a column of reachable icons — dropping search left a gap above Home and took a
+   destination away. The field becomes a 24-tall square like every other row: its
+   own border, padding and input go, leaving just the glyph, and clicking it is
+   what opens the rail. */
+:host([data-nav-state="collapsed"]) .search {
+  display: flex;
+  justify-content: center;
+  padding-inline: 0;
+  block-size: var(--sherpa-display-mode-size-lg, 24px);
+  border: none;
+  background: none;
+}
+:host([data-nav-state="collapsed"]) :is(.search-input, .search-clear) {
+  display: none;
+}
+
 .search-icon {
   flex-shrink: 0;
   color: var(--sherpa-theme-content-body-1, #35353d);

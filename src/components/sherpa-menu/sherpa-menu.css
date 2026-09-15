@@ -172,20 +172,26 @@
   --sherpa-border-rounding-bottom-right: 0px;
 }
 
-/* Read from the Menu node (49:66174 > "heading"): content/size/XS 10 on
-   line-height/xs 16, regular, content/body/+1, textAlignHorizontal LEFT and
-   textCase ORIGINAL — it is NOT uppercased. The sample string is "ACTIONS",
-   which is written in caps, not transformed into them; applying
-   text-transform here shouted every heading a caller passed. */
+/* Re-read from the Menu heading node (1144:28554, shared by both Type=List and
+   Type=Calendar): content/size/SMALL 12 on line-height/small 16, regular,
+   content/body/+1, textAlignHorizontal LEFT, textCase TITLE, and its parent frame
+   carries NO horizontal padding.
+
+   All three were wrong here, and the comment that stood in this place was the
+   reason: it cited the old node and recorded size XS 10 with textCase ORIGINAL,
+   concluding that "ACTIONS" was merely written in caps rather than transformed
+   into them. Figma says TITLE, so the transform IS the design — and the 8px
+   inline padding pushed the heading off the alignment its own header keeps. */
 .heading {
   margin: 0;
-  padding-inline: var(--sherpa-theme-padding-md, 8px);
+  padding-inline: var(--sherpa-theme-padding-none, 0);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-theme-content-size-xs, 10px);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-xs, 0px);
   text-align: start;
+  text-transform: uppercase;
 
   &:empty { display: none; }
 }

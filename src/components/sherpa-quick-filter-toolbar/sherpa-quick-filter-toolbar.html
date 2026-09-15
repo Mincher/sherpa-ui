@@ -176,8 +176,17 @@
   <template class="qf-menu-tpl">
     <sherpa-menu slot="menu"></sherpa-menu>
   </template>
+  <!-- The input carries its margin INLINE, not in a stylesheet.
+
+       A row is cloned into the CHIP's light DOM and slotted into the menu, so it
+       lives in neither component's shadow tree: the toolbar's sheet does not
+       reach it once moved, and the menu's `::slotted(label)` styles the label but
+       cannot reach the label's CHILDREN. That leaves the browser's own control
+       margin — `3px 3px 0 5px`, asymmetric top-to-bottom — which pushed the box
+       1.5px below the label text on a centred row. An inline style is the only
+       thing that crosses both boundaries. -->
   <template class="qf-row-tpl">
-    <label><input type="checkbox" /><span class="qf-row-label"></span></label>
+    <label><input type="checkbox" style="margin: 0; flex: 0 0 auto;" /><span class="qf-row-label"></span></label>
   </template>
 
   <!--
