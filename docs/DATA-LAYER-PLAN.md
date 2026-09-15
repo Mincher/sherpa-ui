@@ -1,14 +1,17 @@
 # The Data Layer — plan
 
-Branch `sherpa-data-layer`. Nothing is built yet. This is the plan only.
+Branch `sherpa-data-layer`. Step 1 is done (`5a34c3a6`); the rest is plan.
 
-Two jobs, in this order:
+Three jobs:
 
 1. **Consolidate `SherpaElement`** — absorb the plumbing 31 components copy by hand.
 2. **Add a data layer** — one place that owns filter / sort / group / page, so the
    grid, the toolbar and the app cannot disagree about them.
+3. **Add validation** — one rule set for all five data sources, translated to the
+   platform's own validity mechanism at the edge.
 
 Part 1 comes first because Part 2 feeds components through the door Part 1 cleans.
+Part 3 interleaves with Part 2 rather than following it — see the order of work.
 
 ---
 
@@ -389,6 +392,244 @@ those from the data.
 
 ---
 
+# Part 3 — validation
+
+Data arrives from five places, and they do **not** share a mechanism:
+
+| Source | Native validation available? |
+|---|---|
+| User input (a form field) | **Yes** — Constraint Validation API |
+| Server responses (JSON) | **No** |
+| Agent / MCP tool calls | **No** |
+| System events | **No** |
+| Programmatic API calls | **No** |
+
+So the answer splits in two. One half is already built; the other has no platform
+support at all and must be written.
+
+## What already exists — more than expected
+
+Sherpa is **not** starting from zero here:
+
+| Piece | Where | State |
+|---|---|---|
+| `:user-invalid` in CSS | [`sherpa-input-text.css:178`](../src/components/sherpa-input-text/sherpa-input-text.css#L178) | ✅ correct |
+| `checkValidity()` passthrough | input-text, select-checkbox, select-radio | ✅ present |
+| Native constraints mirrored | `required`, `pattern`, `minlength`, `maxlength` | ✅ present |
+| `data-error` display channel | input-text, select-group | ✅ present, but **nothing computes it** |
+
+`:user-invalid` is the right choice and worth protecting: it matches **only after
+the user has interacted**, so a form does not turn red on page load the way
+`:invalid` would. Baseline since November 2023.
+
+## The form half — finish it with `ElementInternals`
+
+The gap is that Sherpa's inputs are **not form-associated**. They pass
+`checkValidity()` through to an inner native control, but a wrapping `<form>`
+cannot see them: no value is submitted, and submission is not blocked when
+invalid.
+
+The fix is platform-native and Baseline since **March 2023**:
+
+```ts
+static formAssociated = true;          // opt in
+#internals = this.attachInternals();   // in the constructor
+
+// Valid:
+this.#internals.setValidity({});
+// Invalid — a message is REQUIRED whenever any flag is true:
+this.#internals.setValidity({ valueMissing: true }, 'Enter an email address');
+```
+
+`setValidity()` takes the same `ValidityState` flags the platform uses
+(`valueMissing`, `typeMismatch`, `patternMismatch`, `tooLong`, `tooShort`,
+`rangeUnderflow`, `rangeOverflow`, `stepMismatch`, `badInput`, `customError`).
+
+Once `setValidity()` marks the host invalid, `:invalid` and `:user-invalid` apply to
+the **custom element itself**, and a native form submit is blocked exactly as it
+would be for a built-in `<input>`. So the CSS Sherpa already has keeps working.
+
+**Sharp edges** (all documented, all avoidable):
+
+- `attachInternals()` throws `NotSupportedError` without `static formAssociated = true`.
+- `setValidity()` throws `TypeError` if a flag is true and no message is given.
+- Passing `{}` is the **only** way to clear the flags.
+- The optional `anchor` must be a shadow-including descendant, or `NotFoundError`.
+
+**Two real cross-browser gaps** — the validation plumbing is solid, the
+*accessibility* plumbing is not:
+
+- **Firefox** implements value + validation but **not** most of `ElementInternals`'
+  ARIA/role reflection. Wire ARIA by hand; do not rely on reflection.
+- **Safari** has an open WebKit bug (#259124) affecting `<label>`-click association
+  for form-associated custom elements.
+
+Neither blocks the work. Both mean: set the ARIA attributes explicitly rather than
+trusting the platform to reflect them.
+
+## The native constraints are shipped — but `type="email"` is not an email check
+
+Every constraint attribute (`required`, `min`, `max`, `minlength`, `maxlength`,
+`pattern`, `step`) is Baseline since 2015. Support is not the limit; **expressiveness**
+is — and `type="email"` deserves a specific warning.
+
+The WHATWG production is a self-declared *"willful violation of RFC 5322."* It is
+simultaneously **too loose and too strict**:
+
+| It ACCEPTS | It REJECTS |
+|---|---|
+| `me@example` — **no TLD required at all** | `"john doe"@example.com` — quoted local part |
+| an empty value when `multiple` + `required` | `john(comment)@example.com` — RFC-legal comment |
+
+So `type="email"` is a useful *shape* hint and nothing more. Treat a real address
+check as a server concern, and never tell a user an address is invalid on its say-so.
+
+### What native cannot express at all
+
+Confirmed: none of these exist as a declarative native primitive.
+
+| Rule | Example |
+|---|---|
+| Cross-field | confirm-password, `start < end` |
+| Async | "is this username taken?" |
+| Conditional | required *only if* another field is set |
+
+The spec-sanctioned escape hatch is the one Sherpa should use:
+`setValidity({ customError: true }, message)` recomputed on the events the rule
+actually depends on — which is exactly what a `validate` module feeds.
+
+**Precedent.** Shoelace / Web Awesome — the closest comparable library — does exactly
+this: native Constraint Validation, `setCustomValidity()`, and it exposes
+`data-user-invalid` / `data-user-valid` for styling. It ships **no** validator
+component and **no** schema validation. Sherpa is already on the same path.
+
+## The non-form half — nothing native exists
+
+For a JSON payload, an MCP tool result or a system event there is **no** web-platform
+validator. Checked and confirmed:
+
+| Candidate | Verdict |
+|---|---|
+| JSON Schema in browsers | **Does not exist.** A spec + third-party libraries only; no engine implements it. |
+| A TC39 proposal for runtime validation | **None.** `proposal-type-annotations` (Stage 1) is explicitly *erased* at runtime — it validates nothing. Records & Tuples was **withdrawn** (April 2025). |
+| A WICG proposal | One 2022 discourse thread ("built-in JSON Schema validation"). Never entered incubation, no implementer interest. **Dormant.** |
+| `JSON.parse` reviver | A *transform* hook, not a validator — any check is code you write by hand. |
+| `JSON.parse` with source | Stage 4, but about **precision/round-tripping**, not validation. |
+| `structuredClone()` | Not a validator — it clones. A value can clone cleanly and still violate every rule. |
+| `URL.canParse()` | ✅ **Baseline Dec 2023** — a real, free URL validator. Use it. |
+| `Temporal` | ⚠️ Stage 4 and shipped in Chrome 144 / Firefox 139 / Node 26 — but **Safari ships it only in Technology Preview**. Not Baseline. Polyfill breaks zero-dependency. **Do not use.** |
+| `Number.isInteger`, `Number.isFinite` | ✅ fine, already used by `coerceNum`. |
+
+So this half must be written. It should be **small**.
+
+## Recommended shape
+
+### 1. A `validate` module, not a component
+
+**Recommend: a plain module (`src/core/validate.ts`), NOT a `<sherpa-data-validator>`
+element.**
+
+The reasoning:
+
+- **A validator has no visual output.** A custom element that renders nothing is
+  a function wearing a costume. `format-tick.ts` is the house precedent for shared
+  non-visual logic, and it is a module.
+- **The data layer must validate before any DOM exists.** A `RestStore` checks a
+  response the moment it lands — there may be no component mounted at all. An
+  element cannot serve that path; a module serves both.
+- **Shadow DOM makes nesting worse, not better.** A nested element's error would
+  have to cross a shadow boundary to reach the field that caused it — the exact
+  problem recorded in [[sherpa-projected-slot-content-crosses-two-shadow-boundaries]].
+- **No prior art.** No major web-component library ships a validator element.
+
+**What the element idea gets right, and how to keep it:** the desire is for
+validation to be *declarative and co-located with the markup*. That is better served
+by a `data-*` attribute the field already owns than by a wrapper element:
+
+```html
+<sherpa-input-text data-rules="required email"></sherpa-input-text>
+```
+
+Declarative, nestable, no extra element, and it reads exactly like the native
+constraint attributes beside it.
+
+### 2. One result shape, used everywhere
+
+```ts
+type Issue = { path: string[]; message: string; code: string };
+type Result<T> = { ok: true; value: T } | { ok: false; issues: Issue[] };
+```
+
+A `path` (not a flat key) because a validated object nests, and an agent payload
+nests deeply.
+
+### 3. Translate to the platform at the edge
+
+The same result drives both halves:
+
+- **Form:** `issues` → `internals.setValidity({ customError: true }, issues[0].message)`
+  → CSS `:user-invalid` already does the rest.
+- **Non-form:** `issues` → a `sherpa-toast`, a `data-error` attribute, or a rejected
+  store write.
+
+One validator, two renderings. No second mechanism.
+
+### 4. Accept a `StandardSchema` — but do not depend on one
+
+**Standard Schema** (standardschema.dev) is a community **interface convention**, not
+a TC39 proposal and not a spec. A schema advertises itself with a `~standard`
+property carrying a `validate` function. Zod, Valibot and ArkType implement it.
+
+It is a **TypeScript interface and a duck-typed contract — no runtime dependency**.
+So Sherpa can accept any Standard Schema object without importing anything:
+
+```ts
+new ArrayStore(rows, { schema: mySchema })   // a Zod/Valibot/ArkType schema, or
+new ArrayStore(rows, { schema: rules({...}) }) // Sherpa's own tiny built-in
+```
+
+Users who already have Zod bring it. Users who want nothing extra use the built-in.
+**Sherpa's `package.json` gains no dependency either way.**
+
+### 5. Accessibility — avoid the known trap
+
+`aria-errormessage` has **poor real-world screen-reader support**, despite being in
+the ARIA spec. MDN recommends against relying on it. Use instead:
+
+```html
+<input aria-invalid="true" aria-describedby="err1">
+<span id="err1" role="alert">Enter a valid email address</span>
+```
+
+`aria-invalid` + `aria-describedby` + `role="alert"`. This is well supported and
+announces the error when it appears.
+
+## Do NOT build
+
+| Not this | Why |
+|---|---|
+| A full JSON Schema implementation | Large, and Standard Schema already delegates it |
+| A `<sherpa-data-validator>` element | No visual output; cannot serve the pre-DOM path |
+| A second validation mechanism for forms | The platform's is better; finish wiring it |
+| Anything using `Temporal` | Safari has not shipped it |
+| `aria-errormessage` as the only wiring | Poor screen-reader support |
+
+## Validation — order of work
+
+| Step | Work |
+|---|---|
+| V1 | `validate.ts`: the `Result`/`Issue` shape + a small rule set (required, type, range, length, pattern, url, enum, custom) |
+| V2 | Accept a Standard Schema object wherever a rule set is accepted |
+| V3 | `formAssociated` + `ElementInternals` on the input components |
+| V4 | `data-rules` on the field, translated into `setValidity()` |
+| V5 | Validate on the store: check a `RestStore` response and reject a bad `insert`/`update` |
+| V6 | ARIA wiring: `aria-invalid` + `aria-describedby` + `role="alert"` |
+
+V1–V2 are prerequisites for V5, so validation interleaves with Part 2 rather than
+following it.
+
+---
+
 # On htmx — recommend **no**
 
 The codebase already reached this conclusion, at
@@ -424,16 +665,24 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 
 | Step | Work | Why here |
 |---|---|---|
-| 1 | `num()` | smallest change, fixes 4 live bugs |
+| **1** ✅ | `num()` | **DONE** (`5a34c3a6`) — fixed 4 live bugs, 15 specs, 416 passing |
 | 2 | `static props` + reflection | biggest win; removes ~30 methods and every if-chain |
 | 3 | `clone()` | trivial; unifies 3 null policies |
 | 4 | `icon()` | gives 4 components working icons |
 | 5 | `delegate()` | fixes the `Number(null)` → row 0 bug |
 | 6 | `renderList()` | most design care; do last |
-| 7 | `Store` + `ArrayStore` + `DataSource` | the core |
-| 8 | `JsonStore`, `RestStore`, `LocalStore` | remote + persistence |
-| 9 | Rewire `records.js` | proves it on the hardest real view |
-| 10 | Move grid sort/filter onto the source | closes the backlog's known issue |
+| 7 | **V1** `validate.ts` — `Result`/`Issue` + the rule set | a prerequisite for step 10 |
+| 8 | **V2** accept a Standard Schema object | zero-dependency Zod/Valibot support |
+| 9 | `Store` + `ArrayStore` + `DataSource` | the core |
+| 10 | **V5** validate on the store | a bad response or `insert` must not reach the UI |
+| 11 | `JsonStore`, `RestStore`, `LocalStore` | remote + persistence |
+| 12 | **V3 + V4** `formAssociated` + `data-rules` | the form half; independent of 9–11 |
+| 13 | **V6** ARIA wiring | `aria-invalid` + `aria-describedby` + `role="alert"` |
+| 14 | Rewire `records.js` | proves it on the hardest real view |
+| 15 | Move grid sort/filter onto the source | closes the backlog's known issue |
+
+Validation is interleaved, not appended: V1–V2 must precede the store work that uses
+them (step 10), while the form half (12–13) is independent and can run in parallel.
 
 ## Gates
 
@@ -441,9 +690,14 @@ Each step must pass before the next:
 
 ```bash
 npm run type-check     # strict, no emit
-npm run lint:css       # 53/0/0
-npm test               # 401 passing today — must not drop
+npm run lint            # eslint, --max-warnings 0
+npm run lint:css        # 57 files · 0 errors · 0 warnings
+npm test                # 416 passing after step 1 — must not drop
 ```
+
+Also run `node scripts/generate-component-spec.mjs --all --check` after touching a
+component and confirm **no new** drift (several pre-existing round-trip notes are
+unrelated and expected).
 
 **Trap:** `npm test` can serve a **stale `dist/`**. If a change *should* have broken a
 test and did not, run `npm run build` and re-run.
