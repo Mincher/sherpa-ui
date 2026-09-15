@@ -18,20 +18,9 @@ export class SherpaNavSection extends SherpaElement {
   static override css = new URL('./sherpa-nav-section.css', import.meta.url);
   static override html = new URL('./sherpa-nav-section.html', import.meta.url);
   static override tier = 'sub-component' as const;
-  static override observed = ['data-label'];
-
-  override onRender(): void {
-    this.#syncLabel();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-label') this.#syncLabel();
-  }
-
-  #syncLabel(): void {
-    const el = this.$('.label');
-    if (el) el.textContent = this.dataset['label'] ?? '';
-  }
+  static override props = {
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+  } as const;
 }
 
 customElements.define('sherpa-nav-section', SherpaNavSection);

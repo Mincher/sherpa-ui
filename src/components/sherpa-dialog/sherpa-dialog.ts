@@ -21,7 +21,11 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaDialog extends SherpaElement {
   static override css = new URL('./sherpa-dialog.css', import.meta.url);
   static override html = new URL('./sherpa-dialog.html', import.meta.url);
-  static override observed = ['data-heading', 'open'];
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
+  } as const;
+
+  static override observed = ['open'];
 
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
@@ -30,14 +34,12 @@ export class SherpaDialog extends SherpaElement {
   override onRender(): void {
     const dialog = this.#dialog();
     if (!dialog) return;
-    this.#syncHeading();
     if (this.hasAttribute('open')) dialog.showModal();
     dialog.addEventListener('close', this.#onClose);
   }
 
   override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncHeading();
-    else if (name === 'open') {
+    if (name === 'open') {
       if (this.hasAttribute('open')) this.show();
       else this.close();
     }
@@ -68,11 +70,6 @@ export class SherpaDialog extends SherpaElement {
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
-
-  #syncHeading(): void {
-    const label = this.$('.heading-text');
-    if (label) label.textContent = this.dataset.heading ?? '';
-  }
 
   #onClose = (): void => {
     this.toggleAttribute('open', false);

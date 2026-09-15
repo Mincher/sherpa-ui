@@ -14,7 +14,8 @@
  * Contract for subclasses:
  *   static css      = new URL('./sherpa-foo.css',  import.meta.url);
  *   static html     = new URL('./sherpa-foo.html', import.meta.url);
- *   static observed = ['data-variant', 'data-size'];   // reflected to attributeChangedCallback
+ *   static props    = { 'data-heading': { type: 'string', kind: 'content', to: '.title' } };
+ *   static observed = ['disabled'];                    // native attrs + own-handling ones
  *   onRender()        // shadow ready — cache refs, wire host listeners (fires exactly once)
  *   onChange(name, old, val)  // an observed attribute changed (after first render)
  *   onConnect()       // once, after the first render completes
@@ -119,6 +120,55 @@ function clampNum(value: number, opts?: NumOptions): number {
   return out;
 }
 
+/* ── Declarative attributes: `static props` ──────────────────────────────── */
+
+/**
+ * How a declared attribute is REALISED — the same three-way split the generated
+ * `<name>.component.yaml` already uses, so the code and the contract agree:
+ *
+ *   content    — JS writes it into the shadow DOM (the base class does it here)
+ *   style      — CSS selects on it; JS never reads it. DECLARED ONLY.
+ *   visibility — presence toggles a CSS rule. Declared only, like style.
+ *
+ * Only `content` generates any work. `style` and `visibility` exist so the
+ * attribute is TYPED and observable — a JS→CSS write path (`this.set()`), and a
+ * place to hang non-CSS use later — without tempting anyone to add a JS branch
+ * for something CSS already handles correctly.
+ */
+export type PropKind = 'content' | 'style' | 'visibility';
+
+/** The declared type of an attribute's value. Mirrors schemas/component.v1.json. */
+export type PropType = 'string' | 'number' | 'boolean' | 'enum';
+
+/** One declared attribute. */
+export interface PropDef {
+  type: PropType;
+  kind: PropKind;
+  /**
+   * Shadow-DOM selector this attribute's text is written into. `content` only.
+   * Without it a `content` prop is observed but not auto-written — for a component
+   * that needs its own handling in `onChange`.
+   */
+  to?: string;
+  /** Write EVERY match rather than the first. A few templates repeat a node per layout. */
+  all?: boolean;
+  /**
+   * Skip the write when this selector matches INSIDE the target. Guards content the
+   * component put there for its own reasons — a projected `[slot]`, or a `<mark>`
+   * left by a search highlight that a textContent write would erase.
+   */
+  skipWhen?: string;
+  /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
+  fallbackAttr?: string;
+  /** Allowed values for an `enum`. Documentation + spec parity; not enforced at runtime. */
+  values?: readonly string[];
+  /** Used when the attribute is absent. Numbers go through coerceNum. */
+  default?: string | number | boolean;
+}
+
+/** A component's whole declared attribute surface. */
+export type PropMap = Readonly<Record<string, PropDef>>;
+
 /** Base class for every `sherpa-*` component. */
 export abstract class SherpaElement extends HTMLElement {
   /**
@@ -141,8 +191,37 @@ export abstract class SherpaElement extends HTMLElement {
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
   static sharedStyles: URL[] = [];
 
+  /**
+   * Declared attributes — the component's public surface, as data rather than code.
+   *
+   * Every key is observed automatically, and every `content` entry with a `to`
+   * selector is written into the shadow DOM by the base class. That replaces the
+   * hand-written `#syncX()` method and the `onChange` if-chain that used to pair
+   * with each one.
+   *
+   * `style` / `visibility` entries generate NO work — they are declared so the
+   * attribute is typed and observable. CSS keeps owning them.
+   */
+  static props: PropMap = {};
+
+  /**
+   * Observed = the declared props PLUS anything in `observed`.
+   *
+   * `observed` stays for native attributes (`disabled`, `value`, `min`) and for
+   * attributes a component reacts to in its own `onChange` without a text write.
+   * Deduped, so declaring an attribute in both is harmless.
+   */
   static get observedAttributes(): string[] {
-    return this.observed;
+    const defs = Object.values(this.props);
+    return [
+      ...new Set([
+        ...Object.keys(this.props),
+        // A fallback source has to be observed too, or changing data-heading would
+        // not re-sync a data-label that falls back to it.
+        ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
+        ...this.observed,
+      ]),
+    ];
   }
 
   /** Open shadow root — queried via $ / $$, never touched directly by subclasses. */
@@ -181,6 +260,15 @@ export abstract class SherpaElement extends HTMLElement {
     // Ignore no-op writes and anything before the first render — onRender reads
     // the initial attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
+    // A declared prop re-syncs itself. onChange still fires, so a component can do
+    // extra work for the same attribute (sync an aria-* value, re-measure) without
+    // also having to write the text.
+    const Ctor = this.constructor as typeof SherpaElement;
+    for (const [prop, def] of Object.entries(Ctor.props)) {
+      // The prop itself, and any prop that FALLS BACK to it — data-label falling
+      // back to data-heading has to re-sync when data-heading is what changed.
+      if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
+    }
     this.onChange(name, oldVal, newVal);
   }
 
@@ -198,6 +286,9 @@ export abstract class SherpaElement extends HTMLElement {
     this.root.innerHTML = this.#resolveTemplate(Ctor, html);
 
     this.#hasRendered = true;
+    // Declared props are written BEFORE onRender, so a component's own setup can
+    // read a populated shadow tree rather than racing the base class for it.
+    this.#syncAllProps();
     this.onRender();
     this.#wireSlots();
     this.#resolveRendered();
@@ -313,6 +404,52 @@ export abstract class SherpaElement extends HTMLElement {
    */
   protected num(attr: string, fallback: number, opts?: NumOptions): number {
     return coerceNum(this.getAttribute(attr), fallback, opts);
+  }
+
+  /**
+   * Write an attribute from JS, so CSS can react to a data change.
+   *
+   * The declared counterpart of `this.dataset['len'] = String(count)` — which
+   * sherpa-sparkline already does by hand to tell its CSS how many points it drew.
+   * `null`, `undefined` and `false` REMOVE the attribute (so `:host([data-x])`
+   * stops matching); `true` sets it empty (a bare boolean attribute).
+   */
+  protected set(attr: string, value: string | number | boolean | null | undefined): void {
+    if (value == null || value === false) this.removeAttribute(attr);
+    else this.setAttribute(attr, value === true ? '' : String(value));
+  }
+
+  /* ── Declared-prop sync ──────────────────────────────────────────── */
+
+  /**
+   * Write one declared `content` prop into the shadow DOM.
+   *
+   * Absent, empty and a missing target are all the same: write `''`, which lets the
+   * component's own `:empty` / `data-has-*` CSS collapse the node. The base class
+   * never hides anything itself — CSS owns visibility.
+   */
+  #syncProp(name: string, def: PropDef): void {
+    if (def.kind !== 'content' || !def.to) return;
+
+    const raw = this.getAttribute(name) ?? (def.fallbackAttr ? this.getAttribute(def.fallbackAttr) : null);
+    const fallback = def.default === undefined ? '' : String(def.default);
+    const text =
+      def.type === 'number'
+        ? String(coerceNum(raw, typeof def.default === 'number' ? def.default : NaN))
+        : (raw ?? fallback);
+
+    for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
+      // `skipWhen` protects content the component owns: a projected [slot], or a
+      // <mark> a search highlight left behind. A textContent write would erase it.
+      if (!el || (def.skipWhen && el.querySelector(def.skipWhen))) continue;
+      el.textContent = text === 'NaN' ? '' : text;
+    }
+  }
+
+  /** Write every declared `content` prop. Runs once after the first render. */
+  #syncAllProps(): void {
+    const Ctor = this.constructor as typeof SherpaElement;
+    for (const [name, def] of Object.entries(Ctor.props)) this.#syncProp(name, def);
   }
 
   /* ── Shadow queries + events ─────────────────────────────────────── */

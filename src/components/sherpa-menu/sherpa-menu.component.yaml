@@ -215,7 +215,7 @@ events:
 tokens:
   menu.gap: "{sherpa.display-mode-space-xs}"
   menu.padding: "{sherpa.theme-padding-md}"
-  menu.padding-block-end: "{sherpa.theme-padding-none}"
+  menu.padding-block-end: "{sherpa.theme-padding-sm}"
   menu.border-color: "{sherpa.style-border-base}"
   menu.border-block-start-width: "{sherpa.border-top}"
   menu.border-block-end-width: "{sherpa.border-bottom}"

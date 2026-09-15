@@ -11,34 +11,11 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaEmptyState extends SherpaElement {
   static override css = new URL('./sherpa-empty-state.css', import.meta.url);
   static override html = new URL('./sherpa-empty-state.html', import.meta.url);
-  static override observed = ['data-heading', 'data-description', 'data-small-print'];
-
-  override onRender(): void {
-    this.#syncTitle();
-    this.#syncDescription();
-    this.#syncSmallPrint();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncTitle();
-    else if (name === 'data-description') this.#syncDescription();
-    else if (name === 'data-small-print') this.#syncSmallPrint();
-  }
-
-  #syncTitle(): void {
-    const el = this.$('.title');
-    if (el) el.textContent = this.dataset['heading'] ?? '';
-  }
-
-  #syncDescription(): void {
-    const el = this.$('.message-text');
-    if (el) el.textContent = this.dataset['description'] ?? '';
-  }
-
-  #syncSmallPrint(): void {
-    const el = this.$('.small-print-text');
-    if (el) el.textContent = this.dataset['smallPrint'] ?? '';
-  }
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-description': { type: 'string', kind: 'content', to: '.message-text' },
+    'data-small-print': { type: 'string', kind: 'content', to: '.small-print-text' },
+  } as const;
 }
 
 customElements.define('sherpa-empty-state', SherpaEmptyState);

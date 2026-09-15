@@ -1,8 +1,9 @@
 /**
  * sherpa-menu.css — a floating list of choices or actions.
  *
- * Data-matched to the Figma "Menu" (49:66174):
- *   card     240 wide · padding/md 8 · gap space/3xs 2 · structure rounding 4
+ * Data-matched to the Figma "Menu" set (1156:29240):
+ *   card     240 wide · padding 8/8/4/8 (md × 3, padding/sm at the bottom)
+ *            · gap space/xs 8 · structure rounding 4
  *            · style-surface/base fill · Elevation md (offset 2,2 blur 16 spread −8)
  *   heading  content/body/+1 at content/size/xs 10 on line-height/xs 16, upper-case
  *   row      36 tall (Menu List Item: padding space/xs 8 × padding/md 8, gap/md 8,
@@ -61,12 +62,12 @@
      laid out only when the popover is actually open. */
   display: none;
   flex-direction: column;
-  /* Re-read from the Menu node (49:66174) after Will's tweak: gap space/xs 8
-     (it was space/3xs 2) and padding 8/8/NONE/8 — no bottom padding, because the
-     footer's own 8 sits flush against the card's edge. */
+  /* Re-read from the Menu SET (1156:29240) after Will's tweak: gap space/xs 8
+     and padding 8/8/SM 4/8 — the bottom step is padding/sm, half the other three,
+     so the footer's own 8 does not read as a double gap at the card's edge. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-md, 8px);
-  padding-block-end: var(--sherpa-theme-padding-none, 0px);
+  padding-block-end: var(--sherpa-theme-padding-sm, 4px);
   /* The default 0.5px ring — the card is a surface on a surface, so it needs the
      border to separate itself from what it floats over. */
   border-style: solid;
@@ -366,7 +367,7 @@
 /* ── Type = Calendar ─────────────────────────────────────────────────────
  * Read from the Menu set (1156:29240), which Will split into
  * `Type = List | Calendar`. Both variants share the card — gap 8, padding
- * 8/8/0/8, three slots — and differ in exactly two things:
+ * 8/8/4/8, three slots — and differ in exactly two things:
  *
  *   the WIDTH      List 240, Calendar 527 (it holds a 7-column grid, and
  *                  optionally a time picker beside it)

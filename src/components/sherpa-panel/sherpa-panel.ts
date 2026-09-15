@@ -17,20 +17,9 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaPanel extends SherpaElement {
   static override css = new URL('./sherpa-panel.css', import.meta.url);
   static override html = new URL('./sherpa-panel.html', import.meta.url);
-  static override observed = ['data-heading'];
-
-  override onRender(): void {
-    this.#syncHeading();
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncHeading();
-  }
-
-  #syncHeading(): void {
-    const label = this.$('.heading-text');
-    if (label) label.textContent = this.dataset.heading ?? '';
-  }
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
+  } as const;
 }
 
 customElements.define('sherpa-panel', SherpaPanel);

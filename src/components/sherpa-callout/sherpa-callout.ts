@@ -13,27 +13,19 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaCallout extends SherpaElement {
   static override css = new URL('./sherpa-callout.css', import.meta.url);
   static override html = new URL('./sherpa-callout.html', import.meta.url);
-  static override observed = ['data-heading'];
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+  } as const;
 
   override onRender(): void {
     if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
-    this.#syncTitle();
     this.$('.close')?.addEventListener('click', this.#onDismiss);
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncTitle();
   }
 
   /** Dismiss the callout: emit the event and remove the element. */
   dismiss(): void {
     this.emit('callout-dismiss');
     this.remove();
-  }
-
-  #syncTitle(): void {
-    const el = this.$('.title');
-    if (el) el.textContent = this.dataset['heading'] ?? '';
   }
 
   #onDismiss = (event: Event): void => {
