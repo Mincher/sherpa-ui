@@ -593,16 +593,48 @@ Users who already have Zod bring it. Users who want nothing extra use the built-
 
 ### 5. Accessibility — avoid the known trap
 
-`aria-errormessage` has **poor real-world screen-reader support**, despite being in
-the ARIA spec. MDN recommends against relying on it. Use instead:
+The base is `aria-invalid` + `aria-describedby`. Both are old, stable ARIA with no
+known gaps — treat them as safe.
 
 ```html
-<input aria-invalid="true" aria-describedby="err1">
-<span id="err1" role="alert">Enter a valid email address</span>
+<label for="email">Email address</label>
+<input id="email" type="email"
+       aria-describedby="email-hint email-error"
+       aria-invalid="true">          <!-- set by JS only AFTER validation runs -->
+<p id="email-hint">We only use this to send your receipt.</p>
+<!-- present in the DOM from the start; JS fills the text -->
+<p id="email-error"></p>
 ```
 
-`aria-invalid` + `aria-describedby` + `role="alert"`. This is well supported and
-announces the error when it appears.
+Three rules that are easy to get wrong:
+
+**1. `role="alert"` does NOT belong on a per-field error.** Putting `role="alert"`
+(or `aria-live`) on the same element `aria-describedby` points at causes
+**double-speak** in JAWS and NVDA — the live region fires, then the description
+fires again on focus — and has been observed to make VoiceOver drop the
+`aria-describedby` association entirely.
+
+Reserve `role="alert"` for a **form-level summary** ("There are 3 errors"), shown
+once on a failed submit. That is the one place an interruption is warranted.
+
+**2. The error element must already exist in the DOM.** Creating the element and
+injecting its text in one operation frequently fails to announce. Sherpa already
+does this correctly — the error line is in the `.html` template and CSS reveals it,
+per the "all elements must exist in the template from the start" rule.
+
+**3. `aria-errormessage` is optional, additive — never the only wiring.** Its
+reputation for poor support was accurate through ~2023, and it has **measurably
+improved**: NVDA added it in 2024.3, JAWS and iOS VoiceOver support it. But
+**macOS VoiceOver (desktop) and Android TalkBack remain gaps** as of 2025 testing,
+and the W3C ARIA group has an open issue questioning whether the attribute stays in
+the spec at all. Adding it alongside `aria-describedby`, pointing at the same id,
+costs nothing where unsupported. Relying on it alone does not.
+
+**Known platform gap worth recording:** Safari 17+ on macOS changed how
+`aria-describedby` is exposed on **text-type inputs** — VoiceOver no longer
+auto-announces it, and instead offers a "more content menu" the user must open.
+Radio, checkbox and button types are unaffected. This hits exactly the field type
+most often validated, and there is no workaround from the library side.
 
 ## Do NOT build
 
@@ -612,7 +644,8 @@ announces the error when it appears.
 | A `<sherpa-data-validator>` element | No visual output; cannot serve the pre-DOM path |
 | A second validation mechanism for forms | The platform's is better; finish wiring it |
 | Anything using `Temporal` | Safari has not shipped it |
-| `aria-errormessage` as the only wiring | Poor screen-reader support |
+| `aria-errormessage` as the only wiring | macOS VoiceOver + TalkBack gaps remain |
+| `role="alert"` on a per-field error | double-speak in JAWS/NVDA; summaries only |
 
 ## Validation — order of work
 
@@ -623,7 +656,7 @@ announces the error when it appears.
 | V3 | `formAssociated` + `ElementInternals` on the input components |
 | V4 | `data-rules` on the field, translated into `setValidity()` |
 | V5 | Validate on the store: check a `RestStore` response and reject a bad `insert`/`update` |
-| V6 | ARIA wiring: `aria-invalid` + `aria-describedby` + `role="alert"` |
+| V6 | ARIA wiring: `aria-invalid` + `aria-describedby`; `role="alert"` only on a form-level summary |
 
 V1–V2 are prerequisites for V5, so validation interleaves with Part 2 rather than
 following it.
@@ -677,7 +710,7 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 | 10 | **V5** validate on the store | a bad response or `insert` must not reach the UI |
 | 11 | `JsonStore`, `RestStore`, `LocalStore` | remote + persistence |
 | 12 | **V3 + V4** `formAssociated` + `data-rules` | the form half; independent of 9–11 |
-| 13 | **V6** ARIA wiring | `aria-invalid` + `aria-describedby` + `role="alert"` |
+| 13 | **V6** ARIA wiring | `aria-invalid` + `aria-describedby` (NOT `role="alert"` per field) |
 | 14 | Rewire `records.js` | proves it on the hardest real view |
 | 15 | Move grid sort/filter onto the source | closes the backlog's known issue |
 
