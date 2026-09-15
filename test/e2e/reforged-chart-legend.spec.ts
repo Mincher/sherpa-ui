@@ -42,7 +42,11 @@ test('renders a row per item with label + value and categorical swatches', async
   // colorIndex picks the series by POSITION. The RELATIONSHIPS are asserted, not
   // the hexes — the palette is a design decision and has changed twice.
   expect(r.hue1).not.toBe(r.hue5);
-  expect(r.hue1).toContain('50%');
+  // TRANSLUCENT, whatever syntax the token arrives in. It was `color-mix(… 50%)`
+  // while the series were composed in CSS; Theme bakes the alpha into the hex
+  // now, so the computed value is `rgba(…, .502)`. Asserting the SYNTAX made the
+  // test a mirror of the token file rather than a check on the result.
+  expect(r.hue1).toMatch(/(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5)/);
   // Both must RESOLVE: an undefined custom property paints nothing, with no error.
   expect(r.ring1).not.toBe('rgb(0, 0, 0)');
   expect(r.ring5).not.toBe('rgb(0, 0, 0)');

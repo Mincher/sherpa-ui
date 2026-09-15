@@ -100,11 +100,15 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
   const [a, b] = r as Array<Record<string, string>>;
   // Each series is a DIFFERENT hue…
   expect(a!['hue']).not.toBe(b!['hue']);
-  // …carrying the 50% the token layer composes it at…
-  expect(a!['hue']).toContain('50%');
-  // …and its border is a SEPARATE value, not the fill.
+  // …TRANSLUCENT, whatever syntax the token arrives in. It was `color-mix(… 50%)`
+  // while the series were composed in CSS; Theme bakes the alpha into the hex
+  // now, so the computed value is `rgba(…, .502)`. Asserting the SYNTAX made the
+  // test a mirror of the token file rather than a check on the result.
+  const TRANSLUCENT = /(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5)/;
+  expect(a!['hue']).toMatch(TRANSLUCENT);
+  // …and its border is a SEPARATE value, not the fill — and SOLID.
   expect(a!['border']).not.toBe(a!['hue']);
-  expect(a!['border']).not.toContain('50%');
+  expect(a!['border']).not.toMatch(TRANSLUCENT);
   expect(a!['borderWidth']).toBe('1px');
   // Both must RESOLVE — an undefined custom property paints nothing at all, with
   // no error, so a wrong name shows up as the property's initial value.

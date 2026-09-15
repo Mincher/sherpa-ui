@@ -168,9 +168,10 @@ const ROUTING = {
   // line-height/letter-spacing/weight/font), NOT a flat dump — see the typography block
   // below. No standalone `typography` collection any more.
 
-  // Categorical / sequential / divergent series → @layer style (styling). Primary
-  // (categorical) → the 11 public --sherpa-categorical-* names via a bespoke emit below.
-  'data-viz': { target: 'style', attr: null },
+  // NO `data-viz` collection route. Theme owns the series now —
+  // `theme.data-viz.sequence/<n>/color <s>` plus `sequence-border/<n>` — and the
+  // public names are emitted from there (see the data-viz block below). The
+  // collection's own leaves aliased `sequential/*`, which no longer exists.
 
   // Component-scoped collections. Emit each component's Figma collection into its
   // own partial; non-primary modes → :host([attr="mode"]).
@@ -881,99 +882,47 @@ const fontAtomLines = [
 const categoricalLines = [];
 const seriesBorderLines = [];
 {
-  let border = null;
-  const hues = [];
-  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
-    // A series fill is a COMPOSE_COLOR of its ramp step and effects/opacity/500,
-    // and the DTCG export flattens that to the bare hue — the alpha survives only
-    // in $extensions.opacity, which withOpacity() re-applies. Without this the
-    // marks would all paint at full strength.
-    const v = withOpacity(
-      toCss(leaf.value, leaf.type),
-      leaf.opacity?.[leaf.primaryMode] ?? Object.values(leaf.opacity ?? {})[0],
-    );
+  // The DEFAULT palette comes from THEME now, not the Data Viz collection.
+  //
+  // Theme holds `data-viz/sequence/<n>/color <s>` — ten sequences of ten steps,
+  // each already carrying its 50% — plus `data-viz/sequence-border/<n>`, that
+  // ramp's colour 5 held solid. A multi-series chart wants ONE colour per series,
+  // so `--sherpa-data-viz-series-N` is sequence N's MID step (colour 5) and the
+  // border is sequence N's border.
+  //
+  // It used to read the Data Viz collection's own `series/N`, whose primary mode
+  // is a single sequence — ten shades of purple — and then re-point them at the
+  // per-sequence picks. Theme names them directly, so the indirection is gone.
+  const seqMid = new Map();
+  const seqBorder = new Map();
+  const seqSteps = new Map();
+  for (const leaf of walkLeaves(doc.theme?.['data-viz'] ?? {}, ['theme', 'data-viz'])) {
+    const v = withOpacity(toCss(leaf.value, leaf.type), leaf.opacity?.[leaf.primaryMode]);
     if (v == null) continue;
-    const m = leaf.rawPath.match(/series\/(\d+)$/);
-    if (m) { hues.push([Number(m[1]), v]); continue; }
-    if (/(^|\/)border$/.test(leaf.rawPath)) border = v;
-  }
-  hues.sort((a, b) => a[0] - b[0]);
-
-  // DEFAULT = one hue per series, taken from COLOUR 5 of each SEQUENCE.
-  //
-  // The collection's own primary mode is `sequence 1`, so series/1..10 all read
-  // the purple ramp — ten purples, which is a SEQUENTIAL reading. A chart with
-  // several series needs ten DISTINCT hues, and that is what the retired
-  // `categorical` mode used to give. Colour 5 of each sequence is the set that
-  // replaced it (see the ramp study), so the default is assembled from the
-  // per-mode values rather than from the primary mode alone.
-  //
-  // A chart that genuinely wants one ramp sets [data-palette] and gets the
-  // sequential reading instead.
-  const modeNames = [];
-  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
-    for (const m of Object.keys(leaf.modes ?? {})) if (!modeNames.includes(m)) modeNames.push(m);
-  }
-  const bySequence = new Map();
-  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
-    const m = leaf.rawPath.match(/series\/(\d+)$/);
-    if (!m || Number(m[1]) !== 5) continue;          // colour 5 only
-    for (const mode of modeNames) {
-      const raw = leaf.modes?.[mode];
-      if (raw == null) continue;
-      bySequence.set(mode, withOpacity(toCss(raw, leaf.type), leaf.opacity?.[mode]));
+    let m = leaf.rawPath.match(/sequence\/(\d+)\/color (\d+)$/);
+    if (m) {
+      const [, n, step] = m.map(Number);
+      if (Number(step) === 5) seqMid.set(Number(n), v);
+      seqSteps.set(`${n}/${step}`, v);
+      continue;
     }
+    m = leaf.rawPath.match(/sequence-border\/(\d+)$/);
+    if (m) seqBorder.set(Number(m[1]), v);
   }
-  // The base holds FIVE sequences since Set 2 was split out, so it supplies only
-  // the first five picks. The rest come from the Set 2 extension's cache — the
-  // ten categorical hues span both collections.
-  const picks = modeNames.map((m) => bySequence.get(m)).filter((v) => v != null);
-  const set2 = extDoc['data-viz-set-2']?.vars?.['data-viz/series/5'];
-  if (set2) {
-    for (const mode of Object.keys(set2)) {
-      const v = set2[mode];
-      if (v != null) picks.push(`color-mix(in srgb, ${v} 50%, transparent)`);
+  const count = Math.max(seqMid.size, seqBorder.size);
+  for (let n = 1; n <= count; n++) {
+    const fill = seqMid.get(n);
+    const border = seqBorder.get(n);
+    if (fill != null) {
+      categoricalLines.push(`  --sherpa-categorical-${n}: ${fill};`);
+      categoricalLines.push(`  --sherpa-data-viz-series-${n}: ${fill};`);
     }
+    if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${border};`);
   }
-
-  // The BORDER per series, from that series' OWN sequence.
-  //
-  // The `border` leaf carries one value per MODE, and the generic leaf emit gives
-  // only the primary mode — so every series got a PURPLE outline while its fill
-  // came from its own ramp. The per-mode values are collected the same way the
-  // picks are, and Set 2 supplies the second five.
-  const borderByMode = new Map();
-  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
-    if (!/(^|\/)border$/.test(leaf.rawPath)) continue;
-    for (const mode of modeNames) {
-      const raw = leaf.modes?.[mode];
-      if (raw != null) borderByMode.set(mode, toCss(raw, leaf.type));
-    }
+  if (seqBorder.get(1) != null) {
+    seriesBorderLines.push(`  --sherpa-data-viz-series-border: ${seqBorder.get(1)};`);
   }
-  const borders = modeNames.map((m) => borderByMode.get(m)).filter((v) => v != null);
-  const set2Border = extDoc['data-viz-set-2']?.vars?.['data-viz/border'];
-  if (set2Border) for (const mode of Object.keys(set2Border)) borders.push(set2Border[mode]);
-
-  for (const [n, v] of hues) {
-    const pick = picks[n - 1] ?? v;
-    categoricalLines.push(`  --sherpa-categorical-${n}: ${pick};`);
-    // …and RE-POINT the series name at the same pick. The generic leaf emit gives
-    // `--sherpa-data-viz-series-N` the collection's PRIMARY mode, which is one
-    // sequence — ten shades of purple. Charts read this name, so a categorical
-    // chart came out monochrome. A chart that genuinely wants one ramp sets
-    // [data-palette] and gets the sequential reading back.
-    categoricalLines.push(`  --sherpa-data-viz-series-${n}: ${pick};`);
-    // Each series' border comes from its OWN sequence — the same ramp its fill
-    // does — so a phlox slice is outlined in phlox, not in the primary mode's
-    // purple.
-    const bor = borders[n - 1] ?? border;
-    if (bor != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${bor};`);
-  }
-  if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border: ${border};`);
-  if (!hues.length) warn('data-viz: no series/N leaves found in the dump');
-  if (picks.length && picks.length < hues.length) {
-    warn(`data-viz: ${picks.length} sequence picks for ${hues.length} series — some will repeat a ramp step`);
-  }
+  if (!count) warn('theme data-viz: no sequence/<n>/color <s> leaves found');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
