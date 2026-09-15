@@ -113,11 +113,29 @@
   flex-shrink: 0;
 }
 
+/* The content region is a single-column GRID, one row of `1fr`.
+   A grid row of 1fr is BOUNDED by the track, where a flex child is bounded only
+   by its own content — so anything slotted in gets exactly the height left over
+   after the header and footer, and cannot push past the panel. That is what lets
+   a composed card inside hand its own footer (a chat composer) to the bottom
+   while its body scrolls: the chain of heights is unbroken from the panel down.
+
+   `overflow: hidden`, not auto: the PANEL must not scroll. Whatever is slotted in
+   owns its own scrolling region, which is the only way a composer can stay put
+   while the thread above it moves. */
 .body {
+  display: grid;
+  grid-template-rows: 1fr;
   flex: 1 1 auto;
   min-block-size: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: var(--_pad);
+}
+/* The slotted child fills the row and resolves its own percentage heights
+   against it, rather than hugging its content. */
+.body ::slotted(*) {
+  min-block-size: 0;
+  block-size: 100%;
 }
 
 /* The two controls specific to a FLOATING panel, sitting in the composed

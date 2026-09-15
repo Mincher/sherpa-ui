@@ -149,6 +149,9 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
       searchBox: (() => { const r = s.querySelector('.search')!.getBoundingClientRect();
         return { h: Math.round(r.height), w: Math.round(r.width) }; })(),
       sectionLabel: getComputedStyle(s.querySelector('.section-label')!).display,
+      // The NAME goes; the row and its divider stay — see below.
+      sectionLabelColor: getComputedStyle(s.querySelector('.section-label')!).color,
+      sectionLabelHeight: Math.round(s.querySelector('.section-label')!.getBoundingClientRect().height),
     };
   });
   // Figma Navigation collection: the rail's resting mode is `collapsed` at 40px.
@@ -165,7 +168,13 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
   // Hovering the rail swaps collapsed → hover, and a row that changed height
   // between the two shifted everything below it as the panel opened.
   expect(r.searchBox).toEqual({ h: 32, w: 24 });
-  expect(r.sectionLabel).toBe('none');
+  // The section ROW stays in every state — the divider is its ::after, so hiding
+  // the row took the section rule with it and the collapsed rail lost its
+  // grouping entirely. What collapses is the TEXT.
+  expect(r.sectionLabel).toBe('flex');
+  expect(r.sectionLabelColor).toBe('rgba(0, 0, 0, 0)');
+  // A FIXED 24 in every state, so nothing below it jumps as the rail opens.
+  expect(r.sectionLabelHeight).toBe(24);
 });
 
 test('pointer in opens the rail (hover); pointer out collapses it again', async ({ page }) => {

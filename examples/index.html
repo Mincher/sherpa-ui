@@ -191,14 +191,29 @@
        every page load is not a preference. Wrapped, because storage throws in a
        private window and a failed WRITE must not stop the theme changing. */
     const MODE_KEY = 'sherpa-examples-mode';
+    /* The button shows what you will GET, not what you have: a moon offers dark,
+       a sun offers light. `data-mode` lives on <html>, which CSS inside the
+       header's shadow root cannot select, so the glyph is set from here. */
+    const syncModeIcon = (mode) => {
+      const btn = document.querySelector('sherpa-app-header')?.shadowRoot
+        ?.querySelector('.theme-toggle');
+      btn?.setAttribute('data-icon-start',
+        mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon');
+      btn?.setAttribute('aria-label',
+        mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    };
     const setMode = (mode) => {
       document.documentElement.dataset.mode = mode;
+      syncModeIcon(mode);
       try { localStorage.setItem(MODE_KEY, mode); } catch { /* storage unavailable */ }
     };
     try {
       const saved = localStorage.getItem(MODE_KEY);
       if (saved === 'light' || saved === 'dark') document.documentElement.dataset.mode = saved;
     } catch { /* storage unavailable — the markup's own data-mode stands */ }
+    // The header defines asynchronously, so the first sync waits for it.
+    void customElements.whenDefined('sherpa-app-header')
+      .then(() => syncModeIcon(document.documentElement.dataset.mode));
 
     /* Ask N-zo opens the assistant panel.
        Its markup is the CHAT template, fetched on first open and kept — a person
@@ -210,6 +225,12 @@
     document.addEventListener('ai-click', () => {
       assistantReady ??= (async () => {
         assistant.innerHTML = await (await fetch('/template/view/chat')).text();
+        /* The chat card is sized in LAYOUT-GRID ROWS for its full-page form
+           (data-rows="12"), which is a fixed height — inside a panel that made it
+           944px tall in a 648px region and pushed the composer off the bottom.
+           In here the panel's own grid row supplies the height, so the fixed one
+           is dropped and the card fills what it is given. */
+        assistant.querySelector('sherpa-container')?.removeAttribute('data-rows');
         await customElements.whenDefined('sherpa-overlay-panel');
         const mod = await import('./views/chat.js');
         // The chat view hides the app header for its full-page form; inside a
