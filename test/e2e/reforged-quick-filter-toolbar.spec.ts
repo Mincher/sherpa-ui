@@ -1819,3 +1819,77 @@ test('a sort from the organise chip never reaches the host as a filter change', 
   expect(r.sortChanges).toEqual([{ field: 'spend', direction: 'asc' }]);
   expect(r.filterChanges).toEqual([]);
 });
+
+/**
+ * A BOOLEAN filter folded into the overflow is a TICKABLE row, not a drill row.
+ *
+ * A chip with no `options` is on or off — there is nothing inside it to open.
+ * It used to get the same drill row every other folded filter does, so it wore
+ * a chevron, read as a parent, and did NOTHING when clicked: the drill handler
+ * needs the chip's own menu, and a boolean chip has none.
+ */
+test('a folded BOOLEAN filter ticks in place; one with options still drills', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(defs: unknown): void;
+    };
+    el.setAttribute('data-type', 'data');
+    // Narrow, so everything but the first chip folds.
+    el.style.cssText = 'max-inline-size: 300px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'active', label: 'Active', type: 'data' },
+      { id: 'trial', label: 'Trial', type: 'data' },
+      { id: 'churned', label: 'Churned', type: 'data' },
+      { id: 'plan', label: 'Plan', type: 'data',
+        options: [{ value: 'pro', label: 'Pro' }] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const sr = el.shadowRoot!;
+    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    const menu = sr.querySelector('.overflow-chip sherpa-menu');
+    if (!menu) return { err: 'no overflow menu' };
+
+    const toggles = [...menu.querySelectorAll<HTMLElement>('.qf-toggle')]
+      .map((t) => t.dataset['for']);
+    const drills = [...menu.querySelectorAll<HTMLElement>('.qf-folded')]
+      .map((d) => d.dataset['for']);
+
+    // Ticking the row must flip the CHIP it stands for, and report it.
+    const seen: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => seen.push((e as CustomEvent).detail));
+    const row = menu.querySelector<HTMLElement>('.qf-toggle')!;
+    const box = row.querySelector<HTMLInputElement>('input')!;
+    const chip = sr.querySelector<HTMLElement>(
+      `.chips > .chip[data-id="${row.dataset['for']}"]`,
+    )!;
+    box.click();
+    await new Promise((res) => setTimeout(res, 200));
+    const on = { box: box.checked, chip: chip.hasAttribute('data-current') };
+    box.click();
+    await new Promise((res) => setTimeout(res, 200));
+    const off = { box: box.checked, chip: chip.hasAttribute('data-current') };
+    return { toggles, drills, on, off, seen, id: row.dataset['for'] };
+  });
+
+  // Which chips fold depends on the measured width, so the test does not name
+  // them — what matters is that EVERY folded boolean ticks and the one with
+  // options drills, whichever of them ended up in the menu.
+  expect(r.toggles!.length).toBeGreaterThan(0);
+  expect(r.drills).toEqual(['plan']);
+  // Neither list may hold the other's rows.
+  expect(r.toggles).not.toContain('plan');
+
+  // The tick drives the CHIP, so the bar and the menu can never disagree.
+  expect(r.on).toEqual({ box: true, chip: true });
+  expect(r.off).toEqual({ box: false, chip: false });
+  // …and it reports, so a host hears a folded toggle exactly as it hears a
+  // toggle on the bar.
+  expect(r.seen).toContainEqual(
+    expect.objectContaining({ id: r.id, active: true, source: 'overflow' }),
+  );
+});
