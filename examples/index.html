@@ -41,6 +41,17 @@
     <main id="view-root"></main>
   </sherpa-app-shell>
 
+  <!--
+    THE BELL'S LIST. Outside the app shell on purpose: its menu is a popover in
+    the TOP LAYER, so it needs no place in the layout — and every one of the
+    header's slots is NAMED, so an unslotted child put inside it is never
+    projected and gets no layout at all.
+
+    Fed by a DataSource in the script below, so the list and the badge are two
+    views of one set of records rather than two things to keep in step.
+  -->
+  <sherpa-notifications id="notifications"></sherpa-notifications>
+
   <!-- The ASSISTANT, as a right-pinned overlay over the content.
 
        sherpa-overlay-panel is already a right-hand floating panel — a <dialog>
@@ -59,7 +70,7 @@
                         data-dismissible></sherpa-overlay-panel>
 
   <script type="module">
-    import { installIcons } from '../dist/index.js';
+    import { installIcons, ArrayStore, DataSource } from '../dist/index.js';
 
     // Font Awesome must be in the DOCUMENT too, not just adopted into shadow roots:
     // the class rules reach shadow DOM via sharedStyles, but the @font-face — and any
@@ -192,6 +203,70 @@
     // ── Populate the shared nav once. ──────────────────────────────────
     await customElements.whenDefined('sherpa-nav');
     nav.populate(navConfig);
+
+    /* ── Notifications, through the data layer ────────────────────────
+       The bell's badge and the list are TWO VIEWS OF ONE SET, not two things to
+       keep in step. An ArrayStore stands in for the live feed here; swapping it
+       for a SocketStore is the only change a real app makes:
+
+         const feed = new SocketStore({ url: 'wss://…/notifications' });
+         const notifications = new DataSource({ store: feed });
+         feed.connect();
+
+       …and every push then redraws both, with nothing else to wire. */
+    const notificationFeed = new ArrayStore([
+      { id: 'n1', title: 'Northwind renewed', description: 'Enterprise, 3 years',
+        icon: 'fa-solid fa-circle-check', time: '2m ago', unread: true },
+      { id: 'n2', title: 'Contoso payment failed', description: 'Card declined',
+        icon: 'fa-solid fa-triangle-exclamation', time: '1h ago', unread: true },
+      { id: 'n3', title: 'Fabrikam raised a ticket', description: 'Priority: high',
+        icon: 'fa-solid fa-ticket', time: '3h ago', unread: true },
+      { id: 'n4', title: 'Tailspin trial ends Friday', description: '14-day trial',
+        icon: 'fa-solid fa-hourglass-half', time: 'Yesterday', unread: true },
+      { id: 'n5', title: 'Weekly report ready', description: 'Revenue and churn',
+        icon: 'fa-solid fa-chart-line', time: '2d ago' },
+    ], { key: 'id' });
+
+    const notificationSource = new DataSource({ store: notificationFeed });
+    const notifications = document.getElementById('notifications');
+    // Its own reference: the `header` further up is local to the view loader.
+    const appHeader = document.querySelector('sherpa-app-header');
+
+    // The LIST is bound. Rows in, and its own events out.
+    notificationSource.bind(notifications);
+
+    // The BADGE is derived from the SOURCE's own rows, not from the component's.
+    // The list fills itself through populate(), which waits for its first render
+    // — so reading the component here counted an empty list on the first pass
+    // and the badge never appeared. The source has the records the moment they
+    // load, which is also the honest thing to summarise: the badge and the list
+    // are two views of ONE set, and this is that set.
+    const syncBadge = () => {
+      const unread = notificationSource.rows.filter((n) => n.unread).length;
+      if (unread > 0) appHeader.setAttribute('data-notifications', String(unread));
+      else appHeader.removeAttribute('data-notifications');
+    };
+    notificationSource.addEventListener('change', syncBadge);
+
+    // The bell opens the list, anchored to itself.
+    appHeader.addEventListener('notifications-open', () => {
+      notifications.toggle(appHeader.shadowRoot?.querySelector('.notif-btn') ?? appHeader);
+    });
+
+    // "Mark all read" persists through the STORE, which is what makes the badge
+    // follow: the list marked itself immediately, and this records it so a
+    // reload does not bring the pips back.
+    notifications.addEventListener('notification-read', async (e) => {
+      for (const id of e.detail.ids) await notificationFeed.update(id, { unread: false });
+      syncBadge();
+    });
+
+    notifications.addEventListener('notification-click', (e) => {
+      notificationFeed.update(e.detail.id, { unread: false }).then(syncBadge);
+      notifications.hide();
+    });
+
+    notificationSource.load().then(syncBadge);
 
     // The Views nav rows render as real <a href="?view=…"> links (right-clickable,
     // deep-linkable). Intercept the click so we swap in-page instead of a full

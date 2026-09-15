@@ -300,6 +300,25 @@
     are `data-type="range"` and `data-has-time` on this element, which the chip
     definition sets — not a second template.
   -->
+  <!--
+    A FOLDED TOGGLE — a boolean chip's row in the overflow menu.
+
+    A chip with no `options` has nothing to drill into: it is on or off. It used
+    to get the same drill row every other folded filter does, so it wore a
+    chevron, looked like a parent, and did NOTHING when clicked — the drill
+    handler needs the chip's own menu and a boolean chip has none.
+
+    It is the SAME label+checkbox shape as a value row, because that is exactly
+    what it is: one value you can tick. The tick mirrors the chip's own on/off
+    state, so the menu and the bar can never disagree.
+  -->
+  <template class="qf-toggle-tpl">
+    <label class="qf-toggle">
+      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
+      <span class="qf-toggle-label"></span>
+    </label>
+  </template>
+
   <template class="qf-calendar-tpl">
     <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
   </template>

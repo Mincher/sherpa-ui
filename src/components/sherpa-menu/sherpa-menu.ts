@@ -256,10 +256,15 @@ export class SherpaMenu extends SherpaElement {
    * would commit it as a picked value, and the count badge would be one too
    * high with everything ticked.
    */
+  // The rows that carry a VALUE. Two checkbox shapes in a filter menu are not
+  // values and must not be counted as ones:
+  //   .qf-all     Select all — a control over the set, not a member of it
+  //   .qf-toggle  a folded BOOLEAN filter — it stands for a whole chip, and is
+  //               reported by the toolbar rather than as a value of this menu
   #inputs(): HTMLInputElement[] {
     return Array.from(
       this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
-    ).filter((i) => !i.closest('.qf-all'));
+    ).filter((i) => !i.closest('.qf-all, .qf-toggle'));
   }
 
   /**

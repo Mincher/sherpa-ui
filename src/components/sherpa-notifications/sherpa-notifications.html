@@ -1,0 +1,56 @@
+<!--
+  sherpa-notifications — the bell's list.
+
+  A composed <sherpa-menu> of <sherpa-list-item> rows. Nothing here is drawn by
+  hand: the menu owns the card, its placement and its dismissal; the list item
+  owns a row's box, its hover and its keyboard activation; the tag owns the
+  unread pip. This component owns only which notifications there are and what
+  happens when one is clicked.
+
+  populate([{ id, title, description?, icon?, time?, unread? }])
+
+  It is a real Store consumer, so a DataSource can bind it — which is the point:
+  a SocketStore or an EventStore pushes, and the list is right without anyone
+  refreshing.
+
+  Public API:
+    data-empty-text   what to say when there is nothing (default "No notifications")
+
+  Fires:
+    notification-click — a row was activated. detail: { id, notification }
+    notification-read  — "Mark all read" was pressed. detail: { ids }
+-->
+<template id="default">
+  <sherpa-menu class="menu" part="menu" data-heading="Notifications">
+    <!--
+      MARK ALL READ, in the menu's own header slot beside the heading. A footer
+      button would sit below a list that scrolls, and the action belongs to the
+      whole list rather than to its end.
+    -->
+    <span class="head" slot="header">
+      <sherpa-button class="read-all" part="read-all" data-look="transparent"
+                     data-size="xs">Mark all read</sherpa-button>
+    </span>
+  </sherpa-menu>
+
+  <!--
+    ONE NOTIFICATION. A composed list item: its `leading` slot takes the icon and
+    its `trailing` slot the time and the unread pip.
+
+    `data-interactive` is what makes it a real button — keyboard-reachable and
+    Enter/Space-activatable — rather than a div with a click listener.
+  -->
+  <template class="notification-tpl">
+    <sherpa-list-item class="notification" data-interactive>
+      <i class="notification-icon" slot="leading" aria-hidden="true"></i>
+      <span class="notification-time" slot="trailing"></span>
+      <span class="notification-pip" slot="trailing" aria-hidden="true"></span>
+    </sherpa-list-item>
+  </template>
+
+  <!-- Shown when the list is empty. A menu with nothing in it reads as broken
+       rather than as "you are up to date". -->
+  <template class="empty-tpl">
+    <p class="empty" role="status"></p>
+  </template>
+</template>

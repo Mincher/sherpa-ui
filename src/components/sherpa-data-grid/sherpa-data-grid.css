@@ -401,6 +401,46 @@
      label 14px short of a sortable column's and the headings would not line up. */
   &[data-sortable="false"] .sort-icon { display: none; }
 }
+/* ── A FILTERED column's header — Style mode `active` ────────────────
+ * A filter narrows what the grid shows, and the filter box itself scrolls out
+ * of sight the moment the user looks down the table. The heading is what stays
+ * on screen (it is sticky), so the heading has to say "this column is doing
+ * something to what you can see".
+ *
+ * `active` is the Style collection's own mode for exactly this — the brand
+ * tint the quick-filter toolbar's favourite star uses — so this reuses it
+ * rather than inventing a grid-only highlight colour.
+ *
+ * WRITTEN OUT HERE, not left to the [data-status="active"] block in tokens.css:
+ * that block is a BARE selector in a document stylesheet, so it matches light
+ * DOM only and never a <th> inside this component's shadow root. Setting the
+ * attribute alone paints nothing. Feeding the --_status-* properties directly
+ * is what makes the cascade work — custom properties DO cross a shadow
+ * boundary, so any nested component in the cell picks the same mode up.
+ *
+ * The attribute is the SAME `data-status` the rest of the system uses, so a
+ * host that later wants a different mode on a column writes the same door. */
+:is(.head-cell, .filter-cell)[data-status="active"] {
+  --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
+  --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
+  --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
+
+  background: var(--_status-surface);
+  color: var(--_status-text);
+}
+
+/* The label and the sort glyph both take the active ink. Without this the
+   glyph keeps its own body-colour rule above (a later, equally specific rule
+   wins) and a filtered column's arrow would stay grey on the tinted fill. */
+.head-cell[data-status="active"] {
+  .head-label,
+  .sort-icon { color: var(--_status-text); }
+}
+
+/* The rule under a filtered heading takes the mode's border too, so the tinted
+   block reads as one piece rather than a fill with a stray grey line under it. */
+.head-cell[data-status="active"] { border-block-end-color: var(--_status-border); }
+
 /* ── Column widths + the resize grip ─────────────────────────────────
  * A column is drawn at the width its <col> carries, so its content has to fold
  * back into that box. Both the header label and the body cells clip with an

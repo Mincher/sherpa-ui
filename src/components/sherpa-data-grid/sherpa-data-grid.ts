@@ -9,7 +9,10 @@
  *   • data-selectable adds a leading checkbox column (a select-all in the header
  *     and a checkbox per row); toggling emits selection-change.
  *   • data-filterable adds a secondary header row of per-column filter inputs;
- *     typing emits filter-change.
+ *     typing emits filter-change. A column a filter is narrowing takes the Style
+ *     `active` mode (data-status="active") on BOTH its heading and its filter
+ *     cell — the heading is sticky, so it is what still says so after the filter
+ *     row has scrolled away.
  * Both are CSS-gated — the columns/rows exist in the template always and only JS
  * behaviour (selection tracking, filter dispatch) lives here.
  *
@@ -17,7 +20,9 @@
  * in that column and each bunch gets a collapsible group row on top (Figma Grid
  * Cell Type=group) carrying that value as its label. The grouped column drops out
  * of the header and the body — its value IS the heading, so repeating it in every
- * row below would be noise.
+ * row below would be noise. Groups run A→Z and data-sort-field orders the rows
+ * WITHIN each group — unless the two name the SAME column, in which case
+ * data-sort-direction orders the GROUPS.
  *
  * @element sherpa-data-grid
  * @attr {enum}    data-sort-field      current sort column field
@@ -342,8 +347,13 @@ export class SherpaDataGrid extends SherpaElement {
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
-      const active = sortable && col.field === sortField;
-      if (active) th.dataset['sort'] = sortDir ?? 'asc';
+      const sorted = sortable && col.field === sortField;
+      if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
+      // A column that is ORDERING or NARROWING what the user can see takes the
+      // Style `active` mode. Both are the column acting on the view, so both
+      // read the same — one highlight, not two rival ones. The heading is
+      // sticky, so it keeps saying so after the filter row has scrolled away.
+      if (sorted || this.#filters.has(col.field)) th.dataset['status'] = 'active';
 
       // THE SORT GLYPH — a tri-state, from the shared map.
       //
@@ -355,7 +365,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (icon) {
         const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
         icon.className = sortable
-          ? `sort-icon ${!active ? sortNone : (sortDir === 'desc' ? sortDesc : sortAsc)}`
+          ? `sort-icon ${!sorted ? sortNone : (sortDir === 'desc' ? sortDesc : sortAsc)}`
           : 'sort-icon';
       }
       headRow.appendChild(th);
@@ -388,6 +398,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (this.#filters.has(col.field)) {
         input.value = this.#filters.get(col.field) ?? '';
         th.toggleAttribute('data-has-value', true);
+        th.dataset['status'] = 'active';
       }
       filterRow.appendChild(th);
     });
@@ -560,9 +571,17 @@ export class SherpaDataGrid extends SherpaElement {
     // one pass: rows sharing a group value are guaranteed adjacent, so a change of
     // value is exactly a group boundary. The sort column then orders rows WITHIN
     // their group.
+    //
+    // Groups normally run A→Z whatever the sort column does — the sort orders rows
+    // INSIDE a group, not the groups themselves. The exception is sorting BY the
+    // grouped column: there the two are the same key, so the direction the user
+    // asked for is a direction for the GROUPS, and honouring it is the whole point
+    // of the click. The second compare is then a no-op (equal keys) and is skipped.
+    const groupDir = group && group === field ? dir : 1;
     return [...rows].sort(
       (a, b) =>
-        (group ? compare(a, b, group, 1) : 0) || (field ? compare(a, b, field, dir) : 0),
+        (group ? compare(a, b, group, groupDir) : 0) ||
+        (field && field !== group ? compare(a, b, field, dir) : 0),
     );
   }
 
@@ -876,6 +895,20 @@ export class SherpaDataGrid extends SherpaElement {
   };
 
   /**
+   * Flag (or unflag) one column's header + filter cell as filtered.
+   *
+   * `data-status` is the system-wide door for a Style mode, so a host reading
+   * the shadow DOM sees the same attribute it would on any other component.
+   */
+  #markFiltered(field: string, on: boolean): void {
+    for (const cell of this.$$(`.head-cell[data-field], .filter-cell[data-field]`)) {
+      if ((cell as HTMLElement).dataset['field'] !== field) continue;
+      if (on) (cell as HTMLElement).dataset['status'] = 'active';
+      else delete (cell as HTMLElement).dataset['status'];
+    }
+  }
+
+  /**
    * Record one column's filter text and redraw the body.
    *
    * The needle is lower-cased ONCE here rather than per row in the match loop —
@@ -893,6 +926,12 @@ export class SherpaDataGrid extends SherpaElement {
 
     // CSS shows the clear button off this flag — JS never touches `display`.
     cell?.toggleAttribute('data-has-value', value.length > 0);
+    // The heading and the filter cell take the Style `active` mode while the
+    // column is narrowing the view. Set on BOTH: the header row is sticky and
+    // stays on screen once the filter row has scrolled away, which is exactly
+    // when the user needs telling. The whole-row rebuild in #renderHead does
+    // the same from #filters, so a sort or a re-render keeps the tint.
+    this.#markFiltered(field, needle.length > 0);
 
     this.#renderBody();
     // "No matches" is NOT data-empty: that hides the whole <table>, which would

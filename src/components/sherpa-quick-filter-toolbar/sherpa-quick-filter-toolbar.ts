@@ -322,13 +322,36 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.replaceChildren();
 
     for (const source of folded) {
+      const id = source.dataset['id'] ?? '';
+      const label = source.dataset['label'] ?? id;
+
+      // A BOOLEAN chip — one with no menu of its own — is on or off, so it has
+      // nothing to drill into. It gets a TICKABLE row, the same label+checkbox
+      // shape a value row has, rather than a drill row that wears a chevron,
+      // reads as a parent and does nothing when clicked.
+      if (!source.querySelector('sherpa-menu')) {
+        const toggle = this.clone('template.qf-toggle-tpl');
+        if (!toggle) continue;
+        toggle.dataset['for'] = id;
+        const box = toggle.querySelector<HTMLInputElement>('input');
+        const text = toggle.querySelector('.qf-toggle-label');
+        if (text) text.textContent = label;
+        // The tick MIRRORS the chip, so the menu and the bar cannot disagree.
+        if (box) box.checked = source.hasAttribute('data-current');
+        // Bound to the BOX, not to the toolbar: a native `change` is not
+        // composed, so it stops at the menu and never reaches a listener on the
+        // host. The row is stamped here and lives as long as the fold does.
+        box?.addEventListener('change', this.#onFoldedToggle);
+        menu.appendChild(toggle);
+        continue;
+      }
+
       const row = this.clone('template.qf-folded-tpl');
       if (!row) continue;
-      const id = source.dataset['id'] ?? '';
       row.dataset['for'] = id;
       // The list item names itself from data-label — the component's own API,
       // so there is no inner element for this to reach into.
-      row.dataset['label'] = source.dataset['label'] ?? id;
+      row.dataset['label'] = label;
       const glyph = source.dataset['iconStart'];
       if (glyph) row.dataset['icon'] = glyph;
 
@@ -362,6 +385,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       badge.hidden = count === 0;
     }
   }
+
+  /**
+   * A folded TOGGLE was ticked — flip the chip it stands for.
+   *
+   * The chip is the source of truth: setting `data-current` on it and letting it
+   * announce the change is what every other path does, so a filter folded into
+   * the overflow behaves exactly as it does on the bar. Ticking the row does not
+   * set the chip directly — it asks the chip to toggle, the same as clicking it.
+   */
+  #onFoldedToggle = (event: Event): void => {
+    const box = event.target;
+    if (!(box instanceof HTMLInputElement)) return;
+    const row = box.closest('.qf-toggle');
+    if (!(row instanceof HTMLElement)) return;
+    const id = row.dataset['for'];
+    const chip = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
+    if (!chip) return;
+    // Mirror onto the chip and let IT tell the host, so a folded toggle and a
+    // bar toggle are the same event to a listener.
+    if (box.checked) chip.setAttribute('data-current', '');
+    else chip.removeAttribute('data-current');
+    this.emit('quick-filter-change', {
+      id, active: box.checked, values: [], source: 'overflow',
+    });
+  };
 
   /**
    * Where a DRILLED-IN menu's rows came from, so Back can put them home.
@@ -400,6 +448,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #onFoldedClick = (event: Event): void => {
     const path = event.composedPath();
+
+    // A FOLDED TOGGLE ticks in place — it has no menu to drill into. Let the
+    // click through so the checkbox flips natively; the chip follows on `change`
+    // (see #onFoldedToggle). Stopping it here would leave the box unticked.
+    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('qf-toggle'))) return;
 
     // composedPath, because the click starts on the list item's own inner
     // <button> — inside ITS shadow root — so `target` is the host and `closest`

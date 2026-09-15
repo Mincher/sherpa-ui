@@ -1,0 +1,86 @@
+/**
+ * sherpa-notifications.css
+ *
+ * Almost nothing. The menu owns the card, the list item owns a row, the button
+ * owns itself — what is left is the unread treatment, the time, and the empty
+ * line. A component that composes should have a short stylesheet; a long one
+ * means it is re-drawing something it was handed.
+ */
+
+/* The host holds only the menu, which is a popover in the top layer — so it must
+   take no room beside the bell it belongs to.
+
+   NOT `display: contents`, which removes the host from the box tree entirely
+   and takes its shadow content with it: the popover then had no layout at all
+   and measured 0x0, so its own placement put it at the viewport corner. Parked
+   out of flow at zero size instead, which costs nothing and keeps the card real. */
+:host {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+}
+
+/* The header's action, pushed to the trailing edge of the menu's heading row. */
+.head {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+/* ── One notification ──────────────────────────────────────────────── */
+
+.notification {
+  display: block;
+}
+
+/* The leading glyph. Sized with the text beside it, per the system's rule that
+   an icon is the same size as its text. */
+.notification-icon {
+  font-size: var(--sherpa-theme-size-icon-xs, 14px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+/* When it arrived. Quieter than the title, because it is context rather than
+   the thing itself. */
+.notification-time {
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  white-space: nowrap;
+}
+
+/* ── Unread ────────────────────────────────────────────────────────── */
+
+/* The pip. A filled dot in the ACTIVE brand, the same colour a picked chip
+   wears — "this one wants you" reads as the same kind of state. */
+.notification-pip { display: none; }
+[data-unread] .notification-pip {
+  display: inline-block;
+  flex: 0 0 auto;
+  inline-size: var(--sherpa-display-mode-size-2xs, 8px);
+  block-size: var(--sherpa-display-mode-size-2xs, 8px);
+  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
+  background: var(--sherpa-theme-border-active-2, #c046ff);
+}
+
+/* An unread row's TITLE carries the weight, so the list is scannable without
+   reading it — the pip confirms, the weight is what the eye catches.
+   The icon goes darker for the same reason. */
+[data-unread] .notification-icon {
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+}
+
+/* ── Empty ─────────────────────────────────────────────────────────── */
+
+.empty {
+  margin: 0;
+  padding: var(--sherpa-theme-padding-md, 8px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  text-align: center;
+}
+
+/* Nothing to mark when there is nothing there. */
+:host([data-empty]) .read-all { display: none; }

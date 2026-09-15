@@ -276,6 +276,85 @@ test('typing in a filter narrows rows to substring matches in THAT column', asyn
   expect(last['filters']).toEqual({ spend: '80' });
 });
 
+test('a filtered column takes the Style `active` mode on its HEADER', async ({ page }) => {
+  // A filter narrows what the grid shows, and the filter box scrolls away the
+  // moment the user reads down the table. The sticky HEADING is what stays, so
+  // the heading carries the tint. `active` is the Style collection's own mode
+  // for this, the same one the quick-filter toolbar's favourite star uses.
+  await installBuilder(page);
+  const r = await page.evaluate(async (config) => {
+    const el = await window.__buildGrid(config);
+    const sr = el.shadowRoot!;
+    const type = async (field: string, value: string): Promise<void> => {
+      const input = sr
+        .querySelector(`.filter-cell[data-field="${field}"]`)!
+        .querySelector<HTMLInputElement>('.filter-input')!;
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    };
+    const status = (): Record<string, (string | null)[]> => ({
+      heads: Array.from(sr.querySelectorAll<HTMLElement>('.head-cell')).map(
+        (th) => th.dataset['status'] ?? null,
+      ),
+      filters: Array.from(sr.querySelectorAll<HTMLElement>('.filter-cell')).map(
+        (th) => th.dataset['status'] ?? null,
+      ),
+    });
+    const head = (field: string): HTMLElement =>
+      sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
+    // The tint has to be a real painted colour, not just an attribute — the
+    // [data-status] block in tokens.css is a DOCUMENT rule and cannot reach
+    // inside this shadow root, so the component must feed --_status-* itself.
+    const paint = (field: string) => {
+      const th = head(field);
+      const cs = getComputedStyle(th);
+      return {
+        background: cs.backgroundColor,
+        label: getComputedStyle(th.querySelector('.head-label')!).color,
+      };
+    };
+
+    const clean = { ...status(), paint: paint('name') };
+
+    await type('name', 'ar');
+    const filtered = { ...status(), paint: paint('name'), other: paint('status') };
+
+    // A SORT rebuilds the whole header row — the tint must survive it.
+    el.dataset['sortField'] = 'spend';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const afterSort = status();
+
+    // Clearing the field takes the mode straight back off.
+    await type('name', '');
+    const cleared = { ...status(), paint: paint('name') };
+
+    return { clean, filtered, afterSort, cleared };
+  }, FILTER_CONFIG);
+
+  // Nothing filtered: no column carries the mode.
+  expect(r.clean.heads.every((v) => v === null)).toBe(true);
+  expect(r.clean.filters.every((v) => v === null)).toBe(true);
+
+  // Exactly ONE column takes it — the one being filtered, on both its rows.
+  expect(r.filtered.heads.filter((v) => v === 'active')).toHaveLength(1);
+  expect(r.filtered.filters.filter((v) => v === 'active')).toHaveLength(1);
+
+  // And it is actually PAINTED, not merely flagged.
+  expect(r.filtered.paint.background).not.toBe(r.clean.paint.background);
+  expect(r.filtered.paint.label).not.toBe(r.clean.paint.label);
+  // An untouched column is left alone.
+  expect(r.filtered.other.background).toBe(r.clean.paint.background);
+
+  // A header rebuild (here: a sort) keeps it.
+  expect(r.afterSort.heads.filter((v) => v === 'active')).toHaveLength(1);
+
+  // Clearing the filter clears the mode and the paint with it.
+  expect(r.cleared.heads.every((v) => v === null)).toBe(true);
+  expect(r.cleared.filters.every((v) => v === null)).toBe(true);
+  expect(r.cleared.paint.background).toBe(r.clean.paint.background);
+});
+
 test('a populated filter shows a clear button that empties only its own column', async ({ page }) => {
   await installBuilder(page);
   const r = await page.evaluate(async (config) => {
@@ -547,6 +626,76 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
   // Un-grouping restores the column without re-populating.
   expect(r.ungrouped.headers).toEqual(['Name', 'Team']);
   expect(r.ungrouped.groups).toBe(0);
+});
+
+test('sorting BY the grouped column turns the group order around', async ({ page }) => {
+  // Group and sort on the SAME column and the two keys are one key: the direction
+  // the user asked for is a direction for the GROUPS. Sorting by a DIFFERENT
+  // column leaves the groups A-Z and only orders the rows inside each one.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'team', header: 'Team' },
+      ],
+      rows: [
+        { name: 'Ana', team: 'Blue' },
+        { name: 'Bo', team: 'Red' },
+        { name: 'Cy', team: 'Blue' },
+        { name: 'Di', team: 'Green' },
+      ],
+    });
+    el.dataset['groupField'] = 'team';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const groups = () =>
+      Array.from(sr.querySelectorAll('.group-label')).map((g) => g.textContent);
+    // children[0] is the (CSS-hidden) selection cell, which is always in the DOM.
+    const names = () =>
+      Array.from(sr.querySelectorAll('.row')).map((row) => row.children[1]!.textContent?.trim());
+
+    const plain = groups();
+
+    // Sort by the grouped column, descending.
+    el.dataset['sortField'] = 'team';
+    el.dataset['sortDirection'] = 'desc';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const desc = { groups: groups(), names: names() };
+
+    // ...and ascending again.
+    el.dataset['sortDirection'] = 'asc';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const asc = groups();
+
+    // A DIFFERENT sort column must not touch the group order.
+    el.dataset['sortField'] = 'name';
+    el.dataset['sortDirection'] = 'desc';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const other = { groups: groups(), names: names() };
+
+    return { plain, desc, asc, other };
+  });
+
+  // No sort at all: groups run A-Z.
+  expect(r.plain).toEqual(['Blue', 'Green', 'Red']);
+
+  // Sorting by the grouped column descending reverses the GROUPS.
+  expect(r.desc.groups).toEqual(['Red', 'Green', 'Blue']);
+  // Every row still sits under its own group heading.
+  expect(r.desc.names).toEqual(['Bo', 'Di', 'Ana', 'Cy']);
+
+  expect(r.asc).toEqual(['Blue', 'Green', 'Red']);
+
+  // Sorting by another column: groups stay A-Z, rows flip INSIDE their group.
+  expect(r.other.groups).toEqual(['Blue', 'Green', 'Red']);
+  expect(r.other.names).toEqual(['Cy', 'Ana', 'Di', 'Bo']);
 });
 
 test('a group checkbox selects every row in that group', async ({ page }) => {
