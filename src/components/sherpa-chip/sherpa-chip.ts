@@ -12,7 +12,10 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaChip extends SherpaElement {
   static override css = new URL('./sherpa-chip.css', import.meta.url);
   static override html = new URL('./sherpa-chip.html', import.meta.url);
-  static override observed = ['data-icon'];
+  /** data-icon is a glyph string; CSS `:host(:not([data-icon]))` gates visibility. */
+  static override props = {
+    'data-icon': { type: 'string', kind: 'content', to: '.glyph' },
+  } as const;
 
   /** The dismissible template adds the close button; default is a plain chip. */
   protected override get templateId(): string | null {
@@ -20,18 +23,7 @@ export class SherpaChip extends SherpaElement {
   }
 
   override onRender(): void {
-    this.#syncIcon();
     this.$('.close')?.addEventListener('click', this.#onRemove);
-  }
-
-  override onChange(name: string): void {
-    if (name === 'data-icon') this.#syncIcon();
-  }
-
-  /** data-icon is a glyph string; CSS `:host(:not([data-icon]))` gates visibility. */
-  #syncIcon(): void {
-    const glyph = this.$('.glyph');
-    if (glyph) glyph.textContent = this.dataset['icon'] ?? '';
   }
 
   #onRemove = (event: Event): void => {

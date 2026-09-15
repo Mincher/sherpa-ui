@@ -37,7 +37,14 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
-  static override observed = ['data-icon', 'data-title', 'data-collapsed', 'open'];
+  static override props = {
+    'data-title': { type: 'string', kind: 'content', to: '.title' },
+    // CSS-only: `:host([data-icon]) .icon` reveals the icon area. Declared so the
+    // attribute is typed and observable; no JS writes it.
+    'data-icon': { type: 'string', kind: 'visibility' },
+  } as const;
+
+  static override observed = ['data-collapsed', 'open'];
 
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
@@ -46,7 +53,6 @@ export class SherpaOverlayPanel extends SherpaElement {
   override onRender(): void {
     const dialog = this.#dialog();
     if (!dialog) return;
-    this.#syncTitle();
     this.#syncCollapsed();
     if (this.hasAttribute('open')) dialog.show();
     dialog.addEventListener('close', this.#onClose);
@@ -57,8 +63,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-title') this.#syncTitle();
-    else if (name === 'data-collapsed') this.#syncCollapsed();
+    if (name === 'data-collapsed') this.#syncCollapsed();
     else if (name === 'open') {
       if (this.hasAttribute('open')) this.show();
       else this.close();
@@ -90,11 +95,6 @@ export class SherpaOverlayPanel extends SherpaElement {
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
-
-  #syncTitle(): void {
-    const label = this.$('.title');
-    if (label) label.textContent = this.dataset.title ?? '';
-  }
 
   #syncCollapsed(): void {
     const collapsed = this.hasAttribute('data-collapsed');

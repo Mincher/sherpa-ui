@@ -48,12 +48,17 @@ export class SherpaContainerHeader extends SherpaElement {
   static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-container-header.css', import.meta.url);
   static override html = new URL('./sherpa-container-header.html', import.meta.url);
-  static override observed = ['data-heading', 'data-description', 'data-icon', 'data-collapsed'];
+  static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    // `skipWhen`: a SLOTTED icon wins over the data-icon glyph, so the write is
+    // skipped when the consumer has projected something into the icon span.
+    'data-icon': { type: 'string', kind: 'content', to: '.icon', skipWhen: '[slot]' },
+  } as const;
+
+  static override observed = ['data-collapsed'];
 
   override onRender(): void {
-    this.#syncTitle();
-    this.#syncDescription();
-    this.#syncIcon();
     this.#syncCollapsed();
     this.$('.close')?.addEventListener('click', this.#onDismiss);
     this.$('.toggle')?.addEventListener('click', this.#onToggle);
@@ -61,26 +66,8 @@ export class SherpaContainerHeader extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncTitle();
-    else if (name === 'data-description') this.#syncDescription();
-    else if (name === 'data-icon') this.#syncIcon();
-    else if (name === 'data-collapsed') this.#syncCollapsed();
-  }
-
-  #syncTitle(): void {
-    const el = this.$('.title');
-    if (el) el.textContent = this.dataset['heading'] ?? '';
-  }
-
-  #syncDescription(): void {
-    const el = this.$('.description');
-    if (el) el.textContent = this.dataset['description'] ?? '';
-  }
-
-  /** A glyph in data-icon renders into the icon span (a slotted icon wins). */
-  #syncIcon(): void {
-    const el = this.$('.icon');
-    if (el && !el.querySelector('[slot]')) el.textContent = this.dataset['icon'] ?? '';
+    // Text is written by the declared props; this mirrors STATE onto aria-expanded.
+    if (name === 'data-collapsed') this.#syncCollapsed();
   }
 
   /** Reflect collapsed onto the toggle's aria-expanded / label. */

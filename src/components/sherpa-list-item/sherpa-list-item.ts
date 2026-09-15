@@ -31,15 +31,25 @@ export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
-  static override observed = ['data-label', 'data-heading', 'data-description', 'data-icon', 'data-expanded', 'data-selected'];
+  static override props = {
+    // `all`: the title and description appear TWICE in the template — once inside
+    // the <button> and once in the static content span — so both must be written.
+    // `fallbackAttr`: data-heading is the legacy alias for data-label.
+    'data-label': { type: 'string', kind: 'content', to: '.title', all: true, fallbackAttr: 'data-heading' },
+    'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
+    'data-icon': { type: 'string', kind: 'content', to: '.icon' },
+  } as const;
 
-  /** Prefer data-label; fall back to the legacy data-heading alias. */
+  static override observed = ['data-expanded', 'data-selected'];
+
+  /**
+   * The label as the click event reports it — the same data-label → data-heading
+   * chain the declared prop above uses. Kept because the EVENT carries the text,
+   * not just the DOM.
+   */
   #labelText(): string { return this.dataset['label'] ?? this.dataset['heading'] ?? ''; }
 
   override onRender(): void {
-    this.#syncLabel();
-    this.#syncDescription();
-    this.#syncIcon();
     this.#syncSelected();
     this.#syncExpanded();
     this.addEventListener('click', this.#onClick);
@@ -49,10 +59,9 @@ export class SherpaListItem extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-heading') this.#syncLabel();
-    else if (name === 'data-description') this.#syncDescription();
-    else if (name === 'data-icon') this.#syncIcon();
-    else if (name === 'data-expanded') this.#syncExpanded();
+    // Text is written by the declared props above; these two mirror STATE onto a
+    // native control and an aria value, which is not a textContent write.
+    if (name === 'data-expanded') this.#syncExpanded();
     else if (name === 'data-selected') this.#syncSelected();
   }
 
@@ -65,20 +74,6 @@ export class SherpaListItem extends SherpaElement {
   set selected(v: boolean) { this.toggleAttribute('data-selected', v); }
 
   /* ── Sync ─────────────────────────────────────────────────────── */
-
-  // Title/description appear in both the <button> and the static content span.
-  #syncLabel(): void {
-    for (const el of this.$$('.title')) el.textContent = this.#labelText();
-  }
-
-  #syncDescription(): void {
-    for (const el of this.$$('.description')) el.textContent = this.dataset['description'] ?? '';
-  }
-
-  #syncIcon(): void {
-    const el = this.$('.icon');
-    if (el) el.textContent = this.dataset['icon'] ?? '';
-  }
 
   /** Keep the native checkbox checked-state in sync with data-selected. */
   #syncSelected(): void {
