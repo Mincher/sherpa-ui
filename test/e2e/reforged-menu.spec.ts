@@ -409,10 +409,16 @@ test('data-type="calendar" is a MENU variant: wider card, horizontal list region
       }
       document.getElementById('root')!.appendChild(menu);
       await menu.rendered;
+      // OPEN it before measuring. A closed popover is `display: none`, so the
+      // card has no laid-out box — and the declared width is no longer a plain
+      // number to read back: the card is `max-content` with a 240 floor, so a
+      // menu grows for a footer whose buttons keep their own widths.
+      (menu as unknown as { show(): void }).show();
+      await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
       const card = menu.shadowRoot!.querySelector('.menu') as HTMLElement;
       const rows = menu.shadowRoot!.querySelector('.rows') as HTMLElement;
       return {
-        width: getComputedStyle(card).inlineSize,
+        width: Math.round(card.getBoundingClientRect().width),
         direction: getComputedStyle(rows).flexDirection,
       };
     };
@@ -423,10 +429,15 @@ test('data-type="calendar" is a MENU variant: wider card, horizontal list region
   // `Type = List | Calendar`. Both share the card — gap, padding, three slots —
   // and differ in exactly two things:
   //
-  //   the WIDTH: List is a fixed 240; Calendar hugs, because it holds a
-  //   7-column grid and optionally a time picker beside it.
-  expect(r.list.width).toBe('240px');
-  expect(r.calendar.width).not.toBe('240px');
+  //   the WIDTH: a List menu draws at the node's 240. That is a FLOOR, not a
+  //   fixed size — a menu grows to fit a footer whose buttons keep their own
+  //   widths — so this reads the laid-out box, not the declared value.
+  //   A Calendar drops the floor and HUGS: it holds a 7-column grid and
+  //   optionally a time picker, and one with no time picker should be narrower
+  //   rather than half empty. With no calendar slotted it hugs to well under 240.
+  expect(r.list.width).toBe(240);
+  expect(r.calendar.width).not.toBe(240);
+  expect(r.calendar.width).toBeLessThan(240);
 
   //   the LIST AXIS: a calendar lays its regions out side by side.
   expect(r.list.direction).toBe('column');

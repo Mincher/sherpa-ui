@@ -43,6 +43,16 @@
     var(--sherpa-style-border-base-1, #35353d);
 }
 
+/* A slotted control keeps its OWN width. A flex item shrinks below its content
+   by default, and a "Remove filter" button whose natural width is 125px was
+   being squeezed to 93 in a 240px menu — the label truncated and the row still
+   claimed to fit. The footer is an actions row: the actions are the content, so
+   the row grows and the container around it grows with it.
+
+   `stretch` overrides this below, which is the one case where a control is meant
+   to take the space rather than state it. */
+.row ::slotted(*) { flex: 0 0 auto; }
+
 /* ── Alignment ────────────────────────────────────────────────────────── */
 :host([data-align="start"]) .row { justify-content: flex-start; }
 :host([data-align="end"]) .row { justify-content: flex-end; }

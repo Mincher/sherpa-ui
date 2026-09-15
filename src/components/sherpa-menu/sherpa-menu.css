@@ -47,7 +47,19 @@
   inset-block-start: var(--_y, 0px);
   inset-inline-start: var(--_x, 0px);
   margin: 0;
-  inline-size: 240px;
+  /* 240 is the Menu node's width, and the FLOOR rather than the fixed size: the
+     footer is an actions row whose buttons keep their own widths, so a menu that
+     shows Remove + Cancel + Apply needs more than 240 and must take it. Fixed at
+     240, the row overflowed and "Remove filter" was squeezed from 125px to 93
+     with its label truncated.
+
+     `max-content` is the width the content actually asks for; `min-inline-size`
+     holds the node's 240 for every ordinary menu, so nothing narrower than the
+     design appears. The cap is the viewport, less the 8px gutter the popover
+     needs at either edge. */
+  inline-size: max-content;
+  min-inline-size: 240px;
+  max-inline-size: calc(100vw - 16px);
   /* --_max-h is the room actually left between the trigger and the viewport edge,
      measured by #place(). A flat 60vh let a long list (a Sort menu offers two rows
      per column) run off the bottom of the screen, taking the Apply/Cancel footer
@@ -405,13 +417,11 @@
      grid, which is the tell. A calendar with no time picker should be narrower
      rather than half empty, so the card is sized by what it holds.
 
-     `max-content` alone sized the card to the GRID and let the footer overflow:
-     Today + Remove filter + Cancel + Apply is wider than a 224 day grid, so the
-     row was clipped at the card's edge. `fit-content` with a floor of the
-     footer's own content width lets the card grow to whichever region is wider
-     — the grid, or the buttons — which is what an auto-layout frame that hugs
-     does in Figma. */
-  inline-size: fit-content;
+     The base card is already `max-content` with a 240 floor, so the card grows
+     to whichever region is wider — the grid, or the footer's buttons. What a
+     calendar drops is the FLOOR: 240 is the List node's width and a calendar
+     with no time picker should be narrower rather than half empty, which is
+     what an auto-layout frame that hugs does in Figma. */
   min-inline-size: min-content;
 }
 
