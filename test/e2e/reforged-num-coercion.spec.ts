@@ -251,3 +251,91 @@ test('coerceNum: absent, empty and unparseable all mean ABSENT; a real 0 survive
     fallbackUnclamped: 25,
   });
 });
+
+/* ── Declared props: the guards that keep real behaviour ──────────────────── */
+
+test('props: a FILLED slot inside the target wins over the attribute', async ({ page }) => {
+  // sherpa-toast's .heading contains a <slot>. Writing the attribute text into it
+  // would destroy whatever the consumer slotted, so skipWhen guards it.
+  const text = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-heading', 'from the attribute');
+    el.textContent = 'from the slot';
+    root.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return el.shadowRoot!.querySelector('.heading')!.textContent;
+  });
+  // The slot's assigned node is what shows; the attribute must not have overwritten it.
+  expect(text).not.toContain('from the attribute');
+});
+
+test('props: an EMPTY slot is NOT a guard — the attribute still writes', async ({ page }) => {
+  // The mirror case, and the reason the guard tests assignedNodes() rather than
+  // just the presence of a <slot>: a slot in the template is the NORMAL state, so
+  // treating it as a guard would stop data-heading working at all.
+  const text = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-heading', 'from the attribute');
+    root.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return el.shadowRoot!.querySelector('.heading')!.textContent;
+  });
+  expect(text).toBe('from the attribute');
+});
+
+test('props: fallbackAttr is used when the primary attribute is absent', async ({ page }) => {
+  // data-message is toast's legacy alias for data-heading.
+  const got = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const read = async (attr: string, value: string) => {
+      const el = document.createElement('sherpa-toast') as HTMLElement & { rendered?: Promise<void> };
+      el.setAttribute(attr, value);
+      root.appendChild(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return el.shadowRoot!.querySelector('.heading')!.textContent;
+    };
+    return { alias: await read('data-message', 'legacy'), primary: await read('data-heading', 'current') };
+  });
+  expect(got).toEqual({ alias: 'legacy', primary: 'current' });
+});
+
+test('props: a declared prop re-syncs when the attribute changes', async ({ page }) => {
+  const got = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-section-header') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-heading', 'first');
+    root.appendChild(el);
+    await el.rendered;
+    const before = el.shadowRoot!.querySelector('.title')!.textContent;
+    el.setAttribute('data-heading', 'second');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return { before, after: el.shadowRoot!.querySelector('.title')!.textContent };
+  });
+  expect(got).toEqual({ before: 'first', after: 'second' });
+});
+
+test('props: `all` writes EVERY matching node, not just the first', async ({ page }) => {
+  // sherpa-list-item repeats .title — once inside the <button>, once in the static
+  // content span — so a first-match-only write would leave one of them blank.
+  const titles = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const el = document.createElement('sherpa-list-item') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-label', 'repeated');
+    root.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return [...el.shadowRoot!.querySelectorAll('.title')].map((n) => n.textContent);
+  });
+  expect(titles.length).toBeGreaterThan(1);
+  expect(titles.every((t) => t === 'repeated')).toBe(true);
+});

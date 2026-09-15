@@ -16,7 +16,11 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaCodeBlock extends SherpaElement {
   static override css = new URL('./sherpa-code-block.css', import.meta.url);
   static override html = new URL('./sherpa-code-block.html', import.meta.url);
-  static override observed = ['data-code', 'data-language', 'data-line-numbers'];
+  static override props = {
+    'data-language': { type: 'string', kind: 'content', to: '.language' },
+  } as const;
+
+  static override observed = ['data-code', 'data-line-numbers'];
 
   #codeText: HTMLElement | null = null;
   #gutter: HTMLElement | null = null;
@@ -26,7 +30,6 @@ export class SherpaCodeBlock extends SherpaElement {
     this.#codeText = this.$('.code-text');
     this.#gutter = this.$('.gutter');
     this.#syncCode();
-    this.#syncLanguage();
     this.#syncGutter();
     this.$('.copy')?.addEventListener('click', this.#onCopy);
     this.$('slot')?.addEventListener('slotchange', this.#syncGutter);
@@ -34,7 +37,6 @@ export class SherpaCodeBlock extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-code') { this.#syncCode(); this.#syncGutter(); }
-    else if (name === 'data-language') this.#syncLanguage();
     else if (name === 'data-line-numbers') this.#syncGutter();
   }
 
@@ -51,11 +53,6 @@ export class SherpaCodeBlock extends SherpaElement {
   #syncCode(): void {
     const value = this.dataset['code'];
     if (this.#codeText && value != null) this.#codeText.textContent = value;
-  }
-
-  #syncLanguage(): void {
-    const label = this.$('.language');
-    if (label) label.textContent = this.dataset['language'] ?? '';
   }
 
   /** One line number per line of code — CSS decides whether the gutter shows. */

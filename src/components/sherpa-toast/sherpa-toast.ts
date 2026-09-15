@@ -43,19 +43,31 @@ type ToastStatus = 'info' | 'success' | 'warning' | 'critical';
 export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
-  static override observed = ['data-heading', 'data-message', 'data-value', 'data-action'];
+  static override props = {
+    // `skipWhen`: the heading span CONTAINS a <slot>, so a consumer's slotted
+    // heading must survive. The guard fires only when that slot is actually
+    // filled — an empty slot is the normal state, not an override.
+    // `fallbackAttr`: data-message is the legacy alias for data-heading.
+    'data-heading': {
+      type: 'string', kind: 'content', to: '.heading',
+      fallbackAttr: 'data-message', skipWhen: 'slot',
+    },
+    'data-value': { type: 'string', kind: 'content', to: '.value' },
+    'data-action': { type: 'string', kind: 'content', to: '.action' },
+  } as const;
 
   #timer: ReturnType<typeof setTimeout> | null = null;
 
   override onRender(): void {
-    this.#syncContent();
     this.$('.close')?.addEventListener('click', () => this.dismiss());
     this.$('.action')?.addEventListener('click', () => this.emit('toast-action', {}));
   }
 
   override onConnect(): void {
-    const duration = Number(this.dataset['duration'] ?? String(DEFAULT_DURATION));
-    if (Number.isFinite(duration) && duration > 0) {
+    // num(), not Number(): an EMPTY data-duration used to read as 0, which the
+    // `> 0` test then treated as "no auto-dismiss" — a toast that never left.
+    const duration = this.num('data-duration', DEFAULT_DURATION);
+    if (duration > 0) {
       this.#timer = setTimeout(() => this.dismiss(), duration);
     }
   }
@@ -63,10 +75,6 @@ export class SherpaToast extends SherpaElement {
   override onDisconnect(): void {
     if (this.#timer) clearTimeout(this.#timer);
     this.#timer = null;
-  }
-
-  override onChange(): void {
-    this.#syncContent();
   }
 
   /**
@@ -90,17 +98,6 @@ export class SherpaToast extends SherpaElement {
     const stack = this.parentElement;
     this.remove();
     if (stack?.classList.contains('sherpa-toast-stack') && !stack.children.length) stack.remove();
-  }
-
-  /** Mirror heading (data-heading, or the data-message alias), value, and action. */
-  #syncContent(): void {
-    const heading = this.$('.heading');
-    const headingText = this.dataset['heading'] ?? this.dataset['message'];
-    if (heading && headingText !== undefined) heading.textContent = headingText;
-    const value = this.$('.value');
-    if (value) value.textContent = this.dataset['value'] ?? '';
-    const action = this.$('.action');
-    if (action) action.textContent = this.dataset['action'] ?? '';
   }
 
   /* ── Static factory helpers ────────────────────────────────────────── */

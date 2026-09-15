@@ -31,8 +31,11 @@ interface SliderData {
 export class SherpaSlider extends SherpaElement {
   static override css = new URL('./sherpa-slider.css', import.meta.url);
   static override html = new URL('./sherpa-slider.html', import.meta.url);
+  static override props = {
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+  } as const;
+
   static override observed = [
-    'data-label',
     'min',
     'max',
     'step',
@@ -150,9 +153,6 @@ export class SherpaSlider extends SherpaElement {
 
     // JS→CSS-var bridge: the fill width lives in CSS as width: var(--_pct).
     this.style.setProperty('--_pct', `${pct}%`);
-
-    const label = this.$('.label');
-    if (label) label.textContent = this.dataset['label'] ?? '';
   }
 
   /* ── Native → re-dispatched events ───────────────────────────────────── */

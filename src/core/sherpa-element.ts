@@ -441,9 +441,27 @@ export abstract class SherpaElement extends HTMLElement {
     for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
       // `skipWhen` protects content the component owns: a projected [slot], or a
       // <mark> a search highlight left behind. A textContent write would erase it.
-      if (!el || (def.skipWhen && el.querySelector(def.skipWhen))) continue;
+      if (!el || this.#guarded(el, def)) continue;
       el.textContent = text === 'NaN' ? '' : text;
     }
+  }
+
+  /**
+   * Is this target guarded against a write?
+   *
+   * `skipWhen` names a selector INSIDE the target. Two cases, and the difference
+   * matters: a plain element (a `<mark>` a search highlight left, a projected
+   * `[slot]` attribute) guards by merely existing, but a `<slot>` guards only when
+   * a consumer has actually FILLED it. A `<slot>` in the template is the normal
+   * state — treating its presence as a guard would stop the attribute working at
+   * all, which is why `assignedNodes()` is checked rather than the tag alone.
+   */
+  #guarded(el: Element, def: PropDef): boolean {
+    if (!def.skipWhen) return false;
+    const found = el.querySelector(def.skipWhen);
+    if (!found) return false;
+    if (found instanceof HTMLSlotElement) return found.assignedNodes().length > 0;
+    return true;
   }
 
   /** Write every declared `content` prop. Runs once after the first render. */
