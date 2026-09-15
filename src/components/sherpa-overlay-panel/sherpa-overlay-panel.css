@@ -40,8 +40,19 @@
 }
 :host([open]) .scrim { display: block; }
 
-.root {
+/* Open — the UA sets [open] when show()/close() runs. */
+.root[open] {
   display: flex;
+}
+
+.root {
+  /* A closed <dialog> is hidden by the UA with `display: none`. Setting `display`
+     unconditionally CLOBBERS that, so the panel rendered whether it was open or
+     not — permanently on screen before anything opened it. The open layout has to
+     be scoped to [open]. sherpa-dialog already carries this fix and the same
+     comment; the panel was left behind, and only showed once it became full-height
+     and opaque enough to notice. */
+  display: none;
   flex-direction: column;
   min-inline-size: 0;
   inline-size: min(92vw, 30rem);
