@@ -79,7 +79,10 @@
       <slot></slot>
     </div>
 
-    <sherpa-container-footer class="footer" part="footer">
+    <!-- data-align="stretch": a panel's footer holds ONE full-width control far
+         more often than a row of buttons at one end — a chat composer, a search
+         field, a form's primary action. -->
+    <sherpa-container-footer class="footer" part="footer" data-align="stretch">
       <slot name="footer" data-accepts="control,input"></slot>
     </sherpa-container-footer>
   </dialog>

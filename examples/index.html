@@ -225,12 +225,27 @@
     document.addEventListener('ai-click', () => {
       assistantReady ??= (async () => {
         assistant.innerHTML = await (await fetch('/template/view/chat')).text();
-        /* The chat card is sized in LAYOUT-GRID ROWS for its full-page form
-           (data-rows="12"), which is a fixed height — inside a panel that made it
-           944px tall in a 648px region and pushed the composer off the bottom.
-           In here the panel's own grid row supplies the height, so the fixed one
-           is dropped and the card fills what it is given. */
-        assistant.querySelector('sherpa-container')?.removeAttribute('data-rows');
+
+        /* UNWRAP the card. The chat view is a sherpa-container because a PAGE
+           needs one — a bordered surface holding the thread. Inside a panel the
+           PANEL is that surface, so the card was a box drawn inside a box, and
+           its own footer sat 43px above the panel's bottom edge.
+
+           So the two halves are re-slotted onto the panel itself: the thread into
+           its content region, the composer into its `footer` slot — which is the
+           same sherpa-container-footer, now the panel's rather than the card's. */
+        const card = assistant.querySelector('sherpa-container');
+        if (card) {
+          const thread = card.querySelector('#thread');
+          /* The COMPOSER moves across, not the card's footer around it. The panel
+             already IS a sherpa-container-footer in that region, so slotting
+             another one inside drew two dividers — and the inner one shrink-wrapped
+             its content, so the second rule spanned only half the width. */
+          const composer = card.querySelector('sherpa-prompt-composer');
+          if (composer) composer.setAttribute('slot', 'footer');
+          card.replaceWith(...[thread, composer].filter(Boolean));
+        }
+
         await customElements.whenDefined('sherpa-overlay-panel');
         const mod = await import('./views/chat.js');
         // The chat view hides the app header for its full-page form; inside a
