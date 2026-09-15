@@ -84,6 +84,26 @@
     <div class="organise-zone" part="organise"></div>
 
     <div class="chips" part="chips"></div>
+
+    <!--
+      THE OVERFLOW CHIP — where filter chips go when even a collapsed action
+      cluster leaves no room for them.
+
+      Chips fold in from the END of the run, so the ones a user put there first
+      stay visible and the fold order is the reverse of the unfold order. The
+      badge counts what is inside.
+
+      It is a real <sherpa-quick-filter> so it reads as one of the run rather
+      than as chrome beside it — same height, same rounding, same caret. CSS
+      reveals it; #reflow() sets the count.
+
+      Its menu lists the folded chips by FIELD NAME, each with its own value
+      count, and each opens a submenu carrying that chip's real menu — so a
+      filter is still changeable from in here rather than only countable.
+    -->
+    <sherpa-quick-filter class="overflow-chip" part="overflow-chip"
+                         data-label="More" data-icon-start="fa-solid fa-filter"
+                         data-current data-persistent data-no-value></sherpa-quick-filter>
     <!--
       ACTION CLUSTER — Figma's `right-actions` slot, built in.
 
@@ -220,6 +240,27 @@
   -->
   <template class="qf-divider-tpl">
     <hr class="qf-divider" />
+  </template>
+
+  <!--
+    One row of the OVERFLOW chip's menu: a folded filter, named by its field,
+    with a badge counting the values applied to it.
+
+    A composed <sherpa-list-item>, not a hand-rolled <button>. The component
+    already owns the row's box, its hover and its keyboard activation, and
+    `data-interactive` is what makes it a real button rather than a div with a
+    listener. The badge is a <sherpa-tag> in its `trailing` slot — the same pill
+    the rest of the system counts with.
+
+    It is a DOOR, not a value to tick: clicking it replaces the menu's list with
+    that filter's own rows rather than toggling anything.
+  -->
+  <template class="qf-folded-tpl">
+    <sherpa-list-item class="qf-folded" data-interactive>
+      <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
+      <i class="fa-solid fa-chevron-right qf-folded-caret" slot="trailing"
+         aria-hidden="true"></i>
+    </sherpa-list-item>
   </template>
 
   <!--

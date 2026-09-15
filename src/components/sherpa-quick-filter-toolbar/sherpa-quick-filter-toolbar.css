@@ -32,6 +32,10 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline: var(--sherpa-theme-padding-none, 0);
+  /* The query container the collapse steps read. Declared on the BAR, not the
+     host: the bar is the box the chips and actions actually share, so its width
+     is the one that decides whether they fit. */
+  container: qf-bar / inline-size;
 }
 
 /* The VIEW bar bottom-aligns; the DATA bar centres.
@@ -88,11 +92,23 @@
 
 .chips {
   display: flex;
-  flex-wrap: wrap;
+  /* NOWRAP. A filter toolbar is one line: wrapping pushed the bar to two rows
+     and the action cluster's `margin-inline-start: auto` then sat against a
+     short second line instead of the bar's end. When the chips will not fit,
+     the ANSWER IS THE OVERFLOW CHIP — collapse, not reflow.
+
+     `min-inline-size: 0` is what lets the run shrink below its content so the
+     measurement pass sees an overflow to act on. */
+  flex-wrap: nowrap;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   flex: 1 1 auto;
   min-inline-size: 0;
+  /* Clipped, not scrolled: a chip half out of view reads as a rendering fault.
+     Anything that does not fit is moved into the overflow chip by #reflow(), so
+     in the settled state nothing is ever cut. This only covers the frame
+     BETWEEN a resize and the measure that answers it. */
+  overflow: clip;
 }
 
 /* ── Action cluster ──────────────────────────────────────────────────
@@ -113,6 +129,57 @@
   flex: 0 0 auto;
   margin-inline-start: auto;
 }
+
+/* ── COLLAPSING THE ACTION CLUSTER ───────────────────────────────────
+ * The trailing actions fold into the ⋮ button from the RIGHT-MOST first, so
+ * they are pushed onto the top of that menu's stack and come back in the same
+ * order as the bar widens.
+ *
+ * CSS does the first pass, off a container query on the bar's own width, so a
+ * narrow bar is already collapsed on the very first paint with no JS in the
+ * loop. #reflow() then measures and can collapse FURTHER — the breakpoints
+ * below are width guesses, and a bar of eleven long chips needs to fold sooner
+ * than one of three short ones. `data-collapse` is what the measurement writes;
+ * each step subsumes the ones before it.
+ */
+/* Step 1 — the view group (★ Save ▾) goes first: it is the widest run and the
+   least used mid-filtering. */
+@container qf-bar (max-width: 900px) {
+  .view-group { display: none; }
+}
+:host([data-collapse="1"]) .view-group,
+:host([data-collapse="2"]) .view-group,
+:host([data-collapse="3"]) .view-group { display: none; }
+
+/* Step 2 — refresh and configure. */
+@container qf-bar (max-width: 760px) {
+  .act[data-act="refresh"],
+  .act[data-act="configure"] { display: none; }
+}
+:host([data-collapse="2"]) :is(.act[data-act="refresh"], .act[data-act="configure"]),
+:host([data-collapse="3"]) :is(.act[data-act="refresh"], .act[data-act="configure"]) {
+  display: none;
+}
+
+/* Step 3 — everything but Add and the ⋮ itself. Add stays because putting a
+   filter ON the bar is the one action a collapsed bar still needs; the ⋮ stays
+   because it is where all of this went. */
+@container qf-bar (max-width: 620px) {
+  .act-divider,
+  .act:not([data-act="add"]):not([data-act="overflow"]) { display: none; }
+}
+:host([data-collapse="3"]) .act-divider,
+:host([data-collapse="3"]) .act:not([data-act="add"]):not([data-act="overflow"]) {
+  display: none;
+}
+
+/* The ⋮ is pointless with nothing in it, so it appears only once something has
+   folded — either by the container query or by the measured flag. */
+.act[data-act="overflow"] { display: none; }
+@container qf-bar (max-width: 900px) {
+  .act[data-act="overflow"] { display: inline-flex; }
+}
+:host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
 /* The 1x16 divider inside the cluster, before the refresh/overflow tail.
@@ -281,4 +348,73 @@
   outline: none;
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
   box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+
+/* ── The overflow chip ───────────────────────────────────────────────
+ * Hidden until #reflow() has folded something into it, and pinned OUT of the
+ * chip run's clipping: it sits beside `.chips` as the bar's own child, so a run
+ * that is overflowing cannot cut off the very control that says so.
+ */
+/* NOT `.chip`. It is a control ABOUT the run, not a member of it, and every
+   `.chip` selector in this file and in the specs means "a filter the host put
+   on the bar" — counting it would report one filter too many everywhere.
+
+   ACTIVE. `data-current` is the chip's own active state, so the More chip wears
+   the same treatment a chip with values picked does — it stands for filters the
+   bar could not show, and should read as "something is in here" rather than as
+   one more empty dropdown.
+
+   `data-persistent` with it, because clicking its body must not toggle it off:
+   it is not a filter you can turn off, it is where the others went. */
+.overflow-chip {
+  display: none;
+  flex: 0 0 auto;
+}
+:host([data-folded]) .overflow-chip { display: inline-flex; }
+
+/* A chip that has folded into the overflow.
+   NOT `display: none` on the chip itself. Its MENU is still live — the overflow
+   chip's rows open it as a submenu — and a menu inside a `display: none` host
+   has no layout at all: it measured 0x0 and placed itself at the viewport
+   corner. So the chip is taken out of flow and parked off-screen instead, where
+   its menu keeps a real box.
+
+   `position: absolute` removes it from the run, so the very next measurement
+   sees the width without it, which is the whole point of folding. */
+.chips > .chip[data-folded-away] {
+  position: absolute;
+  /* Far enough to be off any screen. Not a spacing value — it is the "park it
+     out of sight" idiom, which is why it is not on the grid. */
+  inset-inline-start: -9999px; /* off-grid-ok */
+  inset-block-start: 0;
+  /* Out of the tab order too — a chip nobody can see should not be reachable by
+     keyboard on the bar. Its values stay reachable through the overflow menu. */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* …but the MENU it holds is not hidden with it. `visibility` inherits, so the
+   submenu would have been invisible while perfectly placed. */
+.chips > .chip[data-folded-away] sherpa-menu {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ── The overflow chip's menu rows ───────────────────────────────────
+ * A composed <sherpa-list-item> with a <sherpa-tag> badge, so the row's box,
+ * hover and keyboard activation are the component's and there is almost nothing
+ * to style here. They live in the chip's LIGHT DOM and are slotted into the
+ * menu, so a plain descendant selector from here reaches them.
+ */
+:is(.chip, .overflow-chip) .qf-folded { display: block; }
+
+/* Hidden at zero — `nothing applied` is the absence of a badge everywhere else
+   in the bar, and `hidden` on a custom element needs saying because the host is
+   not display:none by default. */
+:is(.chip, .overflow-chip) .qf-folded-count[hidden] { display: none; }
+
+/* The drill affordance, at the trailing edge after the badge. */
+:is(.chip, .overflow-chip) .qf-folded-caret {
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }

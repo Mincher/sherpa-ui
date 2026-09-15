@@ -132,6 +132,26 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   flex: 0 0 auto;
 }
+/* ── Drill: the back arrow and the breadcrumb ────────────────────────
+ * Both belong to data-drill only. An ordinary menu's header is the single
+ * heading it always was.
+ */
+/* The back button + breadcrumbs pair, exactly as sherpa-app-header composes it.
+   Shown only in a drilled menu; the ordinary heading takes its place otherwise,
+   so an undrilled header is unchanged. */
+.drill-trail { display: none; }
+:host([data-drill]) .drill-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+/* The trail REPLACES the heading rather than sitting beside it — the last crumb
+   IS the heading, so showing both would say the same word twice. */
+:host([data-drill]) .heading { display: none; }
+
 /* The heading takes the free space so a slotted control sits at the trailing
    edge beside it — and a header with ONLY a stepper still fills its row. */
 .header .heading { flex: 1 1 auto; }

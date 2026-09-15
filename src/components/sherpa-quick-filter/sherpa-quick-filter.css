@@ -361,6 +361,12 @@
   text-overflow: ellipsis;
   max-inline-size: 12ch;
 }
+/* A chip that carries no VALUE to name. The More chip is the case this exists
+   for: its caret opens a list of other filters, not a set of values, so a value
+   label there would either be blank or would name whichever filter happened to
+   be first. Its badge already says how many are inside. */
+:host([data-no-value]) .caret-label { display: none; }
+
 .caret-label:empty {
   display: none;
 }

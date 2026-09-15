@@ -36,6 +36,7 @@
  * @fires menu-apply  — Apply was clicked. detail: { values: string[] }
  * @fires menu-cancel — Cancel was clicked; values already restored. detail: {}
  * @fires menu-clear — Clear was clicked; the selection is already empty. detail: {}
+ * @fires menu-back   — the back arrow of a DRILLED menu was pressed. detail: {}
  *
  * @attr {enum} data-type — list (default) | calendar. The Menu set's own `Type`
  *   axis: `calendar` widens the card and runs the list region horizontally.
@@ -46,6 +47,9 @@
  * @prop {string[]} values — the checked row values (read/write)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The drill trail composes the real breadcrumbs component, as sherpa-app-header
+// does — a second hand-rolled trail would drift from it.
+import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 // The search field is the composed Input Field (atom), as the Menu node
 // instances it — not a hand-rolled input.
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -70,6 +74,9 @@ export class SherpaMenu extends SherpaElement {
     'data-clearable',
     'data-removable',
     'data-type',
+    // The breadcrumb's text is written from data-drill-from, so a change to it
+    // has to reach #syncCrumb.
+    'data-drill-from',
     'open',
   ];
 
@@ -99,6 +106,16 @@ export class SherpaMenu extends SherpaElement {
     card.addEventListener('toggle', this.#onToggle as EventListener);
     // Rows live in the light DOM, so listen on the host and let events bubble up.
     this.addEventListener('change', this.#onChange);
+    this.$('.drill-back')?.addEventListener('click', this.#onBack);
+    // The PARENT crumb is the same way out as the back arrow — a trail whose
+    // links did nothing would be decoration. Only the first crumb is a link
+    // (the last is where you are), so any select here means "go back".
+    this.$('.drill-crumbs')?.addEventListener('breadcrumb-select', this.#onBack);
+    // The ROWS can be replaced wholesale — the overflow menu drills in by
+    // swapping its list for another filter's — so the select-all row's state
+    // and label have to follow them. slotchange fires exactly when they move in
+    // or out, which show() alone does not cover: a drill happens after it.
+    this.$('.rows slot')?.addEventListener('slotchange', this.#onRowsChanged);
     this.addEventListener('click', this.#onClick);
     // The footer is in the SHADOW root, so its clicks are listened for there.
     this.$('.apply')?.addEventListener('click', this.#onApply);
@@ -242,7 +259,31 @@ export class SherpaMenu extends SherpaElement {
     ).filter((i) => !i.closest('.qf-all'));
   }
 
+  /**
+   * The breadcrumb trail shown when the list has been drilled into.
+   *
+   * Two crumbs: where it came from, then where it is. The trail is a real
+   * <sherpa-breadcrumbs>, which draws the separator and the current-crumb
+   * treatment itself, so there is nothing to compose here beyond the data.
+   */
+  #syncCrumb(): void {
+    const crumbs = this.$<HTMLElement & { populate(d: unknown): void }>('.drill-crumbs');
+    if (!crumbs) return;
+    const from = this.dataset['drillFrom'];
+    if (!from) {
+      crumbs.populate([]);
+      return;
+    }
+    // NO href on either. The trail here navigates nothing — it goes back a level
+    // inside a menu that must stay open — and an <a href="#"> both appended a
+    // hash to the URL and dismissed the popover on the way out. sherpa-breadcrumbs
+    // fires `breadcrumb-select` for an href-less crumb just the same, which is
+    // the whole signal needed.
+    crumbs.populate([{ label: from }, { label: this.dataset['heading'] ?? '' }]);
+  }
+
   #sync(): void {
+    this.#syncCrumb();
     // The heading TEXT is a declared prop. data-heading stays observed because it
     // also names the card for a screen reader and the radio group below.
     // A CALENDAR shows no heading — its header holds the month stepper and
@@ -304,6 +345,12 @@ export class SherpaMenu extends SherpaElement {
     let x = this.dataset['align'] === 'end' ? t.right - c.width : t.left;
     if (x + c.width > vw) x = vw - c.width - gap;
     if (x < gap) x = gap;
+
+    // Never off the top either. The vertical flip above can put a tall card
+    // above the trigger and past the viewport's start edge, which is where a
+    // drilled calendar landed — taller than the list it replaced, with the same
+    // y it was placed at.
+    if (y < gap) y = gap;
 
     card.style.setProperty('--_x', `${Math.round(x)}px`);
     card.style.setProperty('--_y', `${Math.round(y)}px`);
@@ -396,6 +443,29 @@ export class SherpaMenu extends SherpaElement {
         : SherpaMenu.ALL_LABELS.select;
     }
   }
+
+  /**
+   * The back arrow was pressed — say so, and let the owner put the list back.
+   *
+   * The menu does not know what it drilled INTO, only that it did: the rows came
+   * from somewhere else and only that somewhere can take them home. So this is a
+   * report, not an action. `menu-back` is composed, which the button's own click
+   * is not — it starts inside this shadow root and would never reach the
+   * component that filled the menu.
+   */
+  #onRowsChanged = (): void => {
+    this.#syncSelectAll();
+    // RE-PLACE. A drill swaps a 240px list for content of its own size — a
+    // calendar is half as wide again — and the card was positioned while it was
+    // still the list. Left alone it kept the old x and ran off the side of the
+    // screen. Measured on the next frame, so the new rows have been laid out.
+    if (this.open) requestAnimationFrame(() => this.#place());
+  };
+
+  #onBack = (event: Event): void => {
+    event.stopPropagation();
+    this.emit('menu-back', {});
+  };
 
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;

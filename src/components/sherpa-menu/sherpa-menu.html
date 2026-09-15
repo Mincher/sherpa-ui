@@ -31,6 +31,12 @@
     data-search   show a search input under the heading that filters the rows
     data-removable  show a "Remove filter" button in the footer (after Today);
                     it emits menu-select with value="remove"
+    data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
+                    and a breadcrumb in the header. data-drill-from names the
+                    list that was replaced. Drilling IN PLACE rather than opening
+                    a second card means one box to position, nothing to close on
+                    a pointer crossing a gap, and no way for two cards to
+                    disagree about what is ticked.
     data-clearable  show a Clear button in the footer that empties the selection
                     (a CALENDAR menu shows Today there instead — see the footer)
     data-type     list (default) | calendar — the Menu set's own `Type` axis.
@@ -76,6 +82,23 @@
       slotted here is unchanged.
     -->
     <div class="header" part="header">
+      <!--
+        THE DRILL TRAIL — a back button beside real breadcrumbs, exactly the pair
+        sherpa-app-header composes (a 16px transparent icon button, then the
+        trail). Shown only inside a DRILLED menu, where the list has been
+        replaced by a sub-list and there is somewhere to go back to.
+
+        <sherpa-breadcrumbs>, not hand-rolled text: the trail IS that component,
+        and a second one written here would drift from it and would not draw the
+        separators, the current-crumb treatment or the link behaviour it already
+        owns.
+      -->
+      <span class="drill-trail" part="drill-trail">
+        <sherpa-button class="drill-back" part="drill-back" data-type="icon" data-size="xs"
+                       data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
+                       aria-label="Back"></sherpa-button>
+        <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
+      </span>
       <p class="heading" part="heading"></p>
       <slot name="header"></slot>
     </div>

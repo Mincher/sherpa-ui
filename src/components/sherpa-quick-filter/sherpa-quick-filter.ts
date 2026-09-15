@@ -43,6 +43,8 @@
  *                                 above the badge (pure CSS; see the .count-tip part).
  * @attr {boolean} data-menu       Figma State=menu — snap on the caret button
  * @attr {boolean} data-empty      set by the chip: it is ON but holds no values
+ * @attr {boolean} data-no-value  the caret names no VALUE — for a chip whose menu
+ *                lists other filters rather than values (the toolbar's More chip)
  * @attr {boolean} data-persistent  a SELECTOR, not a toggle — always on, never
  *                                  empty. Set by the toolbar.
  *

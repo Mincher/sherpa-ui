@@ -329,14 +329,17 @@ test('the action cluster is built in, and data-type=view adds the save group', a
     return { data: await probe(), view: await probe('view') };
   }, MOUNT);
 
-  // Both types carry the shared run: Add · AI · undo · configure · | · refresh · ⋮
+  // Both types carry the shared run: Add · AI · undo · configure · | · refresh.
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(true);
     expect(t.clear).toBe(true);
     expect(t.configure).toBe(true);
     expect(t.refresh).toBe(true);
-    expect(t.overflow).toBe(true);
+    // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
+    // out of room, and an empty one on a bar wide enough to show everything is a
+    // button that opens nothing — so it appears only once something has folded.
+    expect(t.overflow).toBe(false);
   }
   // Only `view` gets the ★ | Save | ▾ group — Figma's Type=data cluster ends at
   // the divider.
@@ -1401,4 +1404,204 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
 
   expect(r.pinned.single).toEqual({ commits: false, apply: false, cancel: false });
   expect(r.pinned.ranged).toEqual({ commits: false, apply: false, cancel: false });
+});
+
+/**
+ * THE BAR IS ONE LINE. It never wraps: the trailing ACTIONS fold into the ⋮
+ * first, and only when they are all folded do chips start folding into an
+ * overflow chip at the end of the run.
+ *
+ * The order is the user's priority, not the layout's — a filter chip is what the
+ * bar is FOR, and Save/Refresh stay reachable from the ⋮.
+ */
+test('the bar folds its actions, then its chips, and never wraps', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    const box = document.createElement('div');
+    box.style.inlineSize = '1400px';
+    box.appendChild(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    el.populate(
+      ['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner', 'Tier', 'Plan'].map((label) => ({
+        id: label.toLowerCase(),
+        label,
+        options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
+      })),
+    );
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const settle = (): Promise<void> =>
+      new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+
+    const at = async (width: number): Promise<Record<string, unknown>> => {
+      box.style.inlineSize = `${width}px`;
+      await settle();
+      await settle();
+      const on = [...sr.querySelectorAll('.chips > .chip')].filter(
+        (c) => !c.hasAttribute('data-folded-away'),
+      );
+      const shown = (sel: string): boolean => {
+        const n = sr.querySelector(sel);
+        return !!n && getComputedStyle(n).display !== 'none';
+      };
+      return {
+        collapse: el.getAttribute('data-collapse'),
+        folded: el.getAttribute('data-folded'),
+        chipsOnBar: on.length,
+        // ONE LINE, at every width. Wrapping pushed the bar to two rows and the
+        // action cluster then sat against a short second line, not the bar's end.
+        rows: new Set(on.map((c) => Math.round(c.getBoundingClientRect().y))).size,
+        overflowChip: shown('.overflow-chip'),
+        ellipsis: shown('.act[data-act="overflow"]'),
+        // Add survives every fold: putting a filter ON the bar is the one action
+        // a collapsed bar still needs.
+        add: shown('.act[data-act="add"]'),
+      };
+    };
+
+    return { wide: await at(1400), mid: await at(900), narrow: await at(620) };
+  });
+
+  // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one
+  // that opens nothing.
+  expect(r.wide.collapse).toBeNull();
+  expect(r.wide.folded).toBeNull();
+  expect(r.wide.ellipsis).toBe(false);
+  expect(r.wide.overflowChip).toBe(false);
+  expect(r.wide.rows).toBe(1);
+
+  // MID: the ACTIONS have folded and the ⋮ has appeared to hold them.
+  expect(r.mid.collapse).not.toBeNull();
+  expect(r.mid.ellipsis).toBe(true);
+  expect(r.mid.rows).toBe(1);
+
+  // NARROW: chips fold too, and the overflow chip appears to hold them.
+  expect(Number(r.narrow.folded)).toBeGreaterThan(0);
+  expect(r.narrow.overflowChip).toBe(true);
+  expect(Number(r.narrow.chipsOnBar)).toBeLessThan(Number(r.mid.chipsOnBar));
+  expect(r.narrow.rows).toBe(1);
+
+  // Add is still there at every width.
+  for (const step of [r.wide, r.mid, r.narrow]) expect(step.add).toBe(true);
+});
+
+/**
+ * The overflow chip's menu DRILLS IN PLACE: a row swaps the list for that
+ * filter's own rows, and a back arrow plus breadcrumbs swap it home.
+ *
+ * One card, so there is no second box to position, nothing to close when a
+ * pointer crosses a gap, and no way for two cards to disagree about what is
+ * ticked — which is exactly what a hover-spawned submenu got wrong.
+ */
+test('the overflow menu drills into a folded filter and back out', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      pickedValues: Record<string, string[]>;
+    };
+    const box = document.createElement('div');
+    box.style.inlineSize = '560px';
+    box.appendChild(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    el.populate(
+      ['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner'].map((label) => ({
+        id: label.toLowerCase(),
+        label,
+        options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
+      })),
+    );
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+
+    const sr = el.shadowRoot!;
+    const chip = sr.querySelector('.overflow-chip') as HTMLElement & { rendered?: Promise<void> };
+    await chip.rendered;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>;
+      shadowRoot: ShadowRoot;
+      show(t?: HTMLElement): void;
+      values: string[];
+    };
+    await menu.rendered;
+    menu.show(chip);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const settle = (): Promise<void> =>
+      new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+
+    const snap = (): Record<string, unknown> => ({
+      drill: menu.hasAttribute('data-drill'),
+      heading: menu.shadowRoot.querySelector('.heading')?.textContent,
+      // The rows ARE the folded filters, or ARE that filter's values.
+      firstRow: menu.firstElementChild?.className ?? menu.firstElementChild?.tagName,
+      trail: getComputedStyle(menu.shadowRoot.querySelector('.drill-trail')!).display !== 'none',
+      open: getComputedStyle(menu.shadowRoot.querySelector('.menu')!).display !== 'none',
+    });
+
+    const rows = [...chip.querySelectorAll('.qf-folded')] as HTMLElement[];
+    const list = {
+      ...snap(),
+      // The badge counts the FOLDED FILTERS — "three are in here" is what a
+      // reader needs before opening it.
+      badge: chip.dataset['count'],
+      rowCount: rows.length,
+      // Composed components, not hand-rolled markup.
+      rowTag: rows[0]?.tagName,
+    };
+
+    const target = rows[0]!.dataset['for']!;
+    rows[0]!.click();
+    await settle();
+    const drilled = snap();
+
+    // A value ticked while drilled is reported LIVE — the rows are moved, not
+    // copied, so this is where the filter's one set of inputs currently lives.
+    const box1 = menu.querySelector<HTMLInputElement>('label:not(.qf-all) input')!;
+    box1.checked = true;
+    box1.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    const ticked = el.pickedValues[target] ?? null;
+
+    // BACK, through the arrow. It lives in the MENU's own shadow root, so its
+    // click is re-emitted as a composed `menu-back` to reach the toolbar.
+    const back = menu.shadowRoot.querySelector('.drill-back') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    await back.rendered;
+    back.click();
+    await settle();
+    const out = snap();
+
+    return { list, drilled, ticked, target, out, kept: el.pickedValues[target] ?? null };
+  });
+
+  // The overflow list: composed list items, one per folded filter.
+  expect(r.list.drill).toBe(false);
+  expect(r.list.heading).toBe('More filters');
+  expect(r.list.rowTag).toBe('SHERPA-LIST-ITEM');
+  expect(Number(r.list.badge)).toBe(r.list.rowCount);
+  expect(r.list.trail).toBe(false);
+
+  // DRILLED: the filter's own rows, its name, and the way out.
+  expect(r.drilled.drill).toBe(true);
+  expect(r.drilled.trail).toBe(true);
+  expect(r.drilled.open).toBe(true);
+  expect(r.drilled.firstRow).not.toBe('qf-folded');
+
+  // A pick made while drilled is live, and survives coming back out.
+  expect(r.ticked).toEqual(['a']);
+  expect(r.kept).toEqual(['a']);
+
+  // BACK: the list is restored and the menu stays open.
+  expect(r.out.drill).toBe(false);
+  expect(r.out.heading).toBe('More filters');
+  expect(r.out.firstRow).toBe('qf-folded');
+  expect(r.out.open).toBe(true);
 });

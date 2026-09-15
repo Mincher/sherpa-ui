@@ -54,6 +54,9 @@ import '../sherpa-calendar/sherpa-calendar.js';
 // lead with a Range switch.
 import '../sherpa-slider/sherpa-slider.js';
 import '../sherpa-switch/sherpa-switch.js';
+// The overflow menu's rows are composed list items with a tag as their badge.
+import '../sherpa-list-item/sherpa-list-item.js';
+import '../sherpa-tag/sherpa-tag.js';
 
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
@@ -209,6 +212,302 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #available: QuickFilterDef[] = [];
 
+  /* ── Fitting the bar ─────────────────────────────────────────────── */
+
+  #observer: ResizeObserver | null = null;
+  /** The pending reflow frame, so a burst of resizes measures once. */
+  #frame: number | null = null;
+
+  /**
+   * How far the action cluster has folded: 1 the view group, 2 refresh and
+   * configure, 3 everything but Add and the ⋮ itself. Each step subsumes the
+   * ones before it, and CSS reads it off the host.
+   */
+  static readonly COLLAPSE_STEPS = 3;
+
+  /**
+   * Fit the bar to its width — collapse the actions, then fold chips.
+   *
+   * ONE LINE, always. A filter toolbar that wraps pushes the bar to two rows and
+   * the action cluster then sits against a short second line instead of the
+   * bar's end; the answer to "these do not fit" is to collapse, not to reflow.
+   *
+   * The order is the user's priority, not the layout's: the trailing ACTIONS go
+   * first, because a filter chip is what the bar is for and Save/Refresh are
+   * reachable from the ⋮. Only when the cluster is fully folded and the chips
+   * still overflow do chips start folding too.
+   *
+   * Chips fold from the END of the run, so what the user put there first stays
+   * visible and the unfold order is the exact reverse.
+   */
+  #reflow(): void {
+    const bar = this.$('.bar');
+    const chips = this.$('.chips');
+    if (!bar || !chips) return;
+
+    // A RESIZE CLOSES THE OVERFLOW MENU. The reflow can fold away the very chip
+    // whose rows are currently drilled into it, or unfold one whose rows are
+    // sitting somewhere else — either way the list the reader is looking at is
+    // about to be rebuilt under them. Closing first puts the rows home and
+    // leaves nothing half-moved.
+    this.#closeOverflow();
+
+    // Start from nothing folded and add back only what the measurements demand.
+    // Measuring against the CURRENT fold would ratchet: a bar that once narrowed
+    // could never widen again, because each pass would see the collapsed layout
+    // as the one that fits.
+    this.removeAttribute('data-collapse');
+    this.removeAttribute('data-folded');
+    this.#showAllChips();
+
+    // `scrollWidth > clientWidth` on the clipped run is the overflow test. It is
+    // read AFTER the resets above, which force the layout the browser would have
+    // drawn with everything visible.
+    for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) {
+      if (!this.#overflowing()) break;
+      this.setAttribute('data-collapse', String(step));
+    }
+
+    if (!this.#overflowing()) return;
+
+    // Still too wide with every action folded, so chips start folding — one at a
+    // time from the end, re-measuring after each, so exactly as many move as
+    // have to. A chip's width is its own; there is no arithmetic that predicts
+    // how many will fit.
+    const run = [...chips.children].filter(
+      (c): c is HTMLElement => c instanceof HTMLElement && c.classList.contains('chip'),
+    );
+    const folded: HTMLElement[] = [];
+    for (let i = run.length - 1; i >= 0; i--) {
+      const chip = run[i]!;
+      chip.toggleAttribute('data-folded-away', true);
+      folded.unshift(chip);
+      this.setAttribute('data-folded', String(folded.length));
+      // The overflow chip is itself a chip: folding the last one and revealing
+      // it can be a net LOSS of room, so the loop has to re-measure rather than
+      // assume each fold helps.
+      if (!this.#overflowing()) break;
+    }
+
+    this.#renderFolded(folded);
+  }
+
+  /**
+   * Fill the overflow chip: its badge, and one menu row per folded filter.
+   *
+   * Each row names the FILTER'S FIELD and badges how many values it carries, so
+   * the bar still says what is inside rather than only how much. Hovering or
+   * focusing a row opens that filter's OWN menu beside it — the real one, moved
+   * across rather than rebuilt, so every value, its Range switch and its Apply
+   * footer come with it and a folded filter stays fully usable.
+   */
+  #renderFolded(folded: readonly HTMLElement[]): void {
+    const chip = this.$<HTMLElement>('.overflow-chip');
+    if (!chip) return;
+
+    // The badge is the COUNT OF FOLDED FILTERS, not of values — "three filters
+    // are in here" is what a reader needs before they open it.
+    chip.dataset['count'] = String(folded.length);
+
+    let menu = chip.querySelector('sherpa-menu');
+    if (!menu) {
+      menu = this.clone('template.qf-menu-tpl') as HTMLElement | null;
+      if (!menu) return;
+      menu.setAttribute('slot', 'menu');
+      menu.setAttribute('data-heading', 'More filters');
+      chip.setAttribute('data-menu', '');
+      chip.appendChild(menu);
+    }
+    menu.replaceChildren();
+
+    for (const source of folded) {
+      const row = this.clone('template.qf-folded-tpl');
+      if (!row) continue;
+      const id = source.dataset['id'] ?? '';
+      row.dataset['for'] = id;
+      // The list item names itself from data-label — the component's own API,
+      // so there is no inner element for this to reach into.
+      row.dataset['label'] = source.dataset['label'] ?? id;
+      const glyph = source.dataset['iconStart'];
+      if (glyph) row.dataset['icon'] = glyph;
+
+      // How many values this filter carries. The same figure its own chip wears,
+      // read from the same place, so the two can never disagree.
+      const count = this.#chipPicks(source).length;
+      const badge = row.querySelector<HTMLElement>('.qf-folded-count')!;
+      badge.textContent = String(count);
+      badge.hidden = count === 0;
+
+      menu.appendChild(row);
+    }
+  }
+
+  /**
+   * Where a DRILLED-IN menu's rows came from, so Back can put them home.
+   *
+   * The overflow menu drills IN PLACE rather than opening a second card beside
+   * itself: its list is replaced by the chosen filter's rows and the header
+   * grows a back arrow and a breadcrumb. One card, so there is no second box to
+   * position, nothing to close when the pointer crosses a gap, and no way for
+   * the two to disagree about what is ticked.
+   */
+  #drill: { home: HTMLElement; rows: Element[] } | null = null;
+
+  /**
+   * The menu attributes that belong to a FILTER rather than to the card.
+   *
+   * They travel with the rows on a drill and go home with them, so a filter's
+   * mode is never left on the overflow list and the overflow list's never lands
+   * on a filter. `data-type` is here because a calendar needs its own layout —
+   * without it the grid drew a hairline high.
+   */
+  static readonly DRILL_FLAGS = [
+    'data-commit',
+    'data-range',
+    'data-select',
+    'data-search',
+    'data-type',
+  ] as const;
+
+  /**
+   * A folded filter's row was clicked — drill into that filter.
+   *
+   * Its real rows are MOVED, not copied. A clone would be a second set of
+   * inputs over the same filter, and whichever the user touched the other would
+   * be stale; moving means the Range switch, the value rows and everything else
+   * come across intact, and Back is the same move in reverse.
+   */
+  #onFoldedClick = (event: Event): void => {
+    const path = event.composedPath();
+
+    // composedPath, because the click starts on the list item's own inner
+    // <button> — inside ITS shadow root — so `target` is the host and `closest`
+    // from there would miss the row entirely.
+    const row = path.find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('qf-folded'),
+    );
+    if (!row) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const id = row.dataset['for'];
+    const source = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
+    const from = source?.querySelector<HTMLElement>('sherpa-menu');
+    const chip = this.$<HTMLElement>('.overflow-chip');
+    const into = chip?.querySelector<HTMLElement>('sherpa-menu');
+    if (!from || !into || !chip) return;
+
+    // Already drilled? Put the last one back first, so Back is one level deep
+    // and never a chain of them.
+    if (this.#drill) this.#drillOut();
+
+    // Park the overflow list so it can come back exactly as it was, then move
+    // the filter's own rows across.
+    this.#drill = { home: from, rows: [...into.children] };
+    into.replaceChildren(...from.childNodes);
+
+    // The HEADER says where you are and how to get out. `data-drill` is what
+    // CSS reveals the back arrow off; the heading carries the breadcrumb.
+    into.setAttribute('data-drill', '');
+    into.dataset['drillFrom'] = chip.dataset['label'] ?? 'More';
+    into.setAttribute('data-heading', row.dataset['label'] ?? '');
+    // The drilled filter's own modes travel WITH its rows — a multi-select filter
+    // still needs its Apply footer, a number filter its Range switch, and a date
+    // filter its calendar LAYOUT. `data-type` was the one left out: a calendar
+    // dropped into a list-shaped menu had its grid crushed to a hairline, and
+    // the flag then stayed behind on the way home so the filter's own menu was
+    // distorted too.
+    //
+    // Every flag is restored to what the TARGET had, not merged — an attribute
+    // the overflow list carried and the filter does not must go, or the filter
+    // inherits a mode it never asked for.
+    for (const flag of SherpaQuickFilterToolbar.DRILL_FLAGS) {
+      const value = from.getAttribute(flag);
+      if (value == null) into.removeAttribute(flag);
+      else into.setAttribute(flag, value);
+    }
+  };
+
+  #drillOutHandler = (): void => {
+    this.#drillOut();
+  };
+
+  /**
+   * Shut the overflow menu, putting any drilled rows back first.
+   *
+   * ORDER MATTERS: the rows have to go home before the fold changes, or a chip
+   * that folds away this pass takes another filter's rows with it — they are
+   * moved, not copied, and there is only one set.
+   */
+  #closeOverflow(): void {
+    this.#drillOut();
+    const menu = this.$<HTMLElement>('.overflow-chip')
+      ?.querySelector<HTMLElement & { hide(): void }>('sherpa-menu');
+    menu?.hide();
+  }
+
+  /** Put a drilled-in filter's rows back and restore the overflow list. */
+  #drillOut(): void {
+    const chip = this.$<HTMLElement>('.overflow-chip');
+    const menu = chip?.querySelector<HTMLElement>('sherpa-menu');
+    const drill = this.#drill;
+    if (!menu || !drill) return;
+
+    // Back to the filter's own menu, which is where its state has been living
+    // all along — the chip is only parked off-screen, not emptied.
+    drill.home.replaceChildren(...menu.childNodes);
+    menu.replaceChildren(...drill.rows);
+    this.#drill = null;
+
+    menu.removeAttribute('data-drill');
+    delete menu.dataset['drillFrom'];
+    menu.setAttribute('data-heading', 'More filters');
+    // Hand every mode back to the filter's own menu — it is where they belong,
+    // and a calendar left without its data-type is a crushed grid.
+    for (const flag of SherpaQuickFilterToolbar.DRILL_FLAGS) {
+      const value = menu.getAttribute(flag);
+      if (value == null) drill.home.removeAttribute(flag);
+      else drill.home.setAttribute(flag, value);
+      // …and the overflow list is a plain list of doors: no draft to apply, no
+      // search, no calendar.
+      menu.removeAttribute(flag);
+    }
+  }
+
+  /**
+   * Does the chip run want more room than it has?
+   *
+   * Reading `scrollWidth` FORCES the pending layout, so an attribute written on
+   * the line above is already reflected — which is what lets the collapse loop
+   * add one step at a time and stop at the first that fits, rather than applying
+   * all three and folding an action cluster that only needed its widest run
+   * taken off.
+   */
+  #overflowing(): boolean {
+    const chips = this.$('.chips');
+    // 1px of slack: a sub-pixel layout rounds scrollWidth up and a bar that fits
+    // exactly would otherwise fold a chip for nothing, every frame.
+    return !!chips && chips.scrollWidth > chips.clientWidth + 1;
+  }
+
+  /** Put every chip back on the bar, before a fresh measurement. */
+  #showAllChips(): void {
+    for (const chip of this.$$<HTMLElement>('.chips > .chip')) {
+      chip.removeAttribute('data-folded-away');
+    }
+  }
+
+  #onResize = (): void => {
+    // ONE measure per frame. A resize drag fires this per pixel, and each pass
+    // reads layout — batching to an animation frame is what keeps a drag from
+    // forcing a hundred synchronous reflows.
+    if (this.#frame != null) return;
+    this.#frame = requestAnimationFrame(() => {
+      this.#frame = null;
+      this.#reflow();
+    });
+  };
+
   override onRender(): void {
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // The cluster is delegated from its own zone, not per button: every control
@@ -230,6 +529,39 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
+
+    // THE MEASURE PASS. CSS's container queries do the first cut — a narrow bar
+    // is already collapsed on the first paint, with no JS in the loop — and this
+    // refines it: the breakpoints are width guesses, and a bar of eleven long
+    // chips has to fold sooner than one of three short ones.
+    //
+    // ResizeObserver rather than a window listener, because the bar's width
+    // changes without the window's: the nav collapsing, a panel opening, a
+    // container query elsewhere. It fires once on observe, which is the initial
+    // measurement.
+    // The overflow chip's rows open their filter's own menu beside them.
+    // pointerover, not pointerenter: the rows are stamped after this runs, and
+    // pointerenter does not bubble so a delegated listener would never hear it.
+    // The overflow menu drills IN PLACE — a row swaps the list for that
+    // filter's own rows, and Back swaps it home. Click, not hover: a drill
+    // replaces what is on screen, and doing that on a pointer passing over a
+    // row would move the list out from under it.
+    this.addEventListener('click', this.#onFoldedClick, true);
+    // BACK out of a drill. The arrow lives in the MENU's own shadow root, two
+    // boundaries away, so its native click never reaches here — the menu
+    // re-emits it as a composed `menu-back`, which does.
+    this.addEventListener('menu-back', this.#drillOutHandler);
+
+    this.#observer = new ResizeObserver(this.#onResize);
+    const bar = this.$('.bar');
+    if (bar) this.#observer.observe(bar);
+  }
+
+  override onDisconnect(): void {
+    this.#observer?.disconnect();
+    this.#observer = null;
+    if (this.#frame != null) cancelAnimationFrame(this.#frame);
+    this.#frame = null;
   }
 
   /**
@@ -315,6 +647,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * reason.
    */
   #chipPicks(chip: HTMLElement): string[] {
+    // A chip whose rows are currently DRILLED INTO the overflow menu reports
+    // from there. The rows are moved, not copied — there is one set of inputs
+    // and this is where they are right now — so reading the chip's own empty
+    // menu would say "nothing picked" for a filter the user is editing.
+    if (this.#drill && this.#drill.home === chip.querySelector('sherpa-menu')) {
+      const live = this.$<HTMLElement & { values: string[] }>('.overflow-chip');
+      const menu = live?.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
+      if (menu) return menu.values;
+    }
     // A NUMBER chip's menu reports its own value — one number, or the two ends
     // of its range — because the menu is what knows which shape its Range switch
     // has it in. Reading it here as well would be the same rule written twice.
@@ -431,6 +772,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // after a rebuild like everything else.
       if (f.kind === 'date') this.#syncDateLabel(chip);
     }
+
+    // The run just changed, so what fits has changed with it. The ResizeObserver
+    // only fires on a size change, and populating a bar that was already its
+    // final width is not one — without this, a bar loaded with eleven chips
+    // stayed overflowing until the window happened to be resized.
+    this.#onResize();
   }
 
   /**
