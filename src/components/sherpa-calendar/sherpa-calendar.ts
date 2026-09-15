@@ -72,6 +72,14 @@ export class SherpaCalendar extends SherpaElement {
   /** Currently viewed year / 0-indexed month (drives the grids). */
   #viewYear = new Date().getFullYear();
   #viewMonth = new Date().getMonth();
+  /**
+   * True while the USER's own click is writing a value.
+   *
+   * onChange re-anchors the view to whatever value arrives, which is right for a
+   * host setting one — the day should be on screen — and wrong for a click,
+   * where the day is already on screen and moving to it moves everything else.
+   */
+  #picking = false;
 
   override onRender(): void {
     const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
@@ -96,8 +104,15 @@ export class SherpaCalendar extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-value' || name === 'data-value-start') {
-      const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
-      if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
+      // JUMP TO THE VALUE only when a HOST set it. A user's own click writes the
+      // same attribute, and re-anchoring on that moved the grid under them:
+      // picking a start date in a RANGE calendar's right-hand month scrolled
+      // that month to the left, so the days they were about to click as the end
+      // were suddenly somewhere else. Stepping is theirs to do.
+      if (!this.#picking) {
+        const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
+        if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
+      }
     }
     if (name === 'data-value') this.#syncTimeInput();
     this.#render();
@@ -497,20 +512,28 @@ export class SherpaCalendar extends SherpaElement {
   #pickRange(iso: string): void {
     const start = datePart(this.dataset['valueStart']);
     const end = datePart(this.dataset['valueEnd']);
-    if (!start || (start && end)) {
-      // begin a fresh range
-      this.dataset['valueStart'] = iso;
-      delete this.dataset['valueEnd'];
+    // The grid must NOT follow the value the user just clicked — see #picking.
+    this.#picking = true;
+    try {
+      if (!start || (start && end)) {
+        // begin a fresh range
+        this.dataset['valueStart'] = iso;
+        delete this.dataset['valueEnd'];
+        this.#render();
+        return;
+      }
+      // complete the range (order the two ends)
+      let s = start, e = iso;
+      if (e < s) { [s, e] = [e, s]; }
+      this.dataset['valueStart'] = s;
+      this.dataset['valueEnd'] = e;
       this.#render();
-      return;
+      this.emit('range-select', { start: s, end: e });
+    } finally {
+      // `finally`, so an early return or a listener that throws still clears it
+      // — a stuck flag would leave the calendar ignoring its host for good.
+      this.#picking = false;
     }
-    // complete the range (order the two ends)
-    let s = start, e = iso;
-    if (e < s) { [s, e] = [e, s]; }
-    this.dataset['valueStart'] = s;
-    this.dataset['valueEnd'] = e;
-    this.#render();
-    this.emit('range-select', { start: s, end: e });
   }
 
   /** hh:mm currently held in the time input (empty if unset). */

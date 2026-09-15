@@ -635,3 +635,89 @@ test('the current month and year cells take the today state', async ({ page }) =
   expect(r.bothMonth.state).toBe('selected');
   expect(r.bothYear.state).toBe('selected');
 });
+
+/**
+ * A RANGE calendar's grid does NOT follow the day the user just clicked.
+ *
+ * onChange re-anchors the view to whatever value arrives, which is right for a
+ * host setting one — the day should be on screen — and wrong for a click, where
+ * the day is already on screen. Picking a start in the RIGHT-hand month scrolled
+ * that month to the left, so the days about to be clicked as the end were
+ * suddenly somewhere else.
+ */
+test('picking a range start does not move the grid; a host-set value still does', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.inlineSize = '520px';
+    document.getElementById('root')!.replaceChildren(box);
+
+    const el = document.createElement('sherpa-calendar') as CalEl;
+    el.setAttribute('data-type', 'range');
+    box.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const label = (): string => sr.querySelector('.cal-label')!.textContent ?? '';
+    // The RIGHT-hand month's days: the two-up grid puts them past the divider,
+    // which is track 8 of 15.
+    const rightMonth = (): HTMLElement[] =>
+      [...sr.querySelectorAll('sherpa-calendar-cell')].filter(
+        (c) =>
+          !c.hasAttribute('data-blank') &&
+          parseInt(getComputedStyle(c).gridColumnStart, 10) > 8,
+      ) as HTMLElement[];
+
+    const before = label();
+
+    // START in the right-hand month.
+    const start = rightMonth()[10]!;
+    const startIso = start.dataset['iso']!;
+    start.click();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const afterStart = label();
+    // The day just picked must still be where it was, or the END cannot be
+    // chosen from the same month.
+    const stillThere = rightMonth().some((c) => c.dataset['iso'] === startIso);
+
+    // Complete the range in that same month.
+    const end = rightMonth().find((c) => (c.dataset['iso'] ?? '') > startIso)!;
+    end.click();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const afterEnd = label();
+
+    // A HOST setting a value SHOULD still jump — the day has to be on screen.
+    (el as HTMLElement).dataset['valueStart'] = '2025-03-04';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const afterHostSet = label();
+
+    // …and the stepper still steps.
+    (sr.querySelector('.cal-next') as HTMLElement).click();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return {
+      before,
+      afterStart,
+      afterEnd,
+      stillThere,
+      afterHostSet,
+      afterNext: label(),
+      range: [(el as HTMLElement).dataset['valueStart'], (el as HTMLElement).dataset['valueEnd']],
+    };
+  });
+
+  // UNMOVED through both clicks.
+  expect(r.afterStart).toBe(r.before);
+  expect(r.afterEnd).toBe(r.before);
+  expect(r.stillThere).toBe(true);
+  // …and the range actually completed, so nothing was broken to achieve it.
+  expect(r.range[0]).toBeTruthy();
+  expect(r.range[1]).toBeTruthy();
+
+  // A host-set value jumps, and the stepper steps.
+  expect(r.afterHostSet).not.toBe(r.before);
+  expect(r.afterNext).not.toBe(r.afterHostSet);
+});
