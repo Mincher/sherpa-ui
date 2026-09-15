@@ -188,3 +188,40 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
   parts.push('Z');
   return parts.join(' ');
 }
+
+/* ── Series colours ───────────────────────────────────────────────────── */
+
+/**
+ * How many data-viz series the token layer defines.
+ *
+ * Ten, since the Data Viz collection was rebuilt (2026-09-15): ten sequences of
+ * ten steps, with `series/1..10` reading one step each. It was eleven, and the
+ * wrap lived as a bare `% 11` in four separate components — so a change to the
+ * palette silently left charts asking for a variable that no longer existed.
+ */
+export const SERIES_COUNT = 10;
+
+/**
+ * The CSS custom property a chart mark should paint with, for a 0-based mark
+ * index and an optional explicit 1-based `colorIndex` from the data.
+ *
+ * Wraps: an eleventh series reuses the first hue rather than falling through to
+ * an undefined variable (which paints nothing at all, with no error).
+ */
+export function seriesVar(index: number, colorIndex?: number): string {
+  const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;
+  return `var(--sherpa-data-viz-series-${n})`;
+}
+
+/**
+ * The mark's OUTLINE for the same series — the collection's `border`, which
+ * aliases to colour 5 of whichever sequence is active.
+ *
+ * A mark's fill moves along its ramp; its border does not. The border is the
+ * series' identity, so it stays put whatever the fill is doing — and it is what
+ * keeps a translucent mark legible on any surface.
+ */
+export function seriesBorderVar(index: number, colorIndex?: number): string {
+  const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;
+  return `var(--sherpa-data-viz-series-border-${n}, var(--sherpa-data-viz-series-${n}))`;
+}

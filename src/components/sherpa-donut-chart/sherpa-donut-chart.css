@@ -163,7 +163,12 @@
 .slice {
   fill: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
   fill-opacity: 0.6;
-  stroke: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  /* The OUTLINE has its own token — colour 5 of the series' sequence, at full
+     strength — so it does NOT track the fill. A slice's fill moves along its
+     ramp; its border is the series' identity and stays put, which is what keeps
+     a translucent mark legible on any surface. Falls back to the hue where the
+     border token is not defined. */
+  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
   /* ROUND joins. The corner arcs already carry the rounding, but a join sits
      where two path commands meet, and a mitre there pushes a spike out past the
      corner on a narrow slice. */

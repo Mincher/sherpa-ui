@@ -31,7 +31,7 @@
  * @fires slice-click — a slice is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.js';
+import { formatTick, radialArea, ringSegmentPath, seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 
 export interface DonutSlice {
   label: string;
@@ -164,8 +164,10 @@ export class SherpaDonutChart extends SherpaElement {
         }),
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
-      const n = ((slice.colorIndex ?? i + 1) - 1) % 11 + 1;
-      arc.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+      arc.style.setProperty('--_hue', seriesVar(i, slice.colorIndex));
+      // The OUTLINE is its own token — colour 5 of the series' sequence, held at
+      // full strength. A mark's fill moves along its ramp; its border does not.
+      arc.style.setProperty('--_border', seriesBorderVar(i, slice.colorIndex));
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
 

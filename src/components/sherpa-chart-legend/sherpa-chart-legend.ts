@@ -31,6 +31,7 @@
  * @fires legend-breakdown-change — the "Other" breakdown was applied. bubbles + composed. detail: { active: number[], hidden: number[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 // The roll-up row composes a real button + a committing menu, so the legend must
 // register them — it cannot rely on the page having imported them.
 import '../sherpa-button/sherpa-button.js';
@@ -167,9 +168,9 @@ export class SherpaChartLegend extends SherpaElement {
         // sparkline's stroke uses, so a zone's key and its band agree.
         entry.dataset['status'] = item.status;
       } else {
-        // Categorical hue by 1-based index (wraps at 11).
-        const n = ((item.colorIndex ?? i + 1) - 1) % 11 + 1;
-        swatch.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+        // The series hue by 1-based index, wrapping at the palette size.
+        swatch.style.setProperty('--_hue', seriesVar(i, item.colorIndex));
+        swatch.style.setProperty('--_border', seriesBorderVar(i, item.colorIndex));
       }
       entry.querySelector('.label')!.textContent = item.label;
       entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';

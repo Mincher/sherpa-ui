@@ -1422,5 +1422,44 @@
         "end": 4
       }
     }
+  },
+  "data-viz-status": {
+    "collectionId": "VariableCollectionId:1224:35812",
+    "defaultMode": "categorical",
+    "vars": {
+      "data-viz/series/1": {
+        "categorical": "#36de8c"
+      },
+      "data-viz/series/2": {
+        "categorical": "#ffc44c"
+      },
+      "data-viz/series/3": {
+        "categorical": "#ff7300"
+      },
+      "data-viz/series/4": {
+        "categorical": "#dd2c01"
+      },
+      "data-viz/series/5": {
+        "categorical": "#008bba"
+      },
+      "data-viz/series/6": {
+        "categorical": "#6681ff"
+      },
+      "data-viz/series/7": {
+        "categorical": "#ffaa00"
+      },
+      "data-viz/series/8": {
+        "categorical": "#ff5385"
+      },
+      "data-viz/series/9": {
+        "categorical": "#c60056"
+      },
+      "data-viz/series/10": {
+        "categorical": "#36de8c"
+      },
+      "data-viz/series/11": {
+        "categorical": "#878794"
+      }
+    }
   }
 }

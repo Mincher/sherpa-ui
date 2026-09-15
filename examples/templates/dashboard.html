@@ -67,11 +67,18 @@
     <sherpa-container-header slot="header" data-heading="Storage used"></sherpa-container-header>
     <!-- The gauge's legend names its ZONES rather than a data series — the bands
          are meaningless without the thresholds they stand for. READ-ONLY: a gauge
-         shows one value, so there is no series to toggle off. -->
+         shows one value, so there is no series to toggle off.
+
+         `data-palette="status"` is what makes the bands read as severities. The
+         gauge colours them by POSITION off the data-viz series, exactly as a
+         donut colours its slices; the palette re-points series 1-5 onto the
+         status ramps. Any chart can do the same with the same one attribute. -->
     <sherpa-gauge-chart
       id="gauge"
       data-min="0"
       data-max="100"
+      data-unit="%"
+      data-palette="status"
       data-caption="4.2 TB of 6 TB used"
       data-zones="0-60:success,60-85:warning,85-100:critical"
       data-legend="horizontal">

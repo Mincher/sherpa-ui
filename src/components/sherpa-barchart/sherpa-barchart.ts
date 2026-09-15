@@ -12,7 +12,7 @@
  * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, tickPercent } from '../../core/format-tick.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
@@ -101,10 +101,11 @@ export class SherpaBarchart extends SherpaElement {
       // The ORIGINAL index, so bar-click still names the datum the caller gave us
       // even when earlier categories are hidden.
       col.dataset['index'] = String(i);
-      const n = ((d.colorIndex ?? i + 1) - 1) % 11 + 1;
+      const hue = seriesVar(i, d.colorIndex);
       const bar = col.querySelector<HTMLElement>('.bar')!;
       bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
-      bar.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+      bar.style.setProperty('--_hue', hue);
+      bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
 
       // The hover tooltip. The only thing JS supplies is the anchor NAME — CSS
       // cannot derive a per-mark `anchor-name`, and everything else about the

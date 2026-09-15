@@ -19,7 +19,7 @@
  * JS still hands CSS the needle angle. The big number, caption and scale are text.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { radialArea, ringSegmentPath } from '../../core/format-tick.js';
+import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -34,25 +34,22 @@ interface Zone {
 }
 
 /**
- * Status name → the band's colour.
+ * The status names a zone may be declared with, in the order the data-viz Status
+ * palette re-points its series. `0-60:success` is series 1, `warning` series 2,
+ * and so on — so a status name resolves to a POSITION, and the position picks the
+ * hue, exactly as a donut slice picks its own.
  *
- * The `-2` step is the SATURATED middle of each status ramp — the one a chart
- * mark wants. `base` and `-1` are the pale tints a card fills with, and `-3`/`-4`
- * are the dark inks for text on them.
+ * The colours themselves are NOT here. Every band reads
+ * `--sherpa-data-viz-series-N` like any other chart mark; setting
+ * `data-palette="status"` on the host re-points series 1-5 onto the status ramps
+ * (@layer style in tokens.css, from the `Status` EXTENSION of Figma's Data Viz
+ * collection). That is the whole point: a chart needs no status-aware colour code
+ * of its own, and any other chart can speak status with the same one attribute.
  *
- * These used to read `--sherpa-style-surface-<status>-strong`, which does not
- * exist: `style-surface/*` is status-MODED (one `[data-status]` pin re-points the
- * whole set) and has no per-status names, so all five silently fell through to
- * their hardcoded hex. A gauge paints several statuses at once, so the moded
- * token could not serve it anyway — it has to name each ramp directly.
+ * These used to be five hardcoded `--sherpa-theme-surface-<status>-2` vars — the
+ * gauge naming ramps directly, which no other chart did and none could reuse.
  */
-const STATUS_COLOUR: Record<string, string> = {
-  success: 'var(--sherpa-theme-surface-success-2, #36de8c)',
-  warning: 'var(--sherpa-theme-surface-warning-2, #ffc44c)',
-  urgent: 'var(--sherpa-theme-surface-urgent-2, #ff7300)',
-  critical: 'var(--sherpa-theme-surface-critical-2, #dd2c01)',
-  info: 'var(--sherpa-theme-surface-info-2, #008bba)',
-};
+const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
 /** Centre of the 100-unit circle. Only its TOP half is inside the viewBox. */
 const CENTRE = 50;
@@ -93,7 +90,9 @@ const SPAN_DEG = 180;
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption'];
+  static override observed = [
+    'data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit',
+  ];
 
   override onRender(): void {
     this.#sync();
@@ -132,12 +131,24 @@ export class SherpaGaugeChart extends SherpaElement {
     // and the indices would slip out of step.
     this.#renderHotspots(this.#renderArcs(zones, frac));
 
-    const value = this.$('.value');
-    if (value) value.textContent = this.dataset['label'] ?? String(raw);
+    // THREE SCALE TICKS: min at the left end, the MIDPOINT above the crown, max
+    // at the right end. The middle one is a tick like the other two, NOT the
+    // reading — it sits at the top centre of the arc, which is the halfway point
+    // of the scale, and the needle is what reports the value.
+    //
+    // It used to print `data-label ?? the value`, which put the reading in a
+    // place that means "half way". On the Figma component the needle happens to
+    // sit at 50 too, so the two readings agreed and the bug stayed hidden.
+    //
+    // `data-unit` suffixes all three (Figma's gauge reads 0% / 50% / 100%).
+    const unit = this.dataset['unit'] ?? '';
+    const tick = (n: number): string => `${formatTick(n)}${unit}`;
+    const mid = this.$('.value');
+    if (mid) mid.textContent = this.dataset['label'] ?? tick((min + max) / 2);
     const minEl = this.$('.min');
-    if (minEl) minEl.textContent = String(min);
+    if (minEl) minEl.textContent = tick(min);
     const maxEl = this.$('.max');
-    if (maxEl) maxEl.textContent = String(max);
+    if (maxEl) maxEl.textContent = tick(max);
 
     // Caption text (the caption slot, when filled, wins via light-DOM content).
     const caption = this.$('.caption');
@@ -250,7 +261,8 @@ export class SherpaGaugeChart extends SherpaElement {
       tip.style.setProperty('--_anchor', `--gauge-zone-${i}`);
       // A status band is named by its status; a raw CSS colour has no name worth
       // showing, so that row falls back to the range alone.
-      const label = STATUS_COLOUR[zone.name] ? this.#zoneLabel(zone.name) : '';
+      const isStatus = (STATUS_ORDER as readonly string[]).includes(zone.name);
+      const label = isStatus ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
       // The zone's range on the scale the reader sees ("60–85"), not a 0–1
       // fraction of it.
@@ -272,9 +284,20 @@ export class SherpaGaugeChart extends SherpaElement {
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
-  /** Map a zone colour token/name to a CSS colour. Status names route to tokens. */
+  /**
+   * A zone's colour name → the CSS colour its band paints with.
+   *
+   * A STATUS name picks a data-viz series by POSITION (success → series 1,
+   * warning → 2, urgent → 3, critical → 4, info → 5) — the same series variable
+   * a donut slice uses. `data-palette="status"` on the host is what makes those
+   * five resolve to the status ramps; without it they are the categorical hues,
+   * which is the correct reading for a gauge whose bands are just categories.
+   *
+   * Anything else is taken as a raw CSS colour and passed through.
+   */
   #zoneColour(name: string): string {
-    return STATUS_COLOUR[name] ?? name;
+    const i = STATUS_ORDER.indexOf(name as (typeof STATUS_ORDER)[number]);
+    return i === -1 ? name : `var(--sherpa-data-viz-series-${i + 1})`;
   }
 
   /**

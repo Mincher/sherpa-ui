@@ -289,7 +289,9 @@
 .zone {
   fill: var(--_hue, var(--_fill));
   fill-opacity: 0.6;
-  stroke: var(--_hue, var(--_fill));
+  /* The OUTLINE has its own token and does NOT track the fill — see the same
+     rule on sherpa-donut-chart's .slice. */
+  stroke: var(--_border, var(--_hue, var(--_fill)));
   /* ROUND joins. The corner arcs already carry the rounding, but a join sits
      where two path commands meet, and a mitre there pushes a spike out past the
      corner on a narrow band. */

@@ -11,7 +11,7 @@
  * axis stretched to data nobody can see.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, tickPercent } from '../../core/format-tick.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
@@ -136,7 +136,7 @@ export class SherpaLineChart extends SherpaElement {
       // hit-testing. Its COLOUR INDEX is still derived from `si`, so unhiding it
       // comes back the same hue rather than shifting every colour along.
       if (this.#hidden.has(si)) return;
-      const n = ((s.colorIndex ?? si + 1) - 1) % 11 + 1;
+      const hue = seriesVar(si, s.colorIndex);
       const pts = s.values.map((v, i) => {
         const x = s.values.length > 1 ? (i / (s.values.length - 1)) * 100 : 50;
         const y = 100 - ((v - min) / span) * 100;
@@ -145,7 +145,8 @@ export class SherpaLineChart extends SherpaElement {
 
       const g = document.createElementNS(SVG_NS, 'g');
       g.setAttribute('class', 'series');
-      g.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+      g.style.setProperty('--_hue', hue);
+      g.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
 
       const area = document.createElementNS(SVG_NS, 'path');
       area.setAttribute('class', 'area');
@@ -180,7 +181,7 @@ export class SherpaLineChart extends SherpaElement {
           dot.dataset['index'] = String(i);
           dot.style.setProperty('--_x', `${x}%`);
           dot.style.setProperty('--_y', `${y}%`);
-          dot.style.setProperty('--_hue', `var(--sherpa-data-viz-series-${n})`);
+          dot.style.setProperty('--_hue', hue);
           // The anchor NAME on BOTH: the dot declares it, the tip points at it.
           dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
           tip.style.setProperty('--_anchor', `--line-${si}-${i}`);

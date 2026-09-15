@@ -182,6 +182,11 @@ const ROUTING = {
 
   // Extension-only collections (no leaves in the dump) — consumed from the cache.
   // (hero/mono collections deleted 2026-09-07 — families now in content/font/*.)
+  // The Status extension of Data Viz → [data-palette="status"] @layer style. It
+  // re-points series 1-5 onto the status ramps, so ANY chart can speak status by
+  // colouring its marks by POSITION exactly as it always does — the palette swap
+  // is the one change, and no chart needs status-aware code of its own.
+  'data-viz-status': { target: 'skip' },
   'style-transparent': { target: 'skip' }, // → [data-look="transparent"] @layer style
   'style-saturated': { target: 'skip' }, // → [data-look="saturated"] @layer style
   // The BORDER collection — per-corner rounding + per-edge border width.
@@ -855,20 +860,90 @@ const fontAtomLines = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
-// Categorical series — the 11 public --sherpa-categorical-* names.
+// Data-viz series — the public --sherpa-categorical-* / --sherpa-data-viz-* names.
 // ════════════════════════════════════════════════════════════════════════════
-// data-viz `series/1..11` primary mode = `categorical`; each resolves to a theme
-// categorical colour. Emit the stable public names (consumed by charts).
+// The Data Viz collection is TEN sequences of TEN steps (rebuilt 2026-09-15); its
+// `series/1..10` read one step each from whichever sequence mode is active, and
+// its `border` reads that sequence's colour 5.
+//
+// The count is NOT hardcoded here — it follows whatever the dump carries, so a
+// palette change cannot leave the CSS emitting a series the tokens no longer
+// define. (It was eleven, with a `categorical` primary mode that has since been
+// retired: step 5 of each sequence covers that job.)
+//
+// A mark's fill moves along its ramp; its BORDER does not. The border is the
+// series' identity, so `--sherpa-data-viz-series-border-N` is emitted alongside
+// each hue and every chart strokes with it.
 const categoricalLines = [];
-for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
-  const m = leaf.rawPath.match(/series\/(\d+)$/);
-  if (!m) continue;
-  const v = toCss(leaf.value, leaf.type);
-  if (v != null) categoricalLines.push(`  --sherpa-categorical-${m[1]}: ${v};`);
+const seriesBorderLines = [];
+{
+  let border = null;
+  const hues = [];
+  for (const leaf of walkLeaves(doc['data-viz'] ?? {}, ['data-viz'])) {
+    // A series fill is a COMPOSE_COLOR of its ramp step and effects/opacity/500,
+    // and the DTCG export flattens that to the bare hue — the alpha survives only
+    // in $extensions.opacity, which withOpacity() re-applies. Without this the
+    // marks would all paint at full strength.
+    const v = withOpacity(
+      toCss(leaf.value, leaf.type),
+      leaf.opacity?.[leaf.primaryMode] ?? Object.values(leaf.opacity ?? {})[0],
+    );
+    if (v == null) continue;
+    const m = leaf.rawPath.match(/series\/(\d+)$/);
+    if (m) { hues.push([Number(m[1]), v]); continue; }
+    if (/(^|\/)border$/.test(leaf.rawPath)) border = v;
+  }
+  hues.sort((a, b) => a[0] - b[0]);
+  for (const [n, v] of hues) {
+    categoricalLines.push(`  --sherpa-categorical-${n}: ${v};`);
+    // One border per series name, so a chart can ask for its own index without
+    // knowing that they all currently resolve to the same value.
+    if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border-${n}: ${border};`);
+  }
+  if (border != null) seriesBorderLines.push(`  --sherpa-data-viz-series-border: ${border};`);
+  if (!hues.length) warn('data-viz: no series/N leaves found in the dump');
 }
-categoricalLines.sort(
-  (a, b) => Number(a.match(/-(\d+):/)[1]) - Number(b.match(/-(\d+):/)[1]),
-);
+
+// ════════════════════════════════════════════════════════════════════════════
+// Status palette — [data-palette="status"] re-points the series onto the ramps.
+// ════════════════════════════════════════════════════════════════════════════
+// The `Status` EXTENSION of Data Viz overrides series/1..5 to the status ramps'
+// +2 step (the saturated middle — `base`/+1 are the pale card tints, +3/+4 the
+// dark inks for text on them). Series 6-11 keep the categorical hues.
+//
+// Emitting it as an ATTRIBUTE rather than per-component code is the whole point:
+// every chart already colours its marks by POSITION (series-1, series-2, …), so
+// one `data-palette="status"` turns any of them into a status chart with no
+// chart-specific status handling anywhere.
+//
+// Both the public `--sherpa-categorical-*` names and the `--sherpa-data-viz-
+// series-*` aliases are re-pointed, because charts consume whichever they were
+// written against.
+const paletteBlocks = [];
+{
+  const cache = extDoc['data-viz-status']?.vars;
+  if (!cache) {
+    warn('status palette "data-viz-status" missing from extension cache');
+  } else {
+    const mode = extDoc['data-viz-status'].defaultMode ?? 'categorical';
+    const lines = [];
+    for (const [path, byMode] of Object.entries(cache)) {
+      const n = path.match(/series\/(\d+)$/)?.[1];
+      const val = byMode[mode];
+      if (!n || val == null) continue;
+      lines.push(`    --sherpa-categorical-${n}: ${val};`);
+      lines.push(`    --sherpa-data-viz-series-${n}: ${val};`);
+    }
+    lines.sort((a, b) => {
+      const an = Number(a.match(/-(\d+):/)[1]);
+      const bn = Number(b.match(/-(\d+):/)[1]);
+      return an - bn || a.localeCompare(b);
+    });
+    if (lines.length) {
+      paletteBlocks.push(`  [data-palette="status"] {\n${lines.join('\n')}\n  }`);
+    }
+  }
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // Status cascade — an ancestor [data-status] emits --_status-* to shadow roots.
@@ -1365,8 +1440,12 @@ ${joinBlocks(snapBlocks)}
 const styleVars = [
   ...layers.style.root,
   '',
-  '    /* categorical data-viz series — stable public names */',
+  '    /* data-viz series — stable public names */',
   ...categoricalLines,
+  ...(seriesBorderLines.length
+    ? ['', '    /* series BORDER — colour 5 of the active sequence, held fixed */',
+       ...seriesBorderLines]
+    : []),
 ];
 const styleLayer = `@layer style {
   :root {
@@ -1378,6 +1457,10 @@ ${joinBlocks(statusBlocks)}
 
   /* Look tiers — [data-look] re-points the status cascade per status mode. */
 ${joinBlocks(lookBlocks)}
+
+  /* Status palette — [data-palette] re-points the data-viz series onto the
+     status ramps, so any chart can colour its marks by status with one attr. */
+${joinBlocks(paletteBlocks)}
 ${layers.style.modeBlocks.length ? '\n' + joinBlocks(layers.style.modeBlocks) : ''}
 }`;
 
@@ -1438,7 +1521,7 @@ console.log(
     `  layout       ${layers.layout.root.length} vars + .sherpa-view\n` +
     `  structure    ${layers.structure.root.length} vars\n` +
     `  border       ${layers.border.root.length} vars, ${snapBlocks.length} group positions\n` +
-    `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length} categorical\n` +
+    `  style        ${layers.style.root.length} vars, ${statusBlocks.length} status, ${lookBlocks.length} look, ${categoricalLines.length} series, ${seriesBorderLines.length} border, ${paletteBlocks.length} palette\n` +
     `  elevation    ${layers.elevation.root.length} vars, ${shadowAliasLines.length} shadow aliases, ${layers.elevation.modeBlocks.length} [data-elevation]\n` +
     `✓ ${wrote} component token regions inlined into <comp>.css\n` +
     `${warnings.length ? `⚠ ${warnings.length} warning(s) — see above` : '✓ no warnings'}`,
