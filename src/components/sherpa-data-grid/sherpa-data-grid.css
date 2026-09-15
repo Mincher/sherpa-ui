@@ -859,3 +859,14 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([data-empty]) .empty { display: block; }
+
+/* ── Single select ───────────────────────────────────────────────────
+ * The head cell shows NO control. "Select all" is meaningless where only one
+ * row can be chosen, and a lone checkbox there would offer something the grid
+ * cannot do. The CELL stays — it holds the column open so the rows' radios line
+ * up under it.
+ */
+:host([data-select="single"]) .select-all { display: none; }
+
+/* A GROUP's box is a select-all for its rows, so it goes for the same reason. */
+:host([data-select="single"]) .group-select { display: none; }

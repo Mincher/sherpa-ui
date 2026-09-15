@@ -32,6 +32,10 @@
  * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
  * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
  * @fires column-resize    — a column header grip is dragged. bubbles + composed. detail: { field: string, width: number }
+ *
+ * @attr {enum} data-select — multiple (default) | single. Single draws RADIOS and
+ *   holds one row; the header cell shows no control, because "select all" is
+ *   meaningless where only one can be chosen.
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -66,6 +70,9 @@ export class SherpaDataGrid extends SherpaElement {
     'data-sort-direction',
     'data-group-field',
     'data-selectable',
+    // SINGLE vs multiple changes the CONTROL each row draws — a radio cannot be
+    // turned into a checkbox by CSS — so a change here re-renders the body.
+    'data-select',
   ];
 
   /* ── Column widths ───────────────────────────────────────────────
@@ -107,6 +114,30 @@ export class SherpaDataGrid extends SherpaElement {
    * so DOM-held selection vanished and an index would point at a different record
    * once the order changed. A record reference survives both.
    */
+  /**
+   * Whether the grid picks ONE row or many.
+   *
+   * `single` draws radios and holds at most one record. The head cell shows NO
+   * control in that mode: "select all" is meaningless where only one can be
+   * chosen, and a lone checkbox there would offer something the grid cannot do.
+   */
+  get #single(): boolean {
+    return this.dataset['select'] === 'single';
+  }
+
+  /**
+   * The radio group's name in single mode.
+   *
+   * Per INSTANCE, so two grids on one page do not share a group and steal each
+   * other's selection. Derived once and kept, because the name has to be stable
+   * across re-renders or the browser treats each render as a fresh group.
+   */
+  static #uid = 0;
+  #selectNameId = ++SherpaDataGrid.#uid;
+  get #selectName(): string {
+    return `sherpa-grid-select-${this.#selectNameId}`;
+  }
+
   #selected = new Set<GridRow>();
   /**
    * The last row CLICKED — the "focused" state.
@@ -412,7 +443,19 @@ export class SherpaDataGrid extends SherpaElement {
       // every render, so the tick has to come from #selected rather than survive
       // in the DOM.
       const box = tr.querySelector<HTMLInputElement>('.row-select');
-      if (box) box.checked = this.#selected.has(record);
+      if (box) {
+        // RADIOS in single mode. A radio cannot be made from a checkbox by CSS,
+        // and the native type is what buys the group behaviour: the browser
+        // unticks the previous row for us, and arrow keys move the choice.
+        // They share a NAME for that, scoped to this grid so two grids on one
+        // page cannot fight over the same group.
+        if (this.#single) {
+          box.type = 'radio';
+          box.name = this.#selectName;
+          box.setAttribute('aria-label', 'Select this row');
+        }
+        box.checked = this.#selected.has(record);
+      }
       // Which group this row belongs to, so CSS can hide it when that group's
       // row is collapsed — the row itself never needs a `display` write.
       if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
@@ -719,6 +762,11 @@ export class SherpaDataGrid extends SherpaElement {
     // Record the choice against the RECORD, so it survives the next re-render.
     const record = this.#recordFor(target);
     if (record) {
+      // SINGLE mode holds one. The browser has already unticked the previous
+      // radio, so the set has to follow — left alone it would grow with every
+      // pick while only one box showed, and `selected` would name rows the user
+      // can no longer see ticked.
+      if (this.#single) this.#selected.clear();
       if ((target as HTMLInputElement).checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }

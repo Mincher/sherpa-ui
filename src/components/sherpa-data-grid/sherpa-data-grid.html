@@ -30,7 +30,10 @@
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
     data-group-field                         group rows by this column
-    data-selectable                          show a leading checkbox column (select-all + per-row)
+    data-selectable                          show a leading selection column
+    data-select     multiple (default) | single — single draws RADIOS, holds one
+                    row, and shows no control in the header: "select all" is
+                    meaningless where only one can be chosen
     data-filterable                          show a secondary header row of filter inputs
 
   Column widths: each column is drawn at a fixed width so long labels TRUNCATE

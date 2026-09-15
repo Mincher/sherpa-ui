@@ -835,3 +835,81 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
   await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
   expect(await sortField()).toBe('name');
 });
+
+/**
+ * data-select="single" — the grid picks ONE row.
+ *
+ * Radios, not checkboxes: the native type buys the group behaviour, so the
+ * browser unticks the previous row and arrow keys move the choice. And no
+ * control in the header, because "select all" is meaningless where only one can
+ * be chosen — a lone checkbox there would offer something the grid cannot do.
+ */
+test('data-select="single" draws radios, holds one row, and drops the select-all', async ({
+  page,
+}) => {
+  await installBuilder(page);
+  const r = await page.evaluate(async () => {
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const run = async (single: boolean): Promise<Record<string, unknown>> => {
+      const el = await window.__buildGrid({
+        columns: [{ field: 'name', header: 'Name' }],
+        rows: [{ name: 'A' }, { name: 'B' }, { name: 'C' }],
+      });
+      el.setAttribute('data-selectable', '');
+      if (single) el.setAttribute('data-select', 'single');
+      await settle();
+
+      const sr = el.shadowRoot!;
+      const boxes = (): HTMLInputElement[] => [...sr.querySelectorAll('.row-select')];
+      const shown = (sel: string): boolean => {
+        const n = sr.querySelector(sel);
+        return !!n && getComputedStyle(n).display !== 'none';
+      };
+
+      const before = {
+        type: boxes()[0]?.type,
+        // One NAME per grid, so two grids on a page cannot share a group and
+        // steal each other's selection.
+        names: [...new Set(boxes().map((b) => b.name))].length,
+        selectAll: shown('.select-all'),
+        // The CELL stays — it holds the column open so the radios line up.
+        headCell: shown('.select-head'),
+      };
+
+      let detail: unknown = null;
+      el.addEventListener('selection-change', (e) => {
+        detail = (e as CustomEvent).detail;
+      });
+
+      boxes()[0]!.click();
+      await settle();
+      boxes()[2]!.click();
+      await settle();
+
+      return {
+        ...before,
+        ticked: boxes().filter((b) => b.checked).length,
+        reported: (detail as { selected: string[] } | null)?.selected.length ?? null,
+      };
+    };
+
+    return { multi: await run(false), single: await run(true) };
+  });
+
+  // MULTIPLE is unchanged: checkboxes, a select-all, and both picks held.
+  expect(r.multi.type).toBe('checkbox');
+  expect(r.multi.selectAll).toBe(true);
+  expect(r.multi.ticked).toBe(2);
+  expect(r.multi.reported).toBe(2);
+
+  // SINGLE: radios in one group, no select-all, one row held.
+  expect(r.single.type).toBe('radio');
+  expect(r.single.names).toBe(1);
+  expect(r.single.selectAll).toBe(false);
+  // …and the column is still open, so the radios line up under the header.
+  expect(r.single.headCell).toBe(true);
+  expect(r.single.ticked).toBe(1);
+  expect(r.single.reported).toBe(1);
+});
