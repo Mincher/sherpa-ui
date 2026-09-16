@@ -32,6 +32,7 @@
  * One filter change re-populates every bound component. The grid's own header
  * arrow and the toolbar's Sort chip become two views of one value.
  */
+import { filterFields } from './store.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */
@@ -88,6 +89,23 @@ export interface BindOptions {
    * value.
    */
   steerOnly?: boolean;
+  /**
+   * Events from this component the source must NOT act on.
+   *
+   * `readonly` is all-or-nothing; this is the scalpel. The case it exists for
+   * is a view that translates ONE of a component's events itself: the records
+   * page turns the quick-filter toolbar's chips into a filter by hand, because
+   * only it knows that two picks on a date column mean a range — and only it
+   * can combine those chips with the data grid's column filters.
+   *
+   * Without this both write `filter`, and the LAST one wins. The source hears
+   * `quick-filter-change` and sets the filter from the chips alone, throwing
+   * away whatever else the view had folded in. Naming the event here leaves
+   * `sort-change` and `group-change` working as they always did.
+   *
+   *   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] });
+   */
+  ignore?: readonly string[];
   /**
    * Reshape the rows before they reach this component.
    *
@@ -324,8 +342,14 @@ export class DataSource extends EventTarget {
     const readonlyBind = options.readonly ?? false;
     const listeners: Array<[string, EventListener]> = [];
 
+    const ignored = new Set(options.ignore ?? []);
     if (!readonlyBind) {
       for (const type of STEERING_EVENTS) {
+        // An IGNORED event gets no listener at all, rather than a listener that
+        // returns early — so a view that owns an event owns it outright, with
+        // no chance of the source having already acted by the time the view's
+        // own handler runs.
+        if (ignored.has(type)) continue;
         const handler = ((event: Event) => this.#steer(type, event as CustomEvent)) as EventListener;
         el.addEventListener(type, handler);
         listeners.push([type, handler]);
@@ -430,12 +454,19 @@ export class DataSource extends EventTarget {
    * the toolbar's Sort chip and the grid's own header two views of one value.
    */
   #push(el: Populatable): void {
-    const { sort, group, page, pageSize } = this.#state;
+    const { sort, group, page, pageSize, filter } = this.#state;
     const first = sort[0];
 
     setAttr(el, 'data-sort-field', first?.field);
     setAttr(el, 'data-sort-direction', first ? (first.direction ?? 'asc') : undefined);
     setAttr(el, 'data-group-field', group ?? undefined);
+    // WHICH fields the filter touches — not the filter itself. A grid marks
+    // those columns' headers active, so a filter set from the toolbar ABOVE the
+    // grid still shows up on the columns it is narrowing. Without this the grid
+    // only ever knew about filters typed into its own header row, and a chip
+    // change silently shrank the table with nothing to say why.
+    const fields = filterFields(filter);
+    setAttr(el, 'data-filter-fields', fields.length ? fields.join(' ') : undefined);
     setAttr(el, 'data-page', pageSize ? String(page) : undefined);
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
     setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);

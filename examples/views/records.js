@@ -131,6 +131,17 @@ export async function init(root) {
      dropped on the floor here, which is why clicking them did nothing. */
   const statusChips = new Set(['active', 'trial', 'suspended', 'churned']);
 
+  /* COLUMN FILTERS — one clause per column heading the reader has filtered.
+
+     The grid reports each as a ready FilterClause and lights that column, but
+     it does not narrow its own rows: it holds one column's clause at a time and
+     cannot know what the toolbar is doing. Combining them is this view's job,
+     the same as combining the chips.
+
+     Kept by field, so setting "contains ana" and then "contains bo" on the same
+     column is one filter, not two fighting each other. */
+  const columnClauses = new Map();
+
   const filterFromChips = (values, active = []) => {
     const clauses = [];
     const statuses = active.filter((id) => statusChips.has(id));
@@ -156,8 +167,18 @@ export async function init(root) {
         clauses.push([field, 'in', picked]);
       }
     }
+    // The column headings' own clauses AND with everything above.
+    clauses.push(...columnClauses.values());
     return clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined;
   };
+
+  /* The last chip state, so a column filter can re-run the whole combination.
+     `filterFromChips` needs both halves and the grid's event carries only its
+     own, so the chips' last word is remembered here rather than read back out
+     of the toolbar's shadow DOM. */
+  let lastChips = { values: {}, active: [] };
+  const reapplyFilter = () =>
+    source.setFilter(filterFromChips(lastChips.values, lastChips.active));
 
   /* ── Cache view refs (scoped to root) ────────────────────────────── */
   const grid      = root.querySelector('#grid');
@@ -310,8 +331,23 @@ export async function init(root) {
 
   // The grid takes { columns, rows }, not a bare array — so the shape is adapted
   // AT THE BINDING, which is where the mismatch actually is.
-  source.bind(grid, { as: (rows) => ({ columns, rows }) });
-  source.bind(pager);
+  /* `ignore` on filter-change for the same reason the toolbar carries it: this
+     view owns the whole filter. The grid's secondary header row emits
+     filter-change with ONE column's text, and the source would set the filter
+     to that alone — wiping both the chips and the other columns' clauses. */
+  /* THE BINDS, kept so the view can end them.
+
+     `bind()` returns its own unbind function, and the router calls whatever a
+     view's init() returns when it swaps away. Without collecting these, the
+     source kept pushing rows into three components that had been removed from
+     the DOM — one live source per view visit, each holding detached elements. */
+  const unbinds = [];
+
+  unbinds.push(source.bind(grid, {
+    as: (rows) => ({ columns, rows }),
+    ignore: ['filter-change'],
+  }));
+  unbinds.push(source.bind(pager));
 
   /* STEER-ONLY. The toolbar's populate() means "here are your CHIPS", not "here
      are your rows" — a plain bind() overwrote the bar with records and it came
@@ -324,9 +360,93 @@ export async function init(root) {
      events. Only the FILTER stays hand-written, because translating chips is
      view knowledge: only this page knows two picks on `created` mean a RANGE
      rather than an either/or. */
-  source.bind(qft, { steerOnly: true });
+  /* `ignore` on the FILTER event, because this view owns the whole filter: it
+     folds the chips together with the data grid's column filters, and only it
+     can do that. Left to the source, `quick-filter-change` would set the filter
+     from the chips alone and the column clauses would vanish on every chip
+     click. Sort and group are untouched — the source still handles those. */
+  unbinds.push(source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] }));
   qft.addEventListener('quick-filter-change', (e) => {
-    source.setFilter(filterFromChips(e.detail.values, e.detail.active));
+    lastChips = { values: e.detail.values, active: e.detail.active };
+    /* A CUSTOM chip's body is a TOGGLE, exactly like any other chip's: off
+       means "stop applying this", not "delete it". The chip stays on the bar
+       with its condition still written on it, ready to come back on.
+
+       Only REMOVE deletes — from either menu, the toolbar chip's or the column
+       heading's. So this suspends the clause and restores it, and never
+       touches the chip itself.
+
+       A custom chip shows in neither `active` (which skips menu chips) nor
+       `values` (which reads ticked rows), so the toolbar reports it in its own
+       `custom` map. */
+    for (const [id, on] of Object.entries(e.detail.custom ?? {})) {
+      if (!id.startsWith('col:')) continue;
+      const field = id.slice(4);
+      /* The grid keeps the clause either way; this only says whether it is
+         being APPLIED. Suspended, the heading stops reading active and its
+         match marks come off — the column is narrowing nothing, and a lit
+         column that filters nothing is a lie. */
+      grid.suspendColumnFilter(field, !on);
+      const clause = on ? grid.columnClause(field) : null;
+      if (clause) columnClauses.set(field, clause);
+      else columnClauses.delete(field);
+    }
+    reapplyFilter();
+  });
+
+  /* The COLUMN chip's CARET opens that column's own filter menu — the real
+     one, borrowed from the grid's heading, so the two places cannot drift about
+     what the column is filtered by.
+
+     The caret, not the body: a chip's body is its on/off toggle, and turning
+     the chip off already means "stop filtering that column" (handled above).
+     One gesture per meaning. */
+  qft.addEventListener('click', (e) => {
+    const path = e.composedPath();
+    if (!path.some((n) => n.classList?.contains?.('caret'))) return;
+    const chip = path.find((n) => n.dataset?.id?.startsWith?.('col:'));
+    if (!chip) return;
+    grid.openColumnFilter(chip.dataset.id.slice(4), chip);
+  }, true); /* CAPTURE. The chip's own caret handler calls stopPropagation() —
+               it is guarding its menu from the body's toggle — so a bubbling
+               listener out here never runs. Capture reaches the event on the
+               way DOWN, before the chip sees it. */
+
+  /* COLUMN FILTERS — the funnel in each column heading.
+
+     The grid says what was asked for; this view decides what it means for the
+     query, because only this view knows what else is filtering. The clause
+     arrives ready, so there is nothing to translate.
+
+     It also goes onto the TOOLBAR as a chip, so a reader who scrolls the grid
+     sideways still sees that the view is narrowed and by what. `header` is the
+     field name and `label` the condition and value — "Name" / "Contains: ana". */
+  grid.addEventListener('column-filter-change', (e) => {
+    const { field, header, clause, label } = e.detail;
+    if (clause) columnClauses.set(field, clause);
+    else columnClauses.delete(field);
+    /* THE CHIP FIRST, then the filter.
+
+       Putting the chip on the bar makes the toolbar emit `quick-filter-change`,
+       and the source is bound to the toolbar — so it hears that event and sets
+       the filter from the CHIPS alone, throwing this column's clause away. Done
+       in this order the source's own write lands first and `reapplyFilter()`
+       has the last word, which includes both halves. */
+    qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
+    reapplyFilter();
+  });
+
+  /* Taking the chip OFF the bar has to reach back and clear the column, or the
+     heading stays lit and its menu still holds a clause the bar no longer
+     shows. `clearColumnFilter` is silent by design — it does not echo the
+     event back, which would clear the clause twice. */
+  qft.addEventListener('filter-remove', (e) => {
+    const id = e.detail?.id ?? '';
+    if (!id.startsWith('col:')) return;
+    const field = id.slice(4);
+    columnClauses.delete(field);
+    grid.clearColumnFilter(field);
+    reapplyFilter();
   });
   // The GRID does the grouping — data-group-field makes it drop that column and
   // draw a collapsible group row per value. The source writes that attribute on
@@ -384,4 +504,14 @@ export async function init(root) {
       value: 'The customer record was created.',
     });
   });
+
+  /* THE TEARDOWN the router calls when it swaps to another view.
+
+     Unbinding is what ends the source's hold on these three components. The
+     components themselves go with the view's markup; the SOURCE would have
+     kept pushing rows into them, and a filter set on the next visit would fan
+     out to every detached copy from every previous one. */
+  return () => {
+    for (const off of unbinds) off();
+  };
 }

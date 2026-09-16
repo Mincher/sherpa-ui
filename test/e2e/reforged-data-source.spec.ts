@@ -560,3 +560,97 @@ test('source: steerOnly sends events but never pushes rows', async ({ page }) =>
   expect(r.toolbarSortAttr).toBe('seats');
   expect(r.toolbarFed).toBe(0);
 });
+
+/**
+ * A filter set ABOVE the grid has to reach the grid's headers.
+ *
+ * The grid cannot see a quick-filter toolbar's chips, and the source hands it
+ * only the rows that survived — so on its own it has no way to know WHICH
+ * column shrank the table. It just got smaller, with nothing to say why. The
+ * source writes the narrowed field names onto `data-filter-fields`, and the
+ * grid lights those columns with the Style `active` mode.
+ */
+test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', async ({ page }) => {
+  const r = await page.evaluate(async (data) => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    root.appendChild(grid);
+    await grid.rendered;
+
+    // The grid's populate() takes { columns, rows }, so the bind carries an
+    // adapter — otherwise a bare row array would wipe the columns.
+    const columns = [
+      { field: 'name', header: 'Name' },
+      { field: 'plan', header: 'Plan' },
+      { field: 'region', header: 'Region' },
+      { field: 'seats', header: 'Seats', type: 'number' },
+    ];
+    const source = new DataSource({ store: new ArrayStore(data) });
+    source.bind(grid, { as: (rows: unknown[]) => ({ columns, rows }) });
+    await source.load();
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = grid.shadowRoot!;
+    const lit = (): (string | undefined)[] =>
+      Array.from(sr.querySelectorAll<HTMLElement>('.head-cell'))
+        .filter((th) => th.dataset['status'] === 'active')
+        .map((th) => th.dataset['field']);
+    const chips = async (values: Record<string, string[]>): Promise<void> => {
+      grid.dispatchEvent(new CustomEvent('quick-filter-change', {
+        detail: { active: [], values }, bubbles: true, composed: true,
+      }));
+      await new Promise((res) => setTimeout(res, 30));
+      await settle();
+    };
+
+    const clean = lit();
+
+    // ONE chip.
+    await chips({ plan: ['Pro'] });
+    const onePlan = { lit: lit(), attr: grid.getAttribute('data-filter-fields'), rows: source.rows.length };
+
+    // TWO chips — the filter is an AND tree, so BOTH fields must light.
+    await chips({ plan: ['Pro'], region: ['EMEA'] });
+    const twoChips = { lit: lit(), attr: grid.getAttribute('data-filter-fields') };
+
+    // A SORT on a third column stacks with them rather than replacing them.
+    grid.dispatchEvent(new CustomEvent('sort-change', {
+      detail: { field: 'seats', direction: 'desc' }, bubbles: true, composed: true,
+    }));
+    await new Promise((res) => setTimeout(res, 30));
+    await settle();
+    const withSort = lit();
+
+    // Clearing the chips leaves the sort's own column lit and nothing else.
+    await chips({});
+    const cleared = { lit: lit(), attr: grid.getAttribute('data-filter-fields') };
+
+    return { clean, onePlan, twoChips, withSort, cleared };
+  }, ROWS);
+
+  // Nothing filtered, nothing sorted: no column is active.
+  expect(r.clean).toEqual([]);
+
+  // One chip lights exactly its own column — and the filter really ran.
+  expect(r.onePlan.lit).toEqual(['plan']);
+  expect(r.onePlan.attr).toBe('plan');
+  expect(r.onePlan.rows).toBe(3);
+
+  // An AND of two clauses lights both fields.
+  expect(r.twoChips.lit.sort()).toEqual(['plan', 'region']);
+  expect(r.twoChips.attr!.split(' ').sort()).toEqual(['plan', 'region']);
+
+  // A sort is the same kind of state, so it stacks: three columns active.
+  expect(r.withSort.sort()).toEqual(['plan', 'region', 'seats']);
+
+  // Clearing the chips drops the attribute entirely; the sort holds on alone.
+  expect(r.cleared.lit).toEqual(['seats']);
+  expect(r.cleared.attr).toBe(null);
+});
