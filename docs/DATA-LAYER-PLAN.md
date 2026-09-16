@@ -18,6 +18,14 @@ Five jobs:
    grid, the toolbar and the app cannot disagree about them, and so MANY components
    can bind to ONE source: a sort set in a toolbar moves the grid's column header, a
    filter set in an app header re-populates every chart on a dashboard.
+
+   **Nothing reloads and no page re-renders.** A source calls `populate()` on
+   each bound component, and that component updates its OWN shadow DOM from its
+   own template — the rest of the page is untouched. What is NOT yet scoped is
+   the update WITHIN a component: the grid rebuilds every row even when only the
+   sort changed. That is F1/F2, and it is the difference between "the right
+   component updated" (true today) and "only the part that changed updated"
+   (not yet).
 3. **Settle state OWNERSHIP** — every value has one owner; everything else reads
    it. Plus PARITY: anything a person can do by clicking, a caller can do by
    calling, through the same code. This is what makes the layer usable by hosts,
@@ -649,10 +657,11 @@ Provenance is only kept **client-side**, and only for the UI:
 a last-writer. The grid ⇄ toolbar link works precisely because there is exactly
 one of each.
 
-That is also the honest limit: **multi-column sort has no model yet.**
-`LoadOptions.sort` is an array and `applyOptions` honours every spec, but no
-component can express more than one. If multi-sort is ever wanted, the ownership
-question ("who owns the ORDER of the specs?") needs answering first.
+**Multi-column sort is NOT WANTED** (Will, 2026-09-16). `LoadOptions.sort` is an
+array and `applyOptions` honours every spec, so the format allows it — but no
+component expresses more than one, and none should until asked. If it is ever
+wanted, the ownership question ("who owns the ORDER of the specs?") is the first
+thing to answer.
 
 ### Server-side grouping — deferred, deliberately
 
@@ -1286,10 +1295,12 @@ Written before the core shipped, as a prediction. Re-measured 2026-09-16, and
 
 **This is not a failed prediction so much as an unfinished one.** The shrink was
 contingent on step 15 — "move grid sort/filter onto the source" — which has not
-been done: `#sortRows` and `#filteredRows` are still in the grid, alongside the
-source that could own them. The grid now sorts and filters in TWO places
-depending on whether it is bound, which is precisely the duplication this plan
-exists to remove.
+been done: `#sortRows` and `#filteredRows` are still in `sherpa-data-grid`,
+alongside the source that could own them.
+
+**So the same job has TWO implementations**, and which one runs depends on
+whether the grid happens to be bound to a source. That is precisely the
+duplication this plan exists to remove — one solution, or it is not a layer.
 
 `records.js` also still builds filter options by hand (`valuesOf`, 2 uses) — a
 store can derive those from the data.
@@ -2583,9 +2594,51 @@ component's.
 | **S5** | Move theme mode onto it | the clearest duplicate: hand-rolled `localStorage` + try/catch in an example, which every app would copy |
 | **S6** | Persisted pointers — `session.persist('/theme/mode')` | so rule 3 is a capability rather than a convention |
 
-**Not a prerequisite for anything else in this plan.** It is a tidy-up with a
-clear payoff, and it stops the next app hand-rolling theme persistence the way
-this one did.
+#### The case that makes it worth building: surviving a reload
+
+Will, 2026-09-16: *retain app context so we can survive accidental page reloads
+and retain a variety of contexts and states.*
+
+Today an accidental refresh loses everything — the filters, the sort, the page,
+which view you were on. The user starts again.
+
+**Most of what must survive is already serialisable.** `ViewState` is plain
+JSON:
+
+```ts
+interface ViewState {
+  filter?: Filter;  sort: SortSpec[];  group: string | null;
+  search: string;   page: number;      pageSize: number | null;
+}
+```
+
+…and `DataSource` already exposes `state` and `setState`. So restoring a view is
+**wiring, not new machinery**: persist the state under a pointer, read it back
+on load, hand it to `setState`.
+
+What should survive, and where:
+
+| State | Survives a reload? | Where |
+|---|---|---|
+| theme / mode | yes | `localStorage` — a choice, not a session |
+| signed-in user | yes | `localStorage` |
+| current view + its `ViewState` | yes | `sessionStorage` — per TAB, so two tabs keep their own |
+| scroll position, open menus | no | transient by nature |
+
+**`sessionStorage` for view state is the important choice.** Two tabs on the
+same screen filtered differently is a feature (see "Tabs and windows"), and
+`localStorage` would make them fight.
+
+One trap already known: Web Storage throws in a private window, with site data
+blocked, and during preview or thumbnail capture. `LocalStore` already wraps
+every access for that reason — the session store must do the same, and a failed
+read must fall back to the default rather than break the page.
+
+| Step | Work | Why here |
+|---|---|---|
+| **S11** | Persist a `DataSource`'s `ViewState` under a session pointer; restore on load | an accidental refresh currently loses every filter, sort and page. `state` / `setState` already exist and `ViewState` is already JSON — this is wiring |
+
+**S4–S6 are a tidy-up.** S11 is the one a user would notice.
 
 ### Tabs and windows
 
@@ -2670,12 +2723,38 @@ before then.
 |---|---|---|
 | **Q1** | Keep `src/core/store.ts` DOM-free, as a rule | it is what lets a SERVER import `applyOptions` / `filterRows` / `sortRows` and answer a query identically to the browser. Free today; easy to lose by accident |
 | **Q2** | A translator per real backend — `toOData`, `toSql`, `toGraphQL` | the `buildQuery` seam already takes them. Pure functions: `LoadOptions` in, a request out. **Build on demand, never speculatively** |
-| **Q3** | Server-side group / sort / filter | **DEFERRED** — belongs with the wider server + database work. Needs a `LoadResult` shape for genuinely grouped payloads (nested rows, per-group counts), which does not exist and must not be invented before a real backend asks |
+| **Q3** | Server-side group / sort / filter | **DEFERRED, and for the right reason.** Measured 2026-09-16 — see below. Needs a `LoadResult` shape for genuinely grouped payloads (nested rows, per-group counts), which must not be invented before a real backend asks |
 
 Two rules that hold whenever Q2 is picked up: a translator **parameterises,
 never interpolates** (a filter value is user input), and it **throws on an
 operator it cannot express** rather than dropping the clause and returning rows
 nobody asked for.
+
+### Is the layer fast enough? Measured, 2026-09-16
+
+`applyOptions` over generated rows, in the browser:
+
+| Rows | Filter | Sort | Group | Filter + sort + page |
+|---|---|---|---|---|
+| 1,000 | 0ms | 1ms | 2ms | 1ms |
+| 10,000 | 1ms | 5ms | 5ms | 1ms |
+| 100,000 | 8ms | **60ms** | **72ms** | 10ms |
+
+**Up to ~10k rows the layer is not the bottleneck.** Everything is inside one
+frame, and the combined case is fastest because paging cuts the work.
+
+At 100k a sort costs 60ms — one dropped frame, noticeable on a keystroke.
+
+**But that is the wrong thing to optimise.** Long before the sort hurts, the
+cost of shipping 100k rows to the browser does: the transfer, the parse and the
+memory. **So server-side preparation is worth doing, and the reason is TRANSFER,
+not arithmetic** — a server that filters and pages returns 25 rows instead of
+100,000.
+
+Which changes what Q3 is for. It is not "the client is too slow"; it is "do not
+send what will be thrown away". That also makes the design obvious: the server
+receives a `LoadOptions` (it is already serialisable JSON) and returns rows plus
+a total — which is the shape `RestStore` already expects.
 
 ## What this week actually proved
 
