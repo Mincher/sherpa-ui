@@ -145,6 +145,34 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
+## The token ontology was DELETED 2026-09-16 — rebuild it in the MCP rewrite
+
+`docs/ontology/tokens.yaml` (522K) + `structure.yaml` described a design system
+that no longer exists:
+
+| check | result |
+|---|---|
+| knows the `display-mode` layer | **0 mentions** |
+| knows the `structure` layer | **0 mentions** |
+| still describes Typography | 52 mentions (collection DELETED) |
+| still describes monochrome | 72 mentions (DELETED) |
+| who read it | **only the MCP** |
+
+Regenerating would not have helped: its source,
+`scripts/figma-data/variable-graph.json`, is from 14 August and equally stale.
+
+**A file that confidently describes deleted tokens is worse than no file** — an
+agent reading it gets a wrong answer with no warning. `loadOntology()` is
+double-guarded (`try/catch → null`, then `?? {}`), so everything degrades to an
+empty object rather than failing.
+
+Verified before deleting: the spec generator produces a **byte-identical**
+spec without it, all 58 specs validate, and the MCP still imports.
+
+`scripts/build-ontology.mjs` and `audit-ontology.mjs` were KEPT even though
+nothing calls them — they are the only way to rebuild this from Figma, and the
+rewrite will want them. Point them at a fresh `variable-graph.json` first.
+
 ## MCP server — a full rewrite, agreed 2026-09-16
 
 Will: *"The MCP was created a long time ago so a lot of it will be outdated.
