@@ -16,7 +16,10 @@
  * internal scroll inside a fixed-height panel, and grouping across a row count
  * that no longer fits on one screen.
  */
-import { ArrayStore, DataSource, SherpaToast, persistView } from '../../dist/index.js';
+import {
+  ArrayStore, DataSource, SherpaToast, persistView, applyViewSnapshot,
+} from '../../dist/index.js';
+import { RECORDS_VIEWS, recordsViewOptions } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
@@ -177,8 +180,21 @@ export async function init(root) {
      own, so the chips' last word is remembered here rather than read back out
      of the toolbar's shadow DOM. */
   let lastChips = { values: {}, active: [] };
-  const reapplyFilter = () =>
-    source.setFilter(filterFromChips(lastChips.values, lastChips.active));
+  /* The SAVED VIEW's own clause — a third contributor, beside the chips and the
+     column filters.
+
+     It has to live here rather than in the source, because `reapplyFilter`
+     rebuilds the whole filter from what this view knows and would otherwise
+     overwrite whatever a view definition set. That is the last-write-wins
+     problem O5 (named contributions on the source) exists to remove; until then
+     every writer composes through this one function. */
+  let viewClause;
+
+  const reapplyFilter = () => {
+    const chips = filterFromChips(lastChips.values, lastChips.active);
+    const parts = [viewClause, chips].filter(Boolean);
+    source.setFilter(parts.length === 1 ? parts[0] : parts.length ? ['and', ...parts] : undefined);
+  };
 
   /* ── Cache view refs (scoped to root) ────────────────────────────── */
   const grid      = root.querySelector('#grid');
@@ -218,12 +234,9 @@ export async function init(root) {
     // above every page and trickle DOWN: whatever they narrow to is the
     // population this grid then works within, and the bar BELOW narrows further
     // inside that. See global-filters.js.
-    filters: globalFilters([
-      { value: 'all', label: 'All customers', selected: true },
-      { value: 'mine', label: 'My accounts' },
-      { value: 'risk', label: 'At risk' },
-      { value: 'renewals', label: 'Renewals this quarter' },
-    ]),
+    // DERIVED from the view definitions, so a label cannot drift from the view
+    // it names. Each option's value is a key into RECORDS_VIEWS.
+    filters: globalFilters(recordsViewOptions('all')),
   });
 
   /* Quick-filter chips — status segments with counts, plus two value pickers.
@@ -481,6 +494,51 @@ export async function init(root) {
       return state;
     },
   }));
+
+  /* SAVED VIEWS — the header's View chip.
+
+     Each option is a real definition, not a label: a ViewSnapshot holding the
+     query AND every component's state. Picking one applies it, and the screen
+     reconfigures — filter, sort, grouping, and the grid's own column filters.
+
+     The same call a user's saved view would take, and the same one an agent
+     would make over MCP. That is the point of one shape: a preset, a saved
+     view and a shared link are not three features. */
+  const applyView = (id) => {
+    const view = RECORDS_VIEWS[id];
+    if (!view) return;
+
+    /* The grid's column clauses are applied by the snapshot; this view's own
+       map has to agree, because the QUERY is composed here rather than by the
+       grid. Cleared first — a view that names no column filters means none,
+       not "keep whatever the last view had". */
+    columnClauses.clear();
+    /* The view's own clause is remembered so `reapplyFilter` can compose it with
+       the chips, rather than the two overwriting each other. */
+    viewClause = view.snapshot.source?.filter;
+
+    const report = applyViewSnapshot(view.snapshot, { source, elements: { grid } });
+    if (report.missingElements.length || Object.keys(report.skipped).length) {
+      // A definition that could not be fully applied is worth saying out loud
+      // rather than leaving the reader to wonder why half the screen moved.
+      console.warn('view applied with gaps', report);
+    }
+
+    /* Read the grid's clauses back, so reapplyFilter() includes them. The
+       snapshot set them ON THE GRID; this view owns the composition. */
+    queueMicrotask(() => {
+      for (const col of columns) {
+        const clause = grid.columnClause(col.field);
+        if (clause) columnClauses.set(col.field, clause);
+      }
+      reapplyFilter();
+    });
+  };
+
+  header?.addEventListener('quick-filter-change', (e) => {
+    const picked = e.detail?.values?.view?.[0];
+    if (picked) applyView(picked);
+  });
 
   /* The view's OWN map has to agree with the grid after a restore. The snapshot
      put the clauses back into the GRID; this reads them out again so the

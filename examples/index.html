@@ -15,9 +15,10 @@
     <sherpa-nav slot="nav"></sherpa-nav>
 
     <!-- Every header action is opt-in, so a product shows only what it wires. -->
+    <!-- NO data-heading / data-icon here. The title and the icon ARE the selected
+         nav row's — the script copies them across on every view load, so a value
+         hard-coded here would just be a second copy to go stale. -->
     <sherpa-app-header slot="header"
-                       data-heading="Dashboard"
-                       data-icon="fa-solid fa-gauge-high"
                        data-ai data-labs data-theme-toggle
                        data-account data-help data-menu
                        data-notifications="4">
@@ -137,11 +138,39 @@
     };
     const idForView  = (v) => `view-${v}`;
 
-    /** The id of whichever nav row points at this view. */
+    /** The id of whichever nav row points at this view.
+     *
+     * settingsSections is searched too: Preferences is a real row that opens a
+     * real view, and leaving it out meant the rail never lit it up and the header
+     * had nothing to copy its name from. */
     const navRowIdForView = (view) => {
       const all = [...(navConfig.quickItems ?? []),
-                   ...(navConfig.sections ?? []).flatMap((s) => s.items ?? [])];
+                   ...(navConfig.sections ?? []).flatMap((s) => s.items ?? []),
+                   ...(navConfig.settingsSections ?? []).flatMap((s) => s.items ?? [])];
       return all.find((i) => viewForHref(i.href) === view)?.id ?? null;
+    };
+
+    /* A view that no nav row opens (the assistant, reached from the header's
+       "Ask N-zo") still needs a name in the header. It is a fallback ONLY — a
+       view with a row always takes the row's label and icon, so the two can
+       never disagree. */
+    const HEADLESS_VIEWS = {
+      chat: { label: 'Assistant', icon: 'fa-solid fa-comments' },
+    };
+
+    /* Write the rail's CURRENT row onto the header.
+
+       The rail is asked what it shows (nav.activeEntry) rather than the config
+       being read a second time here: the rows are the thing on screen, so they
+       are the honest source, and a rail filled any other way still works. */
+    const syncHeaderToNav = (header, view) => {
+      const entry = nav.activeEntry ?? HEADLESS_VIEWS[view];
+      if (!header || !entry) return;
+      header.setAttribute('data-heading', entry.label ?? '');
+      // No icon on the row → no icon on the header. Clearing is the point: a
+      // stale glyph from the previous view is worse than none.
+      if (entry.icon) header.setAttribute('data-icon', entry.icon);
+      else header.removeAttribute('data-icon');
     };
 
     // Read the current view from the URL (?view=<v>), defaulting to dashboard.
@@ -168,14 +197,11 @@
       // The settings view lives behind the nav header's settings button, so landing
       // on it (or leaving it) switches the rail's mode — which swaps the whole
       // section list to the settings pages.
-      const wantsSettings = name === 'settings';
-      const inSettings = nav.dataset.navState === 'settings';
-      if (wantsSettings !== inSettings) {
-        nav.dataset.navState = wantsSettings ? 'settings' : 'collapsed';
-        nav.dispatchEvent(new CustomEvent('nav-state-change', {
-          detail: { state: nav.dataset.navState }, bubbles: true, composed: true,
-        }));
-      }
+      /* Through the rail's OWN setter, not a raw dataset write plus a hand-rolled
+         event. The setter announces the change itself, so the app-shell's content
+         inset follows without this file re-creating the rail's event — a copy that
+         could go out of step with the real one and had no way to be told. */
+      nav.state = name === 'settings' ? 'settings' : 'collapsed';
 
       // 1) Fetch the bespoke content-only markup for the view.
       const markup = await (await fetch(`/template/view/${name}`)).text();
@@ -186,6 +212,16 @@
          than no control. Every other view gets one. */
       const header = document.querySelector('sherpa-app-header');
       header?.toggleAttribute('data-back', name !== DEFAULT_VIEW);
+
+      /* The header's title and icon ARE the selected nav row's — one value, one
+         owner. Each view used to set its own heading by hand, which is two copies
+         of the same string in two files: rename a nav row and the header kept the
+         old name with nothing to catch it.
+
+         A row with NO icon must CLEAR the header's, not leave the last view's
+         behind — so a missing icon removes the attribute, and the header's CSS
+         (`:host([data-icon]) .view-icon`) hides the slot. */
+      syncHeaderToNav(header, name);
 
       // 2) Inject into the app-shell content slot.
       viewRoot.innerHTML = markup;
@@ -202,7 +238,22 @@
 
     // ── Populate the shared nav once. ──────────────────────────────────
     await customElements.whenDefined('sherpa-nav');
-    nav.populate(navConfig);
+    /* AWAITED. populate() defers its work to the component's own render promise,
+       so calling it is not the same as the rows existing — and the header reads
+       its title off a stamped ROW. */
+    const navReady = nav.populate(navConfig);
+
+    /* A row that opens a view is mirrored by loadView. A row that does NOT —
+       Recent, Favorites — never reaches the router, so the header would keep the
+       previous view's name. The rail's own event covers both, and it carries the
+       label and icon with it, so nothing is looked up twice. */
+    nav.addEventListener('nav-select', (e) => {
+      const header = document.querySelector('sherpa-app-header');
+      if (!header) return;
+      header.setAttribute('data-heading', e.detail.label ?? '');
+      if (e.detail.icon) header.setAttribute('data-icon', e.detail.icon);
+      else header.removeAttribute('data-icon');
+    });
 
     /* ── Notifications, through the data layer ────────────────────────
        The bell's badge and the list are TWO VIEWS OF ONE SET, not two things to
@@ -380,7 +431,13 @@
     // Back/forward → load without pushing.
     window.addEventListener('popstate', () => loadView(viewFromURL()));
 
-    // First paint: load the view named in the URL.
+    /* First paint: load the view named in the URL.
+
+       AFTER the rail has stamped its rows. Without this await the very first
+       load found an empty rail and the header came up blank; every later
+       navigation worked, which is exactly the shape of bug that survives a
+       manual click-through. */
+    await navReady;
     loadView(viewFromURL());
   </script>
 </body>

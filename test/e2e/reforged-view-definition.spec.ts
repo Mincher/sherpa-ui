@@ -214,6 +214,90 @@ test('one method, MANY calls — a state block is a map, so calls nest', async (
   expect(r.selected).toEqual(['a']);
 });
 
+test('a PRESET reconfigures a whole screen: query, arrangement and components', async ({ page }) => {
+  // What the app header's View dropdown does. Each option is a ViewSnapshot,
+  // not a label — the same object a user's saved view produces, a shared link
+  // carries, and an agent sends over MCP.
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, applyViewSnapshot } = await import('/dist/index.js');
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const rows = Array.from({ length: 90 }, (_, i) => ({
+      id: i, name: `n${i % 11}`, tier: ['Bronze', 'Silver', 'Gold'][i % 3],
+      status: i % 7 ? 'active' : 'churned', health: (i * 13) % 100, spend: (i * 31) % 900,
+    }));
+    const columns = [
+      { field: 'name', header: 'Name' },
+      { field: 'tier', header: 'Tier' },
+      { field: 'status', header: 'Status' },
+      { field: 'health', header: 'Health', type: 'number' },
+    ];
+
+    const grid = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      columnClause(f: string): unknown[] | null;
+    };
+    grid.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(grid);
+    await grid.rendered;
+
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 25 });
+    source.bind(grid, { as: (r2: unknown[]) => ({ key: 'id', columns, rows: r2 }) });
+    await source.load();
+    await settle();
+
+    const read = () => ({
+      total: source.total,
+      group: source.state.group,
+      sort: source.state.sort[0]?.field ?? null,
+      statusClause: grid.columnClause('status'),
+      groupRows: grid.shadowRoot!.querySelectorAll('.group-row').length,
+    });
+
+    const before = read();
+
+    // "At risk" — a query AND a column filter, which is the case that proves a
+    // definition reaches both halves.
+    applyViewSnapshot({
+      v: 1,
+      source: { filter: ['health', 'lt', 40], sort: [{ field: 'health', direction: 'asc' }], group: null, page: 1 },
+      elements: { grid: { setColumnFilter: ['status', ['status', 'ne', 'churned']] } },
+    }, { source, elements: { grid } });
+    await new Promise((res) => setTimeout(res, 150));
+    await settle();
+    const risk = read();
+
+    // "Renewals" — GROUPED, which nothing else here exercises: a view can set
+    // how rows are ARRANGED, not only which ones there are.
+    applyViewSnapshot({
+      v: 1,
+      source: { filter: undefined, sort: [{ field: 'spend', direction: 'desc' }], group: 'tier', page: 1 },
+      elements: { grid: { clearColumnFilter: [undefined] } },
+    }, { source, elements: { grid } });
+    await new Promise((res) => setTimeout(res, 150));
+    await settle();
+    const renewals = read();
+
+    return { before, risk, renewals };
+  });
+
+  expect(r.before.group).toBe(null);
+  expect(r.before.statusClause).toBe(null);
+
+  // The QUERY narrowed, the sort moved, and the grid's own control is set.
+  expect(r.risk.total).toBeLessThan(r.before.total);
+  expect(r.risk.sort).toBe('health');
+  expect(r.risk.statusClause).toEqual(['status', 'ne', 'churned']);
+
+  // …and a different view rearranges rather than merely re-filtering.
+  expect(r.renewals.group).toBe('tier');
+  expect(r.renewals.groupRows).toBeGreaterThan(0);
+  expect(r.renewals.sort).toBe('spend');
+  // Its own definition cleared the previous view's column filter, rather than
+  // inheriting it — a view says what it IS, not what to change.
+  expect(r.renewals.statusClause).toBe(null);
+});
+
 test('a definition DEGRADES: a gone element and a gone method are reported, not thrown', async ({ page }) => {
   // A saved view outlives the code that made it. One stale key must not stop
   // the rest being restored — the same reason a bad ROW is dropped and counted.
