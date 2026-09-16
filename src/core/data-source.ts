@@ -226,6 +226,22 @@ export class DataSource extends EventTarget {
   }
 
   /** The last loaded result. */
+  /**
+   * The whole of the last load's answer — rows, total, and anything else the
+   * store reported.
+   *
+   * `rows` and `total` have their own getters because they are what a component
+   * needs; this is for what a HOST needs. A schema that refused rows reports
+   * `dropped` and `issues` here, and without a way to read them a store could
+   * count them and nobody would ever know — which is worse than not counting.
+   *
+   * A copy of the container, so a caller cannot steer the source by writing to
+   * it. The rows inside are the same objects `rows` hands out.
+   */
+  get result(): LoadResult {
+    return { ...this.#result };
+  }
+
   get rows(): Row[] {
     return this.#result.rows;
   }

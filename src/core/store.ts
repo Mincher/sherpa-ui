@@ -109,6 +109,25 @@ export interface LoadResult {
   rows: Row[];
   /** Matching rows before skip/take — what a pager needs to count pages. */
   total: number;
+  /**
+   * Rows the store's schema REFUSED, and so did not hand over.
+   *
+   * Absent when nothing was dropped — which is the normal case, and means a
+   * host can test for the field rather than compare a count to zero.
+   *
+   * A read cannot throw the way a write does: one bad row in a thousand must
+   * not empty a grid. But a silent drop is worse than a bad row, because a
+   * schema quietly rejecting 40% of a response looks like a backend outage. So
+   * the count travels with the rows and a host can surface it.
+   */
+  dropped?: number;
+  /**
+   * Why the dropped rows were refused — the first few only.
+   *
+   * A broken backend produces one issue per row; ten thousand copies of "name
+   * is required" tell a host nothing the first one did not.
+   */
+  issues?: ReadonlyArray<{ readonly message: string; readonly path?: ReadonlyArray<PropertyKey> }>;
 }
 
 /**

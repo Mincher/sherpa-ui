@@ -95,6 +95,55 @@ abstract class BaseStore extends EventTarget implements Store {
     return (result.value ?? values) as Row;
   }
 
+  /**
+   * Check ROWS ARRIVING, dropping the ones the schema refuses.
+   *
+   * The read counterpart of `check()`, and deliberately not the same shape.
+   *
+   * A WRITE throws: the caller handed over one row, it is wrong, and telling
+   * them is the only useful answer. A READ cannot — one bad row in a thousand
+   * would empty a grid, and a backend that adds a null next month would take
+   * the screen down. So a bad row is DROPPED and COUNTED, and the count
+   * travels on the LoadResult where a host can see it.
+   *
+   * A silent drop would be worse than a bad row: a schema that quietly rejects
+   * 40% of a response looks like a backend outage. That is why `dropped` is
+   * reported rather than merely handled.
+   *
+   * The schema's PARSED value is kept, not the input — a schema may rename
+   * `customer_name` to `name` and coerce `"900"` to `900`, and that mapping is
+   * the point of having one on a read at all.
+   *
+   * No schema means no check: a store without one behaves exactly as it always
+   * did.
+   */
+  protected async checkRows(result: LoadResult): Promise<LoadResult> {
+    if (!this.schema) return result;
+
+    const rows: Row[] = [];
+    const issues: Issue[] = [];
+    for (const row of result.rows) {
+      const checked = await validate(this.schema, row);
+      if (checked.issues) issues.push(...checked.issues);
+      else rows.push((checked.value ?? row) as Row);
+    }
+
+    const dropped = result.rows.length - rows.length;
+    if (!dropped) return { ...result, rows };
+
+    return {
+      ...result,
+      rows,
+      // The TOTAL drops with them. A pager counting rows that were never shown
+      // would offer a page that renders empty.
+      total: Math.max(0, result.total - dropped),
+      dropped,
+      // The first few only. A broken backend produces one issue per row, and a
+      // host wants to know WHAT is wrong, not to receive ten thousand copies.
+      issues: issues.slice(0, 5),
+    };
+  }
+
   /** Tell every listener the records changed. */
   protected announce(detail: StoreChangeDetail): void {
     this.dispatchEvent(new CustomEvent('change', { detail }));
@@ -145,7 +194,7 @@ export class ArrayStore extends BaseStore {
   load(options: LoadOptions = {}): Promise<LoadResult> {
     const result = applyOptions(this.#rows, options);
     // Copies out, for the same reason as copies in.
-    return Promise.resolve({ rows: result.rows.map((r) => ({ ...r })), total: result.total });
+    return this.checkRows({ ...result, rows: result.rows.map((r) => ({ ...r })) });
   }
 
   byKey(key: unknown): Promise<Row | undefined> {
@@ -262,7 +311,9 @@ export class JsonStore extends BaseStore {
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     await this.#ensure();
-    return this.#inner.load(options);
+    // The inner ArrayStore holds no schema of its own (see #ensure), so the
+    // check happens once, here — never twice.
+    return this.checkRows(await this.#inner.load(options));
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -347,7 +398,10 @@ export class RestStore extends BaseStore {
     // only the page length, which is the honest answer for an unknown corpus.
     const reported = this.#options.totalPath ? readPath(body, this.#options.totalPath) : undefined;
     const total = typeof reported === 'number' ? reported : rows.length;
-    return { rows, total };
+    // THE LEAST TRUSTWORTHY PATH IN THE SYSTEM — rows from somewhere else,
+    // over a wire, shaped by a backend this code does not own. If a schema is
+    // going to be applied anywhere on a read, it is here.
+    return this.checkRows({ rows, total });
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -518,7 +572,7 @@ export class LocalStore extends BaseStore {
   }
 
   load(options: LoadOptions = {}): Promise<LoadResult> {
-    return Promise.resolve(applyOptions(this.#read(), options));
+    return this.checkRows(applyOptions(this.#read(), options));
   }
 
   byKey(key: unknown): Promise<Row | undefined> {

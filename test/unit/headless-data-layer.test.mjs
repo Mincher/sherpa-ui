@@ -262,3 +262,105 @@ test('F3: writes in one tick coalesce; separate ticks do not', async () => {
   }
   assert.equal(storeLoads - beforeTyping, 3, 'one load per tick, as asked');
 });
+
+/* ── V7 / V8 — a schema on the way IN ───────────────────────────────── */
+
+/**
+ * One backend's shape, mapped to ours. A hand-written Standard Schema, so no
+ * library is involved — it renames, coerces, defaults and rejects.
+ */
+const CustomerSchema = {
+  '~standard': {
+    version: 1,
+    vendor: 'acme-crm',
+    validate(input) {
+      const issues = [];
+      const id = Number(input?.cust_id);
+      if (!Number.isInteger(id)) issues.push({ message: 'cust_id must be an integer', path: ['cust_id'] });
+      const name = typeof input?.customer_name === 'string' ? input.customer_name.trim() : '';
+      if (!name) issues.push({ message: 'customer_name is required', path: ['customer_name'] });
+      const spend = input?.total_spend == null ? 0 : Number(input.total_spend);
+      if (!Number.isFinite(spend)) issues.push({ message: 'total_spend is not a number', path: ['total_spend'] });
+      if (issues.length) return { issues };
+      return { value: { id, name, spend, plan: input?.plan_tier ?? 'free' } };
+    },
+  },
+};
+
+/** What a backend actually sends: snake_case, stringly-typed, two bad rows. */
+const rawCustomers = () => [
+  { cust_id: '1', customer_name: ' Ada ', total_spend: '900.50', plan_tier: 'pro' },
+  { cust_id: 2, customer_name: 'Bob', total_spend: '40' },
+  { cust_id: 3, customer_name: 'Cy', total_spend: null, plan_tier: 'enterprise' },
+  { cust_id: 4, customer_name: '', total_spend: '10' },
+  { cust_id: 'x', customer_name: 'Dee', total_spend: 'oops' },
+];
+
+test('V7: a schema maps rows on the way IN — rename, coerce, default', async () => {
+  const store = new ArrayStore(rawCustomers(), { key: 'cust_id', schema: CustomerSchema });
+  const source = new DataSource({ store });
+  await source.load();
+  await settle();
+
+  assert.deepEqual(source.rows, [
+    { id: 1, name: 'Ada', spend: 900.5, plan: 'pro' },       // renamed, trimmed, coerced
+    { id: 2, name: 'Bob', spend: 40, plan: 'free' },          // plan DEFAULTED
+    { id: 3, name: 'Cy', spend: 0, plan: 'enterprise' },      // null spend defaulted
+  ]);
+
+  // The coercion is the point: a real number sorts numerically, where "100"
+  // would sort below "9" as text.
+  assert.equal(typeof source.rows[0].spend, 'number');
+  source.setSort('spend', 'desc');
+  await settle();
+  assert.deepEqual(source.rows.map((r) => r.spend), [900.5, 40, 0]);
+});
+
+test('V8: bad rows are DROPPED and REPORTED, never thrown', async () => {
+  const store = new ArrayStore(rawCustomers(), { key: 'cust_id', schema: CustomerSchema });
+  const source = new DataSource({ store });
+
+  // A read must NOT throw the way a write does — one bad row in a thousand
+  // would empty a grid.
+  await source.load();
+  await settle();
+
+  const result = source.result;
+  assert.equal(source.rows.length, 3, 'the good rows arrived');
+  assert.equal(result.dropped, 2, 'the bad ones were counted');
+  // The TOTAL drops with them, or a pager offers a page that renders empty.
+  assert.equal(result.total, 3);
+
+  // A silent drop would be worse than a bad row — a schema quietly rejecting
+  // 40% of a response looks like a backend outage.
+  assert.ok(result.issues?.length, 'and WHY they were refused');
+  assert.ok(
+    result.issues.some((i) => i.message.includes('customer_name')),
+    'the issue names the field',
+  );
+});
+
+test('V8: no schema means no check — nothing changes', async () => {
+  const store = new ArrayStore([{ id: 1, name: '' }, { id: 2 }], { key: 'id' });
+  const source = new DataSource({ store });
+  await source.load();
+  await settle();
+
+  assert.equal(source.rows.length, 2, 'every row survives');
+  assert.equal(source.result.dropped, undefined, 'and `dropped` is ABSENT, not zero');
+});
+
+test('V7: a WRITE still throws — the read path did not change it', async () => {
+  const store = new ArrayStore([], { key: 'id', schema: CustomerSchema });
+
+  // A write hands over ONE row the caller can fix, so telling them is the only
+  // useful answer. That asymmetry with reads is deliberate.
+  await assert.rejects(
+    () => store.insert({ cust_id: 'x', customer_name: '', total_spend: 'no' }),
+    (e) => e.name === 'ValidationError' && e.issues.length > 0,
+  );
+
+  // …and a good write stores the schema's PARSED value, not the input.
+  const saved = await store.insert({ cust_id: 7, customer_name: '  Eve  ', total_spend: '12' });
+  assert.deepEqual(saved, { id: 7, name: 'Eve', spend: 12, plan: 'free' });
+});

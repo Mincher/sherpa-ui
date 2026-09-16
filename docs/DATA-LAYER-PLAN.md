@@ -2543,8 +2543,8 @@ applied to data:
 
 | Step | Work | Why here |
 |---|---|---|
-| **V7** | Apply the schema on `load()`, not just writes | data from outside is the LEAST trustworthy and the only path with no check. Verified 2026-09-16: `check()` runs on `insert`/`update` in `ArrayStore`, `RestStore` and `LocalStore` — and `RestStore` even re-checks the RESPONSE to an insert (line 378) — but no store checks `load()` |
-| **V8** | Drop-and-report for bad rows: a field on `LoadResult` AND a getter on `DataSource` | one bad row must not empty a grid, and a silent drop must not hide a broken backend. Verified: `LoadResult` is `{ rows, total }` with nowhere to report, and `#result` is private with no getter — so BOTH halves are needed or neither works |
+| **V7** ✅ | Apply the schema on `load()`, not just writes | **DONE 2026-09-16.** `checkRows()` on the base store, wired into all four `load()`s. A schema now RENAMES, COERCES and DEFAULTS on the way in, so the hand-written adapter store the plan sketched is no longer needed |
+| **V8** ✅ | Drop-and-report for bad rows: a field on `LoadResult` AND a getter on `DataSource` | **DONE 2026-09-16.** `LoadResult` gained `dropped` + `issues` (absent when nothing dropped, so a host tests the field rather than comparing to zero) and `DataSource` gained `result`. `total` drops with the rows, or a pager offers a page that renders empty |
 | **V9** | Derive a column's `type` from the schema where one is given | the grid's `type` and the schema's already say the same thing in two places |
 | **V10** | `sample` — check the first N rows on a bulk load | so a 10k-row load is not 10k parses |
 
