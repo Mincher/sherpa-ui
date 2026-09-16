@@ -159,7 +159,7 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ## Recently finished (for context)
 
-Most recent first. Each is a commit on `sherpa-reforged` with a long message
+Most recent first. Each is a commit on `sherpa-data-layer` with a long message
 explaining the reasoning — `git log` is worth reading.
 
 | Area | What changed |

@@ -408,7 +408,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // so the two can never disagree.
       const count = this.#chipPicks(source).length;
       badge.textContent = String(count);
-      badge.hidden = count === 0;
+      /* A data-* ON THE ROW, not `hidden` on the badge. CSS owns visibility —
+         and the chip already answers this same question with
+         `:host([data-count]) .count`, so the bar was the only place in the
+         project saying it a second way.
+
+         The attribute goes on the ROW because the badge is not a host: nothing
+         can write `:host(...)` for an element inside a menu. Same vocabulary
+         (`data-count`), same rule, reachable selector. */
+      badge.closest('.qf-folded')?.toggleAttribute('data-count', count > 0);
     }
   }
 

@@ -609,9 +609,12 @@ export function deleteSavedView(
   options: PersistOptions = {},
 ): SavedViewStore {
   const views = loadSavedViews(page, options);
-  delete views[id];
-  writeSavedViews(page, views, options);
-  return views;
+  // REBUILT WITHOUT IT, rather than `delete views[id]`. A dynamic delete on a
+  // parsed-JSON object is the one shape that can carry a prototype key through
+  // — and this object came from storage, which a person can edit.
+  const kept = Object.fromEntries(Object.entries(views).filter(([key]) => key !== id));
+  writeSavedViews(page, kept, options);
+  return kept;
 }
 
 /**

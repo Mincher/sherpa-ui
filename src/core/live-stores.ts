@@ -237,6 +237,13 @@ export interface EventStoreOptions extends LiveStoreOptions {
 export class EventStore extends LiveStore {
   #source: EventSource | null = null;
 
+  /* NOT a useless constructor, though it looks like one. Without it this class
+     inherits `LiveStore`'s signature and would accept a bare
+     `LiveStoreOptions` — so a caller could construct a EventStore with none of the
+     fields that make it one, and TypeScript would allow it. The body is
+     `super(options)` precisely because the only job here is NARROWING the
+     parameter type. */
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- narrows the options type; see above
   constructor(options: EventStoreOptions) {
     super(options);
   }
@@ -310,6 +317,13 @@ export class SocketStore extends LiveStore {
   /** How long to wait before retry N, capped. */
   static readonly BACKOFF_MS = [500, 1000, 2000, 5000, 10000] as const;
 
+  /* NOT a useless constructor, though it looks like one. Without it this class
+     inherits `LiveStore`'s signature and would accept a bare
+     `LiveStoreOptions` — so a caller could construct a SocketStore with none of the
+     fields that make it one, and TypeScript would allow it. The body is
+     `super(options)` precisely because the only job here is NARROWING the
+     parameter type. */
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- narrows the options type; see above
   constructor(options: SocketStoreOptions) {
     super(options);
   }

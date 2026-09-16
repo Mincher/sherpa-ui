@@ -31,8 +31,8 @@ npm run lint         # eslint src/
   the last resort — HTML data-attributes and CSS own structure and appearance.
 - **Tokens** are projected from the Figma file by `scripts/project-tokens.mjs` into
   `src/styles/tokens/tokens.css`, layered by Figma's aliasing tiers
-  (`@layer core, style, overrides, components`). See
-  [docs/VARIABLE-TOKEN-MAP.md](docs/VARIABLE-TOKEN-MAP.md).
+  (`@layer core, display-mode, theme, layout, structure, border, style, elevation,
+  components`). See [CLAUDE.md](CLAUDE.md#token-architecture) for what each owns.
 - **Two-way Figma ↔ code** is the direction of travel — see
   [docs/FIGMA-CODE-SYNC-PLAN.md](docs/FIGMA-CODE-SYNC-PLAN.md).
 

@@ -14,9 +14,10 @@ failures that have each cost hours.
 |---|---|
 | [docs/HANDOVER.md](docs/HANDOVER.md) | **Always, before your first change.** Traps (anchor positioning, tables, shadow DOM, SVG), the working method, where the interesting code is |
 | [docs/HANDOVER-BACKLOG.md](docs/HANDOVER-BACKLOG.md) | Picking up work — what is queued and what "done" means |
+| [docs/DATA-LAYER-PLAN.md](docs/DATA-LAYER-PLAN.md) | **Working on data, state, or view definitions** — Store/DataSource, the ownership + parity rules, view definitions, and the headless contract. This branch's plan |
 | [docs/HANDOVER-FIGMA.md](docs/HANDOVER-FIGMA.md) | Touching tokens or reading Figma — how to read values RELIABLY (extension overrides read back empty) |
 
-Active branch is `sherpa-reforged`. **Never push** — commit freely, pushing is
+Active branch is `sherpa-data-layer`. **Never push** — commit freely, pushing is
 Will's call.
 
 ---
@@ -26,7 +27,8 @@ Will's call.
 ```bash
 # Build (clean → compile TS → transform + copy CSS/HTML assets into dist/)
 npm run build
-npm run build:watch       # tsc --watch — TS only, no asset copy
+npm run build:watch       # build-reforged.mjs --watch — TS *and* assets
+npm run build:watch:ts    # tsc --watch — TS only, no asset copy
 
 # Type check (no emit)
 npm run type-check
@@ -84,8 +86,8 @@ A fourth file, `sherpa-<name>.component.yaml`, is **generated** — by
 `scripts/generate-component-spec.mjs` from the source + Figma — and git-tracked. It is
 the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
 validate tooling. Never hand-edit it; regenerate it. `scripts/resync-figma.mjs --check`
-reports drift between a spec and Figma. (`scripts/generate-defs.mjs` is RETIRED — it
-errors out and points at the current script.)
+reports drift between a spec and Figma. (`scripts/generate-defs.mjs` was deleted
+2026-09-16 — it had been a stub that only printed an error.)
 
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 
@@ -175,7 +177,9 @@ Applies to **all** components, existing and new:
 - **Attributes:** `data-*` for the public API; native attributes (`disabled`, `name`, `value`, `hidden`, `required`, `readonly`) stay un-prefixed. Reuse the standard-name enums above verbatim — don't invent a synonym for an existing concept. Component-private state is `--_*` CSS custom properties, never a public `data-*`.
 - **Events:** **unprefixed `noun-verb`** names (`button-click`, `page-change`, `tree-select`, `quick-filter-change`). Do **not** prefix event strings with `sherpa-`. Standard shared events: `change`/`input` (re-dispatched native), `*-click`, `*-change`, `*-select`, `*-open`/`*-close`.
 - **Standard data attrs for data components:** `data-sort-field`/`data-sort-direction` (`asc|desc`), `data-segment-field`/`data-segment-mode` — reuse across all chart/grid components.
-- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist. There is no separate slot-contracts doc — read the `data-accepts` values in the component `.html` templates (16 components carry them).
+- **Slots:** every content-bearing slot declares a `data-accepts` category allowlist. There is no separate slot-contracts doc — read the `data-accepts` values in the component `.html` templates. **12 of the 44
+  slot-bearing components carry them** — the rule is every content-bearing slot, so
+  the other 32 are a real gap, not a licence to skip it.
 
 ### CSS owns all visibility
 
@@ -232,7 +236,7 @@ Cascade layer order (declared in the generated `src/styles/tokens/tokens.css`) m
 the Figma collection families — each layer owns its base values plus its own mode /
 extension blocks:
 ```
-core → display-mode → theme → layout → structure → style → elevation → components
+core → display-mode → theme → layout → structure → border → style → elevation → components
 ```
 - **core** — shared base geometry (Primitives are inlined as literals, not emitted).
 - **display-mode** — light/dark colour+scale ramp + dark re-point + density (`[data-density]`).

@@ -1,4 +1,4 @@
-# Handover — Sherpa-UI `sherpa-reforged`
+# Handover — Sherpa-UI `sherpa-data-layer`
 
 **Read this before touching anything.** It is the knowledge that is *not* in the
 code: the traps, the rulings, and the reasons behind decisions that look odd.
@@ -25,7 +25,7 @@ have bitten repeatedly.
 - **Figma is the source of truth.** Code maps to it. If code and Figma disagree,
   Figma wins unless Will says otherwise — and then the divergence goes in the
   component's `.component.yaml` `_divergence:` block, not just a comment.
-- **Never push.** Commit freely on `sherpa-reforged`; pushing is his call.
+- **Never push.** Commit freely on `sherpa-data-layer`; pushing is his call.
 - **Judge with your eyes, not just numbers.** See §3.
 
 ### The golden rule

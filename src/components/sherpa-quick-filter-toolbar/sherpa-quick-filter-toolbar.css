@@ -411,7 +411,11 @@
 /* Hidden at zero — `nothing applied` is the absence of a badge everywhere else
    in the bar, and `hidden` on a custom element needs saying because the host is
    not display:none by default. */
-:is(.chip, .overflow-chip) .qf-folded-count[hidden] { display: none; }
+/* A folded row's badge appears only when it holds something — the same rule the
+   chip's own badge follows (`:host([data-count]) .count`), said the same way.
+   The flag sits on the ROW because a badge inside a menu is not a host. */
+:is(.chip, .overflow-chip) .qf-folded-count { display: none; }
+:is(.chip, .overflow-chip) .qf-folded[data-count] .qf-folded-count { display: block; }
 
 /* The drill affordance is a composed transparent icon button — it owns its own
    size and ink, so there is nothing to style here. It is decorative (the ROW is
