@@ -91,6 +91,18 @@ function applyAttr(el: HTMLElement, name: string, value: unknown): void {
  * `renderView` builds them, but a saved view loaded later has to reach a live
  * screen.
  */
+/**
+ * Is this value a LIST OF CALLS rather than one argument list?
+ *
+ * `[['name', clause], ['plan', clause]]` is two calls; `[['a@x']]` is one call
+ * whose single argument is an array. They are told apart by whether EVERY entry
+ * is itself an array AND there is more than one — a single nested array stays
+ * one call, which keeps the common case unambiguous.
+ */
+function isCallList(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 1 && value.every((v) => Array.isArray(v));
+}
+
 export function applyState(el: HTMLElement, state: Record<string, unknown>): string[] {
   const skipped: string[] = [];
   const target = el as unknown as Record<string, unknown>;
@@ -110,8 +122,15 @@ export function applyState(el: HTMLElement, state: Record<string, unknown>): str
         // A METHOD. An array is its ARGUMENT LIST, so `setColumnFilter` takes
         // two and `select` takes one — which is why a single-argument method
         // wanting an array is written as a nested array.
-        const args = Array.isArray(value) ? value : [value];
-        (current as (...a: unknown[]) => unknown).apply(el, args);
+        //
+        // CALLED REPEATEDLY when the value is an array of argument lists. A
+        // `state` block is a map, so one method cannot appear twice — and
+        // `setColumnFilter` has to run once per filtered column. Nesting the
+        // calls is the honest answer; inventing a `setColumnFilter:name` key
+        // would be a second vocabulary nothing else understands.
+        const fn = current as (...a: unknown[]) => unknown;
+        const calls = isCallList(value) ? (value as unknown[][]) : [Array.isArray(value) ? value : [value]];
+        for (const args of calls) fn.apply(el, args);
       } else {
         // An ACCESSOR, or a plain property.
         target[key] = value;

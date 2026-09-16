@@ -45,14 +45,36 @@ function storage(shared: boolean): Storage | null {
 }
 
 /**
- * Restore `source` from storage, then keep it saved.
+ * Keep a whole view — the query AND every component's state — across a reload.
  *
- * Returns a function that stops saving — call it when the view is torn down,
- * the same way `bind()`'s return value is used.
+ *   const off = persistView('records',
+ *     { source, elements: { grid } },
+ *     { grid: () => ({ setColumnFilter: …, select: [grid.selectedKeys] }) });
+ *
+ * Restores on the way in, then saves on every change.
+ *
+ * ONE SNAPSHOT, not a key per concern. This started as two: `persistViewState`
+ * for the source and a hand-written `sessionStorage` line for the grid's column
+ * filters — with a third needed for selection and a fourth for the toolbar's
+ * chips. Four shapes, four restore paths, one idea. A saved view, a preset, a
+ * deep link and an agent's request are the same object, so they get the same
+ * mechanism.
+ *
+ * WHAT EACH ELEMENT CONTRIBUTES is a function the caller supplies, because only
+ * the caller knows which of a component's properties are view state and which
+ * are incidental. Guessing would restore someone's scroll position a week
+ * later. Each returns an `ElementNode.state` block — the same shape
+ * `renderElement` takes, so a saved view and a preset are interchangeable.
+ *
+ * Returns a function that stops saving, the same way `bind()`'s does.
  */
-export function persistViewState(
-  source: DataSource,
+export function persistView(
   name: string,
+  targets: {
+    source?: DataSource;
+    elements?: Record<string, HTMLElement>;
+  },
+  contributors: Record<string, () => Record<string, unknown>> = {},
   options: PersistOptions = {},
 ): () => void {
   const store = storage(options.shared ?? false);
@@ -63,26 +85,58 @@ export function persistViewState(
   // than loading empty and then loading again.
   try {
     const raw = store.getItem(key);
-    if (raw) source.setState(JSON.parse(raw) as Partial<ViewState>);
+    if (raw) applyViewSnapshot(JSON.parse(raw) as ViewSnapshot, targets);
   } catch {
-    // Unreadable or not JSON — a state that cannot be restored is one the user
-    // starts without, which is exactly where they were before this existed.
+    // Unreadable, not JSON, or a shape this code no longer understands. A view
+    // that cannot be restored is one the user starts without — exactly where
+    // they were before this existed.
     try { store.removeItem(key); } catch { /* storage unavailable */ }
   }
 
-  // …then save on every change. `change` fires after a load completes, which is
-  // the only moment the state is both settled and known to be loadable.
   const save = (): void => {
+    const snapshot: ViewSnapshot = { v: 1 };
+    if (targets.source) snapshot.source = targets.source.state;
+
+    const elements: Record<string, Record<string, unknown>> = {};
+    for (const [id, contribute] of Object.entries(contributors)) {
+      try {
+        const state = contribute();
+        if (state && Object.keys(state).length) elements[id] = state;
+      } catch {
+        // A contributor that threw — a component mid-teardown, a getter that
+        // needs data it does not have yet. Skipped rather than losing the whole
+        // snapshot over one element.
+      }
+    }
+    if (Object.keys(elements).length) snapshot.elements = elements;
+
     try {
-      store.setItem(key, JSON.stringify(source.state));
+      store.setItem(key, JSON.stringify(snapshot));
     } catch {
-      // Quota, or storage revoked mid-session. Not keeping the state is a
+      // Quota, or storage revoked mid-session. Not keeping the view is a
       // smaller problem than throwing inside an event handler.
     }
   };
-  source.addEventListener('change', save);
 
-  return () => source.removeEventListener('change', save);
+  // SAVE ON THE SOURCE'S `change`, which fires after a load completes — the one
+  // moment the state is both settled and known to be loadable. A host whose
+  // view has no source calls the returned `save` itself.
+  targets.source?.addEventListener('change', save);
+  return () => targets.source?.removeEventListener('change', save);
+}
+
+/**
+ * Keep just a `DataSource`'s view state.
+ *
+ * @deprecated Use `persistView`, which keeps the components' state too. This
+ * remains because it is a strict subset — a view whose only state is its query.
+ */
+export function persistViewState(
+  source: DataSource,
+  name: string,
+  options: PersistOptions = {},
+): () => void {
+  return persistView(name, { source }, {}, options);
 }
 
 /**
@@ -102,7 +156,7 @@ export interface ViewSnapshot {
    */
   v: 1;
   /** The query — a `DataSource`'s ViewState. Restored via `setState()`. */
-  source?: Record<string, unknown>;
+  source?: Partial<ViewState>;
   /**
    * Per-element state, keyed by an id the CALLER chooses — the same ids a
    * `renderView` definition uses, so the two agree.
@@ -140,7 +194,7 @@ export interface ApplyReport {
 export function applyViewSnapshot(
   snapshot: ViewSnapshot,
   targets: {
-    source?: { setState(next: Record<string, unknown>): void };
+    source?: { setState(next: Partial<ViewState>): void };
     elements?: Record<string, HTMLElement>;
   },
 ): ApplyReport {
@@ -186,7 +240,7 @@ export function applyViewSnapshot(
  */
 export function captureView(
   targets: {
-    source?: { state: Record<string, unknown> };
+    source?: { state: ViewState };
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},

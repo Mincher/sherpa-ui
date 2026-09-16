@@ -164,6 +164,56 @@ test('a whole view round-trips: capture it, restore it into a FRESH one', async 
   expect(r.bytes).toBeLessThan(600);
 });
 
+test('one method, MANY calls — a state block is a map, so calls nest', async ({ page }) => {
+  // `setColumnFilter` has to run once per filtered column, and a state block is
+  // a map — one method, one key. Inventing `setColumnFilter:name` would be a
+  // second vocabulary nothing else understands, so the calls nest instead.
+  const r = await page.evaluate(async () => {
+    const { renderElement } = await import('/dist/index.js');
+    const el = renderElement({
+      type: 'sherpa-data-grid',
+      props: { 'data-column-filters': true },
+      data: {
+        columns: [{ field: 'name', header: 'Name' }, { field: 'plan', header: 'Plan' }],
+        rows: [{ name: 'Marcus', plan: 'Pro' }, { name: 'Omar', plan: 'Free' }],
+      },
+      state: {
+        // TWO calls — every entry is itself an array, and there is more than one.
+        setColumnFilter: [
+          ['name', ['name', 'contains', 'ar']],
+          ['plan', ['plan', 'contains', 'Pro']],
+        ],
+      },
+    }) as HTMLElement & { rendered?: Promise<void>; columnClause(f: string): unknown[] | null };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await new Promise((res) => setTimeout(res, 150));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    // …and ONE call whose single argument is an array stays one call, which is
+    // what keeps the common case unambiguous.
+    const single = renderElement({
+      type: 'sherpa-data-grid',
+      props: { 'data-selectable': true },
+      data: { key: 'id', columns: [{ field: 'n', header: 'N' }], rows: [{ id: 'a', n: 1 }, { id: 'b', n: 2 }] },
+      state: { select: [['a']] },
+    }) as HTMLElement & { rendered?: Promise<void>; selectedKeys: string[] };
+    document.body.appendChild(single);
+    await single.rendered;
+    await new Promise((res) => setTimeout(res, 150));
+
+    return {
+      name: el.columnClause('name'),
+      plan: el.columnClause('plan'),
+      selected: single.selectedKeys,
+    };
+  });
+
+  expect(r.name).toEqual(['name', 'contains', 'ar']);
+  expect(r.plan).toEqual(['plan', 'contains', 'Pro']);
+  expect(r.selected).toEqual(['a']);
+});
+
 test('a definition DEGRADES: a gone element and a gone method are reported, not thrown', async ({ page }) => {
   // A saved view outlives the code that made it. One stale key must not stop
   // the rest being restored — the same reason a bad ROW is dropped and counted.

@@ -16,7 +16,7 @@
  * internal scroll inside a fixed-height panel, and grouping across a row count
  * that no longer fits on one screen.
  */
-import { ArrayStore, DataSource, SherpaToast, persistViewState } from '../../dist/index.js';
+import { ArrayStore, DataSource, SherpaToast, persistView } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
@@ -432,7 +432,6 @@ export async function init(root) {
        has the last word, which includes both halves. */
     qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
     reapplyFilter();
-    saveColumns();
   });
 
   /* Taking the chip OFF the bar has to reach back and clear the column, or the
@@ -451,34 +450,45 @@ export async function init(root) {
   // draw a collapsible group row per value. The source writes that attribute on
   // every bound component, so the grid gets it without this view wiring it.
 
-  /* REMEMBER THE VIEW ACROSS A RELOAD.
+  /* REMEMBER THE WHOLE VIEW ACROSS A RELOAD — as ONE definition.
 
-     An accidental refresh used to throw away every filter, sort and page the
-     reader had set, and they started again. sessionStorage, so two tabs on this
-     screen keep their own filters — which is a feature, not a bug.
+     An accidental refresh used to throw away every filter, sort and page, and
+     the reader started again.
 
-     It restores BEFORE the first load, so the source queries once with the
-     remembered state rather than loading empty and loading again. */
-  unbinds.push(persistViewState(source, 'records'));
+     This was two mechanisms: persistViewState for the source, plus a
+     hand-written sessionStorage line for the grid's column clauses — with a
+     third needed for selection and a fourth for the toolbar's chips. Four
+     shapes, four restore paths, one idea. Now one snapshot, in the same shape a
+     PRESET or a shared link would use, so all three are interchangeable.
 
-  /* The COLUMN clauses are the grid's, not the source's, so they need their own
-     line. Without this a reload restored the ROWS but not the controls: the
-     heading stayed lit with an empty menu and no match marks, which reads as
-     broken — the rows are right and the control lies about why. */
-  const COLUMN_KEY = 'sherpa:view:records:columns';
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(COLUMN_KEY) ?? '{}');
-    for (const [field, clause] of Object.entries(saved)) {
-      columnClauses.set(field, clause);
-      grid.setColumnFilter(field, clause);
-    }
-  } catch { /* storage unavailable, or not JSON — start clean */ }
+     sessionStorage, so two tabs on this screen keep their own filters — which
+     is a feature, not a bug. It restores BEFORE the first load, so the source
+     queries once with the remembered state rather than loading empty and
+     loading again. */
+  unbinds.push(persistView('records', { source, elements: { grid } }, {
+    /* WHAT THE GRID CONTRIBUTES. The view names it rather than the helper
+       guessing: only this view knows that a column filter belongs in a saved
+       view and a scroll position does not.
 
-  const saveColumns = () => {
-    try {
-      sessionStorage.setItem(COLUMN_KEY, JSON.stringify(Object.fromEntries(columnClauses)));
-    } catch { /* storage unavailable */ }
-  };
+       Each entry is an ElementNode.state block — the same shape renderElement
+       takes, which is why a saved view and a preset are the same object. */
+    grid: () => {
+      const state = { select: [grid.selectedKeys] };
+      // A LIST OF CALLS, because setColumnFilter runs once per filtered column
+      // and a state block is a map — one method, one key.
+      const calls = [...columnClauses].map(([field, clause]) => [field, clause]);
+      if (calls.length) state.setColumnFilter = calls.length === 1 ? calls[0] : calls;
+      return state;
+    },
+  }));
+
+  /* The view's OWN map has to agree with the grid after a restore. The snapshot
+     put the clauses back into the GRID; this reads them out again so the
+     query — which this view composes, not the grid — includes them. */
+  for (const col of columns) {
+    const clause = grid.columnClause(col.field);
+    if (clause) columnClauses.set(col.field, clause);
+  }
 
   await source.load();
 

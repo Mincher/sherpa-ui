@@ -102,7 +102,7 @@ export {
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
 export {
-  persistViewState, clearViewState, applyViewSnapshot, captureView,
+  persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
 } from './core/persist-view.js';
 export {
