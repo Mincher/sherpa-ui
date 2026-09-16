@@ -167,6 +167,62 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
+   * The chip's picked values — the same list `quick-filter-change` reports.
+   *
+   * PARITY: what a reader picks in the menu, a caller must be able to set. A
+   * saved view, a deep link and an agent all need this door, and before it
+   * existed a view could narrow the DATA while the chip sat blank — the bar
+   * then lies about what is being shown.
+   */
+  get values(): string[] {
+    return (this.menu?.values ?? []) as string[];
+  }
+
+  /**
+   * Set the picks, and bring the chip's whole face with them.
+   *
+   * The chip does NOT store its state — it derives its label, badge, tooltip
+   * and on/off from the menu's ticked rows. So ticking the rows from outside is
+   * only half the job: the first version of this ticked them and left the chip
+   * reading "Region" with no value, lit but silent. Every sync `#onMenuChange`
+   * runs on a click runs here too, through the same code.
+   *
+   * SILENT. The caller is the one who asked, and a host that routes
+   * `quick-filter-change` back into its query would apply the same filter
+   * twice. Clicks report an INTENT; this is the answer to one.
+   *
+   * A value naming no row is ignored — a saved view outlives the options it
+   * was made from.
+   */
+  set values(next: readonly string[]) {
+    const menu = this.menu;
+    if (!menu) return;
+    const want = new Set(next.map(String));
+    for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
+      // The "All" row is a control, not a value; it derives from the rest.
+      if (!input.closest('.qf-all')) input.checked = want.has(input.value);
+    }
+    // Read BACK, never trust the ask: a value naming no row never landed.
+    this.#applySelection((menu.values ?? []) as string[]);
+  }
+
+  /**
+   * Everything the chip derives from its picks, in one place.
+   *
+   * Shared by the menu event and the `values` setter so a click and a call
+   * cannot drift — the same five writes, the same order.
+   */
+  #applySelection(values: string[]): void {
+    if (values.length > 1) this.dataset['count'] = String(values.length);
+    else delete this.dataset['count'];
+    this.current = values.length > 0;
+    this.#syncLabelForSelection(values);
+    this.#syncCountTip(values);
+    this.#syncEmpty();
+    this.#syncText();
+  }
+
+  /**
    * The chip's own field name, remembered before a single pick rewrites the
    * visible label to "Field: Value". Without it, going from one pick to two (or
    * back to none) would have nothing to restore — the field name would already
@@ -247,13 +303,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // The badge needs TWO or more picks to say anything. At one pick the label
     // already names the value ("Region: EMEA"), so a "1" beside it is pure noise
     // — and on a single-select chip the badge could never read anything else.
-    if (values.length > 1) this.dataset['count'] = String(values.length);
-    else delete this.dataset['count'];
-    this.current = values.length > 0;
-    this.#syncLabelForSelection(values);
-    this.#syncCountTip(values);
-    this.#syncEmpty();
-    this.#syncText();
+    this.#applySelection(values);
     this.emit('quick-filter-change', { values });
   };
 

@@ -49,11 +49,35 @@ export async function init(root) {
    * re-applies. Held here rather than in the chip's options because the chip
    * carries the LABELS a reader picks from; this is what picking one MEANS.
    */
+  /* `chips` is the SAME fact as `filter`, said to the reader.
+     A view that narrows to EMEA must also show the Region chip reading EMEA,
+     or the bar claims nothing is filtered while the charts disagree — and a
+     filter nobody can see is a filter nobody can undo.
+     A chip the view does not name is switched OFF, so every view is a whole
+     statement about the bar and not a patch on the view before it. */
   const savedViews = {
-    fleet:    { label: 'Fleet overview',    filter: undefined },
-    critical: { label: 'Critical only',     filter: ['severity', 'eq', 'critical'] },
-    emea:     { label: 'EMEA operations',   filter: ['region', 'eq', 'EMEA'] },
-    capacity: { label: 'Capacity planning', filter: ['storage', 'gt', 70] },
+    fleet: {
+      label: 'Fleet overview',
+      filter: undefined,
+      chips: { view: ['fleet'] },
+    },
+    critical: {
+      label: 'Critical only',
+      filter: ['severity', 'eq', 'critical'],
+      // No header chip names severity — it is this page's own axis, not a
+      // slice of the business — so the bar stays clear and honest.
+      chips: { view: ['critical'] },
+    },
+    emea: {
+      label: 'EMEA operations',
+      filter: ['region', 'eq', 'EMEA'],
+      chips: { view: ['emea'], region: ['emea'] },
+    },
+    capacity: {
+      label: 'Capacity planning',
+      filter: ['storage', 'gt', 70],
+      chips: { view: ['capacity'] },
+    },
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -232,6 +256,13 @@ export async function init(root) {
        the value, but now fights the chip and left the bar reading
        "EMEA operations | EMEA operations" the moment anyone changed view. */
     source.contribute('view', view.filter);
+
+    /* AND THE BAR. The write above moved the DATA; this one moves what the
+       reader sees. Both come from the one definition, so they cannot drift.
+
+       Setting the chips fires no event — see the setter — so this does not
+       come back round as a second filter. */
+    header.values = view.chips ?? {};
   });
 
   // The cluster's own actions, for the example's sake.

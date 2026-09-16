@@ -109,6 +109,38 @@ export class SherpaAppHeader extends SherpaElement {
     if (Array.isArray(cfg.filters)) this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters);
   }
 
+  /* ── The filter bar, reachable ─────────────────────────────────────
+     The toolbar is slotted in the LIGHT DOM, so a host CAN reach it with a
+     querySelector. It should not have to: the header is what a view holds a
+     reference to, and a saved view that must know the toolbar's tag name to
+     set a filter is a view coupled to this header's internals.
+
+     PARITY. Anything a reader can click here, a caller must be able to call —
+     a saved view, a deep link, a test, an agent with no pointer. */
+
+  /** The toolbar's picks, or `{}` when no toolbar is slotted. */
+  get values(): Record<string, readonly string[]> {
+    return this.#toolbar()?.values ?? {};
+  }
+
+  /**
+   * Set every filter chip — `{ region: ['emea'] }`.
+   *
+   * REPLACES the set: a chip the caller does not name is switched off, because
+   * a view definition is a whole statement about the bar, not a patch on
+   * whatever was showing before it.
+   *
+   * Silent, like the toolbar's own setter: the caller already knows.
+   */
+  set values(next: Record<string, readonly string[]>) {
+    const bar = this.#toolbar();
+    if (bar) bar.values = next;
+  }
+
+  #toolbar(): (HTMLElement & { values: Record<string, readonly string[]> }) | null {
+    return this.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  }
+
   /** Populate a consumer-slotted composed child (no structural createElement). */
   #stamp(slot: string, tag: string, data: unknown): void {
     const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);

@@ -193,6 +193,8 @@ export interface QuickFilterDef {
 
 interface ChipEl extends HTMLElement {
   current: boolean;
+  /** The chip's picks. Setting them brings its label and badge along. */
+  values: readonly string[];
 }
 
 /** One column the grid can be grouped or sorted by. */
@@ -778,6 +780,56 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (picked.length) out[id] = picked;
     }
     return out;
+  }
+
+  /**
+   * Set every chip from a view definition — `{ region: ['EMEA'], plan: ['Pro'] }`.
+   *
+   * THE HALF THAT WAS MISSING. A saved view could narrow the DATA and leave the
+   * bar saying nothing was filtered: pick "EMEA operations" and the charts
+   * showed EMEA while the Region chip sat off and blank. The bar then lies
+   * about what the reader is looking at, which is worse than not having it —
+   * a filter nobody can see is a filter nobody can undo.
+   *
+   * REPLACES the whole set: a view says what IS filtered, so a chip the
+   * definition does not name is turned OFF. Its own picks survive (they are
+   * remembered, not applied — see `pickedValues`), so switching away from a
+   * view and back does not make the reader choose again.
+   *
+   * SILENT. The caller is the one who asked, and a host that routes
+   * `quick-filter-change` back into its query would apply the same filter
+   * twice. A definition sets the CHIPS; the source is set from the same
+   * definition, not from the echo.
+   *
+   * A value naming no option is ignored, like every other restore here: a saved
+   * view outlives the options it was made from.
+   */
+  set values(next: Record<string, readonly string[]>) {
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'];
+      if (!id || !chip.hasAttribute('data-menu')) continue;
+      const wanted = next[id];
+      // A PERSISTENT chip is a selector — the view chip itself — so it is never
+      // switched OFF. It still follows a pick: a definition may name the view
+      // it is, and the chip must read it. Not naming it leaves it as it is,
+      // because "no view" is not a state this chip has.
+      if (chip.hasAttribute('data-persistent')) {
+        if (wanted?.length) chip.values = wanted;
+        continue;
+      }
+
+      if (wanted?.length) {
+        // The CHIP owns its own face — label, badge, tooltip, on/off — so it
+        // sets them, not this bar. Writing them from here was two places
+        // deriving one thing, which is the bug this whole model exists to stop.
+        chip.values = wanted;
+      } else {
+        // NOT named by the view: off, but its picks survive. "Off" and "gone"
+        // are different states, and collapsing them makes a reader re-choose
+        // every time they look at another view.
+        chip.current = false;
+      }
+    }
   }
 
   /**
