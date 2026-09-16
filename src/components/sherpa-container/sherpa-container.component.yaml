@@ -100,29 +100,7 @@ props:
       4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows. The body's content fills it, so a
       chart draws into the whole card and a data grid scrolls inside it instead of the card growing
       with the data.
-  - $type: prop
-    name: data-state
-    type: enum
-    kind: style
-    values:
-      - empty
-      - error
-    description: "empty | error   (shows the matching overlay; TODO D6: move to slot-driven :has())"
-  - $type: prop
-    name: data-variant
-    type: enum
-    kind: style
-    values:
-      - fill
-      - fit
-    description: fill  | fit (hugs content)
 states:
-  - $type: state
-    name: fill
-    selector: ":host([data-variant=\"fill\"])"
-  - $type: state
-    name: fit
-    selector: ":host([data-variant=\"fit\"])"
   - $type: state
     name: sm
     selector: ":host([data-elevation=\"sm\"])"

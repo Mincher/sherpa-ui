@@ -45,7 +45,7 @@ props:
       empty-state message No events of its own — child rows emit item-click, which the list uses to
       keep a single current row.
   - $type: prop
-    name: data-variant
+    name: data-type
     type: string
     kind: style
     default: — dividers between rows
@@ -53,13 +53,13 @@ props:
 states:
   - $type: state
     name: plain
-    selector: ":host([data-variant=\"plain\"])"
+    selector: ":host([data-type=\"plain\"])"
   - $type: state
     name: empty-visible
     selector: ":host([data-empty-visible])"
   - $type: state
     name: not-plain
-    selector: ":host(:not([data-variant=\"plain\"]))"
+    selector: ":host(:not([data-type=\"plain\"]))"
 tokens:
   empty.padding: "{sherpa.theme-padding-lg}"
   empty.color: "{sherpa.theme-content-body-1}"

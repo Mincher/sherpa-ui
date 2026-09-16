@@ -8,11 +8,11 @@
   Default.
 
   Two presets share ONE skeleton (heading row + metadata row), switched by
-  data-variant:
+  data-type:
     default  single row — title + optional description + actions (today's header)
     panel    link-style title + right-side actions group + bottom metadata row
 
-  Figma has a third variant, `accordion`. It is NOT a data-variant value here:
+  Figma has a third variant, `accordion`. It is NOT a data-type value here:
   it is the default skeleton whose trailing affordance is a disclosure chevron
   instead of a close X — i.e. exactly `data-collapsible` (shows .toggle, fires
   header-collapse, rotates on data-collapsed). Set data-collapsible (and omit
@@ -22,7 +22,7 @@
   for a container it heads, so no `accordion` variant value is needed.
 
   Public API:
-    data-variant     default | panel   (default default)
+    data-type     default | panel   (default default)
     data-heading     heading text (rendered into .title)
     data-description  secondary text (rendered into .description)
     data-icon         a glyph before the title (shows the icon slot)

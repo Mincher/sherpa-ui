@@ -223,7 +223,7 @@ test('the panel variant renders a link-style title and the metadata row', async 
     await dflt.rendered;
 
     const panel = document.createElement('sherpa-container-header') as HeaderEl;
-    panel.setAttribute('data-variant', 'panel');
+    panel.setAttribute('data-type', 'panel');
     panel.setAttribute('data-heading', 'Panel title');
     panel.innerHTML = '<span slot="metadata">buildings · Acme Corp</span>';
     document.getElementById('root')!.appendChild(panel);
@@ -234,7 +234,7 @@ test('the panel variant renders a link-style title and the metadata row', async 
     const titleColor = getComputedStyle(s.querySelector('.title')!).color;
     const defaultTitleColor = getComputedStyle(dflt.shadowRoot!.querySelector('.title')!).color;
     return {
-      variant: panel.getAttribute('data-variant'),
+      variant: panel.getAttribute('data-type'),
       titleText: s.querySelector('.title')!.textContent,
       metadataVisible: getComputedStyle(s.querySelector('.metadata')!).display !== 'none',
       // panel title uses the content-link token → differs from the default title colour
@@ -257,7 +257,7 @@ test('the default variant is unchanged: metadata hidden, no link-style title', a
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = el.shadowRoot!;
     return {
-      variant: el.getAttribute('data-variant'), // unset by default
+      variant: el.getAttribute('data-type'), // unset by default
       metadataVisible: getComputedStyle(s.querySelector('.metadata')!).display !== 'none',
       descriptionVisible: getComputedStyle(s.querySelector('.description')!).display !== 'none',
       title: s.querySelector('.title')!.textContent,

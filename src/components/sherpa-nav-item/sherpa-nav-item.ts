@@ -23,7 +23,7 @@
  *   data-description promo description (promo variant only)
  *   data-current     current item in the nav set
  *   data-href        render the row as a link
- *   data-variant     "promo" for the CTA row
+ *   data-type     "promo" for the CTA row
  *   disabled         disabled state
  *
  * @tier sub-component
@@ -56,7 +56,7 @@ export class SherpaNavItem extends SherpaElement {
   #highlightStyled = false;
 
   protected override get templateId(): string {
-    return this.dataset['variant'] === 'promo' ? 'promo' : 'default';
+    return this.dataset['type'] === 'promo' ? 'promo' : 'default';
   }
 
   override onRender(): void {
@@ -89,7 +89,7 @@ export class SherpaNavItem extends SherpaElement {
   /* ── Sync attribute state into the template ───────────────────── */
 
   #sync(): void {
-    const promo = this.dataset['variant'] === 'promo';
+    const promo = this.dataset['type'] === 'promo';
 
     // Both the <button> and the <a href> row carry the icon/label — write to both.
     const setAll = (sel: string, text: string): void => {
@@ -173,7 +173,7 @@ export class SherpaNavItem extends SherpaElement {
     // BOTH rows carry a label (the <button> row and the <a href> row; CSS shows one).
     // Marking only the first would mark the HIDDEN one — which is exactly why the
     // highlight appeared to do nothing on link rows.
-    const labels = this.$$(this.dataset['variant'] === 'promo' ? '.promo-heading' : '.label');
+    const labels = this.$$(this.dataset['type'] === 'promo' ? '.promo-heading' : '.label');
     if (!labels.length) return;
 
     if (at < 0) {

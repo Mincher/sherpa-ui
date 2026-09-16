@@ -51,15 +51,17 @@
   --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
-/* ── Variant: fill stretches to its parent; fit hugs its content ───── */
-:host,
-:host([data-variant="fill"]) {
+/* ── Sizing: fills its parent by default ─────────────────────────────
+   NO ATTRIBUTE. This was a fill/fit variant attribute, and NAMING-STANDARD rules
+   that fill/fit sizing is pure CSS: a host is in the LIGHT DOM, so a consumer
+   writes `align-self: flex-start; height: auto` on the element itself and gets
+   "fit" without the component owning an axis for it.
+
+   Nothing in the repo ever set `fit` — `fill` was the bare-:host default and
+   the attribute only ever restated it. */
+:host {
   align-self: stretch;
   height: 100%;
-}
-:host([data-variant="fit"]) {
-  align-self: flex-start;
-  height: auto;
 }
 
 /* ── Elevation — the Figma Elevation modes (sm/md/lg = small/base/large), written

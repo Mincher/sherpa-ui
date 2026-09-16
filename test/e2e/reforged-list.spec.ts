@@ -166,7 +166,7 @@ test('empty-state hides once rows are populated', async ({ page }) => {
 test('bordered variant collapses the inter-row gap', async ({ page }) => {
   const gap = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
-    el.setAttribute('data-variant', 'bordered');
+    el.setAttribute('data-type', 'bordered');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     el.populate([{ title: 'A' }, { title: 'B' }]);

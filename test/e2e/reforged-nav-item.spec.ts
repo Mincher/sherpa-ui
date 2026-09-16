@@ -146,7 +146,7 @@ test('disabled item does not fire on click', async ({ page }) => {
 test('promo variant renders heading + description', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-nav-item') as unknown as NavItemEl;
-    el.setAttribute('data-variant', 'promo');
+    el.setAttribute('data-type', 'promo');
     el.setAttribute('data-label', 'Upgrade');
     el.setAttribute('data-description', 'Unlock more');
     document.getElementById('root')!.appendChild(el);

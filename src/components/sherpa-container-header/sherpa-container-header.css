@@ -153,8 +153,8 @@ slot[name="heading"] { display: contents; }
 /* ── Panel variant ────────────────────────────────────────────────────── */
 /* Panel = link-style title, a right-aligned actions group, and the bottom
    metadata strip. It reuses the shared skeleton — only the look changes. */
-:host([data-variant="panel"]) .title { color: var(--sherpa-theme-content-link-1, #2b34b4); }
-:host([data-variant="panel"]) .actions { margin-inline-start: auto; }
+:host([data-type="panel"]) .title { color: var(--sherpa-theme-content-link-1, #2b34b4); }
+:host([data-type="panel"]) .actions { margin-inline-start: auto; }
 
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {

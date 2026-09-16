@@ -141,7 +141,7 @@ props:
       nesting depth 2 | 3 — indents the row to the Figma indent tier (tier 1 is the default, no
       attribute needed)
   - $type: prop
-    name: data-variant
+    name: data-type
     type: string
     kind: style
     description: "\"promo\" for the CTA row"
@@ -184,7 +184,7 @@ states:
     selector: ":host([data-current])"
   - $type: state
     name: promo
-    selector: ":host([data-variant=\"promo\"])"
+    selector: ":host([data-type=\"promo\"])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"

@@ -9,12 +9,12 @@
  * CSS handles the look. JS writes the heading, description, and icon text, keeps
  * the collapse toggle in sync, and fires the header's events.
  *
- * A `panel` variant (data-variant) presents the same skeleton as a link-style
+ * A `panel` variant (data-type) presents the same skeleton as a link-style
  * title with a right-aligned actions group and a bottom metadata strip; the
  * default variant is today's single-row header. The look is entirely CSS —
- * data-variant only selects it.
+ * data-type only selects it.
  *
- * Figma's third variant, `accordion`, is intentionally NOT a data-variant value.
+ * Figma's third variant, `accordion`, is intentionally NOT a data-type value.
  * It is the default skeleton with a disclosure chevron in place of the close X —
  * which is precisely `data-collapsible` here (shows the .toggle button, fires
  * header-collapse, rotates on data-collapsed). Reproduce Figma's accordion header
@@ -24,7 +24,7 @@
  *
  * @element sherpa-container-header
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
- * @attr {string}  data-variant      — default | panel (default: default)
+ * @attr {string}  data-type      — default | panel (default: default)
  * @attr {string}  data-heading      — heading text (or use the `heading` slot)
  * @attr {string}  data-description  — secondary text below the heading
  * @attr {string}  data-icon         — a glyph before the title

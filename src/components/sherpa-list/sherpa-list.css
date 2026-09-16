@@ -38,11 +38,11 @@
 /* ── Default = the Figma List (49:66025): a BORDERED, rounded surface (style-
    surface/base fill, 0.5 style-border/base ring, rounding 4) with 1px
    border/default/+2 dividers between rows. `bordered` is kept as an alias; only
-   data-variant="plain" opts out of the box + dividers. ───────────────────── */
-:host(:not([data-variant="plain"])) {
+   data-type="plain" opts out of the box + dividers. ───────────────────── */
+:host(:not([data-type="plain"])) {
   --_row-gap: 0;
 }
-:host(:not([data-variant="plain"])) .body {
+:host(:not([data-type="plain"])) .body {
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border-style: solid;
   border-color: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
@@ -58,14 +58,14 @@
 }
 
 /* Dividers — Figma: 1px rectangles in border/default/+2 between adjacent rows. */
-:host(:not([data-variant="plain"])) .body > .row-item:not(:last-child),
-:host(:not([data-variant="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
+:host(:not([data-type="plain"])) .body > .row-item:not(:last-child),
+:host(:not([data-type="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
   border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 /* Plain — no dividers, spaced rows (the former "default" look). */
-:host([data-variant="plain"]) {
+:host([data-type="plain"]) {
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 

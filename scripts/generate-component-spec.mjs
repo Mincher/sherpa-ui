@@ -734,8 +734,23 @@ function generateSpec(name) {
      selected in the CSS, or written in the HTML, and any of those is proof it
      is real. What it cannot be is present in NONE of them. */
   const sourceText = `${ts ?? ''}\n${css ?? ''}\n${html ?? ''}`;
+  /* USED, not merely MENTIONED. A bare substring search keeps a prop alive on
+     the strength of a COMMENT — removing `data-variant` from sherpa-container
+     and explaining why in a comment left the dead prop in its spec, because the
+     explanation contains the name. So look for the three ways an attribute is
+     really used: selected in CSS (`[data-x`), written in HTML (`data-x=`), or
+     read in TS (`dataset['x']` / `dataset.x`, its camelCase spelling). */
+  const attrInUse = (nm) => {
+    const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    return sourceText.includes(`[${nm}`)          // CSS selector
+      || sourceText.includes(`${nm}=`)            // HTML attribute
+      || sourceText.includes(`'${nm}'`)           // getAttribute / observed list
+      || sourceText.includes(`"${nm}"`)
+      || sourceText.includes(`dataset['${camel}']`)
+      || sourceText.includes(`dataset.${camel}`);
+  };
   const carriedButGone = Object.keys(priorProps).filter(
-    (nm) => !(nm in apiProps) && !sourceText.includes(nm),
+    (nm) => !(nm in apiProps) && !attrInUse(nm),
   );
   for (const nm of carriedButGone) {
     delete priorProps[nm];

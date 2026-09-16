@@ -45,7 +45,7 @@ props:
       - compact
     description: comfortable  | compact (tighter block padding)
   - $type: prop
-    name: data-variant
+    name: data-type
     type: enum
     kind: style
     values:
@@ -58,7 +58,7 @@ states:
     selector: ":host([data-density=\"compact\"])"
   - $type: state
     name: bordered
-    selector: ":host([data-variant=\"bordered\"])"
+    selector: ":host([data-type=\"bordered\"])"
   - $type: state
     name: not-has-leading
     selector: ":host(:not([data-has-leading]))"

@@ -123,7 +123,7 @@ props:
     kind: style
     description: a glyph before the title (shows the icon slot)
   - $type: prop
-    name: data-variant
+    name: data-type
     type: enum
     kind: style
     values:
@@ -161,7 +161,7 @@ states:
     selector: ":host([data-has-metadata])"
   - $type: state
     name: panel
-    selector: ":host([data-variant=\"panel\"])"
+    selector: ":host([data-type=\"panel\"])"
 events:
   - $type: event
     name: header-dismiss

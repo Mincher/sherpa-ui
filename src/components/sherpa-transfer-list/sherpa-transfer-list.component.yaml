@@ -52,7 +52,6 @@ anatomy:
               class: move
               attrs:
                 data-move: add
-                data-variant: secondary
                 data-size: sm
                 data-label: ›
                 aria-label: Add selected
@@ -60,7 +59,6 @@ anatomy:
               class: move
               attrs:
                 data-move: add-all
-                data-variant: secondary
                 data-size: sm
                 data-label: »
                 aria-label: Add all
@@ -68,7 +66,6 @@ anatomy:
               class: move
               attrs:
                 data-move: remove
-                data-variant: secondary
                 data-size: sm
                 data-label: ‹
                 aria-label: Remove selected
@@ -76,7 +73,6 @@ anatomy:
               class: move
               attrs:
                 data-move: remove-all
-                data-variant: secondary
                 data-size: sm
                 data-label: «
                 aria-label: Remove all

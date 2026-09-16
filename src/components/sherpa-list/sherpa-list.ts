@@ -10,7 +10,7 @@
  * there are no rows, an empty-state message (data-empty) shows in their place.
  *
  * Public API:
- *   data-variant  (default — dividers between rows) | bordered | plain (no dividers)
+ *   data-type  (default — dividers between rows) | bordered | plain (no dividers)
  *   data-empty    empty-state message (shown when no rows are present)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

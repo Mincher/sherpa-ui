@@ -253,7 +253,7 @@
 }
 .nav:focus-visible,
 .expand:focus-visible { outline: none; }
-:host([data-variant="promo"]:focus-within) { box-shadow: none; }
+:host([data-type="promo"]:focus-within) { box-shadow: none; }
 :host(:focus-within) .promo {
   box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
@@ -280,14 +280,14 @@
 
 /* ── The promo variant is its own bordered card, so the box rules above must not
    apply to it: it owns its padding, height and radius. ───────────────────── */
-:host([data-variant="promo"]) {
+:host([data-type="promo"]) {
   block-size: auto;
   padding-inline: 0;
   border-radius: 0;
   background: none;
 }
 @supports (color: color-mix(in oklab, red, blue)) {
-  :host([data-variant="promo"]:hover) { background: none; }
+  :host([data-type="promo"]:hover) { background: none; }
 }
 
 /* ── Promo (CTA) variant — activation target is a native <button> or <a href> ─ */
@@ -317,11 +317,11 @@
 .promo-link { display: none; }
 :host([data-href]) .promo-button { display: none; }
 :host([data-href]) .promo-link { display: flex; }
-:host([data-variant="promo"]:hover) .promo {
+:host([data-type="promo"]:hover) .promo {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 @supports (color: color-mix(in oklab, red, blue)) {
-  :host([data-variant="promo"]:hover) .promo {
+  :host([data-type="promo"]:hover) .promo {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
 }
