@@ -129,3 +129,48 @@ test('the open gaps are the ones we think they are', () => {
   // promise to fix something, and it has to fail this test to get in.
   assert.deepEqual(gaps, []);
 });
+
+/**
+ * Every `this.dataset['x']` has its `data-x` spelling named somewhere.
+ *
+ * THE RENAME TRAP, made mechanical. `this.dataset['variant']` IS
+ * `data-variant`, and a search for the hyphenated name does not find it — so a
+ * rename sweeps the CSS, the HTML and the docs, leaves the one camelCase read
+ * behind, and the component silently keeps looking for an attribute nobody
+ * sets any more.
+ *
+ * That shipped once this session: sherpa-donut-chart's pie mode quietly stopped
+ * filling, caught only because a test read the rendered output. The same trap
+ * was waiting in sherpa-input-text (`dataset['style']` picking a template) and
+ * sherpa-nav-item.
+ *
+ * THIS.dataset only. Reading a CHILD's dataset — a grid row's `data-index`, a
+ * legend item's `data-series` — is a different thing: that attribute belongs to
+ * the child, and the host is right not to declare it.
+ */
+test('no component reads its own dataset for an attribute nothing else names', () => {
+  const orphans = [];
+  for (const { name, src } of readComponents()) {
+    const dir = join(COMPONENTS, name);
+    const read = (ext) => {
+      try { return readFileSync(join(dir, `${name}.${ext}`), 'utf8'); } catch { return ''; }
+    };
+    // The whole authored surface: if the attribute is real, ONE of these names it.
+    const surface = src + read('css') + read('html');
+
+    for (const m of src.matchAll(/this\.dataset\['([a-zA-Z][\w]*)'\]/g)) {
+      const camel = m[1];
+      const kebab = 'data-' + camel.replace(/([A-Z])/g, (c) => `-${c.toLowerCase()}`);
+      if (!surface.includes(kebab)) orphans.push(`${name}: this.dataset['${camel}'] → ${kebab}`);
+    }
+  }
+
+  assert.deepEqual(
+    orphans,
+    [],
+    'A component reads its own dataset for an attribute that appears nowhere in ' +
+      'its .ts, .css or .html.\n\nAlmost always a HALF-FINISHED RENAME: the ' +
+      "hyphenated spelling moved and the camelCase read did not. Rename both, or " +
+      'declare the attribute.\n\n  ' + orphans.join('\n  '),
+  );
+});
