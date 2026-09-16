@@ -146,7 +146,13 @@ export class SherpaTooltip extends SherpaElement {
     let y = t.top - gap - b.height;
     if (y < gap) y = Math.min(vh - b.height - gap, t.bottom + gap);
 
-    // Centred, pulled back inside either edge.
+    /* Centred, pulled back inside either edge.
+       NOT clampNum, and the difference is real: clampNum applies min THEN max,
+       so `max` wins a conflict. Here the order is reversed — `min` wins — and
+       that matters when the bubble is WIDER than the viewport, where max would
+       be less than min. Pinning to the LEFT edge shows the start of the text;
+       pinning right would show its end. Left is the readable answer, so the
+       order is deliberate and stays written out. */
     let x = t.left + t.width / 2 - b.width / 2;
     if (x + b.width > vw - gap) x = vw - b.width - gap;
     if (x < gap) x = gap;
