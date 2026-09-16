@@ -32,3 +32,23 @@ export const ORGANISE_ICONS = {
 } as const;
 
 export type OrganiseIcon = keyof typeof ORGANISE_ICONS;
+
+/**
+ * Rows in a filter menu that are NOT values, as a selector.
+ *
+ * Two checkbox shapes in a filter menu stand for something other than a value,
+ * and counting either one as a pick is a visible bug:
+ *
+ *   .qf-all     Select all — a control OVER the set. Counted in, it reports its
+ *               own "on" as a picked value and the badge reads one too high
+ *               with everything ticked.
+ *   .qf-toggle  a folded BOOLEAN filter — it stands for a whole CHIP, and the
+ *               toolbar reports it as one, not as a value of this menu.
+ *
+ * ONE DEFINITION because the two readers had DRIFTED: sherpa-menu excluded both,
+ * while the toolbar and quick-filter excluded only `.qf-all`. Harmless today —
+ * `.qf-toggle` rows only ever live in the overflow chip's menu, which the
+ * toolbar's chip loop does not reach — but the two were one refactor apart from
+ * disagreeing about what a pick is.
+ */
+export const NON_VALUE_ROWS = '.qf-all, .qf-toggle';

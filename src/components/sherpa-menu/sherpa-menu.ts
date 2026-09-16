@@ -50,6 +50,7 @@
  * @prop {string[]} values — the checked row values (read/write)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { NON_VALUE_ROWS } from '../../core/icons.js';
 // The drill trail composes the real breadcrumbs component, as sherpa-app-header
 // does — a second hand-rolled trail would drift from it.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -120,7 +121,8 @@ export class SherpaMenu extends SherpaElement {
     // or out, which show() alone does not cover: a drill happens after it.
     this.$('.rows slot')?.addEventListener('slotchange', this.#onRowsChanged);
     this.addEventListener('click', this.#onClick);
-    // The footer is in the SHADOW root, so its clicks are listened for there.
+    // The footer and the header actions are in the SHADOW root, so their clicks
+    // are listened for there.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     this.$('.clear')?.addEventListener('click', this.#onClear);
@@ -175,9 +177,9 @@ export class SherpaMenu extends SherpaElement {
   show(trigger?: HTMLElement): void {
     if (trigger) this.#trigger = trigger;
     // Point the select-all row at the set BEFORE the card is painted, so a menu
-    // opens reading "Select all" or "Clear all" rather than blank. The rows are
-    // slotted light DOM that a host stamps, so there is no render pass of ours
-    // to hang this on — opening is the moment the set is known.
+    // opens with its box already reading all / some / none rather than blank.
+    // The rows are slotted light DOM that a host stamps, so there is no render
+    // pass of ours to hang this on — opening is the moment the set is known.
     this.#syncSelectAll();
     // Show FIRST, then measure. A closed popover is `display: none`, so its own
     // size reads as 0 and a pre-show measurement cannot flip correctly.
@@ -279,15 +281,11 @@ export class SherpaMenu extends SherpaElement {
    * would commit it as a picked value, and the count badge would be one too
    * high with everything ticked.
    */
-  // The rows that carry a VALUE. Two checkbox shapes in a filter menu are not
-  // values and must not be counted as ones:
-  //   .qf-all     Select all — a control over the set, not a member of it
-  //   .qf-toggle  a folded BOOLEAN filter — it stands for a whole chip, and is
-  //               reported by the toolbar rather than as a value of this menu
+  // The rows that carry a VALUE — see NON_VALUE_ROWS for what is excluded and why.
   #inputs(): HTMLInputElement[] {
     return Array.from(
       this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
-    ).filter((i) => !i.closest('.qf-all, .qf-toggle'));
+    ).filter((i) => !i.closest(NON_VALUE_ROWS));
   }
 
   /**
@@ -487,8 +485,15 @@ export class SherpaMenu extends SherpaElement {
     this.#cardResize?.disconnect();
   }
 
-  /** The label a select-all row wears, given whether everything is already on. */
-  static readonly ALL_LABELS = { select: 'Select all', clear: 'Clear all' } as const;
+  /**
+   * The label a select-all row wears.
+   *
+   * ONE label, not two. The row used to say "Clear all" once everything was on,
+   * which made it both the select-all control AND the menu's clear — a second
+   * place to do what the header's Clear button now does, and one that moved
+   * under the reader depending on what was ticked.
+   */
+  static readonly ALL_LABEL = 'Select all';
 
   /** A slotted row marked as the select-all control (class `qf-all`). */
   #allRow(): HTMLInputElement | null {
@@ -514,8 +519,11 @@ export class SherpaMenu extends SherpaElement {
     // A native checkbox that is indeterminate reports `checked === false` after
     // a click, so trusting the box turned "some are picked" into "clear them" —
     // and the row then stuck at NONE, because clearing an already-empty set is a
-    // no-op the next click repeats. The set is the truth: anything short of all
-    // means the useful action is to select the rest.
+    // no-op the next click repeats. The set is the truth.
+    //
+    // Unticking it EMPTIES the set, the way any checkbox unticks what it turned
+    // on — but the row never RELABELS itself to "Clear all", because emptying
+    // the menu is the header's Clear button and one action belongs in one place.
     const boxes = this.#inputs();
     const on = boxes.some((b) => !b.checked);
     for (const box of boxes) box.checked = on;
@@ -540,11 +548,7 @@ export class SherpaMenu extends SherpaElement {
     all.checked = boxes.length > 0 && on === boxes.length;
     all.indeterminate = on > 0 && on < boxes.length;
     const label = all.parentElement?.querySelector('.qf-row-label');
-    if (label) {
-      label.textContent = all.checked
-        ? SherpaMenu.ALL_LABELS.clear
-        : SherpaMenu.ALL_LABELS.select;
-    }
+    if (label) label.textContent = SherpaMenu.ALL_LABEL;
   }
 
   /**
@@ -651,7 +655,7 @@ export class SherpaMenu extends SherpaElement {
   };
 
   /**
-   * Remove — the footer button form of the action ROW.
+   * Remove — the header button form of the action ROW.
    *
    * Emits exactly what a `<button value="remove">` row emits, so a host listens
    * for one event whichever shape its menu is. A calendar menu has no rows, and

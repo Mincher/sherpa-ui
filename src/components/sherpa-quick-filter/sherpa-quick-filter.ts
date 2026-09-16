@@ -80,6 +80,7 @@
  * @fires quick-filter-change — the menu selection changed. detail: { values: string[] }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { NON_VALUE_ROWS } from '../../core/icons.js';
 // The count badge's value list is a composed tooltip, in floating mode so it
 // escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -200,7 +201,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const want = new Set(next.map(String));
     for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
       // The "All" row is a control, not a value; it derives from the rest.
-      if (!input.closest('.qf-all')) input.checked = want.has(input.value);
+      if (!input.closest(NON_VALUE_ROWS)) input.checked = want.has(input.value);
     }
     // Read BACK, never trust the ask: a value naming no row never landed.
     this.#applySelection((menu.values ?? []) as string[]);

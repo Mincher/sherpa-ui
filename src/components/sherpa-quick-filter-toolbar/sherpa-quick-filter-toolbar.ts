@@ -44,7 +44,7 @@
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 // The sort/group glyphs are SHARED with sherpa-data-grid — see core/icons.
-import { ORGANISE_ICONS } from '../../core/icons.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
@@ -892,11 +892,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const value = cal.dataset['value'];
       return value ? [value] : [];
     }
-    // The SELECT-ALL row is excluded. It is a control OVER the set, not a member
-    // of it — counted in, its box reports its own default "on" as a picked value
-    // and the count badge reads one too high with everything ticked.
+    // NON_VALUE_ROWS, not a local `.qf-all` — see that constant for what a row
+    // has to be to count as a pick.
     return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked'))
-      .filter((i) => !i.closest('.qf-all'))
+      .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
   }
 
@@ -1119,6 +1118,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const picksOne = (def.kind === 'date' || def.kind === 'number') && !def.range;
     const defers = def.commit ?? (!single && !picksOne);
     if (defers) menu.setAttribute('data-commit', '');
+    // EVERY chip menu gets CLEAR — the icon button in the menu's header.
+    //
+    // It used not to exist for a value chip at all: the multi-select list led
+    // with a "Select all / Clear all" row that relabelled itself once
+    // everything was ticked, so a menu's clear was a row that moved under the
+    // reader and a single-select menu had none. Clear is one action, so it has
+    // one place, and the select-all row is now Select all only.
+    //
+    // NOT a persistent chip. It always holds exactly one value — the view
+    // selector is the case — so "nothing picked" is not a state it can be in,
+    // and a clear would leave the page somewhere it has no way to be.
+    if (!def.persistent) menu.setAttribute('data-clearable', '');
     // EVERY value menu gets a search. A filter's values are the user's own data
     // — regions, owners, plans — so the list is as long as their data is, and
     // scrolling a hundred owners to find one is the case this exists for.
@@ -1184,12 +1195,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           cal.setAttribute('data-available', def.availableDates.join(','));
         }
         // A calendar is not a list to search, and the search would filter
-        // nothing — so it is not offered here.
+        // nothing — so it is not offered here. That leaves the header's second
+        // row to the month stepper, which is the control this menu does have.
+        //
+        // CLEAR stays: `#onClear` unsets a slotted calendar's date attributes,
+        // and a date chip was the one kind with no way back to "no date" short
+        // of removing the chip, because Clear was a footer button and Today had
+        // taken the only footer slot.
         menu.removeAttribute('data-search');
-        // NO data-clearable. The Calendar footer's left slot holds TODAY in
-        // Figma, not Clear — so that is what a calendar menu shows there, and
-        // the way back to "no date" is the remove-filter row below (which the
-        // date branch used to skip by returning early).
         // The Menu set's own `Type = Calendar` variant: a wider card whose list
         // region runs horizontally, so a day grid and a time picker sit side by
         // side. The calendar is the CONTENT; the menu is the card.
