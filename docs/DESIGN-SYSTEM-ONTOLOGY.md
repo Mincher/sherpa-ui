@@ -1,5 +1,19 @@
 # Design-System Ontology
 
+> **Status 2026-09-16: the ARTEFACT is gone; this is the CONCEPT.**
+> `docs/ontology/tokens.yaml` was deleted — it described Typography and
+> monochrome collections that no longer exist, and knew nothing of the
+> `display-mode` or `structure` layers. Its source
+> (`scripts/figma-data/variable-graph.json`, 14 August) is equally stale, so
+> regenerating would have reproduced the same rot.
+>
+> This doc is kept for the MCP rewrite (see HANDOVER-BACKLOG), which is when an
+> ontology would be rebuilt — from a fresh variable graph, via
+> `scripts/build-ontology.mjs`, which was deliberately NOT deleted.
+>
+> Paths below that name `docs/ontology/*` describe what to rebuild, not what
+> exists.
+
 > A queryable description layer for the **whole** design system — every variable,
 > group, mode, collection, component, property, and event, with its **purpose**,
 > not just its name. "An MCP for understanding the design system, not tools."

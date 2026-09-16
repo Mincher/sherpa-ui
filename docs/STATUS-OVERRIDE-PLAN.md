@@ -1,5 +1,14 @@
 # Status override reintroduction
 
+> **Status 2026-09-16: THIS IS THE MODEL THAT SHIPPED.** Verified against
+> `tokens.css`: 222 `--_status-*` properties and `[data-status]` blocks are
+> live, and CLAUDE.md's "Status cascade" section documents the result.
+> `CONTENT-COLLECTION-MIGRATION.md` proposed a competing model (a first-class
+> `Content` collection) which has **zero** variables in the code — it was
+> superseded, and is marked so.
+>
+> Branch line below says `sherpa-reforged`; that was true when written.
+
 Bring **status** back into the design system as a **terminal override** — the last thing that
 recolours a component. Status touches **three things only**: surface, border, content. Everything
 else (geometry, spacing, typography, look-tier, active/inactive state) is untouched.

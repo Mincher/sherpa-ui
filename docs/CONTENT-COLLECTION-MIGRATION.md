@@ -1,5 +1,16 @@
 # Content collection migration
 
+> **Status 2026-09-16: SUPERSEDED — this is not the model that shipped.**
+> Its Phases 1-3 are marked done on the FIGMA side (August 2026), but the code
+> has **zero** `--sherpa-content-*` variables: a first-class `Content`
+> collection does not exist in `tokens.css`. What shipped instead is
+> `STATUS-OVERRIDE-PLAN.md`'s model — status as a terminal override, 222
+> `--_status-*` custom properties and `[data-status]` blocks, with content
+> living in Theme `content/*`.
+>
+> Kept as the record of a design direction that was tried and replaced. Do not
+> build from it; read STATUS-OVERRIDE-PLAN and the shipped `tokens.css`.
+
 Restructure status/content tokens: a first-class **`Content`** collection (role as the mode
 axis) that every component aliases into, with **Status as scoped Extended Collections** on
 Content + Container, replacing the monolithic `Status` collection.

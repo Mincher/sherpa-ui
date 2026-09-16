@@ -145,6 +145,22 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
+## Two deferrals rescued from VISUAL-DIFF.md (deleted 2026-09-16)
+
+That doc was a completed by-eye pass (2026-09-08, "266 passed / 0 failed ✅"),
+but it ended with two items nobody had picked up. They are recorded here so
+they outlive the audit.
+
+**1. The content-ink token needs ONE ratification, not per-component fallbacks.**
+`style-content-base` / `theme-content-body-base` resolve to `#0c0b11`
+(near-black) in code, where Figma binds `#35353d` (the softer secondary) for
+body text. It recurs across metric, key-value-list, breadcrumbs, quick-filter
+and the section-header title. Fixing it per component would scatter wrong
+fallbacks; ratify the mapping once instead.
+
+**2. Figma-side, not code:** the gauge-chart track binds a legacy
+`_old_border/base` token. Needs a Figma cleanup pass.
+
 ## The token ontology was DELETED 2026-09-16 — rebuild it in the MCP rewrite
 
 `docs/ontology/tokens.yaml` (522K) + `structure.yaml` described a design system

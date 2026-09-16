@@ -1,5 +1,17 @@
 # Figma Variable → CSS Token Mapping
 
+> **Status 2026-09-16: the LAYER MODEL below is out of date.** It describes four
+> layers including `@layer overrides`, which **does not exist** — the only
+> matches for that word in `tokens.css` are the English word in comments. The
+> real order, from `tokens.css` line 20, is:
+>
+> `@layer core, display-mode, theme, layout, structure, border, style, elevation, components;`
+>
+> The var COUNTS below (core 180, style 244) are from a projection predating the
+> `border` layer, so treat them as historical too. CLAUDE.md's "Token
+> architecture" section is the current description; this file is kept for its
+> per-collection detail, which is still broadly right about what lives where.
+
 How every Figma variable collection lands in CSS. Generated from `figma.tokens.json`
 via `scripts/project-tokens.mjs`. The CSS mirrors Figma's tier chain as `@layer`s.
 
