@@ -1734,6 +1734,90 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 Validation is interleaved, not appended: V1–V2 must precede the store work that uses
 them (step 10), while the form half (12–13) is independent and can run in parallel.
 
+## The layer runs on the SERVER — verified, and it changes the goal
+
+Will, 2026-09-16: *the data layer should bridge client and server. We need the
+ability to use data layer components server side too, to allow all of the same
+operations and mutations that happen client side. This also opens up any Sherpa
+app to be run headless by APIs or agents using MCP.*
+
+**Tested in plain Node 24, no DOM, no jsdom, no shim:**
+
+```
+typeof document === "undefined"
+
+store.load()        → 25 of 500 rows, paged          ✅
+setFilter()         → 333 matched                    ✅
+setSort()           → top spend 9953                 ✅
+store.insert()      → total 333 → 334, source updated ✅
+filterRows / sortRows / applyOptions                 ✅
+source.bind(plainObject)  → populate() called twice  ✅
+```
+
+**The entire layer already works headless.** Not a port, not a plan — it runs
+today. Even `bind()` does: it needs only `populate` and `setAttribute`, so a
+plain object stands in for a component.
+
+### Why it already works
+
+The pieces were built DOM-free for other reasons, and it adds up to this:
+
+| Module | DOM refs | Note |
+|---|---|---|
+| `store.ts` | **0** | filter, sort, page, the whole query engine |
+| `validate.ts` | **0** | rules and Standard Schema |
+| `stores.ts` | 2 | `localStorage` in `LocalStore` only — guarded already |
+| `data-source.ts` | 8 | all TYPES plus `CustomEvent`, which **Node has natively** |
+
+`DataSource extends EventTarget` — a platform class Node ships. That decision was
+made to avoid writing a subscriber list; it is also what makes the layer
+portable.
+
+### What this actually enables
+
+Three things, in increasing order of interest:
+
+1. **Server-side preparation** (Q3). A server imports `applyOptions` and answers
+   a `LoadOptions` **identically to the browser** — same code, so no drift
+   between what the client would have computed and what the server returns.
+2. **Real isomorphism.** A screen can be rendered server-side, or its query run
+   server-side and its rows sent down, with one implementation of "what does
+   this view show".
+3. **Headless Sherpa.** An app's data layer driven with no browser at all — by
+   an HTTP API, a test, or an agent over MCP. Every operation and mutation is
+   available because they are plain method calls on objects that need no DOM.
+
+That last one connects to Part 2.5's parity rule: *anything a person can do by
+clicking, a caller can do by calling.* Headless operation is that rule taken to
+its conclusion — the caller need not even be in a browser.
+
+### The real gap: nothing PROTECTS this
+
+It works by happy accident. One `document.querySelector` in `store.ts` would
+break it silently, and no test would notice.
+
+| Step | Work | Why here |
+|---|---|---|
+| **N1** ✅ | A Node test that imports the layer and runs the operations above | **DONE 2026-09-16** — `test/unit/headless-data-layer.test.mjs`, run by `npm run test:node`. 5 tests: pure functions, store + source query and mutate, headless `bind()`, and a schema mapping an external shape. Proven to catch a regression: adding one `document.querySelector` to `store.js` fails it |
+| **N2** | A lint rule: no DOM globals in `store.ts` / `validate.ts` / `data-source.ts` | states the boundary where it can be enforced, not just described |
+| **N3** | Publish the layer as a separate entry point (`sherpa-ui/data`) | so a server imports it without pulling in `customElements`. `src/index.ts` currently registers every component on import |
+| **N4** | An MCP tier that drives a headless source | needs N3 (a clean import) and P1–P3 (parity). The layer itself is ready |
+
+**N1 and N2 are small and should come first.** The capability exists; what is
+missing is anything stopping it being lost.
+
+### What does NOT run headless, and should not
+
+- **Components.** Custom elements need a DOM. Headless means the data layer, not
+  the UI — `render-view.ts` and `sherpa-element.ts` are DOM-bound by nature.
+- **`LocalStore`.** Web Storage is a browser thing. It already guards every
+  access, so it degrades rather than throws, but a server should use a different
+  store.
+
+The split is clean and worth stating: **the query layer is portable, the
+presentation layer is not.** That is the same Store / DataSource / component
+separation this plan already draws, seen from a different angle.
+
 ## Next — the optimisations the fan-out needs
 
 Measured 2026-09-16 against a real harness: six components bound to one source

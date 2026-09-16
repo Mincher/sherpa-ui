@@ -42,6 +42,7 @@
     "serve:examples": "node server/index.mjs",
     "prebuild": "npm run clean",
     "test": "playwright test",
+    "test:node": "node --test 'test/unit/**/*.test.mjs'",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
