@@ -505,7 +505,7 @@ export abstract class SherpaElement extends HTMLElement {
       // `skipWhen` protects content the component owns: a projected [slot], or a
       // <mark> a search highlight left behind. A textContent write would erase it.
       if (!el || this.#guarded(el, def)) continue;
-      if (def.as === 'icon') this.#writeIcon(el, text);
+      if (def.as === 'icon') this.writeIcon(el, text);
       else el.textContent = text === 'NaN' ? '' : text;
     }
   }
@@ -525,8 +525,15 @@ export abstract class SherpaElement extends HTMLElement {
    *
    * The target's own structural classes are preserved — only previously-applied
    * `fa-*` classes are removed, so a re-render never accumulates two icons.
+   *
+   * PROTECTED, not private, because a declared `as: 'icon'` prop cannot cover
+   * every case: nav and nav-item choose their target at runtime, the quick
+   * filter writes the same glyph into two slots, and the app header renders one
+   * from `#sync`. Those four each wrote their own copy of this — byte for byte,
+   * minus the fa-* cleanup — so the rule is: reach for THIS, never build an
+   * `<i>` with createElement.
    */
-  #writeIcon(el: Element, value: string): void {
+  protected writeIcon(el: Element, value: string): void {
     for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
     if (value && /\bfa-/.test(value)) {
       el.classList.add(...value.split(/\s+/).filter(Boolean));

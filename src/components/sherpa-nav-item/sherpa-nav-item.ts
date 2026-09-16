@@ -99,7 +99,7 @@ export class SherpaNavItem extends SherpaElement {
     // treated as a literal glyph. Writing an FA class list as text would render the
     // class names, which is why this can't go through setAll.
     for (const el of this.$$(promo ? '.promo-icon' : '.icon')) {
-      this.#applyIcon(el, this.dataset['icon'] ?? '');
+      this.writeIcon(el, this.dataset['icon'] ?? '');
     }
     // Skip the label while a search mark is in place — rewriting textContent would
     // wipe the <mark> highlight() just built. highlight() re-reads data-label itself,
@@ -239,16 +239,6 @@ export class SherpaNavItem extends SherpaElement {
   }
 
   /** Render an icon as FA classes on an <i> when it looks like one, else as text. */
-  #applyIcon(host: Element, value: string): void {
-    if (/\bfa-/.test(value)) {
-      const i = document.createElement('i');
-      i.className = value;
-      i.setAttribute('aria-hidden', 'true');
-      host.replaceChildren(i);
-    } else {
-      host.textContent = value;
-    }
-  }
 
   /* ── Interaction ──────────────────────────────────────────────── */
 

@@ -241,16 +241,10 @@ export class SherpaQuickFilter extends SherpaElement {
     // visible — a sort control needs three different glyphs and cannot use the
     // hardcoded funnel, so it writes data-icon-start like anything else.
     const glyph = this.dataset['iconStart'];
-    for (const icon of this.$$('.icon, .caret-icon')) {
-      if (glyph && /\bfa-/.test(glyph)) {
-        const i = document.createElement('i');
-        i.className = glyph;
-        i.setAttribute('aria-hidden', 'true');
-        icon.replaceChildren(i);
-      } else {
-        icon.textContent = glyph ?? '';
-      }
-    }
+    // The base class's writer, not a fourth copy of the same if/else. It also
+    // strips previously-applied `fa-*` classes, which the hand-rolled version
+    // did not — so a chip whose glyph changes cannot end up wearing two.
+    for (const icon of this.$$('.icon, .caret-icon')) this.writeIcon(icon, glyph ?? '');
   }
 
   #onClick = (): void => {

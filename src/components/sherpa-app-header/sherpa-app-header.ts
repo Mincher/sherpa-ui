@@ -167,19 +167,10 @@ export class SherpaAppHeader extends SherpaElement {
   /* ── Sync data-* → DOM ──────────────────────────────────────────── */
 
   #sync(): void {
-    // The view icon is a Font Awesome class list; render it as an <i>, never as text.
+    // A Font Awesome class list becomes CLASSES, a raw character becomes TEXT —
+    // one policy, in the base class, rather than a copy here.
     const icon = this.$('.view-icon');
-    const glyph = this.dataset['icon'];
-    if (icon) {
-      if (glyph && /\bfa-/.test(glyph)) {
-        const i = document.createElement('i');
-        i.className = glyph;
-        i.setAttribute('aria-hidden', 'true');
-        icon.replaceChildren(i);
-      } else {
-        icon.textContent = glyph ?? '';
-      }
-    }
+    if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
 
     // Notification count → badge text; CSS shows/hides via [data-notifications].
     const count = this.dataset['notifications'];
