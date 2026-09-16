@@ -463,3 +463,129 @@ test('onViewPicked REPORTS a stale definition instead of throwing', async ({ pag
   // whatever COULD be applied still was.
   expect(r).toEqual([{ missing: ['vanished'], skipped: { chip: ['noSuchMethod'] } }]);
 });
+
+/**
+ * A PRESET CAN BRING ITS OWN CONTENT AND LAYOUT.
+ *
+ * Will, 2026-09-16: *each preset view option shows the same content just with a
+ * different data source. Content can be different across presets. Doesn't need
+ * to be the same charts, data viz etc. The layout can also be unique.*
+ *
+ * A preset is not always one screen with different rows. "Capacity planning"
+ * may want a storage table where "Fleet overview" wants metric tiles — different
+ * components, in a different arrangement, not the same components re-populated.
+ *
+ * `SavedView.content` is a `ViewDefinition`, the shape `renderView` already
+ * builds, because "a screen described as data" is a problem this repo solved
+ * once. The snapshot still applies AFTER, so a view can build its own grid and
+ * arrive with a column already filtered.
+ */
+test('a preset builds its OWN components and layout, then configures them', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+    const into = document.createElement('div');
+    host.replaceChildren(into);
+
+    const states: unknown[] = [];
+    const source = { setState: (s: unknown) => states.push(s) };
+
+    const VIEWS = {
+      tiles: {
+        label: 'Fleet overview',
+        content: {
+          root: 'layout',
+          elements: {
+            layout: { type: 'sherpa-container', children: ['a', 'b'] },
+            a: { type: 'sherpa-metric', props: { id: 'a', 'data-span': '3' } },
+            b: { type: 'sherpa-metric', props: { id: 'b', 'data-span': '3' } },
+          },
+        },
+        snapshot: { v: 1, source: { filter: undefined } },
+      },
+      table: {
+        label: 'Capacity planning',
+        // DIFFERENT components, DIFFERENT arrangement — not the same screen.
+        content: {
+          root: 'layout',
+          elements: {
+            layout: { type: 'sherpa-container', children: ['grid'] },
+            grid: {
+              type: 'sherpa-data-grid',
+              props: { id: 'grid', 'data-span': '12' },
+              data: {
+                columns: [{ field: 'name', label: 'Name' }, { field: 'gb', label: 'GB' }],
+                rows: [{ name: 'alpha', gb: 90 }, { name: 'beta', gb: 40 }],
+              },
+              // …and it arrives CONFIGURED, through the grid's own API.
+              state: { setColumnFilter: ['name', ['name', 'contains', 'al']] },
+            },
+          },
+        },
+        snapshot: { v: 1, source: { filter: ['gb', 'gt', 70] } },
+      },
+    };
+
+    const picks: unknown[] = [];
+    onViewPicked(host, VIEWS, { source }, { into, after: (p) => picks.push(p.id) });
+
+    const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
+      detail: { values: { view: [v] } }, bubbles: true,
+    }));
+    const shape = () => ({
+      tags: [...into.querySelectorAll('*')].map((e) => e.tagName.toLowerCase()),
+    });
+
+    fire('tiles');
+    await new Promise((res) => setTimeout(res, 50));
+    const first = shape();
+
+    fire('table');
+    await new Promise((res) => setTimeout(res, 300));
+    const second = shape();
+    const grid = into.querySelector('sherpa-data-grid') as HTMLElement & {
+      columnClause(f: string): unknown;
+    };
+
+    return { first, second, states, picks, clause: grid?.columnClause('name') ?? null };
+  });
+
+  // VIEW ONE: two metric tiles in a container.
+  expect(r.first.tags).toEqual(['sherpa-container', 'sherpa-metric', 'sherpa-metric']);
+
+  // VIEW TWO: a different component, and the old one is GONE. A view that left
+  // its predecessor's tiles on screen would be two views at once.
+  expect(r.second.tags).toEqual(['sherpa-container', 'sherpa-data-grid']);
+
+  // The query moved too, so content and data are one definition.
+  expect(r.states).toEqual([{ filter: undefined }, { filter: ['gb', 'gt', 70] }]);
+  expect(r.picks).toEqual(['tiles', 'table']);
+
+  // AND the built grid arrived CONFIGURED — `state` reaches a method on an
+  // element that did not exist when the listener was wired.
+  expect(r.clause).toEqual(['name', 'contains', 'al']);
+});
+
+test('renderView hands back the elements it built, by id', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { renderView } = await import('/dist/index.js');
+    const view = renderView({
+      root: 'layout',
+      elements: {
+        layout: { type: 'sherpa-container', children: ['tag'] },
+        tag: { type: 'sherpa-tag', props: { 'data-label': 'live' } },
+      },
+    });
+    return {
+      ids: Object.keys(view.elements).sort(),
+      // The registry is the view's OWN addressing scheme; without it the ids
+      // were write-only and a snapshot could not name what a view had built.
+      isSameNode: view.elements['layout'] === view.el,
+      tagLabel: (view.elements['tag'] as HTMLElement).dataset['label'],
+    };
+  });
+
+  expect(r.ids).toEqual(['layout', 'tag']);
+  expect(r.isSameNode).toBe(true);
+  expect(r.tagLabel).toBe('live');
+});

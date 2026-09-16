@@ -19,6 +19,7 @@
  */
 import type { DataSource, ViewState } from './data-source.js';
 import { applyState } from './render-element.js';
+import { renderView, type ViewDefinition, type RenderedView } from './render-view.js';
 
 export interface PersistOptions {
   /**
@@ -294,7 +295,29 @@ export function clearViewState(name: string, options: PersistOptions = {}): void
 /** One saved view in a set: what it is called, and what it does. */
 export interface SavedView {
   label: string;
+  /** The query, and the state of whatever is on screen. */
   snapshot: ViewSnapshot;
+  /**
+   * This view's OWN CONTENT AND LAYOUT, when it differs from its neighbours'.
+   *
+   * A preset is not always the same screen with different rows. "Capacity
+   * planning" may want a storage histogram and a forecast table where "Fleet
+   * overview" wants four metric tiles and a donut — different components, in a
+   * different arrangement, not the same components re-populated.
+   *
+   * OPTIONAL, and most views should omit it. A set of views over one screen is
+   * the common case and the cheap one: nothing is torn down, every component
+   * keeps its identity, and `snapshot.elements` configures what is already
+   * there. Only a view that needs DIFFERENT components declares content.
+   *
+   * It is a `ViewDefinition` — the shape `renderView` already builds — because
+   * "a screen described as data" is a problem this repo solved once. A second
+   * shape for it would be a second thing to learn, serialise and get wrong.
+   *
+   * The snapshot still applies afterwards, so a view can build its own grid AND
+   * arrive with a column already filtered.
+   */
+  content?: ViewDefinition;
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */
@@ -338,6 +361,15 @@ export interface ViewPick {
   view: SavedView;
   /** What could not be applied. Empty when everything landed. */
   report: ApplyReport;
+  /**
+   * The content this view built, when it declared its own — its root element
+   * and its live state store.
+   *
+   * Undefined for a view that shares the screen, which is most of them. A host
+   * uses it to reach the elements it just created: they did not exist when the
+   * listener was wired, so `targets.elements` could not name them.
+   */
+  rendered?: RenderedView;
 }
 
 /**
@@ -374,6 +406,14 @@ export function onViewPicked(
     after?: (pick: ViewPick) => void;
     /** Called instead of the default `console.warn` when something was skipped. */
     onIncomplete?: (pick: ViewPick) => void;
+    /**
+     * Where a view's own `content` is placed — the content region.
+     *
+     * Only consulted by a view that declares content. Omit it and such a view
+     * is built and handed back in `pick.rendered` unplaced, for a host that
+     * wants to route or animate the swap itself.
+     */
+    into?: HTMLElement | null;
   } = {},
 ): () => void {
   if (!host) return () => {};
@@ -386,8 +426,33 @@ export function onViewPicked(
     const view = views[id];
     if (!view) return;
 
+    /* CONTENT FIRST, when the view brings its own. A preset is not always the
+       same screen with different rows — one may want a histogram and a forecast
+       table where another wants metric tiles and a donut.
+
+       Built BEFORE the snapshot because the snapshot configures what is on
+       screen, and for this view that is what we are about to create. Applying
+       first would set state on the outgoing screen and then throw it away.
+
+       The host says WHERE via `into`. Without it the content is built and handed
+       back unplaced, which is honest: this function knows what a view wants, not
+       where a page keeps it. */
+    let rendered: RenderedView | undefined;
+    if (view.content) {
+      rendered = renderView(view.content);
+      const host = options.into;
+      // replaceChildren, not append: switching view REPLACES the content. The
+      // outgoing elements go with it, which is the point — a view that leaves
+      // its predecessor's charts on screen is two views at once.
+      if (host) host.replaceChildren(rendered.el);
+      // Elements this view just built are addressable by the ids it used, so a
+      // snapshot can configure them. They did not exist when the listener was
+      // wired, so `targets.elements` could not have named them.
+      targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
+    }
+
     const report = applyViewSnapshot(view.snapshot, targets);
-    const pick: ViewPick = { id, view, report };
+    const pick: ViewPick = { id, view, report, ...(rendered ? { rendered } : {}) };
 
     options.after?.(pick);
 

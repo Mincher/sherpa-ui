@@ -46,6 +46,22 @@ export interface ViewElement {
   slots?: Record<string, string | string[]>;
   children?: string[];
   writes?: WriteRule[];
+  /**
+   * State applied through the element's OWN PUBLIC API, after it has its data.
+   *
+   * The same field `ElementNode.state` carries, and it was missing here — so a
+   * view definition could build a whole unique layout and then not set a grid's
+   * column filter, which is the thing view definitions exist for. `props` sets
+   * attributes and `data` sets the populate payload; neither reaches a method
+   * or an accessor.
+   *
+   *   grid: { type: 'sherpa-data-grid', data: {…},
+   *           state: { setColumnFilter: ['name', ['name', 'contains', 'ana']] } }
+   *
+   * A key the element does not expose is SKIPPED, not thrown — a saved view
+   * outlives the code that made it.
+   */
+  state?: Record<string, unknown>;
 }
 
 /** A whole view. */
@@ -61,6 +77,18 @@ export interface ViewDefinition {
 export interface RenderedView {
   el: HTMLElement;
   state: StateStore;
+  /**
+   * Every element this view built, by the id the definition gave it.
+   *
+   * The registry is the view's own addressing scheme, so handing it back is
+   * what lets a caller reach one element without knowing the layout: a saved
+   * view's snapshot configures `elements.grid`, and this is how "grid" becomes
+   * an element. The map was always built internally; not returning it made the
+   * ids write-only.
+   *
+   * A live map, not a copy of the tree — reading it never re-renders.
+   */
+  elements: Record<string, HTMLElement>;
 }
 
 function isStateRef(v: unknown): v is StateRef {
@@ -193,6 +221,9 @@ export function renderView(view: ViewDefinition): RenderedView {
       }
     }
 
+    // The element's own API state, applied after its data — see ViewElement.state.
+    if (def.state) node.state = def.state;
+
     let stateData: string | null = null;
     if (isStateRef(def.data)) stateData = def.data.$state;
     else if (def.data !== undefined) node.data = def.data;
@@ -250,7 +281,9 @@ export function renderView(view: ViewDefinition): RenderedView {
   const bodyId = shell?.body ?? view.root;
   const bodyEl = build(bodyId);
 
-  if (!shell) return { el: bodyEl, state: store };
+  const elements = Object.fromEntries(built);
+
+  if (!shell) return { el: bodyEl, state: store, elements };
 
   // A view with nav/header regions is framed by a light-DOM view container: a
   // two-column grid (nav rail + main column, header row over scrolling body)
@@ -270,5 +303,6 @@ export function renderView(view: ViewDefinition): RenderedView {
   }
   bodyEl.dataset['region'] = 'body';
   shellEl.appendChild(bodyEl);
-  return { el: shellEl, state: store };
+  // Re-read: the shell regions above build elements the body did not reach.
+  return { el: shellEl, state: store, elements: Object.fromEntries(built) };
 }
