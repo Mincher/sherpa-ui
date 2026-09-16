@@ -145,6 +145,41 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
+## Figma↔code translation — MEASURED 2026-09-16, narrower than feared
+
+Will: *"The figma side was massively refactored but the translation etc. in the
+codebase wasn't really kept in line."*
+
+Measured rather than assumed, and the answer splits in two.
+
+**The TOKEN path is current.** `figma.tokens.json` + `figma.extensions.json`
+exported 15 September, `project-tokens.mjs` run the same day, `tokens.css`
+rebuilt 16 September. The 9-layer order in the CSS matches the live Figma
+collections. Nothing to do here.
+
+**The COMPONENT contracts are broadly current.** `resync-figma.mjs --check`
+against the 14 September Figma dump reports **1 drift in 58**, and it is a
+case/order difference rather than a real mismatch:
+
+    sherpa-container-header
+      spec[Variant[Default,Panel,accordion]] vs live[Variant[Panel,accordion,default]]
+
+**What HAD rotted was the SECONDARY data, and it is now dead weight only:**
+
+| file | age | who reads it |
+|---|---|---|
+| `scripts/figma-data/variable-graph.json` | 14 Aug | `build-ontology.mjs` (output deleted), `lib/generation/data.mjs` |
+| `scripts/figma-data/figma-read.json` | 25 Aug | `merge-figma.mjs` — RETIRED 2026-09-02 |
+| `docs/ontology/*` | 25 Aug | **deleted 2026-09-16** |
+
+So the drift was never in the live translation — it was in the artefacts built
+FROM it, which nothing regenerated and nothing gated. See
+[[sherpa-generated-artefacts-rot-silently]].
+
+**Owed:** re-export `variable-graph.json` before the MCP rewrite rebuilds an
+ontology from it, and decide whether `sherpa-container-header`'s variant casing
+follows Figma or the code.
+
 ## Two deferrals rescued from VISUAL-DIFF.md (deleted 2026-09-16)
 
 That doc was a completed by-eye pass (2026-09-08, "266 passed / 0 failed ✅"),
