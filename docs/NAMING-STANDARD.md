@@ -89,9 +89,16 @@ Figma** — one vocabulary, all three surfaces.
 ## Per-component gap table — WHAT IS STILL OUTSTANDING
 
 Carried over from the 2026-09-02 audit when the rest of it was deleted. This
-is a worklist, not history: as of 2026-09-16, **14 files still use
-`data-variant`** and 2 still use `data-title`, so every RENAME row below is
-still owed.
+is a worklist, not history.
+
+**`data-variant` is DONE (2026-09-16)** — repo-wide count is 0. It took three
+different answers, which is why it was not one rename: 8 components moved to
+`data-type` (a kind), `sherpa-container`'s fill/fit became pure CSS with no
+attribute, and `sherpa-transfer-list`'s four were inert attributes on child
+buttons that had already moved to `data-look`.
+
+**Still owed:** `data-title` → `data-heading` (2 files), and the rest of the
+RENAME rows below.
 
 Legend: **ALIGNED** (code = Figma), **RENAME** (concept ok, name differs), **MISSING** (Figma prop not in code), **EXTRA** (code-only, no Figma), **NATIVE-OK** (correctly native / correctly out-of-Figma-scope). Tier: **SA**=standalone, **SUB**=sub-component. Native/PE columns folded into the notes above (§1.10); the `PE-drift` flag is called out per row where relevant.
 
