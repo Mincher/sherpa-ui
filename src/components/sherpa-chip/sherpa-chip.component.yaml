@@ -54,7 +54,7 @@ props:
   - $type: prop
     name: data-icon
     type: string
-    kind: content
+    kind: style
     description: leading icon glyph value (shown when present; or slot "icon")
   - $type: prop
     name: data-status
@@ -88,17 +88,18 @@ events:
     composed: true
 tokens:
   chip.gap: "{sherpa.theme-gap-sm}"
-  chip.padding: "{sherpa.theme-padding-xs}"
-  chip.border-width: "{sherpa.style-border-width}"
-  chip.border-radius: "{sherpa.structure-rounding-top-left}"
+  chip.padding: "{sherpa.theme-padding-sm}"
+  chip.border-width: "{sherpa.display-mode-border-width-base}"
+  chip.border-radius: "{sherpa.display-mode-border-rounding-sm}"
   chip.font-size: "{sherpa.font-size-body-small}"
-  chip.font-weight: "{sherpa.font-weight-semibold}"
+  chip.font-weight: "{sherpa.font-weight-regular}"
+  chip.line-height: "{sherpa.theme-content-line-height-small}"
   icon.inline-size: "{sherpa.theme-size-icon-2xs}"
   icon.block-size: "{sherpa.theme-size-icon-2xs}"
   close.inline-size: "{sherpa.theme-size-icon-2xs}"
   close.block-size: "{sherpa.theme-size-icon-2xs}"
   close.margin-inline-start: "{sherpa.theme-gap-sm}"
-  close.border-radius: "{sherpa.display-border-rounding-full}"
+  close.border-radius: "{sherpa.display-mode-border-rounding-full}"
   close.font-size: "{sherpa.font-size-body-base}"
 $extensions:
   sherpa:

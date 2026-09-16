@@ -52,7 +52,7 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: heading text (rendered into .title)
   - $type: prop
     name: data-size
@@ -82,11 +82,6 @@ states:
   - $type: state
     name: none
     selector: ":host([data-divider=\"none\"])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   row.gap: "{sherpa.display-mode-space-xs}"
   title.color: "{sherpa.theme-content-body-base}"

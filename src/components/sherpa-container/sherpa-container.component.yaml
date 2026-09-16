@@ -183,11 +183,6 @@ states:
   - $type: state
     name: has-error
     selector: ":host([data-has-error])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   state.background: "{sherpa.style-surface-base}"
   state-text.color: "{sherpa.theme-content-body-1}"

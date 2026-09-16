@@ -28,17 +28,13 @@ anatomy:
       role: toolbar
     children:
       - el: div
-        class: zone start
-        part: start
-        slot: start
+        class: zone leading
+        part: leading
+        slot: leading
       - el: div
-        class: zone center
-        part: center
-        slot: center
-      - el: div
-        class: zone end
-        part: end
-        slot: end
+        class: zone trailing
+        part: trailing
+        slot: trailing
 props:
   - $type: prop
     name: data-density
@@ -64,21 +60,11 @@ states:
     name: bordered
     selector: ":host([data-variant=\"bordered\"])"
   - $type: state
-    name: not-has-start
-    selector: ":host(:not([data-has-start]))"
+    name: not-has-leading
+    selector: ":host(:not([data-has-leading]))"
   - $type: state
-    name: not-has-center
-    selector: ":host(:not([data-has-center]))"
-  - $type: state
-    name: not-has-end
-    selector: ":host(:not([data-has-end]))"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
-tokens:
-  bar.padding-inline: "{sherpa.theme-padding-lg}"
+    name: not-has-trailing
+    selector: ":host(:not([data-has-trailing]))"
 $extensions:
   sherpa:
     figmaName: Toolbar

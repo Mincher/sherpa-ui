@@ -112,6 +112,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (hiddenBars). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (setBarHidden). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: bar-click
@@ -120,14 +123,6 @@ events:
     trigger:
       "on": click
       node: .bars
-  - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: value
-    bubbles: true
-    composed: true
 tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
@@ -162,6 +157,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Data Field
+    methods:
+      - $type: method
+        name: setBarHidden
+        args: "index: number, hidden = true"
+        description: Hide or show one bar, so a chart legend can toggle it.
     category: chart
     variantAxes:
       - name: Orientation

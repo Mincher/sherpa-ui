@@ -145,6 +145,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (focus, clear). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: prompt-submit
@@ -153,14 +156,6 @@ events:
     trigger:
       "on": submit
       node: .form
-  - $type: event
-    name: composer-attach
-    bubbles: true
-    composed: true
-  - $type: event
-    name: composer-lab
-    bubbles: true
-    composed: true
 tokens:
   form.gap: "{sherpa.display-mode-space-xs}"
   form.padding: "{sherpa.display-mode-space-sm}"
@@ -175,17 +170,30 @@ tokens:
   extras.gap: "{sherpa.display-mode-space-2xs}"
   lead-btn.inline-size: "{sherpa.display-mode-size-lg}"
   lead-btn.block-size: "{sherpa.display-mode-size-lg}"
-  lead-btn.border-radius: "{sherpa.border-rounding-top-left}"
+  lead-btn.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  lead-btn.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  lead-btn.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  lead-btn.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   lead-btn.color: "{sherpa.theme-content-body-1}"
   send.inline-size: "{sherpa.display-mode-size-lg}"
   send.block-size: "{sherpa.display-mode-size-lg}"
-  send.border-radius: "{sherpa.border-rounding-top-left}"
+  send.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  send.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  send.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  send.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   send.background: "{sherpa.theme-surface-accent-2}"
   send.color: "{sherpa.theme-content-body-base-fixed}"
   send-glyph.font-size: "{sherpa.theme-content-size-base}"
 $extensions:
   sherpa:
     figmaName: Prompt Composer
+    methods:
+      - $type: method
+        name: focus
+        args: ""
+      - $type: method
+        name: clear
+        args: ""
     category: content
     booleanProps:
       - hasLeadingActions

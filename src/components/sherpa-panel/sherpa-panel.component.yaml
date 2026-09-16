@@ -47,7 +47,7 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: — convenience header label (a slotted [slot=header] overrides it)
   - $type: prop
     name: data-status
@@ -67,11 +67,6 @@ states:
   - $type: state
     name: collapsed
     selector: ":host([data-collapsed])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   heading-text.color: "{sherpa.theme-content-body-base}"
   heading-text.font-size: "{sherpa.font-size-body-base}"

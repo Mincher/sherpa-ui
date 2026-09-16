@@ -172,6 +172,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (files). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (setFileStatus). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: file-add
@@ -180,10 +183,6 @@ events:
     trigger:
       "on": drop
       node: .drop-zone
-  - $type: event
-    name: files
-    bubbles: true
-    composed: true
   - $type: event
     name: file-remove
     bubbles: true
@@ -238,7 +237,10 @@ tokens:
   file-icon.block-size: "{sherpa.theme-size-icon-xl}"
   file-icon.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   file-icon.border-width: "{sherpa.display-mode-border-width-base}"
-  file-icon.border-radius: "{sherpa.border-rounding-top-left}"
+  file-icon.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  file-icon.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  file-icon.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  file-icon.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   file-icon.color: "{sherpa.theme-content-body-1}"
   file-icon.font-size: "{sherpa.theme-content-size-base}"
   file-body.gap: "{sherpa.display-mode-space-3xs}"
@@ -251,9 +253,15 @@ tokens:
   file-status.color: "{sherpa.theme-content-body-1}"
   file-remove.inline-size: "{sherpa.structure-height}"
   file-remove.block-size: "{sherpa.structure-height}"
-  file-remove.border-width: "{sherpa.style-border-width}"
   file-remove.border-color: "{sherpa.style-border-base}"
-  file-remove.border-radius: "{sherpa.border-rounding-top-left}"
+  file-remove.border-block-start-width: "{sherpa.border-top}"
+  file-remove.border-block-end-width: "{sherpa.border-bottom}"
+  file-remove.border-inline-start-width: "{sherpa.border-left}"
+  file-remove.border-inline-end-width: "{sherpa.border-right}"
+  file-remove.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  file-remove.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  file-remove.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  file-remove.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   file-remove.background: "{sherpa.style-surface-base}"
   file-remove.color: "{sherpa.theme-content-body-1}"
   file-remove.font-size: "{sherpa.theme-content-size-base}"
@@ -276,14 +284,22 @@ tokens:
   upload.border-radius: "{sherpa.display-mode-border-rounding-base}"
   upload.font-size: "{sherpa.font-size-body-base}"
   upload.font-weight: "{sherpa.font-weight-medium}"
-  clear-all.border-width: "{sherpa.style-border-width}"
   clear-all.border-color: "{sherpa.theme-border-default-2}"
+  clear-all.border-block-start-width: "{sherpa.border-top}"
+  clear-all.border-block-end-width: "{sherpa.border-bottom}"
+  clear-all.border-inline-start-width: "{sherpa.border-left}"
+  clear-all.border-inline-end-width: "{sherpa.border-right}"
   clear-all.color: "{sherpa.theme-content-body-1}"
   upload.background: "{sherpa.style-indicator-accent}"
   upload.color: "{sherpa.theme-content-body-base-fixed}"
 $extensions:
   sherpa:
     figmaName: File Uploader
+    methods:
+      - $type: method
+        name: setFileStatus
+        args: "index: number, status: string"
+        description: Set a per-file status line (e.g. "Uploading…", "Uploaded", "Failed").
     category: control
     jsProps:
       - name: files

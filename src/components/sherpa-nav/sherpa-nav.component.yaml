@@ -157,11 +157,11 @@ props:
     description: show the search field (auto-set when a product is given)
 states:
   - $type: state
-    name: has-query
-    selector: ":host([data-has-query])"
-  - $type: state
     name: collapsed
     selector: ":host([data-nav-state=\"collapsed\"])"
+  - $type: state
+    name: has-query
+    selector: ":host([data-has-query])"
   - $type: state
     name: not-searchable
     selector: ":host(:not([data-searchable]))"
@@ -174,7 +174,10 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (state, pinned). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (state, pinned, activeEntry). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (entry). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: nav-select
@@ -198,7 +201,7 @@ tokens:
   rail.background: "{sherpa.navigation-nav-surface-default}"
   rail.color: "{sherpa.theme-content-body-base}"
   rail.box-shadow: "{sherpa.navigation-nav-shadow-offset-x}"
-  header.gap: "{sherpa.display-mode-space-xs}"
+  header.gap: "{sherpa.display-mode-space-none}"
   header.padding-block-end: "{sherpa.display-mode-space-xs}"
   brand.gap: "{sherpa.display-mode-space-sm}"
   brand.padding-inline-end: "{sherpa.display-mode-space-xs}"
@@ -215,17 +218,29 @@ tokens:
   product.color: "{sherpa.theme-content-body-1}"
   hdr-btn.--_btn-box: "{sherpa.display-mode-space-xl}"
   hdr-btn.--_btn-glyph: "{sherpa.theme-content-size-small}"
-  hdr-btn.border-width: "{sherpa.style-border-width}"
-  hdr-btn.border-radius: "{sherpa.border-rounding-top-left}"
+  hdr-btn.border-block-start-width: "{sherpa.border-top}"
+  hdr-btn.border-block-end-width: "{sherpa.border-bottom}"
+  hdr-btn.border-inline-start-width: "{sherpa.border-left}"
+  hdr-btn.border-inline-end-width: "{sherpa.border-right}"
+  hdr-btn.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  hdr-btn.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  hdr-btn.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  hdr-btn.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   hdr-btn.color: "{sherpa.style-content-base}"
   quick-zone.gap: "{sherpa.display-mode-space-xs}"
   quick-zone.padding: "{sherpa.display-mode-space-xs}"
   search.gap: "{sherpa.display-mode-space-xs}"
   search.padding-inline-start: "{sherpa.structure-space-padding}"
   search.block-size: "{sherpa.display-mode-size-2xl}"
-  search.border-radius: "{sherpa.border-rounding-top-left}"
-  search.border-width: "{sherpa.style-border-width}"
+  search.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  search.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  search.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  search.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   search.border-color: "{sherpa.style-border-base}"
+  search.border-block-start-width: "{sherpa.border-top}"
+  search.border-block-end-width: "{sherpa.border-bottom}"
+  search.border-inline-start-width: "{sherpa.border-left}"
+  search.border-inline-end-width: "{sherpa.border-right}"
   search.background: "{sherpa.style-surface-base}"
   search-icon.color: "{sherpa.theme-content-body-1}"
   search-icon.font-size: "{sherpa.theme-size-icon-xs}"
@@ -242,6 +257,7 @@ tokens:
   content.gap: "{sherpa.display-mode-space-xs}"
   section.gap: "{sherpa.display-mode-space-xs}"
   section-label.gap: "{sherpa.display-mode-space-xs}"
+  section-label.block-size: "{sherpa.display-mode-size-lg}"
   section-label.padding: "{sherpa.display-mode-space-2xs}"
   section-label.font-size: "{sherpa.font-size-body-xs}"
   section-label.font-weight: "{sherpa.font-weight-regular}"
@@ -252,6 +268,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Primary Navigation
+    methods:
+      - $type: method
+        name: entry
+        args: "id: string"
+        description: "What a row shows: its label, and its icon if it has one."
     category: nav
     jsProps:
       - name: state
@@ -260,3 +281,6 @@ $extensions:
       - name: pinned
         type: string
         access: read-write
+      - name: activeEntry
+        type: string
+        access: read

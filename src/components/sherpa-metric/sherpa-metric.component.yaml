@@ -88,11 +88,6 @@ states:
   - $type: state
     name: disabled
     selector: ":host([disabled])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   label.font-size: "{sherpa.theme-content-size-small}"
   label.font-weight: "{sherpa.font-weight-light}"

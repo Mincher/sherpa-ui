@@ -62,12 +62,12 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: — optional secondary line under the title (fallback to slotted [slot=description])
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: — the summary title (fallback to slotted [slot=heading])
   - $type: prop
     name: data-status

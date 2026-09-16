@@ -46,7 +46,7 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    kind: style
     description: the section label text (rendered verbatim — author its case)
 states:
   - $type: state

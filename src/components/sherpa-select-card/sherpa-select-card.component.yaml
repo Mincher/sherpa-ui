@@ -41,7 +41,7 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: helper line under the title
   - $type: prop
     name: data-footer
@@ -51,7 +51,7 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    kind: style
     description: header title (used when no header slot is given)
   - $type: prop
     name: data-orientation
@@ -130,24 +130,32 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (selected, value). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (focus). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: change
     bubbles: true
     composed: true
-  - $type: event
-    name: value
-    bubbles: true
-    composed: true
 tokens:
-  card.border-width: "{sherpa.style-border-width}"
-  header.gap: "{sherpa.display-space-3xs}"
+  card.border-width: "{sherpa.display-mode-border-width-base}"
+  body.color: "{sherpa.theme-content-body-1}"
+  body.font-size: "{sherpa.font-size-body-base}"
+  body.line-height: "{sherpa.theme-content-line-height-base}"
+  header.gap: "{sherpa.display-mode-space-3xs}"
   label.font-size: "{sherpa.font-size-body-base}"
-  label.font-weight: "{sherpa.font-weight-semibold}"
+  label.font-weight: "{sherpa.font-weight-medium}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
   description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
+    methods:
+      - $type: method
+        name: focus
+        args: "options?: FocusOptions"
     jsProps:
       - name: selected
         type: string

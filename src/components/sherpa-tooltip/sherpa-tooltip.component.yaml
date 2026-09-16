@@ -28,6 +28,7 @@ anatomy:
       part: bubble
       attrs:
         role: tooltip
+        popover: manual
       children:
         - el: span
           class: tip-text
@@ -38,6 +39,14 @@ anatomy:
           attrs:
             aria-hidden: "true"
 props:
+  - $type: prop
+    name: data-floating
+    type: string
+    kind: style
+    description: >-
+      place the bubble in the TOP LAYER from measured coordinates rather than relative to the host.
+      For a tooltip inside a box that clips — a toolbar's chip run, a scroller — where the ordinary
+      absolute bubble is cut off.
   - $type: prop
     name: data-placement
     type: enum
@@ -51,7 +60,7 @@ props:
   - $type: prop
     name: data-text
     type: string
-    kind: content
+    kind: style
     description: tip text (or use the `tip` slot)
 states:
   - $type: state
@@ -66,21 +75,21 @@ states:
   - $type: state
     name: right
     selector: ":host([data-placement=\"right\"])"
+  - $type: state
+    name: floating
+    selector: ":host([data-floating])"
 capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (text). See $extensions.sherpa.jsProps.
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
-  bubble.padding: "{sherpa.display-space-2xs}"
+  bubble.padding: "{sherpa.display-mode-space-2xs}"
   bubble.font-family: "{sherpa.font-family-body}"
   bubble.font-size: "{sherpa.font-size-body-small}"
-  bubble.font-weight: "{sherpa.font-weight-semibold}"
-  bubble.border-radius: "{sherpa.display-border-rounding-base}"
+  bubble.font-weight: "{sherpa.font-weight-regular}"
+  bubble.line-height: "{sherpa.theme-content-line-height-small}"
+  bubble.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  bubble.box-shadow: "{sherpa.display-mode-size-2xs}"
 $extensions:
   sherpa:
     figmaName: Tooltip (atom)

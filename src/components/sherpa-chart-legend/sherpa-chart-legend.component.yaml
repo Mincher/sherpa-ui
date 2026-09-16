@@ -75,11 +75,7 @@ events:
       "on": click
       node: .legend
   - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: active
+    name: legend-breakdown-change
     bubbles: true
     composed: true
 tokens:

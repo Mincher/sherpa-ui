@@ -60,13 +60,18 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: message text (rendered into .message-text)
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: heading text (rendered into .title)
+  - $type: prop
+    name: data-illustration
+    type: string
+    kind: style
+    description: "built-in glyph: empty  | search | folder | data | error | success"
   - $type: prop
     name: data-size
     type: enum
@@ -79,10 +84,8 @@ props:
   - $type: prop
     name: data-small-print
     type: string
-    kind: content
-    description: >-
-      fine-print / help text (rendered into .small-print-text) data-illustration built-in glyph:
-      empty  | search | folder | data | error | success
+    kind: style
+    description: fine-print / help text (rendered into .small-print-text)
 states:
   - $type: state
     name: has-icon
@@ -126,31 +129,29 @@ states:
   - $type: state
     name: not-heading
     selector: ":host(:not([data-heading]))"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
-  empty.gap: "{sherpa.display-space-base}"
+  empty.gap: "{sherpa.display-mode-space-base}"
   icon.padding: "{sherpa.theme-padding-md}"
-  icon.border-radius: "{sherpa.structure-rounding-top-left}"
+  icon.border-radius: "{sherpa.display-mode-border-rounding-lg}"
   icon.background: "{sherpa.theme-surface-default-2}"
   icon.color: "{sherpa.theme-content-body-1}"
   glyph.font-family: "{sherpa.font-family-body}"
   glyph.font-weight: "{sherpa.font-weight-regular}"
-  heading.gap: "{sherpa.display-space-2xs}"
+  heading.gap: "{sherpa.display-mode-space-2xs}"
   title.color: "{sherpa.theme-content-body-base}"
   title.font-family: "{sherpa.font-family-body}"
-  title.font-size: "{sherpa.font-size-heading-h2}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
-  message.color: "{sherpa.theme-content-body-1}"
+  title.font-size: "{sherpa.font-size-body-base}"
+  title.font-weight: "{sherpa.font-weight-regular}"
+  title.line-height: "{sherpa.theme-content-line-height-base}"
+  message.color: "{sherpa.theme-content-body-base}"
   message.font-family: "{sherpa.font-family-body}"
   message.font-size: "{sherpa.font-size-body-base}"
-  actions.gap: "{sherpa.display-space-sm}"
+  message.line-height: "{sherpa.theme-content-line-height-base}"
+  actions.gap: "{sherpa.display-mode-space-sm}"
   small-print.color: "{sherpa.theme-content-body-1}"
   small-print.font-family: "{sherpa.font-family-body}"
   small-print.font-size: "{sherpa.font-size-body-xs}"
+  small-print.line-height: "{sherpa.theme-content-line-height-xs}"
 $extensions:
   sherpa:
     figmaName: Empty State

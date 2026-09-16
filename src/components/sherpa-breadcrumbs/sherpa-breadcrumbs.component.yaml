@@ -55,21 +55,13 @@ events:
     trigger:
       "on": click
       node: .crumbs
-  - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: href
-    bubbles: true
-    composed: true
 tokens:
-  crumbs.gap: "{sherpa.display-space-xs}"
-  crumb.gap: "{sherpa.display-space-xs}"
-  link.color: "{sherpa.theme-content-link-base}"
-  link.font-weight: "{sherpa.font-weight-semibold}"
-  link.border-radius: "{sherpa.display-border-rounding-sm}"
-  link.padding: "{sherpa.display-space-3xs}"
+  crumbs.gap: "{sherpa.display-mode-space-xs}"
+  crumb.gap: "{sherpa.display-mode-space-xs}"
+  link.color: "{sherpa.theme-content-link-1}"
+  link.font-weight: "{sherpa.font-weight-regular}"
+  link.line-height: "{sherpa.theme-content-line-height-small}"
+  link.border-radius: "{sherpa.display-mode-border-rounding-sm}"
 $extensions:
   sherpa:
     figmaName: Breadcrumbs

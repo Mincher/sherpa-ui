@@ -35,7 +35,14 @@ props:
       - start
       - end
       - between
-    description: start | end  | between
+      - stretch
+    description: start | end  | between | stretch
+  - $type: prop
+    name: stretch
+    type: string
+    description: >-
+      ONE wide control fills the row (a chat composer, a search field), rather than a cluster of
+      buttons at one end.
 states:
   - $type: state
     name: has-content
@@ -49,11 +56,9 @@ states:
   - $type: state
     name: between
     selector: ":host([data-align=\"between\"])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
+  - $type: state
+    name: stretch
+    selector: ":host([data-align=\"stretch\"])"
 tokens:
   row.gap: "{sherpa.theme-gap-sm}"
   row.padding-block: "{sherpa.theme-padding-md}"

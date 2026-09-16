@@ -64,6 +64,22 @@ anatomy:
             - el: span
             - el: span
             - el: span
+            - el: span
+              class: wd-gap
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
+            - el: span
+              class: wd-2
         - el: div
           class: cal-days cal-grid
           part: days
@@ -155,6 +171,15 @@ anatomy:
                 aria-label: Next
 props:
   - $type: prop
+    name: data-available
+    type: string
+    kind: content
+    description: >-
+      comma-separated ISO days that EXIST in the data; every other day is disabled. A SET, not a
+      span — a column of dates is a scatter, and min/max would leave the empty days between them
+      selectable. Omit it and every day is selectable, which is the override: a host that wants a
+      picker unconstrained by its own data simply does not supply one.
+  - $type: prop
     name: data-embedded
     type: boolean
     kind: style
@@ -242,6 +267,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (today). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: datetime-change
@@ -268,11 +296,11 @@ tokens:
   cal.border-color: "{sherpa.theme-border-default-2}"
   cal.border-radius: "{sherpa.border-rounding-top-left}"
   cal.background: "{sherpa.style-surface-base}"
-  cal-grid.inline-size: "{sherpa.display-mode-size-2xl}"
+  cal-grid.min-inline-size: "{sherpa.display-mode-size-2xl}"
   cal-grid.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-grid.padding-inline: "{sherpa.theme-padding-md}"
   cal-grid.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
-  cal-weekdays.inline-size: "{sherpa.display-mode-size-2xl}"
+  cal-weekdays.min-inline-size: "{sherpa.display-mode-size-2xl}"
   cal-weekdays.row-gap: "{sherpa.display-mode-space-3xs}"
   cal-weekdays.padding-inline: "{sherpa.theme-padding-md}"
   cal-weekdays.grid-auto-rows: "{sherpa.display-mode-size-2xl}"
@@ -286,7 +314,10 @@ tokens:
   cal-time-label.color: "{sherpa.theme-content-body-1}"
   cal-time.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-time.padding-inline: "{sherpa.display-mode-space-xs}"
-  cal-time.border-width: "{sherpa.style-border-width}"
+  cal-time.border-block-start-width: "{sherpa.border-top}"
+  cal-time.border-block-end-width: "{sherpa.border-bottom}"
+  cal-time.border-inline-start-width: "{sherpa.border-left}"
+  cal-time.border-inline-end-width: "{sherpa.border-right}"
   cal-time.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-time.background: "{sherpa.style-surface-base}"
   cal-time.color: "{sherpa.theme-content-body-1}"
@@ -301,7 +332,10 @@ tokens:
   cal-cancel.block-size: "{sherpa.structure-height}"
   cal-cancel.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-cancel.padding-inline: "{sherpa.theme-padding-lg}"
-  cal-cancel.border-width: "{sherpa.style-border-width}"
+  cal-cancel.border-block-start-width: "{sherpa.border-top}"
+  cal-cancel.border-block-end-width: "{sherpa.border-bottom}"
+  cal-cancel.border-inline-start-width: "{sherpa.border-left}"
+  cal-cancel.border-inline-end-width: "{sherpa.border-right}"
   cal-cancel.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-cancel.background: "{sherpa.style-surface-base}"
   cal-cancel.color: "{sherpa.theme-content-body-1}"
@@ -310,7 +344,10 @@ tokens:
   cal-apply.block-size: "{sherpa.structure-height}"
   cal-apply.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-apply.padding-inline: "{sherpa.theme-padding-lg}"
-  cal-apply.border-width: "{sherpa.style-border-width}"
+  cal-apply.border-block-start-width: "{sherpa.border-top}"
+  cal-apply.border-block-end-width: "{sherpa.border-bottom}"
+  cal-apply.border-inline-start-width: "{sherpa.border-left}"
+  cal-apply.border-inline-end-width: "{sherpa.border-right}"
   cal-apply.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-apply.background: "{sherpa.style-surface-base}"
   cal-apply.color: "{sherpa.theme-content-body-1}"
@@ -319,6 +356,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Calendar
+    methods:
+      - $type: method
+        name: today
+        args: ""
+        description: Jump to today and select it.
     category: container
     variantAxes:
       - name: Type

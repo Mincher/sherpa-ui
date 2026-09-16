@@ -57,17 +57,17 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: helper line under the heading
   - $type: prop
     name: data-error
     type: string
-    kind: content
+    kind: style
     description: validation message; present → validation row shown
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    kind: style
     description: group heading (hidden when empty)
   - $type: prop
     name: data-multiple

@@ -27,22 +27,42 @@ anatomy:
         part: nav
         children:
           - slot: nav
-      - el: header
-        class: region header
-        part: header
+      - el: div
+        class: frame
+        part: frame
         children:
-          - slot: header
-      - el: main
-        class: region content
-        part: content
-        slot: ""
+          - el: main
+            class: region content
+            part: content
+            children:
+              - el: header
+                class: header
+                part: header
+                children:
+                  - slot: header
+              - el: div
+                class: view
+                slot: ""
 props:
   - $type: prop
     name: data-nav-collapsed
     type: boolean
-    kind: content
+    kind: style
     default: false
     description: collapse the nav rail to icon width
+  - $type: prop
+    name: data-nav-state
+    type: enum
+    kind: content
+    values:
+      - collapsed
+      - hover
+      - default
+      - pinned
+      - settings
+    description: >-
+      collapsed  | hover | default | pinned | settings — mirrored from the rail; drives the content
+      inset
   - $type: prop
     name: data-no-header
     type: boolean
@@ -51,16 +71,16 @@ props:
     description: let the content span the full height (no header row)
 states:
   - $type: state
-    name: nav-collapsed
-    selector: ":host([data-nav-collapsed])"
+    name: pinned
+    selector: ":host([data-nav-state=\"pinned\"])"
+  - $type: state
+    name: settings
+    selector: ":host([data-nav-state=\"settings\"])"
   - $type: state
     name: no-header
     selector: ":host([data-no-header])"
 tokens:
-  nav.border-inline-end: "{sherpa.display-mode-border-width-base}"
-  nav.background: "{sherpa.theme-surface-default-base}"
-  header.border-block-end: "{sherpa.display-mode-border-width-base}"
-  content.padding: "{sherpa.layout-grid-padding}"
+  header.background: "{sherpa.style-surface-base}"
 $extensions:
   sherpa:
     figmaName: App Shell

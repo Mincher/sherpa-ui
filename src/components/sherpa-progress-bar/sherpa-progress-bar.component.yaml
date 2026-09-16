@@ -61,6 +61,7 @@ props:
     name: value
     type: string
     native: true
+    kind: content
     description: 0–100 completion (native <progress value>); read/write
 states:
   - $type: state
@@ -78,9 +79,10 @@ capabilities:
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
 tokens:
   label.font-size: "{sherpa.font-size-body-base}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
   label.color: "{sherpa.theme-content-body-base}"
-  bar.block-size: "{sherpa.display-space-2xs}"
-  bar.border-radius: "{sherpa.display-border-rounding-full}"
+  bar.block-size: "{sherpa.display-mode-space-2xs}"
+  bar.border-radius: "{sherpa.display-mode-border-rounding-full}"
 $extensions:
   sherpa:
     figmaName: Progress Bar (atom)

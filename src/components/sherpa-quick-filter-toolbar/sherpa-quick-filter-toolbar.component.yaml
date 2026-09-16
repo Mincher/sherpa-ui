@@ -39,6 +39,16 @@ anatomy:
         - el: div
           class: chips
           part: chips
+        - el: sherpa-quick-filter
+          class: overflow-chip
+          part: overflow-chip
+          attrs:
+            data-label: More
+            data-icon-start: fa-solid fa-filter
+            data-current: ""
+            data-persistent: ""
+            data-no-value: ""
+            data-locked: ""
         - el: div
           class: actions-zone
           part: actions
@@ -162,28 +172,43 @@ states:
     name: has-organise
     selector: ":host([data-has-organise])"
   - $type: state
+    name: "1"
+    selector: ":host([data-collapse=\"1\"])"
+  - $type: state
+    name: "2"
+    selector: ":host([data-collapse=\"2\"])"
+  - $type: state
+    name: "3"
+    selector: ":host([data-collapse=\"3\"])"
+  - $type: state
+    name: collapse
+    selector: ":host([data-collapse])"
+  - $type: state
     name: no-actions
     selector: ":host([data-no-actions])"
   - $type: state
     name: favourite
     selector: ":host([data-favourite])"
+  - $type: state
+    name: folded
+    selector: ":host([data-folded])"
+  - $type: state
+    name: focus-visible
+    selector: .qf-number-one:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (active, values, pickedValues, groupField, sortField, sortDirection,
-      sortSuspended). See $extensions.sherpa.jsProps.
+      read/write JS properties (active, values, pickedValues, customFilters, groupField, sortField,
+      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (available, addCustomFilter, clearAll,
+      organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
-    bubbles: true
-    composed: true
-  - $type: event
-    name: values
-    bubbles: true
-    composed: true
-  - $type: event
-    name: picked
     bubbles: true
     composed: true
   - $type: event
@@ -226,6 +251,14 @@ events:
     name: filter-overflow
     bubbles: true
     composed: true
+  - $type: event
+    name: sort-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-remove
+    bubbles: true
+    composed: true
 tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
   bar.padding-block: "{sherpa.display-mode-space-2xs}"
@@ -238,6 +271,23 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Filter Toolbar
+    methods:
+      - $type: method
+        name: available
+        args: "defs: QuickFilterDef[]"
+        description: available([...]) — the filters the Add chip offers.
+      - $type: method
+        name: addCustomFilter
+        args: "spec: { id: string; label: string; value?: string | null }"
+        description: Put a CUSTOM filter on the bar — one whose value is typed, not picked.
+      - $type: method
+        name: clearAll
+        args: ""
+        description: Turn every chip off and drop every picked value.
+      - $type: method
+        name: organise
+        args: "def: OrganiseDef"
+        description: "organise({ group: [...], sort: [...] }) — the columns the leading chips offer."
     category: control
     variantAxes:
       - name: Type
@@ -262,8 +312,11 @@ $extensions:
         access: read
       - name: values
         type: string
-        access: read
+        access: read-write
       - name: pickedValues
+        type: string
+        access: read
+      - name: customFilters
         type: string
         access: read
       - name: groupField

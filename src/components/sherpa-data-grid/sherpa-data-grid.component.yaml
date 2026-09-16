@@ -210,15 +210,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: width
-    bubbles: true
-    composed: true
-  - $type: event
     name: sort-change
-    bubbles: true
-    composed: true
-  - $type: event
-    name: direction
     bubbles: true
     composed: true
   - $type: event
@@ -229,23 +221,7 @@ events:
       "on": click
       node: .body
   - $type: event
-    name: row
-    bubbles: true
-    composed: true
-  - $type: event
     name: selection-change
-    bubbles: true
-    composed: true
-  - $type: event
-    name: for
-    bubbles: true
-    composed: true
-  - $type: event
-    name: since
-    bubbles: true
-    composed: true
-  - $type: event
-    name: means
     bubbles: true
     composed: true
   - $type: event
@@ -253,43 +229,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: header
-    bubbles: true
-    composed: true
-  - $type: event
-    name: op
-    bubbles: true
-    composed: true
-  - $type: event
-    name: value
-    bubbles: true
-    composed: true
-  - $type: event
-    name: from
-    bubbles: true
-    composed: true
-  - $type: event
-    name: to
-    bubbles: true
-    composed: true
-  - $type: event
-    name: clause
-    bubbles: true
-    composed: true
-  - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
     name: filter-change
-    bubbles: true
-    composed: true
-  - $type: event
-    name: filters
-    bubbles: true
-    composed: true
-  - $type: event
-    name: visible
     bubbles: true
     composed: true
   - $type: event
@@ -297,7 +237,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: collapsed
+    name: menu-clear
     bubbles: true
     composed: true
 tokens:
@@ -346,7 +286,8 @@ tokens:
   head-cell.padding: "{sherpa.display-mode-space-2xs}"
   head-cell.background: "{sherpa.style-surface-base-1}"
   head-cell.border-block-end: "{sherpa.border-bottom}"
-  head-row-inner.gap: "{sherpa.display-mode-space-2xs}"
+  head-row-inner.gap: "{sherpa.display-mode-space-xs}"
+  head-row-inner.padding-inline-end: "{sherpa.display-mode-space-xs}"
   head-filter-body.gap: "{sherpa.display-mode-space-2xs}"
   head-filter-body.padding: "{sherpa.display-mode-space-2xs}"
   head-filter-range.gap: "{sherpa.display-mode-space-xs}"
@@ -369,7 +310,8 @@ tokens:
   head-filter-op.padding-inline-end: "{sherpa.display-mode-space-xs}"
   resize-grip.inline-size: "{sherpa.display-mode-space-xs}"
   head-btn.gap: "{sherpa.display-mode-space-2xs}"
-  head-btn.padding: "{sherpa.display-mode-space-2xs}"
+  head-btn.padding-block: "{sherpa.display-mode-space-2xs}"
+  head-btn.padding-inline-start: "{sherpa.display-mode-space-xs}"
   head-btn.font-family: "{sherpa.font-family-body}"
   head-btn.font-size: "{sherpa.font-size-body-base}"
   head-btn.font-weight: "{sherpa.font-weight-regular}"

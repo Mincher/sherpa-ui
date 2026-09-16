@@ -44,12 +44,12 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    kind: style
     description: helper line below the label
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    kind: style
     description: label text to the right of the dot (or default slot)
   - $type: prop
     name: checked
@@ -65,9 +65,6 @@ props:
     description: submitted value when selected
 states:
   - $type: state
-    name: minimal
-    selector: ":host([data-variant=\"minimal\"])"
-  - $type: state
     name: status
     selector: ":host([data-status])"
   - $type: state
@@ -80,28 +77,39 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (checked, value). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (checkValidity, focus). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: change
     bubbles: true
     composed: true
-  - $type: event
-    name: value
-    bubbles: true
-    composed: true
 tokens:
-  field.gap: "{sherpa.display-space-xs}"
+  field.gap: "{sherpa.display-mode-space-xs}"
   field.color: "{sherpa.theme-content-body-base}"
-  control.border-width: "{sherpa.display-border-width-sm}"
-  control.border-radius: "{sherpa.display-border-rounding-full}"
-  text.gap: "{sherpa.display-space-3xs}"
+  control.border-width: "{sherpa.display-mode-border-width-base}"
+  control.border-radius: "{sherpa.display-mode-border-rounding-full}"
+  text.gap: "{sherpa.display-mode-space-2xs}"
   label.color: "{sherpa.theme-content-body-base}"
   label.font-size: "{sherpa.font-size-body-base}"
+  label.font-weight: "{sherpa.font-weight-medium}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
   description.color: "{sherpa.theme-content-body-1}"
   description.font-size: "{sherpa.font-size-body-small}"
+  description.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
     figmaName: Select Radio
+    methods:
+      - $type: method
+        name: checkValidity
+        args: ""
+      - $type: method
+        name: focus
+        args: "options?: FocusOptions"
     category: control
     booleanProps:
       - hasDescription

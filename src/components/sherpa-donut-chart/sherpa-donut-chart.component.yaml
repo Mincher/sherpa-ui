@@ -90,17 +90,14 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (slices, hiddenSlices). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (setSliceHidden). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: slice-click
-    bubbles: true
-    composed: true
-  - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: value
     bubbles: true
     composed: true
 tokens:
@@ -120,6 +117,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Donut Chart
+    methods:
+      - $type: method
+        name: setSliceHidden
+        args: "index: number, hidden = true"
+        description: Show or hide one slice by index — the hook a chart legend toggles.
     category: chart
     jsProps:
       - name: slices

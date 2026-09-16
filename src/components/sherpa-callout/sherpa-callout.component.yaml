@@ -58,7 +58,7 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: heading text (rendered into .title)
   - $type: prop
     name: data-status
@@ -102,6 +102,10 @@ states:
   - $type: state
     name: focus-visible
     selector: .close:focus-visible
+capabilities:
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (dismiss). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: callout-dismiss
@@ -111,24 +115,31 @@ events:
       "on": click
       node: .close
 tokens:
-  box.gap: "{sherpa.theme-gap-lg}"
+  box.gap: "{sherpa.display-mode-space-xs}"
   box.padding: "{sherpa.theme-padding-lg}"
-  box.border-width: "{sherpa.style-border-width}"
-  box.border-radius: "{sherpa.structure-rounding-top-left}"
+  box.border-inline-start: "{sherpa.display-mode-border-width-lg}"
+  box.border-radius: "{sherpa.display-mode-border-rounding-sm}"
   box.font-size: "{sherpa.font-size-body-base}"
-  icon.inline-size: "{sherpa.theme-size-icon-md}"
-  icon.block-size: "{sherpa.theme-size-icon-md}"
-  icon.color: "{sherpa.theme-content-body-base-fixed}"
-  icon.font-size: "{sherpa.font-size-body-small}"
-  icon.font-weight: "{sherpa.font-weight-bold}"
-  content.gap: "{sherpa.display-space-2xs}"
+  icon.inline-size: "{sherpa.theme-content-size-base}"
+  icon.block-size: "{sherpa.theme-content-size-base}"
+  icon.margin-block-start: "{sherpa.display-mode-space-3xs}"
+  icon.font-size: "{sherpa.theme-content-size-base}"
+  content.gap: "{sherpa.display-mode-space-2xs}"
   title.font-weight: "{sherpa.font-weight-semibold}"
-  title.font-size: "{sherpa.font-size-body-large}"
+  title.font-size: "{sherpa.font-size-body-base}"
+  title.line-height: "{sherpa.theme-content-line-height-base}"
+  message.font-size: "{sherpa.font-size-body-small}"
+  message.line-height: "{sherpa.theme-content-line-height-small}"
   close.inline-size: "{sherpa.theme-size-icon-md}"
   close.block-size: "{sherpa.theme-size-icon-md}"
-  close.margin-inline-start: "{sherpa.display-space-2xs}"
-  close.border-radius: "{sherpa.display-border-rounding-sm}"
+  close.margin-inline-start: "{sherpa.display-mode-space-2xs}"
+  close.border-radius: "{sherpa.display-mode-border-rounding-sm}"
 $extensions:
   sherpa:
     figmaName: Callout
+    methods:
+      - $type: method
+        name: dismiss
+        args: ""
+        description: "Dismiss the callout: emit the event and remove the element."
     category: container

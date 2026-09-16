@@ -27,11 +27,19 @@
  * @attr {string}  data-active-id  id of the current item
  * @attr {boolean} data-searchable show the search field (auto-set with a product)
  *
- * @fires nav-select       — detail: { id }
+ * @fires nav-select       — detail: { id, label, icon } (icon absent on a child row)
  * @fires nav-search       — detail: { query }
  * @fires nav-state-change — detail: { state }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+
+/** What a stamped row actually shows. `icon` is undefined on a child row (by
+ *  design — a child is told apart by its indent, never by an icon). */
+export interface NavRowInfo {
+  id: string;
+  label: string | undefined;
+  icon: string | undefined;
+}
 
 export interface NavEntry {
   id: string;
@@ -137,9 +145,24 @@ export class SherpaNav extends SherpaElement {
     this.removeEventListener('focusout', this.#onFocusOut);
   }
 
-  override onChange(name: string): void {
+  override onChange(name: string, oldValue: string | null, newValue: string | null): void {
     if (name === 'data-active-id') this.#applyActive();
-    if (name === 'data-nav-state') this.#applyState();
+    if (name === 'data-nav-state') {
+      this.#applyState();
+      /* SETTINGS mode shows a DIFFERENT list — its own pages, and no quick items.
+         #renderQuick and #renderSections have always branched on the mode, but
+         nothing re-ran them when the mode changed, so the rail claimed to be in
+         settings while still showing the product tree. Only the settings edge
+         re-stamps: the other four modes share one list, and re-rendering on every
+         hover would throw away each parent's expanded state. */
+      const was = oldValue === 'settings';
+      const now = newValue === 'settings';
+      if (was !== now && this.#hasContent()) {
+        this.#renderQuick();
+        this.#renderSections();
+        this.#applyActive();
+      }
+    }
   }
 
   /* ── Public API ──────────────────────────────────────────────────── */
@@ -149,7 +172,11 @@ export class SherpaNav extends SherpaElement {
     return (this.dataset['navState'] as NavState) ?? 'collapsed';
   }
   set state(value: NavState) {
-    this.dataset['navState'] = value;
+    // Through the state machine, so a host setting the mode is announced exactly
+    // as the rail's own pin and settings buttons are. Writing the attribute here
+    // instead left `nav-state-change` unfired, so the app-shell's content inset
+    // never moved and every host had to re-dispatch the event by hand.
+    this.#setState(value);
   }
 
   /** True while the rail is latched open by the pin. */
@@ -173,14 +200,12 @@ export class SherpaNav extends SherpaElement {
   #setState(next: NavState): void {
     const previous = this.state;
     if (previous === next) return;
+    // Writing the attribute is the ONLY step: onChange owns the settings re-render
+    // now, so a host that sets `nav.dataset.navState` by hand — which the example
+    // app does to follow the URL — gets the same swap this path does. It used to
+    // live here, which is why that host ended up in settings mode still showing
+    // the product tree.
     this.dataset['navState'] = next;
-    // Entering or leaving SETTINGS swaps which section list the rail shows, AND
-    // whether the quick items are there at all — settings has none.
-    if ((previous === 'settings') !== (next === 'settings')) {
-      this.#renderQuick();
-      this.#renderSections();
-      this.#applyActive();
-    }
     this.emit('nav-state-change', { state: next });
   }
 
@@ -368,12 +393,37 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Interaction ────────────────────────────────────────────────── */
 
+  /**
+   * What a row shows: its label, and its icon if it has one.
+   *
+   * Read back off the stamped ROW, not off the config, so it is true for a rail
+   * filled any way — populate(), or hand-authored rows in the light DOM. A child
+   * row carries no icon by design, so `icon` is undefined there; a consumer
+   * mirroring this (the app header does) must then show no icon rather than keep
+   * the last one.
+   */
+  entry(id: string): NavRowInfo | null {
+    const row = this.$$<HTMLElement>('.nav-row').find((r) => r.dataset['id'] === id);
+    const item = row?.querySelector<HTMLElement>('sherpa-nav-item');
+    if (!item) return null;
+    return { id, label: item.dataset['label'], icon: item.dataset['icon'] };
+  }
+
+  /** The row that is current, per data-active-id. */
+  get activeEntry(): NavRowInfo | null {
+    const id = this.dataset['activeId'];
+    return id ? this.entry(id) : null;
+  }
+
   #onItemClick = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     const id = row?.dataset['id'];
     if (!id) return;
     this.setAttribute('data-active-id', id);
-    this.emit('nav-select', { id });
+    // The label and the icon ride along: a consumer that mirrors the selection
+    // (an app header showing the view name) should not have to re-look-up the
+    // row, and must not have to keep its own copy of the nav config in step.
+    this.emit('nav-select', { id, ...this.entry(id) });
   };
 
   /** A parent row's chevron was toggled — record it, then re-derive visibility. */

@@ -143,6 +143,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (page, totalPages, pageSize). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (goToPage). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: page-change
@@ -168,20 +171,38 @@ tokens:
   pagination.gap: "{sherpa.display-mode-space-base}"
   pagination.padding: "{sherpa.display-mode-space-xs}"
   rows.padding: "{sherpa.theme-padding-sm}"
-  rows.border-width: "{sherpa.style-border-width}"
-  rows.border-radius: "{sherpa.border-rounding-top-left}"
+  rows.border-block-start-width: "{sherpa.border-top}"
+  rows.border-block-end-width: "{sherpa.border-bottom}"
+  rows.border-inline-start-width: "{sherpa.border-left}"
+  rows.border-inline-end-width: "{sherpa.border-right}"
+  rows.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  rows.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  rows.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  rows.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   rows.background: "{sherpa.theme-surface-default-base}"
   rows.color: "{sherpa.theme-content-body-1}"
   rows.font-size: "{sherpa.font-size-body-base}"
   page-input.padding: "{sherpa.theme-padding-sm}"
-  page-input.border-width: "{sherpa.style-border-width}"
-  page-input.border-radius: "{sherpa.border-rounding-top-left}"
+  page-input.border-block-start-width: "{sherpa.border-top}"
+  page-input.border-block-end-width: "{sherpa.border-bottom}"
+  page-input.border-inline-start-width: "{sherpa.border-left}"
+  page-input.border-inline-end-width: "{sherpa.border-right}"
+  page-input.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  page-input.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  page-input.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  page-input.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   page-input.background: "{sherpa.theme-surface-default-base}"
   page-input.color: "{sherpa.theme-content-body-1}"
   page-input.font-size: "{sherpa.font-size-body-base}"
+  rows.padding-inline-end: "{sherpa.structure-space-padding}"
 $extensions:
   sherpa:
     figmaName: Pagination
+    methods:
+      - $type: method
+        name: goToPage
+        args: "n: number"
+        description: Navigate to a page (clamped) and emit page-change if it changed.
     category: control
     booleanProps:
       - hasResults

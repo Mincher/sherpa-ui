@@ -134,6 +134,124 @@ anatomy:
             attrs:
               data-role: end
               data-index: "7"
+      - el: div
+        class: hotspots
+        part: hotspots
+        attrs:
+          aria-hidden: "true"
+        children:
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "0"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "0"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "1"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "1"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "2"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "2"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "3"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "3"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "4"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "4"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "5"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "5"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "6"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "6"
+            children:
+              - el: span
+                class: chart-tip-value
+          - el: button
+            class: hotspot chart-mark
+            attrs:
+              type: button
+              data-index: "7"
+              tabindex: "-1"
+          - el: span
+            class: chart-tip
+            attrs:
+              role: tooltip
+              data-index: "7"
+            children:
+              - el: span
+                class: chart-tip-value
 props:
   - $type: prop
     name: data-values
@@ -173,13 +291,13 @@ states:
   - $type: state
     name: "1"
     selector: ":host([data-len=\"1\"])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
+  - $type: state
+    name: focus-visible
+    selector: .hotspot:focus-visible
 tokens:
   point.border-radius: "{sherpa.display-mode-border-rounding-full}"
+  hotspot.inline-size: "{sherpa.display-mode-size-sm}"
+  hotspot.block-size: "{sherpa.display-mode-size-sm}"
 $extensions:
   sherpa:
     figmaName: Data Field

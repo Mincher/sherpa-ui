@@ -195,13 +195,12 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (templateId, current, expanded). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (highlight). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: item-click
-    bubbles: true
-    composed: true
-  - $type: event
-    name: href
     bubbles: true
     composed: true
   - $type: event
@@ -235,8 +234,11 @@ tokens:
   promo.gap: "{sherpa.structure-space-gap}"
   promo.padding: "{sherpa.theme-padding-sm}"
   promo.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  promo.border-width: "{sherpa.style-border-width}"
   promo.border-color: "{sherpa.theme-border-default-2}"
+  promo.border-block-start-width: "{sherpa.border-top}"
+  promo.border-block-end-width: "{sherpa.border-bottom}"
+  promo.border-inline-start-width: "{sherpa.border-left}"
+  promo.border-inline-end-width: "{sherpa.border-right}"
   promo.background: "{sherpa.style-surface-base}"
   promo.color: "{sherpa.theme-content-body-base}"
   promo-icon.inline-size: "{sherpa.display-mode-size-lg}"
@@ -254,6 +256,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Navigation Item
+    methods:
+      - $type: method
+        name: highlight
+        args: "query: string | null"
+        description: Mark a substring of this row's label as a search match.
     category: nav
     booleanProps:
       - hasIcon

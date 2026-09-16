@@ -148,8 +148,3 @@ states:
   - $type: state
     name: fill
     selector: ":host([data-fill])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true

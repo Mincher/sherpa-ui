@@ -68,6 +68,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (currentId). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (select). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: tab-change
@@ -92,6 +95,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Tab Group
+    methods:
+      - $type: method
+        name: select
+        args: "id: string"
+        description: Activate a tab by id (no-op if already active or unknown).
     category: container
     jsProps:
       - name: currentId

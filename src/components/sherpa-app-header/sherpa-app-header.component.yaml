@@ -180,7 +180,7 @@ props:
   - $type: prop
     name: data-ai-label
     type: string
-    kind: content
+    kind: style
     default: "\"Ask N-zo\""
     description: its label
   - $type: prop
@@ -197,7 +197,7 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: the view title (row 2)
   - $type: prop
     name: data-help
@@ -237,7 +237,7 @@ props:
   - $type: prop
     name: data-title
     type: string
-    kind: content
+    kind: style
     description: accepted as an alias for data-heading
 states:
   - $type: state
@@ -273,13 +273,13 @@ states:
   - $type: state
     name: not-loading
     selector: ":host(:not([data-loading]))"
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (values). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: header-back
-    bubbles: true
-    composed: true
-  - $type: event
-    name: header-notifications
+    name: breadcrumb-click
     bubbles: true
     composed: true
 tokens:
@@ -304,8 +304,8 @@ tokens:
   notif-badge.font-size: "{sherpa.theme-content-size-base}"
   notif-badge.font-weight: "{sherpa.font-weight-regular}"
   notif-badge.line-height: "{sherpa.theme-content-line-height-base}"
-  notif-badge.box-shadow: "{sherpa.theme-elevation-offset-x-large}"
-  row-view.gap: "{sherpa.display-mode-space-sm}"
+  notif-badge.box-shadow: "{sherpa.display-mode-size-2xs}"
+  row-view.gap: "{sherpa.display-mode-space-2xs}"
   title-row.gap: "{sherpa.display-mode-space-xs}"
   title-row.min-block-size: "{sherpa.display-mode-size-lg}"
   view-icon.inline-size: "{sherpa.theme-size-icon-xs}"
@@ -325,3 +325,7 @@ $extensions:
     booleanProps:
       - hasNotifications
       - hasLoadingBar
+    jsProps:
+      - name: values
+        type: string
+        access: read-write

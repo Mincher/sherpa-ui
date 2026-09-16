@@ -192,7 +192,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (current, valueLabel, menu). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current, valueLabel, menu, values). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: quick-filter-click
@@ -254,3 +254,6 @@ $extensions:
       - name: menu
         type: string
         access: read
+      - name: values
+        type: string
+        access: read-write

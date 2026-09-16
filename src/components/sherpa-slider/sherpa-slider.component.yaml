@@ -32,6 +32,13 @@ anatomy:
     - el: div
       class: slider-row
       children:
+        - el: input
+          class: value-input value-start
+          part: value-start
+          attrs:
+            type: number
+            inputmode: decimal
+            aria-label: Minimum
         - el: div
           class: track-area
           children:
@@ -48,8 +55,14 @@ anatomy:
               attrs:
                 id: slider-range
                 type: range
+            - el: input
+              class: range range-end
+              part: range-end
+              attrs:
+                type: range
+                aria-label: Maximum
         - el: input
-          class: value-input
+          class: value-input value-end
           part: value
           attrs:
             type: number
@@ -59,7 +72,7 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: visibility
+    kind: style
     description: — label text above the slider (shown when set)
   - $type: prop
     name: data-max
@@ -86,6 +99,11 @@ props:
     default: "1"
     description: — step increment
   - $type: prop
+    name: data-type
+    type: string
+    kind: content
+    description: — single  | range — two thumbs and two value fields
+  - $type: prop
     name: data-value
     type: string
     kind: style
@@ -93,8 +111,16 @@ props:
   - $type: prop
     name: data-value-readonly
     type: string
-    kind: style
-    description: make the value display read-only (no typing)
+    kind: content
+    description: — make the value display read-only (no typing)
+  - $type: prop
+    name: value-end
+    type: string
+    description: the range ends (data-type="range" only)
+  - $type: prop
+    name: value-start
+    type: string
+    description: the range ends (data-type="range" only)
   - $type: prop
     name: disabled
     type: boolean
@@ -137,6 +163,9 @@ states:
     name: value-readonly
     selector: ":host([data-value-readonly])"
   - $type: state
+    name: range
+    selector: ":host([data-type=\"range\"])"
+  - $type: state
     name: disabled
     selector: ":host([disabled])"
   - $type: state
@@ -145,24 +174,37 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (value). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (value, range). See $extensions.sherpa.jsProps.
+events:
+  - $type: event
+    name: input
+    bubbles: true
+    composed: true
+  - $type: event
+    name: change
+    bubbles: true
+    composed: true
 tokens:
   head.font-size: "{sherpa.font-size-body-base}"
   label.color: "{sherpa.theme-content-body-1}"
   label.font-weight: "{sherpa.font-weight-medium}"
-  slider-row.gap: "{sherpa.display-space-sm}"
-  value-input.inline-size: "{sherpa.display-size-6xl}"
-  value-input.min-block-size: "{sherpa.display-size-2xl}"
-  value-input.padding: "{sherpa.display-space-2xs}"
-  value-input.border-width: "{sherpa.style-border-width}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
+  slider-row.gap: "{sherpa.display-mode-space-sm}"
+  value-input.inline-size: "{sherpa.display-mode-size-6xl}"
+  value-input.min-block-size: "{sherpa.display-mode-size-2xl}"
+  value-input.padding: "{sherpa.display-mode-space-2xs}"
   value-input.border-color: "{sherpa.theme-border-default-2}"
-  value-input.border-radius: "{sherpa.display-border-rounding-base}"
-  value-input.background: "{sherpa.style-surface-base}"
-  value-input.color: "{sherpa.style-content-base}"
+  value-input.border-block-start-width: "{sherpa.border-top}"
+  value-input.border-block-end-width: "{sherpa.border-bottom}"
+  value-input.border-inline-start-width: "{sherpa.border-left}"
+  value-input.border-inline-end-width: "{sherpa.border-right}"
+  value-input.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  value-input.background: "{sherpa.theme-surface-default-base}"
+  value-input.color: "{sherpa.theme-content-body-1}"
   value-input.font-family: "{sherpa.font-family-mono}"
   value-input.font-size: "{sherpa.font-size-body-base}"
   track.background: "{sherpa.theme-surface-default-2}"
-  track.border-radius: "{sherpa.display-border-rounding-full}"
+  track.border-radius: "{sherpa.display-mode-border-rounding-full}"
 $extensions:
   sherpa:
     figmaName: Slider
@@ -171,4 +213,8 @@ $extensions:
       - name: value
         type: number
         description: the current value (read/write, clamped to min/max)
+        access: read-write
+      - name: range
+        type: "[number, number]"
+        description: the two ends (read/write); low end first
         access: read-write

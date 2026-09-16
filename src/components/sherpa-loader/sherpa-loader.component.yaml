@@ -63,14 +63,10 @@ states:
   - $type: state
     name: lg
     selector: ":host([data-size=\"lg\"])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
-  spinner.border-radius: "{sherpa.display-border-rounding-full}"
-  spinner.border-width: "{sherpa.style-border-base}"
+  label.line-height: "{sherpa.theme-content-line-height-base}"
+  spinner.border-radius: "{sherpa.display-mode-border-rounding-full}"
+  spinner.border-width: "{sherpa.theme-surface-default-2}"
 $extensions:
   sherpa:
     figmaName: Loading Spinner (atom)

@@ -141,11 +141,11 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (hiddenSeries). See $extensions.sherpa.jsProps.
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (setSeriesHidden). See
+      $extensions.sherpa.methods.
 tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
@@ -177,6 +177,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Data Field
+    methods:
+      - $type: method
+        name: setSeriesHidden
+        args: "index: number, hidden = true"
+        description: Show or hide one series by index — the hook a chart legend toggles.
     category: chart
     variantAxes:
       - name: Orientation

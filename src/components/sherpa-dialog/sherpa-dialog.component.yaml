@@ -48,7 +48,7 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    kind: style
     description: — convenience header label (a slotted [slot=header] overrides it)
   - $type: prop
     name: data-status
@@ -73,6 +73,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (open). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (show, close). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: close
@@ -96,6 +99,15 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Dialog
+    methods:
+      - $type: method
+        name: show
+        args: ""
+        description: Open as a modal (top layer, backdrop, focus trap).
+      - $type: method
+        name: close
+        args: ""
+        description: Close the dialog.
     category: container
     divergence:
       note: >-

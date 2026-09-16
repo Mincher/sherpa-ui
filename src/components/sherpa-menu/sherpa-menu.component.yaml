@@ -217,10 +217,6 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: only
-    bubbles: true
-    composed: true
-  - $type: event
     name: menu-apply
     bubbles: true
     composed: true
@@ -237,11 +233,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: label
-    bubbles: true
-    composed: true
-  - $type: event
-    name: menu-open
+    name: menu-back
     bubbles: true
     composed: true
 tokens:

@@ -142,14 +142,6 @@ events:
     trigger:
       "on": click
       node: .moves
-  - $type: event
-    name: moved
-    bubbles: true
-    composed: true
-  - $type: event
-    name: direction
-    bubbles: true
-    composed: true
 tokens:
   pane.border-width: "{sherpa.display-mode-border-width-base}"
   pane.border-radius: "{sherpa.border-rounding-top-left}"

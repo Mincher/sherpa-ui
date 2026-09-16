@@ -435,6 +435,32 @@ function parseFires(comment) {
   }
   return [...out];
 }
+/**
+ * Every event the TypeScript actually dispatches.
+ *
+ * THE GROUND TRUTH, and the reason this exists: the `Fires:` comment is PROSE,
+ * and prose was being scraped for identifiers. `@fires nothing — it is a layout
+ * surface` produced an event called `nothing` in 14 specs; a sentence about a
+ * column filter produced `since`, `means`, `from` and `to` in the data grid's.
+ * 31 of 58 specs claimed at least one event their component never emits.
+ *
+ * Reads the three ways a Sherpa component can dispatch: the base class's
+ * `emit()`, a hand-built `CustomEvent`, and a re-dispatched native `Event`.
+ */
+function emittedEvents(ts) {
+  const out = new Set();
+  if (!ts) return out;
+  const patterns = [
+    /\bemit\(\s*['"`]([a-z][\w-]*)['"`]/g,
+    /new CustomEvent\(\s*['"`]([a-z][\w-]*)['"`]/g,
+    /new Event\(\s*['"`]([a-z][\w-]*)['"`]/g,
+  ];
+  for (const re of patterns) {
+    for (const m of ts.matchAll(re)) out.add(m[1]);
+  }
+  return out;
+}
+
 function collectEventNames(text, set) {
   // strip `(detail: …)` tails, then take the leading identifier of each fragment
   const cleaned = text.replace(/\(detail[^)]*\)/gi, '').replace(/\(re-dispatched[^)]*\)/gi, '');
@@ -755,8 +781,22 @@ function generateSpec(name) {
   // keep event names, or renamed/removed events would linger forever (stale-event bug).
   const priorEvents = {};
   for (const e of (existing.events ?? [])) if (e && e.name) priorEvents[e.name] = e;
+  /* THE CODE DECIDES, the comment only describes.
+     `Fires:` is authored prose, so a word in it is not evidence of an event —
+     `@fires nothing`, and half a sentence about a column filter, put 60-odd
+     phantom events into these specs. Intersecting with what the TS actually
+     dispatches keeps the comment useful (it still chooses WHICH of the emitted
+     events are public) while making it unable to invent one.
+
+     A component that emits nothing gets no `events:` key at all, rather than a
+     key holding a sentinel — which is how `nothing` read as an event name. */
+  const emitted = emittedEvents(ts);
   const firesNames = comment ? parseFires(comment) : [];
-  const eventNames = new Set(firesNames);
+  const eventNames = new Set(firesNames.filter((n) => emitted.has(n)));
+  /* An event the code emits but the comment forgot is still part of the
+     contract — a caller can listen for it. Silence in a comment is an
+     oversight, not a decision to make something private. */
+  for (const n of emitted) eventNames.add(n);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: true };

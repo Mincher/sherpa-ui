@@ -115,11 +115,6 @@ states:
   - $type: state
     name: system
     selector: ":host([data-type=\"system\"])"
-events:
-  - $type: event
-    name: nothing
-    bubbles: true
-    composed: true
 tokens:
   message.grid-template-columns: "{sherpa.theme-content-size-base}"
   message.gap: "{sherpa.display-mode-space-xs}"
