@@ -2928,6 +2928,7 @@ why the answer must not be a per-concern storage key.
 | **D3** ✅ | `captureView(targets, reads)` — read the current state BACK into a definition | **DONE 2026-09-16.** What to read is NAMED per element rather than guessed: only the caller knows which properties are view state and which are incidental, and guessing would put a scroll position in a saved view |
 | **D4** ✅ | Replace S11's two hand-rolled keys with one definition | **DONE 2026-09-16.** `persistView(name, targets, contributors)` keeps a whole snapshot; `persistViewState` is now a thin deprecated wrapper over it. Verified in the records app: TWO column filters, both lit, both typed values and all 6 match marks survive a real reload |
 | **D5** ✅ | Degrade + version: apply what fits, report what did not | **DONE 2026-09-16.** A gone element and a gone method are REPORTED (`missingElements`, `skipped`), never thrown. An unrecognised `v` is ignored whole rather than half-applied — a definition applied in part leaves a screen nobody designed |
+| **D6** ✅ | A saved-view LIBRARY — `viewOptions` + `onViewPicked` | **DONE 2026-09-16.** Both pages wired the same four pieces by hand and were already drifting in name. One implementation; `after` carries the page-specific half |
 
 **D1 is blocked on parity, not on itself.** A definition can only set what a
 component exposes, so the P-steps are its prerequisite — P2 (selection) first,
@@ -2940,6 +2941,50 @@ Building it forced one addition to D1: a `state` block is a MAP, so one method
 cannot appear twice — and `setColumnFilter` must run once per filtered column.
 The value may now be a LIST OF CALLS. Inventing a `setColumnFilter:name` key
 would have been a second vocabulary nothing else understands.
+
+### D6 ✅ — a saved-view LIBRARY, so a page does not wire one by hand
+
+**DONE 2026-09-16.** `viewOptions` + `onViewPicked` in `core/persist-view.ts`.
+
+A page rarely has ONE saved view; it has a set, offered in a chip. Both example
+pages wrote the same four things by hand and wrote them the same way: options
+derived from the set, a listener reading `detail.values.view[0]`, an apply, and
+a warn when a stale definition could not be fully restored.
+
+Four small pieces of one idea, copied — and already drifting in name
+(`recordsViewOptions(id)` vs `DASHBOARD_VIEW_OPTIONS`), which is what the third
+copy always does.
+
+```js
+filters: globalFilters(viewOptions(MY_VIEWS)),
+unbinds.push(onViewPicked(header, MY_VIEWS, { source, elements: { grid } }));
+```
+
+Three rulings the shared version settles:
+
+- **A change naming no view is ignored.** The other chips on a view bar fire the
+  same `quick-filter-change`, and you are always in SOME view — "no view" is not
+  a state a page can be in.
+- **A view that is gone is ignored, not an error.** A saved link outlives a
+  deleted view.
+- **It returns an unsubscribe, like `bind()`.** A caller should not have to
+  remember which of our functions hand back a teardown. Matching the shape
+  matters more than the line it saves.
+
+`after` carries the page-specific half, which is why this could not be shared
+before. The records page composes its query from NAMED PARTS, so after a
+snapshot it must re-contribute the view's own clause and read the grid's column
+clauses back — `setState` treats a restored filter as the WHOLE query and clears
+the named parts with it. The dashboard does not compose, so it passes nothing.
+
+**The dashboard's views became real `ViewSnapshot`s in the same pass.** It had
+carried `{ label, filter, chips }`, a dialect invented for one page that could
+not express a sort, a grouping or a method call — so its views could only ever
+say less than the records page's. Two shapes for one idea is two things to
+learn, two to serialise, and two for an agent to get wrong.
+
+**Known, pre-existing:** the records "My accounts" view yields 0 rows — its demo
+owner name does not match the generated data. Identical at baseline.
 
 ## Component SPECS have fallen behind the data layer
 
