@@ -2931,6 +2931,7 @@ why the answer must not be a per-concern storage key.
 | **D6** ✅ | A saved-view LIBRARY — `viewOptions` + `onViewPicked` | **DONE 2026-09-16.** Both pages wired the same four pieces by hand and were already drifting in name. One implementation; `after` carries the page-specific half |
 | **D7** ✅ | A preset brings its OWN content and layout | **DONE 2026-09-16.** `SavedView.content` is a `ViewDefinition`. Two gaps closed first: `ViewElement` had no `state`, and `RenderedView` kept its id→element map private |
 | **D8** ✅ | Saving a view the READER made | **DONE 2026-09-16.** `saveViewAs` / `loadSavedViews` / `deleteSavedView`. Surfaced three real bugs — see below |
+| **D9** ✅ | One way to say "stop" — `AbortSignal` on every binding | **DONE 2026-09-16.** Found by a leak: a second unbind list appeared and the teardown dropped it. The platform's own token replaces the list |
 
 **D1 is blocked on parity, not on itself.** A definition can only set what a
 component exposes, so the P-steps are its prerequisite — P2 (selection) first,
@@ -3040,6 +3041,41 @@ is a leak that also costs a redraw on every load.
 
 > The lesson is the general one: a capability tested only with toy components is
 > tested only in its easy case. The real screen is where the mixed case lives.
+
+### D9 ✅ — one way to say "stop": `AbortSignal`
+
+**DONE 2026-09-16.** `bind()`, `persistView` and `onViewPicked` all take
+`options.signal`.
+
+**Found by a leak I wrote.** Both example views collected unbind functions in a
+list and looped them at teardown. When a view gained its own content, a SECOND
+list appeared — a shorter lifetime, because a view's elements are gone the
+moment another view replaces them. The dashboard's teardown dropped only the
+first, so leaving the page while "Capacity planning" was showing left the source
+pushing rows into a detached grid.
+
+**A list of teardowns is a list someone forgets.** The platform already solved
+this — `addEventListener` takes an `AbortSignal` — so the data layer reuses it
+rather than inventing a second way to say "stop". Progressive enhancement
+applied to an API instead of to markup.
+
+```js
+const page = new AbortController();
+source.bind(chart, { readonly: true, signal: page.signal });
+persistView('records', targets, contributors, { signal: page.signal });
+onViewPicked(header, views, targets, { signal: page.signal });
+page.abort();   // all of it
+```
+
+`onViewPicked` and `persistView` hand the signal straight to
+`addEventListener` (`DataSource extends EventTarget`, so this is native).
+`bind()` uses it to drop the binding, which is what stops the rows. An
+ALREADY-ABORTED signal binds nothing and returns a no-op.
+
+Both example views converted. **A convention used by one page is not a
+convention** — the next page has one thing to copy rather than two shapes to
+choose between. Each still returns its unbind function, so a caller with one
+binding need not make a controller.
 
 ### D8 ✅ — saving a view the READER made
 
