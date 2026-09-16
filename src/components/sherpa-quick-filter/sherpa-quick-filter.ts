@@ -292,14 +292,14 @@ export class SherpaQuickFilter extends SherpaElement {
     // badge or its on/off state. It still relays the event, because the toolbar
     // is listening for exactly that.
     if (this.hasAttribute('data-locked')) {
-      this.emit('quick-filter-change', { values });
+      this.emit('quick-filter-change', { scope: 'chip', values });
       return;
     }
     // The badge needs TWO or more picks to say anything. At one pick the label
     // already names the value ("Region: EMEA"), so a "1" beside it is pure noise
     // — and on a single-select chip the badge could never read anything else.
     this.#applySelection(values);
-    this.emit('quick-filter-change', { values });
+    this.emit('quick-filter-change', { scope: 'chip', values });
   };
 
   /**

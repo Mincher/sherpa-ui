@@ -807,3 +807,60 @@ test('a view WITHOUT content gets the page its own content back, still live', as
     { filter: ['b', 'eq', 2] },
   ]);
 });
+
+/**
+ * A CHIP's event must never be read as the BAR's.
+ *
+ * `quick-filter-change` carries `values` in two shapes: a bare `string[]` from
+ * a single chip (its own picks) and a `Record<id, string[]>` from the toolbar
+ * (every chip's). One name, two meanings — and reading one as the other has
+ * already shipped a bug: a view turned an organise chip's sort pick into a
+ * filter and emptied the grid on every sort. The toolbar carries a
+ * capture-phase listener purely to stop that event escaping.
+ *
+ * Every emit now says which shape it is, and this asserts the reader checks.
+ * It used to be safe BY ACCIDENT — `['name']['view']` is undefined, so a chip's
+ * array fell through the id test. Accidental safety stops working the moment a
+ * shape changes slightly.
+ */
+test('onViewPicked ignores a chip-scoped event, by shape not by luck', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+    host.replaceChildren();
+
+    const states: unknown[] = [];
+    const source = { setState: (s: unknown) => states.push(s) };
+    const VIEWS = { risk: { label: 'At risk', snapshot: { v: 1, source: { filter: ['h', 'lt', 60] } } } };
+    onViewPicked(host, VIEWS, { source });
+
+    const fire = (detail: unknown) => host.dispatchEvent(
+      new CustomEvent('quick-filter-change', { detail, bubbles: true }),
+    );
+
+    /* A CHIP's event whose array WOULD read as a map. A bare `['risk']` is
+       harmless — `['risk']['view']` is undefined — which is the accidental
+       safety this marker replaces. So the test uses the case where the accident
+       does NOT save you: an array is an object, and a `view` property on it
+       survives every `values?.['view']` read.
+
+       Without the scope check this applies the view. With it, nothing moves. */
+    const sneaky: string[] & { view?: string[] } = ['risk'];
+    sneaky.view = ['risk'];
+    fire({ scope: 'chip', values: sneaky });
+    const afterChip = states.length;
+
+    // The same payload WITHOUT the marker still works — the marker is a
+    // narrowing, not a new requirement, so an older emitter is not broken.
+    fire({ values: { view: ['risk'] } });
+    const afterUnmarked = states.length;
+
+    // And the bar's own event.
+    fire({ scope: 'bar', values: { view: ['risk'] } });
+    return { afterChip, afterUnmarked, total: states.length };
+  });
+
+  expect(r.afterChip, 'a chip-scoped event moves nothing').toBe(0);
+  expect(r.afterUnmarked, 'an unmarked event is still honoured').toBe(1);
+  expect(r.total, 'and the bar-scoped one applies').toBe(2);
+});

@@ -447,7 +447,18 @@ export function onViewPicked(
 
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent).detail as
-      { values?: Record<string, readonly string[]> } | undefined;
+      { scope?: string; values?: Record<string, readonly string[]> } | undefined;
+
+    /* THE BAR'S event, not a single chip's. `values` carries two shapes on this
+       event name — a bare string[] from a chip, a Record<id, string[]> from the
+       toolbar — and reading one as the other is a bug that has already shipped
+       once (a view turned a sort pick into a filter and emptied the grid).
+
+       This USED to be safe by accident: `['name']['view']` is undefined, so a
+       chip's array fell through the next line. Accidental safety is the kind
+       that stops working when a shape changes slightly. */
+    if (detail?.scope && detail.scope !== 'bar') return;
+
     const id = detail?.values?.['view']?.[0];
     if (!id) return;
     // RE-READ every time when given a function. A library GROWS — a reader

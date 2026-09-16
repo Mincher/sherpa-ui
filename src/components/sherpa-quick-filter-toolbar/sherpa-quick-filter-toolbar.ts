@@ -441,7 +441,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (box.checked) chip.setAttribute('data-current', '');
     else chip.removeAttribute('data-current');
     this.emit('quick-filter-change', {
-      id, active: box.checked, values: [], source: 'overflow',
+      scope: 'chip', id, active: box.checked, values: [], source: 'overflow',
     });
   };
 
@@ -1573,6 +1573,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #emitChange(): void {
     this.emit('quick-filter-change', {
+      // WHICH SHAPE this is. `values` means two different things on this event:
+      // a bare string[] from a CHIP (its own picks) and a Record<id, string[]>
+      // from the BAR (every chip's). A host that read one as the other filtered
+      // by nothing and emptied the grid on every sort — which is why the
+      // capture listener below exists. The marker says it outright instead.
+      scope: 'bar',
       active: this.active,
       // What is APPLIED — only the chips that are ON.
       values: this.values,
