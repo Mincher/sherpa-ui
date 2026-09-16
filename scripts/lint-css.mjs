@@ -17,6 +17,7 @@
  *   E disabled-opacity  `opacity` under `:host([disabled])` — compounds in dark mode.
  *   W viewport-media `@media` other than forced-colors / prefers-* — components use
  *                    @container, not viewport media (warning; --strict makes it fail).
+ *   E focus-ring     a focus ring not drawn with the canonical accent token
  *   W off-grid       an odd px literal (>=1px, not on the 2px grid) in a spacing/sizing/
  *                    radius property. Sherpa uses an 8px grid with a 4px text sub-grid;
  *                    2px/1px are edge cases, sub-1px is stroke-only. Allowed: sub-1px +
@@ -101,6 +102,36 @@ function lintFile(file, cssRaw) {
 
   root.walkDecls((decl) => {
     const line = decl.source?.start?.line ?? 0;
+    /* E focus-ring: a focus ring drawn with anything but the canonical token.
+       47 sites use `--sherpa-theme-border-accent-2, #3b4ccd` and nothing else.
+       CLAUDE.md named a DIFFERENT token until 2026-09-16 — one that does not
+       exist in tokens.css — so anyone who followed the doc got a ring in the
+       fallback colour only. A ring nobody can see is an accessibility bug, and
+       a wrong token fails silently, which is why this is a lint and not a note. */
+    if (decl.prop === 'box-shadow' && /inset 0 0 0 2px/.test(decl.value)) {
+      const inFocus = (() => {
+        let p2 = decl.parent;
+        while (p2 && p2.type === 'rule') {
+          if (/:focus-visible|:focus\b/.test(p2.selector)) return true;
+          p2 = p2.parent;
+        }
+        return false;
+      })();
+      const ok = /--sherpa-theme-border-accent-2\s*,\s*#3b4ccd/.test(decl.value)
+        /* A PRIVATE var passes. A component that also draws an error ring
+           (input-text) or names its accent once (progress-step-tracker) routes
+           through `--_*`, and those resolve to the right thing —
+           `--_border-error` is deliberately the RED status colour, not the
+           accent. What this rule is for is a ring wired straight to some OTHER
+           shared token, which is how the 47 copies could have drifted apart. */
+        || /var\(--_/.test(decl.value);
+      if (inFocus && !ok) {
+        report('error', file, line, 'focus-ring',
+          `focus ring must be `
+          + `inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd) `
+          + `(or a --_* private var that resolves to it). Got: ${decl.value}`);
+      }
+    }
     // E light-dark
     if (/\blight-dark\(/.test(decl.value)) {
       report('error', file, line, 'light-dark',

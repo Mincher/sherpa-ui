@@ -275,9 +275,22 @@ toolbar overlaps whatever sits beside it):
 ```css
 :host(:focus-visible) {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-border-control-primary-default, #3c5edd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 ```
+
+**This exact token and fallback, verbatim** — 47 sites across 29 components use
+it and nothing else. This doc named `--sherpa-border-control-primary-default`
+until 2026-09-16; **that token does not exist** in `tokens.css`, so anyone who
+followed the doc got a focus ring drawn in the fallback colour only, and a
+slightly wrong one. A ring nobody can see is the accessibility bug the rule
+exists to prevent.
+
+Two components deviate and are **not** the pattern to copy: `sherpa-button`
+(outer ring + surface halo) and `sherpa-progress-step-tracker` / the
+`sherpa-select-card` tick (outer `0 0 0 2px`). `sherpa-input-text` and
+`sherpa-pagination` route through a private `--_border-focus` because they also
+need an error state — acceptable, since the resolved value is the same.
 
 ### Events
 
