@@ -124,24 +124,27 @@ export async function init(root) {
      Each bind is readonly: a chart shows the data, it does not steer it. Only
      the header's toolbar does that. */
   const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
-  const unbinds = [];
-  const bindEl = (el, as) => {
-    if (el) unbinds.push(source.bind(el, { readonly: true, as }));
-  };
-  const show = (sel, as) => bindEl($(sel), as);
 
-  /* Binds made for a view's OWN content, torn down when that view leaves.
-     Kept apart from `unbinds` because those live as long as the page: this
-     view's grid is gone the moment another view replaces it, and a source
-     still pushing into a detached element is a leak that also costs a redraw
-     on every load. */
-  let contentUnbinds = [];
-  const dropContentBinds = () => {
-    for (const off of contentUnbinds) off();
-    contentUnbinds = [];
+  /* TWO LIFETIMES, two AbortControllers — the platform's own teardown token,
+     which is why there is no list of unbind functions here to forget.
+
+     `page` lasts as long as this view is mounted. `content` is shorter: a
+     view's own elements are gone the moment another view replaces them, and a
+     source still pushing into a detached element is a leak that also costs a
+     redraw on every load. */
+  const page = new AbortController();
+  let content = new AbortController();
+
+  const show = (sel, as) => {
+    const el = $(sel);
+    if (el) source.bind(el, { readonly: true, as, signal: page.signal });
   };
   const bindContent = (el, as) => {
-    if (el) contentUnbinds.push(source.bind(el, { readonly: true, as }));
+    if (el) source.bind(el, { readonly: true, as, signal: content.signal });
+  };
+  const dropContentBinds = () => {
+    content.abort();
+    content = new AbortController();
   };
 
   /* A chart and its legend take the SAME ARRAY — a legend row IS a chart datum
@@ -246,8 +249,9 @@ export async function init(root) {
     return bands.map((label, i) => ({ label, value: counts[i] }));
   };
 
-  unbinds.push(onViewPicked(header, () => views, { source, elements: { header } }, {
+  onViewPicked(header, () => views, { source, elements: { header } }, {
     into: contentRegion,
+    signal: page.signal,
     after: ({ rendered }) => {
       /* A view that brings NO content leaves the page's own charts in place —
          and their binds with them. Only tear down when something replaced them. */
@@ -274,7 +278,7 @@ export async function init(root) {
         rows: rows.slice(0, 50),
       }));
     },
-  }));
+  });
 
   /* SAVE THIS VIEW. The button was wired to console.log — a control that
      promises something and does nothing.
@@ -324,6 +328,12 @@ export async function init(root) {
   /* The router calls whatever init() returns when it swaps away. Without this
      the source keeps pushing into eight components that have left the DOM. */
   return () => {
-    for (const off of unbinds) off();
+    // ONE ABORT, everything: every bind, and the view-picker's listener. The
+    // old shape was a list of unbind functions, and a second list appeared the
+    // moment a view could build its own content — the teardown dropped only the
+    // first, so leaving the page left the source pushing into a detached grid.
+    // A list is a thing to forget; a signal is not.
+    page.abort();
+    content.abort();
   };
 }

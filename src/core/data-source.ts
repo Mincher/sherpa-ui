@@ -67,6 +67,27 @@ export interface DataSourceOptions {
 /** What a component may do with the source it is bound to. */
 export interface BindOptions {
   /**
+   * Unbind when this signal aborts — the PLATFORM'S OWN teardown token.
+   *
+   * `addEventListener` already takes one, so a caller with several bindings
+   * has one thing to abort rather than a list of functions to remember:
+   *
+   *   const ac = new AbortController();
+   *   source.bind(chart, { readonly: true, signal: ac.signal });
+   *   source.bind(grid,  { signal: ac.signal });
+   *   …
+   *   ac.abort();   // both gone
+   *
+   * A list of unbind functions is a list someone forgets. That is not
+   * hypothetical: a second list appeared on the dashboard when a view began
+   * building its own content, and the teardown dropped only the first — so
+   * leaving the page left the source pushing rows into a detached grid.
+   *
+   * An ALREADY-ABORTED signal binds nothing, which is what a caller who
+   * cancelled before this ran should get.
+   */
+  signal?: AbortSignal;
+  /**
    * Read the data but never steer it — the component's events are ignored.
    *
    * The dashboard case: a chart beside a steering grid should re-draw when the
@@ -556,6 +577,9 @@ export class DataSource extends EventTarget {
    */
   bind(el: Populatable, options: BindOptions = {}): () => void {
     if (this.#bound.has(el)) return () => this.unbind(el);
+    // Already cancelled: bind nothing, and hand back a no-op rather than a
+    // function that would unbind something this call never did.
+    if (options.signal?.aborted) return () => {};
 
     const readonlyBind = options.readonly ?? false;
     const listeners: Array<[string, EventListener]> = [];
@@ -583,6 +607,11 @@ export class DataSource extends EventTarget {
       off,
       ...(options.as ? { as: options.as } : {}),
     });
+
+    // The platform removes the listeners; this drops the binding itself, which
+    // is what stops the source pushing rows. `once` so an abort cannot leave a
+    // listener on the signal for an element that is already gone.
+    options.signal?.addEventListener('abort', () => this.unbind(el), { once: true });
 
     // Populate straight away with whatever is already loaded, so a component
     // bound late is not blank until the next change.

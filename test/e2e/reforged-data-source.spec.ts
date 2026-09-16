@@ -767,3 +767,59 @@ test('source: a view state survives a page reload, per TAB', async ({ page }) =>
 
   expect(after.cleared).toBe(true);
 });
+
+/**
+ * `signal` — the PLATFORM'S teardown token, not a list of our own.
+ *
+ * `addEventListener` already takes an AbortSignal, so a caller with several
+ * bindings should have one thing to abort rather than a list of unbind
+ * functions to remember.
+ *
+ * A list is a thing to forget, and that is not hypothetical: a second list
+ * appeared on the dashboard when a view began building its own content, and
+ * the teardown dropped only the first — so leaving the page left the source
+ * pushing rows into a detached grid.
+ */
+test('one AbortController tears down every binding it was given', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const source = new DataSource({
+      store: new ArrayStore([{ id: 1, n: 'a' }, { id: 2, n: 'b' }], { key: 'id' }),
+    });
+
+    const make = (id: string) => {
+      const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+        rendered?: Promise<void>;
+      };
+      el.id = id;
+      document.getElementById('root')!.appendChild(el);
+      return el;
+    };
+    document.getElementById('root')!.replaceChildren();
+    const a = make('a');
+    const b = make('b');
+    const kept = make('kept');
+
+    const ac = new AbortController();
+    source.bind(a, { readonly: true, signal: ac.signal });
+    source.bind(b, { readonly: true, signal: ac.signal });
+    source.bind(kept, { readonly: true });          // no signal — survives
+    await source.load();
+    const before = source.boundElements.length;
+
+    ac.abort();
+    const after = source.boundElements.map((e) => (e as HTMLElement).id);
+
+    // An ALREADY-ABORTED signal binds nothing — a caller who cancelled before
+    // this ran should not end up with a live binding.
+    const late = make('late');
+    source.bind(late, { readonly: true, signal: ac.signal });
+
+    return { before, after, afterLate: source.boundElements.map((e) => (e as HTMLElement).id) };
+  });
+
+  expect(r.before).toBe(3);
+  // Both signalled bindings gone; the one bound without a signal untouched.
+  expect(r.after).toEqual(['kept']);
+  expect(r.afterLate).toEqual(['kept']);
+});

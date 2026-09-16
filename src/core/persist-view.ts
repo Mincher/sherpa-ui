@@ -418,6 +418,13 @@ export function onViewPicked(
      * wants to route or animate the swap itself.
      */
     into?: HTMLElement | null;
+    /**
+     * Stop listening when this aborts — the same platform token `bind()` takes.
+     *
+     * `addEventListener` honours it natively, so one controller can tear down
+     * every binding and every listener a view made.
+     */
+    signal?: AbortSignal;
   } = {},
 ): () => void {
   if (!host) return () => {};
@@ -496,7 +503,12 @@ export function onViewPicked(
     }
   };
 
-  host.addEventListener('quick-filter-change', listener);
+  // The signal goes straight to the platform, which is the whole point of
+  // reusing it rather than inventing a second way to say "stop".
+  host.addEventListener(
+    'quick-filter-change', listener,
+    options.signal ? { signal: options.signal } : undefined,
+  );
   return () => host.removeEventListener('quick-filter-change', listener);
 }
 
