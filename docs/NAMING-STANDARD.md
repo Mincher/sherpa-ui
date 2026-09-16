@@ -97,8 +97,12 @@ different answers, which is why it was not one rename: 8 components moved to
 attribute, and `sherpa-transfer-list`'s four were inert attributes on child
 buttons that had already moved to `data-look`.
 
-**Still owed:** `data-title` → `data-heading` (2 files), and the rest of the
-RENAME rows below.
+**`data-title` is DONE (2026-09-16)** — `sherpa-overlay-panel` renamed, which
+also deleted the translation step it used to run on the way to its header.
+`sherpa-app-header` deliberately keeps `data-title` as a `fallbackAttr` alias:
+that is the sanctioned legacy mechanism, not drift.
+
+**Still owed:** the remaining RENAME rows below.
 
 Legend: **ALIGNED** (code = Figma), **RENAME** (concept ok, name differs), **MISSING** (Figma prop not in code), **EXTRA** (code-only, no Figma), **NATIVE-OK** (correctly native / correctly out-of-Figma-scope). Tier: **SA**=standalone, **SUB**=sub-component. Native/PE columns folded into the notes above (§1.10); the `PE-drift` flag is called out per row where relevant.
 
