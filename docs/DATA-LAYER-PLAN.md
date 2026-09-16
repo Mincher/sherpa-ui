@@ -3017,6 +3017,30 @@ unplaced, because this function knows what a view wants, not where a page keeps
 it. Placement is `replaceChildren` — a view that leaves its predecessor's charts
 on screen is two views at once.
 
+**Proven on a real screen 2026-09-16, which found a bug the toy test could not.**
+The dashboard's "Capacity planning" now builds a table of the fullest devices
+and a storage histogram instead of the eight charts every other view shares.
+
+**A MIXED set is the real case** — most views share the page's content, one or
+two bring their own — and the first version only handled the all-or-nothing
+case. The first view that brought content **kept the screen for good**: picking
+any other view moved the data while capacity's grid stayed on display, which is
+exactly the lie view definitions exist to prevent. Every view in the toy test
+brought content, so nothing caught it.
+
+`onViewPicked` now remembers the content region's original children on the FIRST
+swap, and a view with no content of its own hands them back. **Re-attached, never
+rebuilt** — they are the same elements the page bound at init, so every bind
+still points at them. Verified live: after returning from capacity, picking
+"Critical only" still redraws the bar chart (403 → 135 → 403).
+
+**Keep the two sets of binds apart.** A view's own elements are gone the moment
+another view replaces them, and a source still pushing into a detached element
+is a leak that also costs a redraw on every load.
+
+> The lesson is the general one: a capability tested only with toy components is
+> tested only in its easy case. The real screen is where the mixed case lives.
+
 ### D8 ✅ — saving a view the READER made
 
 **DONE 2026-09-16.** Both example pages had a Save button wired to
