@@ -62,8 +62,23 @@ export interface ElementNode {
 }
 
 /** An element that can be populated (all reforged components qualify). */
-interface Populatable extends HTMLElement {
-  populate?: (data: unknown) => void;
+/**
+ * An element that takes a data payload — the one shape, declared once.
+ *
+ * Every `SherpaElement` is one; the optional members are what lets a plain
+ * `HTMLElement` be passed where one is expected, and be skipped rather than
+ * crash.
+ *
+ * `rendered` MATTERS AND WAS MISSING HERE. This file declared the interface
+ * without it while data-source, render-view and app-header each declared their
+ * own copy WITH it — so this was the odd one out, and the reason
+ * `renderElement` populated synchronously while everything else waited for the
+ * element to exist. Four declarations of one idea, and the shortest one was
+ * silently a different contract.
+ */
+export interface Populatable extends HTMLElement {
+  populate?: (data: unknown) => void | Promise<void>;
+  rendered?: Promise<void>;
 }
 
 /** Apply one attribute, honouring the boolean/omit rules. */
@@ -176,9 +191,13 @@ export function renderElement(node: ElementNode): HTMLElement {
   // first render itself, so a grid has no columns to filter until after it
   // resolves. Applying synchronously here set a column filter on a grid with no
   // columns, which silently did nothing.
+  //
+  // `el.rendered` reads straight off Populatable now. It used to need an inline
+  // `as { rendered?: … }` cast, because THIS file's copy of the interface was
+  // the one missing the member.
   if (node.state) {
     const state = node.state;
-    void Promise.resolve((el as { rendered?: Promise<void> }).rendered).then(() => {
+    void Promise.resolve(el.rendered).then(() => {
       applyState(el, state);
     });
   }

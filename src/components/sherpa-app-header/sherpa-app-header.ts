@@ -39,6 +39,7 @@
  * @fires breadcrumb-click   — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import type { Populatable } from '../../core/render-element.js';
 // Every action is a composed sherpa-button, exactly as Figma instances them, so
 // it must be defined. The header used to hand-roll eight plain <button> elements
 // with ~50 lines of CSS re-implementing the component — which is precisely how
@@ -53,7 +54,6 @@ interface AppHeaderConfig {
   filters?: FilterChip[];
 }
 
-interface Populatable extends HTMLElement { populate?: (d: unknown) => void; rendered?: Promise<void> }
 
 /** Every plain action button: its class → the event it fires.
  *

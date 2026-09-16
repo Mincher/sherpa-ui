@@ -33,6 +33,7 @@
  * arrow and the toolbar's Sort chip become two views of one value.
  */
 import { filterFields } from './store.js';
+import type { Populatable } from './render-element.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */
@@ -145,10 +146,6 @@ export interface BindOptions {
 }
 
 /** A populatable element — every Sherpa data component answers this. */
-interface Populatable extends HTMLElement {
-  populate?: (data: unknown) => void;
-  rendered?: Promise<void>;
-}
 
 /** What `change` carries, for a listener that wants the result without asking. */
 export interface DataChangeDetail extends LoadResult {

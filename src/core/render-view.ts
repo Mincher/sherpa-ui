@@ -23,7 +23,7 @@
  * THROUGH state: an element `writes` to a `$state` pointer on an event; consumers
  * whose data/props bind that pointer re-populate. No direct element references.
  */
-import { renderElement, type ElementNode } from './render-element.js';
+import { renderElement, type ElementNode, type Populatable } from './render-element.js';
 
 /** A `{ "$state": "/pointer" }` binding into the view state blob. */
 interface StateRef {
@@ -176,10 +176,6 @@ export class StateStore {
 }
 
 /** A populatable reforged element. */
-interface Populatable extends HTMLElement {
-  populate?: (data: unknown) => void;
-  rendered?: Promise<void>;
-}
 
 /** Run `fn` once the element has rendered. */
 function whenRendered(el: Populatable, fn: () => void): void {
