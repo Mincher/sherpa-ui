@@ -1728,7 +1728,7 @@ Part 1 first — Part 2 feeds components through the door Part 1 cleans.
 | 12 | **V3 + V4** `formAssociated` + `data-rules` | the form half; independent of 9–11 |
 | 13 | **V6** ARIA wiring | `aria-invalid` + `aria-describedby` (NOT `role="alert"` per field) |
 | **14** ✅ | Rewire `records.js` | **DONE** — one source steering grid + toolbar + pager |
-| 14a | Rewire `dashboard.js` | proves ONE filter fanning out to 11 visualisations |
+| **14a** ✅ | Rewire `dashboard.js` | **DONE 2026-09-16.** ONE source, EIGHT bound components. Needed the pre-aggregated arrays replaced with RECORDS first: the totals WERE the data, so no filter could touch them. Every chart is now a different summary of the same rows, computed by its own `as` adapter |
 | 15 | Move grid sort/filter onto the source | **RAISED 2026-09-16.** The grid still holds `#sortRows` + `#filteredRows` beside a source that could own them, so it sorts in two places depending on whether it is bound. That is the duplication this plan exists to remove — see "What shrinks — and what has NOT yet" |
 
 Validation is interleaved, not appended: V1–V2 must precede the store work that uses

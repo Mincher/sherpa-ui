@@ -7,7 +7,11 @@
  * own content + wires a couple of demo listeners. Behaviour is identical to
  * the old standalone dashboard.html.
  */
+import { ArrayStore, DataSource } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
+import {
+  alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
+} from './dashboard-data.js';
 
 export async function init(root) {
   // ── Header config: breadcrumb trail + a couple of quick filters. ──────
@@ -46,10 +50,10 @@ export async function init(root) {
    * carries the LABELS a reader picks from; this is what picking one MEANS.
    */
   const savedViews = {
-    fleet:    { label: 'Fleet overview',   sites: 'all',      window: '24h' },
-    critical: { label: 'Critical only',    sites: 'critical', window: '1h' },
-    emea:     { label: 'EMEA operations',  sites: 'all',      window: '24h', region: 'emea' },
-    capacity: { label: 'Capacity planning', sites: 'all',     window: '7d' },
+    fleet:    { label: 'Fleet overview',    filter: undefined },
+    critical: { label: 'Critical only',     filter: ['severity', 'eq', 'critical'] },
+    emea:     { label: 'EMEA operations',   filter: ['region', 'eq', 'EMEA'] },
+    capacity: { label: 'Capacity planning', filter: ['storage', 'gt', 70] },
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -72,39 +76,8 @@ export async function init(root) {
     },
   };
 
-  // ── Bar chart: 8 alert categories (raw data-viz colours via colorIndex). ──
-  const barData = [
-    { label: 'Disk',      value: 42, colorIndex: 1 },
-    { label: 'CPU',       value: 31, colorIndex: 2 },
-    { label: 'Memory',    value: 28, colorIndex: 3 },
-    { label: 'Network',   value: 22, colorIndex: 4 },
-    { label: 'Security',  value: 19, colorIndex: 5 },
-    { label: 'Services',  value: 14, colorIndex: 6 },
-    { label: 'Backup',    value: 11, colorIndex: 7 },
-    { label: 'Antivirus', value: 8,  colorIndex: 8 },
-  ];
 
-  // ── Donut: 5 OS slices. ─────────────────────────────────────────────
-  const donutData = [
-    { label: 'Windows 11', value: 612, colorIndex: 1 },
-    { label: 'Windows 10', value: 388, colorIndex: 2 },
-    { label: 'macOS',      value: 174, colorIndex: 3 },
-    { label: 'Linux',      value: 84,  colorIndex: 4 },
-    { label: 'Other',      value: 26,  colorIndex: 5 },
-  ];
 
-  // ── Line chart: 2 series over 8 months. ─────────────────────────────
-  const lineData = {
-    labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-    series: [
-      { name: 'Sessions',  values: [820, 932, 901, 934, 1290, 1330, 1220, 1410] },
-      { name: 'Incidents', values: [62, 55, 71, 48, 90, 76, 58, 44] },
-    ],
-  };
-  const lineLegend = [
-    { label: 'Sessions',  colorIndex: 1 },
-    { label: 'Incidents', colorIndex: 2 },
-  ];
 
   // ── Summary key/value stats. ────────────────────────────────────────
   const summary = [
@@ -144,22 +117,41 @@ export async function init(root) {
     root.querySelector(`#${id}`)?.populate(data);
   }
 
-  // Charts.
-  $('#bar')?.populate(barData);
-  $('#donut')?.populate(donutData);
+  /* ── ONE SOURCE, EIGHT BOUND COMPONENTS ─────────────────────────────
 
-  // Every chart gets a legend: a colour is only readable if the reader can name
-  // it. The SAME ARRAY goes to both — a chart and its legend show the same data,
-  // so a legend row IS a chart datum.
-  //
-  // These two lines used to each carry a `.map()` copying a shape to ITSELF,
-  // field for field, purely to cross a type boundary between BarDatum,
-  // DonutSlice and LegendItem — three names for one shape. Sharing the array
-  // also lets the source's skip-if-unchanged guard hold, since it compares by
-  // identity and a rebuilt array never matches.
-  $('#donut-legend')?.populate(donutData);
-  $('#bar-legend')?.populate(barData);
-  $('#gauge')?.populate(70);
+     The capability this whole layer exists for: a filter set ONCE fans out to
+     every visualisation on the page.
+
+     It used to be eight hand-written `populate()` calls over pre-aggregated
+     arrays — eight bars, five slices, a gauge reading 70 — none of which any
+     filter could touch, because the totals WERE the data. Now the records are
+     the data and every chart is a different SUMMARY of them, computed by its
+     own `as` adapter.
+
+     Each bind is readonly: a chart shows the data, it does not steer it. Only
+     the header's toolbar does that. */
+  const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
+  const unbinds = [];
+  const show = (sel, as) => {
+    const el = $(sel);
+    if (el) unbinds.push(source.bind(el, { readonly: true, as }));
+  };
+
+  /* A chart and its legend take the SAME ARRAY — a legend row IS a chart datum
+     (see core/chart-datum.ts), so there is nothing to reshape between them.
+     Sharing it also lets the source's skip-if-unchanged guard hold, since it
+     compares by identity and a rebuilt array never matches. */
+  const byCategory = (rows) => countBy(rows, 'category', CATEGORY_ORDER);
+  const byOs = (rows) => countBy(rows, 'os', OS_ORDER);
+
+  show('#bar', byCategory);
+  show('#bar-legend', byCategory);
+  show('#donut', byOs);
+  show('#donut-legend', byOs);
+
+  // The gauge reads one NUMBER — the mean storage across whatever survived the
+  // filter. An aggregate is still just an adapter.
+  show('#gauge', (rows) => meanOf(rows, 'storage'));
   // …and the gauge's names its THRESHOLD ZONES, which are what its bands mean.
   // The colour indices are deliberately absent: a zone's colour is a STATUS
   // (success / warning / critical), not a categorical series hue.
@@ -168,8 +160,20 @@ export async function init(root) {
     { label: 'Warning (60–85%)', status: 'warning' },
     { label: 'Critical (85–100%)', status: 'critical' },
   ]);
-  $('#line')?.populate(lineData);
-  $('#line-legend')?.populate(lineLegend);
+  /* TWO SERIES from the SAME rows, split on severity — the case that shows an
+     adapter doing real work rather than passing a payload through. Both series
+     re-count when the filter changes, so the line moves with everything else. */
+  show('#line', (rows) => ({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'],
+    series: [
+      seriesByDay(rows.filter((r) => r.severity !== 'critical'), 'Sessions', 1),
+      seriesByDay(rows.filter((r) => r.severity === 'critical'), 'Incidents', 2),
+    ],
+  }));
+  show('#line-legend', () => [
+    { label: 'Sessions', colorIndex: 1 },
+    { label: 'Incidents', colorIndex: 2 },
+  ]);
   $('#kv')?.populate(summary);
 
   // ── Legends toggle their chart ──────────────────────────────────────
@@ -217,16 +221,29 @@ export async function init(root) {
     if (!picked) return;
     const view = savedViews[picked];
     if (!view) return;
-    // The chip labels ITSELF now: the field name stays "View" and the picked
-    // view reads in the caret button. This used to overwrite data-label with the
-    // view's name, which was right under the old design — where the chip carried
-    // the value — but now fights the chip and left the bar reading
-    // "EMEA operations | EMEA operations" the moment anyone changed view.
-    console.log('view-change', picked, view);
+
+    /* ONE WRITE, EIGHT COMPONENTS. Picking a view narrows the records, and
+       every chart re-summarises what is left: the bars, the donut, the gauge's
+       mean, both line series and the two legends.
+
+       The chip labels ITSELF — the field name stays "View" and the picked view
+       reads in the caret button. This used to overwrite data-label with the
+       view's name, which was right under the old design where the chip carried
+       the value, but now fights the chip and left the bar reading
+       "EMEA operations | EMEA operations" the moment anyone changed view. */
+    source.contribute('view', view.filter);
   });
 
   // The cluster's own actions, for the example's sake.
   header?.addEventListener('view-save', () => console.log('view-save'));
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
   header?.addEventListener('data-refresh', () => console.log('data-refresh'));
+
+  await source.load();
+
+  /* The router calls whatever init() returns when it swaps away. Without this
+     the source keeps pushing into eight components that have left the DOM. */
+  return () => {
+    for (const off of unbinds) off();
+  };
 }
