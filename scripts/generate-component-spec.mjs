@@ -724,6 +724,23 @@ function generateSpec(name) {
   // Union the Public-API comment's props with any props the prior spec carried —
   // some props (e.g. grid-cell data-type, nav-item data-description) live in the
   // spec but not in the HTML comment; carrying them keeps the spec stable.
+  /* …but a carried prop must still EXIST somewhere in the source. The union
+     alone means a RENAMED attribute lingers for ever: `data-variant` became
+     `data-type` in three charts and the old name stayed in every spec, because
+     nothing ever drops a name the prior spec knew. Same shape as the phantom
+     events — a spec that can only grow.
+
+     "Mentioned anywhere" is deliberately loose: a prop can be read in the TS,
+     selected in the CSS, or written in the HTML, and any of those is proof it
+     is real. What it cannot be is present in NONE of them. */
+  const sourceText = `${ts ?? ''}\n${css ?? ''}\n${html ?? ''}`;
+  const carriedButGone = Object.keys(priorProps).filter(
+    (nm) => !(nm in apiProps) && !sourceText.includes(nm),
+  );
+  for (const nm of carriedButGone) {
+    delete priorProps[nm];
+    notes.push(`dropped stale prop "${nm}" — the prior spec carried it, the source does not mention it`);
+  }
   const propNames = new Set([...Object.keys(apiProps), ...Object.keys(priorProps)]);
   const props = [];
   for (const nm of propNames) {

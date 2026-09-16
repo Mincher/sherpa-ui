@@ -69,7 +69,7 @@ props:
     kind: content
     description: centre small text
   - $type: prop
-    name: data-variant
+    name: data-type
     type: enum
     kind: content
     values:
@@ -79,7 +79,7 @@ props:
 states:
   - $type: state
     name: pie
-    selector: ":host([data-variant=\"pie\"])"
+    selector: ":host([data-type=\"pie\"])"
   - $type: state
     name: not-has-legend
     selector: ":host(:not([data-has-legend]))"

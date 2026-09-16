@@ -75,29 +75,11 @@ props:
     kind: style
     description: — label text above the slider (shown when set)
   - $type: prop
-    name: data-max
-    type: string
-    kind: style
-    default: "100"
-    description: — maximum value
-  - $type: prop
-    name: data-min
-    type: string
-    kind: style
-    default: "0"
-    description: — minimum value
-  - $type: prop
     name: data-show-value
     type: boolean
     kind: style
     default: false
     description: — show the editable value input beside the track
-  - $type: prop
-    name: data-step
-    type: string
-    kind: style
-    default: "1"
-    description: — step increment
   - $type: prop
     name: data-type
     type: string

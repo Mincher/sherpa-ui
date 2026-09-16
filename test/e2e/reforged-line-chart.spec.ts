@@ -58,7 +58,7 @@ test('area variant reveals the fill; line variant hides it', async ({ page }) =>
         rendered?: Promise<void>;
         populate?: (d: unknown) => void;
       };
-      if (variant) el.setAttribute('data-variant', variant);
+      if (variant) el.setAttribute('data-type', variant);
       document.getElementById('root')!.appendChild(el);
       await el.rendered;
       el.populate!({ labels: ['a', 'b'], series: [[10, 20]] });

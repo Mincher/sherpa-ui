@@ -45,12 +45,6 @@ anatomy:
                 slot: ""
 props:
   - $type: prop
-    name: data-nav-collapsed
-    type: boolean
-    kind: style
-    default: false
-    description: collapse the nav rail to icon width
-  - $type: prop
     name: data-nav-state
     type: enum
     kind: content

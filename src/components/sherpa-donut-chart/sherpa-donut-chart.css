@@ -195,7 +195,7 @@
   text-align: center;
   pointer-events: none;
 }
-:host([data-variant="pie"]) .centre { display: none; }
+:host([data-type="pie"]) .centre { display: none; }
 
 /* Centre: value content/size/h1 24 on 32 semibold (−0.2 tracking); sub 10/16
    regular. BOTH MONOSPACED — the centre of a donut is its total, a number, and it

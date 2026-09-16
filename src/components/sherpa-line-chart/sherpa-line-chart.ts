@@ -35,7 +35,7 @@ export class SherpaLineChart extends SherpaElement {
     'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },
   } as const;
 
-  static override observed = ['data-variant', 'data-min', 'data-max', 'data-ticks'];
+  static override observed = ['data-type', 'data-min', 'data-max', 'data-ticks'];
 
   #labels: string[] = [];
   #series: Series[] = [];

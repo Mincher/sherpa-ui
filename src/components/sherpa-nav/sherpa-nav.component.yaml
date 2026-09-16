@@ -134,12 +134,6 @@ props:
     kind: content
     description: id of the current item
   - $type: prop
-    name: data-collapsed
-    type: string
-    kind: style
-    default: false
-    description: — icon-only rail (labels, search, section labels hidden)
-  - $type: prop
     name: data-nav-state
     type: enum
     kind: content

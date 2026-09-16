@@ -4,7 +4,7 @@
   populate({ labels, series }) — one or more series of numbers over shared x
   labels. The JS computes SVG coordinates and writes the polyline points + area
   path into an inline <svg> (viewBox 0 0 100 100, preserveAspectRatio none, so it
-  stretches). Colour is categorical per series. data-variant=area fills under the
+  stretches). Colour is categorical per series. data-type=area fills under the
   line.
 
   The Y AXIS matches the Figma "Chart Axis" (Orientation=vertical): value labels
@@ -14,7 +14,7 @@
 
   Public API:
     data-label       chart title
-    data-variant     line (default) | area
+    data-type     line (default) | area
     data-min / data-max   y-scale bounds (else derived)
     data-axis-label  y-axis caption (shown when set)
     data-x-axis-label  x-axis caption (shown when set)

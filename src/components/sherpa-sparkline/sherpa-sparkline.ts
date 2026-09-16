@@ -7,7 +7,7 @@
  *
  * @element sherpa-sparkline
  * @attr {string} data-values  — comma-separated or JSON array (e.g. "10,25,15,30")
- * @attr {enum}   data-variant — line (default) | bar
+ * @attr {enum}   data-type — line (default) | bar
  *
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */

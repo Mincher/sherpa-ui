@@ -115,16 +115,6 @@ props:
     kind: style
     description: icon
   - $type: prop
-    name: data-variant
-    type: enum
-    kind: style
-    values:
-      - primary
-      - secondary
-      - tertiary
-      - tertiary-on-color
-    description: primary | secondary | tertiary | tertiary-on-color
-  - $type: prop
     name: disabled
     type: boolean
     native: true

@@ -104,12 +104,6 @@ anatomy:
         - el: option
 props:
   - $type: prop
-    name: data-current-page
-    type: string
-    kind: style
-    default: "1"
-    description: the active 1-based page
-  - $type: prop
     name: data-page
     type: string
     kind: content

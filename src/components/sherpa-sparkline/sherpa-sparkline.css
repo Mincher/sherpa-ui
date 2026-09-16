@@ -68,7 +68,7 @@
   position: relative;
 }
 
-:host([data-variant="bar"]) .chart {
+:host([data-type="bar"]) .chart {
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
@@ -135,11 +135,11 @@
 }
 
 /* ── Bar variant: flat-topped columns (both corners share the end value) ─ */
-:host([data-variant="bar"]) .shape { --_v-start: var(--_v-end); }
-:host([data-variant="bar"]) .shape::before {
+:host([data-type="bar"]) .shape { --_v-start: var(--_v-end); }
+:host([data-type="bar"]) .shape::before {
   background: currentColor;
 }
-:host([data-variant="bar"]) .shape::after { display: none; }
+:host([data-type="bar"]) .shape::after { display: none; }
 
 /* ── Points: dots at each vertex, revealed on hover ────────────────── */
 .point {
@@ -157,7 +157,7 @@
   &[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 }
 
-:host([data-variant="bar"]) .point { display: none; }
+:host([data-type="bar"]) .point { display: none; }
 
 /* ── Data-presence collapse — CSS owns visibility from the host's data-len ──
  * JS reflects the value count on the host as data-len; CSS reveals the live
@@ -237,7 +237,7 @@
 }
 
 /* Bar variant never shows points, regardless of length. */
-:host([data-variant="bar"]) .point { display: none; }
+:host([data-type="bar"]) .point { display: none; }
 
 /* Hover reveals the live points. */
 :host(:hover) .point { opacity: 1; }
@@ -382,4 +382,4 @@
   display: block;
 }
 
-:host([data-variant="bar"]) .hotspots { display: none; }
+:host([data-type="bar"]) .hotspots { display: none; }

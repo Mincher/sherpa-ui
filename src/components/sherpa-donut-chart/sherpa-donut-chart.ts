@@ -22,7 +22,7 @@
  * of a whole, so hiding one must not leave a gap where it was.
  *
  * @element sherpa-donut-chart
- * @attr {enum}   data-variant   donut (default) | pie
+ * @attr {enum}   data-type   donut (default) | pie
  * @attr {string} data-label     centre big text
  * @attr {string} data-sublabel  centre small text
  *
@@ -58,7 +58,7 @@ const OUTLINE = 0.5;
 export class SherpaDonutChart extends SherpaElement {
   static override css = new URL('./sherpa-donut-chart.css', import.meta.url);
   static override html = new URL('./sherpa-donut-chart.html', import.meta.url);
-  static override observed = ['data-label', 'data-sublabel', 'data-variant'];
+  static override observed = ['data-label', 'data-sublabel', 'data-type'];
 
   #slices: DonutSlice[] = [];
   /** Slice indices the legend has switched off. */
@@ -72,7 +72,7 @@ export class SherpaDonutChart extends SherpaElement {
 
   override onChange(): void {
     this.#syncCentre();
-    // data-variant changes the ring's thickness, so the arcs must be re-measured.
+    // data-type changes the ring's thickness, so the arcs must be re-measured.
     if (this.#slices.length) this.#renderRing();
   }
 
@@ -122,7 +122,7 @@ export class SherpaDonutChart extends SherpaElement {
     // fills to the centre instead. These are the TRUE edges of the band; the path
     // is inset half an outline below so the stroke lands inside them, matching
     // Figma's strokeAlign INSIDE.
-    const pie = this.dataset['variant'] === 'pie';
+    const pie = this.dataset['type'] === 'pie';
     const outer = CENTRE - OUTLINE / 2;
     const inner = pie ? 0 : CENTRE * 0.7 + OUTLINE / 2;
 

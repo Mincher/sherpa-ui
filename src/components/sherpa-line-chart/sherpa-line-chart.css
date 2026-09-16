@@ -155,7 +155,7 @@
   opacity: 0.14;
   stroke: none;
 }
-:host(:not([data-variant="area"])) .area { display: none; }
+:host(:not([data-type="area"])) .area { display: none; }
 
 .x-axis {
   display: flex;

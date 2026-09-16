@@ -106,7 +106,7 @@ props:
     default: "4"
     description: number of y gridlines/values
   - $type: prop
-    name: data-variant
+    name: data-type
     type: enum
     kind: content
     values:
@@ -133,7 +133,7 @@ states:
     selector: ":host([data-x-axis-label])"
   - $type: state
     name: not-area
-    selector: ":host(:not([data-variant=\"area\"]))"
+    selector: ":host(:not([data-type=\"area\"]))"
   - $type: state
     name: focus-visible
     selector: .hotspot:focus-visible

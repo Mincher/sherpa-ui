@@ -29,20 +29,10 @@ anatomy:
         aria-hidden: "true"
 props:
   - $type: prop
-    name: data-active-id
-    type: string
-    kind: style
-    description: id of the currently active item
-  - $type: prop
     name: data-collapsed
     type: string
     kind: style
     description: present on a collapsed rail — hides the label, keeps the rule
-  - $type: prop
-    name: data-heading
-    type: string
-    kind: style
-    description: optional panel heading text
   - $type: prop
     name: data-label
     type: string

@@ -254,19 +254,19 @@ anatomy:
                 class: chart-tip-value
 props:
   - $type: prop
+    name: data-type
+    type: string
+    kind: style
+    description: — line  | bar (flat-topped columns)
+  - $type: prop
     name: data-values
     type: string
     kind: content
     description: — comma-separated or JSON array (e.g. "10,25,15,30")
-  - $type: prop
-    name: data-variant
-    type: string
-    kind: style
-    description: — line  | bar (flat-topped columns)
 states:
   - $type: state
     name: bar
-    selector: ":host([data-variant=\"bar\"])"
+    selector: ":host([data-type=\"bar\"])"
   - $type: state
     name: "2"
     selector: ":host([data-len=\"2\"])"

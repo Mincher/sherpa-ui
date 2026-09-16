@@ -93,15 +93,15 @@ test('unused segments and points collapse via CSS (data-len)', async ({ page }) 
   expect(r.livePointIndexes).toEqual([0, 1, 1, 2]);
 });
 
-test('data-variant="bar" renders and normalises the same value bridge', async ({ page }) => {
+test('data-type="bar" renders and normalises the same value bridge', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-sparkline') as SparkEl;
-    el.setAttribute('data-variant', 'bar');
+    el.setAttribute('data-type', 'bar');
     el.setAttribute('data-values', '1,4,2');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return {
-      variant: el.getAttribute('data-variant'),
+      variant: el.getAttribute('data-type'),
       v0: el.style.getPropertyValue('--_v0').trim(),
       min: el.style.getPropertyValue('--_min').trim(),
       range: el.style.getPropertyValue('--_range').trim(),

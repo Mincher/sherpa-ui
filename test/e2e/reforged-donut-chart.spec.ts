@@ -128,7 +128,7 @@ test('pie variant fills to the centre (no hole)', async ({ page }) => {
         rendered?: Promise<void>;
         populate?: (d: unknown) => void;
       };
-      if (variant) el.setAttribute('data-variant', variant);
+      if (variant) el.setAttribute('data-type', variant);
       document.getElementById('root')!.replaceChildren(el);
       await el.rendered;
       // Four slices, so the wedge measured below is a clean quarter. A single

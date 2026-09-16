@@ -189,12 +189,6 @@ props:
     kind: style
     description: show the back button
   - $type: prop
-    name: data-favorite
-    type: string
-    kind: style
-    default: false
-    description: — favourited state (the star toggle)
-  - $type: prop
     name: data-heading
     type: string
     kind: style
