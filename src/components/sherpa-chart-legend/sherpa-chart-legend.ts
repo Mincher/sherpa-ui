@@ -30,6 +30,7 @@
  * @fires legend-item-click — a legend entry is clicked. bubbles + composed. detail: { index: number, indices: number[], label: string, active: boolean }
  * @fires legend-breakdown-change — the "Other" breakdown was applied. bubbles + composed. detail: { active: number[], hidden: number[] }
  */
+import type { LegendDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 // The roll-up row composes a real button + a committing menu, so the legend must
@@ -47,20 +48,15 @@ import '../sherpa-menu/sherpa-menu.js';
  */
 const MAX_ITEMS = 6;
 
-export interface LegendItem {
-  label: string;
-  value?: string | number;
-  colorIndex?: number;
-  /**
-   * A STATUS swatch instead of a categorical one.
-   *
-   * A gauge's bands are thresholds, not a data series — their colour means
-   * "healthy / warning / critical", so the swatch must come from the status
-   * ramp rather than the next hue in the categorical wheel. Set this OR
-   * colorIndex, not both.
-   */
-  status?: 'success' | 'warning' | 'critical' | 'info' | 'urgent';
-}
+/**
+ * One legend row — an alias of the shared `LegendDatum`.
+ *
+ * A legend sits BESIDE a chart showing the same data, so a `ChartDatum` should
+ * pass straight into one. It does now: `LegendDatum` is `ChartDatum` with the
+ * two things only a legend has — a value it may PRINT rather than plot, and a
+ * status swatch. See chart-datum.ts.
+ */
+export type LegendItem = LegendDatum;
 
 /** @tier sub-component — renders inside charts; excluded from the public catalog. */
 export class SherpaChartLegend extends SherpaElement {

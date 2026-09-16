@@ -50,6 +50,8 @@ export function installTokens(): void {
 
 export { SherpaElement } from './core/sherpa-element.js';
 export { renderElement, applyState, type ElementNode } from './core/render-element.js';
+// ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
+export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
 export {
   renderView,
   StateStore,

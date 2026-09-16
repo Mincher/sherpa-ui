@@ -147,14 +147,18 @@ export async function init(root) {
   // Charts.
   $('#bar')?.populate(barData);
   $('#donut')?.populate(donutData);
-  $('#donut-legend')?.populate(
-    donutData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex })),
-  );
+
   // Every chart gets a legend: a colour is only readable if the reader can name
-  // it. The bar chart's legend names its categories…
-  $('#bar-legend')?.populate(
-    barData.map((d) => ({ label: d.label, value: d.value, colorIndex: d.colorIndex })),
-  );
+  // it. The SAME ARRAY goes to both — a chart and its legend show the same data,
+  // so a legend row IS a chart datum.
+  //
+  // These two lines used to each carry a `.map()` copying a shape to ITSELF,
+  // field for field, purely to cross a type boundary between BarDatum,
+  // DonutSlice and LegendItem — three names for one shape. Sharing the array
+  // also lets the source's skip-if-unchanged guard hold, since it compares by
+  // identity and a rebuilt array never matches.
+  $('#donut-legend')?.populate(donutData);
+  $('#bar-legend')?.populate(barData);
   $('#gauge')?.populate(70);
   // …and the gauge's names its THRESHOLD ZONES, which are what its bands mean.
   // The colour indices are deliberately absent: a zone's colour is a STATUS

@@ -107,6 +107,57 @@ test('charts: a hidden series can be restored, not just read', async ({ page }) 
   expect(r.barCleared).toEqual([]);
 });
 
+test('one chart datum: the SAME array feeds a chart and its legend', async ({ page }) => {
+  // BarDatum, DonutSlice and LegendItem were three names for the same three
+  // fields, so crossing between them cost a `.map()` that copied a shape to
+  // itself. Sharing one array also lets the source's skip-if-unchanged guard
+  // hold — it compares by IDENTITY, and a rebuilt array never matches.
+  const r = await page.evaluate(async () => {
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const data = [
+      { label: 'Disk', value: 42, colorIndex: 1 },
+      { label: 'CPU', value: 31, colorIndex: 2 },
+      { label: 'Memory', value: 28, colorIndex: 3 },
+    ];
+
+    const mk = async (tag: string) => {
+      const el = document.createElement(tag) as HTMLElement & {
+        rendered?: Promise<void>; populate(d: unknown): void;
+      };
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      return el;
+    };
+    document.getElementById('root')!.replaceChildren();
+
+    const bar = await mk('sherpa-barchart');
+    const donut = await mk('sherpa-donut-chart');
+    const legend = await mk('sherpa-chart-legend');
+
+    // THE SAME ARRAY — no adapter, no copy, no per-component shape.
+    bar.populate(data);
+    donut.populate(data);
+    legend.populate(data);
+    await settle();
+
+    const labels = (el: HTMLElement) =>
+      Array.from(el.shadowRoot!.querySelectorAll('.legend-label, .label'))
+        .map((x) => x.textContent?.trim())
+        .filter(Boolean);
+
+    return {
+      bars: bar.shadowRoot!.querySelectorAll('.bar').length,
+      slices: donut.shadowRoot!.querySelectorAll('path, .slice').length,
+      legendLabels: labels(legend).slice(0, 3),
+    };
+  });
+
+  expect(r.bars).toBe(3);
+  expect(r.slices).toBeGreaterThan(0);
+  // The legend names the same categories, with nothing reshaping them.
+  expect(r.legendLabels).toEqual(['Disk', 'CPU', 'Memory']);
+});
+
 test('every stateful component exposes BOTH halves of its state', async ({ page }) => {
   // The sweep itself, as a standing guard. A getter with no setter is only a
   // problem when it holds a CHOICE — derived data (an unread count, rendered

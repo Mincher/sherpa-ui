@@ -11,17 +11,22 @@
  *
  * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
+import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
 
-export interface BarDatum {
-  label: string;
-  value: number;
-  colorIndex?: number;
-}
+/**
+ * One bar.
+ *
+ * An ALIAS of the shared `ChartDatum`, not a copy: a bar, a donut slice and a
+ * legend row are the same three fields, and three names for one shape meant
+ * crossing between them cost a `.map()` that rebuilt each object identically.
+ * The name stays because it reads better at a call site.
+ */
+export type BarDatum = ChartDatum;
 
 export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);

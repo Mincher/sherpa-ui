@@ -30,14 +30,12 @@
  *
  * @fires slice-click — a slice is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
  */
+import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, radialArea, ringSegmentPath, seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 
-export interface DonutSlice {
-  label: string;
-  value: number;
-  colorIndex?: number;
-}
+/** One slice — an alias of the shared `ChartDatum`. See chart-datum.ts. */
+export type DonutSlice = ChartDatum;
 
 /** The viewBox is 100×100, so every number below is a percentage of the box. */
 const BOX = 100;
