@@ -63,6 +63,36 @@ export class SherpaTransferList extends SherpaElement {
     return this.#items.filter((i) => i.selected).map((i) => i.value);
   }
 
+  /**
+   * Move exactly these values to the selected pane — a saved view, a preset, a
+   * deep link, an agent.
+   *
+   * It was a GETTER ONLY, which made a reader's choices readable and not
+   * restorable: a value you can read and not write is half an API, and a saved
+   * view could record what was transferred and never put it back.
+   *
+   * REPLACES rather than adds: a restore means "this is what is selected", not
+   * "also select these". `selected = []` moves everything back to the source
+   * pane, which is how a reset is expressed.
+   *
+   * Values matching no item are IGNORED rather than throwing — a saved view
+   * outlives the list it was made from, and one removed option must not stop
+   * the rest being restored.
+   */
+  set selected(values: readonly string[]) {
+    const wanted = new Set(values);
+    for (const item of this.#items) item.selected = wanted.has(item.value);
+    // The STAGED set is a half-finished gesture — which rows are ticked ready
+    // to move. A restore replaces the outcome, so anything mid-gesture is no
+    // longer about anything.
+    this.#staged.clear();
+    this.#render();
+  }
+
+  /**
+   * @deprecated Read `selected` instead — this is the same value under a second
+   * name, and two names for one thing is how they drift.
+   */
   getSelectedValues(): string[] {
     return this.selected;
   }

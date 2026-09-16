@@ -63,7 +63,11 @@
     "no-restricted-syntax": [
       "error",
       {
-        "selector": "AssignmentExpression > MemberExpression[property.name='hidden']",
+        // `property.type='Identifier'` so a PRIVATE FIELD named #hidden is not
+        // caught. A chart holding `#hidden = new Set<number>()` is tracking
+        // which series a reader hid — its own state, nothing to do with an
+        // element's `.hidden` property, which is what this rule exists for.
+        "selector": "AssignmentExpression > MemberExpression[property.type='Identifier'][property.name='hidden']",
         "message": "CSS owns visibility — never set `.hidden` on shadow internals. Toggle a data-* attribute on the host and select it in CSS (`:host([data-*]) .el { display: … }`)."
       },
       {

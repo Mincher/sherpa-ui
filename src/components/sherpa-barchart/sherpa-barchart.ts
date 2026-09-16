@@ -72,6 +72,26 @@ export class SherpaBarchart extends SherpaElement {
     return [...this.#hidden].sort((a, b) => a - b);
   }
 
+  /**
+   * Hide exactly these bars, by index — a saved view, a preset, an agent.
+   *
+   * Clicking a legend swatch to hide a series is real VIEW STATE: it is what
+   * this reader wants to look at, and it belongs in a saved view beside the
+   * filter and the sort. It was a getter only, so that choice could be read and
+   * never put back — half an API.
+   *
+   * REPLACES rather than adds, like every other restore here: a saved view says
+   * "this is what is hidden", not "also hide these". An empty array shows
+   * everything.
+   *
+   * Out-of-range indices are KEPT rather than filtered — the data may not have
+   * arrived yet, and an index that matches nothing hides nothing.
+   */
+  set hiddenBars(indices: readonly number[]) {
+    this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
+    this.#render();
+  }
+
   #render(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
