@@ -2929,6 +2929,8 @@ why the answer must not be a per-concern storage key.
 | **D4** ✅ | Replace S11's two hand-rolled keys with one definition | **DONE 2026-09-16.** `persistView(name, targets, contributors)` keeps a whole snapshot; `persistViewState` is now a thin deprecated wrapper over it. Verified in the records app: TWO column filters, both lit, both typed values and all 6 match marks survive a real reload |
 | **D5** ✅ | Degrade + version: apply what fits, report what did not | **DONE 2026-09-16.** A gone element and a gone method are REPORTED (`missingElements`, `skipped`), never thrown. An unrecognised `v` is ignored whole rather than half-applied — a definition applied in part leaves a screen nobody designed |
 | **D6** ✅ | A saved-view LIBRARY — `viewOptions` + `onViewPicked` | **DONE 2026-09-16.** Both pages wired the same four pieces by hand and were already drifting in name. One implementation; `after` carries the page-specific half |
+| **D7** ✅ | A preset brings its OWN content and layout | **DONE 2026-09-16.** `SavedView.content` is a `ViewDefinition`. Two gaps closed first: `ViewElement` had no `state`, and `RenderedView` kept its id→element map private |
+| **D8** ✅ | Saving a view the READER made | **DONE 2026-09-16.** `saveViewAs` / `loadSavedViews` / `deleteSavedView`. Surfaced three real bugs — see below |
 
 **D1 is blocked on parity, not on itself.** A definition can only set what a
 component exposes, so the P-steps are its prerequisite — P2 (selection) first,
@@ -2985,6 +2987,67 @@ learn, two to serialise, and two for an agent to get wrong.
 
 **Known, pre-existing:** the records "My accounts" view yields 0 rows — its demo
 owner name does not match the generated data. Identical at baseline.
+
+### D7 ✅ — a preset brings its OWN content and layout
+
+**DONE 2026-09-16.** Will: *each preset view option shows the same content just
+with a different data source. Content can be different across presets. Doesn't
+need to be the same charts, data viz etc. The layout can also be unique.*
+
+`SavedView.content` is a `ViewDefinition` — the shape `renderView` already
+builds. A second shape for "a screen described as data" would be a second thing
+to learn, serialise and get wrong. OPTIONAL, and most views omit it: a set of
+views over ONE screen is the common and cheap case, where nothing is torn down
+and the snapshot configures what is already there.
+
+**Two gaps had to close first, both in code that existed but had never run end
+to end:**
+
+- `ViewElement` had **no `state` field**, while `ElementNode` did. So a
+  definition could build a whole unique layout and then not set a grid's column
+  filter — the one thing view definitions exist for.
+- `RenderedView` returned `{ el, state }` and kept its id→element map private.
+  The registry is the view's own addressing scheme, so withholding it made the
+  ids **write-only** and a snapshot could not name what a view had built.
+
+Order is fixed: content is built BEFORE the snapshot applies, because the
+snapshot configures what is on screen and for such a view that is what we are
+about to create. `into` says where it goes; omit it and the view is handed back
+unplaced, because this function knows what a view wants, not where a page keeps
+it. Placement is `replaceChildren` — a view that leaves its predecessor's charts
+on screen is two views at once.
+
+### D8 ✅ — saving a view the READER made
+
+**DONE 2026-09-16.** Both example pages had a Save button wired to
+`console.log`. A page that can APPLY a saved view but not MAKE one is half a
+feature.
+
+`saveViewAs` sits beside `persistView` and answers a different question:
+`persistView` keeps ONE view under a fixed name ("put me back where I was"),
+this makes a NEW NAMED view and adds it to the set the chip offers. The id is
+DERIVED from the label, so saving the same name twice UPDATES rather than
+collecting two rows that look identical. Storage defaults to SHARED, unlike
+`persistView`'s — a view someone took the trouble to name should outlive the tab.
+
+**Three real bugs, each found by the round trip failing rather than by reading:**
+
+1. **`onViewPicked` held its library by value.** A view saved AFTER that call
+   could never be resolved — the dashboard wired its presets and then could not
+   restore anything the reader saved. `views` may now be a FUNCTION, re-read on
+   every pick. **Rule: any registry that can grow is passed as a getter.**
+2. **`sherpa-app-header.renderData` stamped its slotted children
+   fire-and-forget**, so `await header.populate(…)` settled before the CHIPS
+   existed. A caller that repopulated the bar and then set the chips wrote into
+   a toolbar that had not rebuilt them, and the write silently went nowhere.
+3. **`SherpaElement.renderData` was typed `void`** while `populate()` already
+   chained onto whatever it returned. The behaviour was right and the TYPE hid
+   it, so no composing component could know the door was there. Now
+   `Promise<void> | void`: a composing component's DOM is somebody else's, so
+   its own render finishing says nothing about whether the data is in the DOM.
+
+(3) is the generic one and worth carrying forward — every composing component
+has this shape.
 
 ## Component SPECS have fallen behind the data layer
 
