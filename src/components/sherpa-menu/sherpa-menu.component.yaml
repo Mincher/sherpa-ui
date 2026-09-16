@@ -206,6 +206,11 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (values, open). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (show, hide, toggle). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: menu-change
@@ -268,6 +273,19 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Menu
+    methods:
+      - $type: method
+        name: show
+        args: "trigger?: HTMLElement"
+        description: Open the menu. Pass the trigger to place it under (and to measure against).
+      - $type: method
+        name: hide
+        args: ""
+        description: Close the menu.
+      - $type: method
+        name: toggle
+        args: "trigger?: HTMLElement"
+        description: Flip the menu open or shut.
     figmaNodeId: "1156:29240"
     category: overlay
     variantAxes:

@@ -507,6 +507,79 @@ function parseTsJsProps(ts) {
   return [...props.values()];
 }
 
+/**
+ * PUBLIC METHODS — what a caller can DO to a component.
+ *
+ * The specs recorded attributes, events, slots, tokens and accessors, and no
+ * methods at all. That was tolerable while a component's whole surface was its
+ * attributes; it is not any more.
+ *
+ * A VIEW DEFINITION can set exactly what a component exposes, so the set of
+ * public methods IS the set of things a saved view, a preset or an agent can
+ * configure. The MCP serves these specs — an agent asking "what can I set on a
+ * data grid?" was getting an answer that left out setColumnFilter, select and
+ * every other verb the parity work added.
+ *
+ * WHAT COUNTS as public, and why each exclusion:
+ *   - `#name`        private by construction
+ *   - lifecycle      onRender / onConnect / onChange / onDisconnect / renderData
+ *                    are the base class's contract with the SUBCLASS, not with a
+ *                    caller
+ *   - `get` / `set`  already recorded as jsProps, with their access
+ *   - `static`       not reachable from an element
+ *
+ * The leading JSDoc line becomes the description, so the spec says what a method
+ * is FOR rather than only that it exists.
+ */
+const LIFECYCLE = new Set([
+  'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'constructor',
+  'connectedCallback', 'disconnectedCallback', 'attributeChangedCallback', 'adoptedCallback',
+]);
+
+function parseTsMethods(ts) {
+  const out = [];
+  // A method at CLASS BODY indentation (two spaces), optionally `override` or
+  // `async`, not preceded by get/set/static. The two-space anchor is what keeps
+  // nested functions and object literals out.
+  const re = /\n {2}(?:override\s+)?(?:async\s+)?([a-z][\w$]*)\s*\(([^)]*)\)\s*:/g;
+  for (const m of ts.matchAll(re)) {
+    const [, name, args] = m;
+    if (LIFECYCLE.has(name)) continue;
+    if (out.some((x) => x.name === name)) continue;
+
+    // The JSDoc block immediately above, if there is one — its first prose line
+    // is the summary, which is what a reader (or an agent) actually needs.
+    //
+    // `m.index` points at the leading NEWLINE of the match, so the slice ends
+    // mid-line and a `$`-anchored search would never find the closing `*​/`.
+    // Take the LAST block and check it really is adjacent — otherwise every
+    // method inherited the file header, which is worse than no description.
+    const before = ts.slice(0, m.index + 1);
+    const lastClose = before.lastIndexOf('*/');
+    const doc = lastClose >= 0 && before.slice(lastClose + 2).trim() === ''
+      ? /\/\*\*([\s\S]*)$/.exec(before.slice(before.lastIndexOf('/**', lastClose), lastClose))
+      : null;
+    let description = '';
+    if (doc) {
+      const line = doc[1]
+        .split('\n')
+        .map((l) => l.replace(/^\s*\*ledge?/, '').replace(/^\s*\*\s?/, '').trim())
+        .find((l) => l && !l.startsWith('@'));
+      if (line) description = line;
+    }
+
+    out.push({
+      $type: 'method',
+      name,
+      // The signature as written, so a caller knows the argument ORDER — which
+      // is what a view definition's `state` block encodes.
+      args: args.replace(/\s+/g, ' ').trim(),
+      ...(description ? { description } : {}),
+    });
+  }
+  return out;
+}
+
 
 // ══ the generator ════════════════════════════════════════════════════════════════
 /**
@@ -724,12 +797,23 @@ function generateSpec(name) {
 
   // ── capabilities + jsProps (best-effort) ──────────────────────────────────────
   const jsProps = ts ? parseTsJsProps(ts) : [];
+  const methods = ts ? parseTsMethods(ts) : [];
   const capabilities = [];
   if (jsProps.length) {
     capabilities.push({
       $type: 'capability',
       api: 'js-property-mirror',
       description: `read/write JS properties (${jsProps.map((j) => j.name).join(', ')}). See $extensions.sherpa.jsProps.`,
+    });
+  }
+  if (methods.length) {
+    // A capability, not just a list, because this is what a VIEW DEFINITION can
+    // set: the methods are the vocabulary a saved view, a preset or an agent
+    // may use on this component.
+    capabilities.push({
+      $type: 'capability',
+      api: 'js-methods',
+      description: `callable from a view definition's state block (${methods.map((m) => m.name).join(', ')}). See $extensions.sherpa.methods.`,
     });
   }
 
@@ -740,6 +824,10 @@ function generateSpec(name) {
   // owns keeping it aligned with live Figma. Only jsProps are re-derived (from TS).
   const sherpaExt = {};
   if (priorExt.figmaName) sherpaExt.figmaName = priorExt.figmaName;
+  // Re-derived from the TS, like jsProps — never carried from the prior spec, so
+  // a removed method disappears rather than lingering as a promise the code no
+  // longer keeps.
+  if (methods.length) sherpaExt.methods = methods;
   // The node ID is what makes a binding CHECKABLE — a name can be duplicated or
   // renamed, an id addresses one node. It was silently dropped on every regen
   // because it was not on this list, so all 54 specs name a Figma component

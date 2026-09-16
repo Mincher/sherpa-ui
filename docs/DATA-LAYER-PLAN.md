@@ -3007,12 +3007,13 @@ again — which is the spec doing its job.
 | Step | Work | Why here |
 |---|---|---|
 | **C1** ✅ | Strip comments before parsing `observed` | **DONE 2026-09-16.** The "flaky nav schema" was this: a comment in the array became a prop name |
-| **C2** | Record METHODS in the spec — name, arguments, what they set | the set of methods IS the set of things a view definition can configure. Without it the MCP cannot answer "what can I set on this?" and a definition's vocabulary is undocumented |
+| **C2** ✅ | Record METHODS in the spec — name, arguments, description | **DONE 2026-09-16.** `$extensions.sherpa.methods` plus a `js-methods` capability, re-derived from the TS like `jsProps` so a removed method disappears rather than lingering. The MCP's `get_component` serves the whole spec, so an agent now sees the seven verbs a data grid accepts and what each is for |
 | **C3** | Regenerate all 58 and review the drift | 22 fail; the churn is ~800 lines of real CSS drift and deserves its own pass, not a ride-along |
 | **C4** | Make the round-trip a GATE, once C3 lands | it catches exactly the class of mistake C1 and my `Public API` omission both were — cheap, and only possible once the baseline is clean |
 
-**C2 is the one the data layer needs.** C1 removed the false alarm; C3 and C4 are
-hygiene that should not block the app-header work.
+**C1 and C2 are done.** C3 and C4 remain: 22 specs still fail round-trip on
+pre-existing CSS drift, which wants its own reviewed pass rather than riding
+along with feature work.
 
 ## Next — parity (API equals interaction)
 
