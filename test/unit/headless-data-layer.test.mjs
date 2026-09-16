@@ -422,3 +422,72 @@ test('S11: setState MERGES — an unnamed field keeps its value', async () => {
   await settle();
   assert.equal(source.state.filter, undefined, 'an explicit undefined clears');
 });
+
+/* ── O5 — named filter contributions ────────────────────────────────── */
+
+test('O5: each writer owns its own PART; none can clobber another', async () => {
+  const store = new ArrayStore(makeRows(90), { key: 'id' });
+  const source = new DataSource({ store });
+  await source.load();
+  await settle();
+  const all = source.total;
+
+  // THREE ALTITUDES, as a real screen has: a saved view, the page's chips, and
+  // a grid's column headings. Each writes its own key.
+  source.contribute('view', ['spend', 'gt', 1000]);
+  await settle();
+  const withView = source.total;
+
+  source.contribute('chips', ['plan', 'eq', 'Pro']);
+  await settle();
+  const withChips = source.total;
+
+  // The view's clause is STILL THERE — this is the whole point. With setFilter
+  // alone the second writer replaced the first, so a saved view's filter
+  // vanished the moment any chip changed.
+  assert.ok(withChips < withView, 'the chips narrowed further, rather than replacing');
+  assert.deepEqual(source.state.filter, ['and', ['spend', 'gt', 1000], ['plan', 'eq', 'Pro']]);
+
+  // A key is REPLACED by its next contribution, not appended.
+  source.contribute('chips', ['plan', 'eq', 'Free']);
+  await settle();
+  assert.deepEqual(source.state.filter, ['and', ['spend', 'gt', 1000], ['plan', 'eq', 'Free']]);
+
+  // …and REMOVED by undefined — "clear just the columns" without recomposing.
+  source.contribute('chips', undefined);
+  await settle();
+  assert.deepEqual(source.state.filter, ['spend', 'gt', 1000], 'one part left, unwrapped');
+
+  source.contribute('view', undefined);
+  await settle();
+  assert.equal(source.state.filter, undefined);
+  assert.equal(source.total, all, 'back to everything');
+});
+
+test('O5: setFilter and setState REPLACE, clearing the parts with them', async () => {
+  const source = new DataSource({ store: new ArrayStore(makeRows(90), { key: 'id' }) });
+  await source.load();
+
+  source.contribute('view', ['spend', 'gt', 1000]);
+  source.contribute('chips', ['plan', 'eq', 'Pro']);
+  await settle();
+
+  // setFilter is a claim about the WHOLE query. Quietly ANDing it with the
+  // leftover parts would make it not mean what it says.
+  source.setFilter(['plan', 'eq', 'Free']);
+  await settle();
+  assert.deepEqual(source.state.filter, ['plan', 'eq', 'Free']);
+
+  // A contribution after that starts from the new baseline, not the old parts.
+  source.contribute('columns', ['name', 'contains', 'n1']);
+  await settle();
+  assert.deepEqual(source.state.filter, ['name', 'contains', 'n1'],
+    'setFilter cleared the parts, so only the new one composes');
+
+  // setState says the same thing — a saved view restores the WHOLE query.
+  source.contribute('view', ['spend', 'gt', 1]);
+  await settle();
+  source.setState({ filter: ['plan', 'eq', 'Pro'] });
+  await settle();
+  assert.deepEqual(source.state.filter, ['plan', 'eq', 'Pro']);
+});

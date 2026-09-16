@@ -170,30 +170,23 @@ export async function init(root) {
         clauses.push([field, 'in', picked]);
       }
     }
-    // The column headings' own clauses AND with everything above.
-    clauses.push(...columnClauses.values());
     return clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined;
   };
 
-  /* The last chip state, so a column filter can re-run the whole combination.
-     `filterFromChips` needs both halves and the grid's event carries only its
-     own, so the chips' last word is remembered here rather than read back out
-     of the toolbar's shadow DOM. */
-  let lastChips = { values: {}, active: [] };
-  /* The SAVED VIEW's own clause — a third contributor, beside the chips and the
-     column filters.
+  /* THREE WRITERS, THREE NAMED PARTS.
 
-     It has to live here rather than in the source, because `reapplyFilter`
-     rebuilds the whole filter from what this view knows and would otherwise
-     overwrite whatever a view definition set. That is the last-write-wins
-     problem O5 (named contributions on the source) exists to remove; until then
-     every writer composes through this one function. */
-  let viewClause;
+     The app's saved view, this page's chips, and the grid's column headings all
+     narrow the same query, and each owns its own key. The source ANDs them.
 
-  const reapplyFilter = () => {
-    const chips = filterFromChips(lastChips.values, lastChips.active);
-    const parts = [viewClause, chips].filter(Boolean);
-    source.setFilter(parts.length === 1 ? parts[0] : parts.length ? ['and', ...parts] : undefined);
+     It used to be four variables composed by hand — lastChips, columnClauses,
+     viewClause and one reapplyFilter() that rebuilt the whole filter from all
+     three. Every writer had to know about the others, and the last one to run
+     won: a saved view's clause was silently dropped the moment any chip
+     changed. `contribute` removes the coordination entirely. */
+  const pushColumns = () => {
+    const clauses = [...columnClauses.values()];
+    source.contribute('columns',
+      clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined);
   };
 
   /* ── Cache view refs (scoped to root) ────────────────────────────── */
@@ -378,7 +371,7 @@ export async function init(root) {
      click. Sort and group are untouched — the source still handles those. */
   unbinds.push(source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] }));
   qft.addEventListener('quick-filter-change', (e) => {
-    lastChips = { values: e.detail.values, active: e.detail.active };
+    source.contribute('chips', filterFromChips(e.detail.values, e.detail.active));
     /* A CUSTOM chip's body is a TOGGLE, exactly like any other chip's: off
        means "stop applying this", not "delete it". The chip stays on the bar
        with its condition still written on it, ready to come back on.
@@ -402,7 +395,7 @@ export async function init(root) {
       if (clause) columnClauses.set(field, clause);
       else columnClauses.delete(field);
     }
-    reapplyFilter();
+    pushColumns();
   });
 
   /* The COLUMN chip's CARET opens that column's own filter menu — the real
@@ -441,10 +434,10 @@ export async function init(root) {
        Putting the chip on the bar makes the toolbar emit `quick-filter-change`,
        and the source is bound to the toolbar — so it hears that event and sets
        the filter from the CHIPS alone, throwing this column's clause away. Done
-       in this order the source's own write lands first and `reapplyFilter()`
-       has the last word, which includes both halves. */
+       in this order the source's own write lands first and the column
+       contribution has the last word on its own key. */
     qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
-    reapplyFilter();
+    pushColumns();
   });
 
   /* Taking the chip OFF the bar has to reach back and clear the column, or the
@@ -457,7 +450,7 @@ export async function init(root) {
     const field = id.slice(4);
     columnClauses.delete(field);
     grid.clearColumnFilter(field);
-    reapplyFilter();
+    pushColumns();
   });
   // The GRID does the grouping — data-group-field makes it drop that column and
   // draw a collapsible group row per value. The source writes that attribute on
@@ -513,25 +506,29 @@ export async function init(root) {
        grid. Cleared first — a view that names no column filters means none,
        not "keep whatever the last view had". */
     columnClauses.clear();
-    /* The view's own clause is remembered so `reapplyFilter` can compose it with
-       the chips, rather than the two overwriting each other. */
-    viewClause = view.snapshot.source?.filter;
 
     const report = applyViewSnapshot(view.snapshot, { source, elements: { grid } });
+
+    /* AFTER the snapshot, not before. `setState` treats a restored filter as
+       the WHOLE query and clears the named parts with it — right for a host
+       that does not compose, wrong here. So the view's own clause is
+       re-contributed under its own key, and the chips and columns re-added
+       below. The order is the whole subtlety. */
+    source.contribute('view', view.snapshot.source?.filter);
     if (report.missingElements.length || Object.keys(report.skipped).length) {
       // A definition that could not be fully applied is worth saying out loud
       // rather than leaving the reader to wonder why half the screen moved.
       console.warn('view applied with gaps', report);
     }
 
-    /* Read the grid's clauses back, so reapplyFilter() includes them. The
-       snapshot set them ON THE GRID; this view owns the composition. */
+    /* Read the grid's clauses back into the 'columns' part. The snapshot set
+       them ON THE GRID; the source still has to be told. */
     queueMicrotask(() => {
       for (const col of columns) {
         const clause = grid.columnClause(col.field);
         if (clause) columnClauses.set(col.field, clause);
       }
-      reapplyFilter();
+      pushColumns();
     });
   };
 

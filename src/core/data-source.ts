@@ -196,6 +196,15 @@ export class DataSource extends EventTarget {
   #inFlightKey: string | null = null;
   /** A coalesced load is queued for the end of this tick — see `#schedule`. */
   #scheduled = false;
+  /**
+   * The named parts of the filter, in contribution order — see `contribute`.
+   *
+   * A Map so a key is replaced rather than appended, and so iteration order is
+   * stable: the composed filter should not re-order itself between loads, or
+   * `#stateKey()` would see a change where there is none and F1's skip would
+   * stop working.
+   */
+  #parts = new Map<string, Filter>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -244,6 +253,14 @@ export class DataSource extends EventTarget {
    */
   setState(next: Partial<ViewState>): void {
     if ('filter' in next) {
+      // A restored filter REPLACES, and clears the named parts with it — the
+      // same claim `setFilter` makes. A saved view says what the whole query
+      // is; leaving a stale contribution behind would AND something the
+      // definition never mentioned into it.
+      //
+      // A host that composes by contribution restores the PARTS rather than
+      // the whole: `contribute('view', snapshot.source.filter)` after this.
+      this.#parts.clear();
       if (next.filter) this.#state.filter = next.filter;
       else delete this.#state.filter;
     }
@@ -310,7 +327,59 @@ export class DataSource extends EventTarget {
     this.#schedule();
   }
 
+  /**
+   * Replace the WHOLE filter.
+   *
+   * The blunt instrument, and still the right one when a single writer owns the
+   * whole query. Where several do — an app header, a view toolbar, a grid's
+   * columns, a saved view — use `contribute()`, which lets each own its own
+   * part instead of the last one winning.
+   *
+   * Setting a filter directly CLEARS every contribution, because the two are
+   * different claims about the same value and quietly ANDing them would make
+   * `setFilter` not mean what it says.
+   */
   setFilter(filter: Filter | undefined): void {
+    this.#parts.clear();
+    this.#setFilterValue(filter);
+  }
+
+  /**
+   * Own ONE NAMED PART of the filter.
+   *
+   *   source.contribute('chips',   filterFromChips(...));
+   *   source.contribute('columns', ['and', ...clauses]);
+   *   source.contribute('view',    preset.filter);
+   *
+   * Every part is ANDed. A key is replaced by its next contribution and removed
+   * by `undefined`, so each writer changes only what it owns and cannot clobber
+   * another's.
+   *
+   * WHY THIS EXISTS. A real screen has several filter sources at different
+   * altitudes — the app header, the view's own toolbar, a grid's column
+   * headings, a saved view — and they all write one `filter`. With `setFilter`
+   * alone the last writer wins, so every view ends up rebuilding the whole
+   * filter by hand from variables it keeps in step itself. The records example
+   * had FOUR of those before this existed.
+   *
+   * Provenance survives to the edge as a bonus: "clear just the column filters"
+   * is `contribute('columns', undefined)` rather than a recomposition.
+   */
+  contribute(key: string, filter: Filter | undefined): void {
+    if (filter) this.#parts.set(key, filter);
+    else this.#parts.delete(key);
+    this.#setFilterValue(this.#composed());
+  }
+
+  /** Every named part, ANDed — or undefined when there are none. */
+  #composed(): Filter | undefined {
+    const parts = [...this.#parts.values()];
+    if (!parts.length) return undefined;
+    return parts.length === 1 ? parts[0] : (['and', ...parts] as Filter);
+  }
+
+  /** The shared tail of `setFilter` and `contribute`. */
+  #setFilterValue(filter: Filter | undefined): void {
     if (filter) this.#state.filter = filter;
     else delete this.#state.filter;
     this.#resetPage();
