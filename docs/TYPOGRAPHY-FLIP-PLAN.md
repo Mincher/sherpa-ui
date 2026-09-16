@@ -1,8 +1,12 @@
 # Typography flip — WEIGHT becomes the mode (model C) — ✅ DONE 2026-08-17
 
 **Status: COMPLETE.** 6 weight modes + 26 size/use-case extensions built; ~6663 nodes
-re-pinned; 17 old collections deleted; Button page verified rendering. Backups:
-`typography-backup-2026-08-17.json`, `typography-pinmap-2026-08-17.json`.
+re-pinned; 17 old collections deleted; Button page verified rendering. Backups were `typography-backup-2026-08-17.json` and
+`typography-pinmap-2026-08-17.json` — **deleted 2026-09-16**, along with the
+other eleven migration dumps in this folder (~1.3MB). They restored Typography
+collections that were themselves deleted later, when Typography moved into
+Theme `content/*`, so they could not have been replayed. Recoverable from git
+history if ever needed.
 
 
 Goal: **Typography = one collection.** WEIGHT is the free axis (the mode).
