@@ -74,7 +74,7 @@ props:
   - $type: prop
     name: data-axis-label
     type: string
-    kind: content
+    kind: style
     description: y-axis caption (shown when set)
   - $type: prop
     name: data-label
@@ -171,4 +171,4 @@ $extensions:
     jsProps:
       - name: hiddenBars
         type: string
-        access: read
+        access: read-write

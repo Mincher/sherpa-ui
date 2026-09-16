@@ -2941,6 +2941,79 @@ cannot appear twice — and `setColumnFilter` must run once per filtered column.
 The value may now be a LIST OF CALLS. Inventing a `setColumnFilter:name` key
 would have been a second vocabulary nothing else understands.
 
+## Component SPECS have fallen behind the data layer
+
+Will, 2026-09-16: *ensure the component schemas still work with the data layer —
+another agent noted the nav schema was "flaky" in a recent update.*
+
+Checked, and there are three separate problems. The "flakiness" was real and had
+a cause.
+
+### 1. The generator could not read a commented `observed` list — FIXED
+
+`static override observed` was parsed with a bare `split(',')`, so a component
+that explained an entry inline produced observed "names" like
+`// SINGLE vs multiple changes the CONTROL each row draws` and failed its own
+round-trip. The spec then looked unstable when the only thing that had changed
+was a COMMENT.
+
+That is not an unusual thing to write: `observed` is where a component says WHY
+an attribute is reactive, which is exactly the kind of thing worth recording
+next to it.
+
+Fixed 2026-09-16 — comments are stripped before splitting, in the one place both
+call sites now share.
+
+### 2. The specs do not describe the data layer's API at all
+
+A spec records **attributes**, **events**, **slots**, **tokens** and — best
+effort — **getters/setters**. It records nothing about **methods**.
+
+Everything the parity and view-definition work added is a method:
+
+| | |
+|---|---|
+| `setColumnFilter` / `columnClause` / `clearColumnFilter` | invisible to the spec |
+| `suspendColumnFilter` / `openColumnFilter` | invisible |
+| `select` / `clearSelection` | invisible |
+| `setState` / `applyState` / `applyViewSnapshot` | invisible |
+
+This matters more than it used to. **A view definition can set exactly what a
+component exposes** (Part 2.5), so the set of methods IS the set of things a
+saved view, a preset or an agent can configure. A spec that cannot describe them
+cannot describe what a view definition may contain — and the MCP serves specs,
+so an agent asking "what can I set on a grid?" gets an incomplete answer.
+
+### 3. Twenty-two of fifty-eight specs fail their own round-trip
+
+Measured 2026-09-16, after fixing (1):
+
+```
+22 FAIL / 58 components
+```
+
+Mostly pre-existing CSS drift — a token added or renamed since the spec was last
+generated. Regenerating them produces ~800 lines of legitimate change across 43
+files, which is real work and wants reviewing on its own rather than riding
+along with a data-layer commit.
+
+**One of the 22 was the data grid, and it was MY omission**: `data-filterable`,
+`data-column-filters`, `data-filter-fields` and the whole JS API were missing
+from the HTML `Public API:` block the generator reads. Fixed, and it round-trips
+again — which is the spec doing its job.
+
+### The steps
+
+| Step | Work | Why here |
+|---|---|---|
+| **C1** ✅ | Strip comments before parsing `observed` | **DONE 2026-09-16.** The "flaky nav schema" was this: a comment in the array became a prop name |
+| **C2** | Record METHODS in the spec — name, arguments, what they set | the set of methods IS the set of things a view definition can configure. Without it the MCP cannot answer "what can I set on this?" and a definition's vocabulary is undocumented |
+| **C3** | Regenerate all 58 and review the drift | 22 fail; the churn is ~800 lines of real CSS drift and deserves its own pass, not a ride-along |
+| **C4** | Make the round-trip a GATE, once C3 lands | it catches exactly the class of mistake C1 and my `Public API` omission both were — cheap, and only possible once the baseline is clean |
+
+**C2 is the one the data layer needs.** C1 removed the false alarm; C3 and C4 are
+hygiene that should not block the app-header work.
+
 ## Next — parity (API equals interaction)
 
 Anything a person can do by clicking, a caller must be able to do by calling —

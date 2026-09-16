@@ -23,6 +23,11 @@ anatomy:
     class: chip
     part: chip
     children:
+      - el: sherpa-tooltip
+        class: count-wrap
+        attrs:
+          data-floating: ""
+          data-anchor: .chip
       - el: button
         class: body
         part: body
@@ -35,19 +40,10 @@ anatomy:
             attrs:
               aria-hidden: "true"
           - el: span
-            class: count-wrap
-            children:
-              - el: span
-                class: count
-                part: count
-                attrs:
-                  role: img
-              - el: span
-                class: count-tip
-                part: count-tip
-                attrs:
-                  role: tooltip
-                  aria-hidden: "true"
+            class: count
+            part: count
+            attrs:
+              role: img
           - el: span
             class: icon
             part: icon
@@ -70,7 +66,12 @@ anatomy:
             class: caret-label
             part: caret-label
           - el: i
-            class: fa-solid fa-caret-down
+            class: caret-glyph fa-solid fa-caret-down
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: caret-icon
+            part: caret-icon
             attrs:
               aria-hidden: "true"
       - el: span
@@ -98,6 +99,14 @@ props:
     type: string
     kind: style
     description: start leading icon — an FA class list (Figma default is a funnel)
+  - $type: prop
+    name: data-icon-only
+    type: string
+    kind: style
+    description: >-
+      the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator
+      and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere
+      (a data-grid column header).
   - $type: prop
     name: data-icon-start
     type: string
@@ -145,6 +154,9 @@ states:
     name: menu
     selector: ":host([data-menu])"
   - $type: state
+    name: open
+    selector: ":host([data-open])"
+  - $type: state
     name: ai
     selector: ":host([data-type=\"ai\"])"
   - $type: state
@@ -159,6 +171,18 @@ states:
   - $type: state
     name: icon-start
     selector: ":host([data-icon-start])"
+  - $type: state
+    name: full-value
+    selector: ":host([data-full-value])"
+  - $type: state
+    name: no-value
+    selector: ":host([data-no-value])"
+  - $type: state
+    name: icon-only
+    selector: ":host([data-icon-only])"
+  - $type: state
+    name: unsupported
+    selector: ":host([data-unsupported])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"
@@ -196,16 +220,6 @@ tokens:
   body.font-size: "{sherpa.font-size-body-base}"
   body.font-weight: "{sherpa.font-weight-regular}"
   body.line-height: "{sherpa.theme-content-line-height-base}"
-  count-tip.inset-block-end: "{sherpa.display-mode-space-2xs}"
-  count-tip.padding: "{sherpa.display-mode-space-2xs}"
-  count-tip.background: "{sherpa.style-content-base}"
-  count-tip.color: "{sherpa.theme-content-body-4}"
-  count-tip.font-family: "{sherpa.font-family-body}"
-  count-tip.font-size: "{sherpa.font-size-body-small}"
-  count-tip.font-weight: "{sherpa.font-weight-regular}"
-  count-tip.line-height: "{sherpa.theme-content-line-height-small}"
-  count-tip.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  count-tip.box-shadow: "{sherpa.display-mode-size-2xs}"
   caret.min-inline-size: "{sherpa.display-mode-size-lg}"
   caret.gap: "{sherpa.display-mode-space-2xs}"
   caret.border-width: "{sherpa.border-top}"
@@ -216,6 +230,7 @@ tokens:
   caret.color: "{sherpa.theme-content-body-1}"
   caret.font-size: "{sherpa.theme-content-size-base}"
   caret-label.font-size: "{sherpa.theme-content-size-base}"
+  caret-label.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Filter Chip (atom)

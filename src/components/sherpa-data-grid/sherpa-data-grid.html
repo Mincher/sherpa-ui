@@ -35,6 +35,21 @@
                     row, and shows no control in the header: "select all" is
                     meaningless where only one can be chosen
     data-filterable                          show a secondary header row of filter inputs
+    data-column-filters                      a filter button in each column heading
+    data-filter-fields                       space-separated fields an EXTERNAL filter
+                    is narrowing; those columns' headings take data-status="active".
+                    Written by SherpaDataSource — a host driving the grid by hand
+                    can write it too.
+
+  JS API — what a person can do by clicking, a caller can do by calling. This is
+  what lets a SAVED VIEW, a preset or an agent configure a grid:
+    setColumnFilter(field, clause)  set one column's filter from a store FilterClause
+    columnClause(field)            read it back — the same clause, for saving
+    suspendColumnFilter(field, on) keep the clause but stop applying it
+    clearColumnFilter(field?)      delete one, or all
+    openColumnFilter(field, anchor) open that column's menu, anchored anywhere
+    select(keys) / clearSelection() set the selection BY KEY (needs `key` in populate)
+    selectedKeys / selectedRecords read it back
 
   Column widths: each column is drawn at a fixed width so long labels TRUNCATE
   rather than stretch the column. A column takes `width` from its config, else the
@@ -45,7 +60,10 @@
     column-resize    — detail: { field, width }
     sort-change      — detail: { field, direction }
     row-click        — detail: { index, row }
-    selection-change — detail: { selected: string[] }   (row indices as strings)
+    selection-change — detail: { selected: string[] }   (row indices as strings —
+                       for a SAVED selection read `selectedKeys`, since an index
+                       means something different after any sort)
+    column-filter-change — detail: { field, header, op, value, from, to, clause, label }
     filter-change    — detail: { field, value, filters, visible }
     group-toggle     — detail: { value, collapsed }
 -->

@@ -112,13 +112,13 @@ props:
   - $type: prop
     name: data-source-heading
     type: string
-    kind: content
+    kind: style
     default: "\"Available\""
     description: heading for the available pane
   - $type: prop
     name: data-target-heading
     type: string
-    kind: content
+    kind: style
     default: "\"Selected\""
     description: heading for the selected pane
 states:
@@ -166,4 +166,4 @@ $extensions:
     jsProps:
       - name: selected
         type: string
-        access: read
+        access: read-write

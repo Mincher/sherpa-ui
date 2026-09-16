@@ -186,4 +186,4 @@ $extensions:
     jsProps:
       - name: hiddenSeries
         type: string
-        access: read
+        access: read-write

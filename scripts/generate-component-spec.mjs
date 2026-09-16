@@ -509,6 +509,37 @@ function parseTsJsProps(ts) {
 
 
 // ══ the generator ════════════════════════════════════════════════════════════════
+/**
+ * The `static override observed` list, as names.
+ *
+ * COMMENTS ARE STRIPPED FIRST. This used to be a bare `split(',')`, so a
+ * component that explained an entry inline —
+ *
+ *   static override observed = [
+ *     'data-select',
+ *     // SINGLE vs multiple changes the CONTROL each row draws.
+ *     'data-filter-fields',
+ *   ];
+ *
+ * — produced observed names like "// SINGLE vs multiple changes the CONTROL
+ * each row draws" and failed its own round-trip. The spec then looked "flaky"
+ * when the only thing that had changed was a comment.
+ *
+ * Comments in this array are not unusual: `observed` is where a component says
+ * WHY an attribute is reactive, which is exactly the kind of thing worth
+ * writing down next to it.
+ */
+function parseObserved(ts) {
+  const m = /static override observed\s*=\s*\[([\s\S]*?)\]/.exec(ts ?? '');
+  if (!m) return [];
+  return m[1]
+    .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments
+    .replace(/\/\/[^\n]*/g, '')           // line comments
+    .split(',')
+    .map((x) => x.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean);
+}
+
 function generateSpec(name) {
   const dir = join(C, name);
   const notes = [];
@@ -529,7 +560,7 @@ function generateSpec(name) {
   // compileDef derives observed from props with kind !== 'style', so a prop the TS
   // observes must NOT be kind:style in the spec (else the round-trip observed list
   // mismatches). A prior spec's stale kind loses to the TS `observed` list.
-  const tsObserved = ts ? (() => { const m = /static override observed\s*=\s*\[([^\]]*)\]/.exec(ts); return m ? m[1].split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean) : []; })() : [];
+  const tsObserved = parseObserved(ts);
 
   const comment = html ? htmlComment(html) : '';
   const apiProps = comment ? parsePublicApi(comment) : {};
@@ -839,7 +870,7 @@ function tsDiff(genTs, realTs, diffs) {
   const fact = (ts) => ({
     class: (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null,
     define: (/customElements\.define\('([^']+)'/.exec(ts) || [])[1] ?? null,
-    observed: (() => { const m = /static override observed = \[([^\]]*)\]/.exec(ts); return m ? m[1].split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean).sort() : []; })(),
+    observed: parseObserved(ts).sort(),
   });
   const g = fact(genTs), r = fact(realTs);
   for (const k of ['class', 'define']) if (g[k] !== r[k]) diffs.push(`TS ${k}: "${g[k]}"≠"${r[k]}"`);

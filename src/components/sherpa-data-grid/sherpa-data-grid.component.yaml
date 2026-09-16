@@ -31,6 +31,11 @@ anatomy:
           class: grid
           part: grid
           children:
+            - el: colgroup
+              class: cols
+              children:
+                - el: col
+                  class: select-col
             - el: thead
               class: head
               part: head
@@ -79,18 +84,56 @@ anatomy:
           attrs:
             scope: col
           children:
-            - el: button
-              class: head-btn
-              attrs:
-                type: button
+            - el: span
+              class: head-row-inner
               children:
-                - el: span
-                  class: head-label
-                - el: i
-                  class: sort-icon
+                - el: button
+                  class: head-btn
                   attrs:
-                    aria-hidden: "true"
+                    type: button
+                  children:
+                    - el: span
+                      class: head-label
+                - el: sherpa-quick-filter
+                  class: head-filter
+                  attrs:
+                    data-icon-only: ""
+                    data-menu: ""
+                    data-no-value: ""
+                    data-locked: ""
+                    data-plain: ""
+                - el: sherpa-quick-filter
+                  class: head-sort
+                  attrs:
+                    data-icon-only: ""
+                    data-plain: ""
+                    data-no-value: ""
+                    data-locked: ""
+            - el: span
+              class: resize-grip
+              part: resize-grip
+              attrs:
+                aria-hidden: "true"
 props:
+  - $type: prop
+    name: data-column-filters
+    type: string
+    kind: style
+    description: a filter button in each column heading
+  - $type: prop
+    name: data-filter-fields
+    type: string
+    kind: content
+    description: >-
+      space-separated fields an EXTERNAL filter is narrowing; those columns' headings take
+      data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write
+      it too. JS API — what a person can do by clicking, a caller can do by calling. This is what
+      lets a SAVED VIEW, a preset or an agent configure a grid: setColumnFilter(field, clause)  set
+      one column's filter from a store FilterClause columnClause(field)            read it back —
+      the same clause, for saving suspendColumnFilter(field, on) keep the clause but stop applying
+      it clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that
+      column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY
+      (needs `key` in populate) selectedKeys / selectedRecords read it back
   - $type: prop
     name: data-filterable
     type: string
@@ -102,10 +145,20 @@ props:
     kind: content
     description: group rows by this column
   - $type: prop
+    name: data-select
+    type: enum
+    kind: content
+    values:
+      - multiple
+      - single
+    description: >-
+      multiple  | single — single draws RADIOS, holds one row, and shows no control in the header:
+      "select all" is meaningless where only one can be chosen
+  - $type: prop
     name: data-selectable
     type: string
     kind: content
-    description: show a leading checkbox column (select-all + per-row)
+    description: show a leading selection column
   - $type: prop
     name: data-sort-direction
     type: string
@@ -130,13 +183,30 @@ states:
     name: no-matches
     selector: ":host([data-no-matches])"
   - $type: state
+    name: column-filters
+    selector: ":host([data-column-filters])"
+  - $type: state
+    name: resizing
+    selector: ":host([data-resizing])"
+  - $type: state
+    name: single
+    selector: ":host([data-select=\"single\"])"
+  - $type: state
     name: focus-visible
     selector: .select-all:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (selectedRecords). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (selectedRecords, selectedKeys). See $extensions.sherpa.jsProps.
 events:
+  - $type: event
+    name: column-resize
+    bubbles: true
+    composed: true
+  - $type: event
+    name: width
+    bubbles: true
+    composed: true
   - $type: event
     name: sort-change
     bubbles: true
@@ -161,11 +231,51 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: filter-change
+    name: for
+    bubbles: true
+    composed: true
+  - $type: event
+    name: since
+    bubbles: true
+    composed: true
+  - $type: event
+    name: means
+    bubbles: true
+    composed: true
+  - $type: event
+    name: column-filter-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: header
+    bubbles: true
+    composed: true
+  - $type: event
+    name: op
     bubbles: true
     composed: true
   - $type: event
     name: value
+    bubbles: true
+    composed: true
+  - $type: event
+    name: from
+    bubbles: true
+    composed: true
+  - $type: event
+    name: to
+    bubbles: true
+    composed: true
+  - $type: event
+    name: clause
+    bubbles: true
+    composed: true
+  - $type: event
+    name: label
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-change
     bubbles: true
     composed: true
   - $type: event
@@ -188,6 +298,7 @@ tokens:
   head.background: "{sherpa.theme-surface-default-1}"
   head-row.background: "{sherpa.theme-surface-default-1}"
   filter-row.background: "{sherpa.theme-surface-default-1}"
+  select-col.width: "{sherpa.display-mode-space-2xl}"
   select-cell.inline-size: "{sherpa.display-mode-space-2xl}"
   select-cell.padding: "{sherpa.display-mode-space-2xs}"
   select-head.background: "{sherpa.theme-surface-default-1}"
@@ -200,8 +311,14 @@ tokens:
   filter-spacer.background: "{sherpa.style-surface-base-1}"
   filter-spacer.border-block-end: "{sherpa.border-bottom}"
   filter-field.padding: "{sherpa.display-mode-space-2xs}"
-  filter-field.border-width: "{sherpa.style-border-width}"
-  filter-field.border-radius: "{sherpa.border-rounding-top-left}"
+  filter-field.border-block-start-width: "{sherpa.border-top}"
+  filter-field.border-block-end-width: "{sherpa.border-bottom}"
+  filter-field.border-inline-start-width: "{sherpa.border-left}"
+  filter-field.border-inline-end-width: "{sherpa.border-right}"
+  filter-field.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  filter-field.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  filter-field.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  filter-field.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   filter-input.font-family: "{sherpa.font-family-body}"
   filter-input.font-size: "{sherpa.font-size-body-base}"
   filter-input.font-weight: "{sherpa.font-weight-regular}"
@@ -210,7 +327,10 @@ tokens:
   filter-clear.inline-size: "{sherpa.theme-size-icon-xs}"
   filter-clear.block-size: "{sherpa.theme-size-icon-xs}"
   filter-clear.margin-inline-start: "{sherpa.display-mode-space-3xs}"
-  filter-clear.border-radius: "{sherpa.border-rounding-top-left}"
+  filter-clear.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  filter-clear.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  filter-clear.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  filter-clear.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   filter-clear.color: "{sherpa.theme-content-body-1}"
   filter-clear.font-size: "{sherpa.theme-content-size-small}"
   no-matches.padding: "{sherpa.display-mode-space-xs}"
@@ -220,6 +340,28 @@ tokens:
   head-cell.padding: "{sherpa.display-mode-space-2xs}"
   head-cell.background: "{sherpa.style-surface-base-1}"
   head-cell.border-block-end: "{sherpa.border-bottom}"
+  head-row-inner.gap: "{sherpa.display-mode-space-2xs}"
+  head-filter-body.gap: "{sherpa.display-mode-space-2xs}"
+  head-filter-body.padding: "{sherpa.display-mode-space-2xs}"
+  head-filter-range.gap: "{sherpa.display-mode-space-xs}"
+  head-filter-range.padding: "{sherpa.display-mode-space-2xs}"
+  head-filter-range-label.font-size: "{sherpa.theme-content-size-base}"
+  head-filter-range-label.line-height: "{sherpa.theme-content-line-height-base}"
+  head-filter-range-label.color: "{sherpa.theme-content-body-1}"
+  head-filter-op.min-block-size: "{sherpa.display-mode-size-2xl}"
+  head-filter-op.padding: "{sherpa.display-mode-space-2xs}"
+  head-filter-op.border-color: "{sherpa.theme-border-default-2}"
+  head-filter-op.border-block-start-width: "{sherpa.border-top}"
+  head-filter-op.border-block-end-width: "{sherpa.border-bottom}"
+  head-filter-op.border-inline-start-width: "{sherpa.border-left}"
+  head-filter-op.border-inline-end-width: "{sherpa.border-right}"
+  head-filter-op.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  head-filter-op.background: "{sherpa.theme-surface-default-base}"
+  head-filter-op.color: "{sherpa.theme-content-body-1}"
+  head-filter-op.font-size: "{sherpa.theme-content-size-base}"
+  head-filter-num.font-family: "{sherpa.font-family-mono}"
+  head-filter-op.padding-inline-end: "{sherpa.display-mode-space-xs}"
+  resize-grip.inline-size: "{sherpa.display-mode-space-xs}"
   head-btn.gap: "{sherpa.display-mode-space-2xs}"
   head-btn.padding: "{sherpa.display-mode-space-2xs}"
   head-btn.font-family: "{sherpa.font-family-body}"
@@ -227,9 +369,6 @@ tokens:
   head-btn.font-weight: "{sherpa.font-weight-regular}"
   head-btn.line-height: "{sherpa.theme-content-line-height-base}"
   head-btn.color: "{sherpa.theme-content-body-1}"
-  sort-icon.inline-size: "{sherpa.theme-size-icon-xs}"
-  sort-icon.block-size: "{sherpa.theme-size-icon-xs}"
-  sort-icon.font-size: "{sherpa.theme-size-icon-xs}"
   group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
   row.background: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
@@ -276,5 +415,8 @@ $extensions:
         grid-sort-change, row-click) is preserved on both sides.
     jsProps:
       - name: selectedRecords
+        type: string
+        access: read
+      - name: selectedKeys
         type: string
         access: read
