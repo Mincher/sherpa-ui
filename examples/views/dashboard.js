@@ -7,7 +7,10 @@
  * own content + wires a couple of demo listeners. Behaviour is identical to
  * the old standalone dashboard.html.
  */
-import { ArrayStore, DataSource, viewOptions, onViewPicked } from '../../dist/index.js';
+import {
+  ArrayStore, DataSource, viewOptions, onViewPicked,
+  loadSavedViews, saveViewAs,
+} from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import {
@@ -15,6 +18,12 @@ import {
 } from './dashboard-data.js';
 
 export async function init(root) {
+  /* THE LIBRARY = presets + whatever this reader saved.
+     One object, because a saved view and a preset are the same shape and the
+     chip should not care which is which. The presets come first so a reader's
+     own views read as additions to them. */
+  let views = { ...DASHBOARD_VIEWS, ...loadSavedViews('dashboard') };
+
   // ── Header config: breadcrumb trail + a couple of quick filters. ──────
   const headerConfig = {
     /* NO BREADCRUMB. This view IS home — the Home nav item opens it — so a trail
@@ -37,7 +46,7 @@ export async function init(root) {
     // population this dashboard's charts then work within. See global-filters.js.
     // The options come FROM the views, so a label cannot drift from the view
     // it names — the list and the definitions are one source.
-    filters: globalFilters(viewOptions(DASHBOARD_VIEWS)),
+    filters: globalFilters(viewOptions(views)),
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -207,10 +216,50 @@ export async function init(root) {
   // series and the two legends — while the header's chips move from the SAME
   // definition, so the bar cannot claim the data is unfiltered while the charts
   // disagree.
-  unbinds.push(onViewPicked(header, DASHBOARD_VIEWS, { source, elements: { header } }));
+  // A FUNCTION, not the object: the library grows when the reader saves a view,
+  // and a listener holding the set it was wired with would never see one.
+  unbinds.push(onViewPicked(header, () => views, { source, elements: { header } }));
 
-  // The cluster's own actions, for the example's sake.
-  header?.addEventListener('view-save', () => console.log('view-save'));
+  /* SAVE THIS VIEW. The button was wired to console.log — a control that
+     promises something and does nothing.
+
+     `captureView` reads the state back through the same API a definition
+     writes it through, so what is saved is exactly what can be restored. The
+     `reads` map names WHICH properties are view state: the header's chips are,
+     a scroll position is not, and only this page knows the difference.
+
+     The new view goes into the library and the chip is re-populated in the
+     same breath — a saved view nobody can pick is not saved. */
+  header?.addEventListener('view-save', () => {
+    const label = prompt('Name this view');
+    if (!label) return;
+    views = {
+      ...views,
+      ...saveViewAs('dashboard', label, { source, elements: { header } }, {
+        header: ['values'],
+      }),
+    };
+    // The chip should now READ the view just saved — a reader who names what
+    // they are looking at is still looking at it.
+    const id = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    /* RE-POPULATE, THEN PUT THE CHIPS BACK. `populate` rebuilds the bar from
+       the defs, so every chip returns to its declared state — which wipes what
+       the reader had just picked and named. Saving a view must not change the
+       view.
+
+       Read BEFORE the rebuild and written after, through the same `values` API
+       a definition uses. The capture itself was already correct; this is the
+       demo putting the screen back the way it found it. */
+    const picked = header.values;
+    /* AWAIT populate(), not `rendered`. `rendered` resolved when the header
+       first drew — long ago — so a restore hung off it ran BEFORE the rebuilt
+       chips existed and wrote into nothing. populate()'s own promise settles
+       once the data is in the DOM, which is what a caller reading back its own
+       write has to wait for. The base class says so; I used the wrong one. */
+    void Promise.resolve(
+      header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id)) }),
+    ).then(() => { header.values = picked; });
+  });
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
   header?.addEventListener('data-refresh', () => console.log('data-refresh'));
 

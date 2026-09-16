@@ -379,6 +379,10 @@ export interface ViewPick {
  *
  *   const off = onViewPicked(header, VIEWS, { source, elements: { grid } });
  *
+ * `views` may be a FUNCTION, and should be whenever the set can grow. A library
+ * is re-read on every pick, so a view the reader saves after this call still
+ * resolves; pass the object only for a fixed set of presets.
+ *
  * READS `detail.values.view[0]`, the View chip's id — the one convention a
  * view toolbar has. A change naming no view is ignored rather than treated as
  * "no view", because you are always in some view and the other chips on that
@@ -396,7 +400,7 @@ export interface ViewPick {
  */
 export function onViewPicked(
   host: EventTarget | null | undefined,
-  views: ViewLibrary,
+  views: ViewLibrary | (() => ViewLibrary),
   targets: {
     source?: { setState(next: Partial<ViewState>): void };
     elements?: Record<string, HTMLElement>;
@@ -423,7 +427,12 @@ export function onViewPicked(
       { values?: Record<string, readonly string[]> } | undefined;
     const id = detail?.values?.['view']?.[0];
     if (!id) return;
-    const view = views[id];
+    // RE-READ every time when given a function. A library GROWS — a reader
+    // saves a view and it joins the set — and a listener holding the object it
+    // was wired with would never see one. The dashboard's Save button wired the
+    // presets and then could not restore anything the reader had saved.
+    const library = typeof views === 'function' ? views() : views;
+    const view = library[id];
     if (!view) return;
 
     /* CONTENT FIRST, when the view brings its own. A preset is not always the
@@ -466,4 +475,120 @@ export function onViewPicked(
 
   host.addEventListener('quick-filter-change', listener);
   return () => host.removeEventListener('quick-filter-change', listener);
+}
+
+/* ── Saving a view the READER made ─────────────────────────────────────
+   `persistView` keeps ONE view under a fixed name — "put me back where I was"
+   across a reload. A Save button is a different thing: it makes a NEW NAMED
+   view from what is on screen and adds it to the set the chip offers.
+
+   Both example pages had a Save button wired to `console.log`. */
+
+const SAVED_PREFIX = 'sherpa:views:';
+
+/** The user's own saved views for one page, keyed by id like a preset set. */
+export type SavedViewStore = Record<string, SavedView>;
+
+/**
+ * Read a page's user-saved views.
+ *
+ * Returns `{}` when there are none, or when storage is unreadable — a reader
+ * whose saved views cannot be loaded gets the presets, which is exactly where
+ * they were before the feature existed.
+ */
+export function loadSavedViews(page: string, options: PersistOptions = {}): SavedViewStore {
+  try {
+    const raw = storage(options.shared ?? true)?.getItem(SAVED_PREFIX + page);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as SavedViewStore;
+    // A stored object is only trustworthy in SHAPE, never in content: it
+    // outlives the code that wrote it, and a hand-edited one is a plain string.
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Save what is on screen as a NEW named view, and hand back the whole set.
+ *
+ * `reads` names which of each element's properties are view state, exactly as
+ * `captureView` takes it — only the caller knows which of a component's
+ * properties belong in a saved view and which are incidental. A grid's column
+ * filters do; its scroll position does not.
+ *
+ *   const views = saveViewAs('dashboard', 'Q3 capacity',
+ *     { source, elements: { header } }, { header: ['values'] });
+ *
+ * The id is DERIVED from the label, so a reader saving "Q3 capacity" twice
+ * updates it rather than collecting two entries that look identical in the
+ * chip. Returns the full store so a caller can re-populate the chip in the
+ * same breath — a saved view nobody can pick is not saved.
+ *
+ * Storage defaults to SHARED (localStorage): a view a reader took the trouble
+ * to name should outlive the tab. `persistView`'s "where was I" state defaults
+ * the other way, and deliberately.
+ */
+export function saveViewAs(
+  page: string,
+  label: string,
+  targets: {
+    source?: { state: ViewState };
+    elements?: Record<string, HTMLElement>;
+  },
+  reads: Record<string, readonly string[]> = {},
+  options: PersistOptions & { content?: ViewDefinition } = {},
+): SavedViewStore {
+  const trimmed = label.trim();
+  if (!trimmed) return loadSavedViews(page, options);
+
+  const views = loadSavedViews(page, options);
+  views[viewId(trimmed)] = {
+    label: trimmed,
+    snapshot: captureView(targets, reads),
+    // A view of a screen the reader BUILT has to remember that screen, or
+    // re-opening it would restore the state onto whatever was there instead.
+    ...(options.content ? { content: options.content } : {}),
+  };
+
+  writeSavedViews(page, views, options);
+  return views;
+}
+
+/** Forget one saved view. Returns what is left, for the same reason. */
+export function deleteSavedView(
+  page: string,
+  id: string,
+  options: PersistOptions = {},
+): SavedViewStore {
+  const views = loadSavedViews(page, options);
+  delete views[id];
+  writeSavedViews(page, views, options);
+  return views;
+}
+
+/**
+ * A stable id from a label — lowercase, words joined by a hyphen.
+ *
+ * Deriving it rather than generating one is what makes saving the same name
+ * twice an UPDATE. A random id would leave a reader with two "Q3 capacity"
+ * rows and no way to tell them apart.
+ */
+function viewId(label: string): string {
+  const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  // A label of pure punctuation still needs an id. Falling back to the raw
+  // label keeps it addressable rather than colliding on an empty key.
+  return slug || label;
+}
+
+function writeSavedViews(
+  page: string,
+  views: SavedViewStore,
+  options: PersistOptions,
+): void {
+  try {
+    storage(options.shared ?? true)?.setItem(SAVED_PREFIX + page, JSON.stringify(views));
+  } catch {
+    // Full, blocked, or a private window. The view is not kept; nothing breaks.
+  }
 }

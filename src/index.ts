@@ -106,8 +106,10 @@ export {
 export {
   persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
   viewOptions, onViewPicked,
+  loadSavedViews, saveViewAs, deleteSavedView,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
+  type SavedViewStore,
 } from './core/persist-view.js';
 export {
   EventStore,

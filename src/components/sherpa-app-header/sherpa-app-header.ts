@@ -103,10 +103,22 @@ export class SherpaAppHeader extends SherpaElement {
   }
 
   /** populate({ breadcrumb, filters }) — feed the composed children. */
-  protected override renderData(data: unknown): void {
+  protected override renderData(data: unknown): Promise<void> | void {
     const cfg = (data ?? {}) as AppHeaderConfig;
-    if (Array.isArray(cfg.breadcrumb)) this.#stamp('breadcrumbs', 'sherpa-breadcrumbs', cfg.breadcrumb);
-    if (Array.isArray(cfg.filters)) this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters);
+    const waits: Promise<void>[] = [];
+    if (Array.isArray(cfg.breadcrumb)) {
+      waits.push(this.#stamp('breadcrumbs', 'sherpa-breadcrumbs', cfg.breadcrumb));
+    }
+    if (Array.isArray(cfg.filters)) {
+      waits.push(this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters));
+    }
+    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist.
+    // The base class's contract is that populate() settles when the data is in
+    // the DOM — but this header's data lands in slotted CHILDREN, and stamping
+    // them was fire-and-forget. A caller that repopulated the bar and then set
+    // the chips wrote into a toolbar that had not rebuilt them yet, and the
+    // write silently went nowhere.
+    return waits.length ? Promise.all(waits).then(() => undefined) : undefined;
   }
 
   /* ── The filter bar, reachable ─────────────────────────────────────
@@ -142,12 +154,14 @@ export class SherpaAppHeader extends SherpaElement {
   }
 
   /** Populate a consumer-slotted composed child (no structural createElement). */
-  #stamp(slot: string, tag: string, data: unknown): void {
+  async #stamp(slot: string, tag: string, data: unknown): Promise<void> {
     const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
     if (!el) return; // consumer must slot the empty host; we never create one
-    const run = (): void => el.populate?.(data);
-    if (el.rendered) void Promise.resolve(el.rendered).then(run);
-    else queueMicrotask(run);
+    // A child that has not upgraded yet has no `rendered` to wait on, so give
+    // the custom-element registry a turn first.
+    if (!el.rendered) await new Promise<void>((res) => queueMicrotask(res));
+    await Promise.resolve(el.rendered);
+    await Promise.resolve(el.populate?.(data));
   }
 
   /* ── Sync data-* → DOM ──────────────────────────────────────────── */

@@ -589,3 +589,126 @@ test('renderView hands back the elements it built, by id', async ({ page }) => {
   expect(r.isSameNode).toBe(true);
   expect(r.tagLabel).toBe('live');
 });
+
+/**
+ * SAVING a view — the other half of applying one.
+ *
+ * A page that can APPLY a saved view but not MAKE one is half a feature, and
+ * both example pages had a Save button wired to `console.log` — a control that
+ * promises something and does nothing.
+ *
+ * `saveViewAs` captures what is on screen through the same API a definition
+ * writes it through, so what is saved is exactly what can be restored.
+ */
+test('saveViewAs stores a named view, and the id is derived from the label', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { saveViewAs, loadSavedViews, deleteSavedView } = await import('/dist/index.js');
+    localStorage.removeItem('sherpa:views:probe');
+
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { values?: unknown };
+    document.getElementById('root')!.replaceChildren(el);
+    const source = { state: { filter: ['region', 'eq', 'EMEA'], page: 1 } };
+
+    const first = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
+      { chip: ['values'] });
+
+    // The SAME label again is an UPDATE, not a second row. A random id would
+    // leave a reader with two "Q3 capacity" entries and no way to tell them
+    // apart in the chip.
+    source.state = { filter: ['region', 'eq', 'APAC'], page: 2 };
+    const second = saveViewAs('probe', 'Q3 capacity', { source, elements: { chip: el } },
+      { chip: ['values'] });
+
+    // Whitespace is not a different view either.
+    saveViewAs('probe', '  Q3 capacity  ', { source }, {});
+    const trimmed = Object.keys(loadSavedViews('probe'));
+
+    const reloaded = loadSavedViews('probe');
+    const afterDelete = deleteSavedView('probe', 'q3-capacity');
+    return {
+      ids: Object.keys(first),
+      label: first['q3-capacity']?.label,
+      firstFilter: first['q3-capacity']?.snapshot.source?.filter,
+      secondFilter: second['q3-capacity']?.snapshot.source?.filter,
+      count: Object.keys(second).length,
+      trimmed,
+      // It SURVIVES the call — read back from storage, not from the return.
+      reloadedFilter: reloaded['q3-capacity']?.snapshot.source?.filter,
+      afterDelete: Object.keys(afterDelete),
+    };
+  });
+
+  expect(r.ids).toEqual(['q3-capacity']);
+  expect(r.label).toBe('Q3 capacity');
+  expect(r.firstFilter).toEqual(['region', 'eq', 'EMEA']);
+
+  // Saved twice under one name = one view, updated.
+  expect(r.secondFilter).toEqual(['region', 'eq', 'APAC']);
+  expect(r.count).toBe(1);
+  expect(r.trimmed).toEqual(['q3-capacity']);
+
+  expect(r.reloadedFilter).toEqual(['region', 'eq', 'APAC']);
+  expect(r.afterDelete).toEqual([]);
+});
+
+test('an empty label saves nothing, and unreadable storage yields no views', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { saveViewAs, loadSavedViews } = await import('/dist/index.js');
+    localStorage.removeItem('sherpa:views:probe2');
+
+    // A reader who cancels the naming prompt has not saved anything.
+    const blank = saveViewAs('probe2', '   ', { source: { state: {} } }, {});
+
+    // A stored value this code no longer understands is not a crash. A saved
+    // view outlives the code that wrote it, and a hand-edited one is a string.
+    localStorage.setItem('sherpa:views:probe3', 'not json at all');
+    const broken = loadSavedViews('probe3');
+    localStorage.setItem('sherpa:views:probe4', '"a plain string"');
+    const wrongShape = loadSavedViews('probe4');
+
+    return { blank: Object.keys(blank), broken, wrongShape };
+  });
+
+  expect(r.blank).toEqual([]);
+  expect(r.broken).toEqual({});
+  expect(r.wrongShape).toEqual({});
+});
+
+test('onViewPicked re-reads a library that GROWS when given a function', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+    host.replaceChildren();
+
+    const states: unknown[] = [];
+    const source = { setState: (s: unknown) => states.push(s) };
+
+    // Starts with presets only — exactly what a page wires at init.
+    const library: Record<string, { label: string; snapshot: unknown }> = {
+      fleet: { label: 'Fleet', snapshot: { v: 1, source: { filter: undefined } } },
+    };
+    onViewPicked(host, () => library, { source });
+
+    const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
+      detail: { values: { view: [v] } }, bubbles: true,
+    }));
+
+    fire('saved-later');
+    const beforeSave = states.length;
+
+    // The reader saves one AFTER the listener was wired.
+    library['saved-later'] = {
+      label: 'Saved later', snapshot: { v: 1, source: { filter: ['a', 'eq', 1] } },
+    };
+    fire('saved-later');
+
+    return { beforeSave, states };
+  });
+
+  // Unknown before it was saved, resolvable after — the whole point of the
+  // function form. A listener holding the object it was wired with could never
+  // restore a view the reader made, which is what the dashboard's Save button
+  // hit: it wired the presets and then could not find anything it had saved.
+  expect(r.beforeSave).toBe(0);
+  expect(r.states).toEqual([{ filter: ['a', 'eq', 1] }]);
+});

@@ -387,8 +387,17 @@ export abstract class SherpaElement extends HTMLElement {
     return this.rendered.then(() => this.renderData(data));
   }
 
-  /** Override to render a data payload. Default is a no-op (attribute-only components). */
-  protected renderData(_data: unknown): void {
+  /**
+   * Override to render a data payload. Default is a no-op (attribute-only).
+   *
+   * MAY RETURN A PROMISE, and `populate()` chains onto it. Most components
+   * render synchronously and return nothing. A COMPOSING one does not: an app
+   * header's data lands in slotted children, so its own `renderData` finishing
+   * says nothing about whether the chips exist. Returning the children's
+   * promises is what keeps populate()'s contract true — it settles when the
+   * data is in the DOM — for a component whose DOM is somebody else's.
+   */
+  protected renderData(_data: unknown): Promise<void> | void {
     /* no-op by default */
   }
 
