@@ -131,7 +131,7 @@
 
 /* ── Hover ────────────────────────────────────────────────────────── */
 :host(:not([disabled]):hover) .card {
-  border-color: var(--sherpa-theme-border-default-1, #E8E8F6);
+  border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
 }
 
 /* ── Selected — accent ring + subtle accent face ──────────────────── */
@@ -153,8 +153,8 @@
 :host([disabled]) .card {
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
-  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 /* Disabled text stays a legible dark (Figma keeps content on the inactive card at
    content/body/+1 #35353d). The previous content-body-2 (#b3b3c3) matched the

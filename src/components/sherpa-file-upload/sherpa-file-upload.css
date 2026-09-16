@@ -17,7 +17,7 @@
   /* cascade fallbacks so a bare (status-less) file chip still resolves */
   --_file-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_file-border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
-  --_file-text: var(--_status-text, var(--sherpa-theme-content-body-1, #35353D));
+  --_file-text: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }
 
 .field {
@@ -50,7 +50,7 @@
 
 .helper {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
 /* ── Drop zone ───────────────────────────────────────────────────────── */
@@ -66,7 +66,7 @@
   border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: center;
   transition: border-color 120ms ease, background-color 120ms ease;
@@ -82,14 +82,14 @@
 .drop-icon {
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .browse {
   padding: 0;
   border: none;
   background: none;
   font: inherit;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-weight: var(--sherpa-font-weight-medium, 500);
   text-decoration: underline;
   cursor: pointer;
@@ -148,7 +148,7 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
@@ -169,7 +169,7 @@
   text-overflow: ellipsis;
 }
 .file-size {
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   flex-shrink: 0;
@@ -177,7 +177,7 @@
 .file-status {
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:empty { display: none; }
 }
@@ -200,7 +200,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
@@ -218,11 +218,11 @@
 :host([disabled]) .drop-zone {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #B3B3C3);
-  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
-  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #B3B3C3); }
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Details (max size + allowed types) ──────────────────────────────── */
 /* Figma details: two 12/16 lines, gap 0. */
@@ -237,7 +237,7 @@
 .allowed-types {
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .max-size:empty,
 .allowed-types:empty { display: none; }
@@ -269,13 +269,13 @@
 /* Clear all — secondary (outline) button */
 .clear-all {
   border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:hover { background: transparent; }
 }
@@ -296,7 +296,7 @@
 :host([disabled]) .clear-all,
 :host([disabled]) .upload {
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #B3B3C3);
-  border-color: var(--sherpa-theme-border-default-2, #B3B3C3);
-  color: var(--sherpa-theme-content-body-2, #B3B3C3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }

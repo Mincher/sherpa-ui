@@ -64,7 +64,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
@@ -98,7 +98,7 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: pre;
   tab-size: 2;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   @container sherpa-code-block (max-width: 400px) {
     & { font-size: var(--sherpa-font-size-body-small, 12px); }
@@ -115,7 +115,7 @@
   white-space: pre;
   text-align: end;
   user-select: none;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([data-line-numbers]) .code {
   display: flex;

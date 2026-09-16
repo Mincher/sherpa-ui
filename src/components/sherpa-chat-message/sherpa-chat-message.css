@@ -118,7 +118,7 @@
 :host([data-has-content]) .content { display: none; }
 
 .bubble ::slotted(*) { margin: 0; }
-.bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 4px); }
+.bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 
 /* ── Assistant (default): left-aligned, neutral Style surface, avatar shown ─ */
 :host,

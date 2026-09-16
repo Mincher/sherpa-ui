@@ -55,7 +55,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   cursor: grab;
 
   &:active { cursor: grabbing; }
@@ -79,7 +79,7 @@
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0C0B11));
+  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -94,7 +94,7 @@ slot[name="heading"] { display: contents; }
 /* ── Description ──────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -143,7 +143,7 @@ slot[name="heading"] { display: contents; }
   align-items: center;
   gap: var(--sherpa-theme-gap-lg, 12px);
   padding: 0 var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-md, 8px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);

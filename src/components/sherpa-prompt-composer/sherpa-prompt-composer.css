@@ -66,7 +66,7 @@
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:focus { outline: none; }
   &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
@@ -107,7 +107,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   cursor: pointer;
   flex-shrink: 0;
   transition: background-color 120ms ease, color 120ms ease;

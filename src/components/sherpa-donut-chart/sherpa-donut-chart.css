@@ -215,7 +215,7 @@
   /* content/body/BASE — the darkest ink, as Figma binds it. It read body/+1
      (#35353D) here, which is the SUBLABEL's colour: the total and its caption
      were the same grey, so the total did not lead. */
-  color: var(--sherpa-theme-content-body-base, #0C0B11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-variant-numeric: tabular-nums;
 
   &:empty { display: none; }
@@ -224,7 +224,7 @@
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 
   &:empty { display: none; }
 }

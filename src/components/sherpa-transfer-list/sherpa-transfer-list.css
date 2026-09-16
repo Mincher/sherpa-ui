@@ -18,7 +18,7 @@
   min-block-size: 240px;
   font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #0C0B11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
 
   /* cascade fallbacks so a bare (status-less) list still resolves */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
@@ -50,7 +50,7 @@
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -68,7 +68,7 @@
   display: none;
   margin: 0;
   padding: var(--sherpa-display-mode-space-base, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
   text-align: center;
 }
 /* Empty pane: hide the list, show the placeholder. */

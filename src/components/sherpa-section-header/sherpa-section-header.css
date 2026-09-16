@@ -23,7 +23,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sherpa-display-mode-space-xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* Figma Section Header (27:767): heading and description stack with ROW GAP 0
@@ -70,7 +70,7 @@
   display: none;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-xs, 4px);
+  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 :host([data-has-actions]) .actions { display: flex; }
 

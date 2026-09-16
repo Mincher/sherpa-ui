@@ -79,7 +79,7 @@
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-theme-content-body-1, #35353D);
+  color: var(--sherpa-theme-content-body-1, #35353d);
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
