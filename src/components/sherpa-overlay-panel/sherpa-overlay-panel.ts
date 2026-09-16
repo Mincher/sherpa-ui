@@ -11,12 +11,12 @@
  * rich header chrome — a lead icon + link-style title + a description/metadata
  * row (slot) + a trailing toolbar of collapse / expand / external / close
  * buttons — plus a body slot and a footer slot. This file opens/closes the
- * dialog, keeps `open` in sync, renders data-icon/data-title, wires the toolbar
+ * dialog, keeps `open` in sync, renders data-icon/data-heading, wires the toolbar
  * buttons to events, and re-dispatches the native `close` event as a composed one.
  *
  * @element sherpa-overlay-panel
  * @attr {string}  data-icon      — glyph before the title (shows the icon slot area)
- * @attr {string}  data-title     — link-style header title text
+ * @attr {string}  data-heading   — link-style header title text
  * @attr {boolean} open           — read reflects dialog.open; set → show()/close()
  * @attr {boolean} data-collapsed — collapsed state (body/footer folded; toggle reflects it)
  * @attr {boolean} data-collapsible — show the collapse toggle
@@ -46,7 +46,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   // The title and icon are MIRRORED onto the composed header rather than written
   // into this shadow tree — the header owns those elements now, and one component
   // must not reach into another's internals.
-  static override observed = ['data-title', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
+  static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
@@ -113,12 +113,14 @@ export class SherpaOverlayPanel extends SherpaElement {
   #syncHeader(): void {
     const header = this.$('.header');
     if (!header) return;
-    for (const name of ['data-title', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible'] as const) {
+    // A STRAIGHT FORWARD, no translation. The panel used to call this
+    // it by another name and rename it to `data-heading` on the way to the header —
+    // two names for one thing, with a mapping step to keep them in step.
+    // NAMING-STANDARD D9: primary text is `data-heading` everywhere.
+    for (const name of ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible'] as const) {
       const value = this.getAttribute(name);
-      // data-title is the panel's name for it; the header calls it data-heading.
-      const target = name === 'data-title' ? 'data-heading' : name;
-      if (value == null) header.removeAttribute(target);
-      else header.setAttribute(target, value);
+      if (value == null) header.removeAttribute(name);
+      else header.setAttribute(name, value);
     }
   }
 

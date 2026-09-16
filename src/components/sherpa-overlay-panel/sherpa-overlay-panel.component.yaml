@@ -107,8 +107,8 @@ props:
   - $type: prop
     name: data-heading
     type: string
-    kind: style
-    description: — convenience header label (a slotted [slot=header] overrides it)
+    kind: content
+    description: link-style header title text (rendered into .title)
   - $type: prop
     name: data-icon
     type: string
@@ -121,11 +121,6 @@ props:
     description: >-
       status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown
       by opt-in data-* flags (CSS-gated):
-  - $type: prop
-    name: data-title
-    type: string
-    kind: content
-    description: link-style header title text (rendered into .title)
   - $type: prop
     name: open
     type: string
