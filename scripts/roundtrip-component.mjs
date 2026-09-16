@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * roundtrip-component.mjs — the lossless / round-trip guard for the DTCG-dialect
- * component spec (docs/COMPONENT-SPEC-DTCG-PLAN.md §1.3-1.4, "Verification").
+ * component spec (schemas/component.v1.json is the contract).
  *
  *   node scripts/roundtrip-component.mjs <sherpa-name>
  *

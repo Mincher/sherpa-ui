@@ -1,6 +1,6 @@
 # Migration: CTA & Transparent — Button-extension → Control-extension
 
-**Date:** 2026-08-24 · **Branch:** sherpa-reforged · **Status:** ✅ DONE (Figma side)
+**Date:** 2026-08-24 · **Branch:** sherpa-reforged · **Status:** ✅ DONE — Figma 2026-08-24, code side confirmed clear 2026-09-16
 
 ## Result (verified)
 - CTA + Transparent now extensions of **Control** (parent VariableCollectionId:13:2622). Old Button-extensions deleted. Collection count back to 21.
@@ -21,9 +21,18 @@
 - `node.mainComponent` throws under dynamic-page access — use `await node.getMainComponentAsync()`.
 - Verified: base/CTA/Transparent × statuses all render correctly after deletion.
 
-## TODO (code side, not yet done)
-- Check `scripts/project-tokens.mjs` / tokens.css for any CTA/Transparent references (scan showed 0 — likely nothing to do, but confirm).
-- The old `.def.json` / component CSS may still describe the old look-tier axis — audit when the Button component is next touched.
+## Code side — CLOSED 2026-09-16, nothing to do
+
+Both items confirmed:
+
+- `scripts/project-tokens.mjs` and `tokens.css` carry **0** CTA/Transparent
+  references. The earlier scan was right.
+- The `.def.json` half cannot apply: that format has **no files anywhere** in
+  the repo. Component contracts are `*.component.yaml`, and the look-tier axis
+  is not described in them.
+
+The 452KB rollback dump that sat beside this file was deleted the same day —
+it restored a Figma state two migrations old.
 
 
 ## Goal

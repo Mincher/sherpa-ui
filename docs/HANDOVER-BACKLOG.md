@@ -145,6 +145,35 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
+## MCP server — a full rewrite, agreed 2026-09-16
+
+Will: *"The MCP was created a long time ago so a lot of it will be outdated.
+I'm fine with a full rewrite of the MCP later."*
+
+**It currently tells agents to write a format that has no files.**
+`scaffold_def`, `validate_def` and `compile_def` all produce or consume
+`<name>.def.json`. There are **zero** such files in the repo; the component
+contract is `<name>.component.yaml`, 58 of them. An agent that follows the MCP
+writes a file nothing reads.
+
+What is known wrong, from the 2026-09-16 sweep:
+
+- the three `*_def` tools target the dead format
+- `mcp-server/README.md` (26KB) documents ~19 tools; **10** are registered, and
+  only ONE name overlaps
+- `mcp-server/tools/generate.js` still points at `scripts/merge-figma.mjs`,
+  retired 2026-09-02
+- `mcp-server/lib/validation.js` hand-rolls a second notion of "valid
+  component", independent of `schemas/component.v1.json` — two definitions that
+  can drift
+- the three docs it cited (`COMPONENT-DEFINITION-STANDARD`,
+  `GENERATION-TOOLING`, `SYSTEM-OVERVIEW`) were deleted 2026-09-16 as they
+  described the dead format. The reads are `existsSync`-guarded, so nothing
+  crashes — the appendix is just empty.
+
+A rewrite should start from `schemas/component.v1.json` and the 58 real specs,
+not from what the old tools did.
+
 ## Owed from earlier passes
 
 - **Sweep every component's projected properties for mode/extension resolution
