@@ -139,3 +139,92 @@ test('validation runs headless, and a schema maps an external shape', async () =
 function settle() {
   return new Promise((resolve) => setTimeout(resolve, 20));
 }
+
+/* ── F1 / F2 — skipping work that would change nothing ──────────────── */
+
+test('F1: a load asking the SAME question twice is skipped', async () => {
+  const store = new ArrayStore(makeRows(), { key: 'id' });
+  let storeLoads = 0;
+  const real = store.load.bind(store);
+  store.load = (o) => { storeLoads += 1; return real(o); };
+
+  const source = new DataSource({ store });
+  await source.load();
+  assert.equal(storeLoads, 1, 'the first load reads the store');
+
+  // Twenty writes of the SAME filter. A chip re-emitting its state, a view
+  // re-applying what it already applied, an attribute syncing back — all
+  // arrive here, and all are free to ignore.
+  for (let i = 0; i < 20; i += 1) source.setFilter(['plan', 'eq', 'Pro']);
+  await settle();
+  assert.equal(storeLoads, 2, 'only the FIRST of the twenty reached the store');
+
+  // A genuine change still reads.
+  source.setFilter(['plan', 'eq', 'Free']);
+  await settle();
+  assert.equal(storeLoads, 3);
+});
+
+test('F1: a MUTATION is never skipped, though the ViewState is identical', async () => {
+  const store = new ArrayStore(makeRows(10), { key: 'id' });
+  const source = new DataSource({ store });
+  await source.load();
+  assert.equal(source.total, 10);
+
+  // The trap this guard could have caused: an insert leaves the ViewState
+  // untouched and changes the answer. The store's change listener forces.
+  await store.insert({ id: 999, name: 'new', plan: 'Pro', spend: 1 });
+  await settle();
+  assert.equal(source.total, 11, 'the insert reached the source');
+
+  await store.remove(999);
+  await settle();
+  assert.equal(source.total, 10, 'and so did the remove');
+});
+
+test('F2: a component is not re-populated with rows it already holds', async () => {
+  const source = new DataSource({ store: new ArrayStore(makeRows(50), { key: 'id' }) });
+
+  let populates = 0;
+  const headless = {
+    populate: () => { populates += 1; },
+    setAttribute() {}, removeAttribute() {},
+    addEventListener() {}, removeEventListener() {},
+  };
+  source.bind(headless);
+  await source.load();
+  await settle();
+
+  const afterFirst = populates;
+  assert.ok(afterFirst > 0, 'the first load populates');
+
+  // Same filter, twenty times. Even if F1 let a load through, the rows array
+  // would be the same reference and the push is skipped.
+  for (let i = 0; i < 20; i += 1) source.setFilter(['plan', 'eq', 'Pro']);
+  await settle();
+  const afterIdentical = populates;
+
+  source.setFilter(['plan', 'eq', 'Free']);
+  await settle();
+  assert.ok(populates > afterIdentical, 'a REAL change still populates');
+});
+
+test('F2: a component bound AFTER a load still gets the rows', async () => {
+  const source = new DataSource({ store: new ArrayStore(makeRows(5), { key: 'id' }) });
+  await source.load();
+  await settle();
+
+  // The guard is per-component, so one that has never been pushed to has no
+  // `lastRows` and must not be skipped — otherwise a late-bound component
+  // would sit empty until the next filter change.
+  const payloads = [];
+  source.bind({
+    populate: (d) => payloads.push(d),
+    setAttribute() {}, removeAttribute() {},
+    addEventListener() {}, removeEventListener() {},
+  });
+  await settle();
+
+  assert.equal(payloads.length, 1, 'bound late, populated immediately');
+  assert.equal(payloads[0].length, 5);
+});

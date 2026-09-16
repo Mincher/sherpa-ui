@@ -1826,14 +1826,28 @@ a hunch.
 
 ### The measurement
 
-| What | Time | Populates |
-|---|---|---|
-| 20 filter writes that CHANGE the filter | 667ms | 120 |
-| 20 filter writes with the **same value** | 667ms | 120 |
+**First figures were wrong — corrected 2026-09-16.** The original "667ms" was
+the BENCHMARK's own `__settled()` waiting, not the layer. Re-measured as a burst
+of twenty writes with one settle at the end, which is what a run of keystrokes
+actually looks like:
 
-**Identical writes cost exactly as much as real ones.** Twenty loads, 120
-populates (6 × 20), and not one pixel changed. ~33ms per keystroke across six
-components; the dashboard binds eleven.
+| Rows | 20 changing writes | 20 IDENTICAL writes | |
+|---|---|---|---|
+| 500 | 34ms | 34ms → **34ms** | no measurable gain |
+| 20,000 | 225ms | 167ms → **32ms** | **5× on the wasted case** |
+
+At 500 rows the work was never the problem. At 20k it is, and the guards remove
+it entirely — identical writes now cost what doing nothing costs.
+
+The COUNTS are the clearer story, and they hold at any size:
+
+| | Before | After |
+|---|---|---|
+| store loads, 20 identical writes | 20 | **2** |
+| populates, 6 bound components | 120 | **0** |
+
+A lesson worth keeping: **measure the thing, not the harness.** The first number
+was 20× too large because the loop awaited a settle between every write.
 
 Nothing here is a correctness bug — the layer works. These are the things that
 will hurt once ONE filter fans out to eleven visualisations, which is the whole
@@ -1841,8 +1855,8 @@ point of the layer.
 
 | Step | Work | Evidence | Size |
 |---|---|---|---|
-| **F1** | `DataSource` skips a load when the ViewState is UNCHANGED | 20 identical writes → 20 loads → 120 populates, all wasted | small — compare a serialised state before `load()` |
-| **F2** | `#push` skips a component whose payload is IDENTICAL to its last | a component bound `readonly` to rows that did not change still rebuilds its DOM | small — hold the last pushed reference per bound element |
+| **F1** ✅ | `DataSource` skips a load when the ViewState is UNCHANGED | **DONE 2026-09-16.** 20 identical writes → **2** store loads (was 20). Needed TWO checks, not one: the last COMPLETED key, and the key currently IN FLIGHT — a burst all fires before the first completes, so the completed key cannot stop it | small |
+| **F2** ✅ | `#push` skips a component whose payload is IDENTICAL to its last | **DONE 2026-09-16.** 120 populates → **0**. Guards on the ROWS ARRAY, not the adapted payload: `applyOptions` returns a new array per load, while an `as` adapter builds a new object every call and would never match | small |
 | **F3** | Coalesce writes within a frame | typing sets the filter per keystroke; each is a full load + fan-out | small — `queueMicrotask` / rAF debounce inside `load()` |
 | **F4** | ONE shared chart datum type | `BarDatum`, `DonutSlice` and `LegendItem` are the same shape under three names; `dashboard.js:157` maps a shape to ITSELF field-for-field to cross between them | small, and a REUSE fix as much as a perf one |
 | **F5** | A datum vocabulary for `as` adapters | 18 different `populate()` shapes across 22 components, so nearly every bind needs a hand-written adapter | medium — needs the F4 survey first |
