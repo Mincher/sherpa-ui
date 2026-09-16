@@ -49,6 +49,10 @@
                     lives in this shadow root, so a light-DOM wrapper component
                     cannot reach it. Reveal is pure CSS on .count-wrap:hover.
     data-menu       Figma State=menu — snap on the caret button
+    data-icon-only  the chip reduced to JUST its menu button — a 24 square with
+                    a funnel. Body, count, indicator and value label are all
+                    hidden in CSS. For a filter affordance whose field is named
+                    elsewhere (a data-grid column header).
     data-persistent a SELECTOR rather than a toggle: always on, and never
                     "empty". Set by sherpa-quick-filter-toolbar from a filter
                     definition's `persistent` flag. The view chip is the case —
@@ -99,7 +103,21 @@
            the chip and the value reads here. Empty when nothing is picked — the
            button hugs its content, so it collapses back to the bare caret. -->
       <span class="caret-label" part="caret-label"></span>
-      <i class="fa-solid fa-caret-down" aria-hidden="true"></i>
+      <!--
+        The caret glyph. It keeps its own fa-caret-down class, so a plain chip
+        is unchanged; an ICON-ONLY chip overrides the glyph in CSS instead
+        (`:host([data-icon-only]) .caret-glyph::before`), which is why the
+        class hook is here. Swapping it in JS would mean a component writing a
+        Font Awesome class name at runtime for a purely presentational change.
+      -->
+      <i class="caret-glyph fa-solid fa-caret-down" aria-hidden="true"></i>
+      <!--
+        An ICON-ONLY chip given `data-icon-start` shows that glyph here instead
+        of the funnel — a sort control cycles through three of them, and which
+        one it wears is data. JS writes the Font Awesome class (see #syncText);
+        CSS picks which of the two <i>s is visible.
+      -->
+      <span class="caret-icon" part="caret-icon" aria-hidden="true"></span>
     </button>
 
     <span class="menu-slot"><slot name="menu"></slot></span>

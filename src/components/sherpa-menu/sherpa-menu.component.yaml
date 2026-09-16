@@ -33,6 +33,22 @@ anatomy:
         class: header
         part: header
         children:
+          - el: span
+            class: drill-trail
+            part: drill-trail
+            children:
+              - el: sherpa-button
+                class: drill-back
+                part: drill-back
+                attrs:
+                  data-type: icon
+                  data-size: xs
+                  data-look: transparent
+                  data-icon-start: fa-solid fa-arrow-left
+                  aria-label: Back
+              - el: sherpa-breadcrumbs
+                class: drill-crumbs
+                part: drill-crumbs
           - el: p
             class: heading
             part: heading
@@ -67,6 +83,7 @@ anatomy:
             class: remove
             part: remove
             attrs:
+              data-status: critical
               data-icon-start: fa-solid fa-xmark
           - el: sherpa-button
             class: clear
@@ -108,6 +125,15 @@ props:
     kind: style
     description: show the Apply / Cancel footer and DEFER changes until Apply
   - $type: prop
+    name: data-drill
+    type: string
+    kind: style
+    description: >-
+      the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header.
+      data-drill-from names the list that was replaced. Drilling IN PLACE rather than opening a
+      second card means one box to position, nothing to close on a pointer crossing a gap, and no
+      way for two cards to disagree about what is ticked.
+  - $type: prop
     name: data-heading
     type: string
     kind: content
@@ -116,9 +142,7 @@ props:
     name: data-removable
     type: string
     kind: content
-    description: >-
-      show a "Remove filter" button in the footer (after Today); it emits menu-select with
-      value="remove", exactly as the action ROW of the same name does
+    description: show a "Remove" button in the footer (after Today); it emits menu-select with value="remove"
   - $type: prop
     name: data-search
     type: string
@@ -154,6 +178,9 @@ states:
   - $type: state
     name: has-header
     selector: ":host([data-has-header])"
+  - $type: state
+    name: drill
+    selector: ":host([data-drill])"
   - $type: state
     name: calendar
     selector: ":host([data-type=\"calendar\"])"
@@ -229,12 +256,14 @@ tokens:
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
   menu.box-shadow: "{sherpa.display-mode-size-2xs}"
-  heading.padding-inline: "{sherpa.theme-padding-md}"
+  heading.padding-inline: "{sherpa.theme-padding-none}"
   heading.color: "{sherpa.theme-content-body-1}"
-  heading.font-size: "{sherpa.theme-content-size-xs}"
+  heading.font-size: "{sherpa.theme-content-size-small}"
   heading.font-weight: "{sherpa.font-weight-regular}"
-  heading.line-height: "{sherpa.theme-content-line-height-xs}"
+  heading.line-height: "{sherpa.theme-content-line-height-small}"
   heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
+  remove.--_status-text: "{sherpa.theme-content-critical-1}"
+  remove.--_status-border: "{sherpa.theme-border-critical-2}"
   rows.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:

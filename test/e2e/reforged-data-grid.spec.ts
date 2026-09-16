@@ -276,83 +276,120 @@ test('typing in a filter narrows rows to substring matches in THAT column', asyn
   expect(last['filters']).toEqual({ spend: '80' });
 });
 
-test('a filtered column takes the Style `active` mode on its HEADER', async ({ page }) => {
-  // A filter narrows what the grid shows, and the filter box scrolls away the
-  // moment the user reads down the table. The sticky HEADING is what stays, so
-  // the heading carries the tint. `active` is the Style collection's own mode
-  // for this, the same one the quick-filter toolbar's favourite star uses.
+test('a SORTED or FILTERED column takes the Style `active` mode on its HEADER', async ({ page }) => {
+  // A sort orders what the grid shows; a filter narrows it. Both are the column
+  // acting on the view, so both read the same. It lands on the sticky HEADING
+  // because the filter box and the 14px sort arrow are both gone by row 40 —
+  // and on the heading ONLY: the secondary filter row already says what it is
+  // doing, because the text is sitting in the box. `active` is the Style
+  // collection's own mode, the one the quick-filter toolbar's favourite star
+  // uses.
   await installBuilder(page);
   const r = await page.evaluate(async (config) => {
     const el = await window.__buildGrid(config);
     const sr = el.shadowRoot!;
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     const type = async (field: string, value: string): Promise<void> => {
       const input = sr
         .querySelector(`.filter-cell[data-field="${field}"]`)!
         .querySelector<HTMLInputElement>('.filter-input')!;
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await settle();
     };
-    const status = (): Record<string, (string | null)[]> => ({
-      heads: Array.from(sr.querySelectorAll<HTMLElement>('.head-cell')).map(
-        (th) => th.dataset['status'] ?? null,
-      ),
-      filters: Array.from(sr.querySelectorAll<HTMLElement>('.filter-cell')).map(
-        (th) => th.dataset['status'] ?? null,
-      ),
+    // Which FIELDS carry the mode — a count alone cannot tell the sorted column
+    // from the filtered one once both are lit. `filters` should stay EMPTY
+    // throughout: the secondary filter row never takes the mode.
+    const status = () => ({
+      heads: Array.from(sr.querySelectorAll<HTMLElement>('.head-cell'))
+        .filter((th) => th.dataset['status'] === 'active')
+        .map((th) => th.dataset['field']),
+      filters: Array.from(sr.querySelectorAll<HTMLElement>('.filter-cell'))
+        .filter((th) => th.dataset['status'] === 'active')
+        .map((th) => th.dataset['field']),
     });
-    const head = (field: string): HTMLElement =>
-      sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
     // The tint has to be a real painted colour, not just an attribute — the
     // [data-status] block in tokens.css is a DOCUMENT rule and cannot reach
     // inside this shadow root, so the component must feed --_status-* itself.
     const paint = (field: string) => {
-      const th = head(field);
-      const cs = getComputedStyle(th);
+      const th = sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
       return {
-        background: cs.backgroundColor,
+        background: getComputedStyle(th).backgroundColor,
         label: getComputedStyle(th.querySelector('.head-label')!).color,
+        // The sort CHIP paints itself from its own on-state; the column's tint
+        // is reset on it so the heading's colour stops at the heading.
+        sortOn: th.querySelector('.head-sort')!.hasAttribute('data-current'),
       };
     };
 
     const clean = { ...status(), paint: paint('name') };
 
+    // SORT alone.
+    sr.querySelector<HTMLElement>('.head-cell[data-field="spend"] .head-btn')!.click();
+    await settle();
+    const sorted = { ...status(), paint: paint('spend') };
+
+    // FILTER a DIFFERENT column: now two columns are acting on the view, and
+    // only the filtered one lights its filter cell.
     await type('name', 'ar');
-    const filtered = { ...status(), paint: paint('name'), other: paint('status') };
+    const both = { ...status(), paint: paint('name') };
 
-    // A SORT rebuilds the whole header row — the tint must survive it.
-    el.dataset['sortField'] = 'spend';
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const afterSort = status();
-
-    // Clearing the field takes the mode straight back off.
+    // Clearing the filter leaves the sort's own tint standing.
     await type('name', '');
-    const cleared = { ...status(), paint: paint('name') };
+    const filterCleared = status();
 
-    return { clean, filtered, afterSort, cleared };
+    // Sorting a column that is ALSO filtered must not light it twice or fight
+    // itself — one attribute, one tint.
+    await type('spend', '80');
+    const sortedAndFiltered = { ...status(), paint: paint('spend') };
+
+    // Naming an UNSORTABLE column as the sort field is not a sort, so that
+    // column takes nothing — the flag follows the real state, not the attribute.
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'locked', header: 'Locked', sortable: false },
+      ],
+      rows: [{ name: 'Marcus Reyes', locked: 'yes' }],
+    });
+    el.dataset['sortField'] = 'locked';
+    await settle();
+    const unsortable = status();
+
+    return { clean, sorted, both, filterCleared, sortedAndFiltered, unsortable };
   }, FILTER_CONFIG);
 
-  // Nothing filtered: no column carries the mode.
-  expect(r.clean.heads.every((v) => v === null)).toBe(true);
-  expect(r.clean.filters.every((v) => v === null)).toBe(true);
+  // Nothing acting on the view: no column carries the mode.
+  expect(r.clean.heads).toEqual([]);
+  expect(r.clean.filters).toEqual([]);
 
-  // Exactly ONE column takes it — the one being filtered, on both its rows.
-  expect(r.filtered.heads.filter((v) => v === 'active')).toHaveLength(1);
-  expect(r.filtered.filters.filter((v) => v === 'active')).toHaveLength(1);
+  // A sort lights the HEADING.
+  expect(r.sorted.heads).toEqual(['spend']);
+  expect(r.sorted.filters).toEqual([]);
+  // And it is actually PAINTED, glyph included, not merely flagged.
+  expect(r.sorted.paint.background).not.toBe(r.clean.paint.background);
+  expect(r.sorted.paint.label).not.toBe(r.clean.paint.label);
+  expect(r.sorted.paint.sortOn).toBe(true);
 
-  // And it is actually PAINTED, not merely flagged.
-  expect(r.filtered.paint.background).not.toBe(r.clean.paint.background);
-  expect(r.filtered.paint.label).not.toBe(r.clean.paint.label);
-  // An untouched column is left alone.
-  expect(r.filtered.other.background).toBe(r.clean.paint.background);
+  // Two columns can be active at once for two different reasons.
+  expect(r.both.heads.sort()).toEqual(['name', 'spend']);
+  // The secondary FILTER row is never lit — not even the column being filtered.
+  // That row already says what it is doing: the text is in the box.
+  expect(r.both.filters).toEqual([]);
+  expect(r.both.paint.background).toBe(r.sorted.paint.background);
 
-  // A header rebuild (here: a sort) keeps it.
-  expect(r.afterSort.heads.filter((v) => v === 'active')).toHaveLength(1);
+  // Clearing the filter drops that column back; the sorted one holds.
+  expect(r.filterCleared.heads).toEqual(['spend']);
+  expect(r.filterCleared.filters).toEqual([]);
 
-  // Clearing the filter clears the mode and the paint with it.
-  expect(r.cleared.heads.every((v) => v === null)).toBe(true);
-  expect(r.cleared.filters.every((v) => v === null)).toBe(true);
-  expect(r.cleared.paint.background).toBe(r.clean.paint.background);
+  // Sorted AND filtered is still ONE tint on one heading.
+  expect(r.sortedAndFiltered.heads).toEqual(['spend']);
+  expect(r.sortedAndFiltered.filters).toEqual([]);
+  expect(r.sortedAndFiltered.paint.background).toBe(r.sorted.paint.background);
+
+  // An unsortable column named as the sort field is not sorted, so it is not
+  // active either — the flag follows the real state, not the attribute.
+  expect(r.unsortable.heads).toEqual([]);
 });
 
 test('a populated filter shows a clear button that empties only its own column', async ({ page }) => {
@@ -1061,4 +1098,723 @@ test('data-select="single" draws radios, holds one row, and drops the select-all
   expect(r.single.headCell).toBe(true);
   expect(r.single.ticked).toBe(1);
   expect(r.single.reported).toBe(1);
+});
+
+/**
+ * COLUMN FILTERS — a filter button in each heading, left of the sort control.
+ *
+ * The button is an icon-only <sherpa-quick-filter>: a column filter is a button
+ * that opens a value menu, which is what the chip already is. Reusing it means
+ * one popover implementation, one cross-shadow placement measurement and one
+ * Apply footer rather than a second set drifting from the toolbar's.
+ */
+test('a TEXT column heading offers a filter menu of DevExtreme conditions', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'spend', header: 'Spend', type: 'number' },
+      ],
+      rows: [{ name: 'Ada', spend: 10 }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const chip = (field: string): HTMLElement =>
+      sr.querySelector(`.head-cell[data-field="${field}"] .head-filter`) as HTMLElement;
+
+    const text = chip('name');
+    const number = chip('spend');
+
+    // LABEL, FILTER, SORT — the name leads, the two controls follow it, inside
+    // the flex row. The row is an INNER wrapper, never the <th>: flexing a
+    // table cell takes it out of table layout and the header stacks vertically
+    // instead of running across.
+    const cell = sr.querySelector('.head-cell[data-field="name"]')!;
+    const row = cell.querySelector('.head-row-inner')!;
+    const order = Array.from(row.children).map((c) => c.className.split(' ')[0]);
+    // The CELL itself must still lay out as a table cell.
+    const cellDisplay = getComputedStyle(cell).display;
+    // …and the two controls must sit SIDE BY SIDE, not stacked. Order in the
+    // DOM is not enough: the wrapper is a <span>, so until its flex rule lands
+    // it is `display: inline` and the button drops onto its own line UNDER the
+    // label. Measured, because that is the part a reader sees.
+    const boxes = {
+      label: cell.querySelector('.head-btn')!.getBoundingClientRect(),
+      filter: cell.querySelector('.head-filter')!.getBoundingClientRect(),
+      sort: cell.querySelector('.head-sort')!.getBoundingClientRect(),
+    };
+    const mid = (b: DOMRect): number => (b.top + b.bottom) / 2;
+    const sideBySide = {
+      rowDisplay: getComputedStyle(row).display,
+      // All three on one line: their vertical centres agree within a pixel.
+      sameLine: Math.abs(mid(boxes.label) - mid(boxes.filter)) < 1.5
+        && Math.abs(mid(boxes.filter) - mid(boxes.sort)) < 1.5,
+      // …and in order, left to right.
+      inOrder: boxes.label.right <= boxes.filter.left + 1
+        && boxes.filter.right <= boxes.sort.left + 1,
+    };
+
+    return {
+      textShown: getComputedStyle(text).display,
+      // A TEXT column has no Range switch: "between two strings" is not a
+      // question a reader asks of a name.
+      textRange: !!text.querySelector('.head-filter-range'),
+      numberShown: getComputedStyle(number).display,
+      numberRange: !!number.querySelector('.head-filter-range'),
+      order,
+      cellDisplay,
+      sideBySide,
+      // DevExtreme's binary operations, narrowed to the ones a text column can
+      // answer. The <, <=, > and >= family is numeric and deliberately absent.
+      conditions: Array.from(text.querySelectorAll('option')).map((o) => o.value),
+      // The menu defers behind Apply: a condition and a value are two decisions,
+      // and querying on the half-built pair is a query for "contains ''".
+      commits: !!text.querySelector('sherpa-menu')?.hasAttribute('data-commit'),
+      heading: text.querySelector('sherpa-menu')?.getAttribute('data-heading'),
+      // Locked, because the chip derives its own on-state from ticked ROWS and
+      // this menu has none — unlocked it switched itself off on every Apply.
+      locked: text.hasAttribute('data-locked'),
+    };
+  });
+
+  expect(r.textShown).not.toBe('none');
+  expect(r.textRange).toBe(false);
+  // A NUMBER column offers one too, and leads with the Range switch.
+  expect(r.numberShown).not.toBe('none');
+  expect(r.numberRange).toBe(true);
+  expect(r.order).toEqual(['head-btn', 'head-filter', 'head-sort']);
+  expect(r.cellDisplay).toBe('table-cell');
+  expect(r.sideBySide.rowDisplay).toBe('flex');
+  expect(r.sideBySide.sameLine).toBe(true);
+  expect(r.sideBySide.inOrder).toBe(true);
+  expect(r.conditions).toEqual([
+    'contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne',
+  ]);
+  expect(r.commits).toBe(true);
+  expect(r.heading).toBe('Filter Name');
+  expect(r.locked).toBe(true);
+});
+
+test('applying a column filter lights the column and reports a ready clause', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      clearColumnFilter(field?: string): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' }],
+      rows: [{ name: 'Ada', team: 'Blue' }, { name: 'Bob', team: 'Red' }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const events: unknown[] = [];
+    el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
+
+    const chip = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="name"] .head-filter') as HTMLElement;
+    const head = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="name"]') as HTMLElement;
+    // Apply and Clear are <sherpa-button>s in the menu's shadow root, so the
+    // real <button> is one root deeper — click the component, which forwards.
+    const footer = async (which: 'apply' | 'clear'): Promise<void> => {
+      const menu = chip().querySelector('sherpa-menu')!;
+      menu.shadowRoot!.querySelector<HTMLElement>(`.${which}`)!.click();
+      await new Promise((res) => setTimeout(res, 40));
+      await settle();
+    };
+    const fill = (op: string, value: string): void => {
+      chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
+      chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+    };
+
+    fill('startswith', 'Ad');
+    await footer('apply');
+    const applied = {
+      status: head().dataset['status'] ?? null,
+      chipOn: chip().hasAttribute('data-current'),
+    };
+
+    // A RE-POPULATE is what a host does when it re-queries off the clause the
+    // grid just reported — so the filter must SURVIVE its own round trip. It
+    // used to be wiped here, and the heading went dark the instant the rows it
+    // had asked for arrived.
+    el.populate({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'team', header: 'Team' }],
+      rows: [{ name: 'Ada', team: 'Blue' }],
+    });
+    await settle();
+    const afterRepopulate = {
+      status: head().dataset['status'] ?? null,
+      chipOn: chip().hasAttribute('data-current'),
+      // The chip must read ACTIVE, not the amber "on but empty" warning: its
+      // menu has no tickable rows, so "nothing ticked" says nothing about
+      // whether it is filtering. data-locked is what tells it so.
+      empty: chip().hasAttribute('data-empty'),
+      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+    };
+
+    // A SORT rebuilds the whole header row, so the menu is stamped fresh — the
+    // pair the user set has to come back with it.
+    el.dataset['sortField'] = 'team';
+    await settle();
+    const afterSort = {
+      op: chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value,
+      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      chipOn: chip().hasAttribute('data-current'),
+      status: head().dataset['status'] ?? null,
+    };
+
+    // An EMPTY value is not a filter: "contains nothing" matches every row, so
+    // applying it would light the column and change the view not at all.
+    fill('contains', '   ');
+    await footer('apply');
+    const emptied = {
+      status: head().dataset['status'] ?? null,
+      chipOn: chip().hasAttribute('data-current'),
+    };
+
+    // Set one again, then clear it from OUTSIDE — what removing its toolbar
+    // chip has to reach back and do.
+    fill('eq', 'Ada');
+    await footer('apply');
+    const beforeExternal = head().dataset['status'] ?? null;
+    el.clearColumnFilter('name');
+    await settle();
+    const external = {
+      status: head().dataset['status'] ?? null,
+      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      // The external clear must NOT echo an event back at the caller.
+      eventCount: events.length,
+    };
+
+    return { applied, afterRepopulate, afterSort, emptied, beforeExternal, external, events };
+  });
+
+  // Applied: the column lights, the button takes the chip's own on-state.
+  expect(r.applied.status).toBe('active');
+  expect(r.applied.chipOn).toBe(true);
+
+  // The clause is READY for a DataSource — the <option> values ARE store ops.
+  const first = r.events[0] as Record<string, unknown>;
+  expect(first['field']).toBe('name');
+  expect(first['header']).toBe('Name');
+  expect(first['clause']).toEqual(['name', 'startswith', 'Ad']);
+  // And the chip text a toolbar should show.
+  expect(first['label']).toBe('Starts with: Ad');
+
+  // It survives its OWN round trip — the re-populate the clause caused.
+  expect(r.afterRepopulate.status).toBe('active');
+  expect(r.afterRepopulate.chipOn).toBe(true);
+  expect(r.afterRepopulate.empty).toBe(false);
+  expect(r.afterRepopulate.value).toBe('Ad');
+
+  // The pair survives the header rebuild a sort causes.
+  expect(r.afterSort.op).toBe('startswith');
+  expect(r.afterSort.value).toBe('Ad');
+  expect(r.afterSort.chipOn).toBe(true);
+  expect(r.afterSort.status).toBe('active');
+
+  // A whitespace-only value clears rather than filtering on nothing.
+  expect(r.emptied.status).toBe(null);
+  expect(r.emptied.chipOn).toBe(false);
+  const emptyEvent = r.events[1] as Record<string, unknown>;
+  expect(emptyEvent['clause']).toBe(null);
+  expect(emptyEvent['label']).toBe(null);
+
+  // clearColumnFilter() unlights the column and empties the menu…
+  expect(r.beforeExternal).toBe('active');
+  expect(r.external.status).toBe(null);
+  expect(r.external.value).toBe('');
+  // …and stays silent: the caller already knows, and re-firing would make a
+  // host that routes the event back into its query clear it twice.
+  expect(r.external.eventCount).toBe(3);
+});
+
+test('a column filter button never sorts the column it sits in', async ({ page }) => {
+  // The heading's click handler is delegated from the whole row, so without a
+  // guard, opening a filter menu would also sort — the wrong answer to a
+  // gesture that was not a sort.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'Ada' }] });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const sorts: unknown[] = [];
+    el.addEventListener('sort-change', (e) => sorts.push((e as CustomEvent).detail));
+
+    const chip = sr.querySelector('.head-cell[data-field="name"] .head-filter') as HTMLElement;
+    chip.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    await settle();
+
+    return {
+      sorts: sorts.length,
+      sortField: el.dataset['sortField'] ?? null,
+      // The menu really did open — the guard must not have blocked the click.
+      menuOpen: chip.querySelector('sherpa-menu')!.hasAttribute('open'),
+    };
+  });
+
+  expect(r.sorts).toBe(0);
+  expect(r.sortField).toBe(null);
+  expect(r.menuOpen).toBe(true);
+});
+
+test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends', async ({ page }) => {
+  // A number filter is "equals this" or "between these two" — one menu with a
+  // mode, not two controls the reader must choose between before they know
+  // which they want. The toolbar's own number chip works this way; this
+  // follows it so a reader meets one control, not two that behave alike.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'spend', header: 'Spend', type: 'number' }],
+      rows: [{ spend: 10 }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const events: unknown[] = [];
+    el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
+    const chip = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="spend"] .head-filter') as HTMLElement;
+    const apply = async (): Promise<void> => {
+      chip().querySelector('sherpa-menu')!.shadowRoot!
+        .querySelector<HTMLElement>('.apply')!.click();
+      await new Promise((res) => setTimeout(res, 40));
+      await settle();
+    };
+
+    // DevExtreme's numeric binary operations. The string family (contains,
+    // startswith…) is absent — "starts with" on a spend column is not a
+    // question, and offering it invites a comparison with no meaning.
+    const conditions = Array.from(chip().querySelectorAll('option')).map((o) => o.value);
+
+    // SINGLE: a condition and one value.
+    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'gte';
+    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = '100';
+    await apply();
+
+    // RANGE: the switch re-points the menu rather than rebuilding it, so what
+    // was typed on the single side is still there on the way back.
+    const sw = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    sw.checked = true;
+    sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await settle();
+    const ranged = {
+      mode: chip().querySelector('sherpa-menu')!.hasAttribute('data-range'),
+      // The condition picker goes: a range IS `between`, which the slider's two
+      // thumbs say more plainly than a list could.
+      opHidden: getComputedStyle(chip().querySelector<HTMLElement>('.head-filter-op')!).display,
+      sliderShown: getComputedStyle(chip().querySelector<HTMLElement>('.head-filter-slider')!).display,
+      // The single value survives the flip — both shapes are in the DOM, so
+      // nothing is rebuilt and nothing typed is lost.
+      kept: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      // The slider spans the COLUMN's real values, not its own 0..100 default
+      // — a spend column left at 0..100 would crush every row at the far left.
+      bounds: [
+        chip().querySelector('.head-filter-slider')!.getAttribute('min'),
+        chip().querySelector('.head-filter-slider')!.getAttribute('max'),
+      ],
+    };
+
+    // The slider keeps its ends in its own attributes, which is where the grid
+    // reads them from.
+    const slider = chip().querySelector('.head-filter-slider')!;
+    slider.setAttribute('value-start', '5');
+    slider.setAttribute('value-end', '50');
+    await apply();
+
+    return { conditions, ranged, events };
+  });
+
+  expect(r.conditions).toEqual(['eq', 'ne', 'gt', 'gte', 'lt', 'lte']);
+
+  // The single clause carries a real NUMBER, not the typed string. The store
+  // compares numerically only when BOTH sides are numbers; as a string, "100"
+  // sorts below "9" and "at least 100" would miss every row above 99.
+  const single = r.events[0] as Record<string, unknown>;
+  expect(single['clause']).toEqual(['spend', 'gte', 100]);
+  expect(single['label']).toBe('At least: 100');
+
+  // Range mode swaps the shape without a rebuild.
+  expect(r.ranged.mode).toBe(true);
+  expect(r.ranged.opHidden).toBe('none');
+  expect(r.ranged.sliderShown).not.toBe('none');
+  expect(r.ranged.kept).toBe('100');
+  // One row of 10, so the column's span is a single point — but it is the
+  // COLUMN's, not the slider's default.
+  expect(r.ranged.bounds).toEqual(['10', '10']);
+
+  // A span: the store's own `between`, ends coerced.
+  const both = r.events[r.events.length - 1] as Record<string, unknown>;
+  expect(both['clause']).toEqual(['spend', 'between', [5, 50]]);
+  expect(both['label']).toBe('Between: 5 - 50');
+});
+
+test('a DATE column filters with a calendar, one day or a span', async ({ page }) => {
+  // A calendar answers "which day" by being clicked, so there is no condition
+  // picker — a "greater than" over a date grid would be a second way of saying
+  // "after", with nowhere to show it.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'created', header: 'Created', type: 'date' }],
+      rows: [{ created: '2026-01-05' }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const events: unknown[] = [];
+    el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
+    const chip = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="created"] .head-filter') as HTMLElement;
+    const cal = (): HTMLElement => chip().querySelector('.head-filter-calendar') as HTMLElement;
+    const apply = async (): Promise<void> => {
+      chip().querySelector('sherpa-menu')!.shadowRoot!
+        .querySelector<HTMLElement>('.apply')!.click();
+      await new Promise((res) => setTimeout(res, 40));
+      await settle();
+    };
+
+    const shape = {
+      hasCalendar: !!cal(),
+      hasRange: !!chip().querySelector('.head-filter-range'),
+      // No condition list — the grid IS the condition.
+      conditions: chip().querySelectorAll('option').length,
+      // Embedded, so it sits inside the menu card rather than floating as its
+      // own popover.
+      embedded: cal().hasAttribute('data-embedded'),
+    };
+
+    // ONE DAY. The calendar holds its pick in its own attributes rather than an
+    // input, so the grid reads it from there.
+    cal().dataset['value'] = '2026-01-05';
+    await apply();
+
+    // RANGE. The switch re-points the CALENDAR — it already owns both shapes,
+    // so there is no second calendar to swap in.
+    const sw = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    sw.checked = true;
+    sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await settle();
+    const calType = cal().getAttribute('data-type');
+
+    cal().dataset['valueStart'] = '2026-01-01';
+    cal().dataset['valueEnd'] = '2026-01-31';
+    await apply();
+
+    return { shape, calType, events };
+  });
+
+  expect(r.shape.hasCalendar).toBe(true);
+  expect(r.shape.hasRange).toBe(true);
+  expect(r.shape.conditions).toBe(0);
+  expect(r.shape.embedded).toBe(true);
+
+  // One day: equality, because that is the only thing a clicked day can mean.
+  const day = r.events[0] as Record<string, unknown>;
+  expect(day['clause']).toEqual(['created', 'eq', '2026-01-05']);
+  expect(day['label']).toBe('Equals: 2026-01-05');
+
+  // The switch turns the calendar itself into its two-click mode.
+  expect(r.calType).toBe('range');
+
+  // A span: the store's own `between`. Dates stay STRINGS — ISO text compares
+  // correctly date-wise, and coercing them would turn them into NaN.
+  const span = r.events[r.events.length - 1] as Record<string, unknown>;
+  expect(span['clause']).toEqual(['created', 'between', ['2026-01-01', '2026-01-31']]);
+  expect(span['label']).toBe('Between: 2026-01-01 - 2026-01-31');
+});
+
+test('a TEXT column filter MARKS its matches; number and date cells stay plain', async ({ page }) => {
+  // A filtered column says WHICH rows survived; the mark says why THIS one did,
+  // so the reader does not scan a column of long names for the letters that
+  // matched. Only the substring conditions leave something to point at, and
+  // only in the column the filter is on.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'team', header: 'Team' },
+        { field: 'spend', header: 'Spend', type: 'number' },
+      ],
+      rows: [
+        { name: 'Marcus', team: 'Marketing', spend: 1042 },
+        { name: 'Omar', team: 'Sales', spend: 204 },
+      ],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const chip = (field: string): HTMLElement =>
+      sr.querySelector(`.head-cell[data-field="${field}"] .head-filter`) as HTMLElement;
+    const apply = async (field: string, op: string, value: string): Promise<void> => {
+      chip(field).querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
+      chip(field).querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+      chip(field).querySelector('sherpa-menu')!.shadowRoot!
+        .querySelector<HTMLElement>('.apply')!.click();
+      await new Promise((res) => setTimeout(res, 40));
+      await settle();
+    };
+    const marks = () =>
+      Array.from(sr.querySelectorAll('.cell mark.match')).map((m) => ({
+        text: m.textContent,
+        column: (m.closest('.cell') as HTMLElement).dataset['type'] ?? 'text',
+      }));
+
+    await apply('name', 'contains', 'ar');
+    // The cell's OWN casing, not the needle's — the reader typed "ar" and the
+    // row says "Marcus"; the row is the truth.
+    const contains = { marks: marks(), cells: sr.querySelectorAll('.cell').length };
+
+    // `eq` matched the whole cell, so marking it would underline every
+    // character. `ne` and `notcontains` matched by NOT being there.
+    await apply('name', 'eq', 'Marcus');
+    const equals = marks().length;
+    await apply('name', 'notcontains', 'zz');
+    const negated = marks().length;
+
+    // A NUMBER column never marks: "greater than 20" does not match a
+    // SUBSTRING of 204, and underlining the "20" would claim a precision the
+    // filter does not have.
+    await apply('name', 'contains', '');
+    chip('spend').querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'gt';
+    chip('spend').querySelector<HTMLInputElement>('.head-filter-value')!.value = '20';
+    chip('spend').querySelector('sherpa-menu')!.shadowRoot!
+      .querySelector<HTMLElement>('.apply')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    await settle();
+    const numeric = marks().length;
+
+    return { contains, equals, negated, numeric };
+  });
+
+  // Only the FILTERED column marks — the Team cells hold "Mar" too and stay plain.
+  expect(r.contains.marks).toEqual([
+    { text: 'ar', column: 'text' },
+    { text: 'ar', column: 'text' },
+  ]);
+
+  expect(r.equals).toBe(0);
+  expect(r.negated).toBe(0);
+  expect(r.numeric).toBe(0);
+});
+
+test('REMOVE FILTER ends a column filter outright; the menu never wears the column tint', async ({ page }) => {
+  // Clear empties the controls and leaves the menu open to type again. Remove
+  // means "I am done with this column" — two intentions, two buttons.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      openColumnFilter(field: string, anchor?: HTMLElement): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [{ name: 'Ada' }, { name: 'Bob' }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const events: unknown[] = [];
+    el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
+    const chip = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="name"] .head-filter') as HTMLElement;
+    const menu = (): HTMLElement => chip().querySelector('sherpa-menu') as HTMLElement;
+    const head = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="name"]') as HTMLElement;
+
+    const removable = menu().hasAttribute('data-removable');
+
+    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'contains';
+    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = 'Ad';
+    menu().shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    await settle();
+    const applied = head().dataset['status'] ?? null;
+
+    // NOTHING THE BUTTON WEARS MAY REACH THE MENU. Both are custom properties
+    // and the menu is a light-DOM child of the chip, so both inherit:
+    //
+    //   the column's ACTIVE tint  — a lit column painted its menu purple
+    //   the button's QUIET look   — a transparent button made the menu's card
+    //                               transparent, so the grid showed through it
+    //
+    // @scope does not help: it limits what a rule MATCHES, never how far a
+    // value it sets then inherits. The tint is reset on the chip; the quiet
+    // look is a real property on the caret, not a token re-point.
+    const menuStyle = getComputedStyle(menu());
+    const leaked = {
+      status: menuStyle.getPropertyValue('--_status-surface').trim(),
+      surface: menuStyle.getPropertyValue('--sherpa-style-surface-base').trim(),
+      // The card must actually be PAINTED, which is what a reader sees.
+      card: getComputedStyle(menu().shadowRoot!.querySelector('.menu')!).backgroundColor,
+    };
+
+    menu().shadowRoot!.querySelector<HTMLElement>('.remove')!.click();
+    await new Promise((res) => setTimeout(res, 60));
+    await settle();
+
+    return {
+      removable,
+      applied,
+      leaked,
+      afterRemove: {
+        status: head().dataset['status'] ?? null,
+        chipOn: chip().hasAttribute('data-current'),
+        value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      },
+      events,
+    };
+  });
+
+  expect(r.removable).toBe(true);
+  expect(r.applied).toBe('active');
+
+  // The heading is lit and the button is quiet, and the menu inherits neither.
+  expect(r.leaked.status).toBe('');
+  expect(r.leaked.surface).not.toBe('transparent');
+  expect(r.leaked.card).toBe('rgb(255, 255, 255)');
+
+  // Remove ends it: clause gone, heading dark, controls empty.
+  expect(r.afterRemove.status).toBe(null);
+  expect(r.afterRemove.chipOn).toBe(false);
+  expect(r.afterRemove.value).toBe('');
+
+  // It reports as a CLEAR, so a host has one path to handle, not two.
+  const last = r.events[r.events.length - 1] as Record<string, unknown>;
+  expect(last['clause']).toBe(null);
+  expect(last['label']).toBe(null);
+});
+
+test('a column filter can be SUSPENDED and resumed without losing it', async ({ page }) => {
+  // The filter shows on the toolbar as a chip, and a chip's body is a TOGGLE:
+  // off means "stop applying this", not "delete it". Suspended, the clause is
+  // still typed into the menu and still comes back from columnClause() — but
+  // the heading stops reading active and its match marks come off, because the
+  // column is narrowing nothing and a lit column that filters nothing is a lie.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      columnClause(field: string): unknown[] | null;
+      suspendColumnFilter(field: string, suspended?: boolean): void;
+      clearColumnFilter(field?: string): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [{ name: 'Marcus' }, { name: 'Omar' }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const chip = (): HTMLElement =>
+      sr.querySelector('.head-cell[data-field="name"] .head-filter') as HTMLElement;
+    const snap = () => ({
+      lit: (sr.querySelector('.head-cell[data-field="name"]') as HTMLElement)
+        .dataset['status'] ?? null,
+      marks: sr.querySelectorAll('.cell mark.match').length,
+      clause: el.columnClause('name'),
+      // The menu still holds what was typed, either way.
+      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+    });
+
+    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'contains';
+    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = 'ar';
+    chip().querySelector('sherpa-menu')!.shadowRoot!
+      .querySelector<HTMLElement>('.apply')!.click();
+    await new Promise((res) => setTimeout(res, 40));
+    await settle();
+    const applied = snap();
+
+    el.suspendColumnFilter('name');
+    await settle();
+    const suspended = snap();
+
+    el.suspendColumnFilter('name', false);
+    await settle();
+    const resumed = snap();
+
+    // REMOVE is the other thing, and it really does delete.
+    el.clearColumnFilter('name');
+    await settle();
+    const cleared = snap();
+
+    return { applied, suspended, resumed, cleared };
+  });
+
+  // Applied: lit, marked, and the clause is live.
+  expect(r.applied.lit).toBe('active');
+  expect(r.applied.marks).toBe(2); // "Marcus" and "Omar" both hold "ar"
+  expect(r.applied.clause).toEqual(['name', 'contains', 'ar']);
+
+  // Suspended: the column stops CLAIMING to filter…
+  expect(r.suspended.lit).toBe(null);
+  expect(r.suspended.marks).toBe(0);
+  // …but the clause and the typed value are both still there, which is what
+  // makes resuming free.
+  expect(r.suspended.clause).toEqual(['name', 'contains', 'ar']);
+  expect(r.suspended.value).toBe('ar');
+
+  expect(r.resumed.lit).toBe('active');
+  expect(r.resumed.marks).toBe(2);
+
+  // Cleared is the OTHER gesture — nothing survives it.
+  expect(r.cleared.lit).toBe(null);
+  expect(r.cleared.clause).toBe(null);
+  expect(r.cleared.value).toBe('');
 });

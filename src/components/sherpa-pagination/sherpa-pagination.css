@@ -109,6 +109,17 @@
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
+/* A <select> DRAWS ITS CARET INSIDE ITS OWN PADDING, so the shared 8px above
+   leaves the glyph about 2px off the border with the label running straight
+   into it. The trailing side needs room for the caret AND a gap: 8 for the
+   glyph, 8 to breathe, on top of the 8 every field already has.
+
+   `padding-inline-end` alone, so the field rule above still owns every other
+   edge — and .page-input, which has no caret, keeps its symmetry. */
+.rows {
+  padding-inline-end: calc(var(--sherpa-structure-space-padding, 8px) * 3);
+}
+
 .rows:focus-visible,
 .page-input:focus-visible {
   outline: none;

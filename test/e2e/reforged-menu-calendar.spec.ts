@@ -131,7 +131,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // `removable: true` is the OPT-IN for the "Remove filter" affordance —
+    // `removable: true` is the OPT-IN for the "Remove" affordance —
     // without it a chip offers no way off the bar, which is what the view
     // SELECTOR wants and what a data filter does not.
     el.populate([
@@ -463,14 +463,14 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   expect(r.listFooter.clear.shown).toBe(true);
 });
 
-test('Remove filter is a footer button after Today, and the card widens to hold it', async ({ page }) => {
+test('Remove is a footer button after Today, and the card widens to hold it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // `removable: true` is the OPT-IN for the "Remove filter" affordance —
+    // `removable: true` is the OPT-IN for the "Remove" affordance —
     // without it a chip offers no way off the bar, which is what the view
     // SELECTOR wants and what a data filter does not.
     // `commit: true` so all FOUR footer buttons are up at once — this test is
@@ -529,7 +529,7 @@ test('Remove filter is a footer button after Today, and the card widens to hold 
   // All four are present on a COMMITTING date chip's menu.
   expect(r.before.shown).toEqual([true, true, true, true]);
 
-  // Today, then Remove filter, then the committing pair — Will's order.
+  // Today, then Remove, then the committing pair — Will's order.
   const [today, remove, cancel, apply] = r.before.order as [number, number, number, number];
   expect(today).toBeLessThan(remove);
   expect(remove).toBeLessThan(cancel);
@@ -551,7 +551,7 @@ test('Remove filter is a footer button after Today, and the card widens to hold 
  *
  * Chips auto-apply by default, so `data-commit` is usually absent — and the row
  * used to be gated on that one attribute. A date chip therefore lost Today and
- * Remove filter along with the Apply button, and a calendar has no list for an
+ * Remove along with the Apply button, and a calendar has no list for an
  * action ROW to sit in instead, so the chip became one a reader could add and
  * never take away.
  *
@@ -616,4 +616,108 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
 
   // A menu with nothing for the row shows no row.
   expect(r.plain.footer).toBe(false);
+});
+
+/**
+ * A DATE menu's value is its CALENDAR's pick, not a ticked row.
+ *
+ * `menu.values` read checked inputs only, so a date menu reported nothing — and
+ * every chip fed by one read as "on but filtering nothing": the amber warning
+ * state, painted over a filter that was working perfectly.
+ */
+test('a calendar menu reports its picked day as the menu value', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>;
+      values: string[];
+    };
+    const cal = document.createElement('sherpa-calendar');
+    cal.setAttribute('data-embedded', '');
+    menu.appendChild(cal);
+    root.appendChild(menu);
+    await menu.rendered;
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const empty = menu.values;
+
+    // ONE DAY.
+    cal.dataset['value'] = '2026-03-04';
+    await settle();
+    const single = menu.values;
+
+    // A RANGE reports BOTH ends — and only once both are picked. Half a span is
+    // not a span, and reporting one end alone would read as a single-day filter.
+    delete cal.dataset['value'];
+    cal.dataset['valueStart'] = '2026-03-01';
+    await settle();
+    const halfRange = menu.values;
+    cal.dataset['valueEnd'] = '2026-03-31';
+    await settle();
+    const fullRange = menu.values;
+
+    return { empty, single, halfRange, fullRange };
+  });
+
+  expect(r.empty).toEqual([]);
+  expect(r.single).toEqual(['2026-03-04']);
+  expect(r.halfRange).toEqual([]);
+  expect(r.fullRange).toEqual(['2026-03-01', '2026-03-31']);
+});
+
+/**
+ * An unpicked calendar opens where the DATA is.
+ *
+ * `data-available` says which days exist. Opening on today when today's month
+ * holds none of them shows a grid of entirely disabled cells — nothing to
+ * click, and no hint the days are two years away.
+ */
+test('an unpicked calendar anchors to its available days, not to today', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const make = (available?: string) => {
+      const cal = document.createElement('sherpa-calendar') as HTMLElement & {
+        rendered?: Promise<void>;
+      };
+      if (available != null) cal.setAttribute('data-available', available);
+      root.appendChild(cal);
+      return cal;
+    };
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    // Days in a month that is NOT this one.
+    const withData = make('2024-12-02,2024-12-06,2024-12-19');
+    await withData.rendered;
+    // No availability at all — today, as before.
+    const plain = make();
+    await plain.rendered;
+    await settle();
+
+    const label = (el: HTMLElement): string =>
+      el.shadowRoot!.querySelector('.cal-label')?.textContent?.trim() ?? '';
+    const pickable = (el: HTMLElement): number =>
+      Array.from(el.shadowRoot!.querySelectorAll('sherpa-calendar-cell'))
+        .filter((c) => !c.hasAttribute('disabled')).length;
+
+    const now = new Date();
+    return {
+      dataLabel: label(withData),
+      dataPickable: pickable(withData),
+      plainLabel: label(plain),
+      thisMonth: `${['January', 'February', 'March', 'April', 'May', 'June', 'July',
+        'August', 'September', 'October', 'November', 'December'][now.getMonth()]} ${now.getFullYear()}`,
+    };
+  });
+
+  // It opens on the LATEST available day's month — the most recent data, and
+  // the end a reader usually wants. Stepping back is one click.
+  expect(r.dataLabel).toBe('December 2024');
+  // …and the three days really are pickable there.
+  expect(r.dataPickable).toBe(3);
+
+  // Without availability nothing changes: today, as it always was.
+  expect(r.plainLabel).toBe(r.thisMonth);
 });

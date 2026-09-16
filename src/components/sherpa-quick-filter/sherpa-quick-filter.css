@@ -339,11 +339,100 @@
   padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* The slotted menu is a popover in the top layer — the wrapper is a positioning
-   anchor only and must not affect the chip's own layout. */
+/* ── ICON-ONLY — the chip reduced to its menu button ─────────────────
+ * The data grid's column headers need a filter affordance, and a filter
+ * affordance is exactly this component minus its chrome: a button that opens a
+ * value menu. Rebuilding that inside the grid would mean a second popover, a
+ * second placement measurement and a second Apply footer, all drifting from
+ * this one.
+ *
+ * So the chip loses its body, its count badge, its indicator and its value
+ * label, and keeps ONE square button with a funnel in it. What stays is the
+ * part that was hard: the menu, its placement across the shadow boundary, and
+ * the events it reports.
+ *
+ * Every hidden piece is hidden in CSS, off one host attribute — the component
+ * builds exactly the same shadow DOM either way, so a chip can become
+ * icon-only and back without a rebuild. */
+:host([data-icon-only]) .body { display: none; }
+
+/* No body to snap against, so the caret is the WHOLE chip again: all four
+   corners round, not just the trailing pair. The [data-menu] margin above is a
+   snapped gap between two boxes; with one box there is nothing to snap to. */
+:host([data-icon-only]) .caret {
+  display: inline-flex;
+  margin-inline-start: 0;
+  /* SQUARE. The 24-wide min plus a 24 block-size is already the icon-button
+     footprint the rest of the system uses; fixing the inline size stops a
+     stray caret-label from ever stretching it. */
+  inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  padding-inline: 0;
+  border-radius: var(--sherpa-border-rounding-top-left, 4px);
+}
+
+/* The value label has nowhere to go in a 24 square, and the whole point of the
+   variant is that the COLUMN names the field. Hidden rather than left to
+   `:empty`, because an active filter does set a value. */
+:host([data-icon-only]) .caret-label { display: none; }
+
+/* A funnel, not a caret: this button filters, it does not merely expand. The
+   glyph is swapped in CSS so JS never writes a Font Awesome class at runtime.
+   `f0b0` is fa-filter.
+
+   That is the DEFAULT. A chip given `data-icon-start` shows THAT glyph in the
+   caret instead — a sort control needs three (ascending, descending, none) and
+   which one it wears is data, not presentation, so the class comes from JS the
+   way every other Font Awesome glyph in the system does.
+
+   `.caret-icon` in the template is where JS writes it; the hardcoded funnel
+   steps aside. Both exist from the start, so which shows is a CSS choice and
+   the component never rebuilds. */
+:host([data-icon-only]) .caret-glyph::before {
+  content: "\f0b0";
+}
+
+:host([data-icon-only][data-icon-start]) .caret-glyph { display: none; }
+
+.caret-icon { display: none; }
+
+:host([data-icon-only][data-icon-start]) .caret-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* An icon-only chip can be asked to carry NO CHROME — just the glyph.
+
+   `data-plain` is a real property on the CARET, not a re-point of
+   --sherpa-style-surface-base. Re-pointing the token looked equivalent and was
+   not: a custom property set on the host INHERITS, and the chip's menu is a
+   light-DOM child of the host, so the menu's own card went transparent too.
+   Inheritance ignores @scope — scoping changes what a rule MATCHES, never how
+   far a value it sets travels — so the boundary could not save it either.
+
+   Only the RESTING state. A chip that is ON keeps its full accent face, which
+   is the point of reusing the component. */
+:host([data-plain]:not([data-current])) .caret {
+  background: transparent;
+  border-color: transparent;
+}
+
+/* A chip with NO MENU to open. The grid sets it on a column whose type has no
+   filter menu yet, and a button that opens an empty card reads as broken. It
+   is on the chip rather than left to the host, so the chip is never drawn in a
+   state it cannot honour. */
+:host([data-unsupported]) { display: none; }
+
+/* An ACTIVE column filter needs no rule of its own: `data-current` already
+   paints the caret in the accent, and that is the whole on-state. Reusing it
+   is the reason this is a variant and not a new button. */
+
 .menu-slot {
   display: contents;
 }
+
+/* The slotted menu is a popover in the top layer — the wrapper is a positioning
+   anchor only and must not affect the chip's own layout. */
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) :is(.body, .caret) {

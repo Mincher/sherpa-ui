@@ -22,7 +22,7 @@
                 A NUMBER chip's menu leads with a Range switch: off, one field
                 filters by a single value; on, a two-ended slider filters between
                 two. A DATE chip gets the same switch over its calendar.
-    removable   offer "Remove filter" in its menu. OPT-IN, because the row
+    removable   offer "Remove" in its menu. OPT-IN, because the row
                 DELETES the chip — the safe default when a host says nothing is
                 to keep it. addFilter() grants it to anything the user added.
     persistent  a SELECTOR, not a toggle: always on, never removable, and never
@@ -37,7 +37,7 @@
                 one unfinished selection.
 
   The menu FOOTER is not the Apply/Cancel pair alone: Today (calendar), Clear
-  (data-clearable) and Remove filter (data-removable) live in the same row, and
+  (data-clearable) and Remove (data-removable) live in the same row, and
   any one of them raises it. An auto-applying date chip therefore keeps Today and
   Remove and drops only Cancel/Apply.
 

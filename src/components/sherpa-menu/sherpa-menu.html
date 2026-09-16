@@ -29,7 +29,7 @@
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
-    data-removable  show a "Remove filter" button in the footer (after Today);
+    data-removable  show a "Remove" button in the footer (after Today);
                     it emits menu-select with value="remove"
     data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
                     and a breadcrumb in the header. data-drill-from names the
@@ -175,13 +175,18 @@
       -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
-        REMOVE FILTER — a footer button, after Today, on the left side.
+        REMOVE — a footer button, after Today, on the left side.
 
         This was an action ROW at the foot of the list for a value menu and a
         footer button for a calendar (which has no list for a row to sit in).
         One action in two places is one too many: the button is the shape that
         works for both, it never scrolls away with a long list, and it sits with
         the menu's other actions rather than among the values.
+
+        Just "Remove", not "Remove filter". The menu is already headed by what
+        it belongs to, and a footer that reads Remove / Clear / Cancel / Apply
+        is four verbs at the same length — "Remove filter" was the one that
+        named its object, and it made the row uneven for nothing.
 
         `data-status="critical"` because it DELETES the chip. The status cascade
         carries the destructive ink through the button's own tokens, which is
@@ -190,7 +195,7 @@
         It emits `menu-select` with value="remove".
       -->
       <sherpa-button class="remove" part="remove" data-status="critical"
-                     data-icon-start="fa-solid fa-xmark">Remove filter</sherpa-button>
+                     data-icon-start="fa-solid fa-xmark">Remove</sherpa-button>
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>

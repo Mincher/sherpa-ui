@@ -45,6 +45,20 @@
  * @attr {boolean} data-empty      set by the chip: it is ON but holds no values
  * @attr {boolean} data-no-value  the caret names no VALUE — for a chip whose menu
  *                lists other filters rather than values (the toolbar's More chip)
+ * @attr {boolean} data-plain  an icon-only chip with NO CHROME while resting —
+ *                no face, no ring, just the glyph. A real property on the
+ *                caret, never a re-point of --sherpa-style-surface-base: a
+ *                custom property set on the host inherits into the chip's
+ *                slotted MENU and turns its card transparent too (and @scope
+ *                cannot stop that — scoping limits what a rule MATCHES, not
+ *                how far the value it sets inherits). A chip that is ON keeps
+ *                its full accent face.
+ * @attr {boolean} data-icon-only  the chip reduced to its menu button: body,
+ *                count, indicator and value label all hidden, the caret squared
+ *                off and its glyph swapped for a funnel. For a filter
+ *                affordance whose FIELD is named by something else — the data
+ *                grid's column header is the case this exists for. Purely CSS;
+ *                the shadow DOM is unchanged, so a chip can flip either way.
  * @attr {boolean} data-persistent  a SELECTOR, not a toggle — always on, never
  *                                  empty. Set by the toolbar.
  * @attr {boolean} data-locked   the chip's ON/OFF state is not its own to change.
@@ -165,9 +179,13 @@ export class SherpaQuickFilter extends SherpaElement {
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
     // The leading icon is a Font Awesome class list; render it as an <i>, not text.
-    const icon = this.$('.icon');
+    //
+    // BOTH slots take it: `.icon` leads the chip body, and `.caret-icon` sits in
+    // the caret for an ICON-ONLY chip, whose body is hidden. CSS picks which is
+    // visible — a sort control needs three different glyphs and cannot use the
+    // hardcoded funnel, so it writes data-icon-start like anything else.
     const glyph = this.dataset['iconStart'];
-    if (icon) {
+    for (const icon of this.$$('.icon, .caret-icon')) {
       if (glyph && /\bfa-/.test(glyph)) {
         const i = document.createElement('i');
         i.className = glyph;
@@ -257,7 +275,17 @@ export class SherpaQuickFilter extends SherpaElement {
    * before the menu's rows were there to be counted.
    */
   #syncEmpty(): void {
-    if (this.hasAttribute('data-persistent')) {
+    // A PERSISTENT chip is a selector, so "on with nothing" is not a state it
+    // can be in.
+    //
+    // A LOCKED one cannot be judged this way at all: `data-empty` is derived
+    // from the menu's TICKED ROWS, and a locked chip's menu is not a list of
+    // its values. The More chip's rows stand for other filters; a data grid's
+    // column-filter menu holds a condition and a typed value. Either way "no
+    // rows ticked" says nothing about whether the chip is filtering, and
+    // reading it as "on but empty" painted a working filter in the amber
+    // warning state — the exact colour that means "this is doing nothing".
+    if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')) {
       this.removeAttribute('data-empty');
       return;
     }

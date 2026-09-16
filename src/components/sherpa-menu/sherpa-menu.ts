@@ -24,11 +24,11 @@
  * @attr {string}  data-bounds   a CSS selector for the region the card must stay
  *                inside (the app's content area, say). Resolved from the
  *                document. Defaults to the viewport.
- * @attr {boolean} data-removable show a "Remove filter" footer button (after Today)
+ * @attr {boolean} data-removable show a "Remove" footer button (after Today)
  * @attr {boolean} data-commit   show the Cancel/Apply pair and DEFER changes
  *                until Apply (without it, every row tick commits immediately).
  *                It does NOT alone decide whether the footer ROW appears —
- *                Today, Clear and Remove filter share that row and each raises
+ *                Today, Clear and Remove share that row and each raises
  *                it on its own flag, so an auto-applying calendar menu still has
  *                a footer holding Today and Remove.
  * @attr {boolean} open          reflects/controls the popover
@@ -216,6 +216,8 @@ export class SherpaMenu extends SherpaElement {
   get values(): string[] {
     const numeric = this.#numericValues();
     if (numeric) return numeric;
+    const dates = this.#calendarValues();
+    if (dates) return dates;
     return this.#inputs()
       .filter((i) => i.checked)
       .map((i) => i.value);
@@ -241,6 +243,27 @@ export class SherpaMenu extends SherpaElement {
     const raw = field?.value.trim() ?? '';
     return raw === '' ? [] : [raw];
   }
+  /**
+   * A CALENDAR menu's value, or null when this is not one.
+   *
+   * A calendar holds its pick in its own attributes, not in checked inputs —
+   * so a date menu reported NO values, and every chip fed by one read as "on
+   * but filtering nothing": the amber warning state, on a filter that was
+   * working. The same shape `#numericValues` exists for, and for the same
+   * reason: a menu whose body is not a list of rows still has a value.
+   */
+  #calendarValues(): string[] | null {
+    const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+    if (!cal) return null;
+    // A RANGE reports both ends, and only once both are picked — half a span
+    // is not a span, and reporting one end would read as a single-day filter.
+    const start = cal.dataset['valueStart'];
+    const end = cal.dataset['valueEnd'];
+    if (start && end) return [start, end];
+    const single = cal.dataset['value'];
+    return single ? [single] : [];
+  }
+
   set values(next: string[]) {
     const wanted = new Set(next);
     for (const input of this.#inputs()) input.checked = wanted.has(input.value);
@@ -426,13 +449,29 @@ export class SherpaMenu extends SherpaElement {
       // rows that have been moved out from under it. Closing is honest and puts
       // everything back where it belongs.
       window.addEventListener('resize', this.#onViewportResize, { passive: true });
+      // THE CARD'S OWN SIZE can change while it is open, and then the placement
+      // it was given no longer fits. A date menu's Range switch turns one month
+      // into two — 274px becomes 485 — and the card kept its left edge and ran
+      // straight off the screen. A number menu's Range switch does the same in
+      // miniature.
+      //
+      // Watching the card rather than re-placing from each control that might
+      // grow it: the menu cannot know what a host slotted into it, and every
+      // future body that changes size gets this for free.
+      this.#cardResize ??= new ResizeObserver(() => this.#place());
+      const card = this.#card();
+      if (card) this.#cardResize.observe(card);
     } else {
       window.removeEventListener('scroll', this.#reposition, { capture: true });
       window.removeEventListener('resize', this.#onViewportResize);
+      this.#cardResize?.disconnect();
       this.#trigger = null;
     }
     this.emit(open ? 'menu-open' : 'menu-close', {});
   };
+
+  /** Watches the card's own box, so a body that grows is re-placed. */
+  #cardResize: ResizeObserver | null = null;
 
   #reposition = (): void => {
     this.#place();
@@ -445,6 +484,7 @@ export class SherpaMenu extends SherpaElement {
   override onDisconnect(): void {
     window.removeEventListener('scroll', this.#reposition, { capture: true });
     window.removeEventListener('resize', this.#onViewportResize);
+    this.#cardResize?.disconnect();
   }
 
   /** The label a select-all row wears, given whether everything is already on. */
@@ -611,14 +651,14 @@ export class SherpaMenu extends SherpaElement {
   };
 
   /**
-   * Remove filter — the footer button form of the action ROW.
+   * Remove — the footer button form of the action ROW.
    *
    * Emits exactly what a `<button value="remove">` row emits, so a host listens
    * for one event whichever shape its menu is. A calendar menu has no rows, and
    * this is how it still offers the action.
    */
   #onRemove = (): void => {
-    this.emit('menu-select', { value: 'remove', label: 'Remove filter' });
+    this.emit('menu-select', { value: 'remove', label: 'Remove' });
     this.hide();
   };
 

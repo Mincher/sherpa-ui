@@ -387,25 +387,16 @@
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
-  /* The sort glyph's ACTIVE / RESTING colour. The glyph itself is a Font
-     Awesome class written by JS (see SherpaDataGrid.icons); which of the three
-     it is, is data — only how loud it looks is presentation.
-
-     A sortable-but-unsorted column shows `sort-none` in the muted ink, so it
-     offers itself without competing with the column that IS sorted. */
-  .sort-icon { color: var(--sherpa-theme-content-body-1, #35353d); }
-  &[data-sort] .sort-icon { color: var(--sherpa-theme-content-body-base, #0c0b11); }
-
-  /* A column that cannot be sorted carries no glyph — JS leaves the class list
-     bare — so the box must go too, or an empty 14px square would hold the
-     label 14px short of a sortable column's and the headings would not line up. */
-  &[data-sortable="false"] .sort-icon { display: none; }
 }
-/* ── A FILTERED column's header — Style mode `active` ────────────────
- * A filter narrows what the grid shows, and the filter box itself scrolls out
- * of sight the moment the user looks down the table. The heading is what stays
- * on screen (it is sticky), so the heading has to say "this column is doing
- * something to what you can see".
+/* ── A SORTED or FILTERED column's header — Style mode `active` ──────
+ * A sort orders what the grid shows and a filter narrows it. Both are the
+ * column ACTING on the view, so both read the same: one highlight, not two
+ * rival ones competing down the header row.
+ *
+ * It lands on the HEADING because the heading is sticky. The filter box
+ * scrolls out of sight the moment the user reads down the table, and the sort
+ * glyph is a 14px arrow — neither survives a glance at row 40. The tinted
+ * column does.
  *
  * `active` is the Style collection's own mode for exactly this — the brand
  * tint the quick-filter toolbar's favourite star uses — so this reuses it
@@ -418,28 +409,233 @@
  * is what makes the cascade work — custom properties DO cross a shadow
  * boundary, so any nested component in the cell picks the same mode up.
  *
+ * The HEADING only, never the filter cell under it. That row already says what
+ * it is doing — the text is sitting in the box the user typed it into — so a
+ * second tint on the control that IS the filter adds nothing.
+ *
  * The attribute is the SAME `data-status` the rest of the system uses, so a
  * host that later wants a different mode on a column writes the same door. */
-:is(.head-cell, .filter-cell)[data-status="active"] {
+.head-cell[data-status="active"] {
   --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
   --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
   --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
 
   background: var(--_status-surface);
   color: var(--_status-text);
+  /* The rule under the heading takes the mode's border too, so the tinted block
+     reads as one piece rather than a fill with a stray grey line under it. */
+  border-block-end-color: var(--_status-border);
+
+  /* The label takes the active ink with the fill. The two CHIPS do not: each
+     paints itself from its own on-state, and the tint is reset on them so the
+     column's colour stops at the heading. */
+  .head-label { color: var(--_status-text); }
 }
 
-/* The label and the sort glyph both take the active ink. Without this the
-   glyph keeps its own body-colour rule above (a later, equally specific rule
-   wins) and a filtered column's arrow would stay grey on the tinted fill. */
-.head-cell[data-status="active"] {
-  .head-label,
-  .sort-icon { color: var(--_status-text); }
+/* ── The column FILTER button ────────────────────────────────────────
+ * An icon-only <sherpa-quick-filter>, sitting LEFT of the sort control in the
+ * heading. It is in the header template always; these rules decide whether it
+ * shows.
+ *
+ * HIDDEN BY DEFAULT. A grid that has not been told it offers column filters
+ * must look exactly as it did — the button appears only for
+ * data-column-filters, and never for a column whose type has no menu yet.
+ */
+/* BOTH header chips are the same control at the same size — the filter one and
+   the sort one. They differ only in what their glyph says and what a click
+   does. */
+.head-filter { display: none; }
+
+:host([data-column-filters]) .head-filter:not([data-unsupported]),
+.head-sort:not([data-unsupported]) {
+  display: inline-flex;
+  flex: 0 0 auto;
+  /* The chip is a fixed 24 tall and the heading's own padding is 4 block, so a
+     24 button would push the row taller than the 32 the rest of the grid uses.
+     The chip scales off this one token, so overriding it here shrinks the whole
+     control rather than clipping it. */
+  --sherpa-display-mode-size-lg: 20px;
 }
 
-/* The rule under a filtered heading takes the mode's border too, so the tinted
-   block reads as one piece rather than a fill with a stray grey line under it. */
-.head-cell[data-status="active"] { border-block-end-color: var(--_status-border); }
+/* The heading is a ROW: filter button, then the sort button, which takes the
+   rest of the width.
+
+   THE ROW IS AN INNER WRAPPER, never the <th> itself. `display: flex` on a
+   table cell takes it OUT of table layout — it stops being a column, and the
+   whole header row stacks vertically down the page instead of running across
+   it. The wrapper flexes; the cell stays a cell.
+
+   It is a <span>, so its default `display: inline` puts the two controls on
+   separate LINES until this rule lands — the filter button above the label
+   rather than beside it. */
+.head-row-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  min-inline-size: 0;
+
+  /* LABEL, FILTER, SORT.
+
+     The NAME takes whatever the two controls leave, which is what pushes them
+     to the column's trailing edge — so the funnels and the sort glyphs line up
+     down the header row instead of stepping in and out with each label's
+     length. It was `space-between` inside the button when the glyph lived
+     there; with three items in one row, growing the first does the same job
+     and keeps the pair together. */
+  .head-btn { flex: 1 1 auto; min-inline-size: 0; }
+  .head-filter,
+  .head-sort { flex: 0 0 auto; }
+}
+
+/* ── The column filter BUTTON ────────────────────────────────────────
+ * The heading's ACTIVE TINT must not continue into the menu the button opens.
+ * `--_status-*` are custom properties, so they inherit — and the menu is a
+ * light-DOM child of the chip. A lit column painted its own menu purple.
+ *
+ * Reset on the chip, and the menu inherits the reset instead. @scope does NOT
+ * help here: it controls which elements a rule MATCHES, not how far a value
+ * that rule sets then inherits. A `to (sherpa-menu)` boundary stops the menu
+ * being matched and does nothing about the value arriving from its parent.
+ *
+ * The chip re-declares whatever it needs from `data-current` — its on-state is
+ * its own — so resetting here costs it nothing.
+ */
+.head-filter,
+.head-sort {
+  --_status-surface: initial;
+  --_status-surface-subtle: initial;
+  --_status-surface-strong: initial;
+  --_status-border: initial;
+  --_status-border-strong: initial;
+  --_status-text: initial;
+  --_status-text-on-color: initial;
+  --_status-icon: initial;
+  --_status-shadow: initial;
+}
+
+/* The filter button must not start a column DRAG. The grip is the trailing 8px
+   strip and the chip sits at the leading edge, so they never overlap — but the
+   pointerdown handler is delegated from the whole header row, and a chip click
+   that reached it would read as the start of a resize. */
+.head-filter { touch-action: auto; }
+
+/* The part of a cell a TEXT column's filter matched.
+
+   A filtered column says WHICH rows survived; the mark says why THIS one did,
+   so the reader does not scan a column of long names for the four letters that
+   matched. Same treatment as sherpa-nav-item's search hit, so one highlight
+   means one thing across the system.
+
+   Number and date cells never carry one — see #fillCell. */
+.cell mark.match {
+  background: color-mix(in srgb,
+    var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
+  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}
+
+/* ── Inside a column filter MENU ─────────────────────────────────────
+ * These rows are cloned into the CHIP's light DOM and slotted into its menu, so
+ * they sit in neither the chip's shadow tree nor the menu's — which is exactly
+ * why a plain descendant selector from HERE reaches them, and why the menu's
+ * own `::slotted()` cannot.
+ *
+ * The shapes mirror the quick-filter toolbar's number and date menus on
+ * purpose: a reader who has met the toolbar's chips already knows this control.
+ */
+.head-filter-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* The RANGE switch row. The control LEADS and the label follows — where a value
+   row puts its checkbox and its text — so every control in the menu shares one
+   left edge instead of the mode row alone reaching for the far side. */
+.head-filter-range {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
+
+.head-filter-range-label {
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  line-height: var(--sherpa-theme-content-line-height-base, 20px);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
+
+/* The two shared controls: a condition picker and a value box. Both are bare
+   form controls rather than composed components — they live where no
+   stylesheet but this one reaches, so a sherpa-input-text there would carry a
+   shadow tree for a box this file could not style anyway. */
+.head-filter-op,
+.head-filter-body input {
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+  border-style: solid;
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* A <select> and an <input> do NOT inherit the page font — browsers
+     substitute their own UI face — so without this the menu's two controls
+     rendered in a different typeface from the heading above them. */
+  font-family: inherit;
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  box-sizing: border-box;
+}
+
+/* Numeric values are mono and right-aligned, per the system's convention —
+   the same rule the grid's own number cells follow. */
+.head-filter-num {
+  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  text-align: right;
+}
+
+/* A <select> DRAWS ITS CARET INSIDE ITS OWN PADDING.
+
+   With the same 8px on both sides the browser puts the glyph about 2px off the
+   border and runs the label straight up against it — no gap on the right at
+   all, while the left has its full 8. The control reads lopsided and the
+   longest option touches the arrow.
+
+   So the trailing side gets room for the caret AND the gap: 8 for the glyph,
+   8 to breathe, on top of the 8 every field already has. It is `padding-inline-
+   end` alone, so the shared rule above still owns every other edge. */
+.head-filter-op {
+  padding-inline-end: calc(
+    var(--sherpa-display-mode-space-xs, 8px) * 3
+  );
+}
+
+.head-filter-op:focus-visible,
+.head-filter-body input:focus-visible {
+  outline: none;
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+
+/* ONE of the two number shapes shows. BOTH are in the DOM from the start, so
+   flipping the Range switch is an attribute write rather than a rebuild — and
+   whatever was typed on the other side is still there on the way back. */
+.head-filter-slider { display: none; }
+
+sherpa-menu[data-range] .head-filter-value { display: none; }
+sherpa-menu[data-range] .head-filter-slider { display: block; }
+
+/* A RANGE has no single condition to pick: it IS `between`, which the slider's
+   two thumbs say more plainly than a list could. */
+sherpa-menu[data-range] .head-filter-op { display: none; }
 
 /* ── Column widths + the resize grip ─────────────────────────────────
  * A column is drawn at the width its <col> carries, so its content has to fold
@@ -483,12 +679,10 @@
 .head-btn {
   display: flex;
   align-items: center;
-  /* The sort glyph sits at the header's TRAILING edge, not tucked against the
-     label. `space-between` pushes it there whatever the label's length, so the
-     glyphs line up down the header row instead of stepping in and out with the
-     text. The gap is the MINIMUM space kept when a label is long enough to reach
-     the icon. */
-  justify-content: space-between;
+  /* The glyph is no longer in here — the row is LABEL, FILTER, SORT, and this
+     button holds only the label now. It still grows (see .head-row-inner), so
+     the two controls after it stay pinned to the column's trailing edge. */
+  justify-content: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
   /* WIDER inline padding than block. The resize grip is an 8px strip on the
@@ -530,20 +724,6 @@
 /* …and so does its filter input, for the same reason. */
 .filter-cell[data-type="number"] .filter-input {
   text-align: end;
-}
-
-/* The glyph is a FONT character, so font-size is what scales it — the two size
-   properties only size its box. Figma's header `actions` frame holds 16x16 icon
-   Buttons (Grid Cell 926:34238), and the glyph inside one is the icon scale. */
-.sort-icon {
-  flex: 0 0 auto;
-  display: inline-flex;
-  place-content: center;
-  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
-  block-size: var(--sherpa-theme-size-icon-xs, 14px);
-  font-size: var(--sherpa-theme-size-icon-xs, 14px);
-  font-style: normal;
-  line-height: 1;
 }
 
 
@@ -621,23 +801,23 @@
    in as well as the body column it heads. */
 :is(.head-cell, .filter-cell, .select-head, .filter-spacer)[data-pinned] { z-index: 4; }
 
-/* ── The scroll shadow ──────────────────────────────────────────────
- * Only while content is ACTUALLY scrolled under the pinned columns — an edge
- * shadow that is always there reads as a permanent divider, not as depth.
+/* ── The pinned edge ────────────────────────────────────────────────
+ * A rule where the pinned columns end, drawn only while content is ACTUALLY
+ * scrolled under them — an edge that is always there reads as a permanent
+ * divider rather than as "something is hidden behind this".
  *
  * `scroll-state(scrollable: inline-start)` asks the scroll container whether it
  * can still scroll TOWARD its inline-start edge, which is true exactly when the
  * user has scrolled away from it. That is a container query on scroll position,
  * so no scroll listener and no JS-written attribute is involved. Chromium 133+.
  *
- * The shadow is drawn as a pseudo-element on the TRAILING edge of the last
- * pinned cell rather than a box-shadow on the cell, because a box-shadow on a
- * <td> in the separate border model is clipped by the neighbouring cell in some
- * paint orders — the pseudo-element is positioned and always paints.
+ * NO DROP SHADOW. A gradient pseudo-element used to fade out over 12px beside
+ * the border; Will's call to drop it — the border alone says where the pinned
+ * run stops, and the shadow was a second answer to the same question.
  *
  * No fallback is written for engines without scroll-state: the columns still pin
- * correctly there, they simply do not gain the depth cue. A scroll listener was
- * the alternative and it buys one shadow for a per-frame JS cost. */
+ * correctly there, they simply do not gain the edge. A scroll listener was the
+ * alternative and it buys one border for a per-frame JS cost. */
 .scroller {
   container-type: scroll-state;
   container-name: grid-scroll;
@@ -645,31 +825,16 @@
 
 [data-pinned][data-pin-last] {
   position: sticky;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset-block: 0;
-    inset-inline-end: 0;
-    inline-size: var(--sherpa-display-mode-space-sm, 12px);
-    translate: 100% 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 120ms ease;
-    /* Two stops, both transparent neutrals: the +4 step carries the near edge so
-       the shadow reads against the grid's white cell fill, and it falls away to
-       nothing over the 12px. A single faint stop was invisible on white. */
-    background: linear-gradient(
-      to right,
-      color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-4, #35353d) 40%, transparent),
-      color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent),
-      transparent
-    );
-  }
+  /* Transparent at rest, so the edge appears with the scroll rather than sitting
+     there permanently. */
+  border-inline-end: var(--sherpa-border-right, 0.5px) solid transparent;
+  transition: border-inline-end-color 120ms ease;
 }
 
 @container grid-scroll scroll-state(scrollable: inline-start) {
-  [data-pinned][data-pin-last]::after { opacity: 1; }
+  [data-pinned][data-pin-last] {
+    border-inline-end-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  }
 }
 
 /* ── Group rows under horizontal scroll ─────────────────────────────

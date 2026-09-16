@@ -43,6 +43,8 @@
  * @fires view-menu-open — the Save group's caret was clicked (view type). bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// The sort/group glyphs are SHARED with sherpa-data-grid — see core/icons.
+import { ORGANISE_ICONS } from '../../core/icons.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
@@ -130,6 +132,17 @@ export interface QuickFilterDef {
    */
   availableDates?: string[];
   /**
+   * A value the user TYPED rather than picked, shown on the chip's caret.
+   *
+   * A normal chip reads its value back from the rows ticked in its menu. A
+   * custom one has no list to tick — the data grid's column-heading filter asks
+   * for a condition and a value, so the finished phrase ("Contains: ana")
+   * arrives already made. Set it and the chip shows it and opens no menu.
+   *
+   * See `addCustomFilter()`, which is the only way it is meant to be set.
+   */
+  customValue?: string;
+  /**
    * Start a number or date chip in RANGE mode rather than single.
    *
    * The switch is the user's to flip either way; this only says which side it
@@ -149,7 +162,7 @@ export interface QuickFilterDef {
    */
   persistent?: boolean;
   /**
-   * Offer "Remove filter" at the foot of this chip's menu.
+   * Offer "Remove" at the foot of this chip's menu.
    *
    * OPT-IN, because removability is a property of the chip and not of the bar.
    * A filter a user ADDED can be taken off again; a chip the host put there on
@@ -201,6 +214,17 @@ export type SortDirection = 'asc' | 'desc';
 export class SherpaQuickFilterToolbar extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
   static override html = new URL('./sherpa-quick-filter-toolbar.html', import.meta.url);
+
+  /**
+   * THE SORT, written from outside — by a DataSource, or by a data grid whose
+   * own column header was clicked.
+   *
+   * The bar's Sort chip and a grid's column headers are two views of ONE value,
+   * and only one column can be sorted at a time. Without observing these the
+   * link ran one way: the chip steered the grid, and sorting from a column
+   * header left the chip saying nothing.
+   */
+  static override observed = ['data-sort-field', 'data-sort-direction'];
 
   #filters: QuickFilterDef[] = [];
   #organise: OrganiseDef = {};
@@ -648,7 +672,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // does bubble this far: the rows are in the CHIP's light DOM, not behind a
     // second shadow boundary.
     this.addEventListener('change', this.#onFoldedCountsChanged);
-    // Action rows (the "Remove filter" button) report separately from value rows.
+    // Action rows (the "Remove" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
     // A CALENDAR commits through its own events, not through the menu's. An
     // auto-applying date chip has no Apply button, so without these its label
@@ -919,6 +943,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     list.replaceChildren();
+    // `valueLabel` writes into the chip's SHADOW root, which does not exist
+    // until the element upgrades — and a chip cloned from a template has not
+    // upgraded while it is still out of the document. So the writes are held
+    // and replayed after the whole run is appended.
+    const customLabels: Array<[HTMLElement, string]> = [];
     for (const f of this.#filters) {
       const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const prior = live.get(f.id);
@@ -942,6 +971,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // well as on having values to list.
       const hasOwnContent = f.kind === 'date' || f.kind === 'number';
       if (f.options?.length || hasOwnContent) this.#addMenu(chip, f, prior?.picked);
+      // A CUSTOM chip's value was typed, not picked, so there is no list to open
+      // and no menu to build. The finished phrase goes onto the caret through
+      // the chip's own `valueLabel` setter — the same door a date chip's
+      // formatted day uses, and for the same reason: the value is not the
+      // chip's to derive, only to show.
+      if (f.customValue) {
+        // `data-custom` is what makes it findable: it is in neither `active`
+        // (which skips menu chips) nor `values` (which reads ticked rows).
+        chip.setAttribute('data-custom', '');
+        chip.setAttribute('data-menu', '');
+        // It reads in FULL: "Contains: ana" truncated to "Contains: a…" names a
+        // condition whose subject the reader cannot see.
+        chip.setAttribute('data-full-value', '');
+        // No menu is slotted, so the caret click is already a no-op (it calls
+        // `this.menu?.toggle?.()`). The caret is still DRAWN, because that is
+        // where the value reads — it just opens nothing.
+        customLabels.push([chip, f.customValue]);
+      }
       list.appendChild(chip);
       // A date chip's label carries its chosen day, so it has to be re-derived
       // after a rebuild like everything else.
@@ -952,6 +999,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-full-value', '');
         this.#syncDateLabel(chip);
       }
+    }
+
+    // A custom chip's phrase goes onto its caret through the chip's own setter,
+    // which writes into the chip's SHADOW root — so it has to wait for the chip
+    // to have rendered one. A freshly cloned chip has not: the element upgrades
+    // when it enters the document and renders a tick later, and writing before
+    // that put the text nowhere and reported no error.
+    for (const [chip, text] of customLabels) {
+      const el = chip as HTMLElement & { valueLabel?: string; rendered?: Promise<void> };
+      void Promise.resolve(el.rendered).then(() => { el.valueLabel = text; });
     }
 
     // The run just changed, so what fits has changed with it. The ResizeObserver
@@ -1247,7 +1304,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Give a chip's menu its "Remove filter" action — a FOOTER BUTTON.
+   * Give a chip's menu its "Remove" action — a FOOTER BUTTON.
    *
    * It was a row at the foot of the list for value chips and a footer button
    * for date chips, because a calendar menu has no list for a row to sit in.
@@ -1275,7 +1332,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * A "Remove filter" row was clicked — take that chip off the bar.
+   * A "Remove" row was clicked — take that chip off the bar.
    *
    * The menu fires `menu-select` for ACTION rows (buttons), separately from the
    * `menu-change` its value rows commit on Apply, so a remove never has to be
@@ -1345,6 +1402,44 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   };
 
+  override onChange(): void {
+    this.#syncSortFromAttrs();
+  }
+
+  /**
+   * Point the Sort chip at whatever `data-sort-field` says.
+   *
+   * The chip derives its column from its own menu's ticked radio, so syncing
+   * means ticking that radio — not writing a label, which the next
+   * #syncSortLabel would overwrite from the menu anyway.
+   *
+   * No event is emitted. The write came from outside; telling the outside what
+   * it just did would be an echo, and a host wiring both directions would
+   * bounce the value between them.
+   */
+  #syncSortFromAttrs(): void {
+    const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
+    if (!chip) return;
+
+    const field = this.dataset['sortField'] ?? '';
+    const direction = this.dataset['sortDirection'] === 'desc' ? 'desc' : 'asc';
+
+    // NO FIELD means no sort — the chip goes off but keeps its pick, the same
+    // suspended state its own third click produces.
+    if (!field) {
+      chip.removeAttribute('data-current');
+      this.#syncSortLabel(chip);
+      return;
+    }
+
+    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+      radio.checked = radio.value === field;
+    }
+    chip.dataset['direction'] = direction;
+    chip.toggleAttribute('data-current', true);
+    this.#syncSortLabel(chip);
+  }
+
   /**
    * Report the whole filter state: the active toggle chips AND every menu chip's
    * picks.
@@ -1360,7 +1455,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       values: this.values,
       // What is REMEMBERED — including chips toggled off, whose picks survive.
       picked: this.pickedValues,
+      // CUSTOM chips, whose value was typed rather than picked — the data
+      // grid's column filters. They appear in neither list above: `active`
+      // skips anything with a menu (so the caret draws), and `values` reads
+      // ticked rows, which a custom chip has none of. Without this a host had
+      // no way to see one at all, so turning one OFF said nothing and the
+      // column it came from stayed filtered and lit.
+      custom: this.customFilters,
     });
+  }
+
+  /**
+   * Every CUSTOM chip and whether it is on — `{ 'col:name': true }`.
+   *
+   * A custom chip's value was typed, not picked, so it carries no rows to read
+   * back; its id and its on/off state are the whole of what it says. A host
+   * that put one on the bar reads this to learn it has been switched off, and
+   * clears whatever set it.
+   */
+  get customFilters(): Record<string, boolean> {
+    const out: Record<string, boolean> = {};
+    for (const chip of this.#chips()) {
+      if (!chip.hasAttribute('data-custom')) continue;
+      out[chip.dataset['id'] ?? ''] = chip.current;
+    }
+    return out;
   }
 
   /**
@@ -1636,6 +1755,65 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * Put a CUSTOM filter on the bar — one whose value is typed, not picked.
+   *
+   * The data grid's column-heading filters are what this is for. A reader sets
+   * "Name contains ana" in a column heading, and the bar has to show it beside
+   * the chips they picked from the Add menu, or the view is narrowed by
+   * something with no presence on the toolbar that says so.
+   *
+   * It differs from a normal chip in one way that matters: its value is not one
+   * of a LIST. A `values` chip's caret opens the field's options and the chip
+   * reads back whichever are ticked; here the condition and the value came from
+   * a form, so the label is handed in whole and the chip carries no menu.
+   *
+   *   toolbar.addCustomFilter({ id: 'col:name', label: 'Name',
+   *                             value: 'Contains: ana' });
+   *
+   * Calling it again with the same `id` REPLACES that chip — a reader who
+   * changes "contains ana" to "contains bo" has one filter, not two. Passing a
+   * null or empty `value` removes it, which is what clearing the column's menu
+   * means.
+   *
+   * The chip is removable: the user put it there, so they may take it off. Doing
+   * so fires `filter-remove` like any other, and the grid should clear that
+   * column's menu when it sees its own id come back.
+   */
+  addCustomFilter(spec: { id: string; label: string; value?: string | null }): void {
+    const { id, label, value } = spec;
+    const i = this.#filters.findIndex((f) => f.id === id);
+
+    // No value means no filter. Removing rather than leaving a chip that reads
+    // "Name:" and narrows nothing.
+    if (value == null || value === '') {
+      if (i >= 0) {
+        this.#filters.splice(i, 1);
+        this.#render();
+        this.#emitChange();
+      }
+      return;
+    }
+
+    const def: QuickFilterDef = {
+      id,
+      label,
+      active: true,
+      // The user typed this one, so it is theirs to remove.
+      removable: true,
+      // `customValue` is what the chip's caret reads. No `options`, so the chip
+      // gets no value menu — there is no list to open, and a caret that opened
+      // an empty card would be worse than none.
+      customValue: value,
+    };
+
+    if (i >= 0) this.#filters[i] = def;
+    else this.#filters = [...this.#filters, def];
+
+    this.#render();
+    this.#emitChange();
+  }
+
+  /**
    * Turn every chip off and drop every picked value.
    *
    * This is what the undo button means: not "undo the last thing" but "back to
@@ -1693,15 +1871,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
      * every screen — so it must not borrow the icon of whatever page it happens
      * to sit on. The examples each passed their own nav glyph (a table for
      * records, a gauge for the dashboard), which made one control look like five.
+     *
+     * It stays HERE because only this component draws it. The four below are
+     * shared, and live in core/icons.
      */
     view: 'fa-solid fa-desktop',
-    group: 'fa-solid fa-layer-group',
-    /* fa-sort, NOT fa-bars — that is the hamburger-menu glyph (three equal
-       rules), which reads as a menu affordance rather than "sortable". Must stay
-       in step with sherpa-data-grid's own map; a spec guards the pair. */
-    sortNone: 'fa-solid fa-sort',
-    sortAsc: 'fa-solid fa-arrow-up-wide-short',
-    sortDesc: 'fa-solid fa-arrow-down-wide-short',
+    /**
+     * Group and the three sort states come from `core/icons.ts`, NOT from a
+     * copy kept here.
+     *
+     * They used to be written out again in this file, with a comment saying
+     * they "must stay in step with sherpa-data-grid's own map" and a spec to
+     * guard the pair. Two copies plus a test to check they match is the long
+     * way round to having one copy: a sort chip and a column header are two
+     * views of ONE sort, so they read one map.
+     */
+    ...ORGANISE_ICONS,
   } as const;
 
   /**

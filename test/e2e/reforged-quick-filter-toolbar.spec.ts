@@ -722,7 +722,7 @@ test('the view chip offers no remove, defaults to its first option, and never go
       viewEmpty: view.hasAttribute('data-empty'),
       // The bar reports it like any other applied filter.
       values: JSON.parse(JSON.stringify(el.values)),
-      // "Remove filter" is a FOOTER BUTTON on the chip's menu now, not a row in
+      // "Remove" is a FOOTER BUTTON on the chip's menu now, not a row in
       // its list — so the offer is the menu's own data-removable flag.
       remove: {
         view: !!view.querySelector('sherpa-menu[data-removable]'),
@@ -741,7 +741,7 @@ test('the view chip offers no remove, defaults to its first option, and never go
 
   expect(r.values).toEqual({ view: ['fleet'] });
 
-  // "Remove filter" is OPT-IN. The selector never offers it; a chip that asked
+  // "Remove" is OPT-IN. The selector never offers it; a chip that asked
   // for it gets it; a chip that did not, does not.
   expect(r.remove).toEqual({ view: false, plan: true, region: false });
 });
@@ -843,7 +843,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     await apply(add);
     const afterAdd = { chips: chips(), offered: offered() };
 
-    // …then take one back off through its own menu's "Remove filter" BUTTON,
+    // …then take one back off through its own menu's "Remove" BUTTON,
     // which lives in the menu's footer (shadow DOM), not in the chip's list.
     const health = sr.querySelector('.chip[data-id="health"]') as HTMLElement;
     const healthMenu = health.querySelector('sherpa-menu')!;
@@ -869,7 +869,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
   // REMOVE puts it back where it came from: a user who removes a chip by mistake
   // should find it where they got it. Its picks are dropped — "remove" means
   // remove, not "hide and remember".
-  expect(r.removeLabel).toBe('Remove filter');
+  expect(r.removeLabel).toBe('Remove');
   expect(r.afterRemove.chips).toEqual(['plan', 'seats']);
   expect(r.afterRemove.offered).toEqual(['tickets', 'health']);
 });
@@ -883,7 +883,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
       available?: (d: unknown) => void;
       values?: Record<string, string[]>;
     };
-    // `removable: true` — the opt-in that puts "Remove filter" in the menu.
+    // `removable: true` — the opt-in that puts "Remove" in the menu.
     el.populate!([
       { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'region', label: 'Region', removable: true, options: [{ value: 'emea', label: 'EMEA' }] },
@@ -1958,4 +1958,77 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
   expect(r.start.chip).toBe(false);
   expect(r.ticked.chip).toBe(true);
   expect(r.unticked.chip).toBe(false);
+});
+
+/**
+ * A CUSTOM chip — one whose value was typed, not picked from a list.
+ *
+ * The data grid's column-heading filters are what this exists for. A reader
+ * sets "Name starts with Ad" in a column heading, and the bar has to show it
+ * beside the chips they picked from the Add menu, or the view is narrowed by
+ * something with no presence on the toolbar that says so.
+ */
+test('addCustomFilter puts a typed-value chip on the bar, replaces it, and removes it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+      addCustomFilter(spec: { id: string; label: string; value?: string | null }): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate?.([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const bar = () =>
+      Array.from(sr.querySelectorAll<HTMLElement>('.chip')).map((c) => ({
+        id: c.dataset['id'] ?? null,
+        label: c.getAttribute('data-label'),
+        value: c.shadowRoot?.querySelector('.caret-label')?.textContent ?? null,
+        on: c.hasAttribute('data-current'),
+        // No list to open, so no menu is slotted — the caret shows the value
+        // and opens nothing.
+        hasMenu: !!c.querySelector('sherpa-menu'),
+        // The phrase must read in FULL: "Starts with: Ad" truncated names a
+        // condition whose subject the reader cannot see.
+        full: c.hasAttribute('data-full-value'),
+      }));
+
+    el.addCustomFilter({ id: 'col:name', label: 'Name', value: 'Starts with: Ad' });
+    await settle();
+    const added = bar();
+
+    // Changing the condition is the SAME filter, not a second one.
+    el.addCustomFilter({ id: 'col:name', label: 'Name', value: 'Contains: bo' });
+    await settle();
+    const replaced = bar();
+
+    // A null value means the column's menu was cleared — the chip goes.
+    el.addCustomFilter({ id: 'col:name', label: 'Name', value: null });
+    await settle();
+    const removed = bar();
+
+    return { added, replaced, removed };
+  });
+
+  // It lands beside the picked chips, on, reading its phrase.
+  expect(r.added).toHaveLength(2);
+  expect(r.added[1]).toEqual({
+    id: 'col:name',
+    label: 'Name',
+    value: 'Starts with: Ad',
+    on: true,
+    hasMenu: false,
+    full: true,
+  });
+
+  // Same id, so it is REPLACED — one filter, not two.
+  expect(r.replaced).toHaveLength(2);
+  expect(r.replaced[1]!.value).toBe('Contains: bo');
+
+  // Cleared: the chip goes, and the picked chip is untouched.
+  expect(r.removed).toHaveLength(1);
+  expect(r.removed[0]!.id).toBe('plan');
 });

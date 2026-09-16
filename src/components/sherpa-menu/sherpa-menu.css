@@ -50,8 +50,9 @@
   /* 240 is the Menu node's width, and the FLOOR rather than the fixed size: the
      footer is an actions row whose buttons keep their own widths, so a menu that
      shows Remove + Cancel + Apply needs more than 240 and must take it. Fixed at
-     240, the row overflowed and "Remove filter" was squeezed from 125px to 93
-     with its label truncated.
+     240, the row overflowed and the Remove button was squeezed from 125px to
+     93 with its label truncated. (It reads just "Remove" now, so it asks for
+     less — but Cancel and Apply beside it still add up past 240.)
 
      `max-content` is the width the content actually asks for; `min-inline-size`
      holds the node's 240 for every ordinary menu, so nothing narrower than the
@@ -277,7 +278,7 @@
 .remove { display: none; }
 .footer-spacer { display: none; }
 
-/* "Remove filter" is a FOOTER BUTTON for every menu shape, not a row in the
+/* "Remove" is a FOOTER BUTTON for every menu shape, not a row in the
    list. A calendar has no list for a row to sit in, and a row at the foot of a
    long list scrolls away from the action it belongs beside. Opt-in, because only
    a chip that can be taken off the bar has anything to remove. */
@@ -398,12 +399,12 @@
  * any ONE of them earns it:
  *
  *   data-commit     Cancel · Apply   (the deferred-selection pair)
- *   data-removable  Remove filter    (a date chip's only way off the bar)
+ *   data-removable  Remove           (a date chip's only way off the bar)
  *   data-clearable  Clear
  *   Type=calendar   Today
  *
  * Tying the row to data-commit ALONE was wrong once auto-apply became the
- * default: an auto-applying date chip lost Today and Remove filter with the
+ * default: an auto-applying date chip lost Today and Remove with the
  * Apply button, and a calendar has no list for an action ROW to sit in instead,
  * so the chip became one a reader could add and never take away. Each control
  * hides itself on its own flag (see the rules above), so listing every case here

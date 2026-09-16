@@ -5,7 +5,10 @@
  * out (day → month → year); picking a month or year zooms back in. The prev/next
  * arrows move by a month in the day view, a year in the month view, and a decade
  * in the year view. data-min / data-max set the range of days you can pick, and
- * data-available narrows that to the days a host says exist in its data.
+ * data-available narrows that to the days a host says exist in its data. It
+ * also decides which month an UNPICKED calendar opens on — see
+ * #availableAnchor — because opening on a month those days do not reach shows
+ * a grid of disabled cells and no way to leave it.
  *
  * TYPE (data-type = single | range) mirrors the Figma Calendar `Type` axis:
  *   single (default) — one day. data-value holds it as YYYY-MM-DD.
@@ -82,7 +85,8 @@ export class SherpaCalendar extends SherpaElement {
   #picking = false;
 
   override onRender(): void {
-    const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
+    const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart'])
+      ?? this.#availableAnchor();
     if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     if (!this.dataset['view']) this.dataset['view'] = 'day';
     // EMBEDDED: the stepper is projected into the host's own `header` slot, so
@@ -269,6 +273,29 @@ export class SherpaCalendar extends SherpaElement {
    * availability gets the behaviour it always had, and `data-available=""`
    * (empty, not missing) genuinely means nothing is selectable.
    */
+  /**
+   * The month to OPEN ON when nothing is picked yet.
+   *
+   * Today, normally. But a host that supplied `data-available` has said which
+   * days exist in its data, and opening on a month holding none of them shows
+   * a grid where every cell is disabled — nothing to click, and no hint that
+   * the days are elsewhere. A chip driven by such a calendar could never take
+   * a value at all, so it sat in the amber "on but filtering nothing" state
+   * looking broken.
+   *
+   * So: the LATEST available day, which is the most recent data and the end a
+   * reader usually wants. Stepping back from there is one click; finding a
+   * populated month from two years away is not.
+   */
+  #availableAnchor(): [number, number, number] | null {
+    const days = this.#availableDays();
+    if (!days?.size) return null;
+    // ISO strings sort chronologically as text, so `max` is a plain compare.
+    let latest = '';
+    for (const d of days) if (d > latest) latest = d;
+    return parseIso(latest);
+  }
+
   #availableDays(): Set<string> | null {
     const raw = this.dataset['available'];
     if (raw == null) return null;

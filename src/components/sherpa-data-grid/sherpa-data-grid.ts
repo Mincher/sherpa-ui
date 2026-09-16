@@ -9,10 +9,20 @@
  *   • data-selectable adds a leading checkbox column (a select-all in the header
  *     and a checkbox per row); toggling emits selection-change.
  *   • data-filterable adds a secondary header row of per-column filter inputs;
- *     typing emits filter-change. A column a filter is narrowing takes the Style
- *     `active` mode (data-status="active") on BOTH its heading and its filter
- *     cell — the heading is sticky, so it is what still says so after the filter
- *     row has scrolled away.
+ *     typing emits filter-change.
+ *
+ * A column ACTING on the view — the one being sorted, or one a filter is
+ * narrowing — takes the Style `active` mode (data-status="active") on its
+ * HEADING. Both are the same kind of thing, so both read the same. The heading
+ * carries it because the heading is sticky: the filter box and the 14px sort
+ * arrow are both gone by row 40, and the tinted column is not. The filter cell
+ * itself never takes it — that row already says what it is doing.
+ *
+ * data-filter-fields is how a filter set OUTSIDE the grid — a quick-filter
+ * toolbar above it — reaches the headers. The grid cannot see that toolbar and
+ * populate() hands it only the surviving rows, so the data source writes the
+ * narrowed field names here (space separated) and the grid lights those
+ * columns. Without it a chip change just shrank the table, saying nothing.
  * Both are CSS-gated — the columns/rows exist in the template always and only JS
  * behaviour (selection tracking, filter dispatch) lives here.
  *
@@ -28,21 +38,71 @@
  * @attr {enum}    data-sort-field      current sort column field
  * @attr {enum}    data-sort-direction  asc | desc
  * @attr {enum}    data-group-field     group the rows by this column
+ * @attr {string}  data-filter-fields   space-separated fields an EXTERNAL filter
+ *   is narrowing; those columns' headers take data-status="active". Written by
+ *   SherpaDataSource — a host driving the grid by hand can write it too.
  * @attr {boolean} data-selectable      show a leading checkbox column
  * @attr {boolean} data-filterable      show a secondary filter-input header row
+ * @attr {boolean} data-column-filters  show a FILTER BUTTON in each column
+ *   heading, left of the sort control. Clicking it opens a menu that builds one
+ *   clause against that column, shaped by the column's `type`:
  *
- * @fires sort-change      — a sortable header is clicked. bubbles + composed. detail: { field: string, direction: 'asc' | 'desc' }
+ *     text    a condition picker + a value box
+ *     number  a condition picker + a value box, or TWO boxes in Range mode
+ *     date    a calendar — one day, or a start→end span in Range mode
+ *
+ *   Number and date lead with a RANGE switch: each is one filter with two
+ *   shapes ("equals this" / "between these two"), and two separate controls
+ *   would make the reader choose the shape before they know which they want.
+ *   Any other type gets no button — an affordance that opens nothing is worse
+ *   than none. The button is an icon-only <sherpa-quick-filter>, so the menu,
+ *   its cross-shadow placement and its Apply footer are the chip's rather than
+ *   a second copy living here.
+ *
+ * @fires sort-change      — the column sort control is clicked. bubbles + composed.
+ *   detail: { field, direction } — TRI-STATE, so `field` is null and `direction`
+ *   null on the third click, which turns the sort off. Only one column sorts at
+ *   a time.
  * @fires row-click        — a row is clicked. bubbles + composed. detail: { index: number, row: object }
  * @fires selection-change — a selection checkbox toggles. bubbles + composed. detail: { selected: string[] }
  * @fires filter-change    — a filter input changes. bubbles + composed. detail: { field: string, value: string }
  * @fires group-toggle     — a group row is expanded or collapsed. bubbles + composed. detail: { value: string, collapsed: boolean }
  * @fires column-resize    — a column header grip is dragged. bubbles + composed. detail: { field: string, width: number }
+ * @fires column-filter-change — a column's filter menu was applied or cleared.
+ *   bubbles + composed. detail: { field, header, op, value, clause, label }.
+ *   `clause` is a ready FilterClause ([field, op, value]) or null when cleared,
+ *   so a host can hand it straight to a DataSource. `label` is the chip text a
+ *   toolbar should show — "Contains: ana" — and `header` the column's own name,
+ *   which together make the "Field: Condition Value" chip.
+ *
+ *   The grid does NOT filter its own rows off this. It has one column's clause
+ *   and no idea what else is filtering the view; whoever owns the query owns
+ *   the combining. The grid lights the column (see data-filter-fields) and
+ *   says what was asked for.
  *
  * @attr {enum} data-select — multiple (default) | single. Single draws RADIOS and
  *   holds one row; the header cell shows no control, because "select all" is
  *   meaningless where only one can be chosen.
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+// The sort/group glyphs are SHARED with the quick-filter toolbar — see core/icons.
+import { ORGANISE_ICONS } from '../../core/icons.js';
+// The operator vocabulary is SHARED — every query-building surface reads the
+// same labels and the same per-type lists, so no second vocabulary can appear.
+import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
+// Each column heading carries an icon-only filter chip, and the chip's menu is
+// a real <sherpa-menu>. Both must be DEFINED, not merely typed: the template
+// stamps the elements, and an undefined custom element renders as an inert
+// <sherpa-quick-filter> with no shadow root and no menu.
+import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-menu/sherpa-menu.js';
+// A NUMBER or DATE column's menu leads with a Range switch, and a date column's
+// body IS a calendar. Both are stamped from the template, so both must be
+// defined or they render as inert unknown elements.
+import '../sherpa-switch/sherpa-switch.js';
+import '../sherpa-calendar/sherpa-calendar.js';
+// A number column's RANGE shape is a two-ended slider, as the toolbar's is.
+import '../sherpa-slider/sherpa-slider.js';
 
 export interface GridColumn {
   field: string;
@@ -64,6 +124,37 @@ interface GridConfig {
   rows: GridRow[];
 }
 
+/**
+ * One column heading's filter, as the grid holds it.
+ *
+ * `range` says which shape it is: a single `op` + `value`, or a `between` over
+ * `from`..`to`. Both are kept rather than a tagged union, so flipping the Range
+ * switch and flipping back finds what was typed on the other side still there.
+ */
+interface ColumnFilter {
+  op: string;
+  value: string;
+  range?: boolean;
+  from?: string;
+  to?: string;
+  /**
+   * SET but not applied — the reader toggled its toolbar chip off.
+   *
+   * The clause is kept, so toggling back on restores it without retyping; the
+   * heading stops reading active, because the column is narrowing nothing
+   * right now and a lit column that filters nothing is a lie.
+   */
+  suspended?: boolean;
+}
+
+/** Which body template each column type's filter menu holds. */
+const COLUMN_FILTER_BODIES: Record<string, string> = {
+  text: 'template.head-text-filter-tpl',
+  number: 'template.head-number-filter-tpl',
+  date: 'template.head-date-filter-tpl',
+};
+
+
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
   static override html = new URL('./sherpa-data-grid.html', import.meta.url);
@@ -74,6 +165,11 @@ export class SherpaDataGrid extends SherpaElement {
     'data-sort-field',
     'data-sort-direction',
     'data-group-field',
+    // Which fields an EXTERNAL filter is narrowing — a space-separated list,
+    // written by the data source. The grid cannot see a quick-filter toolbar's
+    // chips, and populate() only ever hands it the surviving rows, so this is
+    // the only way a column filtered from outside can light its own header.
+    'data-filter-fields',
     'data-selectable',
     // SINGLE vs multiple changes the CONTROL each row draws — a radio cannot be
     // turned into a checkbox by CSS — so a change here re-renders the body.
@@ -103,6 +199,18 @@ export class SherpaDataGrid extends SherpaElement {
   #widths = new Map<string, number>();
   /** Active per-column filter text, keyed by field. Empty entries are removed. */
   #filters = new Map<string, string>();
+
+  /**
+   * One CLAUSE per column, from the heading filter menus, keyed by field.
+   *
+   * Held rather than applied: the grid reports each clause and lights the
+   * column, but does not narrow its own rows off it. It sees one column at a
+   * time and cannot know what else is filtering the view, so combining the
+   * clauses belongs to whoever owns the query — a DataSource, or the page.
+   * Keeping them is what lets a re-opened menu show the pair already set, and
+   * what survives the header rebuild that every sort causes.
+   */
+  #columnFilters = new Map<string, ColumnFilter>();
   /**
    * The group values the user has collapsed.
    *
@@ -155,7 +263,10 @@ export class SherpaDataGrid extends SherpaElement {
   #focused: GridRow | null = null;
 
   override onRender(): void {
-    this.$('.head-row')?.addEventListener('click', this.#onHeaderClick);
+    // CAPTURE. The sort control is a chip, and a chip's caret handler calls
+    // stopPropagation() — it is guarding its own menu from the body's toggle.
+    // A bubbling listener here would never see the click that IS the sort.
+    this.$('.head-row')?.addEventListener('click', this.#onHeaderClick, true);
     this.$('.body')?.addEventListener('click', this.#onRowClick);
     // Selection: select-all in the header, per-row boxes delegated on the body.
     this.$('.select-all')?.addEventListener('change', this.#onSelectAll);
@@ -167,6 +278,29 @@ export class SherpaDataGrid extends SherpaElement {
     // POINTER itself in #onGripDown, so a fast drag that outruns the cursor does
     // not drop out of the gesture.
     this.$('.head-row')?.addEventListener('pointerdown', this.#onGripDown);
+    // The column-filter menus live in the header row and their events bubble.
+    // BOTH footer buttons end the interaction, so both commit: Apply with a
+    // pair to keep, Clear with nothing. Delegated from the row rather than
+    // bound per chip, because the header is rebuilt on every sort.
+    this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
+    this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
+    // A header filter button IS a <sherpa-quick-filter>, so it emits the chip's
+    // own composed events — quick-filter-change and quick-filter-click. Those
+    // are the TOOLBAR's vocabulary: a DataSource bound to this grid hears
+    // quick-filter-change and sets the whole filter from it, wiping everything
+    // else the view had folded in. So they stop here. The grid speaks
+    // `column-filter-change`, which says which COLUMN and carries a ready
+    // clause; anything else leaking out would be a second, rival dialect for
+    // the same gesture.
+    for (const type of ['quick-filter-change', 'quick-filter-click']) {
+      this.$('.head-row')?.addEventListener(type, this.#stopChipEvent);
+    }
+    // The RANGE switch on a number or date menu. sherpa-switch re-dispatches a
+    // native `change`, so this is the one event that covers both.
+    this.$('.head-row')?.addEventListener('change', this.#onColumnRangeToggle);
+    // REMOVE FILTER — the footer's third button. It arrives as menu-select
+    // rather than a footer event of its own.
+    this.$('.head-row')?.addEventListener('menu-select', this.#onColumnFilterRemove);
     if (this.#columns.length) this.#render();
   }
 
@@ -182,6 +316,22 @@ export class SherpaDataGrid extends SherpaElement {
     // Fresh data means the old filters may name columns that no longer exist, and
     // silently hiding rows against an invisible filter would look like data loss.
     this.#filters.clear();
+    // COLUMN filters drop only where the COLUMN has gone.
+    //
+    // They cannot be cleared outright the way the header-row filters are,
+    // because a column filter is what CAUSES a re-populate: the grid reports
+    // the clause, the host queries, and the rows come back through here. Wiping
+    // the map on arrival threw away the filter that had just been applied, so
+    // the heading went dark and the chip unlit the instant the rows it asked
+    // for appeared.
+    //
+    // The grid does not narrow its own rows, so a stale entry would not hide
+    // anything — but it would light a column that is gone and re-stamp a menu
+    // for a field the data no longer has.
+    const fields = new Set(this.#columns.map((c) => c.field));
+    for (const field of this.#columnFilters.keys()) {
+      if (!fields.has(field)) this.#columnFilters.delete(field);
+    }
     // New records are new objects, so nothing selected or focused can still be
     // present.
     this.#selected.clear();
@@ -269,12 +419,12 @@ export class SherpaDataGrid extends SherpaElement {
    * rules. On a column header that reads as a menu affordance, not "this column
    * can be sorted". fa-sort is the neutral up/down pair the state actually means.
    */
-  static readonly icons = {
-    group: 'fa-solid fa-layer-group',
-    sortNone: 'fa-solid fa-sort',
-    sortAsc: 'fa-solid fa-arrow-up-wide-short',
-    sortDesc: 'fa-solid fa-arrow-down-wide-short',
-  } as const;
+  /**
+   * Re-exported from `core/icons.ts`, where the quick-filter toolbar reads the
+   * same four. A column header and a toolbar chip are two views of ONE sort and
+   * must never disagree about what "descending" looks like.
+   */
+  static readonly icons = ORGANISE_ICONS;
 
   /**
    * The width one column is drawn at.
@@ -344,6 +494,7 @@ export class SherpaDataGrid extends SherpaElement {
       // with nth-child, because the position shifts by one when data-selectable
       // is absent and #shownColumns() can drop the grouped column.
       if (i === 0) this.#markPinned(th, true);
+      this.#addColumnFilter(th, col);
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
@@ -352,8 +503,8 @@ export class SherpaDataGrid extends SherpaElement {
       // A column that is ORDERING or NARROWING what the user can see takes the
       // Style `active` mode. Both are the column acting on the view, so both
       // read the same — one highlight, not two rival ones. The heading is
-      // sticky, so it keeps saying so after the filter row has scrolled away.
-      if (sorted || this.#filters.has(col.field)) th.dataset['status'] = 'active';
+      // sticky, so it is what still says so once the user is reading row 40.
+      if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
 
       // THE SORT GLYPH — a tri-state, from the shared map.
       //
@@ -361,17 +512,508 @@ export class SherpaDataGrid extends SherpaElement {
       // reads as "you can sort by this" before anyone clicks. The old pure-CSS
       // triangle had no third state: it could only be up or down, so an
       // unsorted column showed nothing and looked unsortable.
-      const icon = th.querySelector('.sort-icon');
-      if (icon) {
+      const sortChip = th.querySelector<HTMLElement>('.head-sort');
+      if (sortChip) {
         const { sortNone, sortAsc, sortDesc } = SherpaDataGrid.icons;
-        icon.className = sortable
-          ? `sort-icon ${!sorted ? sortNone : (sortDir === 'desc' ? sortDesc : sortAsc)}`
-          : 'sort-icon';
+        sortChip.dataset['iconStart'] = !sorted
+          ? sortNone
+          : (sortDir === 'desc' ? sortDesc : sortAsc);
+        // The chip is LOCKED, so the grid sets its on-state: on for the two
+        // live directions, off for "not the sort column" — which is what the
+        // toolbar's own Sort chip does for its suspended step.
+        sortChip.toggleAttribute('data-current', sorted);
+        sortChip.toggleAttribute('data-unsupported', !sortable);
+        const label = col.header ?? col.field;
+        sortChip.setAttribute(
+          'aria-label',
+          !sorted
+            ? `Sort by ${label}`
+            : `Sorted by ${label}, ${sortDir === 'desc' ? 'descending' : 'ascending'}`,
+        );
       }
       headRow.appendChild(th);
     });
 
     this.#renderFilterRow();
+  }
+
+  /**
+   * Give one column heading its filter menu.
+   *
+   * The chip itself is already in the header template — it is the same element
+   * whether the grid offers column filters or not, and CSS hides it when
+   * data-column-filters is absent. What JS adds is the MENU, because only JS
+   * knows the column's type and its name.
+   *
+   * Three shapes, one per column type:
+   *
+   *   text    a condition picker and a value box
+   *   number  a condition picker and a value box, or TWO boxes in Range mode
+   *   date    a calendar — one day, or a start→end span in Range mode
+   *
+   * Number and date lead with a RANGE switch, because each is really one filter
+   * with two shapes: "equals this" or "between these two". Two separate menus
+   * would make the reader choose the shape before they know which they want.
+   * That is the toolbar's own number and date chips' rule, followed here so a
+   * reader meets one control, not two that behave alike but not the same.
+   *
+   * Any other type gets no menu and no button — an affordance that opens
+   * nothing is worse than none.
+   */
+  #addColumnFilter(th: HTMLElement, col: GridColumn): void {
+    const chip = th.querySelector<HTMLElement>('.head-filter');
+    if (!chip) return;
+
+    // `type` is the column's own declaration; an undeclared column is text,
+    // which is what the grid already assumes everywhere else.
+    const kind = col.type ?? 'text';
+    const bodyTpl = COLUMN_FILTER_BODIES[kind];
+    if (!bodyTpl) {
+      // The flag is the chip's own, so CSS hides it without the grid reaching
+      // into the chip's shadow root.
+      chip.setAttribute('data-unsupported', '');
+      return;
+    }
+
+    const menu = this.clone('template.head-menu-tpl');
+    const body = this.clone(bodyTpl);
+    if (!menu || !body) return;
+
+    // THE CONDITION PICKER, built from the SHARED vocabulary.
+    //
+    // `OPS_FOR_TYPE` says which operators this column type can sensibly answer
+    // and `OP_LABELS` says how each reads; both live beside `FilterOp` in the
+    // store. The keys ARE the operators, so what this control reports back is
+    // already a clause the store understands — there is no translation table to
+    // drift, and a Filter Panel later builds its picker from the same two maps.
+    const picker = body.querySelector<HTMLSelectElement>('.head-filter-op');
+    const proto = picker?.querySelector('option');
+    if (picker && proto) {
+      // The template holds ONE <option> as a cloning prototype — the same shape
+      // sherpa-pagination's rows <select> uses. Cloned per operator, so no
+      // element is created from nothing and no markup is written as a string.
+      const ops = OPS_FOR_TYPE[kind] ?? [];
+      picker.replaceChildren(
+        ...ops.map((op) => {
+          const option = proto.cloneNode(false) as HTMLOptionElement;
+          option.value = op;
+          option.textContent = OP_LABELS[op];
+          return option;
+        }),
+      );
+    }
+
+    // REMOVE FILTER in the footer. Clear empties the controls and leaves the
+    // menu open to type again; Remove says "I am done with this column" — it
+    // drops the clause, unlights the heading and takes the chip off the
+    // toolbar. Two different intentions, so two buttons.
+    menu.setAttribute('data-removable', '');
+
+    const label = col.header ?? col.field;
+    menu.setAttribute('data-heading', `Filter ${label}`);
+    // The menu is a popover in the top layer, so it escapes the grid's scroller
+    // — but only within the region the HOST names. Passed straight through, as
+    // the toolbar passes its own.
+    const bounds = this.dataset['bounds'];
+    if (bounds) menu.setAttribute('data-bounds', bounds);
+
+    const held = this.#columnFilters.get(col.field);
+
+    // A NUMBER column's slider spans the column's REAL values. Left at the
+    // slider's own 0..100 default, a spend column would open with every row
+    // crushed at the far left and no way to pick between them.
+    if (kind === 'number') {
+      const slider = body.querySelector('.head-filter-slider');
+      const nums = this.#rows
+        .map((row) => Number(row[col.field]))
+        .filter((n) => Number.isFinite(n));
+      if (slider && nums.length) {
+        const min = Math.floor(Math.min(...nums));
+        const max = Math.ceil(Math.max(...nums));
+        slider.setAttribute('min', String(min));
+        slider.setAttribute('max', String(max));
+        // A fresh range spans the WHOLE column, so the filter starts by
+        // excluding nothing — opening at 0..0 would empty the view before the
+        // reader had asked it anything.
+        slider.setAttribute('value-start', String(held?.from ?? min));
+        slider.setAttribute('value-end', String(held?.to ?? max));
+      }
+    }
+
+    // NUMBER and DATE lead with the Range switch, above the body it re-points.
+    // Reading "between these two" after the two boxes would be backwards.
+    if (kind === 'number' || kind === 'date') {
+      const range = this.clone('template.head-range-tpl');
+      if (range) {
+        const sw = range.querySelector('sherpa-switch');
+        // The switch starts where the held clause left it, so re-opening a
+        // range filter shows a range rather than resetting to single.
+        if (held?.range) sw?.setAttribute('checked', '');
+        menu.appendChild(range);
+      }
+      // The MENU carries the mode, because CSS selects the visible shape off it
+      // — the same door the toolbar's number chip uses.
+      if (held?.range) menu.setAttribute('data-range', '');
+    }
+
+    // Restore what this column is already filtered by, so re-opening the menu
+    // shows the clause the user set rather than an empty one. The header row is
+    // rebuilt on every sort and every keystroke, so without this the menu would
+    // forget itself constantly.
+    if (held) {
+      const op = body.querySelector<HTMLSelectElement>('.head-filter-op');
+      if (op) op.value = held.op;
+      if (held.range) {
+        // A number range's ends went onto the slider above, where its bounds
+        // are known; only a calendar's need doing here.
+      } else {
+        const value = body.querySelector<HTMLInputElement>('.head-filter-value');
+        if (value) value.value = held.value;
+      }
+      // A CALENDAR holds its pick in its own attributes rather than an input.
+      const cal = body.querySelector('.head-filter-calendar');
+      if (cal) {
+        if (held.range) {
+          cal.setAttribute('data-type', 'range');
+          cal.setAttribute('data-value-start', held.from ?? '');
+          cal.setAttribute('data-value-end', held.to ?? '');
+        } else {
+          cal.setAttribute('data-value', held.value);
+        }
+      }
+      // The chip's own on-state — the same accent a toolbar chip takes.
+      chip.setAttribute('data-current', '');
+    } else if (kind === 'date') {
+      // A fresh RANGE calendar still needs its two-click mode set; without a
+      // held clause the block above never runs.
+      const cal = body.querySelector('.head-filter-calendar');
+      if (cal && menu.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
+    }
+
+    menu.appendChild(body);
+    chip.appendChild(menu);
+    chip.setAttribute('aria-label', `Filter ${label}`);
+  }
+
+  /**
+   * The Range switch on a number or date column's menu.
+   *
+   * It re-points the menu rather than rebuilding it: CSS shows one of the two
+   * number shapes off `data-range`, and the calendar owns both of its own modes
+   * already. So flipping is an attribute write, and whatever was typed on the
+   * other side is still there on the way back.
+   */
+  #onColumnRangeToggle = (event: Event): void => {
+    const sw = (event.target as HTMLElement | null)?.closest?.('.head-filter-range-switch');
+    if (!sw) return;
+    const menu = (sw as HTMLElement).closest('sherpa-menu');
+    if (!menu) return;
+    const on = (sw as HTMLElement & { checked?: boolean }).checked
+      ?? sw.hasAttribute('checked');
+    menu.toggleAttribute('data-range', on);
+    // The calendar's two shapes are its own `data-type`, not a CSS reveal —
+    // one grid, banded or not, rather than two grids with one hidden.
+    const cal = menu.querySelector('.head-filter-calendar');
+    if (cal) {
+      if (on) cal.setAttribute('data-type', 'range');
+      else cal.removeAttribute('data-type');
+    }
+  };
+
+  /**
+   * REMOVE FILTER — the footer button that ends a column's filter outright.
+   *
+   * Clear empties the controls and leaves the menu open to type again. Remove
+   * means "I am done with this column": the clause goes, the heading unlights,
+   * and the toolbar chip that stood for it goes with them. It reports as a
+   * clear so a host has one path to handle, not two.
+   */
+  #onColumnFilterRemove = (event: Event): void => {
+    if ((event as CustomEvent).detail?.value !== 'remove') return;
+    const chip = (event.target as HTMLElement).closest<HTMLElement>('.head-filter');
+    if (!chip) return;
+    event.stopPropagation();
+    chip.querySelector<HTMLElement & { close?: () => void }>('sherpa-menu')?.close?.();
+    // Routed through the same handler as Clear, so "removed" and "cleared" are
+    // one outcome to everything downstream.
+    this.#onColumnFilterCommit(new CustomEvent('menu-clear', { detail: {} , bubbles: false }) as Event, chip);
+  };
+
+  /**
+   * Swallow a header chip's own events at the header row.
+   *
+   * The chip is reused for its menu, not for its vocabulary — see onRender.
+   */
+  #stopChipEvent = (event: Event): void => {
+    // BOTH header chips — the filter one and the sort one.
+    if (!(event.target as HTMLElement)?.closest?.('.head-filter, .head-sort')) return;
+    event.stopPropagation();
+  };
+
+  /**
+   * Apply or clear one column's filter, from its menu's footer.
+   *
+   * Both buttons land here because both end the interaction: Apply with a pair
+   * to keep, Clear with nothing. The grid records the clause, relights the
+   * column, and says what happened — it does not filter its own rows. It holds
+   * ONE column's clause and cannot know what else is narrowing the view, so
+   * combining them belongs to whoever owns the query.
+   */
+  #onColumnFilterCommit = (event: Event, explicit?: HTMLElement): void => {
+    // `explicit` is for a caller that already knows the chip — the Remove
+    // button, whose synthetic event has no target in the tree.
+    const chip = explicit ?? (event.target as HTMLElement).closest<HTMLElement>('.head-filter');
+    const field = chip?.closest<HTMLElement>('.head-cell')?.dataset['field'];
+    if (!chip || !field) return;
+
+    const cleared = event.type === 'menu-clear';
+    const held = cleared ? null : this.#readColumnFilter(chip);
+
+    if (held) {
+      this.#columnFilters.set(field, held);
+      chip.setAttribute('data-current', '');
+    } else {
+      this.#columnFilters.delete(field);
+      chip.removeAttribute('data-current');
+      // Only an explicit CLEAR empties the controls. Apply can also land here —
+      // an empty value, or a range with one end — and wiping there would take
+      // away the half-built entry the reader is still working on. "Between 5
+      // and …" is not finished; it is not a mistake to be swept up.
+      if (cleared) {
+        for (const box of chip.querySelectorAll<HTMLInputElement>('input[type="text"], input[type="number"]')) {
+          box.value = '';
+        }
+        const cal = chip.querySelector('.head-filter-calendar');
+        cal?.removeAttribute('data-value');
+        cal?.removeAttribute('data-value-start');
+        cal?.removeAttribute('data-value-end');
+      }
+    }
+
+    this.#syncColumnFilterStatus();
+    // The cells carry the MATCH MARK, so they are redrawn here rather than left
+    // to the host. A host that re-queries will populate again in a moment and
+    // redraw them a second time, which is cheap — but one that filters nothing
+    // (a grid driven by hand, or a clause the rows already satisfy) would
+    // otherwise show a lit column with nothing marked in it.
+    this.#renderBody();
+
+    const col = this.#columns.find((c) => c.field === field);
+    const header = col?.header ?? field;
+    this.emit('column-filter-change', {
+      field,
+      header,
+      op: held?.op ?? null,
+      value: held?.range ? null : (held?.value ?? null),
+      from: held?.from ?? null,
+      to: held?.to ?? null,
+      // Ready to hand to a DataSource — the <option> values ARE store FilterOps,
+      // and a range is the store's own `between`, whose value is the two ends.
+      //
+      // A NUMBER column's value is COERCED. The store compares a number row
+      // against a string filter with its text collator, where "100" sorts below
+      // "9" and "greater than 9" silently misses every three-digit row. The
+      // grid is what knows the column's type, so it is what must say so.
+      clause: held ? this.#columnClause(field, held, col?.type) : null,
+      // What a toolbar chip should read: "Contains: ana", "Between: 10 - 20".
+      // The FIELD half of "Field: Condition Value" is `header`, which the
+      // toolbar puts on the chip's own label.
+      label: held ? this.#columnFilterLabel(held) : null,
+    });
+  };
+
+  /**
+   * Read one column's menu into a clause — or null when it says nothing.
+   *
+   * Null is the answer for an empty value as much as for a cleared menu:
+   * "contains nothing" matches every row, so applying it would light the column
+   * and change the view not at all, which reads as the filter being broken. A
+   * RANGE needs BOTH ends for the same reason — one end alone is a "greater
+   * than" the reader did not ask for.
+   */
+  #readColumnFilter(chip: HTMLElement): ColumnFilter | null {
+    const menu = chip.querySelector('sherpa-menu');
+    const range = menu?.hasAttribute('data-range') ?? false;
+    const op = chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? 'contains';
+    const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
+
+    if (range) {
+      // A calendar reports its span in its own attributes; a number pair in two
+      // boxes. Both are "the two ends", so both land in from/to.
+      // A calendar reports its span in data-*; a slider in its own value-start /
+      // value-end attributes, which it keeps in step with its thumbs.
+      const slider = chip.querySelector<HTMLElement>('.head-filter-slider');
+      const from = (cal
+        ? cal.dataset['valueStart']
+        : slider?.getAttribute('value-start')) ?? '';
+      const to = (cal
+        ? cal.dataset['valueEnd']
+        : slider?.getAttribute('value-end')) ?? '';
+      if (!from.trim() || !to.trim()) return null;
+      return { op: 'between', value: '', range: true, from: from.trim(), to: to.trim() };
+    }
+
+    // A DATE column has no condition picker — a calendar answers "which day" by
+    // being clicked, so the operator is always equality.
+    const value = (cal ? cal.dataset['value'] : chip.querySelector<HTMLInputElement>('.head-filter-value')?.value) ?? '';
+    if (!value.trim()) return null;
+    return { op: cal ? 'eq' : op, value: value.trim() };
+  }
+
+  /**
+   * One column filter as a store FilterClause.
+   *
+   * A NUMBER column's ends are coerced to numbers. `compareValues` only compares
+   * numerically when BOTH sides are numbers; a string filter against numeric
+   * rows falls through to the text collator, where "100" sorts below "9" — so
+   * "greater than 9" would miss every three-digit row and look like a bug in
+   * the data. A blank or unparseable entry is left as typed rather than turned
+   * into NaN, which would match nothing at all with no way to see why.
+   */
+  #columnClause(field: string, held: ColumnFilter, type?: string): unknown[] {
+    const cast = (raw: string): string | number => {
+      if (type !== 'number') return raw;
+      const n = Number(raw);
+      return raw !== '' && Number.isFinite(n) ? n : raw;
+    };
+    return held.range
+      ? [field, 'between', [cast(held.from ?? ''), cast(held.to ?? '')]]
+      : [field, held.op, cast(held.value)];
+  }
+
+  /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
+  #columnFilterLabel(held: ColumnFilter): string {
+    const name = OP_LABELS[held.op as keyof typeof OP_LABELS] ?? held.op;
+    return held.range ? `${name}: ${held.from} - ${held.to}` : `${name}: ${held.value}`;
+  }
+
+  /**
+   * One column's current filter, as a ready FilterClause — or null.
+   *
+   * A column filter shows on the toolbar as a chip, and a chip's body is a
+   * TOGGLE: off means "stop applying this", not "delete it". So a host needs
+   * to put the clause back when the chip comes on again, and the grid is what
+   * still holds it — turning the chip off changes what the query asks for, not
+   * what the column is set to.
+   *
+   *   if (on) source.add(grid.columnClause(field));
+   *
+   * Only Remove deletes, and that goes through `clearColumnFilter`.
+   */
+  columnClause(field: string): unknown[] | null {
+    // A SUSPENDED clause is returned too: this is what the column is SET to,
+    // and the caller asking is the one putting it back into the query.
+    const held = this.#columnFilters.get(field);
+    if (!held) return null;
+    const col = this.#columns.find((c) => c.field === field);
+    return this.#columnClause(field, held, col?.type);
+  }
+
+  /**
+   * Suspend or resume one column's filter without losing it.
+   *
+   * A column filter shows on the toolbar as a chip, and a chip's body is a
+   * TOGGLE: off means "stop applying this", not "delete it". Suspended, the
+   * clause is still typed into the menu and still comes back from
+   * `columnClause()` — but the heading stops reading active, because the
+   * column is narrowing nothing and a lit column that filters nothing is a
+   * lie.
+   *
+   *   qft.addEventListener('quick-filter-change', (e) => {
+   *     for (const [id, on] of Object.entries(e.detail.custom ?? {})) {
+   *       grid.suspendColumnFilter(id.slice(4), !on);
+   *     }
+   *   });
+   *
+   * Deleting is `clearColumnFilter`, which is what Remove does.
+   */
+  suspendColumnFilter(field: string, suspended = true): void {
+    const held = this.#columnFilters.get(field);
+    if (!held || !!held.suspended === suspended) return;
+    this.#columnFilters.set(field, { ...held, suspended });
+    this.#syncColumnFilterStatus();
+    // The MATCH MARKS go with it: a suspended filter is hiding no rows, so
+    // marking the ones that would have matched claims something untrue.
+    this.#renderBody();
+  }
+
+  /**
+   * Open one column's filter menu, anchored wherever the caller says.
+   *
+   * The column's clause also shows on the toolbar as a chip, and that chip has
+   * to be editable — a reader who sees "Name · Contains: ana" on the bar will
+   * click it to change it. Rather than build a second menu there, the toolbar
+   * chip borrows THIS one: same controls, same Apply, same Remove, so the two
+   * places can never drift or disagree about what the column is filtered by.
+   *
+   *   qft.addEventListener('quick-filter-click', (e) => {
+   *     const id = …;                       // 'col:name'
+   *     grid.openColumnFilter(id.slice(4), e.target);
+   *   });
+   *
+   * Pass the element to anchor against — the menu measures its box, because a
+   * CSS anchor name cannot cross the shadow boundary between them.
+   */
+  openColumnFilter(field: string, anchor?: HTMLElement): void {
+    const chip = this.$<HTMLElement>(
+      `.head-cell[data-field="${CSS.escape(field)}"] .head-filter`,
+    );
+    const menu = chip?.querySelector<HTMLElement & { toggle?: (t?: HTMLElement) => void }>(
+      'sherpa-menu',
+    );
+    menu?.toggle?.(anchor ?? chip ?? undefined);
+  }
+
+  /**
+   * Drop one column's heading filter, from OUTSIDE the grid.
+   *
+   * A column filter shows on the toolbar as a chip, and a chip is removable —
+   * so the reader can take the filter off at either end. Removing it there has
+   * to reach back here, or the column stays lit and its menu still holds a
+   * clause the bar no longer shows.
+   *
+   *   toolbar.addEventListener('filter-remove', (e) => {
+   *     const field = e.detail.id.replace(/^col:/, '');
+   *     grid.clearColumnFilter(field);
+   *   });
+   *
+   * It does NOT re-fire column-filter-change: the caller is the one who asked,
+   * so telling them what they just did would be an echo, and a host that routes
+   * the event back into its query would clear it twice. Pass nothing to clear
+   * every column at once — what a toolbar's "clear all" means.
+   */
+  clearColumnFilter(field?: string): void {
+    if (field) {
+      if (!this.#columnFilters.delete(field)) return;
+    } else {
+      if (!this.#columnFilters.size) return;
+      this.#columnFilters.clear();
+    }
+    // The chips hold the pair the menu shows, so they are rebuilt rather than
+    // reached into — #renderHead restores each menu from #columnFilters, which
+    // is now the truth.
+    this.#renderHead();
+    this.#syncColumnFilterStatus();
+    // The cells' match marks go with the filter that put them there.
+    this.#renderBody();
+  }
+
+  /**
+   * Light every column a filter is acting on — this grid's own column filters
+   * included.
+   *
+   * #renderHead does the same on a rebuild; this is the no-rebuild path, for a
+   * menu commit that changed nothing else about the header row.
+   */
+  #syncColumnFilterStatus(): void {
+    for (const cell of this.$$('.head-cell')) {
+      const th = cell as HTMLElement;
+      const field = th.dataset['field'];
+      if (!field) continue;
+      const lit = th.hasAttribute('data-sort') || this.#isFiltered(field);
+      if (lit) th.dataset['status'] = 'active';
+      else delete th.dataset['status'];
+    }
   }
 
   /** Stamp one filter input per column into the secondary header row. */
@@ -398,7 +1040,6 @@ export class SherpaDataGrid extends SherpaElement {
       if (this.#filters.has(col.field)) {
         input.value = this.#filters.get(col.field) ?? '';
         th.toggleAttribute('data-has-value', true);
-        th.dataset['status'] = 'active';
       }
       filterRow.appendChild(th);
     });
@@ -475,7 +1116,7 @@ export class SherpaDataGrid extends SherpaElement {
         if (col.type) td.dataset['type'] = col.type;
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
-        td.textContent = value == null ? '' : String(value);
+        this.#fillCell(td, value == null ? '' : String(value), col);
         tr.appendChild(td);
       });
       body.appendChild(tr);
@@ -484,6 +1125,53 @@ export class SherpaDataGrid extends SherpaElement {
     // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
     // groups the user had already folded shut.
     if (group) this.#syncGroupVisibility();
+  }
+
+  /**
+   * Write one cell's text, marking the part a TEXT filter matched.
+   *
+   * A filtered column tells the reader WHICH rows survived; the mark tells them
+   * WHY this one did. Scanning a column of long names for the four letters that
+   * matched is work the grid can do for them.
+   *
+   * TEXT columns only. A number or a date matches as a whole value — "between
+   * 10 and 50" does not match a SUBSTRING of 42, and underlining the "4" would
+   * claim a precision the filter does not have. Those columns are left plain.
+   *
+   * Built with createElement + replaceChildren rather than innerHTML: <mark> is
+   * content, not structure, and this is the same shape sherpa-nav-item's own
+   * search highlight uses.
+   */
+  #fillCell(td: HTMLElement, text: string, col: GridColumn): void {
+    const kind = col.type ?? 'text';
+    const held = this.#columnFilters.get(col.field);
+    // Only the SUBSTRING conditions leave something to point at. `eq` matched
+    // the whole cell, so marking it would underline every character; `ne` and
+    // `notcontains` matched by NOT being there, and there is nothing to mark.
+    const markable = held && !held.range && !held.suspended
+      && (held.op === 'contains' || held.op === 'startswith' || held.op === 'endswith');
+
+    if (kind !== 'text' || !markable || !held.value) {
+      td.textContent = text;
+      return;
+    }
+
+    const at = text.toLowerCase().indexOf(held.value.toLowerCase());
+    if (at < 0) {
+      td.textContent = text;
+      return;
+    }
+
+    const mark = document.createElement('mark');
+    mark.className = 'match';
+    // The CELL's own casing, not the needle's — the reader typed "ana" and the
+    // row says "Ana", and the row is the truth.
+    mark.textContent = text.slice(at, at + held.value.length);
+    td.replaceChildren(
+      document.createTextNode(text.slice(0, at)),
+      mark,
+      document.createTextNode(text.slice(at + held.value.length)),
+    );
   }
 
   // No sticky-offset measurement. The WHOLE <thead> sticks as one block now, so
@@ -587,14 +1275,52 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Interaction ────────────────────────────────────────────────── */
 
+  /** Eat exactly one click — the one a finished resize drag synthesises. */
+  #swallowClick = false;
+
   #onHeaderClick = (event: Event): void => {
+    // A RESIZE just ended, and the browser is synthesising the click for it.
+    // Sorting a column because the reader dragged its edge is the wrong answer
+    // to a gesture that was not a click.
+    if (this.#swallowClick) {
+      this.#swallowClick = false;
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
+    // The FILTER button lives in the heading, so its click reaches here too —
+    // and sorting a column because the reader opened its filter menu is the
+    // wrong answer to the wrong gesture. The chip handles its own click.
+    if ((event.target as HTMLElement).closest('.head-filter')) return;
+    // The SORT chip, on the other hand, IS the sort control — its click falls
+    // straight through to the cycle below. It carries no menu, so there is
+    // nothing of its own for it to do.
     const th = (event.target as HTMLElement).closest<HTMLElement>('.head-cell');
     const field = th?.dataset['field'];
     if (!field || th!.dataset['sortable'] === 'false') return;
 
-    // Cycle: not-this-field → asc → desc → asc …
+    // TRI-STATE, matching the quick-filter toolbar's own Sort chip:
+    //
+    //   not this column  →  ascending
+    //   ascending        →  descending
+    //   descending       →  OFF (no column sorted)
+    //
+    // The third step is what the toolbar has and this did not: it cycled
+    // asc → desc → asc, so once a column was sorted there was no way back to
+    // unsorted without picking a different one. Two controls for one value
+    // must agree about how many states that value has.
+    //
+    // ONLY ONE COLUMN AT A TIME. data-sort-field holds a single field, so
+    // sorting a new column replaces the old one rather than stacking.
     const active = this.dataset['sortField'] === field;
-    const next = active && this.dataset['sortDirection'] === 'asc' ? 'desc' : 'asc';
+    const dir = this.dataset['sortDirection'];
+    if (active && dir === 'desc') {
+      delete this.dataset['sortField'];
+      delete this.dataset['sortDirection'];
+      this.emit('sort-change', { field: null, direction: null });
+      return;
+    }
+    const next = active && dir === 'asc' ? 'desc' : 'asc';
     this.dataset['sortField'] = field;
     this.dataset['sortDirection'] = next;
     this.emit('sort-change', { field, direction: next });
@@ -731,12 +1457,17 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleAttribute('data-resizing', false);
 
     // Swallow the click the browser is about to synthesise on this pointerup.
-    // Capture phase on the head row, `once`, so it eats exactly one event and
-    // a real header click straight after a resize still sorts.
+    //
+    // A FLAG, not a rival listener. This used to add its own capture-phase
+    // listener to eat one click — but #onHeaderClick is capture-phase on the
+    // same element and was registered first, so it sorted the column before
+    // the swallow ever ran. Registration order decides capture order, and the
+    // sort listener is bound in onRender, long before any drag.
+    this.#swallowClick = true;
     this.$('.head-row')?.addEventListener(
       'click',
-      (e: Event) => { e.stopPropagation(); e.preventDefault(); },
-      { capture: true, once: true },
+      () => { this.#swallowClick = false; },
+      { capture: false, once: true },
     );
     (event.target as HTMLElement | null)?.removeEventListener?.(
       'pointermove',
@@ -895,16 +1626,55 @@ export class SherpaDataGrid extends SherpaElement {
   };
 
   /**
-   * Flag (or unflag) one column's header + filter cell as filtered.
+   * Is this column being narrowed by a filter — from EITHER direction?
+   *
+   * Three things can filter a column and the grid sees them differently:
+   *
+   *   • its own header filter box, which it owns — `#filters`
+   *   • its column heading's filter MENU — `#columnFilters`
+   *   • a quick-filter toolbar somewhere above it, which it cannot see at all.
+   *     A data source applies that filter and hands the grid only the rows that
+   *     survived, so the grid has no way to work out WHICH column did it. The
+   *     source writes the field names onto `data-filter-fields` instead.
+   *
+   * Either way the column is narrowing the view, so either way it reads active.
+   */
+  #isFiltered(field: string): boolean {
+    if (this.#filters.has(field)) return true;
+    // A clause set in this column's own heading menu — unless it is SUSPENDED,
+    // in which case the column is narrowing nothing and must not read active.
+    const held = this.#columnFilters.get(field);
+    if (held && !held.suspended) return true;
+    const external = this.dataset['filterFields'];
+    // Space-separated, matched WHOLE — a bare `includes` would light `status`
+    // for a filter on `substatus`.
+    return !!external && external.split(/\s+/).includes(field);
+  }
+
+  /**
+   * Flag (or unflag) one column's HEADING as filtered.
+   *
+   * The heading only — never the filter cell under it. That row already says
+   * what it is doing: the text is in the box the user just typed into, and a
+   * second highlight on the control that IS the filter says nothing the
+   * heading is not already saying louder.
+   *
+   * Called on every keystroke, so it does not rebuild the header row.
    *
    * `data-status` is the system-wide door for a Style mode, so a host reading
    * the shadow DOM sees the same attribute it would on any other component.
    */
   #markFiltered(field: string, on: boolean): void {
-    for (const cell of this.$$(`.head-cell[data-field], .filter-cell[data-field]`)) {
-      if ((cell as HTMLElement).dataset['field'] !== field) continue;
-      if (on) (cell as HTMLElement).dataset['status'] = 'active';
-      else delete (cell as HTMLElement).dataset['status'];
+    const head = this.$(`.head-cell[data-field="${CSS.escape(field)}"]`);
+    if (!head) return;
+    // The heading may ALSO be lit because the column is sorted, which typing in
+    // a filter box does not change — so the flag comes off only when nothing
+    // is acting on that column any more.
+    const sorted = head.hasAttribute('data-sort');
+    if (on || sorted || this.#isFiltered(field)) {
+      (head as HTMLElement).dataset['status'] = 'active';
+    } else {
+      delete (head as HTMLElement).dataset['status'];
     }
   }
 
