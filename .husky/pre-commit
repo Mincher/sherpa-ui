@@ -15,10 +15,14 @@ fi
 # prose for identifiers. Cheap to check (a second), and the only thing standing
 # between a fixed spec and the next silent drift.
 echo "📋 Validating component specs..."
-npm run spec:validate --silent
+# QUIET ON SUCCESS. 58 green ticks on every commit is noise that trains people to
+# scroll past the one line that matters. The output is captured and printed only
+# when something fails.
+SPEC_OUT=$(npm run spec:validate --silent 2>&1)
 SPEC_RESULT=$?
 
 if [ $SPEC_RESULT -ne 0 ]; then
+  echo "$SPEC_OUT" | grep -v '^✅' 
   echo "❌ A component spec does not match schemas/component.v1.json. Commit blocked."
   echo "   Regenerate it: node scripts/generate-component-spec.mjs <name>"
   exit 1
