@@ -440,3 +440,81 @@ interactions/behaviours EXIST.
 Some descriptions embed a fenced ```behaviour block — runtime behaviour Figma can't model
 (e.g. Grid Cell's column-pinning / sticky-header / scroll). These map to `@behaviour` JSDoc +
 TODO stubs in code. Treat them as the spec for behaviour the visuals can't express.
+
+---
+
+# Merged from DESIGN-SYSTEM-REFERENCE.md (2026-09-16)
+
+That doc restated this one's collection inventory, tier model and component
+catalogue in shorter form — two answers to one question. These two sections
+were the half that was NOT a restatement, so they moved here and the rest
+was deleted.
+
+## 10. How status & state tinting works (the mechanic)
+
+_(Re-derived 2026-09-07 from live Figma bindings after the collection overhaul — the old
+Container/Control collections were consolidated away.)_
+
+- **Status is the `Style` collection's mode.** `Style` has **8 modes**: `default · info ·
+  critical · warning · urgent · success · active · inactive`. Pin a Style mode on a
+  component's root and every Style role re-resolves for that status, so the whole
+  component recolours from one pin. Roles: `style-surface/{base, base +1, base +2, shadow}`,
+  `style-border/{base, base +1, width}`, `style-content/{base, secondary, tertiary,
+  inverse}`, `style-indicator/accent`.
+- **Style roles alias `Theme`, not raw colour.** e.g. `style-surface/base` → `surface/
+  <family>/base` (default/active status pick the matching Theme family; `inactive` →
+  `surface/default/+2`). So status tinting rides the same Theme → Display Mode → Primitives
+  chain as everything else — no per-status colour lives in Style.
+- **Look tiers are `Style` extensions.** `Style: Transparent` and `Style: Saturated`
+  inherit the 8 status modes and re-point the same roles (transparent = the tier at 10%,
+  saturated = the strong fill). A component opts in with `data-look`; `data-look` +
+  `data-status` compose.
+- **Active / inactive** are two of the Style modes. **Practically they apply to CONTROLS and
+  their content** (buttons, selects, inputs, menu items, and the text/icons within) — a
+  wrapper/panel is rarely itself "active" or "inactive".
+
+### Aliasing direction (verified from live bindings 2026-09-07)
+
+A strict layered DAG — every edge below is a real alias count from the file:
+
+```
+components (Switch·Navigation·Input)
+   → Style / Structure / Elevation / Data Viz      (the "semantic role" tier)
+      → Theme                                       (surface/border/content/size/weight/font)
+         → Display Mode                             (light/dark colour + scale ramp)
+            → Primitives                            (raw values — the root)
+```
+
+- **Display Mode → Primitives** (184). The ramp resolves raw values per light/dark.
+- **Theme → Display Mode** (168) + a few **Theme → Primitives** (28, non-colour constants).
+- **Style → Theme** (80) + **Style → Display Mode** (16).
+- **Structure → Display Mode** (60) + **Structure → Theme** (6). **Layout → Display Mode** (16).
+- **Elevation → Theme** (16) + **Elevation → Style** (4). **Data Viz → Theme** (138).
+- **Components:** Switch → Display Mode/Primitives; Navigation → Theme/Style/Elevation.
+- **Extensions inherit their parent's tier:** `Display Mode: compact/comfortable` → Primitives;
+  `Style: Transparent/Saturated` → Theme/Display Mode; `Structure: snap-*` → Display Mode/Theme.
+
+This DAG is exactly the CSS `@layer` order (`core → display-mode → theme → layout →
+structure → style → elevation → components`) — later layers consume earlier ones, never
+the reverse.
+
+---
+
+## 11. Consistency rules (use when building new components)
+
+1. **Text/icon → `Style::style-content/{base,secondary,tertiary,inverse}`** — not a Theme
+   `content/*` family directly, so the ink follows status + look-tier (`inverse` on saturated fills).
+2. **Surface → `Style::style-surface/*`**; **stroke → `Style::style-border/*`**. One Style pin recolours all.
+3. **Status** comes from pinning a **`Style` status mode** on the root (`data-status` at runtime). Don't hand-tint.
+4. **Look tier** — opt a control into ghost/solid via `Style: Transparent` / `Style: Saturated`
+   (`data-look`); it composes with status.
+5. **Size / geometry → `Structure`** (size modes 2xs–xl); `height`, `icon-size`, per-corner
+   `structure-rounding/*`, `structure-space/*`. Never hardcode. Button pins a `Structure` size extension.
+6. **Bind the lowest appropriate tier** — the component's own scoped collection or a role tier
+   (Style/Structure/Elevation) first; `Theme` only for a genuine one-off; never `Display Mode`/`Primitives`.
+7. **Accent mark inside a static control** (checkbox tick, radio dot, switch track) → `Style::style-indicator/accent`.
+
+---
+
+*Generated from a live survey of the Sherpa-UI Figma file. Keep in sync as collections/components evolve.*
+Sources for token-tier & naming conventions: [UXPin — Design Tokens Guide](https://www.uxpin.com/studio/blog/what-are-design-tokens/), [Design Token Architecture 2026](https://timgraf.com/ui/design-token-architecture-2026-the-strategic-blueprint-for-scalable-design-systems/), [Smart Interface Design Patterns — Naming Design Tokens](https://smart-interface-design-patterns.com/articles/naming-design-tokens/).

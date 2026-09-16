@@ -5,7 +5,10 @@ contract in `CLAUDE.md` and `docs/COMPONENT-API-STANDARD.md`. Principle:
 **Figma names where sensible, native HTML where sensible, consistent across ALL
 components.** This is the Figma↔code PARITY work that precedes two-way sync.
 
-Derived from the full audit (`/tmp/naming-audit.md`, 2026-09-02). 14 decisions ratified.
+Derived from a full audit of every component, 2026-09-02. 14 decisions ratified.
+The audit's own proposal sections became the decisions below and were deleted
+2026-09-16; its per-component gap table survives at the end of this file,
+because that work is **not finished** — 14 files still use `data-variant`.
 
 ## Canonical names
 
@@ -80,3 +83,68 @@ touched: tag, quick-filter.)
 
 **Every rename must land in code AND the `*.component.yaml` contract AND (where noted)
 Figma** — one vocabulary, all three surfaces.
+
+---
+
+## Per-component gap table — WHAT IS STILL OUTSTANDING
+
+Carried over from the 2026-09-02 audit when the rest of it was deleted. This
+is a worklist, not history: as of 2026-09-16, **14 files still use
+`data-variant`** and 2 still use `data-title`, so every RENAME row below is
+still owed.
+
+Legend: **ALIGNED** (code = Figma), **RENAME** (concept ok, name differs), **MISSING** (Figma prop not in code), **EXTRA** (code-only, no Figma), **NATIVE-OK** (correctly native / correctly out-of-Figma-scope). Tier: **SA**=standalone, **SUB**=sub-component. Native/PE columns folded into the notes above (§1.10); the `PE-drift` flag is called out per row where relevant.
+
+| Component (figmaName) | Figma axes / bools / text | Code data-* / state | Verdict |
+|---|---|---|---|
+| **sherpa-button** (Button) | Type=icon\|label; State=Default; hasIconStart/hasIconEnd/hasBadge; label | data-variant=primary\|secondary\|tertiary\|tertiary-on-color; data-type=icon; data-size; data-active; data-status; data-icon-start/-end; data-label | **RENAME**: Figma `Type=icon\|label` but code splits — `data-type=icon` only (label implicit) AND look-tier under `data-variant`. Figma has NO look-tier axis (it is a Style extension: Saturated/Transparent). Propose: `data-type=icon\|label`; look-tier → `data-look`. Badge MISSING (`hasBadge`→data-badge). |
+| **sherpa-tag** (Tag) | Type=dot\|full; hasIcon/hasDismiss; label | data-collapsed(bool), data-removable(bool), data-icon(bool), data-status, data-label | **RENAME**: Figma `Type=dot\|full` → code boolean `data-collapsed`. `hasDismiss`→`data-removable` (should be `data-dismissible`). `hasIcon`→`data-icon` boolean (collides w/ glyph). |
+| **sherpa-switch** (Switch) [SA] | Value=off\|on; hasLabel; | data-state=on\|off; data-style=default | **RENAME + PE-DRIFT**: Figma `Value=off\|on` → code `data-state` on a `<button>`. Should be native `<input type=checkbox role=switch>` + `checked`/`:checked`. `data-style` EXTRA. |
+| **sherpa-loader** (Loading Spinner) | Size=lg\|md\|sm; hasLabel; label | data-size=small\|default\|large; data-orientation; data-panel | **RENAME**: size enum mismatch (small/default/large vs sm/md/lg). data-orientation/data-panel EXTRA (not in Figma). |
+| **sherpa-input-text** (Input Field atom) | State=error\|default; hasLeadingIcon/hasTrailingIcon/hasActions | data-style=minimal; data-borderless; data-multiline; data-label; data-description; data-error | **RENAME/MISSING**: Figma `State=error\|default` → code has `data-error` string (ok-ish) + `:user-invalid`. `hasLeadingIcon/hasTrailingIcon`→ should be data-icon-start/-end. data-style/borderless/multiline EXTRA (1:many wrapper). |
+| **sherpa-container** (Container) [SA] | Type=default\|dialog\|panel\|overlay-panel\|accordion; expanded | data-variant=fill\|fit; data-elevation; data-state=loading\|empty\|error; data-padding | **RENAME + MISSING + PE-DRIFT**: Figma `Type` (5 values incl dialog/accordion) NOT in code — code `data-variant=fill\|fit` is a different (layout) concept. dialog/overlay-panel Type should be native `<dialog>` ([open]); accordion Type should be `<details>` ([open], not data-expanded). `expanded`→native `[open]`. `data-state` overlay EXTRA. |
+| **sherpa-container-header** (Container Header) | Variant=Default\|Panel; hasDragHandle/hasActions/hasIcon/hasMetadata; heading | data-title, data-description, data-icon, data-draggable, data-dismissible, data-collapsible, data-collapsed | **RENAME**: `heading`→data-title; `hasDragHandle`→data-draggable; Variant=Default\|Panel MISSING; `hasMetadata` MISSING. dismissible/collapsible EXTRA vs Figma. |
+| **sherpa-container-footer** (Container Footer) | Type=action-bar | data-align=start\|end\|between | **RENAME/EXTRA**: Figma `Type=action-bar` not represented; data-align is EXTRA (reasonable but undocumented in Figma). |
+| **sherpa-chat-message** (Chat Message) | Type=received\|sent; hasAvatar; name/timestamp/message | data-role=assistant\|user\|system; data-author; data-time; data-content | **RENAME**: `Type=received\|sent` → `data-role=assistant\|user\|system` (name + value mismatch). `name`→data-author, `timestamp`→data-time, `message`→data-content. |
+| **sherpa-calendar** (Calendar) | Type=single\|range; hasTime | data-layout=day\|month\|year; data-value; data-min; data-max | **RENAME/DIVERGE**: recorded divergence — code models picker view (day/month/year) not selection mode (single/range). Figma `Type`+`hasTime` MISSING; code `data-layout` is a different axis. |
+| **sherpa-data-grid / grid-cell** (Grid Cell) | Type=cell\|header\|group\|filter; hasCheckbox/hasActions | data-sort-field/data-sort-direction | **MISSING**: Grid Cell `Type` axis not on the grid host (grid is a table wrapper; cell type lives per-row). sort attrs ALIGNED w/ CLAUDE.md. |
+| **sherpa-callout** (Callout) | heading | data-status, data-title, data-dismissible | **RENAME**: `heading`→data-title. status/dismissible fine (EXTRA vs Figma but standard). |
+| **sherpa-toast** (Toast) | hasClose/hasAction; heading/value | data-status, data-message, data-duration | **RENAME**: `heading`→? code uses data-message (not data-title). `hasClose`→ (always on). value MISSING. |
+| **sherpa-list-item** (Menu List Item) | hasDescription/hasLeadingIcon/hasDragHandle/hasLeadingControl/hasLeading/hasExpand; label/description | data-title, data-description, data-icon, data-active, data-interactive, data-draggable, data-expandable, data-expanded, data-selectable, data-selected | **RENAME**: `label`→data-title; `hasLeadingIcon`→data-icon; `hasDragHandle`→data-draggable; `hasExpand`→data-expandable. data-active vs data-selected both present (muddle). |
+| **sherpa-list** (List) | — | data-variant=default\|bordered\|divided; data-empty | **EXTRA**: data-variant is code-only (List has no Figma axis). Rename to data-look? no — it's a divider style. Candidate `data-divider`/`data-bordered`. |
+| **sherpa-nav-item** (Navigation Item) | hasIcon/hasIndicator/isMaximised | data-icon, data-label, data-badge, data-status-dot, data-description, data-active, data-href, data-variant=promo | **RENAME**: `isMaximised`→(nav data-collapsed inverse); `hasIndicator`→data-badge/data-status-dot; data-variant=promo is a Type. |
+| **sherpa-nav** (Primary Navigation) | — | data-active-id, data-collapsed, data-searchable | **EXTRA/NATIVE-OK**: nav-level state, no Figma axis. `data-collapsed` vs Figma `isMaximised` (inverse polarity) — reconcile. |
+| **sherpa-nav-section** (Navigation Section) | isMaximised | data-heading, data-active-id | **RENAME**: `data-heading`→data-title (consistency). isMaximised MISSING. |
+| **sherpa-quick-filter** (Filter Chip atom) | State=default; hasMenu/hasIcon/hasIndicator/hasLabel; label | data-type=default\|ai\|populated; data-active; data-label; data-count; data-menu | **RENAME**: data-type values (default/ai/populated) are code-invented (Figma has no such axis — it's look via brand). `hasMenu`→data-menu ok; `hasIndicator`→data-count. data-active = selected. |
+| **sherpa-quick-filter-toolbar** (Filter Toolbar) | Type=data\|view | data-type=data\|view | **ALIGNED** ✅ (model to follow). |
+| **sherpa-select-checkbox** (Select Checkbox) | hasDescription; label/description | data-label, data-description; :checked | **ALIGNED-ish**: `hasDescription`→auto data-has-description; checked native ✅. |
+| **sherpa-select-radio** (Select Radio) | hasDescription; label/description | data-label, data-description; :checked | **ALIGNED-ish** ✅ |
+| **sherpa-select-group** (Fieldset) | hasDescription/hasValidation; legend/description/validation | data-label, data-description, data-multiple | **RENAME**: Figma `legend`→data-label; `validation`/`hasValidation` MISSING. data-multiple EXTRA (native `multiple`?). |
+| **sherpa-select-card** (Select Card) | (no axes) | data-label, data-description, data-selected, data-multiple, data-layout=default\|horizontal | **EXTRA**: no Figma axes; data-layout code-only. |
+| **sherpa-section-header** (Section Header) | hasDivider/hasActions/hasDescription; heading/description | data-title, data-size, data-divider | **RENAME**: `heading`→data-title; `hasDivider`→data-divider ok; description MISSING attr (slot). |
+| **sherpa-empty-state** (Empty State) | hasSmallPrint/hasActions; heading/description | data-title, data-description, data-illustration, data-size=sm\|base\|lg | **RENAME**: `heading`→data-title; `hasSmallPrint` MISSING. illustration EXTRA. |
+| **sherpa-metric** (Metric) | label/value/delta | data-label, data-value, data-delta, data-trend | **ALIGNED-ish** ✅ (data-trend EXTRA — derived from delta sign). |
+| **sherpa-code-block** (Code Block) | hasHeader/hasLineNumbers; language | data-code, data-language | **RENAME/MISSING**: `hasLineNumbers`/`hasHeader` MISSING. language ALIGNED. |
+| **sherpa-tooltip** (Tooltip atom) | label | data-text, data-placement | **RENAME**: `label`→data-text. placement EXTRA. |
+| **sherpa-slider** (Slider) | label | data-label, data-min/max/step/value, data-show-value, data-value-readonly | **ALIGNED-ish**: label ok; min/max/step/value → native `min`/`max`/`step`/`value`? (see decisions). |
+| **sherpa-progress-bar** (Progress Bar atom) [SA] | (no axes) | data-value, data-indeterminate, data-label, data-status | **PE-DRIFT**: divs only; should wrap native `<progress value max>`. `data-value`→native `value`; indeterminate = `<progress>` with no value. |
+| **sherpa-tooltip** (Tooltip atom) [SA] | label | data-text, data-placement | **RENAME + PE-DRIFT**: `label`→data-text; visibility should use native `popover` API + CSS anchor positioning, not JS toggles. placement→anchor. |
+| **sherpa-list-item** (Menu List Item) [SUB] | see below | see below | Mark `static tier='sub-component'`; exclude from picker. (details in main row below.) |
+| **sherpa-progress-step-tracker** (Progress Steps) | (no axes) | data-current-step; per-step data-state=done\|active\|todo | **EXTRA**: data-state per step = internal. |
+| **sherpa-pagination** (Pagination) | hasResults; pageSize/currentPage/totalPages | data-total-pages, data-current-page | **RENAME**: Figma `totalPages`/`currentPage` (camel) → data-total-pages/data-current-page (kebab) ✅ ok; `pageSize`/`hasResults` MISSING. |
+| **sherpa-app-header** (App Header) | hasNotifications/hasLoadingBar | data-title, data-icon, data-notifications, data-loading, data-favorite | **RENAME**: `hasLoadingBar`→data-loading ok; data-favorite EXTRA. |
+| **sherpa-toolbar** (Toolbar) | (no axes) | data-variant=plain\|bordered, data-density=comfortable\|compact | **EXTRA**: variant/density code-only. |
+| **sherpa-key-value-list** (Key Value Pair) | key/value | data-layout=horizontal\|stacked | **RENAME**: `stacked`→`vertical` (Figma `Orientation` vocab). Also list vs pair mismatch. |
+| **sherpa-chart-legend** (Legend Item) | hasValue; label/value | data-orientation=horizontal\|vertical | **RENAME**: orientation ok; Figma `hasValue`/label/value MISSING (legend is the wrapper). |
+| **sherpa-donut-chart** (Donut Chart) | (no axes) | data-variant=donut\|pie, data-label, data-sublabel | **RENAME**: data-variant=donut\|pie is a Type → data-type. sublabel→data-description. |
+| **sherpa-line-chart** / **barchart** / **sparkline** (Data Field) | Orientation=vertical\|horizontal | data-variant=line\|area (line), data-variant=line\|bar (sparkline), data-label, data-min/max | **RENAME**: chart kind under data-variant → data-type. Orientation MISSING. |
+| **sherpa-gauge-chart** (Gauge Chart) | (no axes) | data-value, data-label, data-status, data-min/max | **ALIGNED-ish** ✅ |
+| **sherpa-transfer-list** (Transfer List) | (no axes) | data-source-heading, data-target-heading | **EXTRA/OK**. |
+| **sherpa-prompt-composer** (Prompt Composer) | hasLeadingActions; placeholder | data-placeholder | **ALIGNED-ish**: placeholder→native `placeholder`? |
+| **sherpa-breadcrumbs** (Breadcrumbs) | (no axes) | content-driven | **ALIGNED** ✅ |
+| **sherpa-tabs** (Tab Group) | (no axes) | data-active-id | **ALIGNED-ish** ✅ |
+| **sherpa-file-upload** (File Uploader) | (no axes) | data-label, data-helper, data-max-size, data-accept, data-multiple, data-uploading, data-dragover | **RENAME**: data-accept/data-multiple → native `accept`/`multiple`. data-helper→data-description. |
+
+**Fully aligned today (models to copy):** sherpa-quick-filter-toolbar (`data-type=data|view`), sherpa-breadcrumbs, sherpa-data-grid sort attrs, select-checkbox/radio checked-native.
+
+---
