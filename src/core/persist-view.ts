@@ -422,6 +422,10 @@ export function onViewPicked(
 ): () => void {
   if (!host) return () => {};
 
+  /* The content region's ORIGINAL children, kept so a view without content can
+     hand the page back what it had. Null until a view first replaces them. */
+  let original: ChildNode[] | null = null;
+
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent).detail as
       { values?: Record<string, readonly string[]> } | undefined;
@@ -447,17 +451,36 @@ export function onViewPicked(
        back unplaced, which is honest: this function knows what a view wants, not
        where a page keeps it. */
     let rendered: RenderedView | undefined;
+    const host = options.into;
+
     if (view.content) {
       rendered = renderView(view.content);
-      const host = options.into;
-      // replaceChildren, not append: switching view REPLACES the content. The
-      // outgoing elements go with it, which is the point — a view that leaves
-      // its predecessor's charts on screen is two views at once.
-      if (host) host.replaceChildren(rendered.el);
+      if (host) {
+        /* REMEMBER WHAT WAS THERE, once, before the first replacement.
+           A set of views is usually MIXED: most share the page's own content
+           and one or two bring their own. Without this, the first view that
+           brought content kept the screen for good — picking any other view
+           moved the data while capacity's grid stayed on display, which is the
+           exact lie this whole feature exists to prevent.
+
+           Captured on the FIRST swap only, so it holds the page's own content
+           rather than the previous view's. */
+        if (!original) original = [...host.childNodes];
+        // replaceChildren, not append: switching view REPLACES the content. A
+        // view that leaves its predecessor's charts on screen is two views at
+        // once.
+        host.replaceChildren(rendered.el);
+      }
       // Elements this view just built are addressable by the ids it used, so a
       // snapshot can configure them. They did not exist when the listener was
       // wired, so `targets.elements` could not have named them.
       targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
+    } else if (host && original) {
+      /* NO CONTENT of its own, so it wants the page's — put it back.
+         The nodes are re-attached, not rebuilt: they are the same elements the
+         page bound at init, so every bind still points at them and nothing has
+         to be re-wired. */
+      host.replaceChildren(...original);
     }
 
     const report = applyViewSnapshot(view.snapshot, targets);

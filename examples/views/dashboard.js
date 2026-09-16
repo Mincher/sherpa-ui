@@ -125,9 +125,23 @@ export async function init(root) {
      the header's toolbar does that. */
   const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
   const unbinds = [];
-  const show = (sel, as) => {
-    const el = $(sel);
+  const bindEl = (el, as) => {
     if (el) unbinds.push(source.bind(el, { readonly: true, as }));
+  };
+  const show = (sel, as) => bindEl($(sel), as);
+
+  /* Binds made for a view's OWN content, torn down when that view leaves.
+     Kept apart from `unbinds` because those live as long as the page: this
+     view's grid is gone the moment another view replaces it, and a source
+     still pushing into a detached element is a leak that also costs a redraw
+     on every load. */
+  let contentUnbinds = [];
+  const dropContentBinds = () => {
+    for (const off of contentUnbinds) off();
+    contentUnbinds = [];
+  };
+  const bindContent = (el, as) => {
+    if (el) contentUnbinds.push(source.bind(el, { readonly: true, as }));
   };
 
   /* A chart and its legend take the SAME ARRAY — a legend row IS a chart datum
@@ -218,7 +232,49 @@ export async function init(root) {
   // disagree.
   // A FUNCTION, not the object: the library grows when the reader saves a view,
   // and a listener holding the set it was wired with would never see one.
-  unbinds.push(onViewPicked(header, () => views, { source, elements: { header } }));
+  /* WHERE a view's own content goes: the same region the template's charts
+     occupy. A view WITHOUT content leaves it alone, so the eight charts stay
+     exactly as they are. */
+  const contentRegion = root.querySelector('.sherpa-grid');
+
+  /* STORAGE BANDS. A histogram, not a donut: storage is continuous, and cutting
+     a continuum into wedges claims the bands are categories. */
+  const byBand = (rows) => {
+    const bands = ['0-20', '21-40', '41-60', '61-80', '81-100'];
+    const counts = bands.map(() => 0);
+    for (const r of rows) counts[Math.min(4, Math.floor(r.storage / 20))]++;
+    return bands.map((label, i) => ({ label, value: counts[i] }));
+  };
+
+  unbinds.push(onViewPicked(header, () => views, { source, elements: { header } }, {
+    into: contentRegion,
+    after: ({ rendered }) => {
+      /* A view that brings NO content leaves the page's own charts in place —
+         and their binds with them. Only tear down when something replaced them. */
+      if (!rendered) return;
+      dropContentBinds();
+
+      /* The built elements are addressed by the ids the DEFINITION used, which
+         is what makes them reachable at all: they did not exist when this page
+         wired its binds. An id the view does not use is simply absent, so this
+         reads as "bind what is there" rather than a list to keep in step. */
+      bindContent(rendered.elements['hist'], byBand);
+      bindContent(rendered.elements['fullest'], (rows) => ({
+        key: 'id',
+        columns: [
+          { field: 'id', label: 'Device', type: 'number' },
+          { field: 'region', label: 'Region' },
+          { field: 'os', label: 'OS' },
+          { field: 'category', label: 'Category' },
+          { field: 'storage', label: 'Storage %', type: 'number' },
+        ],
+        // The SOURCE already filtered and sorted — this view's snapshot asked
+        // for storage > 70, descending. Re-sorting here would be a second
+        // opinion about the same query.
+        rows: rows.slice(0, 50),
+      }));
+    },
+  }));
 
   /* SAVE THIS VIEW. The button was wired to console.log — a control that
      promises something and does nothing.

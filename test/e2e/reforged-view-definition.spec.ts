@@ -712,3 +712,98 @@ test('onViewPicked re-reads a library that GROWS when given a function', async (
   expect(r.beforeSave).toBe(0);
   expect(r.states).toEqual([{ filter: ['a', 'eq', 1] }]);
 });
+
+/**
+ * A MIXED set of views — most share the page's content, one brings its own.
+ *
+ * This is the real case, and the toy test above could not find what it broke.
+ * A dashboard's views are usually the same charts over fewer rows; but
+ * "Capacity planning" wants a table of the fullest devices and a distribution,
+ * because none of a donut, a gauge or a line series says anything about which
+ * machines are nearly full.
+ *
+ * The bug this guards: the FIRST view that brought content kept the screen for
+ * good. Picking any other view moved the data while the old view's grid stayed
+ * on display — the exact lie the whole feature exists to prevent.
+ */
+test('a view WITHOUT content gets the page its own content back, still live', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+
+    // The page's OWN content, wired once — as a real page does at init.
+    const into = document.createElement('div');
+    const ownTag = document.createElement('sherpa-tag');
+    ownTag.id = 'own';
+    ownTag.dataset['label'] = 'page content';
+    into.replaceChildren(ownTag);
+    host.replaceChildren(into);
+
+    const states: unknown[] = [];
+    const source = { setState: (s: unknown) => states.push(s) };
+
+    const VIEWS = {
+      plain: { label: 'Plain', snapshot: { v: 1, source: { filter: undefined } } },
+      own: {
+        label: 'Brings its own',
+        content: {
+          root: 'wrap',
+          elements: {
+            wrap: { type: 'div', children: ['grid'] },
+            grid: { type: 'sherpa-data-grid', props: { id: 'built' } },
+          },
+        },
+        snapshot: { v: 1, source: { filter: ['a', 'eq', 1] } },
+      },
+      other: { label: 'Other', snapshot: { v: 1, source: { filter: ['b', 'eq', 2] } } },
+    };
+
+    onViewPicked(host, VIEWS, { source }, { into });
+    const fire = (v: string) => host.dispatchEvent(new CustomEvent('quick-filter-change', {
+      detail: { values: { view: [v] } }, bubbles: true,
+    }));
+    const shape = () => ({
+      kids: [...into.children].map((c) => c.tagName.toLowerCase()),
+      // IDENTITY, not just the tag: a restored node must be the SAME element
+      // the page bound at init, or every bind is pointing at a corpse.
+      sameNode: into.firstElementChild === ownTag,
+    });
+
+    const out: Record<string, unknown> = { start: shape() };
+    fire('own');
+    await new Promise((res) => setTimeout(res, 100));
+    out['own'] = shape();
+
+    fire('plain');
+    await new Promise((res) => setTimeout(res, 100));
+    out['plain'] = shape();
+
+    // …and a THIRD view, to prove the restore is not a one-off.
+    fire('own');
+    await new Promise((res) => setTimeout(res, 100));
+    fire('other');
+    await new Promise((res) => setTimeout(res, 100));
+    out['other'] = shape();
+
+    return { out, states };
+  });
+
+  expect(r.out['start']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
+
+  // The view's own content REPLACES the page's.
+  expect(r.out['own']).toEqual({ kids: ['div'], sameNode: false });
+
+  // A view with no content of its own hands the page back what it had — and
+  // hands back the SAME NODE, so the binds made at init still point at it.
+  expect(r.out['plain']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
+  expect(r.out['other']).toEqual({ kids: ['sherpa-tag'], sameNode: true });
+
+  // The query moved on every pick regardless of who owns the content.
+  // Four picks — own, plain, own, other — in that order.
+  expect(r.states).toEqual([
+    { filter: ['a', 'eq', 1] },
+    { filter: undefined },
+    { filter: ['a', 'eq', 1] },
+    { filter: ['b', 'eq', 2] },
+  ]);
+});
