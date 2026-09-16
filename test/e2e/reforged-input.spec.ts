@@ -122,10 +122,10 @@ test('disabled mirrors to the control and uses inactive tokens', async ({ page }
   expect(r.cursor).toBe('not-allowed');
 });
 
-test('data-style=minimal renders the bare inline field (no description/message rows)', async ({ page }) => {
+test('data-type=minimal renders the bare inline field (no description/message rows)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void>; value?: string };
-    el.setAttribute('data-style', 'minimal');
+    el.setAttribute('data-type', 'minimal');
     el.setAttribute('data-label', 'Filter');
     el.setAttribute('placeholder', 'Search…');
     document.getElementById('root')!.appendChild(el);
@@ -152,7 +152,7 @@ test('data-style=minimal renders the bare inline field (no description/message r
 test('minimal style keeps the value property + input/change events', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void>; value?: string };
-    el.setAttribute('data-style', 'minimal');
+    el.setAttribute('data-type', 'minimal');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const control = el.shadowRoot!.querySelector('.control') as HTMLInputElement;
@@ -169,7 +169,7 @@ test('minimal style keeps the value property + input/change events', async ({ pa
 test('data-borderless drops the control border on the minimal field', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-style', 'minimal');
+    el.setAttribute('data-type', 'minimal');
     el.setAttribute('data-borderless', '');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;

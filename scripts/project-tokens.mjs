@@ -179,7 +179,7 @@ const ROUTING = {
   // The Navigation collection scopes the RAIL (width, surface, shadow, header state,
   // indent tiers) — sherpa-nav. Items read the indent tiers off the rail by cascade.
   navigation: { target: { scoped: 'sherpa-nav' }, attr: 'data-nav-state' },
-  switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-style' },
+  switch: { target: { scoped: 'sherpa-switch' }, attr: 'data-type' },
 
   // Extension-only collections (no leaves in the dump) — consumed from the cache.
   // (hero/mono collections deleted 2026-09-07 — families now in content/font/*.)

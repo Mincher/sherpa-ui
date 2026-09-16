@@ -11,7 +11,7 @@
  *
  * @element sherpa-switch
  * @attr {boolean} checked    — native on/off value (read/write; drives :checked visuals)
- * @attr {enum}    data-style — default (rectangular, ON/OFF label) | simple (pill)
+ * @attr {enum}    data-type — default (rectangular, ON/OFF label) | simple (pill)
  * @attr {boolean} disabled   — native disabled state (reflected onto the inner input)
  *
  * @fires change — every toggle. bubbles + composed. detail: { checked: boolean }

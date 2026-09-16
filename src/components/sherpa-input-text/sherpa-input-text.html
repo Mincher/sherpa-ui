@@ -1,7 +1,7 @@
 <!--
   sherpa-input-text — a labelled text field.
 
-  Templates (via data-style / data-multiline):
+  Templates (via data-type / data-multiline):
     default   — the full form-field molecule: label + description + control + message (vertical)
     multiline — the default molecule with an auto-growing <textarea>
     minimal   — a bare inline field: an optional label beside the control, no
@@ -18,7 +18,7 @@
   the control — the Figma `State=error` variant — not a plain message line.
 
   Public API:
-    data-style        "minimal" for the bare inline field (default is the full molecule)
+    data-type        "minimal" for the bare inline field (default is the full molecule)
     data-borderless   drop the control border (minimal style)
     data-multiline    auto-growing <textarea> (default style only)
     data-label        field label (hidden when empty)

@@ -39,10 +39,9 @@ anatomy:
           aria-hidden: "true"
 props:
   - $type: prop
-    name: data-style
+    name: data-type
     type: string
     kind: style
-    default: default
     description: — default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)
   - $type: prop
     name: checked

@@ -101,7 +101,7 @@ props:
     default: style only
     description: auto-growing <textarea>
   - $type: prop
-    name: data-style
+    name: data-type
     type: string
     kind: style
     default: is the full molecule

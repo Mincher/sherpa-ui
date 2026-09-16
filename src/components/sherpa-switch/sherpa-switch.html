@@ -7,11 +7,11 @@
   An <input> can't hold child elements, so the visual knob + ON/OFF label are sibling
   spans; CSS keys them off the input's :checked / :disabled / :focus-visible state via
   the sibling combinator. The visual form (rectangular default vs. simple pill) is a
-  CSS variant on data-style — the same track markup restyles, no second template.
+  CSS variant on data-type — the same track markup restyles, no second template.
 
   Public API:
     checked    — native boolean       (current value; drives :checked visuals)
-    data-style — default (rectangular, ON/OFF label, square thumb)
+    data-type — default (rectangular, ON/OFF label, square thumb)
                | simple  (pill, no label, round thumb)
     disabled   — native boolean       (reflected onto the inner input)
 

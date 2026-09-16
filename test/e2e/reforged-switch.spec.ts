@@ -132,7 +132,7 @@ test('disabled blocks toggling and uses inactive tokens (never opacity)', async 
 test('simple variant hides the ON/OFF label', async ({ page }) => {
   const display = await page.evaluate(async () => {
     const el = document.createElement('sherpa-switch') as SwitchEl;
-    el.setAttribute('data-style', 'simple');
+    el.setAttribute('data-type', 'simple');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     return getComputedStyle(el.shadowRoot!.querySelector('.label')!).display;

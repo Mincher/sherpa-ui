@@ -71,7 +71,7 @@ export class SherpaInputText extends SherpaElement {
    * it has no description/message rows, so multiline is moot there.
    */
   protected override get templateId(): string | null {
-    if (this.dataset['style'] === 'minimal') return 'minimal';
+    if (this.dataset['type'] === 'minimal') return 'minimal';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
