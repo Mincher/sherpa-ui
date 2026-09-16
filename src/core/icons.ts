@@ -1,4 +1,13 @@
 /**
+ * Shared constants that MORE THAN ONE component must agree on.
+ *
+ * Mostly Font Awesome glyphs, which is what the filename says and what this
+ * started as. `NON_VALUE_ROWS` joined them at the bottom: it is a selector, not
+ * a glyph, but it is here for exactly the same reason — two components had each
+ * written their own copy and the copies had drifted. The file is named for its
+ * first inhabitant; the RULE is "a value two components must not disagree
+ * about". Rename it if the non-glyph half ever outgrows the glyphs.
+ *
  * Shared Font Awesome glyphs — the ones more than one component must agree on.
  *
  * A glyph belongs here when TWO OR MORE components draw the same concept. The
