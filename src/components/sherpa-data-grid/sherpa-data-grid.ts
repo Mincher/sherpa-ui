@@ -122,6 +122,18 @@ type GridRow = Record<string, unknown>;
 interface GridConfig {
   columns: GridColumn[];
   rows: GridRow[];
+  /**
+   * The field that identifies a row — `'id'`, `'email'`, whatever the records
+   * use. The same thing a Store's `key` option names.
+   *
+   * Without one a selection can only be described by POSITION, and a position
+   * changes meaning the moment a sort or a filter does — so a saved selection
+   * would silently come back pointing at different rows. With one, a selection
+   * is a list of keys and survives anything.
+   *
+   * Optional: a grid given no key behaves exactly as it always did.
+   */
+  key?: string;
 }
 
 /**
@@ -252,6 +264,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   #selected = new Set<GridRow>();
+  /** The field identifying a row, when the caller named one — see GridConfig. */
+  #key: string | null = null;
   /**
    * The last row CLICKED — the "focused" state.
    *
@@ -313,6 +327,7 @@ export class SherpaDataGrid extends SherpaElement {
     const cfg = (data ?? {}) as Partial<GridConfig>;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
+    this.#key = typeof cfg.key === 'string' ? cfg.key : null;
     // Fresh data means the old filters may name columns that no longer exist, and
     // silently hiding rows against an invisible filter would look like data loss.
     this.#filters.clear();
@@ -1655,6 +1670,67 @@ export class SherpaDataGrid extends SherpaElement {
     // Returned in the caller's original row order, so the list is stable rather
     // than in whatever order the boxes happened to be ticked.
     return this.#rows.filter((r) => this.#selected.has(r));
+  }
+
+  /**
+   * The selected rows as KEYS — savable, unlike the indices `selection-change`
+   * reports.
+   *
+   * `selection-change` carries row indices because that is what a live handler
+   * wants: where the ticked boxes are right now. A saved view cannot use them —
+   * an index is a position in the CURRENTLY VISIBLE list, so it means something
+   * different after any sort or filter, and it cannot describe a selected row
+   * that a filter is hiding.
+   *
+   * Empty when no `key` was given in `populate()`, because without one there is
+   * no durable way to name a row. That is honest rather than approximate: a
+   * selection saved by position would come back pointing at the wrong records.
+   */
+  get selectedKeys(): string[] {
+    if (!this.#key) return [];
+    const key = this.#key;
+    return this.selectedRecords
+      .map((row) => row[key])
+      .filter((v) => v != null)
+      .map((v) => String(v));
+  }
+
+  /**
+   * Select exactly these rows, by key — a saved view, a deep link, an agent.
+   *
+   * REPLACES the selection rather than adding to it: a caller restoring a view
+   * means "this is what is selected", not "also select these". `select([])` is
+   * how a "clear" is expressed, and `clearSelection()` says the same thing more
+   * plainly.
+   *
+   * Keys that match no row are IGNORED rather than throwing. A saved view
+   * outlives the records it was made from, and a deleted row must not stop the
+   * other four being restored.
+   *
+   * SILENT, like the other setters: the caller is the one who asked, and
+   * echoing would make a host that routes `selection-change` back into its own
+   * state apply the same selection twice.
+   */
+  select(keys: readonly string[]): void {
+    this.#selected.clear();
+    if (this.#key && keys.length) {
+      const key = this.#key;
+      const wanted = new Set(keys.map(String));
+      for (const row of this.#rows) {
+        const value = row[key];
+        if (value != null && wanted.has(String(value))) this.#selected.add(row);
+      }
+    }
+    // The boxes are stamped from #selected on every render, so a rebuild is how
+    // the ticks are written — there is one path that sets them, not two.
+    this.#renderBody();
+    this.#syncSelectAll();
+    this.#syncGroupSelects();
+  }
+
+  /** Select nothing. The same as `select([])`, said plainly. */
+  clearSelection(): void {
+    this.select([]);
   }
 
   /* ── Column filters ─────────────────────────────────────────────── */

@@ -2809,6 +2809,133 @@ O1–O4 are small and pay immediately. **O5 is deliberately held**: one screen i
 not evidence, and `ignore` is a working answer until a second one proves the
 shape.
 
+## View DEFINITIONS — the generalisation of a saved view
+
+Will, 2026-09-16: *the column filter setting is why we will want to store and
+retrieve view definitions. A preset, or a saved user configuration of a view,
+should be a definition that is loaded in. These definitions can set context and
+states to initialise any component in the view to.*
+
+This is the right generalisation, and it says what S11 got wrong.
+
+### What S11 built, and why it does not scale
+
+Surviving a reload was wired as **one hand-rolled key per concern**:
+
+```js
+persistViewState(source, 'records');                     // the source's view state
+sessionStorage.setItem('sherpa:view:records:columns', …); // the grid's clauses, by hand
+```
+
+Two stores, two shapes, two restore paths — and a third would be needed for
+selection, a fourth for the toolbar's chips. **That is five implementations of
+one idea**, which is the thing "Reuse — one implementation, not five" argues
+against. It works for one screen and will not survive a second.
+
+### The concept already exists
+
+`render-view.ts` builds a whole view from a **normalised view definition** —
+a flat `elements` registry, a layout tree of id references, a `state` blob and
+`$state` wiring. A saved view is not a new concept; it is an existing one that
+does not yet cover enough.
+
+What it sets today, per element:
+
+| | Sets | When |
+|---|---|---|
+| `props` | attributes | at BUILD |
+| `data` | the `populate()` payload | at BUILD |
+| `state` + `$state` | a shared blob elements bind to | live |
+
+**The gap is everything that is neither an attribute nor a populate payload.**
+A grid's column filters are set by `setColumnFilter()`; a source's view state by
+`setState()`. Neither is expressible in a definition, so neither can be saved,
+shared or preset.
+
+### What a view definition must gain
+
+One field, and the discipline to keep it small:
+
+```js
+{
+  elements: {
+    grid: {
+      type: 'sherpa-data-grid',
+      props: { 'data-column-filters': true },     // attributes — as now
+      state: {                                     // NEW — the API surface
+        columnFilters: { name: ['name', 'contains', 'ana'] },
+        sort: { field: 'spend', direction: 'desc' },
+      },
+    },
+  },
+  source: {                                        // NEW — the query
+    filter: ['and', ['plan', 'eq', 'Pro']],
+    sort: [{ field: 'spend', direction: 'desc' }],
+    page: 3, pageSize: 25,
+  },
+}
+```
+
+Two halves, because they have two owners:
+
+- **`source`** is a `ViewState` — it already serialises, and `setState()`
+  already restores it. Nothing new.
+- **`state`** per element is applied through the component's **own public
+  methods**, which is why parity (Part 2.5) is the prerequisite rather than a
+  nicety. `setColumnFilter` exists; `select()` does not, so selection cannot be
+  saved until P2 is built.
+
+**The rule this implies is worth stating plainly:** *a component's state is
+savable exactly as far as its API reaches.* That turns parity from a principle
+into a feature — and it is why P1 had to be built before S11 could finish.
+
+### Why this is the same answer as headless and MCP
+
+A view definition that can set every component's state is, by construction:
+
+| Also gives you | Because |
+|---|---|
+| **presets** — "Overdue invoices", shipped with the app | a definition is data |
+| **saved views** — a user's own configuration | the same data, stored per user |
+| **deep links** — a URL that opens a configured screen | the same data, in a query string |
+| **agent control** — "show me X filtered by Y" | the same data, from MCP |
+| **reproducible bugs** — "here is my exact view" | the same data, pasted |
+
+Five features, one mechanism. That is the test the design has to pass, and it is
+why the answer must not be a per-concern storage key.
+
+### The honest difficulties
+
+1. **A definition can name a component that no longer exists**, or a column a
+   backend dropped. It must degrade — apply what it can, report what it could
+   not — for the same reason a bad row is dropped rather than thrown (V8).
+2. **Order matters.** A grid's column filters cannot be applied before it has
+   columns, which means after its first `populate()`. The definition describes
+   an end state; something has to sequence it.
+3. **Versioning.** A saved view outlives the code that made it. A definition
+   needs a version, and an unrecognised one must be ignored rather than
+   half-applied.
+4. **Not everything should be saved.** Scroll position, open menus, a
+   half-typed filter — transient by nature. The same "would anything outside be
+   surprised if this were shared?" test applies.
+
+### The steps
+
+| Step | Work | Why here |
+|---|---|---|
+| **D1** | `state` on `ElementNode`, applied through each component's public methods after build | the missing half of a view definition. Everything else follows from it |
+| **D2** | `source` on a view definition, applied via `setState()` | trivial — `ViewState` already serialises and `setState()` already exists |
+| **D3** | `captureView(view)` — read the current state BACK into a definition | a saved view is useless if only a developer can write one. The parity rule again: every setter needs its getter |
+| **D4** | Replace S11's two hand-rolled keys with one definition | proves it on the screen that motivated it, and deletes the duplication S11 introduced |
+| **D5** | Degrade + version: apply what fits, report what did not | a saved view outlives the code that made it |
+
+**D1 is blocked on parity, not on itself.** A definition can only set what a
+component exposes, so the P-steps are its prerequisite — P2 (selection) first,
+then a sweep (P3) for what else is unreachable.
+
+**D4 is the one that pays the debt.** Until it lands, S11's two keys are a
+second implementation of a thing this section says should have one.
+
 ## Next — parity (API equals interaction)
 
 Anything a person can do by clicking, a caller must be able to do by calling —
@@ -2818,7 +2945,7 @@ is structural rather than a convenience.
 | Step | Work | Why here |
 |---|---|---|
 | **P1** ✅ | `setColumnFilter(field, clause)` on the data grid | **DONE 2026-09-16, and the prediction landed exactly.** Building S11 hit it: a reload restored the ROWS and lit the heading, but left the menu empty — a lit column that lies about why. Takes what `column-filter-change` reports, so the round trip closes |
-| **P2** | Selection: `select(ids)` / `clearSelection()` | "select all matching" has nowhere to go today |
+| **P2** ✅ | Selection: `select(keys)` / `clearSelection()` / `selectedKeys` | **DONE 2026-09-16.** BY KEY, not index — `selection-change` reports indices, which is right for a live handler and useless for a saved view: an index means something else after any sort. Needs `key` in `populate()`; without one `selectedKeys` is EMPTY rather than approximate, because a selection saved by position comes back pointing at the wrong records |
 | **P3** | A parity AUDIT across all 53 components | the two gaps above were found by writing one table; the rest of the table has not been written |
 | **P4** | Parity as a spec field | `.component.yaml` records events and props; it should record which interactions have a programmatic equal, so drift is visible |
 | **P5** | MCP instance tier — drive a live screen | a thin wrapper over P1–P3; **impossible before them**, which is the point |

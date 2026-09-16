@@ -1905,3 +1905,106 @@ test('setColumnFilter restores a column from outside — the round trip a saved 
   // that routes the event back into its query apply the same filter twice.
   expect(r.events).toBe(0);
 });
+
+test('selection has a programmatic door, and it is by KEY not position', async ({ page }) => {
+  // `selection-change` reports row INDICES, which is what a live handler wants.
+  // A saved view cannot use them: an index is a position in the currently
+  // visible list, so it means something else after any sort or filter, and it
+  // cannot name a selected row a filter is hiding.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      select(keys: readonly string[]): void;
+      clearSelection(): void;
+      selectedKeys: string[];
+      selectedRecords: Record<string, unknown>[];
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      key: 'email',
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [
+        { email: 'a@x', name: 'Ada' },
+        { email: 'b@x', name: 'Bob' },
+        { email: 'c@x', name: 'Cy' },
+      ],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const events: unknown[] = [];
+    el.addEventListener('selection-change', (e) => events.push((e as CustomEvent).detail));
+    const ticked = () =>
+      Array.from(el.shadowRoot!.querySelectorAll<HTMLInputElement>('.row-select'))
+        .filter((b) => b.checked).length;
+
+    el.select(['a@x', 'c@x']);
+    await settle();
+    const restored = {
+      keys: el.selectedKeys,
+      names: el.selectedRecords.map((x) => x['name']),
+      ticked: ticked(),
+    };
+
+    // A saved view outlives the records it was made from. A key that matches
+    // nothing must not stop the others being restored.
+    el.select(['a@x', 'deleted@x']);
+    await settle();
+    const partial = el.selectedKeys;
+
+    // THE POINT OF KEYS: a sort re-orders every row, and the selection holds.
+    el.dataset['sortField'] = 'name';
+    el.dataset['sortDirection'] = 'desc';
+    await settle();
+    const afterSort = { keys: el.selectedKeys, ticked: ticked() };
+
+    el.clearSelection();
+    await settle();
+
+    return { restored, partial, afterSort, cleared: el.selectedKeys, events: events.length };
+  });
+
+  expect(r.restored.keys).toEqual(['a@x', 'c@x']);
+  expect(r.restored.names).toEqual(['Ada', 'Cy']);
+  expect(r.restored.ticked).toBe(2);
+
+  expect(r.partial).toEqual(['a@x']);       // the missing key ignored, not thrown
+
+  expect(r.afterSort.keys).toEqual(['a@x']); // survives a re-order
+  expect(r.afterSort.ticked).toBe(1);
+
+  expect(r.cleared).toEqual([]);
+
+  // SILENT, like every other setter here.
+  expect(r.events).toBe(0);
+});
+
+test('selectedKeys is EMPTY without a key — honest, not approximate', async ({ page }) => {
+  // A selection saved by position would come back pointing at the wrong
+  // records, which is worse than not offering to save it.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      select(keys: readonly string[]): void;
+      selectedKeys: string[];
+      selectedRecords: Record<string, unknown>[];
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    // NO key in the config.
+    el.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'Ada' }] });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    el.select(['anything']);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return { keys: el.selectedKeys, records: el.selectedRecords.length };
+  });
+
+  expect(r.keys).toEqual([]);
+  expect(r.records).toBe(0);
+});
