@@ -209,9 +209,9 @@ $extensions:
     variantAxes:
       - name: Variant
         values:
-          - Default
           - Panel
           - accordion
+          - default
     booleanProps:
       - hasDragHandle
       - hasActions
