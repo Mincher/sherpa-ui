@@ -9,4 +9,19 @@ if [ $TYPE_CHECK_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# The component specs are the contract the MCP and every agent reads. Nothing
+# validated them until 2026-09-16, and they had rotted badly: 31 of 58 declared
+# events their component never emits, because the generator was scraping English
+# prose for identifiers. Cheap to check (a second), and the only thing standing
+# between a fixed spec and the next silent drift.
+echo "📋 Validating component specs..."
+npm run spec:validate --silent
+SPEC_RESULT=$?
+
+if [ $SPEC_RESULT -ne 0 ]; then
+  echo "❌ A component spec does not match schemas/component.v1.json. Commit blocked."
+  echo "   Regenerate it: node scripts/generate-component-spec.mjs <name>"
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

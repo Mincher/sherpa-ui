@@ -41,6 +41,11 @@ npm run lint:fix
 npm run lint:css
 npm run lint:css:strict
 
+# Validate the component specs against schemas/component.v1.json.
+# RUNS IN THE PRE-COMMIT HOOK — a spec that does not match blocks the commit.
+npm run spec:validate
+npm run spec:check         # coverage + round-trip table, writes nothing
+
 # Format component CSS
 npm run format
 npm run format:check
@@ -85,7 +90,15 @@ Every component lives in `src/components/sherpa-<name>/`. Three hand-written sou
 A fourth file, `sherpa-<name>.component.yaml`, is **generated** — by
 `scripts/generate-component-spec.mjs` from the source + Figma — and git-tracked. It is
 the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
-validate tooling. Never hand-edit it; regenerate it. `scripts/resync-figma.mjs --check`
+validate tooling. Never hand-edit it; regenerate it.
+
+**The EVENTS in a spec come from the code, not from the `Fires:` comment.** That
+comment is prose, and reading it for identifiers put phantom events into 31 of the
+58 specs — one component declared an event literally called `nothing`, another had
+scraped sixteen words out of sentences about its filters. The generator now
+intersects the comment with what the TypeScript actually dispatches (`emit()`,
+`new CustomEvent`, `new Event`), so a comment can choose which emitted events are
+public but can never invent one. `scripts/resync-figma.mjs --check`
 reports drift between a spec and Figma. (`scripts/generate-defs.mjs` was deleted
 2026-09-16 — it had been a stub that only printed an error.)
 

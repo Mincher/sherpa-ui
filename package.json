@@ -34,6 +34,8 @@
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "lint:css": "node scripts/lint-css.mjs",
     "lint:css:strict": "node scripts/lint-css.mjs --strict",
+    "spec:validate": "node scripts/validate-component.mjs --all",
+    "spec:check": "node scripts/generate-component-spec.mjs --all --check",
     "format": "prettier --write 'src/**/*.css'",
     "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
