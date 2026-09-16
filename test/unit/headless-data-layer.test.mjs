@@ -228,3 +228,37 @@ test('F2: a component bound AFTER a load still gets the rows', async () => {
   assert.equal(payloads.length, 1, 'bound late, populated immediately');
   assert.equal(payloads[0].length, 5);
 });
+
+test('F3: writes in one tick coalesce; separate ticks do not', async () => {
+  const store = new ArrayStore(makeRows(), { key: 'id' });
+  let storeLoads = 0;
+  const real = store.load.bind(store);
+  store.load = (o) => { storeLoads += 1; return real(o); };
+
+  const source = new DataSource({ store, autoLoad: false });
+  await source.load();
+  const afterFirst = storeLoads;
+
+  // ONE TICK — a view setting three things in one handler. It used to ask the
+  // store three times and throw two answers away.
+  source.setFilter(['plan', 'eq', 'Pro']);
+  source.setSort('spend', 'desc');
+  source.setPageSize(10);
+  await settle();
+  assert.equal(storeLoads - afterFirst, 1, 'three setters, one load');
+
+  // …and every setter's value made it into that one load.
+  assert.equal(source.rows.length, 10, 'page size applied');
+  assert.equal(source.total, 333, 'filter applied');
+  assert.equal(source.rows[0].spend, 9953, 'sort applied');
+
+  // SEPARATE TICKS are NOT merged. A microtask waits for the current
+  // synchronous run and no longer — merging across ticks would be a debounce,
+  // which is a policy about how fast people type and belongs to the caller.
+  const beforeTyping = storeLoads;
+  for (const term of ['n1', 'n12', 'n123']) {
+    source.setFilter(['name', 'contains', term]);
+    await settle();
+  }
+  assert.equal(storeLoads - beforeTyping, 3, 'one load per tick, as asked');
+});

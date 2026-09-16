@@ -459,7 +459,13 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
     });
 
     const source = new DataSource({ store: store as never, autoLoad: false });
+
+    // SEPARATE TICKS, deliberately. Two writes in one tick are COALESCED into a
+    // single load (see the coalescing test below), which would mean only one
+    // request ever reached the store — and then there would be no race to test.
+    // A person clicking two chips produces two ticks, which is this.
     source.setFilter(['tag', 'eq', 'a']);   // slow
+    await new Promise((r) => setTimeout(r, 0));
     source.setFilter(['tag', 'eq', 'b']);   // fast — must win
     await new Promise((r) => setTimeout(r, 250));
     return { rows: source.rows.map((r) => r['tag']), calls: call };
@@ -468,6 +474,48 @@ test('source: a slow earlier load never overwrites a newer one', async ({ page }
   expect(got.calls).toBe(2);
   // The LAST filter asked for is what shows, not the one that answered last.
   expect(got.rows).toEqual(['b']);
+});
+
+test('source: writes in ONE tick coalesce into a single load', async ({ page }) => {
+  // A view that sets a filter, a sort and a page size in one handler asked the
+  // store three times and threw two answers away. A microtask — not a timer —
+  // so a keystroke still queries on its own tick, and a debounce stays the
+  // caller's policy rather than this layer's.
+  const got = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const rows = Array.from({ length: 50 }, (_, i) => ({ id: i, plan: i % 3 ? 'Pro' : 'Free' }));
+    const store = new ArrayStore(rows, { key: 'id' });
+
+    let calls = 0;
+    const real = store.load.bind(store);
+    (store as unknown as { load: unknown }).load = (o: unknown) => {
+      calls += 1;
+      return real(o as never);
+    };
+
+    const source = new DataSource({ store, autoLoad: false });
+    await source.load();
+    const afterFirst = calls;
+
+    // THREE setters, one tick.
+    source.setFilter(['plan', 'eq', 'Pro']);
+    source.setSort('id', 'desc');
+    source.setPageSize(10);
+    await new Promise((r) => setTimeout(r, 60));
+
+    return {
+      coalesced: calls - afterFirst,
+      // …and the LAST word of each setter is what was asked for.
+      rows: source.rows.length,
+      total: source.total,
+      firstId: source.rows[0]?.['id'],
+    };
+  });
+
+  expect(got.coalesced).toBe(1);        // not 3
+  expect(got.rows).toBe(10);            // the page size applied
+  expect(got.total).toBe(33);           // the filter applied
+  expect(got.firstId).toBe(49);         // the sort applied
 });
 
 test('source: a failed load is a STATE, not a throw', async ({ page }) => {

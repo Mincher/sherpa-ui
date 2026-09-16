@@ -194,6 +194,8 @@ export class DataSource extends EventTarget {
    * cannot stop them and this can.
    */
   #inFlightKey: string | null = null;
+  /** A coalesced load is queued for the end of this tick — see `#schedule`. */
+  #scheduled = false;
 
   constructor(options: DataSourceOptions) {
     super();
@@ -251,42 +253,68 @@ export class DataSource extends EventTarget {
   setSort(field: string | null, direction: SortDirection = 'asc'): void {
     this.#state.sort = field ? [{ field, direction }] : [];
     this.#resetPage();
-    void this.load();
+    this.#schedule();
   }
 
   setGroup(field: string | null): void {
     this.#state.group = field;
     this.#resetPage();
-    void this.load();
+    this.#schedule();
   }
 
   setFilter(filter: Filter | undefined): void {
     if (filter) this.#state.filter = filter;
     else delete this.#state.filter;
     this.#resetPage();
-    void this.load();
+    this.#schedule();
   }
 
   setSearch(term: string): void {
     this.#state.search = term;
     this.#resetPage();
-    void this.load();
+    this.#schedule();
   }
 
   setPage(page: number): void {
     // Clamped against the CURRENT total, so a pager cannot walk past the end.
     this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
-    void this.load();
+    this.#schedule();
   }
 
   setPageSize(size: number): void {
     this.#state.pageSize = Math.max(1, Math.trunc(size) || 1);
     this.#resetPage();
-    void this.load();
+    this.#schedule();
   }
 
   #resetPage(): void {
     this.#state.page = 1;
+  }
+
+  /**
+   * COALESCE the writes in one tick into a single load.
+   *
+   * Every setter above calls this rather than `load()` directly. A person
+   * typing produces a filter per keystroke, and each is a DIFFERENT question —
+   * so F1's identical-key guard cannot help. Six keystrokes over 20,000 rows
+   * meant six full filter-and-sort passes, five of whose answers were thrown
+   * away before anyone saw them.
+   *
+   * A microtask, not a timer. It waits for the current synchronous run to
+   * finish and no longer: a view that sets a filter, a sort and a page in one
+   * handler gets ONE load, and a keystroke still queries on its own tick. A
+   * debounce would be a policy about how fast people type, which is the
+   * caller's to decide, not this layer's.
+   *
+   * `load()` stays immediate and public: a caller that awaits it means it.
+   */
+  #schedule(): void {
+    if (this.#scheduled) return;
+    this.#scheduled = true;
+    queueMicrotask(() => {
+      this.#scheduled = false;
+      void this.load();
+    });
   }
 
   /* ── Loading ───────────────────────────────────────────────────────── */

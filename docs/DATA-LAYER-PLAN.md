@@ -1857,13 +1857,31 @@ point of the layer.
 |---|---|---|---|
 | **F1** ✅ | `DataSource` skips a load when the ViewState is UNCHANGED | **DONE 2026-09-16.** 20 identical writes → **2** store loads (was 20). Needed TWO checks, not one: the last COMPLETED key, and the key currently IN FLIGHT — a burst all fires before the first completes, so the completed key cannot stop it | small |
 | **F2** ✅ | `#push` skips a component whose payload is IDENTICAL to its last | **DONE 2026-09-16.** 120 populates → **0**. Guards on the ROWS ARRAY, not the adapted payload: `applyOptions` returns a new array per load, while an `as` adapter builds a new object every call and would never match | small |
-| **F3** | Coalesce writes within a frame | typing sets the filter per keystroke; each is a full load + fan-out | small — `queueMicrotask` / rAF debounce inside `load()` |
+| **F3** ✅ | Coalesce writes within a tick | **DONE 2026-09-16.** Three setters in one handler → **1** load, not 3. A MICROTASK, in `#schedule()`, which the six setters call instead of `load()` — `load()` itself stays immediate, because a caller that awaits it means it | small |
 | **F4** | ONE shared chart datum type | `BarDatum`, `DonutSlice` and `LegendItem` are the same shape under three names; `dashboard.js:157` maps a shape to ITSELF field-for-field to cross between them | small, and a REUSE fix as much as a perf one |
 | **F5** | A datum vocabulary for `as` adapters | 18 different `populate()` shapes across 22 components, so nearly every bind needs a hand-written adapter | medium — needs the F4 survey first |
 | **F6** ✅ | Bind LIFETIME — answer 1 | **DONE 2026-09-16.** `records.js` now collects its three unbind functions and returns a teardown; the router already called one. Verified: `boundElements` 3 → 0. Answer 2 (auto-drop on disconnect) still open | small |
 
 **F1 and F2 together** are the ones that matter: they turn "nothing changed"
 from full cost into near-zero, which is exactly the shape a filter keystroke has.
+
+### What F3 does and does NOT merge — stated, because it is a limit
+
+A microtask waits for the current synchronous run and no longer:
+
+| | Loads before | after |
+|---|---|---|
+| three setters in ONE handler | 3 | **1** |
+| six keystrokes, 40ms apart | 6 | **6** |
+
+**Typing is deliberately not merged.** Merging across ticks is a debounce, and a
+debounce is a policy about how fast people type — the caller's to choose, not
+this layer's to impose. A view that wants one can wrap its own input handler;
+nothing here stops it.
+
+F1 cannot help with typing either, because every keystroke is a DIFFERENT
+question. What protects a large collection from a fast typist is server-side
+paging (Q3) or a caller's debounce, not this.
 
 ### F1 and F2 in more detail
 
