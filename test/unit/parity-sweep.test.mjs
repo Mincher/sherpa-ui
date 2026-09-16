@@ -57,11 +57,7 @@ const KNOWN = {
   'sherpa-quick-filter-toolbar.sortField': 'ok: data-sort-field attribute',
   'sherpa-quick-filter-toolbar.sortDirection': 'ok: data-sort-direction attribute',
   'sherpa-quick-filter-toolbar.sortSuspended': 'ok: data-sort-field="" suspends it',
-  // ── The open one. ────────────────────────────────────────────────────
-  'sherpa-quick-filter-toolbar.groupField':
-    'GAP: no setter, no method, and no observed data-group-field. A saved view ' +
-    'can restore a SORT and not a GROUPING — the same hole as `values`, one ' +
-    'field over. Fix alongside the organise chip work.',
+  'sherpa-quick-filter-toolbar.groupField': 'ok: data-group-field attribute',
 };
 
 /** Public getters (two-space indent = class body) and their setters. */
@@ -129,5 +125,7 @@ test('the open gaps are the ones we think they are', () => {
   const gaps = Object.entries(KNOWN)
     .filter(([, why]) => why.startsWith('GAP:'))
     .map(([key]) => key);
-  assert.deepEqual(gaps, ['sherpa-quick-filter-toolbar.groupField']);
+  // NONE. Every getter above has a door. Keep it that way: a new GAP entry is a
+  // promise to fix something, and it has to fail this test to get in.
+  assert.deepEqual(gaps, []);
 });

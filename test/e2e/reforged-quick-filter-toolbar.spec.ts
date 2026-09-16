@@ -2032,3 +2032,91 @@ test('addCustomFilter puts a typed-value chip on the bar, replaces it, and remov
   expect(r.removed).toHaveLength(1);
   expect(r.removed[0]!.id).toBe('plan');
 });
+
+/**
+ * `data-group-field` is the GROUP chip's door — the twin of `data-sort-field`.
+ *
+ * `groupField` was readable and completely unwritable: no setter, no method, no
+ * observed attribute. A saved view could restore a SORT and not a GROUPING,
+ * which is the same hole that let a view move the data and leave the filter bar
+ * blank, one field over. The parity sweep found it.
+ *
+ * Also guards the READ side. `groupField` used to read the menu's radio alone,
+ * ignoring whether the chip was on, so a Group chip switched OFF still reported
+ * the column it used to group by — and a host wiring that into a query kept
+ * grouping by a chip the reader had just turned off.
+ */
+test('data-group-field sets the Group chip, and an off chip reports nothing', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      organise(d: unknown): void;
+      groupField: string | null;
+    };
+    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    // A host must hear NOTHING from a write it made itself. Wired before render,
+    // the ordering that broke sort.
+    const changes: unknown[] = [];
+    el.addEventListener('quick-filter-change', (e) => changes.push((e as CustomEvent).detail));
+
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    el.organise({
+      sort: [{ field: 'name', label: 'Name' }],
+      group: [{ field: 'status', label: 'Status' }, { field: 'region', label: 'Region' }],
+    });
+    await settled();
+
+    const chip = () => el.shadowRoot!.querySelector('.organise-chip[data-id="group"]')!;
+    const ticked = () => [
+      ...chip().querySelectorAll<HTMLInputElement>('sherpa-menu label input'),
+    ].filter((i) => i.checked).map((i) => i.value);
+    const face = () => (chip().shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim();
+
+    const before = { on: chip().hasAttribute('data-current'), field: el.groupField };
+
+    el.setAttribute('data-group-field', 'region');
+    await settled();
+    const set = {
+      on: chip().hasAttribute('data-current'),
+      field: el.groupField,
+      ticked: ticked(),
+      face: face(),
+    };
+
+    // Empty means UNGROUPED. Unlike a suspended sort the pick is cleared: a grid
+    // is grouped or flat, so a remembered column would report a grouping that is
+    // not running.
+    el.setAttribute('data-group-field', '');
+    await settled();
+    const cleared = {
+      on: chip().hasAttribute('data-current'),
+      field: el.groupField,
+      ticked: ticked(),
+    };
+
+    return { before, set, cleared, changes };
+  });
+
+  expect(r.before).toEqual({ on: false, field: null });
+
+  // THE DOOR WORKS: the attribute ticks the radio and lights the chip.
+  expect(r.set.on).toBe(true);
+  expect(r.set.field).toBe('region');
+  expect(r.set.ticked).toEqual(['region']);
+  // And the chip NAMES it. A lit chip reading only "Group" says a grouping
+  // exists without saying what it is.
+  expect(r.set.face).toContain('Region');
+
+  // Off means off, in the menu AND in the read-back.
+  expect(r.cleared).toEqual({ on: false, field: null, ticked: [] });
+
+  // No echo. The write came from outside; telling the outside what it just did
+  // would bounce the value between a host wired both ways.
+  expect(r.changes).toEqual([]);
+});

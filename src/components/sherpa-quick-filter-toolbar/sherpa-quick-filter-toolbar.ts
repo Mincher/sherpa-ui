@@ -226,7 +226,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * link ran one way: the chip steered the grid, and sorting from a column
    * header left the chip saying nothing.
    */
-  static override observed = ['data-sort-field', 'data-sort-direction'];
+  static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
 
   #filters: QuickFilterDef[] = [];
   #organise: OrganiseDef = {};
@@ -1456,6 +1456,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onChange(): void {
     this.#syncSortFromAttrs();
+    this.#syncGroupFromAttrs();
   }
 
   /**
@@ -1490,6 +1491,55 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.dataset['direction'] = direction;
     chip.toggleAttribute('data-current', true);
     this.#syncSortLabel(chip);
+  }
+
+  /**
+   * Point the Group chip at whatever `data-group-field` says.
+   *
+   * The twin of `#syncSortFromAttrs`, and deliberately built the same way: both
+   * organise chips are single-select menus, so setting one means ticking its
+   * radio and letting the chip label itself.
+   *
+   * WHY THIS EXISTS. `groupField` was readable and completely unwritable — no
+   * setter, no method, no attribute — so a saved view could restore a SORT and
+   * not a GROUPING. The parity sweep found it; this is the door.
+   *
+   * No event, for the same reason sort emits none: the write came from outside,
+   * and echoing it back would bounce the value between a host wired both ways.
+   */
+  #syncGroupFromAttrs(): void {
+    const chip = this.$<HTMLElement>('.organise-chip[data-id="group"]');
+    if (!chip) return;
+
+    const field = this.dataset['groupField'] ?? '';
+
+    // NO FIELD means ungrouped. Unlike a suspended sort the pick is CLEARED,
+    // because grouping has no third state: a grid is grouped by a column or it
+    // is flat, and a chip remembering a column it is not grouping by would
+    // report a grouping that is not running.
+    if (!field) {
+      for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+        radio.checked = false;
+      }
+      chip.removeAttribute('data-current');
+      this.#syncGroupLabel(chip);
+      return;
+    }
+
+    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+      radio.checked = radio.value === field;
+    }
+    chip.toggleAttribute('data-current', true);
+    this.#syncGroupLabel(chip);
+  }
+
+  /** Name the grouped column in the Group chip's caret, or leave it blank. */
+  #syncGroupLabel(chip: HTMLElement): void {
+    const column = this.#organise.group?.find((c) => c.field === this.#menuValue('group'));
+    const target = chip as HTMLElement & { valueLabel?: string };
+    if ('valueLabel' in target) {
+      target.valueLabel = chip.hasAttribute('data-current') ? column?.label ?? '' : '';
+    }
   }
 
   /**
@@ -1954,8 +2004,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderOrganise();
   }
 
-  /** The column the grid is grouped by, or null. */
+  /**
+   * The column the grid is grouped by, or null.
+   *
+   * Null when the chip is OFF, even if its menu still holds a radio. This used
+   * to read the menu alone, so a Group chip switched off still reported the
+   * column it used to group by — a host wiring this straight into a query kept
+   * grouping by a chip the reader had just turned off. `sortField` already
+   * guarded this way; the two now answer the same question the same way.
+   */
   get groupField(): string | null {
+    const chip = this.$<HTMLElement>('.organise-chip[data-id="group"]');
+    if (!chip || !chip.hasAttribute('data-current')) return null;
     return this.#menuValue('group') ?? null;
   }
 
