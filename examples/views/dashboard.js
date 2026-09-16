@@ -7,8 +7,9 @@
  * own content + wires a couple of demo listeners. Behaviour is identical to
  * the old standalone dashboard.html.
  */
-import { ArrayStore, DataSource } from '../../dist/index.js';
+import { ArrayStore, DataSource, applyViewSnapshot } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
+import { DASHBOARD_VIEWS, DASHBOARD_VIEW_OPTIONS } from './dashboard-views.js';
 import {
   alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
 } from './dashboard-data.js';
@@ -34,50 +35,9 @@ export async function init(root) {
     // THE GLOBAL FILTERS — View, Customer, Region and Date range. They sit
     // above every page and trickle DOWN: whatever they narrow to is the
     // population this dashboard's charts then work within. See global-filters.js.
-    filters: globalFilters([
-      { value: 'fleet',    label: 'Fleet overview', selected: true },
-      { value: 'critical', label: 'Critical only' },
-      { value: 'emea',     label: 'EMEA operations' },
-      { value: 'capacity', label: 'Capacity planning' },
-    ]),
-  };
-
-  /**
-   * The saved views this dashboard offers.
-   *
-   * A view is a whole arrangement, so each one names the data filters it
-   * re-applies. Held here rather than in the chip's options because the chip
-   * carries the LABELS a reader picks from; this is what picking one MEANS.
-   */
-  /* `chips` is the SAME fact as `filter`, said to the reader.
-     A view that narrows to EMEA must also show the Region chip reading EMEA,
-     or the bar claims nothing is filtered while the charts disagree — and a
-     filter nobody can see is a filter nobody can undo.
-     A chip the view does not name is switched OFF, so every view is a whole
-     statement about the bar and not a patch on the view before it. */
-  const savedViews = {
-    fleet: {
-      label: 'Fleet overview',
-      filter: undefined,
-      chips: { view: ['fleet'] },
-    },
-    critical: {
-      label: 'Critical only',
-      filter: ['severity', 'eq', 'critical'],
-      // No header chip names severity — it is this page's own axis, not a
-      // slice of the business — so the bar stays clear and honest.
-      chips: { view: ['critical'] },
-    },
-    emea: {
-      label: 'EMEA operations',
-      filter: ['region', 'eq', 'EMEA'],
-      chips: { view: ['emea'], region: ['emea'] },
-    },
-    capacity: {
-      label: 'Capacity planning',
-      filter: ['storage', 'gt', 70],
-      chips: { view: ['capacity'] },
-    },
+    // The options come FROM the views, so a label cannot drift from the view
+    // it names — the list and the definitions are one source.
+    filters: globalFilters(DASHBOARD_VIEW_OPTIONS),
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -236,33 +196,40 @@ export async function init(root) {
 
   // ── The VIEW toolbar: picking a saved view ─────────────────────────────
   // The header's toolbar is data-type="view", so a change here means "show me a
-  // different saved arrangement" — not "filter the data". A real app would
-  // re-apply every setting the view remembers and re-query; the example shows
-  // the two things that are visible without a backend: the chip renames itself
-  // to the view it is in, and the header heading follows.
+  // different saved arrangement" — not "filter the data".
+  //
+  // ONE CALL. `applyViewSnapshot` is the same function the records page uses,
+  // reading the same `ViewSnapshot` shape, because a saved view is one idea and
+  // deserves one implementation. It sets the SOURCE first — so the rows are on
+  // their way before anything reads them — then each named element through its
+  // own public API.
+  //
+  // This page used to hand-apply a `{ filter, chips }` object of its own. It
+  // said the same things in a vocabulary only this file knew, so a deep link, a
+  // stored view or an agent could not have expressed one.
   header?.addEventListener('quick-filter-change', (e) => {
     const picked = e.detail.values?.view?.[0];
     if (!picked) return;
-    const view = savedViews[picked];
+    const view = DASHBOARD_VIEWS[picked];
     if (!view) return;
 
     /* ONE WRITE, EIGHT COMPONENTS. Picking a view narrows the records, and
        every chart re-summarises what is left: the bars, the donut, the gauge's
-       mean, both line series and the two legends.
+       mean, both line series and the two legends. The header's chips move with
+       them, from the SAME definition, so the bar cannot claim the data is
+       unfiltered while the charts disagree.
 
-       The chip labels ITSELF — the field name stays "View" and the picked view
-       reads in the caret button. This used to overwrite data-label with the
-       view's name, which was right under the old design where the chip carried
-       the value, but now fights the chip and left the bar reading
-       "EMEA operations | EMEA operations" the moment anyone changed view. */
-    source.contribute('view', view.filter);
+       Setting the chips fires no event, so this does not come back round as a
+       second filter. */
+    const report = applyViewSnapshot(view.snapshot, { source, elements: { header } });
 
-    /* AND THE BAR. The write above moved the DATA; this one moves what the
-       reader sees. Both come from the one definition, so they cannot drift.
-
-       Setting the chips fires no event — see the setter — so this does not
-       come back round as a second filter. */
-    header.values = view.chips ?? {};
+    /* A saved view OUTLIVES its code. A renamed component or a dropped method
+       is reported, not thrown — the rest of the view still applies, and the app
+       gets to say what it could not restore rather than leave the reader
+       guessing. The demo logs it; a product would tell someone. */
+    if (report.missingElements.length || Object.keys(report.skipped).length) {
+      console.warn('view applied with gaps', report);
+    }
   });
 
   // The cluster's own actions, for the example's sake.
