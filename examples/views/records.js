@@ -341,17 +341,24 @@ export async function init(root) {
      to that alone — wiping both the chips and the other columns' clauses. */
   /* THE BINDS, kept so the view can end them.
 
-     `bind()` returns its own unbind function, and the router calls whatever a
-     view's init() returns when it swaps away. Without collecting these, the
-     source kept pushing rows into three components that had been removed from
-     the DOM — one live source per view visit, each holding detached elements. */
-  const unbinds = [];
+     The router calls whatever a view's init() returns when it swaps away.
+     Without a teardown the source kept pushing rows into components that had
+     been removed from the DOM — one live source per view visit, each holding
+     detached elements.
 
-  unbinds.push(source.bind(grid, {
+     ONE AbortController for the whole view, because `bind`, `persistView` and
+     `onViewPicked` all take the platform's `signal`. A list of unbind functions
+     is a list someone forgets — which is exactly what happened on the dashboard
+     when a second, shorter-lived list appeared beside the first. */
+  const page = new AbortController();
+  const signal = page.signal;
+
+  source.bind(grid, {
     as: (rows) => ({ columns, rows }),
     ignore: ['filter-change'],
-  }));
-  unbinds.push(source.bind(pager));
+    signal,
+  });
+  source.bind(pager, { signal });
 
   /* STEER-ONLY. The toolbar's populate() means "here are your CHIPS", not "here
      are your rows" — a plain bind() overwrote the bar with records and it came
@@ -369,7 +376,7 @@ export async function init(root) {
      can do that. Left to the source, `quick-filter-change` would set the filter
      from the chips alone and the column clauses would vanish on every chip
      click. Sort and group are untouched — the source still handles those. */
-  unbinds.push(source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] }));
+  source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
     source.contribute('chips', filterFromChips(e.detail.values, e.detail.active));
     /* A CUSTOM chip's body is a TOGGLE, exactly like any other chip's: off
@@ -471,7 +478,7 @@ export async function init(root) {
      is a feature, not a bug. It restores BEFORE the first load, so the source
      queries once with the remembered state rather than loading empty and
      loading again. */
-  unbinds.push(persistView('records', { source, elements: { grid } }, {
+  persistView('records', { source, elements: { grid } }, {
     /* WHAT THE GRID CONTRIBUTES. The view names it rather than the helper
        guessing: only this view knows that a column filter belongs in a saved
        view and a scroll position does not.
@@ -486,7 +493,7 @@ export async function init(root) {
       if (calls.length) state.setColumnFilter = calls.length === 1 ? calls[0] : calls;
       return state;
     },
-  }));
+  });
 
   /* SAVED VIEWS — the header's View chip.
 
@@ -504,7 +511,8 @@ export async function init(root) {
      `after` is the half only this page knows: the QUERY here is composed from
      named parts, so the view's own clause has to be re-contributed and the
      grid's column clauses read back. */
-  unbinds.push(onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
+  onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
+    signal,
     after: ({ view }) => {
       /* AFTER the snapshot, not before. `setState` treats a restored filter as
          the WHOLE query and clears the named parts with it — right for a host
@@ -525,7 +533,7 @@ export async function init(root) {
         pushColumns();
       });
     },
-  }));
+  });
 
   /* The view's OWN map has to agree with the grid after a restore. The snapshot
      put the clauses back into the GRID; this reads them out again so the
@@ -595,6 +603,7 @@ export async function init(root) {
      kept pushing rows into them, and a filter set on the next visit would fan
      out to every detached copy from every previous one. */
   return () => {
-    for (const off of unbinds) off();
+    // ONE ABORT: every binding, the persister and the view picker.
+    page.abort();
   };
 }

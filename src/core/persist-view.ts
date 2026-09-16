@@ -27,6 +27,13 @@ export interface PersistOptions {
    * tab. Off by default — see the note above.
    */
   shared?: boolean;
+  /**
+   * Stop persisting when this aborts — the same platform token `bind()` takes.
+   *
+   * One controller can then tear down every binding, listener and persister a
+   * view made, instead of a list of teardown functions to keep in step.
+   */
+  signal?: AbortSignal;
 }
 
 /** The key prefix, so a host's own storage keys cannot collide with these. */
@@ -122,7 +129,12 @@ export function persistView(
   // SAVE ON THE SOURCE'S `change`, which fires after a load completes — the one
   // moment the state is both settled and known to be loadable. A host whose
   // view has no source calls the returned `save` itself.
-  targets.source?.addEventListener('change', save);
+  // DataSource extends EventTarget, so the signal is honoured natively — no
+  // second way to say "stop".
+  targets.source?.addEventListener(
+    'change', save,
+    options.signal ? { signal: options.signal } : undefined,
+  );
   return () => targets.source?.removeEventListener('change', save);
 }
 
