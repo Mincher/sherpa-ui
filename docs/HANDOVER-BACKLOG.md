@@ -145,6 +145,22 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
+## Specs declare an event's NAME but never its DETAIL
+
+`schemas/component.v1.json:297` defines a `detail` field on an event. **Zero of
+the 58 specs use it.** So the contract every agent and the MCP reads says
+`quick-filter-change` exists and nothing about what it carries.
+
+That is how three payload shapes hid behind one name until 2026-09-16: a bare
+`string[]` from a chip, a `Record<id, string[]>` from the bar, and `[]` with an
+`id` from an overflow toggle. Reading one as another emptied a grid on every
+sort, and the fix — a `scope` marker — is invisible in the specs.
+
+The generator would have to read the `emit()` call sites for their object
+shape, which is harder than reading the event NAME (already done). Worth it:
+the detail is the half of an event contract that a caller actually codes
+against.
+
 ## Figma↔code translation — MEASURED 2026-09-16, narrower than feared
 
 Will: *"The figma side was massively refactored but the translation etc. in the
