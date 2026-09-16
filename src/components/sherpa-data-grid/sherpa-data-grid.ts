@@ -88,7 +88,7 @@
  *   holds one row; the header cell shows no control, because "select all" is
  *   meaningless where only one can be chosen.
  */
-import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
 // The sort/group glyphs are SHARED with the quick-filter toolbar — see core/icons.
 import { ORGANISE_ICONS } from '../../core/icons.js';
 // ONE sort implementation. The store's `sortRows` is what a DataSource and a
@@ -480,7 +480,7 @@ export class SherpaDataGrid extends SherpaElement {
   #clampWidth(n: number): number {
     const { MIN_COL_WIDTH, MAX_COL_WIDTH, DEFAULT_COL_WIDTH } = SherpaDataGrid;
     if (!Number.isFinite(n)) return DEFAULT_COL_WIDTH;
-    return Math.min(MAX_COL_WIDTH, Math.max(MIN_COL_WIDTH, Math.round(n)));
+    return clampNum(Math.round(n), { min: MIN_COL_WIDTH, max: MAX_COL_WIDTH });
   }
 
   /**

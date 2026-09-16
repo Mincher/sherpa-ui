@@ -25,7 +25,7 @@
  * @fires input  bubbles+composed — while dragging. single: { value }; range: { start, end }
  * @fires change bubbles+composed — on commit.     single: { value }; range: { start, end }
  */
-import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
 
 interface SliderData {
   /** Current value (single mode). */
@@ -173,7 +173,7 @@ export class SherpaSlider extends SherpaElement {
   #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : coerceNum(raw, NaN);
     const value = Number.isFinite(n) ? n : this.#min;
-    return Math.min(this.#max, Math.max(this.#min, value));
+    return clampNum(value, { min: this.#min, max: this.#max });
   }
 
   /* ── Sync ────────────────────────────────────────────────────────────── */

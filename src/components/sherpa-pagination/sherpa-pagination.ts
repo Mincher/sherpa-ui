@@ -22,7 +22,7 @@
  * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
 // The four page controls are composed sherpa-buttons, as Figma instances them.
 import '../sherpa-button/sherpa-button.js';
 
@@ -98,8 +98,18 @@ export class SherpaPagination extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
+  /**
+   * A page number: whole, and within 1..totalPages.
+   *
+   * `Math.trunc(n) || 1` used to stand in for the NaN guard — and `||` folds 0,
+   * NaN and -0 together, which is the exact trick `coerceNum`'s doc comment
+   * calls out as the reason it exists. It happened to be harmless here (page 0
+   * is invalid anyway, so both paths give 1), but it hid its reasoning behind a
+   * coincidence. The NaN case is now stated.
+   */
   #clamp(n: number): number {
-    return Math.min(this.totalPages, Math.max(1, Math.trunc(n) || 1));
+    if (!Number.isFinite(n)) return 1;
+    return clampNum(Math.trunc(n), { min: 1, max: this.totalPages });
   }
 
   /** Parse data-rows-options into a numeric list; default to a sensible set. */

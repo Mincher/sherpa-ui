@@ -14,7 +14,7 @@
  *
  * @prop {number} value — the current percentage (read/write, clamped 0–100)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
 
 interface ProgressData {
   /** 0–100 completion percentage. */
@@ -79,10 +79,11 @@ export class SherpaProgressBar extends SherpaElement {
     if (label != null) this.setAttribute('aria-label', label);
   }
 
+  /** A percentage: parse whatever arrived, then hold it to 0..100. */
   #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : parseFloat(raw ?? '');
     if (!Number.isFinite(n)) return 0;
-    return Math.min(100, Math.max(0, n));
+    return clampNum(n, { min: 0, max: 100 });
   }
 }
 

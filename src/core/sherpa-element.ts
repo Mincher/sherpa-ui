@@ -112,8 +112,16 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
   return clampNum(opts?.int === true ? Math.trunc(parsed) : parsed, opts);
 }
 
-/** Apply the min/max bounds from `opts`, if any. */
-function clampNum(value: number, opts?: NumOptions): number {
+/**
+ * Apply the min/max bounds from `opts`, if any.
+ *
+ * EXPORTED, like `coerceNum`, because six components had written their own
+ * `#clamp` — and they were not the same function. Each wrapped a real
+ * `Math.min(max, Math.max(min, …))` in its own extras: progress-bar parses a
+ * string first, pagination truncates, data-grid rounds and falls back to a
+ * default width. Merging them would have been wrong; sharing the BOUNDS is not.
+ */
+export function clampNum(value: number, opts?: NumOptions): number {
   let out = value;
   if (opts?.min !== undefined) out = Math.max(opts.min, out);
   if (opts?.max !== undefined) out = Math.min(opts.max, out);
