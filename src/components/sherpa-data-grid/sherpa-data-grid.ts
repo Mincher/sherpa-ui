@@ -267,6 +267,14 @@ export class SherpaDataGrid extends SherpaElement {
   /** The field identifying a row, when the caller named one — see GridConfig. */
   #key: string | null = null;
   /**
+   * Keys a caller asked to select, held until rows exist to match them against.
+   *
+   * Null when nobody has called `select()`, which is different from an empty
+   * array: empty means "select nothing", null means "the user's own ticks are
+   * in charge".
+   */
+  #wantedKeys: string[] | null = null;
+  /**
    * The last row CLICKED — the "focused" state.
    *
    * Held as the record, like the selection, so it survives a re-render. It is not
@@ -347,9 +355,15 @@ export class SherpaDataGrid extends SherpaElement {
     for (const field of this.#columnFilters.keys()) {
       if (!fields.has(field)) this.#columnFilters.delete(field);
     }
-    // New records are new objects, so nothing selected or focused can still be
-    // present.
-    this.#selected.clear();
+    // New records are new objects, so nothing selected by OBJECT identity can
+    // still be present. But a selection asked for by KEY can: re-resolve it
+    // against the rows that just arrived.
+    //
+    // That is what lets a saved view restore a selection at all — a snapshot
+    // applies before the source has populated, so `select()` had nothing to
+    // match and silently selected nothing. It also means a filter that hides a
+    // selected row and shows it again does not lose the tick.
+    this.#resolveSelection();
     this.#focused = null;
     this.#render();
   }
@@ -1712,20 +1726,36 @@ export class SherpaDataGrid extends SherpaElement {
    * state apply the same selection twice.
    */
   select(keys: readonly string[]): void {
-    this.#selected.clear();
-    if (this.#key && keys.length) {
-      const key = this.#key;
-      const wanted = new Set(keys.map(String));
-      for (const row of this.#rows) {
-        const value = row[key];
-        if (value != null && wanted.has(String(value))) this.#selected.add(row);
-      }
-    }
+    // REMEMBERED, not just resolved. A saved view can arrive BEFORE the rows —
+    // a source populates asynchronously, and a restore that ran first matched
+    // against an empty list and silently selected nothing. Holding the keys
+    // lets `renderData` re-resolve them the moment the rows land.
+    this.#wantedKeys = keys.length ? keys.map(String) : null;
+    this.#resolveSelection();
     // The boxes are stamped from #selected on every render, so a rebuild is how
     // the ticks are written — there is one path that sets them, not two.
     this.#renderBody();
     this.#syncSelectAll();
     this.#syncGroupSelects();
+  }
+
+  /**
+   * Turn the remembered keys into the rows they name, against whatever rows the
+   * grid holds NOW.
+   *
+   * Re-run on every populate, because a restored selection may name rows that
+   * had not arrived yet — and because a filter can hide a selected row and show
+   * it again, which should not lose the tick.
+   */
+  #resolveSelection(): void {
+    this.#selected.clear();
+    if (!this.#key || !this.#wantedKeys) return;
+    const key = this.#key;
+    const wanted = new Set(this.#wantedKeys);
+    for (const row of this.#rows) {
+      const value = row[key];
+      if (value != null && wanted.has(String(value))) this.#selected.add(row);
+    }
   }
 
   /** Select nothing. The same as `select([])`, said plainly. */

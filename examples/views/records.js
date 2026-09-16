@@ -225,8 +225,6 @@ export async function init(root) {
       { value: 'renewals', label: 'Renewals this quarter' },
     ]),
   });
-  header?.setAttribute('data-heading', 'Customers');
-  header?.setAttribute('data-icon', 'fa-solid fa-users');
 
   /* Quick-filter chips — status segments with counts, plus two value pickers.
      A chip with `options` shows a caret and opens a menu of real checkbox/radio

@@ -31,8 +31,6 @@ export async function init(root) {
       { label: 'Assistant' },
     ],
   });
-  header?.setAttribute('data-heading', 'Assistant');
-  header?.setAttribute('data-icon', 'fa-solid fa-comments');
 
   // ── Chat wiring ───────────────────────────────────────────
   const thread = root.querySelector('#thread');

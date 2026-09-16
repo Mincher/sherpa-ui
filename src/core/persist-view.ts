@@ -18,6 +18,7 @@
  * filter genuinely belongs to the person rather than to the tab.
  */
 import type { DataSource, ViewState } from './data-source.js';
+import { applyState } from './render-element.js';
 
 export interface PersistOptions {
   /**
@@ -82,6 +83,139 @@ export function persistViewState(
   source.addEventListener('change', save);
 
   return () => source.removeEventListener('change', save);
+}
+
+/**
+ * A whole VIEW DEFINITION — the query AND every component's state.
+ *
+ * A preset shipped with the app, a saved configuration a user made, a deep
+ * link, or what an agent asks for over MCP. All four are this same object;
+ * that is the point of having one shape rather than a storage key per concern.
+ */
+export interface ViewSnapshot {
+  /**
+   * The version of the SHAPE, not of the data.
+   *
+   * A saved view outlives the code that made it. An unrecognised version is
+   * ignored whole rather than half-applied, because a definition applied in
+   * part leaves a screen in a state nobody designed.
+   */
+  v: 1;
+  /** The query — a `DataSource`'s ViewState. Restored via `setState()`. */
+  source?: Record<string, unknown>;
+  /**
+   * Per-element state, keyed by an id the CALLER chooses — the same ids a
+   * `renderView` definition uses, so the two agree.
+   *
+   * Each value is an `ElementNode.state` block: property or method names on
+   * that element, applied through its own public API.
+   */
+  elements?: Record<string, Record<string, unknown>>;
+}
+
+/** What `applyViewSnapshot` could not do — see its return. */
+export interface ApplyReport {
+  /** Element ids named by the snapshot that the caller did not supply. */
+  missingElements: string[];
+  /** Per element, the state keys its API does not expose. */
+  skipped: Record<string, string[]>;
+}
+
+/**
+ * Apply a whole view definition: the query, then each element's state.
+ *
+ * DEGRADES rather than throws. A saved view outlives its code — a component
+ * renamed, a column dropped, a method gone — and one stale key must not stop
+ * the rest being restored. What could not be applied comes back in the report,
+ * so a host can tell the user rather than leave them guessing.
+ *
+ *   const report = applyViewSnapshot(snapshot, { source, elements: { grid } });
+ *   if (report.missingElements.length) … // tell someone
+ *
+ * ORDER MATTERS and is fixed here: the SOURCE first, so the rows a component's
+ * state refers to are on their way, then each element. Within an element,
+ * `applyState` waits for `rendered` — a grid cannot filter a column it does not
+ * have yet.
+ */
+export function applyViewSnapshot(
+  snapshot: ViewSnapshot,
+  targets: {
+    source?: { setState(next: Record<string, unknown>): void };
+    elements?: Record<string, HTMLElement>;
+  },
+): ApplyReport {
+  const report: ApplyReport = { missingElements: [], skipped: {} };
+  if (!snapshot || snapshot.v !== 1) return report;
+
+  if (snapshot.source && targets.source) targets.source.setState(snapshot.source);
+
+  for (const [id, state] of Object.entries(snapshot.elements ?? {})) {
+    const el = targets.elements?.[id];
+    if (!el) {
+      report.missingElements.push(id);
+      continue;
+    }
+    // Deferred, because a component applies its own state after `rendered` —
+    // the report cannot say what a not-yet-rendered element will skip, so it
+    // reports only what it can know now.
+    const skipped = applyState(el, state);
+    if (skipped.length) report.skipped[id] = skipped;
+  }
+
+  return report;
+}
+
+/**
+ * Read the current state BACK into a definition — the other half of applying one.
+ *
+ * A saved view is useless if only a developer can write one. This is what a
+ * "Save this view" button calls, and what an agent calls to describe what it is
+ * looking at.
+ *
+ *   const snapshot = captureView({ source, elements: { grid, chart } });
+ *
+ * WHAT IT READS is named per element, because only the caller knows which of a
+ * component's properties are view state and which are incidental. A grid's
+ * column filters belong in a saved view; its scroll position does not.
+ *
+ *   captureView({ elements: { grid } }, { grid: ['columnClause', 'selectedKeys'] })
+ *
+ * Omit the map and each element contributes nothing — deliberately, because
+ * guessing would put transient state in a saved view and a reader would find
+ * their scroll position restored a week later.
+ */
+export function captureView(
+  targets: {
+    source?: { state: Record<string, unknown> };
+    elements?: Record<string, HTMLElement>;
+  },
+  reads: Record<string, readonly string[]> = {},
+): ViewSnapshot {
+  const snapshot: ViewSnapshot = { v: 1 };
+
+  if (targets.source) snapshot.source = targets.source.state;
+
+  const elements: Record<string, Record<string, unknown>> = {};
+  for (const [id, el] of Object.entries(targets.elements ?? {})) {
+    const keys = reads[id];
+    if (!keys?.length) continue;
+
+    const out: Record<string, unknown> = {};
+    const target = el as unknown as Record<string, unknown>;
+    for (const key of keys) {
+      if (!(key in target)) continue;
+      const value = target[key];
+      // A getter that is a FUNCTION is not readable state — `columnClause` needs
+      // a field argument, so a caller wanting it must name the setter form
+      // instead. Skipping beats storing "[object Function]".
+      if (typeof value === 'function') continue;
+      out[key] = value;
+    }
+    if (Object.keys(out).length) elements[id] = out;
+  }
+
+  if (Object.keys(elements).length) snapshot.elements = elements;
+  return snapshot;
 }
 
 /** Forget a saved view state — what a "reset this view" action does. */

@@ -134,7 +134,6 @@ export async function init(root) {
   // Shared header (lives in index.html). Set a dashboard breadcrumb + filters.
   const header = document.querySelector('sherpa-app-shell sherpa-app-header');
   header?.populate(headerConfig);
-  header?.setAttribute('data-heading', 'Dashboard');
   header?.setAttribute('data-notifications', '4');
 
   // Metric tiles.

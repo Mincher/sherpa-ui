@@ -376,9 +376,15 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * The single entry point for data. Waits for the first render, then hands the
    * payload to renderData(). Idempotent to call before render — it defers.
+   *
+   * Returns a promise that settles once renderData() HAS RUN. `rendered` only
+   * says the shadow tree exists; populate() chains onto it, so awaiting
+   * `rendered` can resolve BEFORE the data is in the DOM. A caller that reads
+   * back what it just populated must await this, not `rendered`. Fire-and-forget
+   * callers can keep ignoring it.
    */
-  populate(data: unknown): void {
-    void this.rendered.then(() => this.renderData(data));
+  populate(data: unknown): Promise<void> {
+    return this.rendered.then(() => this.renderData(data));
   }
 
   /** Override to render a data payload. Default is a no-op (attribute-only components). */

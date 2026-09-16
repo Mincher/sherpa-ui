@@ -49,7 +49,7 @@ export function installTokens(): void {
 }
 
 export { SherpaElement } from './core/sherpa-element.js';
-export { renderElement, type ElementNode } from './core/render-element.js';
+export { renderElement, applyState, type ElementNode } from './core/render-element.js';
 export {
   renderView,
   StateStore,
@@ -101,7 +101,10 @@ export {
 } from './core/data-source.js';
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
-export { persistViewState, clearViewState, type PersistOptions } from './core/persist-view.js';
+export {
+  persistViewState, clearViewState, applyViewSnapshot, captureView,
+  type PersistOptions, type ViewSnapshot, type ApplyReport,
+} from './core/persist-view.js';
 export {
   EventStore,
   SocketStore,

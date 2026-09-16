@@ -2923,11 +2923,11 @@ why the answer must not be a per-concern storage key.
 
 | Step | Work | Why here |
 |---|---|---|
-| **D1** | `state` on `ElementNode`, applied through each component's public methods after build | the missing half of a view definition. Everything else follows from it |
-| **D2** | `source` on a view definition, applied via `setState()` | trivial — `ViewState` already serialises and `setState()` already exists |
-| **D3** | `captureView(view)` — read the current state BACK into a definition | a saved view is useless if only a developer can write one. The parity rule again: every setter needs its getter |
+| **D1** ✅ | `state` on `ElementNode`, applied through each component's public methods after build | **DONE 2026-09-16.** Plus `applyState(el, state)` exported, so a definition can reach a LIVE screen and not only one being built. A method is called (an array is its argument list), an accessor assigned; unknown keys are returned as skipped |
+| **D2** ✅ | `source` on a view definition, applied via `setState()` | **DONE 2026-09-16** as `applyViewSnapshot(snapshot, targets)` — source first, then each element, because a component's state refers to rows the query brings |
+| **D3** ✅ | `captureView(targets, reads)` — read the current state BACK into a definition | **DONE 2026-09-16.** What to read is NAMED per element rather than guessed: only the caller knows which properties are view state and which are incidental, and guessing would put a scroll position in a saved view |
 | **D4** | Replace S11's two hand-rolled keys with one definition | proves it on the screen that motivated it, and deletes the duplication S11 introduced |
-| **D5** | Degrade + version: apply what fits, report what did not | a saved view outlives the code that made it |
+| **D5** ✅ | Degrade + version: apply what fits, report what did not | **DONE 2026-09-16.** A gone element and a gone method are REPORTED (`missingElements`, `skipped`), never thrown. An unrecognised `v` is ignored whole rather than half-applied — a definition applied in part leaves a screen nobody designed |
 
 **D1 is blocked on parity, not on itself.** A definition can only set what a
 component exposes, so the P-steps are its prerequisite — P2 (selection) first,

@@ -722,3 +722,122 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
   expect(r.collapsed.railWidth).toBe(40);
   expect(r.collapsed.centreOffset).toBe(0);
 });
+
+/* ── The selection carries what the row SHOWS ─────────────────────────────
+   An app header that mirrors the current view must not keep its own copy of the
+   nav config: two copies of one string is exactly how a renamed row ends up with
+   a stale title and nothing to catch it. So the rail reports its label and icon,
+   and can be asked for them. */
+
+test('nav-select carries the row label and icon, and entry() reads them back', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate: (d: unknown) => Promise<void>;
+      entry: (id: string) => unknown;
+      activeEntry: unknown;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    // PINNED so the rows are laid out and clickable — the 40px collapsed rail
+    // hides labels and children.
+    nav.dataset['navState'] = 'pinned';
+    await nav.populate({
+      quickItems: [],
+      sections: [{ label: 'Views', items: [
+        { id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' },
+      ] }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const detail: unknown[] = [];
+    nav.addEventListener('nav-select', (e) => detail.push((e as CustomEvent).detail));
+    const row = [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')]
+      .find((x) => x.dataset['id'] === 'records')!;
+    row.querySelector<HTMLElement>('sherpa-nav-item')!
+      .dispatchEvent(new CustomEvent('item-click', { bubbles: true, composed: true }));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return { detail: detail[0], entry: nav.entry('records'), active: nav.activeEntry };
+  });
+
+  expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+  // entry() reads the STAMPED row, so it agrees with what is on screen.
+  expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+  // activeEntry follows data-active-id, which the click just set.
+  expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+});
+
+test('a row with NO icon reports none, so a mirror can clear its own', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      populate: (d: unknown) => Promise<void>;
+      entry: (id: string) => { icon?: string } | null;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    nav.dataset['navState'] = 'pinned';
+    // A CHILD row never carries an icon — the design tells it apart by its indent.
+    await nav.populate({
+      quickItems: [],
+      sections: [{ items: [
+        { id: 'reports', label: 'Reports', icon: 'fa-solid fa-chart-pie', expanded: true,
+          children: [{ id: 'monthly', label: 'Monthly rollup' }] },
+      ] }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const detail: { icon?: string }[] = [];
+    nav.addEventListener('nav-select', (e) => detail.push((e as CustomEvent).detail));
+    const row = [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')]
+      .find((x) => x.dataset['id'] === 'monthly')!;
+    row.querySelector<HTMLElement>('sherpa-nav-item')!
+      .dispatchEvent(new CustomEvent('item-click', { bubbles: true, composed: true }));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return { detail: detail[0], entry: nav.entry('monthly') };
+  });
+
+  expect(r.detail).toEqual({ id: 'monthly', label: 'Monthly rollup', icon: undefined });
+  // UNDEFINED, not an empty string: a mirror must be able to tell "no icon" from
+  // "an icon whose value is blank", because only the first means hide it.
+  expect(r.entry?.icon).toBeUndefined();
+});
+
+test('setting state to settings swaps the section list, and announces it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      populate: (d: unknown) => Promise<void>;
+      state: string;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.populate({
+      product: { name: 'N-central' },
+      quickItems: [{ id: 'home', label: 'Home', icon: 'fa-solid fa-house' }],
+      sections: [{ label: 'Views', items: [{ id: 'records', label: 'Records' }] }],
+      settingsSections: [{ label: 'Account', items: [{ id: 'prefs', label: 'Preferences' }] }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const ids = () => [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')]
+      .map((x) => x.dataset['id']);
+
+    const before = ids();
+    const announced: string[] = [];
+    nav.addEventListener('nav-state-change', (e) => announced.push((e as CustomEvent).detail.state));
+
+    // The PUBLIC setter — the route a host app takes. It used to write the
+    // attribute and nothing else, so neither the swap nor the event happened.
+    nav.state = 'settings';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const inSettings = ids();
+
+    nav.state = 'collapsed';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return { before, inSettings, after: ids(), announced };
+  });
+
+  expect(r.before).toEqual(['home', 'records']);
+  // Settings is a different PLACE: its own pages, and no quick items at all.
+  expect(r.inSettings).toEqual(['prefs']);
+  // …and leaving it restores the product tree, quick items included.
+  expect(r.after).toEqual(['home', 'records']);
+  expect(r.announced).toEqual(['settings', 'collapsed']);
+});
