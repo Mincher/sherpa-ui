@@ -333,3 +333,133 @@ test('a definition DEGRADES: a gone element and a gone method are reported, not 
   // The future version did nothing at all, and said nothing was missing.
   expect(r.future).toEqual({ missingElements: [], skipped: {} });
 });
+
+/**
+ * `viewOptions` + `onViewPicked` — a saved-view LIBRARY, wired once.
+ *
+ * Both example pages wrote the same four things by hand: chip options derived
+ * from the view set, a listener reading `detail.values.view[0]`, an apply, and
+ * a warn when a stale definition could not be fully restored. Four small pieces
+ * of one idea, copied — and a third copy is where a vocabulary starts to drift.
+ */
+test('a view library derives its own chip options', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { viewOptions } = await import('/dist/index.js');
+    const VIEWS = {
+      all: { label: 'All customers', snapshot: { v: 1 } },
+      risk: { label: 'At risk', snapshot: { v: 1 } },
+    };
+    return {
+      // Defaults to the FIRST view: a set with nothing selected leaves the chip
+      // blank and a reader looking at data no view claims.
+      def: viewOptions(VIEWS),
+      named: viewOptions(VIEWS, 'risk'),
+    };
+  });
+
+  expect(r.def).toEqual([
+    { value: 'all', label: 'All customers', selected: true },
+    { value: 'risk', label: 'At risk', selected: false },
+  ]);
+  expect(r.named[1]!.selected).toBe(true);
+  expect(r.named[0]!.selected).toBe(false);
+});
+
+test('onViewPicked applies the picked view, and only on a view pick', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+
+    const states: unknown[] = [];
+    const source = { setState: (s: unknown) => states.push(s) };
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { values?: unknown };
+    document.getElementById('root')!.replaceChildren(el);
+
+    const VIEWS = {
+      risk: {
+        label: 'At risk',
+        snapshot: {
+          v: 1,
+          source: { filter: ['health', 'lt', 60] },
+          elements: { chip: { values: ['a', 'b'] } },
+        },
+      },
+    };
+
+    const afters: unknown[] = [];
+    const gaps: unknown[] = [];
+    const host = document.getElementById('root')!;
+    const off = onViewPicked(host, VIEWS, { source, elements: { chip: el } }, {
+      after: (pick) => afters.push(pick.id),
+      onIncomplete: (pick) => gaps.push(pick.report),
+    });
+
+    const fire = (detail: unknown) => host.dispatchEvent(
+      new CustomEvent('quick-filter-change', { detail, bubbles: true }),
+    );
+
+    // A change naming NO view — the other chips on a view bar fire this too.
+    fire({ values: { region: ['emea'] } });
+    const afterOther = { states: states.length, afters: afters.length };
+
+    // A view that is not in the library. A saved link outlives a deleted view.
+    fire({ values: { view: ['gone'] } });
+    const afterUnknown = { states: states.length, afters: afters.length };
+
+    fire({ values: { view: ['risk'] } });
+    const afterPick = { states: [...states], afters: [...afters] };
+
+    // UNSUBSCRIBES, like bind() — a view leaving the DOM stops listening.
+    off();
+    fire({ values: { view: ['risk'] } });
+    const afterOff = { states: states.length };
+
+    return { afterOther, afterUnknown, afterPick, afterOff, gaps };
+  });
+
+  // Silence unless a VIEW was named, and named one that exists.
+  expect(r.afterOther).toEqual({ states: 0, afters: 0 });
+  expect(r.afterUnknown).toEqual({ states: 0, afters: 0 });
+
+  // The query goes first, so rows are on their way before anything reads them.
+  expect(r.afterPick.states).toEqual([{ filter: ['health', 'lt', 60] }]);
+  expect(r.afterPick.afters).toEqual(['risk']);
+
+  // The element got its state through its own API, so nothing was skipped.
+  expect(r.gaps).toEqual([]);
+
+  expect(r.afterOff.states).toBe(1);
+});
+
+test('onViewPicked REPORTS a stale definition instead of throwing', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+    const el = document.createElement('sherpa-quick-filter');
+    host.replaceChildren(el);
+
+    const gaps: { missing: string[]; skipped: Record<string, string[]> }[] = [];
+    onViewPicked(host, {
+      old: {
+        label: 'Made last year',
+        snapshot: {
+          v: 1,
+          // A component that has since been renamed, and a method that is gone.
+          elements: { chip: { noSuchMethod: [1] }, vanished: { values: ['x'] } },
+        },
+      },
+    }, { elements: { chip: el } }, {
+      onIncomplete: (p) => gaps.push({
+        missing: p.report.missingElements, skipped: p.report.skipped,
+      }),
+    });
+
+    host.dispatchEvent(new CustomEvent('quick-filter-change', {
+      detail: { values: { view: ['old'] } }, bubbles: true,
+    }));
+    return gaps;
+  });
+
+  // A saved view outlives its code. Both gaps are named, nothing thrown, and
+  // whatever COULD be applied still was.
+  expect(r).toEqual([{ missing: ['vanished'], skipped: { chip: ['noSuchMethod'] } }]);
+});

@@ -81,12 +81,3 @@ export const RECORDS_VIEWS = {
     },
   },
 };
-
-/** The View chip's options, derived so the labels cannot drift from the views. */
-export function recordsViewOptions(currentId = 'all') {
-  return Object.entries(RECORDS_VIEWS).map(([value, v]) => ({
-    value,
-    label: v.label,
-    selected: value === currentId,
-  }));
-}

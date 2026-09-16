@@ -17,9 +17,9 @@
  * that no longer fits on one screen.
  */
 import {
-  ArrayStore, DataSource, SherpaToast, persistView, applyViewSnapshot,
+  ArrayStore, DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
 } from '../../dist/index.js';
-import { RECORDS_VIEWS, recordsViewOptions } from './records-views.js';
+import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
@@ -229,7 +229,7 @@ export async function init(root) {
     // inside that. See global-filters.js.
     // DERIVED from the view definitions, so a label cannot drift from the view
     // it names. Each option's value is a key into RECORDS_VIEWS.
-    filters: globalFilters(recordsViewOptions('all')),
+    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all')),
   });
 
   /* Quick-filter chips — status segments with counts, plus two value pickers.
@@ -497,45 +497,35 @@ export async function init(root) {
      The same call a user's saved view would take, and the same one an agent
      would make over MCP. That is the point of one shape: a preset, a saved
      view and a shared link are not three features. */
-  const applyView = (id) => {
-    const view = RECORDS_VIEWS[id];
-    if (!view) return;
+  /* ONE CALL. `onViewPicked` reads the View chip's id, applies that snapshot,
+     and reports what a stale definition could not restore — the same call the
+     dashboard makes, because picking a saved view is not this page's idea.
 
-    /* The grid's column clauses are applied by the snapshot; this view's own
-       map has to agree, because the QUERY is composed here rather than by the
-       grid. Cleared first — a view that names no column filters means none,
-       not "keep whatever the last view had". */
-    columnClauses.clear();
+     `after` is the half only this page knows: the QUERY here is composed from
+     named parts, so the view's own clause has to be re-contributed and the
+     grid's column clauses read back. */
+  unbinds.push(onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
+    after: ({ view }) => {
+      /* AFTER the snapshot, not before. `setState` treats a restored filter as
+         the WHOLE query and clears the named parts with it — right for a host
+         that does not compose, wrong here. So the view's own clause goes back
+         under its own key. The order is the whole subtlety. */
+      source.contribute('view', view.snapshot.source?.filter);
 
-    const report = applyViewSnapshot(view.snapshot, { source, elements: { grid } });
-
-    /* AFTER the snapshot, not before. `setState` treats a restored filter as
-       the WHOLE query and clears the named parts with it — right for a host
-       that does not compose, wrong here. So the view's own clause is
-       re-contributed under its own key, and the chips and columns re-added
-       below. The order is the whole subtlety. */
-    source.contribute('view', view.snapshot.source?.filter);
-    if (report.missingElements.length || Object.keys(report.skipped).length) {
-      // A definition that could not be fully applied is worth saying out loud
-      // rather than leaving the reader to wonder why half the screen moved.
-      console.warn('view applied with gaps', report);
-    }
-
-    /* Read the grid's clauses back into the 'columns' part. The snapshot set
-       them ON THE GRID; the source still has to be told. */
-    queueMicrotask(() => {
-      for (const col of columns) {
-        const clause = grid.columnClause(col.field);
-        if (clause) columnClauses.set(col.field, clause);
-      }
-      pushColumns();
-    });
-  };
-
-  header?.addEventListener('quick-filter-change', (e) => {
-    const picked = e.detail?.values?.view?.[0];
-    if (picked) applyView(picked);
-  });
+      /* Read the grid's clauses back into the 'columns' part. The snapshot set
+         them ON THE GRID; the source still has to be told. Cleared first — a
+         view that names no column filters means none, not "keep the last
+         view's". */
+      columnClauses.clear();
+      queueMicrotask(() => {
+        for (const col of columns) {
+          const clause = grid.columnClause(col.field);
+          if (clause) columnClauses.set(col.field, clause);
+        }
+        pushColumns();
+      });
+    },
+  }));
 
   /* The view's OWN map has to agree with the grid after a restore. The snapshot
      put the clauses back into the GRID; this reads them out again so the

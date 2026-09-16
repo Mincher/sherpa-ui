@@ -7,9 +7,9 @@
  * own content + wires a couple of demo listeners. Behaviour is identical to
  * the old standalone dashboard.html.
  */
-import { ArrayStore, DataSource, applyViewSnapshot } from '../../dist/index.js';
+import { ArrayStore, DataSource, viewOptions, onViewPicked } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
-import { DASHBOARD_VIEWS, DASHBOARD_VIEW_OPTIONS } from './dashboard-views.js';
+import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import {
   alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
 } from './dashboard-data.js';
@@ -37,7 +37,7 @@ export async function init(root) {
     // population this dashboard's charts then work within. See global-filters.js.
     // The options come FROM the views, so a label cannot drift from the view
     // it names — the list and the definitions are one source.
-    filters: globalFilters(DASHBOARD_VIEW_OPTIONS),
+    filters: globalFilters(viewOptions(DASHBOARD_VIEWS)),
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -198,39 +198,16 @@ export async function init(root) {
   // The header's toolbar is data-type="view", so a change here means "show me a
   // different saved arrangement" — not "filter the data".
   //
-  // ONE CALL. `applyViewSnapshot` is the same function the records page uses,
-  // reading the same `ViewSnapshot` shape, because a saved view is one idea and
-  // deserves one implementation. It sets the SOURCE first — so the rows are on
-  // their way before anything reads them — then each named element through its
-  // own public API.
+  // ONE LINE, because picking a saved view is not this page's idea. `onViewPicked`
+  // reads the View chip's id, applies that `ViewSnapshot`, and reports what a
+  // stale definition could not restore. The records page makes the same call.
   //
-  // This page used to hand-apply a `{ filter, chips }` object of its own. It
-  // said the same things in a vocabulary only this file knew, so a deep link, a
-  // stored view or an agent could not have expressed one.
-  header?.addEventListener('quick-filter-change', (e) => {
-    const picked = e.detail.values?.view?.[0];
-    if (!picked) return;
-    const view = DASHBOARD_VIEWS[picked];
-    if (!view) return;
-
-    /* ONE WRITE, EIGHT COMPONENTS. Picking a view narrows the records, and
-       every chart re-summarises what is left: the bars, the donut, the gauge's
-       mean, both line series and the two legends. The header's chips move with
-       them, from the SAME definition, so the bar cannot claim the data is
-       unfiltered while the charts disagree.
-
-       Setting the chips fires no event, so this does not come back round as a
-       second filter. */
-    const report = applyViewSnapshot(view.snapshot, { source, elements: { header } });
-
-    /* A saved view OUTLIVES its code. A renamed component or a dropped method
-       is reported, not thrown — the rest of the view still applies, and the app
-       gets to say what it could not restore rather than leave the reader
-       guessing. The demo logs it; a product would tell someone. */
-    if (report.missingElements.length || Object.keys(report.skipped).length) {
-      console.warn('view applied with gaps', report);
-    }
-  });
+  // ONE WRITE, EIGHT COMPONENTS: the snapshot narrows the records and every
+  // chart re-summarises what is left — bars, donut, the gauge's mean, both line
+  // series and the two legends — while the header's chips move from the SAME
+  // definition, so the bar cannot claim the data is unfiltered while the charts
+  // disagree.
+  unbinds.push(onViewPicked(header, DASHBOARD_VIEWS, { source, elements: { header } }));
 
   // The cluster's own actions, for the example's sake.
   header?.addEventListener('view-save', () => console.log('view-save'));

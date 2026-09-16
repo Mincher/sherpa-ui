@@ -280,3 +280,125 @@ export function clearViewState(name: string, options: PersistOptions = {}): void
     /* storage unavailable */
   }
 }
+
+/* ── Saved views as a LIBRARY ───────────────────────────────────────────
+   A page rarely has one saved view; it has a set, offered in a chip, and
+   picking one applies it. Both example pages wrote that by hand and wrote it
+   the same way — the chip options derived from the set, a listener reading
+   `detail.values.view[0]`, an apply, and a warn when a stale definition could
+   not be fully restored.
+
+   Four small pieces of one idea, copied. The third copy is where a vocabulary
+   starts to drift, so it lives here instead. */
+
+/** One saved view in a set: what it is called, and what it does. */
+export interface SavedView {
+  label: string;
+  snapshot: ViewSnapshot;
+}
+
+/** A page's saved views, keyed by the id its chip option carries. */
+export type ViewLibrary = Record<string, SavedView>;
+
+/** A quick-filter option, as `populate()` takes it. */
+export interface ViewOption {
+  value: string;
+  label: string;
+  selected?: boolean;
+}
+
+/**
+ * The View chip's options, DERIVED from the views themselves.
+ *
+ * A hand-written option list is a second place the label lives, and the two
+ * drift: a view renamed in one file still reads by its old name in the chip.
+ * Deriving them means there is only ever one name.
+ *
+ *   filters: globalFilters(viewOptions(MY_VIEWS, 'all'))
+ *
+ * `currentId` marks which is showing. It defaults to the FIRST view, because a
+ * set with nothing selected leaves the chip blank and a reader looking at data
+ * no view claims.
+ */
+export function viewOptions(views: ViewLibrary, currentId?: string): ViewOption[] {
+  const ids = Object.keys(views);
+  const current = currentId ?? ids[0];
+  return ids.map((value) => ({
+    value,
+    label: views[value]!.label,
+    selected: value === current,
+  }));
+}
+
+/** What `onViewPicked` hands back, so a host can do its own work after. */
+export interface ViewPick {
+  /** The picked view's id — the key in the library. */
+  id: string;
+  /** The view itself. */
+  view: SavedView;
+  /** What could not be applied. Empty when everything landed. */
+  report: ApplyReport;
+}
+
+/**
+ * Wire a View chip to a library: pick one, and the screen reconfigures.
+ *
+ * The listener both example pages wrote by hand, in one place:
+ *
+ *   const off = onViewPicked(header, VIEWS, { source, elements: { grid } });
+ *
+ * READS `detail.values.view[0]`, the View chip's id — the one convention a
+ * view toolbar has. A change naming no view is ignored rather than treated as
+ * "no view", because you are always in some view and the other chips on that
+ * bar fire the same event.
+ *
+ * A stale definition is REPORTED, never thrown: a saved view outlives its code,
+ * and one gone method must not stop the rest being restored. The default is to
+ * warn, which is what both pages did; pass `onIncomplete` to tell the reader
+ * instead, and `after` to do the work only that page knows about — re-composing
+ * a query from named parts, say.
+ *
+ * Returns an unsubscribe, like `bind()`, so a view that leaves the DOM stops
+ * listening. Matching that shape matters more than saving the line: a caller
+ * should not have to remember which of our functions hand back a teardown.
+ */
+export function onViewPicked(
+  host: EventTarget | null | undefined,
+  views: ViewLibrary,
+  targets: {
+    source?: { setState(next: Partial<ViewState>): void };
+    elements?: Record<string, HTMLElement>;
+  },
+  options: {
+    /** Run after a view applies — the page-specific half. */
+    after?: (pick: ViewPick) => void;
+    /** Called instead of the default `console.warn` when something was skipped. */
+    onIncomplete?: (pick: ViewPick) => void;
+  } = {},
+): () => void {
+  if (!host) return () => {};
+
+  const listener = (event: Event): void => {
+    const detail = (event as CustomEvent).detail as
+      { values?: Record<string, readonly string[]> } | undefined;
+    const id = detail?.values?.['view']?.[0];
+    if (!id) return;
+    const view = views[id];
+    if (!view) return;
+
+    const report = applyViewSnapshot(view.snapshot, targets);
+    const pick: ViewPick = { id, view, report };
+
+    options.after?.(pick);
+
+    if (report.missingElements.length || Object.keys(report.skipped).length) {
+      if (options.onIncomplete) options.onIncomplete(pick);
+      // A definition that could not be fully applied is worth saying out loud
+      // rather than leaving a reader to wonder why half the screen moved.
+      else console.warn('view applied with gaps', report);
+    }
+  };
+
+  host.addEventListener('quick-filter-change', listener);
+  return () => host.removeEventListener('quick-filter-change', listener);
+}

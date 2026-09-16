@@ -74,7 +74,3 @@ export const DASHBOARD_VIEWS = {
   },
 };
 
-/** The View chip's options, derived so the labels cannot drift from the views. */
-export const DASHBOARD_VIEW_OPTIONS = Object.entries(DASHBOARD_VIEWS).map(
-  ([value, { label }], i) => (i === 0 ? { value, label, selected: true } : { value, label }),
-);

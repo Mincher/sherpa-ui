@@ -105,7 +105,9 @@ export {
 // a host chooses whether and where its view state persists.
 export {
   persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
+  viewOptions, onViewPicked,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
+  type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
 } from './core/persist-view.js';
 export {
   EventStore,
