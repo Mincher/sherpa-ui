@@ -47,7 +47,9 @@
   pointer-events: auto;
 }
 
-/* Leaving — JS sets data-leaving, waits for the animation, then removes the node. */
+/* Leaving — JS sets data-leaving, waits for `animationend`, then removes the
+   node. The duration lives HERE and nowhere else: JS listens for the event
+   rather than holding a matching number. */
 :host([data-leaving]) {
   animation: sherpa-toast-out 160ms ease-in both;
   pointer-events: none;

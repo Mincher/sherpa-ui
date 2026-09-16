@@ -33,8 +33,18 @@ export interface ToastOptions {
   action?: string;
 }
 
-/** How long the leave animation runs — keep in step with sherpa-toast-out. */
-const LEAVE_MS = 160;
+/**
+ * A SAFETY NET for the leave animation, not its duration.
+ *
+ * The removal waits for `animationend`, so CSS owns the timing and JS never
+ * needs to know it. This only covers the case where the animation never runs
+ * at all — `display: none`, a reduced-motion setting that cancels it, a
+ * browser that skips animations on a hidden tab — where waiting for an event
+ * that will not fire would leave the node in the DOM forever.
+ *
+ * Generous on purpose: it must never beat a real animation to the finish.
+ */
+const LEAVE_FALLBACK_MS = 1000;
 /** The default auto-dismiss delay. */
 const DEFAULT_DURATION = 5000;
 
@@ -90,7 +100,21 @@ export class SherpaToast extends SherpaElement {
     if (this.hasAttribute('data-leaving')) return; // already on its way out
     this.emit('toast-dismiss');
     this.toggleAttribute('data-leaving', true);
-    setTimeout(() => this.#removeAndTidy(), LEAVE_MS);
+
+    // CSS OWNS THE DURATION. This used to be `setTimeout(…, LEAVE_MS)` with a
+    // 160 that had to be kept in step with `sherpa-toast-out` by hand — two
+    // copies of one number, and a race if either moved. `animationend` is the
+    // platform's own answer: the animation says when it is done.
+    //
+    // `once`, and a fallback in case the animation never runs at all.
+    let done = false;
+    const finish = (): void => {
+      if (done) return;
+      done = true;
+      this.#removeAndTidy();
+    };
+    this.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, LEAVE_FALLBACK_MS);
   }
 
   /** Remove the toast, and the shared stack too once it is empty. */

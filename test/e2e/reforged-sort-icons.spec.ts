@@ -46,24 +46,32 @@ test('a sortable header cycles none → asc → desc, each a different painted g
     await document.fonts.ready;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
+    // The sort control is an icon-only <sherpa-quick-filter> now, so the glyph
+    // is TWO shadow roots down: the chip writes its data-icon-start into its
+    // own `.caret-icon`, which holds the real <i>. Reading the chip's attribute
+    // alone would not prove the glyph paints, which is the whole point here.
     const read = () => [...el.shadowRoot.querySelectorAll('.head-cell')].map((th) => {
       const cell = th as HTMLElement;
-      const i = cell.querySelector('.sort-icon') as HTMLElement;
-      const before = getComputedStyle(i, '::before');
+      const chip = cell.querySelector('.head-sort') as HTMLElement;
+      const i = chip.shadowRoot!.querySelector('.caret-icon i') as HTMLElement | null;
+      const before = i ? getComputedStyle(i, '::before') : null;
       return {
         field: cell.dataset['field'],
         sortable: cell.dataset['sortable'],
-        cls: i.className,
+        cls: chip.dataset['iconStart'] ?? '',
         // `content: none` means NO RULE MATCHED — the class is absent or not in
         // this font. A working glyph reports "" (a private-use codepoint), so
         // testing for an empty string would flag every real icon as broken.
-        paints: before.content !== 'none',
-        w: Math.round(i.getBoundingClientRect().width),
+        paints: !!before && before.content !== 'none',
+        // An UNSUPPORTED column hides the whole chip, so its box is zero.
+        w: Math.round(chip.getBoundingClientRect().width),
       };
     });
 
     const click = async (field: string) => {
-      (el.shadowRoot.querySelector(`.head-cell[data-field="${field}"] .head-btn`) as HTMLElement).click();
+      // Click the SORT CHIP itself — it is the control now, not the label.
+      const chip = el.shadowRoot.querySelector(`.head-cell[data-field="${field}"] .head-sort`) as HTMLElement;
+      (chip.shadowRoot!.querySelector('.caret') as HTMLElement).click();
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
 
@@ -100,29 +108,62 @@ test('a sortable header cycles none → asc → desc, each a different painted g
   // A column that is not the current sort stays on sort-none while another sorts.
   expect(other(r.asc).cls).toContain('fa-sort');
 
-  // A NON-sortable column carries no glyph AND no box — an empty 14px square
+  // A NON-sortable column carries no control AND no box — an empty square
   // would hold its label short of every sortable column's and the headings
   // would not line up.
-  expect(fixed(r.asc).paints).toBe(false);
   expect(fixed(r.asc).w).toBe(0);
 });
 
-test('the grid and the toolbar have not drifted to different glyphs', async ({ page }) => {
-  const r = await page.evaluate(() => {
+test('the grid and the toolbar read ONE glyph map, not two that match', async ({ page }) => {
+  // This used to assert the grid's map against four hardcoded strings — which
+  // could not catch drift at all, because it never read the toolbar's copy.
+  // There is now one map in core/icons.ts and both components import it, so the
+  // real assertion is IDENTITY: the same object, not two that happen to agree.
+  const r = await page.evaluate(async () => {
+    const { ORGANISE_ICONS } = await import('/dist/core/icons.js') as {
+      ORGANISE_ICONS: Record<string, string>;
+    };
     const grid = customElements.get('sherpa-data-grid') as unknown as {
       icons?: Record<string, string>;
     };
-    return { grid: grid?.icons ?? null };
+
+    // Render one of each and read the glyph each actually PAINTS. A shared
+    // import proves the source; this proves what reached the screen.
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const g = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    const t = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; organise(d: unknown): void;
+    };
+    root.append(g, t);
+    await g.rendered;
+    await t.rendered;
+    g.populate({ columns: [{ field: 'name', header: 'Name' }], rows: [{ name: 'a' }] });
+    t.organise({ sort: [{ field: 'name', label: 'Name' }] });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const gridGlyph = (g.shadowRoot!
+      .querySelector('.head-cell[data-field="name"] .head-sort') as HTMLElement)
+      .dataset['iconStart'];
+    const toolbarGlyph = (t.shadowRoot!
+      .querySelector('.organise-chip[data-id="sort"]') as HTMLElement)
+      .getAttribute('data-icon-start');
+
+    return {
+      shared: ORGANISE_ICONS,
+      gridMapIsShared: grid?.icons === ORGANISE_ICONS,
+      gridGlyph,
+      toolbarGlyph,
+    };
   });
 
-  // The map is the contract. If these four move, the toolbar's copy must move
-  // with them — they are two views of one state, and the reason the map exists
-  // at all is that a sort arrow in a header and a sort chip in a toolbar must
-  // never disagree about what "descending" looks like.
-  expect(r.grid).toEqual({
-    group: 'fa-solid fa-layer-group',
-    sortNone: 'fa-solid fa-sort',
-    sortAsc: 'fa-solid fa-arrow-up-wide-short',
-    sortDesc: 'fa-solid fa-arrow-down-wide-short',
-  });
+  // ONE map, imported — not two copies kept in step by hand.
+  expect(r.gridMapIsShared).toBe(true);
+
+  // Both draw the SAME resting glyph, read off the elements themselves.
+  expect(r.gridGlyph).toBe(r.shared['sortNone']);
+  expect(r.toolbarGlyph).toBe(r.shared['sortNone']);
+  expect(r.gridGlyph).toBe(r.toolbarGlyph);
 });

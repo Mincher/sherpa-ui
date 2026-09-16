@@ -38,9 +38,53 @@ export interface SortSpec {
  */
 export type FilterOp =
   | 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'
-  | 'contains' | 'startswith' | 'endswith'
+  | 'contains' | 'notcontains' | 'startswith' | 'endswith'
   | 'in' | 'notin'
   | 'between';
+
+/**
+ * How each operator READS to a person.
+ *
+ * Beside `FilterOp` on purpose: the keys ARE the operators, so a control can
+ * build its picker from this map and whatever it reports back is already a
+ * clause the store understands. No translation table exists to drift.
+ *
+ * Every query-building surface shares it — the data grid's column menu today,
+ * a Filter Panel later. A second copy anywhere is a second vocabulary.
+ */
+export const OP_LABELS: Record<FilterOp, string> = {
+  eq: 'Equals',
+  ne: 'Does not equal',
+  lt: 'Less than',
+  lte: 'At most',
+  gt: 'Greater than',
+  gte: 'At least',
+  contains: 'Contains',
+  notcontains: 'Does not contain',
+  startswith: 'Starts with',
+  endswith: 'Ends with',
+  in: 'Is one of',
+  notin: 'Is not one of',
+  between: 'Between',
+};
+
+/**
+ * The operators each COLUMN TYPE can sensibly answer.
+ *
+ * DevExtreme's binary operations, split by what the question means. Offering
+ * "greater than" on a name column invites a comparison the reader cannot
+ * reason about; offering "starts with" on a spend column is not a question at
+ * all.
+ *
+ * `between` is absent from both: it is the RANGE mode, because a span needs two
+ * inputs and a single condition list cannot grow one.
+ */
+export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
+  text: ['contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne'],
+  number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
+  // A date is answered by clicking a calendar, so it offers no operator list.
+  date: [],
+};
 
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];
@@ -175,6 +219,32 @@ export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[
 
 /* ── Filtering ─────────────────────────────────────────────────────────── */
 
+/**
+ * Every FIELD one filter touches, in the order it first appears.
+ *
+ * A filter is a tree, so a bound component cannot just read `filter[0]` to find
+ * out which of its columns are being narrowed. This flattens it. Used to tell
+ * the grid which headers to mark active — the column doing something to the
+ * view has to say so, and only the source knows what the filter is.
+ */
+export function filterFields(filter: Filter | undefined): string[] {
+  const out: string[] = [];
+  const walk = (f: Filter | undefined): void => {
+    if (!f) return;
+    const [head, ...rest] = f;
+    if (head === 'and' || head === 'or') {
+      (rest as Filter[]).forEach(walk);
+      return;
+    }
+    const [field] = f as FilterClause;
+    // A field can appear in more than one clause (a range is two), and the
+    // header only needs to know THAT it is filtered, not how many times.
+    if (typeof field === 'string' && !out.includes(field)) out.push(field);
+  };
+  walk(filter);
+  return out;
+}
+
 /** Does one row satisfy one filter? Groups recurse. */
 export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
   if (!filter) return true;
@@ -200,6 +270,8 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
       return actual != null && compareValues(actual, value) >= 0;
     case 'contains':
       return text(actual).includes(text(value));
+    case 'notcontains':
+      return !text(actual).includes(text(value));
     case 'startswith':
       return text(actual).startsWith(text(value));
     case 'endswith':

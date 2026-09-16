@@ -44,7 +44,7 @@
 }
 
 /* A slotted control keeps its OWN width. A flex item shrinks below its content
-   by default, and a "Remove filter" button whose natural width is 125px was
+   by default, and a Remove button whose natural width is 125px was
    being squeezed to 93 in a 240px menu — the label truncated and the row still
    claimed to fit. The footer is an actions row: the actions are the content, so
    the row grows and the container around it grows with it.
