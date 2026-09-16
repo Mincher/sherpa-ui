@@ -2752,7 +2752,7 @@ read must fall back to the default rather than break the page.
 
 | Step | Work | Why here |
 |---|---|---|
-| **S11** | Persist a `DataSource`'s `ViewState` under a session pointer; restore on load | an accidental refresh currently loses every filter, sort and page. `state` / `setState` already exist and `ViewState` is already JSON — this is wiring |
+| **S11** ✅ | Persist a `DataSource`'s `ViewState`; restore on load | **DONE 2026-09-16.** `persistViewState(source, name)` in `core/persist-view.ts` — `sessionStorage` by default, so two tabs keep their own filters. A HELPER, not part of `DataSource`: where a state is kept is the host's call. NOTE: `setState` did NOT already exist, contrary to this plan — it was built as part of the step |
 
 **S4–S6 are a tidy-up.** S11 is the one a user would notice.
 
@@ -2817,7 +2817,7 @@ is structural rather than a convenience.
 
 | Step | Work | Why here |
 |---|---|---|
-| **P1** | `setColumnFilter(field, clause)` on the data grid | the clearest gap: a column filter can ONLY be set through its menu, so a saved view cannot restore one and an agent cannot apply one |
+| **P1** ✅ | `setColumnFilter(field, clause)` on the data grid | **DONE 2026-09-16, and the prediction landed exactly.** Building S11 hit it: a reload restored the ROWS and lit the heading, but left the menu empty — a lit column that lies about why. Takes what `column-filter-change` reports, so the round trip closes |
 | **P2** | Selection: `select(ids)` / `clearSelection()` | "select all matching" has nowhere to go today |
 | **P3** | A parity AUDIT across all 53 components | the two gaps above were found by writing one table; the rest of the table has not been written |
 | **P4** | Parity as a spec field | `.component.yaml` records events and props; it should record which interactions have a programmatic equal, so drift is visible |

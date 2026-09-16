@@ -16,7 +16,7 @@
  * internal scroll inside a fixed-height panel, and grouping across a row count
  * that no longer fits on one screen.
  */
-import { ArrayStore, DataSource, SherpaToast } from '../../dist/index.js';
+import { ArrayStore, DataSource, SherpaToast, persistViewState } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
@@ -434,6 +434,7 @@ export async function init(root) {
        has the last word, which includes both halves. */
     qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
     reapplyFilter();
+    saveColumns();
   });
 
   /* Taking the chip OFF the bar has to reach back and clear the column, or the
@@ -451,6 +452,35 @@ export async function init(root) {
   // The GRID does the grouping — data-group-field makes it drop that column and
   // draw a collapsible group row per value. The source writes that attribute on
   // every bound component, so the grid gets it without this view wiring it.
+
+  /* REMEMBER THE VIEW ACROSS A RELOAD.
+
+     An accidental refresh used to throw away every filter, sort and page the
+     reader had set, and they started again. sessionStorage, so two tabs on this
+     screen keep their own filters — which is a feature, not a bug.
+
+     It restores BEFORE the first load, so the source queries once with the
+     remembered state rather than loading empty and loading again. */
+  unbinds.push(persistViewState(source, 'records'));
+
+  /* The COLUMN clauses are the grid's, not the source's, so they need their own
+     line. Without this a reload restored the ROWS but not the controls: the
+     heading stayed lit with an empty menu and no match marks, which reads as
+     broken — the rows are right and the control lies about why. */
+  const COLUMN_KEY = 'sherpa:view:records:columns';
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(COLUMN_KEY) ?? '{}');
+    for (const [field, clause] of Object.entries(saved)) {
+      columnClauses.set(field, clause);
+      grid.setColumnFilter(field, clause);
+    }
+  } catch { /* storage unavailable, or not JSON — start clean */ }
+
+  const saveColumns = () => {
+    try {
+      sessionStorage.setItem(COLUMN_KEY, JSON.stringify(Object.fromEntries(columnClauses)));
+    } catch { /* storage unavailable */ }
+  };
 
   await source.load();
 

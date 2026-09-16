@@ -702,3 +702,68 @@ test('a toolbar filter lights the matching COLUMN HEADERS in a bound grid', asyn
   expect(r.cleared.lit).toEqual(['seats']);
   expect(r.cleared.attr).toBe(null);
 });
+
+test('source: a view state survives a page reload, per TAB', async ({ page }) => {
+  // An accidental refresh threw away every filter, sort and page a person set.
+  // persistViewState is a HELPER rather than a feature of DataSource, because
+  // WHERE a view state is kept is the host's decision.
+  const before = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, persistViewState } = await import('/dist/index.js');
+    const rows = Array.from({ length: 200 }, (_, i) => ({
+      id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
+    }));
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+    persistViewState(source, 'spec');
+    await source.load();
+
+    source.setFilter(['plan', 'eq', 'Pro']);
+    source.setSort('spend', 'desc');
+    source.setPage(3);
+    await new Promise((r) => setTimeout(r, 60));
+
+    return {
+      ids: source.rows.map((r) => r['id']),
+      total: source.total,
+      page: source.state.page,
+      // sessionStorage, NOT localStorage — two tabs filtered differently is a
+      // feature, and localStorage would make them fight.
+      inSession: !!sessionStorage.getItem('sherpa:view:spec'),
+      inLocal: !!localStorage.getItem('sherpa:view:spec'),
+    };
+  });
+
+  // A REAL reload — same tab, fresh document, nothing carried in memory.
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
+
+  const after = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, persistViewState, clearViewState } = await import('/dist/index.js');
+    const rows = Array.from({ length: 200 }, (_, i) => ({
+      id: i, plan: i % 3 ? 'Pro' : 'Free', spend: (i * 7) % 500,
+    }));
+    const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+    persistViewState(source, 'spec');   // restores on the way in
+    await new Promise((r) => setTimeout(r, 80));
+
+    const restored = {
+      ids: source.rows.map((r) => r['id']),
+      total: source.total,
+      page: source.state.page,
+    };
+
+    // …and a reset really forgets.
+    clearViewState('spec');
+    return { ...restored, cleared: !sessionStorage.getItem('sherpa:view:spec') };
+  });
+
+  expect(before.inSession).toBe(true);
+  expect(before.inLocal).toBe(false);
+
+  // The whole view came back — including the PAGE, which is the part a user
+  // notices losing.
+  expect(after.ids).toEqual(before.ids);
+  expect(after.total).toBe(before.total);
+  expect(after.page).toBe(3);
+
+  expect(after.cleared).toBe(true);
+});

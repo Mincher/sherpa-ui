@@ -1818,3 +1818,90 @@ test('a column filter can be SUSPENDED and resumed without losing it', async ({ 
   expect(r.cleared.clause).toBe(null);
   expect(r.cleared.value).toBe('');
 });
+
+test('setColumnFilter restores a column from outside — the round trip a saved view needs', async ({ page }) => {
+  // A value you can READ and not WRITE is half an API. Found by building the
+  // reload-survival feature: the source restored the ROWS, the heading lit from
+  // data-filter-fields, and the menu was empty — a lit column that lies about
+  // why. What `column-filter-change` reports must be handable straight back.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      setColumnFilter(field: string, clause: unknown[] | null): void;
+      columnClause(field: string): unknown[] | null;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'spend', header: 'Spend', type: 'number' },
+      ],
+      rows: [{ name: 'Marcus', spend: 10 }, { name: 'Omar', spend: 50 }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const events: unknown[] = [];
+    el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
+
+    const read = (field: string) => {
+      const th = sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
+      const chip = th.querySelector('.head-filter') as HTMLElement;
+      return {
+        lit: th.dataset['status'] ?? null,
+        op: chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? null,
+        value: chip.querySelector<HTMLInputElement>('.head-filter-value')?.value ?? null,
+        clause: el.columnClause(field),
+        marks: sr.querySelectorAll('.cell mark.match').length,
+      };
+    };
+
+    // A TEXT clause, exactly as column-filter-change would report it.
+    el.setColumnFilter('name', ['name', 'contains', 'ar']);
+    await settle();
+    const text = read('name');
+
+    // A RANGE — `between` carries the two ends.
+    el.setColumnFilter('spend', ['spend', 'between', [10, 50]]);
+    await settle();
+    const range = {
+      lit: (sr.querySelector('.head-cell[data-field="spend"]') as HTMLElement).dataset['status'] ?? null,
+      clause: el.columnClause('spend'),
+    };
+
+    // An EMPTY clause is not a filter — same rule the menu's own commit applies.
+    el.setColumnFilter('name', ['name', 'contains', '']);
+    await settle();
+    const emptied = read('name');
+
+    // …and null clears.
+    el.setColumnFilter('spend', null);
+    await settle();
+    const cleared = el.columnClause('spend');
+
+    return { text, range, emptied, cleared, events: events.length };
+  });
+
+  // The menu holds what was set, the column lights, and the cells mark.
+  expect(r.text.lit).toBe('active');
+  expect(r.text.op).toBe('contains');
+  expect(r.text.value).toBe('ar');
+  expect(r.text.marks).toBe(2);           // "Marcus" and "Omar" both hold "ar"
+  // THE ROUND TRIP: what comes back out is what went in.
+  expect(r.text.clause).toEqual(['name', 'contains', 'ar']);
+
+  expect(r.range.lit).toBe('active');
+  expect(r.range.clause).toEqual(['spend', 'between', [10, 50]]);
+
+  expect(r.emptied.lit).toBe(null);
+  expect(r.emptied.clause).toBe(null);
+  expect(r.cleared).toBe(null);
+
+  // SILENT — the caller is the one who asked, and echoing would make a host
+  // that routes the event back into its query apply the same filter twice.
+  expect(r.events).toBe(0);
+});

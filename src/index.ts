@@ -99,6 +99,9 @@ export {
   type DataSourceOptions,
   type ViewState,
 } from './core/data-source.js';
+// Keeping a view state across a reload — a HELPER, not part of DataSource, so
+// a host chooses whether and where its view state persists.
+export { persistViewState, clearViewState, type PersistOptions } from './core/persist-view.js';
 export {
   EventStore,
   SocketStore,

@@ -364,3 +364,61 @@ test('V7: a WRITE still throws — the read path did not change it', async () =>
   const saved = await store.insert({ cust_id: 7, customer_name: '  Eve  ', total_spend: '12' });
   assert.deepEqual(saved, { id: 7, name: 'Eve', spend: 12, plan: 'free' });
 });
+
+/* ── S11 — restoring a whole view state ─────────────────────────────── */
+
+test('S11: setState restores a whole view in ONE load', async () => {
+  const rows = makeRows(200);
+
+  // A person narrows things down…
+  const before = new DataSource({ store: new ArrayStore(rows, { key: 'id' }), pageSize: 10 });
+  await before.load();
+  before.setFilter(['plan', 'eq', 'Pro']);
+  before.setSort('spend', 'desc');
+  before.setPage(3);
+  await settle();
+
+  const saved = JSON.stringify(before.state);   // what a host would persist
+
+  // …then an accidental reload. A brand new source, nothing shared.
+  const store = new ArrayStore(rows, { key: 'id' });
+  let loads = 0;
+  const real = store.load.bind(store);
+  store.load = (o) => { loads += 1; return real(o); };
+
+  const after = new DataSource({ store, pageSize: 10, autoLoad: false });
+  after.setState(JSON.parse(saved));
+  await settle();
+
+  assert.deepEqual(after.rows, before.rows, 'the same rows, including the PAGE');
+  assert.equal(after.total, before.total);
+  assert.equal(after.state.page, 3, 'page 3, not reset to 1');
+
+  // Restoring six fields must not mean six queries — setState coalesces like
+  // the individual setters do.
+  assert.equal(loads, 1, 'one load for the whole restore');
+});
+
+test('S11: setState MERGES — an unnamed field keeps its value', async () => {
+  const source = new DataSource({
+    store: new ArrayStore(makeRows(60), { key: 'id' }),
+    pageSize: 10,
+  });
+  await source.load();
+  source.setFilter(['plan', 'eq', 'Pro']);
+  await settle();
+
+  // Restoring only a sort must not silently reset the page size to null or
+  // drop the filter — a partial restore is a merge, not a replace.
+  source.setState({ sort: [{ field: 'spend', direction: 'asc' }] });
+  await settle();
+
+  assert.equal(source.state.pageSize, 10, 'page size survived');
+  assert.deepEqual(source.state.filter, ['plan', 'eq', 'Pro'], 'filter survived');
+  assert.equal(source.state.sort[0].field, 'spend', 'and the sort applied');
+
+  // …while an EXPLICIT null clears, which is how a reset is expressed.
+  source.setState({ filter: undefined, group: null });
+  await settle();
+  assert.equal(source.state.filter, undefined, 'an explicit undefined clears');
+});

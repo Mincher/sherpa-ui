@@ -225,7 +225,39 @@ export class DataSource extends EventTarget {
     return structuredClone(this.#state);
   }
 
-  /** The last loaded result. */
+  /**
+   * Restore a whole view state at once — a saved view, a deep link, or what a
+   * reload threw away.
+   *
+   * MERGED, not replaced: a caller restoring a filter and a sort must not
+   * silently reset the page size to null. Every field is optional, and what is
+   * not named keeps the value it had.
+   *
+   * ONE load, whatever was set. The six individual setters coalesce within a
+   * tick (see `#schedule`), and so does this — restoring six fields does not
+   * mean six queries.
+   *
+   * It does NOT persist anything. Where a state is kept, and whether it should
+   * survive a reload at all, is the host's decision — `sessionStorage` per tab,
+   * a URL, a saved-views table on a server. A source that wrote to storage
+   * would make that choice for every app that ever binds one.
+   */
+  setState(next: Partial<ViewState>): void {
+    if ('filter' in next) {
+      if (next.filter) this.#state.filter = next.filter;
+      else delete this.#state.filter;
+    }
+    if (next.sort) this.#state.sort = next.sort;
+    if ('group' in next) this.#state.group = next.group ?? null;
+    if (next.search != null) this.#state.search = next.search;
+    if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
+    // PAGE LAST, and not clamped here: the total it would be clamped against
+    // belongs to the PREVIOUS filter. The load below re-clamps against the new
+    // one, which is the only honest moment to do it.
+    if (next.page != null) this.#state.page = Math.max(1, Math.trunc(next.page) || 1);
+    this.#schedule();
+  }
+
   /**
    * The whole of the last load's answer — rows, total, and anything else the
    * store reported.

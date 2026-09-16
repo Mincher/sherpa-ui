@@ -888,6 +888,59 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
+   * Set one column's filter from OUTSIDE — a saved view, a deep link, an agent.
+   *
+   * The counterpart of `columnClause()`, and the reason that getter exists: a
+   * value you can read and not write is half an API. A reader who filters a
+   * column, reloads the page and finds the column lit with an EMPTY menu has
+   * been shown something broken — the rows are right and the control lies.
+   *
+   *   grid.setColumnFilter('name', ['name', 'contains', 'ana']);
+   *   grid.setColumnFilter('spend', ['spend', 'between', [10, 50]]);
+   *   grid.setColumnFilter('name', null);        // same as clearColumnFilter
+   *
+   * Takes a store FilterClause, which is what `column-filter-change` reports —
+   * so what the grid says happened can be handed straight back to it. That
+   * round trip IS the parity rule: anything a person can do by clicking, a
+   * caller can do by calling, through the same code.
+   *
+   * SILENT, like `clearColumnFilter`: the caller is the one who asked, and
+   * echoing would make a host that routes the event back into its query apply
+   * the same filter twice.
+   */
+  setColumnFilter(field: string, clause: unknown[] | null): void {
+    if (!clause) {
+      this.clearColumnFilter(field);
+      return;
+    }
+
+    const [, op, value] = clause as [string, string, unknown];
+    // `between` is the RANGE shape — its value is the two ends. Everything else
+    // is a single condition with one value.
+    const held: ColumnFilter =
+      op === 'between' && Array.isArray(value)
+        ? { op, value: '', range: true, from: String(value[0] ?? ''), to: String(value[1] ?? '') }
+        : { op, value: String(value ?? '') };
+
+    // Nothing to filter by is not a filter — the same rule the menu's own
+    // commit applies, so a restored empty clause behaves like a cleared one.
+    const empty = held.range ? !held.from || !held.to : !held.value;
+    if (empty) {
+      this.clearColumnFilter(field);
+      return;
+    }
+
+    this.#columnFilters.set(field, held);
+    // The HEADER is rebuilt rather than reached into: #addColumnFilter restores
+    // each menu from #columnFilters, so there is one path that writes a menu
+    // and it is the same one a re-render uses.
+    this.#renderHead();
+    this.#syncColumnFilterStatus();
+    // …and the cells, because a text filter MARKS its matches.
+    this.#renderBody();
+  }
+
+  /**
    * One column's current filter, as a ready FilterClause — or null.
    *
    * A column filter shows on the toolbar as a chip, and a chip's body is a
