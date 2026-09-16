@@ -30,7 +30,7 @@
  * @fires item-click — detail: { label, href }
  * @fires item-expand — detail: { expanded }
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement, markMatch } from '../../core/sherpa-element.js';
 
 /** Counter for the per-row custom-highlight names (see highlight()). */
 let uid = 0;
@@ -189,14 +189,7 @@ export class SherpaNavItem extends SherpaElement {
     const ranges: Range[] = [];
     for (const label of labels) {
       // Rebuild each label as before + <mark> + after (no innerHTML).
-      const mark = document.createElement('mark');
-      mark.className = 'match';
-      mark.textContent = full.slice(at, at + needle.length);
-      label.replaceChildren(
-        document.createTextNode(full.slice(0, at)),
-        mark,
-        document.createTextNode(full.slice(at + needle.length)),
-      );
+      const mark = markMatch(label, full, at, needle.length);
       const text = mark.firstChild;
       if (text) {
         const range = new Range();

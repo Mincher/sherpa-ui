@@ -88,7 +88,7 @@
  *   holds one row; the header cell shows no control, because "select all" is
  *   meaningless where only one can be chosen.
  */
-import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum, clampNum, markMatch } from '../../core/sherpa-element.js';
 // The sort/group glyphs are SHARED with the quick-filter toolbar — see core/icons.
 import { ORGANISE_ICONS } from '../../core/icons.js';
 // ONE sort implementation. The store's `sortRows` is what a DataSource and a
@@ -1254,16 +1254,10 @@ export class SherpaDataGrid extends SherpaElement {
       return;
     }
 
-    const mark = document.createElement('mark');
-    mark.className = 'match';
     // The CELL's own casing, not the needle's — the reader typed "ana" and the
-    // row says "Ana", and the row is the truth.
-    mark.textContent = text.slice(at, at + held.value.length);
-    td.replaceChildren(
-      document.createTextNode(text.slice(0, at)),
-      mark,
-      document.createTextNode(text.slice(at + held.value.length)),
-    );
+    // row says "Ana", and the row is the truth. markMatch slices the haystack
+    // for exactly that reason.
+    markMatch(td, text, at, held.value.length);
   }
 
   // No sticky-offset measurement. The WHOLE <thead> sticks as one block now, so

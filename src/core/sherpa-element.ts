@@ -113,6 +113,36 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
 }
 
 /**
+ * Rebuild `el` as before + `<mark class="match">` + after, around one hit.
+ *
+ * ONE SHAPE for a search highlight. The data grid and nav-item both wrote this
+ * — the grid's own comment says it copied nav-item's — and the five lines were
+ * identical: `createElement('mark')`, `className = 'match'`, then
+ * `replaceChildren(text, mark, text)`.
+ *
+ * TEXT NODES, never innerHTML: a `<mark>` is CONTENT, not structure, and a
+ * label that happens to contain `<` would otherwise be parsed as markup.
+ *
+ * THE MARK TAKES THE HAYSTACK'S CASING, not the needle's — a reader typing
+ * "ana" against a row reading "Ana" sees "Ana" stay itself. That is why this
+ * slices `text` rather than writing the needle back.
+ *
+ * Returns the `<mark>`, because nav-item then wraps it in a `Range` for the
+ * CSS Custom Highlight layer. A caller that just wants the mark drawn ignores it.
+ */
+export function markMatch(el: Element, text: string, at: number, length: number): HTMLElement {
+  const mark = document.createElement('mark');
+  mark.className = 'match';
+  mark.textContent = text.slice(at, at + length);
+  el.replaceChildren(
+    document.createTextNode(text.slice(0, at)),
+    mark,
+    document.createTextNode(text.slice(at + length)),
+  );
+  return mark;
+}
+
+/**
  * Apply the min/max bounds from `opts`, if any.
  *
  * EXPORTED, like `coerceNum`, because six components had written their own
