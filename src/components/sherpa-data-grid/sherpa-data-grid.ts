@@ -12,11 +12,15 @@
  *     typing emits filter-change.
  *
  * A column ACTING on the view — the one being sorted, or one a filter is
- * narrowing — takes the Style `active` mode (data-status="active") on its
- * HEADING. Both are the same kind of thing, so both read the same. The heading
- * carries it because the heading is sticky: the filter box and the 14px sort
- * arrow are both gone by row 40, and the tinted column is not. The filter cell
- * itself never takes it — that row already says what it is doing.
+ * narrowing — is FLAGGED with the Style `active` mode (data-status="active") on
+ * its HEADING. Both are the same kind of thing, so both read the same. The
+ * filter cell itself never takes it — that row already says what it is doing.
+ *
+ * THE FLAG IS NOT A TINT. The component does not paint it: the heading's two
+ * CHIPS each show their own on-state, and a tinted heading behind them was a
+ * second highlight saying the same word. The attribute stays because it is the
+ * system-wide door — a host that wants a column highlight styles it — but this
+ * component's own CSS declines to.
  *
  * data-filter-fields is how a filter set OUTSIDE the grid — a quick-filter
  * toolbar above it — reaches the headers. The grid cannot see that toolbar and
@@ -87,6 +91,11 @@
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 // The sort/group glyphs are SHARED with the quick-filter toolbar — see core/icons.
 import { ORGANISE_ICONS } from '../../core/icons.js';
+// ONE sort implementation. The store's `sortRows` is what a DataSource and a
+// server both use, so a bound grid and an unbound one cannot disagree.
+import {
+  filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
+} from '../../core/store.js';
 // The operator vocabulary is SHARED — every query-building surface reads the
 // same labels and the same per-type lists, so no second vocabulary can appear.
 import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
@@ -529,10 +538,11 @@ export class SherpaDataGrid extends SherpaElement {
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
       const sorted = sortable && col.field === sortField;
       if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
-      // A column that is ORDERING or NARROWING what the user can see takes the
-      // Style `active` mode. Both are the column acting on the view, so both
-      // read the same — one highlight, not two rival ones. The heading is
-      // sticky, so it is what still says so once the user is reading row 40.
+      // A column that is ORDERING or NARROWING what the user can see is flagged
+      // with the Style `active` mode. Both are the column acting on the view, so
+      // both read the same. The grid's own CSS paints nothing from it — the
+      // heading's chips carry the on-state — but the flag is the public door a
+      // host reads and may style.
       if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
 
       // THE SORT GLYPH — a tri-state, from the shared map.
@@ -1310,49 +1320,56 @@ export class SherpaDataGrid extends SherpaElement {
    */
   #filteredRows(): GridRow[] {
     if (!this.#filters.size) return this.#rows;
-    return this.#rows.filter((record) =>
-      [...this.#filters].every(([field, needle]) => {
-        const value = record[field];
-        if (value == null) return false;
-        return String(value).toLowerCase().includes(needle);
-      }),
+
+    // Built as a real FILTER TREE and handed to the store's `filterRows`, so
+    // the secondary header row means exactly what a `contains` clause means
+    // everywhere else. It used to hand-roll the substring match, which is one
+    // more place for "what does contains mean" to drift.
+    //
+    // A blank input never reaches here (`#applyFilter` drops an empty needle),
+    // so no clause matches everything by accident.
+    const clauses: Filter[] = [...this.#filters].map(
+      ([field, needle]) => [field, 'contains', needle] as Filter,
     );
+    const filter: Filter = clauses.length === 1 ? clauses[0]! : (['and', ...clauses] as Filter);
+    return filterRows(this.#rows, filter) as GridRow[];
   }
 
+  /**
+   * Order the rows — through the STORE's `sortRows`, not a compare of its own.
+   *
+   * This held a hand-written comparator that was the weaker of two copies: it
+   * flipped nulls with the direction (a blank belongs at the bottom whichever
+   * way a column runs) and could express only one sort key. The store's version
+   * pins nulls, takes a LIST of specs, and is the same function a `DataSource`
+   * and a server both use — so a bound grid and an unbound one cannot order the
+   * same rows differently.
+   *
+   * The grid still sorts when it is UNBOUND, which is why this is not simply
+   * deleted: a grid handed a plain array is a working table on its own, and
+   * step 15 was about removing the duplicate ALGORITHM, not the capability.
+   *
+   * GROUP FIRST, as a leading spec. That is what lets `#renderBody` find each
+   * group in one pass — rows sharing a group value are adjacent, so a change of
+   * value is exactly a boundary — and it is the same convention `applyOptions`
+   * follows for the same reason.
+   *
+   * Groups run A→Z whatever the sort column does, because a sort orders rows
+   * INSIDE a group rather than the groups themselves. The exception is sorting
+   * BY the grouped column: there the two are one key, so the direction the
+   * reader asked for IS a direction for the groups, and the second spec would
+   * be a no-op on equal keys.
+   */
   #sortRows(rows: GridRow[]): GridRow[] {
     const field = this.dataset['sortField'];
     const group = this.dataset['groupField'];
     if (!field && !group) return rows;
-    const dir = this.dataset['sortDirection'] === 'desc' ? -1 : 1;
+    const direction: SortDirection = this.dataset['sortDirection'] === 'desc' ? 'desc' : 'asc';
 
-    const compare = (a: GridRow, b: GridRow, key: string, direction: number): number => {
-      const av = a[key];
-      const bv = b[key];
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * direction;
-      return String(av).localeCompare(String(bv)) * direction;
-    };
-
-    // Sort the list PASSED IN, not this.#rows — otherwise a filtered list would
-    // be silently replaced by the full one and filtering would appear to do nothing.
-    //
-    // The GROUP key sorts first. That is what lets #renderBody find each group in
-    // one pass: rows sharing a group value are guaranteed adjacent, so a change of
-    // value is exactly a group boundary. The sort column then orders rows WITHIN
-    // their group.
-    //
-    // Groups normally run A→Z whatever the sort column does — the sort orders rows
-    // INSIDE a group, not the groups themselves. The exception is sorting BY the
-    // grouped column: there the two are the same key, so the direction the user
-    // asked for is a direction for the GROUPS, and honouring it is the whole point
-    // of the click. The second compare is then a no-op (equal keys) and is skipped.
-    const groupDir = group && group === field ? dir : 1;
-    return [...rows].sort(
-      (a, b) =>
-        (group ? compare(a, b, group, groupDir) : 0) ||
-        (field && field !== group ? compare(a, b, field, dir) : 0),
-    );
+    const specs: SortSpec[] = [];
+    if (group) specs.push({ field: group, direction: group === field ? direction : 'asc' });
+    if (field && field !== group) specs.push({ field, direction });
+    return sortRows(rows, specs) as GridRow[];
   }
 
   /* ── Interaction ────────────────────────────────────────────────── */
@@ -1814,14 +1831,14 @@ export class SherpaDataGrid extends SherpaElement {
    * Flag (or unflag) one column's HEADING as filtered.
    *
    * The heading only — never the filter cell under it. That row already says
-   * what it is doing: the text is in the box the user just typed into, and a
-   * second highlight on the control that IS the filter says nothing the
-   * heading is not already saying louder.
+   * what it is doing: the text is in the box the user just typed into.
+   *
+   * A FLAG, not a tint: the grid's CSS paints nothing from it, because the
+   * heading's filter chip already shows its own on-state. `data-status` is the
+   * system-wide door for a Style mode, so a host reading the shadow DOM sees
+   * the same attribute it would on any other component — and may style it.
    *
    * Called on every keystroke, so it does not rebuild the header row.
-   *
-   * `data-status` is the system-wide door for a Style mode, so a host reading
-   * the shadow DOM sees the same attribute it would on any other component.
    */
   #markFiltered(field: string, on: boolean): void {
     const head = this.$(`.head-cell[data-field="${CSS.escape(field)}"]`);

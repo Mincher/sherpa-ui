@@ -390,47 +390,26 @@
 }
 /* ── A SORTED or FILTERED column's header — Style mode `active` ──────
  * A sort orders what the grid shows and a filter narrows it. Both are the
- * column ACTING on the view, so both read the same: one highlight, not two
- * rival ones competing down the header row.
+ * column ACTING on the view, and the column says so through its CHIPS: the
+ * filter chip and the sort chip each paint their own on-state, in the heading,
+ * where the user is already looking.
  *
- * It lands on the HEADING because the heading is sticky. The filter box
- * scrolls out of sight the moment the user reads down the table, and the sort
- * glyph is a 14px arrow — neither survives a glance at row 40. The tinted
- * column does.
+ * THE HEADING ITSELF IS NOT TINTED. It was, once — a filled, brand-tinted cell
+ * meant to survive a glance at row 40. With the chips carrying an on-state of
+ * their own that fill became the SECOND thing saying the same word, and two
+ * highlights competing down a header row read as noise, not emphasis. The
+ * quieter of the two goes.
  *
- * `active` is the Style collection's own mode for exactly this — the brand
- * tint the quick-filter toolbar's favourite star uses — so this reuses it
- * rather than inventing a grid-only highlight colour.
+ * The attribute STAYS. `data-status="active"` is still written on every acting
+ * column — it is the system-wide door, so a host that wants its own column
+ * highlight styles the same attribute it would on any other component, and the
+ * grid's own tests and view state read it unchanged. This file simply declines
+ * to paint it.
  *
- * WRITTEN OUT HERE, not left to the [data-status="active"] block in tokens.css:
- * that block is a BARE selector in a document stylesheet, so it matches light
- * DOM only and never a <th> inside this component's shadow root. Setting the
- * attribute alone paints nothing. Feeding the --_status-* properties directly
- * is what makes the cascade work — custom properties DO cross a shadow
- * boundary, so any nested component in the cell picks the same mode up.
- *
- * The HEADING only, never the filter cell under it. That row already says what
- * it is doing — the text is sitting in the box the user typed it into — so a
- * second tint on the control that IS the filter adds nothing.
- *
- * The attribute is the SAME `data-status` the rest of the system uses, so a
- * host that later wants a different mode on a column writes the same door. */
-.head-cell[data-status="active"] {
-  --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
-  --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
-  --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
-
-  background: var(--_status-surface);
-  color: var(--_status-text);
-  /* The rule under the heading takes the mode's border too, so the tinted block
-     reads as one piece rather than a fill with a stray grey line under it. */
-  border-block-end-color: var(--_status-border);
-
-  /* The label takes the active ink with the fill. The two CHIPS do not: each
-     paints itself from its own on-state, and the tint is reset on them so the
-     column's colour stops at the heading. */
-  .head-label { color: var(--_status-text); }
-}
+ * Nothing is declared here on purpose: no rule means the heading keeps the
+ * plain header surface, ink and rule it has when nothing is acting on it. The
+ * --_status-* resets on the chips below stay, because a HOST may still feed
+ * this cell a mode. */
 
 /* ── The column FILTER button ────────────────────────────────────────
  * An icon-only <sherpa-quick-filter>, sitting LEFT of the sort control in the
@@ -471,8 +450,26 @@
 .head-row-inner {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* One step up from the 2xs the label button uses inside itself. The two chips
+     are round and sit shoulder to shoulder; at 4 their edges nearly touched and
+     the pair read as one smudged control rather than two buttons. */
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
+
+  /* THE TRAILING CLEARANCE LIVES HERE, ON THE ROW — one owner for it.
+     `.head-cell` is padding 0 inline by design: the dividers mark the column
+     edges, not padding. The label button used to buy the trailing 8px back with
+     its own inline padding, which worked only while the label was the last
+     thing in the row. It is not — the two chips are its SIBLINGS, so they got
+     nothing, and the sort chip ran flush to the cell boundary and sat under the
+     8px resize grip. Tight to look at, and it stole clicks aimed at the grip.
+
+     On the ROW rather than a margin on the chip, so it holds for whichever
+     child is last: the sort chip normally, the filter chip on a column that
+     cannot sort, the label itself on a column with neither. `.head-btn` keeps
+     only its LEADING padding now (see that rule) — the trailing half moved
+     here, so the two never stack into 16. */
+  padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
 
   /* LABEL, FILTER, SORT.
 
@@ -685,12 +682,14 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   justify-content: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
-  /* WIDER inline padding than block. The resize grip is an 8px strip on the
-     header's trailing edge, and the sort button covered it right up to that
-     edge — the label and the sort glyph ran under the grip, so a user aiming
-     for the grip hit the sort. 8px each side holds the button's content clear
-     of the strip and leaves the whole grip grabbable. */
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  /* LEADING inline padding only. The trailing 8px used to live here too, to
+     hold the label clear of the resize grip — but the label is no longer the
+     last thing in the header row, so that clearance belongs to the ROW, which
+     owns it for whichever child actually ends the row. Keeping it here as well
+     would stack to 16 on the label's own side. See `.head-row-inner`. */
+  padding-block: var(--sherpa-display-mode-space-2xs, 4px);
+  padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
+  padding-inline-end: 0;
   border: none;
   background: none;
   /* Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)

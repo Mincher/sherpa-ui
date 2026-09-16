@@ -276,14 +276,18 @@ test('typing in a filter narrows rows to substring matches in THAT column', asyn
   expect(last['filters']).toEqual({ spend: '80' });
 });
 
-test('a SORTED or FILTERED column takes the Style `active` mode on its HEADER', async ({ page }) => {
+test('a SORTED or FILTERED column FLAGS its header, and the CHIPS say so — no tint', async ({ page }) => {
   // A sort orders what the grid shows; a filter narrows it. Both are the column
-  // acting on the view, so both read the same. It lands on the sticky HEADING
-  // because the filter box and the 14px sort arrow are both gone by row 40 —
-  // and on the heading ONLY: the secondary filter row already says what it is
-  // doing, because the text is sitting in the box. `active` is the Style
-  // collection's own mode, the one the quick-filter toolbar's favourite star
-  // uses.
+  // acting on the view, so both read the same — and both say so through the
+  // heading's CHIPS, each painting its own on-state.
+  //
+  // The HEADING ITSELF IS NOT PAINTED. It was once — a brand-tinted fill meant
+  // to survive a glance at row 40 — but with the chips carrying an on-state of
+  // their own that fill became a second highlight saying the same word, and two
+  // competing down a header row read as noise. The attribute STAYS, because
+  // `data-status` is the system-wide door a host styles; this component just
+  // declines to paint it. So this test checks the FLAG and the CHIP, and pins
+  // the surface and ink as UNCHANGED.
   await installBuilder(page);
   const r = await page.evaluate(async (config) => {
     const el = await window.__buildGrid(config);
@@ -308,21 +312,24 @@ test('a SORTED or FILTERED column takes the Style `active` mode on its HEADER', 
         .filter((th) => th.dataset['status'] === 'active')
         .map((th) => th.dataset['field']),
     });
-    // The tint has to be a real painted colour, not just an attribute — the
-    // [data-status] block in tokens.css is a DOCUMENT rule and cannot reach
-    // inside this shadow root, so the component must feed --_status-* itself.
+    // The flag must NOT become paint. The heading keeps the plain header
+    // surface and ink it has when nothing is acting on the column — the signal
+    // is the chip's own on-state, read here as `sortOn`.
     const paint = (field: string) => {
       const th = sr.querySelector(`.head-cell[data-field="${field}"]`) as HTMLElement;
       return {
         background: getComputedStyle(th).backgroundColor,
         label: getComputedStyle(th.querySelector('.head-label')!).color,
-        // The sort CHIP paints itself from its own on-state; the column's tint
-        // is reset on it so the heading's colour stops at the heading.
+        // The sort CHIP paints itself from its own on-state. That is now the
+        // ONLY thing the sorted column shows.
         sortOn: th.querySelector('.head-sort')!.hasAttribute('data-current'),
       };
     };
 
-    const clean = { ...status(), paint: paint('name') };
+    // Both columns' resting paint, BEFORE anything acts on the view. A number
+    // column is right-aligned and monospaced where a text one is not, so the
+    // "unchanged" assertions below compare each column against ITSELF.
+    const clean = { ...status(), paint: paint('name'), spendPaint: paint('spend') };
 
     // SORT alone.
     sr.querySelector<HTMLElement>('.head-cell[data-field="spend"] .head-btn')!.click();
@@ -334,12 +341,12 @@ test('a SORTED or FILTERED column takes the Style `active` mode on its HEADER', 
     await type('name', 'ar');
     const both = { ...status(), paint: paint('name') };
 
-    // Clearing the filter leaves the sort's own tint standing.
+    // Clearing the filter leaves the sort's own flag standing.
     await type('name', '');
     const filterCleared = status();
 
-    // Sorting a column that is ALSO filtered must not light it twice or fight
-    // itself — one attribute, one tint.
+    // Sorting a column that is ALSO filtered must not flag it twice or fight
+    // itself — one attribute, one state.
     await type('spend', '80');
     const sortedAndFiltered = { ...status(), paint: paint('spend') };
 
@@ -363,29 +370,33 @@ test('a SORTED or FILTERED column takes the Style `active` mode on its HEADER', 
   expect(r.clean.heads).toEqual([]);
   expect(r.clean.filters).toEqual([]);
 
-  // A sort lights the HEADING.
+  // A sort FLAGS the heading.
   expect(r.sorted.heads).toEqual(['spend']);
   expect(r.sorted.filters).toEqual([]);
-  // And it is actually PAINTED, glyph included, not merely flagged.
-  expect(r.sorted.paint.background).not.toBe(r.clean.paint.background);
-  expect(r.sorted.paint.label).not.toBe(r.clean.paint.label);
+  // The chip is what shows it.
   expect(r.sorted.paint.sortOn).toBe(true);
+  // And the heading itself is untouched — same surface, same ink as at rest.
+  expect(r.sorted.paint.background).toBe(r.clean.spendPaint.background);
+  expect(r.sorted.paint.label).toBe(r.clean.spendPaint.label);
 
   // Two columns can be active at once for two different reasons.
   expect(r.both.heads.sort()).toEqual(['name', 'spend']);
   // The secondary FILTER row is never lit — not even the column being filtered.
   // That row already says what it is doing: the text is in the box.
   expect(r.both.filters).toEqual([]);
-  expect(r.both.paint.background).toBe(r.sorted.paint.background);
+  // A FILTERED heading is no more painted than a sorted one.
+  expect(r.both.paint.background).toBe(r.clean.paint.background);
+  expect(r.both.paint.label).toBe(r.clean.paint.label);
 
   // Clearing the filter drops that column back; the sorted one holds.
   expect(r.filterCleared.heads).toEqual(['spend']);
   expect(r.filterCleared.filters).toEqual([]);
 
-  // Sorted AND filtered is still ONE tint on one heading.
+  // Sorted AND filtered is still ONE flag on one heading, and still no paint.
   expect(r.sortedAndFiltered.heads).toEqual(['spend']);
   expect(r.sortedAndFiltered.filters).toEqual([]);
-  expect(r.sortedAndFiltered.paint.background).toBe(r.sorted.paint.background);
+  expect(r.sortedAndFiltered.paint.background).toBe(r.clean.spendPaint.background);
+  expect(r.sortedAndFiltered.paint.label).toBe(r.clean.spendPaint.label);
 
   // An unsortable column named as the sort field is not sorted, so it is not
   // active either — the flag follows the real state, not the attribute.
@@ -1204,7 +1215,7 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
   expect(r.locked).toBe(true);
 });
 
-test('applying a column filter lights the column and reports a ready clause', async ({ page }) => {
+test('applying a column filter flags the column and reports a ready clause', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -1336,7 +1347,7 @@ test('applying a column filter lights the column and reports a ready clause', as
   expect(emptyEvent['clause']).toBe(null);
   expect(emptyEvent['label']).toBe(null);
 
-  // clearColumnFilter() unlights the column and empties the menu…
+  // clearColumnFilter() unflags the column and empties the menu…
   expect(r.beforeExternal).toBe('active');
   expect(r.external.status).toBe(null);
   expect(r.external.value).toBe('');
@@ -1646,7 +1657,7 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
   expect(r.numeric).toBe(0);
 });
 
-test('REMOVE FILTER ends a column filter outright; the menu never wears the column tint', async ({ page }) => {
+test('REMOVE FILTER ends a column filter outright; the menu never inherits a column tint', async ({ page }) => {
   // Clear empties the controls and leaves the menu open to type again. Remove
   // means "I am done with this column" — two intentions, two buttons.
   const r = await page.evaluate(async () => {
@@ -1686,13 +1697,17 @@ test('REMOVE FILTER ends a column filter outright; the menu never wears the colu
     // NOTHING THE BUTTON WEARS MAY REACH THE MENU. Both are custom properties
     // and the menu is a light-DOM child of the chip, so both inherit:
     //
-    //   the column's ACTIVE tint  — a lit column painted its menu purple
+    //   a column STATUS tint      — a tinted column painted its menu purple
     //   the button's QUIET look   — a transparent button made the menu's card
     //                               transparent, so the grid showed through it
     //
     // @scope does not help: it limits what a rule MATCHES, never how far a
-    // value it sets then inherits. The tint is reset on the chip; the quiet
-    // look is a real property on the caret, not a token re-point.
+    // value it sets then inherits. The --_status-* props are reset on the chip;
+    // the quiet look is a real property on the caret, not a token re-point.
+    //
+    // The grid no longer tints an acting column itself, so the first leak is
+    // only reachable when a HOST styles data-status. The reset and this guard
+    // both stay: that door is public, and it used to paint the menu.
     const menuStyle = getComputedStyle(menu());
     const leaked = {
       status: menuStyle.getPropertyValue('--_status-surface').trim(),
@@ -1721,12 +1736,12 @@ test('REMOVE FILTER ends a column filter outright; the menu never wears the colu
   expect(r.removable).toBe(true);
   expect(r.applied).toBe('active');
 
-  // The heading is lit and the button is quiet, and the menu inherits neither.
+  // The heading is flagged and the button is quiet; the menu inherits neither.
   expect(r.leaked.status).toBe('');
   expect(r.leaked.surface).not.toBe('transparent');
   expect(r.leaked.card).toBe('rgb(255, 255, 255)');
 
-  // Remove ends it: clause gone, heading dark, controls empty.
+  // Remove ends it: clause gone, heading unflagged, controls empty.
   expect(r.afterRemove.status).toBe(null);
   expect(r.afterRemove.chipOn).toBe(false);
   expect(r.afterRemove.value).toBe('');
