@@ -243,6 +243,26 @@ export abstract class SherpaElement extends HTMLElement {
   #hasRendered = false;
   #connected = false;
 
+  /**
+   * Aborted on disconnect, and REPLACED on every connect.
+   *
+   * Pass it to anything that takes one — `addEventListener`, `ResizeObserver`
+   * has no signal but `bind()` and the data layer's helpers do — and the
+   * teardown is done. No stored handler references, no paired
+   * `removeEventListener`, no list of functions to loop in `onDisconnect`.
+   *
+   * A list of teardowns is a list someone forgets: that is not a guess, it is
+   * what happened in the data layer when a second list appeared beside the
+   * first and the teardown dropped it.
+   *
+   * FRESH PER CONNECT, which is the whole subtlety. `connectedCallback` fires
+   * again after `disconnectedCallback` — moving an element in the DOM does
+   * exactly that — so one controller for the element's whole life would leave a
+   * re-attached component wired to nothing, silently. Read `this.signal` inside
+   * `onRender`/`onConnect`, never cache it in a field.
+   */
+  #ac = new AbortController();
+
   constructor() {
     super();
     this.root = this.attachShadow({ mode: 'open' });
@@ -252,6 +272,9 @@ export abstract class SherpaElement extends HTMLElement {
   /* ── Native lifecycle ─────────────────────────────────────────────── */
 
   connectedCallback(): void {
+    // A RE-CONNECT needs a live signal: the last one was aborted on the way
+    // out, and anything wired to it would be wired to nothing.
+    if (this.#ac.signal.aborted) this.#ac = new AbortController();
     if (!this.#hasRendered) {
       void this.#bootstrap();
     } else if (!this.#connected) {
@@ -262,7 +285,23 @@ export abstract class SherpaElement extends HTMLElement {
 
   disconnectedCallback(): void {
     this.#connected = false;
+    // BEFORE onDisconnect, so a component's own teardown still runs after the
+    // automatic one and can rely on the listeners already being gone.
+    this.#ac.abort();
     this.onDisconnect();
+  }
+
+  /**
+   * A signal that aborts when this element leaves the DOM — see `#ac`.
+   *
+   *   this.addEventListener('click', this.#onClick, { signal: this.signal });
+   *   new ResizeObserver(…);  // no signal; still needs onDisconnect
+   *
+   * READ IT WHERE YOU USE IT. It is replaced on every connect, so a copy kept
+   * in a field goes stale the first time the element is moved.
+   */
+  protected get signal(): AbortSignal {
+    return this.#ac.signal;
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {

@@ -76,28 +76,21 @@ export class SherpaSlider extends SherpaElement {
     this.#endInput = this.$<HTMLInputElement>('.range-end');
     this.#valueField = this.$<HTMLInputElement>('.value-end');
     this.#startField = this.$<HTMLInputElement>('.value-start');
-    this.#input?.addEventListener('input', this.#onInput);
-    this.#input?.addEventListener('change', this.#onChange);
-    this.#endInput?.addEventListener('input', this.#onEndInput);
-    this.#endInput?.addEventListener('change', this.#onEndChange);
+    // `signal` instead of eight paired removeEventListener calls. The base
+    // class aborts it on disconnect, so there is no teardown to keep in step
+    // with this list — and nothing to forget when a ninth listener is added.
+    const signal = this.signal;
+    this.#input?.addEventListener('input', this.#onInput, { signal });
+    this.#input?.addEventListener('change', this.#onChange, { signal });
+    this.#endInput?.addEventListener('input', this.#onEndInput, { signal });
+    this.#endInput?.addEventListener('change', this.#onEndChange, { signal });
     // The editable value fields are the second way to set the value.
-    this.#valueField?.addEventListener('input', this.#onFieldInput);
-    this.#valueField?.addEventListener('change', this.#onFieldChange);
-    this.#startField?.addEventListener('input', this.#onStartFieldInput);
-    this.#startField?.addEventListener('change', this.#onStartFieldChange);
+    this.#valueField?.addEventListener('input', this.#onFieldInput, { signal });
+    this.#valueField?.addEventListener('change', this.#onFieldChange, { signal });
+    this.#startField?.addEventListener('input', this.#onStartFieldInput, { signal });
+    this.#startField?.addEventListener('change', this.#onStartFieldChange, { signal });
     this.#syncInputAttrs();
     this.#sync();
-  }
-
-  override onDisconnect(): void {
-    this.#input?.removeEventListener('input', this.#onInput);
-    this.#input?.removeEventListener('change', this.#onChange);
-    this.#endInput?.removeEventListener('input', this.#onEndInput);
-    this.#endInput?.removeEventListener('change', this.#onEndChange);
-    this.#valueField?.removeEventListener('input', this.#onFieldInput);
-    this.#valueField?.removeEventListener('change', this.#onFieldChange);
-    this.#startField?.removeEventListener('input', this.#onStartFieldInput);
-    this.#startField?.removeEventListener('change', this.#onStartFieldChange);
   }
 
   override onChange(name: string): void {
