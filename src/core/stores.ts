@@ -41,6 +41,23 @@ export interface StoreOptions {
    * nothing crosses.
    */
   schema?: StandardSchema;
+  /**
+   * Keep at most this many rows, dropping the OLDEST first.
+   *
+   * A live feed grows without bound: a socket delivering an alert a second
+   * fills a tab's memory overnight, and nobody scrolls to hour three anyway.
+   * This is the one genuinely new piece a shared feed needs.
+   *
+   * OLDEST-OUT, by insertion order rather than by any field — a feed's order is
+   * the order things happened, and the store does not know which field means
+   * "when". A view that wants a different order sorts; the cap is about how much
+   * is kept, not about what is shown.
+   *
+   * Applies on INSERT. Rows handed to the constructor or to `setRows()` are the
+   * caller's own statement of what the store holds, and are trimmed to the cap
+   * too — a cap that only some writes honour is not a cap.
+   */
+  maxRows?: number;
 }
 
 /**
@@ -179,15 +196,29 @@ export class ValidationError extends Error {
  */
 export class ArrayStore extends BaseStore {
   #rows: Row[];
+  /** See StoreOptions.maxRows — 0 or absent means no cap. */
+  readonly #maxRows: number;
 
   constructor(rows: readonly Row[] = [], options: StoreOptions = {}) {
     super(options);
-    this.#rows = rows.map((r) => ({ ...r }));
+    this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
+    this.#rows = this.#trim(rows.map((r) => ({ ...r })));
+  }
+
+  /**
+   * Drop the oldest rows past the cap.
+   *
+   * Returns the array it was given, trimmed in place where it can be — the
+   * caller always owns a fresh copy by the time this runs.
+   */
+  #trim(rows: Row[]): Row[] {
+    if (!this.#maxRows || rows.length <= this.#maxRows) return rows;
+    return rows.slice(rows.length - this.#maxRows);
   }
 
   /** Replace every record. Used by JsonStore once its fetch lands. */
   setRows(rows: readonly Row[]): void {
-    this.#rows = rows.map((r) => ({ ...r }));
+    this.#rows = this.#trim(rows.map((r) => ({ ...r })));
     this.announce({ type: 'update' });
   }
 
@@ -206,6 +237,10 @@ export class ArrayStore extends BaseStore {
     // CHECKED FIRST, so a refused row is never pushed and never announced.
     const row = { ...(await this.check(values)) };
     this.#rows.push(row);
+    // …then hold the cap. A live feed inserts for ever; this is where it would
+    // grow without bound. Trimmed BEFORE the announce, so a listener that reads
+    // the store sees the same rows the store will hand out.
+    this.#rows = this.#trim(this.#rows);
     this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
     return { ...row };
   }

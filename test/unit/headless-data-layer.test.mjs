@@ -491,3 +491,62 @@ test('O5: setFilter and setState REPLACE, clearing the parts with them', async (
   await settle();
   assert.deepEqual(source.state.filter, ['plan', 'eq', 'Pro']);
 });
+
+test('maxRows keeps a live feed bounded, oldest out', async () => {
+  const { ArrayStore } = await import('../../dist/core/stores.js');
+
+  // A feed capped at three, filled with five.
+  const feed = new ArrayStore([], { key: 'id', maxRows: 3 });
+  for (let i = 1; i <= 5; i++) await feed.insert({ id: i, n: i });
+  const { rows } = await feed.load();
+
+  // The OLDEST went. A feed's order is the order things happened, and the cap
+  // is about how much is kept — not about what is shown, which is a sort.
+  assert.deepEqual(rows.map((r) => r.id), [3, 4, 5]);
+
+  // The constructor honours it too: a cap only some writes respect is not a cap.
+  const seeded = new ArrayStore([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], {
+    key: 'id', maxRows: 2,
+  });
+  assert.deepEqual((await seeded.load()).rows.map((r) => r.id), [3, 4]);
+
+  // …and so does setRows.
+  seeded.setRows([{ id: 7 }, { id: 8 }, { id: 9 }]);
+  assert.deepEqual((await seeded.load()).rows.map((r) => r.id), [8, 9]);
+
+  // NO CAP is the default — an ordinary store is untouched.
+  const plain = new ArrayStore([], { key: 'id' });
+  for (let i = 1; i <= 5; i++) await plain.insert({ id: i });
+  assert.equal((await plain.load()).rows.length, 5);
+});
+
+test('several live stores can feed ONE shared store', async () => {
+  const { ArrayStore } = await import('../../dist/core/stores.js');
+  const { EventStore } = await import('../../dist/core/live-stores.js');
+
+  /* THE POINT OF `into`: alerts, builds and deploys arriving on three
+     connections and appearing in ONE list. Without it each live store makes its
+     own ArrayStore and a DataSource can bind only one of them.
+
+     EventSource does not exist in Node, so the CONNECTION is not exercised here
+     — what is, is that the three stores share one set of records, which is the
+     part `into` changes. The wire is covered by the browser tests. */
+  const feed = new ArrayStore([], { key: 'id', maxRows: 100 });
+  const alerts = new EventStore({ url: 'http://x/alerts', into: feed });
+  const builds = new EventStore({ url: 'http://x/builds', into: feed });
+
+  await alerts.insert({ id: 'a1', kind: 'alert' });
+  await builds.insert({ id: 'b1', kind: 'build' });
+
+  // ONE list, both kinds — and every store sees it, because there is only one.
+  const ids = (r) => r.rows.map((x) => x.id).sort();
+  assert.deepEqual(ids(await feed.load()), ['a1', 'b1']);
+  assert.deepEqual(ids(await alerts.load()), ['a1', 'b1']);
+  assert.deepEqual(ids(await builds.load()), ['a1', 'b1']);
+
+  // WITHOUT `into`, each makes its own — the state of the world before S9.
+  const lone = new EventStore({ url: 'http://x/lone' });
+  await lone.insert({ id: 'c1' });
+  assert.deepEqual(ids(await lone.load()), ['c1']);
+  assert.deepEqual(ids(await feed.load()), ['a1', 'b1']);
+});

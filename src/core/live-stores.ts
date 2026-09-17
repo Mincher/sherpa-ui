@@ -61,6 +61,25 @@ export interface LiveStoreOptions extends StoreOptions {
    * what is not its business.
    */
   parse?: (data: unknown) => PushMessage | undefined;
+  /**
+   * Feed an EXISTING store rather than making a new one.
+   *
+   * Several connections into ONE feed — alerts, builds and deploys arriving on
+   * three sockets and appearing in one list — is impossible otherwise, because
+   * each live store creates its own `ArrayStore` and a DataSource can bind only
+   * one of them:
+   *
+   *   const feed = new ArrayStore([], { key: 'id', maxRows: 200 });
+   *   new SocketStore({ url: alertsUrl,  into: feed });
+   *   new SocketStore({ url: buildsUrl,  into: feed });
+   *   new DataSource({ store: feed });   // one query over all three
+   *
+   * No new concept: the re-dispatch below already treats inner and outer as one
+   * store, so this only changes WHERE the inner one comes from. A store passed
+   * here is NOT owned — `rows` and `key` are its own, and nothing here
+   * disconnects it.
+   */
+  into?: ArrayStore;
 }
 
 /**
@@ -81,7 +100,9 @@ abstract class LiveStore extends EventTarget implements Store {
     super();
     this.options = options;
     this.key = options.key ?? 'id';
-    this.inner = new ArrayStore(options.rows ?? [], options);
+    // A SHARED store when one is given: several connections, one feed. Its own
+    // `rows`/`key` win, because it may already hold another socket's messages.
+    this.inner = options.into ?? new ArrayStore(options.rows ?? [], options);
     // The inner store's changes are THIS store's changes. A DataSource listens
     // to one thing and never learns there are two.
     this.inner.addEventListener('change', (event) => {
