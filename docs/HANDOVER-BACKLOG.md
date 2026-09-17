@@ -55,6 +55,57 @@ markers on a ring fan out by construction. Verified zero overlaps on 8 markers.
 
 ## Queued
 
+### 0. No chart is keyboard-reachable — MEASURED 2026-09-17
+
+**All five charts have ZERO tabbable elements.** Measured in Chromium, per
+component, counting `[tabindex]` that is not `-1`:
+
+| chart | tabbable | buttons | of those, inside `aria-hidden` |
+|---|---|---|---|
+| sparkline | **0** | 8 | 8 |
+| line-chart | **0** | 0 | — |
+| donut-chart | **0** | 0 | — |
+| barchart | **0** | 2 | 0 |
+| gauge-chart | **0** | 0 | — |
+
+**Two things here look like fixes and are not.** `sherpa-sparkline` and
+`sherpa-line-chart` both carry the correct focus ring
+(`inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd)`) on a
+`.hotspot:focus-visible`, so a reader — or an audit — concludes they are the
+components that got it right. They are not: sparkline's eight `<button>`
+hotspots are `tabindex="-1"` INSIDE an `aria-hidden="true"` layer, which hides
+them from the keyboard AND from a screen reader. The ring appears on
+click-focus only. There is no working pattern in this repo to copy.
+
+`sherpa-donut-chart` had a third variant — a `.slice:focus-visible` rule whose
+body was byte-identical to its `:hover`, on an element with no tabindex. That
+one is DELETED (2026-09-17): a rule for a state that cannot occur, which would
+have been indistinguishable from hover even if it could.
+
+**The current contract is deliberate, and worth stating before changing it.**
+Every chart is `role="img"` with an `aria-label` — "this is one picture, and
+here is what it shows" — rather than a set of widgets. `sherpa-gauge-chart`
+also ships a table fallback. That is a legitimate answer for a data
+visualisation and it is why nothing is tabbable.
+
+**What a real fix needs**, and why it is a design task rather than a CSS one:
+
+- ONE tab stop per chart, not one per mark. A 12-point sparkline with 12 tab
+  stops makes a keyboard user pay for a picture.
+- Arrow-key roving between marks once inside, and a way out.
+- An accessible NAME per mark — "March, 42" — which means the data, not the
+  geometry, has to reach the a11y tree.
+- A live region, or `aria-activedescendant`, so moving between marks is
+  announced.
+- A decision on whether the table fallback gauge already has becomes the
+  general answer instead. It may be the better one: a table is navigable,
+  searchable and copyable, and needs no new interaction model.
+
+Blocked on nothing technical. It needs a ruling on which of those two shapes
+(roving marks vs. table fallback) the system adopts, because doing both is how
+two conventions start.
+
+
 ### 1. Bundle the toolbar + pagination INTO `sherpa-data-grid`
 
 **Will chose:** "Grid owns both, slots for extras."

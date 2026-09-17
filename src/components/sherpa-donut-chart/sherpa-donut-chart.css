@@ -178,12 +178,21 @@
   cursor: pointer;
 }
 
-/* A slice lifts to full strength on hover, so the pointer target is legible. */
+/* A slice lifts to full strength on hover, so the pointer target is legible.
+
+   NO `:focus-visible` rule, deliberately. A slice has no tabindex and the
+   hotspot layer is `<span>`, so nothing here can take focus — measured: 0
+   tabbable elements. The rule that used to sit here set `outline: none` and
+   then `fill-opacity: 1`, which is byte-identical to the `:hover` above, so
+   even if a slice could be focused the ring would be indistinguishable from a
+   pointer hover. It was a rule for a state that cannot occur.
+
+   The chart's accessibility contract is `role="img"` + `aria-label` on the ring
+   — one picture with a description, not a set of widgets. Keyboard access to
+   individual marks is a real gap across ALL five charts (none has a tabbable
+   mark; sparkline's eight buttons are `tabindex="-1"` inside `aria-hidden`), and
+   it needs a design, not a CSS rule. See docs/HANDOVER-BACKLOG.md. */
 .slice:hover { fill-opacity: 1; }
-.slice:focus-visible {
-  outline: none;
-  fill-opacity: 1;
-}
 
 .centre {
   position: absolute;
