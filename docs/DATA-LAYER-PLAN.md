@@ -3127,11 +3127,24 @@ be picked up today:
 ### Waiting on the MCP rewrite (5) — N4, M2, M3, M4, P5
 
 Every one of these builds a tool inside the MCP server, and that server is due a
-full rewrite (Will, 2026-09-16). Its current tools target `*.def.json`, a format
-with **zero files** in this repo. Building against it would be building on
-something about to be replaced.
+full rewrite (Will, 2026-09-16).
 
-Two things are already waiting for that rewrite: `sherpa://data-rules` and the
+**Checked 2026-09-17, and the premise was half wrong.** The claim was that its
+tools "target `*.def.json`, a format with zero files in this repo". The
+DESCRIPTIONS said that; the CODE never did. `loadDef()` reads
+`<name>.component.yaml` — the real, generated, now-gated spec — and all 58 load
+cleanly, `byTemplate` included. All 10 tools and 7 resources register.
+
+What HAD rotted was everything the deleted ontology touched, and it was worse
+than a gap: `audit_component` marked all 1173 token bindings `unknown-token`,
+`explain_token` told a reader their correct token was not found, and
+`browse_ontology` answered "no tokens with role=surface". All three now answer
+from `tokens.css` and say plainly what is unavailable (`2592d402`). The eight
+stale `*.def.json` descriptions are corrected too.
+
+So the rewrite is a smaller job than it looked — the plumbing is sound, and the
+five steps below are new tools on a working base rather than work blocked behind
+a teardown. Two things are already waiting for it: `sherpa://data-rules` and the
 `sherpa-ui/data` entry point.
 
 ### Deliberately on demand (3) — S8, Q2, Q3
