@@ -17,86 +17,13 @@
  * that no longer fits on one screen.
  */
 import {
-  ArrayStore, DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
+  DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
 } from '../../dist/index.js';
+import { customerStore, customers, columns, plans } from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
-  /* ── Data: 100 customers ──────────────────────────────────────────── */
-  const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
-                 'Yuki','Carlos','Freya','Noah','Zara','Isaac','Maya','Leon','Amara','Felix',
-                 'Ingrid','Rashid','Elena','Tomas','Hana','Bruno','Lila','Kofi','Greta','Sven',
-                 'Anika','Mateo','Chloe','Dmitri','Esme','Farid','Gwen','Hugo','Iris','Jonas',
-                 'Kira','Lucas','Mira','Nadia','Oscar','Paula','Quinn','Rosa','Samir','Tara'];
-  const last  = ['Okafor','Reyes','Khan','Moreau','Berg','Haddad','Nair','Walsh','Costa','Blum',
-                 'Tanaka','Vega','Lund','Schmidt','Ali','Cohen','Iyer','Petit','Diallo','Braun',
-                 'Solberg','Aziz','Popov','Novak','Sato','Ferrari','Roy','Mensah','Meyer','Dahl',
-                 'Bauer','Silva','Duval','Ivanov','Ortiz','Rahman','Price','Keller','Nilsen','Weber',
-                 'Sharma','Jensen','Rossi','Farah','Lindqvist','Marek','Osei','Dubois','Yilmaz','Kaur'];
-  const plans   = ['Free','Starter','Pro','Enterprise'];
-  const states  = ['active','trial','suspended','churned'];
-  const regions = ['EMEA','AMER','APAC','LATAM'];
-  const owners  = ['Unassigned','Ravi Menon','Dana Whitlock','Pierre Sadler'];
-  const tiers   = ['Bronze','Silver','Gold','Platinum'];
-
-  /* A tiny deterministic PRNG. The demo data has to look unpatterned — with
-     plain `i % n` strides every column marched in lockstep, so row 1 and row 5
-     were the same customer in all but name. It stays SEEDED so the grid, the
-     chip counts and any screenshot are identical on every reload. */
-  let seed = 20260911;
-  const rnd = () => {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return seed / 0x7fffffff;
-  };
-  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
-
-  const customers = Array.from({ length: 100 }, (_, i) => {
-    const f = pick(first);
-    const l = pick(last);
-    const status = pick(states);
-    const plan = pick(plans);
-    const created = new Date(2024, Math.floor(rnd() * 12), Math.floor(rnd() * 27) + 1);
-    // Last seen always TRAILS creation, so the two date columns never contradict
-    // each other (a customer cannot be seen before the account existed).
-    const seen = new Date(created.getTime() + (Math.floor(rnd() * 300) + 1) * 86400000);
-    return {
-      name: `${f} ${l}`,
-      // The index keeps the address unique even when the same name is drawn twice.
-      email: `${f.toLowerCase()}.${l.toLowerCase()}${i}@example.com`,
-      status,
-      plan,
-      region: pick(regions),
-      tier: pick(tiers),
-      owner: pick(owners),
-      // Real NUMBERS, not pre-formatted strings: the grid right-aligns
-      // type: 'number' cells in mono and sorts them numerically. A '$1,234'
-      // string would sort as text, putting $90 after $1,000.
-      seats: 1 + Math.floor(rnd() * 240),
-      spend: 120 + Math.floor(rnd() * 9880),
-      openTickets: Math.floor(rnd() * 9),
-      health: 40 + Math.floor(rnd() * 61),
-      created: created.toISOString().slice(0, 10),
-      lastSeen: seen.toISOString().slice(0, 10),
-    };
-  });
-
-  const columns = [
-    { field: 'name',        header: 'Name',      sortable: true },
-    { field: 'email',       header: 'Email',     sortable: true },
-    { field: 'status',      header: 'Status',    sortable: true },
-    { field: 'plan',        header: 'Plan',      sortable: true },
-    { field: 'tier',        header: 'Tier',      sortable: true },
-    { field: 'region',      header: 'Region',    sortable: true },
-    { field: 'owner',       header: 'Owner',     sortable: true },
-    { field: 'seats',       header: 'Seats',     sortable: true, type: 'number' },
-    { field: 'spend',       header: 'Spend',     sortable: true, type: 'number' },
-    { field: 'openTickets', header: 'Tickets',   sortable: true, type: 'number' },
-    { field: 'health',      header: 'Health',    sortable: true, type: 'number' },
-    { field: 'created',     header: 'Created',   sortable: true, type: 'date' },
-    { field: 'lastSeen',    header: 'Last seen', sortable: true, type: 'date' },
-  ];
-
   /* ── The data layer ───────────────────────────────────────────────── */
 
   /* One store holds the records; ONE source holds how they are being viewed.
@@ -106,7 +33,14 @@ export async function init(root) {
      header and the toolbar's Sort chip now read and write the SAME value, so
      they cannot disagree; the comment that used to sit here admitting they were
      being held together by hand is gone with them. */
-  const store = new ArrayStore(customers, { key: 'email' });
+  /* THE STORE IS THE APP'S, not this view's — see records-data.js. Built here,
+     it died with the view: adding a customer took the grid to 5 pages and
+     coming back put it at 4, with the record gone.
+
+     The SOURCE is still this view's, and that is the rule: a store holds
+     records, which outlive a screen; a source holds one QUERY over them, which
+     does not. */
+  const store = customerStore;
   const source = new DataSource({
     store,
     // 25 to match sherpa-pagination's own default — a different number here
