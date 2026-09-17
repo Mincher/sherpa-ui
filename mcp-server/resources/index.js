@@ -5,6 +5,7 @@
  *   sherpa://ontology/{id}            — one design-system token's ontology entry
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
+ *   sherpa://data-rules               — docs/DATA-SOURCE-RULES.md
  */
 import fs from "fs";
 import path from "path";
@@ -17,6 +18,7 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
 const RULES_PATH = path.join(ROOT, "docs", "DEF-TO-FIGMA-BUILD-RULES.md");
 const STANDARD_PATH = path.join(ROOT, "docs", "COMPONENT-DEFINITION-STANDARD.md");
+const DATA_RULES_PATH = path.join(ROOT, "docs", "DATA-SOURCE-RULES.md");
 
 const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
@@ -142,5 +144,33 @@ export function register(server) {
         }],
       };
     }
+  );
+
+  /* ── sherpa://data-rules — what Sherpa expects of your data ──────────
+     What an agent needs before it can point a Sherpa app at a backend, or
+     write a schema for one: the row shape, the filter grammar, the store
+     contract, where validation belongs, and the fact that none of it needs a
+     browser. It was not written down anywhere until 2026-09-17 — an agent was
+     reading the source to find out.
+
+     The same page serves people; that is the point of it being a doc rather
+     than a tool's description string. */
+  server.registerResource(
+    "Sherpa Data Rules",
+    "sherpa://data-rules",
+    {
+      description:
+        "What Sherpa expects of your data: the row shape, the [field, op, value] filter grammar, the Store contract, where validation belongs, and the headless entry point (DATA-SOURCE-RULES.md)",
+      mimeType: "text/markdown",
+    },
+    async (uri) => ({
+      contents: [{
+        uri: uri.href ?? "sherpa://data-rules",
+        mimeType: "text/markdown",
+        text: fs.existsSync(DATA_RULES_PATH)
+          ? fs.readFileSync(DATA_RULES_PATH, "utf8")
+          : "(DATA-SOURCE-RULES.md not found)",
+      }],
+    })
   );
 }

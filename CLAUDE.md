@@ -14,6 +14,7 @@ failures that have each cost hours.
 |---|---|
 | [docs/HANDOVER.md](docs/HANDOVER.md) | **Always, before your first change.** Traps (anchor positioning, tables, shadow DOM, SVG), the working method, where the interesting code is |
 | [docs/HANDOVER-BACKLOG.md](docs/HANDOVER-BACKLOG.md) | Picking up work — what is queued and what "done" means |
+| [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | **Pointing Sherpa at a backend, or writing a schema.** The row shape, the `[field, op, value]` filter grammar, the Store contract, where validation belongs. Served to agents as `sherpa://data-rules` |
 | [docs/DATA-LAYER-PLAN.md](docs/DATA-LAYER-PLAN.md) | **Working on data, state, or view definitions** — Store/DataSource, the ownership + parity rules, view definitions, and the headless contract. This branch's plan |
 | [docs/HANDOVER-FIGMA.md](docs/HANDOVER-FIGMA.md) | Touching tokens or reading Figma — how to read values RELIABLY (extension overrides read back empty) |
 
@@ -361,7 +362,8 @@ button → dialog → save → toast path.
 | `tools/generate.js` | `scaffold_def`, `validate_def`, `compile_def`, `token_for` |
 | `tools/verify.js` | `audit_component`, `check_bindings` |
 
-Resources: `sherpa://def/{name}`, `sherpa://ontology/{id}`,
+Resources: `sherpa://data-rules` (what Sherpa expects of your data),
+`sherpa://def/{name}`, `sherpa://ontology/{id}`,
 `sherpa://component/{name}/{kind}`, `sherpa://rules`. Prompts:
 `generate_component`, `debug_component`, `review_component_usage`.
 

@@ -1,0 +1,197 @@
+# What Sherpa expects of your data
+
+> Served to agents as `sherpa://data-rules`. Written for a person too: if you
+> are pointing a Sherpa app at a backend, this is the whole contract.
+
+Sherpa's data layer is two objects. **A store holds records. A source holds one
+query over them.** Everything below follows from that split.
+
+---
+
+## 1. A record is a plain object
+
+```ts
+type Row = Record<string, unknown>;
+```
+
+No class, no wrapper, no base type to extend. Whatever your backend returns is
+already a row, provided it is a plain object.
+
+**One field is the identity.** You name it when you build the store:
+
+```js
+new ArrayStore(rows, { key: 'email' })   // default: 'id'
+```
+
+The key is how `byKey`, `update` and `remove` find a record, and how a grid
+remembers a selection across a re-query. A row with a duplicate key or a blank
+one is a record that two operations can disagree about — which is why the
+records example puts `required()` on its key field.
+
+**Nested values are read with a dotted path.** `'address.city'` works anywhere a
+field name does — a filter, a sort, a column, a search field. You do not have to
+flatten a response.
+
+---
+
+## 2. A query is data, not a function
+
+```ts
+interface LoadOptions {
+  filter?: Filter;
+  sort?: SortSpec[];        // [{ field, direction }]
+  group?: string;
+  search?: string;
+  searchFields?: string[];
+  skip?: number;            // paging: skip N in, take N out
+  take?: number;
+}
+```
+
+**A filter is `[field, op, value]`**, not a predicate:
+
+```js
+['status', 'eq', 'active']
+['and', ['health', 'lt', 60], ['tickets', 'gt', 2]]
+['or',  ['region', 'eq', 'EMEA'], ['region', 'eq', 'APAC']]
+```
+
+The whole layer speaks this one shape because **a filter has to survive being
+sent somewhere**. An `ArrayStore` runs it in memory; a `RestStore` turns it into
+a query string; a future SQL store would turn it into a `WHERE`. A predicate
+function could do none of that — it cannot cross a network.
+
+The operators, in full:
+
+| | |
+|---|---|
+| comparison | `eq` `ne` `lt` `lte` `gt` `gte` |
+| text | `contains` `notcontains` `startswith` `endswith` |
+| set | `in` `notin` |
+| range | `between` (value is `[from, to]`) |
+
+They are DevExtreme's names, deliberately: a vocabulary a backend author has
+probably met beats one Sherpa invented.
+
+---
+
+## 3. A load returns rows AND a total
+
+```ts
+interface LoadResult {
+  rows: Row[];
+  total: number;       // matching rows BEFORE skip/take
+  dropped?: number;    // rows a schema refused
+  issues?: Issue[];    // and why
+}
+```
+
+**`total` is the count before paging**, which is the number a pager needs to say
+"page 3 of 12". Returning `rows.length` there makes every pager wrong on every
+page but the last.
+
+`dropped` and `issues` are absent when nothing was dropped, so a host tests the
+field rather than comparing to zero.
+
+---
+
+## 4. A custom store implements six methods
+
+```ts
+interface Store {
+  load(options?: LoadOptions): Promise<LoadResult>;
+  byKey(key: unknown): Promise<Row | undefined>;
+  insert(values: Row): Promise<Row>;
+  update(key: unknown, values: Row): Promise<Row>;
+  remove(key: unknown): Promise<void>;
+  totalCount(options?: LoadOptions): Promise<number>;
+  readonly key: string;
+}
+```
+
+Extend `BaseStore` and you get the key handling, the schema check and the
+`change` announcement for free — you write `load` and the four mutations.
+
+**Announce every change.** `this.announce({ type: 'insert', key, row })` is what
+tells a bound `DataSource` to re-query, which is what redraws every component
+watching it. A store that mutates silently leaves the screen lying.
+
+**Copy in and copy out.** `ArrayStore` does `{ ...row }` on both edges so a
+caller cannot reach in and mutate a stored record by holding a reference. It
+also keeps `#push`'s skip-if-unchanged guard working, which compares the rows
+array by identity.
+
+---
+
+## 5. Validation belongs on the store
+
+```js
+new ArrayStore(rows, { key: 'email', schema: customerSchema })
+```
+
+A form is not the only way a record arrives: a dialog, a paste, a REST response
+and a script all reach the same records. **A rule enforced in one screen is not
+a rule.**
+
+The schema runs on **reads as well as writes**. A malformed row from a backend
+is dropped and reported through `dropped` / `issues` rather than reaching a grid
+that has no idea what to draw.
+
+It is a [Standard Schema](https://standardschema.dev), duck-typed — so
+`rules({...})` from Sherpa, or a Zod, Valibot or ArkType schema, all work with
+no adapter and no dependency.
+
+A schema can also **rename, coerce and default** on the way in, which is how an
+external shape becomes a Sherpa row without a hand-written mapping layer.
+
+---
+
+## 6. What the source adds
+
+A `DataSource` holds one query and pushes results to bound components:
+
+```js
+const source = new DataSource({ store, pageSize: 25 });
+source.bind(grid);                                  // two-way: reads and steers
+source.bind(chart, { readonly: true, as: byCategory });  // reads only
+```
+
+- **`readonly`** — the component shows the data but never steers it.
+- **`steerOnly`** — its events reach the source but no rows are pushed back
+  (a filter toolbar's `populate()` means "here are your chips", not "here are
+  your records").
+- **`as`** — an adapter from rows to that component's payload shape.
+- **`into`** — this bind owns ONE named part of the payload, so two sources can
+  feed one component without the last writer winning.
+- **`signal`** — an `AbortSignal`; the binding ends when it aborts.
+
+**Which lives where:** a **store** is app-level, because records outlive any one
+screen and are shared by every screen showing them. A **source** is view-level,
+because a query is exactly as long-lived as the view asking it.
+
+---
+
+## 7. It runs with no DOM
+
+```js
+import { ArrayStore, DataSource } from 'sherpa-ui/data';
+```
+
+Stores, queries, validation, live connections and saved views all work in Node —
+on a server, in a test, in an MCP tool. `sherpa-ui` itself does not: it exports
+58 components, and importing a component defines a custom element.
+
+A lint rule keeps those modules DOM-free, and a test proves the entry point
+stays free of components.
+
+---
+
+## The short version
+
+1. A row is a plain object with one identity field.
+2. A query is data — `[field, op, value]` — so it can be sent somewhere.
+3. `total` is the count **before** paging.
+4. A store announces every change, and copies on both edges.
+5. Validation lives on the store, and runs on reads too.
+6. Stores are app-level; sources are view-level.
+7. None of it needs a browser.
