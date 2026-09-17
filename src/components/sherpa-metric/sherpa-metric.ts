@@ -20,7 +20,16 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {
-  /** Metric name / label. */
+  /**
+   * The metric's name.
+   *
+   * `label`, matching the attribute (`data-label`) and every other populate
+   * shape in the library — `label` is the word in 7 of 13. This component used
+   * to take `name` and write it straight into `dataset['label']`, translating
+   * its own vocabulary in the one line where both spellings met.
+   */
+  label?: string;
+  /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
   name?: string;
   /** Formatted value (already display-ready). */
   value?: string | number;
@@ -54,7 +63,9 @@ export class SherpaMetric extends SherpaElement {
   protected override renderData(source: unknown): void {
     const data = (source ?? {}) as MetricData;
 
-    if (data.name != null) this.dataset['label'] = String(data.name);
+    // `label` wins; `name` is the legacy spelling and still honoured.
+    const label = data.label ?? data.name;
+    if (label != null) this.dataset['label'] = String(label);
     if (data.value != null) this.dataset['value'] = String(data.value);
 
     // Derive delta text + trend from deltaPercent when not given explicitly.

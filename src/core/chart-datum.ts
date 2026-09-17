@@ -62,3 +62,35 @@ export interface LegendDatum extends Omit<ChartDatum, 'value'> {
    */
   status?: 'success' | 'warning' | 'critical' | 'info' | 'urgent';
 }
+
+/* ── The POPULATE VOCABULARY ────────────────────────────────────────────
+   Surveyed 2026-09-17 across all 22 components that implement `renderData`.
+   Thirteen declare a named shape, and three words carry most of them:
+
+     label        7 of 13   the thing's name, as a reader sees it
+     value        4 of 13   its measurement or its form value
+     description  3 of 13   the secondary line under the label
+
+   Two components DEVIATED, and both translated their own vocabulary in the one
+   line where the spellings met:
+
+     sherpa-metric         `name`  → dataset['label']
+     sherpa-notifications  `title` → dataset['label']
+
+   Both now take `label` and keep the old word as a deprecated alias.
+
+   THE RULE, for any new populate shape:
+
+     label        NOT name, title, heading, text or caption
+     value        NOT amount or count
+     description  NOT helper, sublabel, detail or body
+     id           the thing's identity, when a caller needs to address it
+     icon         a Font Awesome class list — see SherpaElement.writeIcon
+
+   It matches the ATTRIBUTE vocabulary (`data-label`, `data-description`,
+   `data-icon-start`) on purpose: a component's two doors should not use two
+   words for one idea. NAMING-STANDARD D9 says the same thing for attributes;
+   this is that rule reaching the data path.
+
+   A shape is free to add fields nothing else has — a metric's `trend`, a
+   notification's `unread`. What it must not do is rename one of these. */

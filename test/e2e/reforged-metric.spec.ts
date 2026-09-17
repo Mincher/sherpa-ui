@@ -226,3 +226,44 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
   expect(r.success).toEqual(r.none);
   expect(r.critical).toEqual(r.none);
 });
+
+/**
+ * `label` is the word — and `name` still works.
+ *
+ * Surveyed across the 22 components with a `renderData`: `label` appears in 7
+ * of the 13 named shapes, `value` in 4, `description` in 3. Two components
+ * deviated, and both TRANSLATED their own vocabulary in the single line where
+ * the two spellings met — this one wrote `data.name` into `dataset['label']`.
+ *
+ * A component's two doors, its attributes and its populate payload, should not
+ * use two words for one idea.
+ */
+test('populate takes label, and the old `name` still works', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (payload: unknown) => {
+      const el = document.createElement('sherpa-metric') as HTMLElement & {
+        rendered?: Promise<void>; populate(d: unknown): void;
+      };
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate(payload);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return {
+        attr: el.dataset['label'] ?? null,
+        text: (el.shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim(),
+      };
+    };
+
+    return {
+      byLabel: await read({ label: 'Open alerts', value: '37' }),
+      byName: await read({ name: 'Open alerts', value: '37' }),
+      // BOTH given: `label` wins, because it is the word.
+      both: await read({ label: 'Wins', name: 'Loses', value: '1' }),
+    };
+  });
+
+  expect(r.byLabel.attr).toBe('Open alerts');
+  expect(r.byLabel.text).toContain('Open alerts');
+  expect(r.byName.attr, 'the old spelling is still honoured').toBe('Open alerts');
+  expect(r.both.attr).toBe('Wins');
+});

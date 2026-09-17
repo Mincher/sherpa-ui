@@ -266,15 +266,15 @@
 
        …and every push then redraws both, with nothing else to wire. */
     const notificationFeed = new ArrayStore([
-      { id: 'n1', title: 'Northwind renewed', description: 'Enterprise, 3 years',
+      { id: 'n1', label: 'Northwind renewed', description: 'Enterprise, 3 years',
         icon: 'fa-solid fa-circle-check', time: '2m ago', unread: true },
-      { id: 'n2', title: 'Contoso payment failed', description: 'Card declined',
+      { id: 'n2', label: 'Contoso payment failed', description: 'Card declined',
         icon: 'fa-solid fa-triangle-exclamation', time: '1h ago', unread: true },
-      { id: 'n3', title: 'Fabrikam raised a ticket', description: 'Priority: high',
+      { id: 'n3', label: 'Fabrikam raised a ticket', description: 'Priority: high',
         icon: 'fa-solid fa-ticket', time: '3h ago', unread: true },
-      { id: 'n4', title: 'Tailspin trial ends Friday', description: '14-day trial',
+      { id: 'n4', label: 'Tailspin trial ends Friday', description: '14-day trial',
         icon: 'fa-solid fa-hourglass-half', time: 'Yesterday', unread: true },
-      { id: 'n5', title: 'Weekly report ready', description: 'Revenue and churn',
+      { id: 'n5', label: 'Weekly report ready', description: 'Revenue and churn',
         icon: 'fa-solid fa-chart-line', time: '2d ago' },
     ], { key: 'id' });
 

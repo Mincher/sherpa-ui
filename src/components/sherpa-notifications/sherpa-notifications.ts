@@ -26,7 +26,16 @@ import '../sherpa-button/sherpa-button.js';
 
 export interface Notification {
   id: string;
-  title: string;
+  /**
+   * The notification's headline.
+   *
+   * `label`, matching the `data-label` it is written into and the rest of the
+   * library. `title` is kept as the old spelling — it was translated in the one
+   * line where both met, which is the same shape sherpa-metric carried.
+   */
+  label?: string;
+  /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
+  title?: string;
   description?: string;
   /** A Font Awesome class list for the leading glyph. */
   icon?: string;
@@ -109,7 +118,7 @@ export class SherpaNotifications extends SherpaElement {
       node.dataset['id'] = item.id;
       // The list item names itself from data-label / data-description — its own
       // API, so there is no inner element for this to reach into.
-      node.dataset['label'] = item.title;
+      node.dataset['label'] = item.label ?? item.title ?? '';
       if (item.description) node.dataset['description'] = item.description;
       // UNREAD is a host flag, so CSS paints the row and the pip together off
       // one attribute rather than this file touching either.

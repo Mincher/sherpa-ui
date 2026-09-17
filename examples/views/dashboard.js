@@ -53,19 +53,19 @@ export async function init(root) {
   // ── Metric tiles (with sparkline series). ───────────────────────────
   const metrics = {
     'm-endpoints': {
-      name: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
+      label: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
       values: [1180, 1195, 1210, 1188, 1230, 1255, 1249, 1270, 1284],
     },
     'm-alerts': {
-      name: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
+      label: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
       values: [61, 58, 54, 49, 52, 45, 41, 39, 37],
     },
     'm-uptime': {
-      name: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
+      label: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
       values: [98.4, 98.7, 98.5, 99.0, 98.9, 99.1, 99.0, 99.3, 99.2],
     },
     'm-patch': {
-      name: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
+      label: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
       values: [74, 76, 79, 78, 81, 83, 84, 86, 87],
     },
   };
