@@ -169,10 +169,12 @@ tokens:
   description.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
+    figmaName: Select Card
     methods:
       - $type: method
         name: focus
         args: "options?: FocusOptions"
+    category: control
     jsProps:
       - name: selected
         type: string

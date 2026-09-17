@@ -106,6 +106,8 @@ tokens:
   close.font-size: "{sherpa.font-size-body-base}"
 $extensions:
   sherpa:
+    figmaName: Chip
+    category: control
     jsProps:
       - name: templateId
         type: string
