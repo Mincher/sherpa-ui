@@ -13,7 +13,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
 /* The BUTTON is the hit area and the focus ring; the content box inside it

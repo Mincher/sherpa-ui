@@ -40,7 +40,7 @@
 .title {
   margin: 0;
   color: var(--sherpa-theme-content-body-base, #0c0b11);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--_title-size);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
@@ -53,7 +53,7 @@
 .description {
   display: none;
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }

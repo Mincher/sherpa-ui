@@ -469,11 +469,21 @@ The component contract it reads is `<name>.component.yaml`; tokens come from
 :host([disabled]) {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-content-inactive-default, #5c5c66);
-  background: var(--sherpa-surface-container-inactive, #f2f2f2);
-  border-color: var(--sherpa-border-container-inactive, #c0c0cc);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 ```
+
+**These exact tokens.** This example named
+`--sherpa-content-inactive-default`, `--sherpa-surface-container-inactive` and
+`--sherpa-border-container-inactive` until 2026-09-17; **none of the three has
+ever existed** in `tokens.css`, so anyone who copied it got a colour drawn from
+the literal fallback only. One component did:
+`sherpa-quick-filter-toolbar.css` carried the dead
+`--sherpa-content-inactive-default` and painted `#5c5c66`, a grey that appears
+nowhere in the system. Same failure as the focus-ring token before 2026-09-16 —
+a doc example is code, and an unchecked one rots the same way.
 
 ### Container queries
 

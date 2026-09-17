@@ -25,7 +25,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
 .legend {
@@ -151,9 +151,9 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   /* Solid hue where color-mix is unavailable — the swatch must never vanish. */
-  background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
 }
 /* A STATUS swatch — a gauge's bands are THRESHOLDS, not a data series, so their
@@ -176,7 +176,7 @@
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
   .swatch {
     /* NO extra tint — the series token already carries its 50%. */
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+    background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   }
 }
 

@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* The plot's MINIMUM height, not its fixed one. A chart in a sized cell should
      fill it — the plot row grows and the axis row keeps its natural height (see
      .chart-body). Left as a fixed track, a chart in a 290px cell drew 180px of
@@ -143,7 +143,7 @@
   /* A LINE is the mark itself, not a filled shape with an outline — so it takes
      the series' BORDER token at full strength. `--_hue` would give it the fill's
      50% and the line would read as a ghost. */
-  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
+  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -151,7 +151,7 @@
 }
 
 .area {
-  fill: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  fill: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   opacity: 0.14;
   stroke: none;
 }
@@ -377,7 +377,7 @@
     translate: -50% -50%;
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     /* A dot is a SOLID mark, like the line — the border token, not the 50% fill. */
-    background: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
+    background: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
     opacity: 0;
     transition: opacity 120ms ease;
   }

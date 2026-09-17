@@ -18,7 +18,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
   /* Box surface + border stay neutral in every status (Figma: style-surface/base
      and style-border/base do not re-point per status). The status hue lives on the

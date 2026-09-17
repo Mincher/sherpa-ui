@@ -117,11 +117,6 @@
   border-color: var(--_border-focus);
   box-shadow: inset 0 0 0 2px var(--_border-focus);
 }
-@supports (color: color-mix(in oklab, red, blue)) {
-  .control-row:focus-within {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
-  }
-}
 
 textarea.control {
   resize: vertical;
@@ -178,12 +173,6 @@ textarea.control {
 .control-row:has(.control:user-invalid):focus-within,
 :host([data-error]) .control-row:focus-within {
   box-shadow: inset 0 0 0 2px var(--_border-error);
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .control-row:has(.control:user-invalid):focus-within,
-  :host([data-error]) .control-row:focus-within {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-error) 30%, transparent);
-  }
 }
 /* Snap the field to the bar when the bar is showing (Figma snap-bottom-edge pin). */
 .control-row:has(.control:user-invalid):has(~ .message:not(:empty)),
@@ -255,11 +244,6 @@ textarea.control {
 .field-minimal .control:focus-visible {
   border-color: var(--_border-focus);
   box-shadow: inset 0 0 0 2px var(--_border-focus);
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .field-minimal .control:focus-visible {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
-  }
 }
 .field-minimal .control:user-invalid:focus-visible {
   box-shadow: inset 0 0 0 2px var(--_border-error);

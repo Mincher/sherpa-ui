@@ -22,7 +22,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* The plot's MINIMUM height, not its fixed one. A chart in a sized cell should
      fill it — the plot row grows and the axis row keeps its natural height (see
      .chart-body). Left as a fixed track, a chart in a 290px cell drew 180px of
@@ -165,9 +165,9 @@
      the series' identity and stays put, which is what keeps a translucent mark
      legible on any surface. Using --_hue here also inherited the fill's 50%. */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   /* Solid hue where color-mix is unavailable, so the bar never disappears. */
-  background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
   transition: filter 100ms ease, block-size 300ms ease;
 }
@@ -176,7 +176,7 @@
     /* NO extra tint. The series token ALREADY carries its opacity — `series/N` is
        COMPOSE_COLOR(ramp step, effects/opacity/500) in Figma, so it arrives at
        50%. A component-side 60% on top of that multiplied down to 30%. */
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+    background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   }
 }
 

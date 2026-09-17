@@ -26,7 +26,7 @@
   inset-inline-end: var(--sherpa-display-mode-space-base, 16px);
   z-index: 1000;
   display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
   /* Slide in from off-screen right, then settle. Reversed on the way out. */
   animation: sherpa-toast-in 180ms ease-out both;

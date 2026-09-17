@@ -70,7 +70,7 @@
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* Figma label: content/size/small 12 · content/weight/regular 400 · line-height/small 16. */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);

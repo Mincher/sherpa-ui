@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   min-block-size: 0;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   border-style: solid;
@@ -282,7 +282,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-style: normal;
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -595,7 +595,7 @@
 /* Numeric values are mono and right-aligned, per the system's convention —
    the same rule the grid's own number cells follow. */
 .head-filter-num {
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   text-align: right;
 }
 
@@ -697,7 +697,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
      the header is set apart by its darker surface band, not by a heavier weight.
      This was semibold 600 by hand. Stated in full because `font: inherit` picks up
      the UA's bold <th> default. */
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-style: normal;
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -949,7 +949,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   /* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
   &[data-type="number"] {
     text-align: end;
-    font-family: var(--sherpa-font-family-mono, monospace);
+    font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
     font-variant-numeric: tabular-nums;
   }
 }

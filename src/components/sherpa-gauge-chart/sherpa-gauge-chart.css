@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* NO --_size. It was a fixed 200px (the Figma chart's own size) that the
      needle, the scale row and the tooltip anchors all measured themselves
      against — so none of them scaled when the gauge grew past 200. Every one of

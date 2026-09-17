@@ -20,7 +20,7 @@
      what makes the percentage chain mean anything. */
   display: grid;
   grid-template-rows: minmax(0, 1fr);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* The host takes its parent's height when there is one to take. A block box
      is `height: auto`, so it grew to whatever the ring asked for and `100%`
      inside it resolved against that — which is how a 600x140 container ended up
@@ -161,7 +161,7 @@
    
    Slices TOUCH, with no gap. The rounding is what separates them, as in Figma. */
 .slice {
-  fill: var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6));
+  fill: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   /* NO fill-opacity. The series token already carries its 50%, and a
      fill-opacity here MULTIPLIES it — marks painted at 30%. */
   /* The OUTLINE has its own token — colour 5 of the series' sequence, at full
@@ -169,7 +169,7 @@
      ramp; its border is the series' identity and stays put, which is what keeps
      a translucent mark legible on any surface. Falls back to the hue where the
      border token is not defined. */
-  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #7b1ce6)));
+  stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   /* ROUND joins. The corner arcs already carry the rounding, but a join sits
      where two path commands meet, and a mitre there pushes a spike out past the
      corner on a narrow slice. */

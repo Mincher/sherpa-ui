@@ -66,7 +66,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* Figma Item Name: content/size/base 14 · weight/light 300 · line-height/base 20.
      Set on the box so the label, the tag and both controls all inherit it. */
   font-size: var(--sherpa-font-size-body-base, 14px);

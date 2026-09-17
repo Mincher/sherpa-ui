@@ -44,7 +44,7 @@
 
      The fallback is the default mode's own data-viz colour (sequence 1). */
   --_line: var(--_status-data-viz-border, var(--sherpa-style-border-data-viz,
-    var(--sherpa-theme-data-viz-sequence-1, #8364c8)));
+    var(--sherpa-data-viz-series-1, #8364c880)));
 
   /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;

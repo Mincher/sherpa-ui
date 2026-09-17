@@ -40,7 +40,7 @@
 }
 
 .language {
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-base, 0);
@@ -93,7 +93,7 @@
 }
 .code {
   display: block;
-  font-family: var(--sherpa-font-family-mono, ui-monospace, monospace);
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: pre;

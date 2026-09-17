@@ -16,7 +16,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 

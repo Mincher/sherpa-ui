@@ -17,7 +17,7 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
 .label {

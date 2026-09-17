@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
 /* ── Tab strip — Figma Tab Group: ONE 0.5px border/default/+2 rule under the whole

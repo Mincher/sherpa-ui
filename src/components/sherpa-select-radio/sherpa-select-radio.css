@@ -20,7 +20,7 @@
 
 :host {
   display: inline-flex;
-  font-family: var(--sherpa-font-family-body, "Inter", sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   --_size: var(--sherpa-display-mode-size-sm, 16px);
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));

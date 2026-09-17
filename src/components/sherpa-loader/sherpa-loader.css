@@ -20,7 +20,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }

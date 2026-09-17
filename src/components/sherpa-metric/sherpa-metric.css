@@ -28,7 +28,7 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
   container: sherpa-metric / inline-size;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
   /* Delta colour — neutral until a trend is set. */
   --_delta: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));

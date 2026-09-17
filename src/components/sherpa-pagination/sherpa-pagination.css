@@ -27,7 +27,7 @@
   inline-size: 100%;
   /* The PADDING lives on .pagination, not here — putting it in both places double-
      insets the row. */
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
@@ -125,12 +125,6 @@
   outline: none;
   border-color: var(--_border-focus);
   box-shadow: inset 0 0 0 2px var(--_border-focus);
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .rows:focus-visible,
-  .page-input:focus-visible {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--_border-focus) 30%, transparent);
-  }
 }
 
 /* Both are the Figma "Input Field (atom)" box at 32 tall, sized to what each

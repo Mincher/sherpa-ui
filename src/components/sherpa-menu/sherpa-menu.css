@@ -95,7 +95,7 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* Elevation=md (Figma pins it on the Menu). */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)

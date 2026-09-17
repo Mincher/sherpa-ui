@@ -13,7 +13,7 @@
 
 :host {
   display: block;
-  font-family: var(--sherpa-font-family-body, system-ui, sans-serif);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
