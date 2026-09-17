@@ -142,7 +142,229 @@ function inferField(field, values, rowCount, keyField) {
   return { rules, notes, confident: rules.length > 0 };
 }
 
+/* ══ JSON Schema / OpenAPI import (M4) ═══════════════════════════════════════
+ * Read a backend's OWN description of its rows instead of guessing from a
+ * sample. Strictly better where it exists: a spec says what the backend
+ * promises, a sample says only what it happened to send.
+ *
+ * Eight JSON Schema keywords map onto a Sherpa rule. TEN DO NOT, and those are
+ * the whole risk: a converter that silently ignores `$ref` or `allOf` emits a
+ * schema that LOOKS faithful, passes every row, and enforces half of what the
+ * backend actually promises. So every unsupported keyword is reported by name
+ * and by field — an honest gap over a confident wrong answer.
+ */
+const JSON_SCHEMA_MAPPED = {
+  'type: number/integer': 'number',
+  'required': 'required',
+  'minimum': 'min',
+  'maximum': 'max',
+  'pattern': 'pattern',
+  'enum': 'oneOf',
+  'format: email': 'email',
+  'format: uri/url': 'url',
+};
+
+/** `#/components/schemas/Customer` → the node it points at, or null. */
+function resolveRef(doc, ref) {
+  if (typeof ref !== 'string' || !ref.startsWith('#/')) return null;
+  let node = doc;
+  for (const raw of ref.slice(2).split('/')) {
+    const seg = raw.replace(/~1/g, '/').replace(/~0/g, '~');
+    if (!node || typeof node !== 'object') return null;
+    node = node[seg];
+  }
+  return node ?? null;
+}
+
+/**
+ * Find the ROW schema in whatever was pasted.
+ *
+ * Three shapes arrive in practice: a bare object schema, an array schema whose
+ * `items` is the row, and a whole OpenAPI document where the row is buried
+ * under a path's 200 response. Returns `{ schema, via }` so the report can say
+ * where it looked — a tool that silently picks the wrong node is worse than one
+ * that says it could not find a row.
+ */
+function findRowSchema(doc, pathHint) {
+  const unwrapArray = (s, via) =>
+    s && s.type === 'array' && s.items ? { schema: s.items, via: `${via} → items` } : { schema: s, via };
+
+  // A whole OpenAPI document?
+  if (doc && doc.paths && typeof doc.paths === 'object') {
+    const paths = Object.keys(doc.paths);
+    const chosen = pathHint && paths.includes(pathHint) ? pathHint : paths[0];
+    if (!chosen) return { schema: null, via: 'openapi document has no paths', options: [] };
+    const get = doc.paths[chosen]?.get;
+    const content = get?.responses?.['200']?.content ?? get?.responses?.default?.content;
+    const media = content && (content['application/json'] ?? Object.values(content)[0]);
+    let s = media?.schema;
+    if (s?.$ref) s = resolveRef(doc, s.$ref);
+    if (!s) return { schema: null, via: `no 200 JSON response schema on GET ${chosen}`, options: paths };
+    const out = unwrapArray(s, `GET ${chosen} → 200 → application/json`);
+    if (out.schema?.$ref) return { schema: resolveRef(doc, out.schema.$ref), via: `${out.via} → ${out.schema.$ref}`, options: paths };
+    return { ...out, options: paths };
+  }
+
+  // A bare schema, possibly an array of rows.
+  if (doc && doc.$ref) {
+    const r = resolveRef(doc, doc.$ref);
+    if (r) return unwrapArray(r, `$ref ${doc.$ref}`);
+  }
+  return unwrapArray(doc, 'the document itself');
+}
+
+/** One property's JSON Schema node → Sherpa rules + what could not be carried. */
+function rulesFromProperty(doc, name, node, isRequired, unsupported) {
+  const rules = [];
+  const notes = [];
+  if (!node || typeof node !== 'object') {
+    unsupported.push(`\`${name}\`: not an object schema`);
+    return { rules, notes };
+  }
+
+  let s = node;
+  if (s.$ref) {
+    const target = resolveRef(doc, s.$ref);
+    // A $ref to another OBJECT is a nested record. Sherpa reads nested values
+    // with a dotted path, but `rules()` maps one field to rules — it cannot
+    // express "and validate this sub-object too". Say so; do not invent it.
+    unsupported.push(`\`${name}\`: \`$ref\` → \`${s.$ref}\`${target?.type === 'object' ? ' (a nested object — reach its values with a dotted path, e.g. `' + name + '.city`)' : ''}`);
+    return { rules, notes };
+  }
+  for (const kw of ['allOf', 'anyOf', 'oneOf', 'not']) {
+    if (s[kw]) { unsupported.push(`\`${name}\`: \`${kw}\` composition has no Sherpa equivalent`); return { rules, notes }; }
+  }
+
+  if (isRequired) { rules.push('required'); notes.push('listed in the schema\'s `required`'); }
+
+  const type = Array.isArray(s.type) ? s.type.find((t) => t !== 'null') : s.type;
+  if (Array.isArray(s.type) && s.type.includes('null')) notes.push('nullable in the spec — Sherpa rules skip an absent value, so this needs no rule');
+
+  if (type === 'number' || type === 'integer') {
+    rules.push('number');
+    notes.push(`\`type: ${type}\``);
+  }
+  if (type === 'object') {
+    unsupported.push(`\`${name}\`: a nested object — reach its values with a dotted path (\`${name}.someKey\`)`);
+  }
+  if (type === 'array') {
+    unsupported.push(`\`${name}\`: an array — Sherpa rules validate one value, not each item`);
+  }
+
+  if (s.format === 'email') { rules.push('email'); notes.push('`format: email`'); }
+  else if (s.format === 'uri' || s.format === 'url') { rules.push('url'); notes.push(`\`format: ${s.format}\``); }
+  else if (s.format) unsupported.push(`\`${name}\`: \`format: ${s.format}\` has no Sherpa rule`);
+
+  if (Array.isArray(s.enum) && s.enum.length) { rules.push({ oneOf: s.enum }); notes.push(`\`enum\` of ${s.enum.length}`); }
+  if (typeof s.minimum === 'number') { rules.push({ min: s.minimum }); notes.push(`\`minimum: ${s.minimum}\` — from the SPEC, not a sample`); }
+  if (typeof s.maximum === 'number') { rules.push({ max: s.maximum }); notes.push(`\`maximum: ${s.maximum}\` — from the SPEC, not a sample`); }
+  if (typeof s.pattern === 'string') { rules.push({ pattern: s.pattern }); notes.push('`pattern`'); }
+
+  if (typeof s.minLength === 'number') unsupported.push(`\`${name}\`: \`minLength: ${s.minLength}\` — no length rule; express it as a \`pattern\``);
+  if (typeof s.maxLength === 'number') unsupported.push(`\`${name}\`: \`maxLength: ${s.maxLength}\` — no length rule; express it as a \`pattern\``);
+  if (s.default !== undefined) unsupported.push(`\`${name}\`: \`default\` — a schema can default on the way in, but \`rules()\` does not`);
+  if (typeof s.exclusiveMinimum === 'number') unsupported.push(`\`${name}\`: \`exclusiveMinimum\` — \`min\` is inclusive`);
+  if (typeof s.exclusiveMaximum === 'number') unsupported.push(`\`${name}\`: \`exclusiveMaximum\` — \`max\` is inclusive`);
+
+  return { rules, notes };
+}
+
 export function register(server) {
+  // ── import_schema — read the backend's OWN description (M4) ──
+  server.registerTool(
+    "import_schema",
+    {
+      title: "Import a JSON Schema or OpenAPI Document",
+      description:
+        "Turn a backend's OWN description of its rows into a Sherpa schema — strictly better than inferring from a sample, because a spec says what the backend PROMISES rather than what it happened to send. Accepts a bare JSON Schema, an array schema, or a whole OpenAPI document (it finds the row under a path's 200 JSON response and follows $ref). Eight keywords map onto a rule: type:number/integer, required, minimum, maximum, pattern, enum, format:email, format:uri. Everything else — $ref, allOf/anyOf/oneOf, nested objects, arrays, minLength/maxLength, default, exclusive bounds — is reported BY NAME AND FIELD rather than dropped, because a converter that quietly ignores half a spec emits a schema that looks faithful and is not.",
+      inputSchema: {
+        document: z
+          .string()
+          .describe("The JSON Schema or OpenAPI document, as JSON."),
+        path: z
+          .string()
+          .optional()
+          .describe("For an OpenAPI document with several paths: which one holds the rows (e.g. \"/customers\"). Defaults to the first path."),
+        key: z
+          .string()
+          .optional()
+          .describe("The identity field (default \"id\")."),
+      },
+    },
+    async ({ document, path, key }) => {
+      const dl = await loadDataLayer();
+      if (!dl) return err(dataLayerError());
+
+      let doc;
+      try { doc = JSON.parse(document); } catch (e) { return err(`document is not valid JSON: ${e.message}`); }
+      if (!doc || typeof doc !== "object") return err("document must be a JSON object.");
+
+      const { schema: row, via, options } = findRowSchema(doc, path);
+      if (!row || typeof row !== "object") {
+        const where = options?.length ? `\n\nPaths in this document: ${options.map((p) => `\`${p}\``).join(", ")} — name one with \`path\`.` : "";
+        return err(`Could not find a row schema (${via}).${where}`);
+      }
+      const props = row.properties;
+      if (!props || typeof props !== "object") {
+        return err(`The row schema at "${via}" has no \`properties\` — it describes ${row.type ? `a \`${row.type}\`` : "something"}, not a record. A Sherpa row is a plain object.`);
+      }
+
+      const required = new Set(Array.isArray(row.required) ? row.required : []);
+      const keyField = key ?? "id";
+      const unsupported = [];
+      const schema = {};
+      const evidence = [];
+      for (const [name, node] of Object.entries(props)) {
+        const { rules, notes } = rulesFromProperty(doc, name, node, required.has(name), unsupported);
+        if (rules.length) schema[name] = rules;
+        evidence.push({ name, rules, notes });
+      }
+
+      const lines = [];
+      lines.push(`## import_schema — ${Object.keys(props).length} field(s)\n`);
+      lines.push(`Read from: ${via}\n`);
+      lines.push("### The schema\n");
+      lines.push("```json");
+      lines.push(JSON.stringify(schema, null, 2));
+      lines.push("```\n");
+
+      lines.push("### Where each rule came from\n");
+      for (const e of evidence) {
+        lines.push(e.rules.length
+          ? `**\`${e.name}\`** → ${e.rules.map((r) => (typeof r === "string" ? r : Object.keys(r)[0])).join(", ")}`
+          : `**\`${e.name}\`** → no rule`);
+        for (const n of e.notes) lines.push(`  - ${n}`);
+      }
+      lines.push("");
+
+      if (unsupported.length) {
+        lines.push(`### ⚠️ ${unsupported.length} thing(s) the spec says that this schema does NOT enforce\n`);
+        for (const u of unsupported) lines.push(`- ${u}`);
+        lines.push("");
+        lines.push("These are listed so you can decide, not so you can ignore them. A `custom(fn)` rule covers anything here that matters; leaving one out means the backend promises something your schema will not catch.");
+        lines.push("");
+      } else {
+        lines.push("### ✅ Everything the spec says is enforced\n");
+        lines.push("No keyword in this document lacks a Sherpa rule.\n");
+      }
+
+      if (!required.has(keyField)) {
+        lines.push(`### The key (\`${keyField}\`)\n`);
+        lines.push(props[keyField]
+          ? `⚠️ \`${keyField}\` is a property but is NOT in the spec's \`required\` list. Sherpa needs one identity field per record — add \`"required"\` to it, or name the real key with \`key\`.`
+          : `❌ the spec has no \`${keyField}\` property. Name the real identity field with \`key\`, or the store cannot find a record.`);
+        lines.push("");
+      }
+
+      lines.push("### Next\n");
+      lines.push("1. Run it against a real page of rows with `validate_schema` — a spec describes the intent, and backends drift from their own specs.");
+      lines.push(`2. Put it on the STORE: \`new ArrayStore(rows, { key: '${keyField}', schema })\`.`);
+      lines.push("\nSee `sherpa://data-rules` for the whole contract.");
+
+      return ok(lines.join("\n"));
+    }
+  );
+
   // ── scaffold_schema — sample rows → a DRAFT, every inference marked ──
   server.registerTool(
     "scaffold_schema",

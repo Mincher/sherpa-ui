@@ -8,7 +8,7 @@
  *   Discover  list_components · explain_token · browse_ontology · get_component
  *   Generate  scaffold_def · validate_def · compile_def · token_for
  *   Verify    audit_component · check_bindings
- *   Data      validate_schema
+ *   Data      import_schema · scaffold_schema · validate_schema
  *   Resources sherpa://def/{name} · sherpa://ontology/{id}
  *             · sherpa://component/{name}/{ts|html|css|def} · sherpa://rules
  *   Prompts   generate_component · review_component_usage · debug_component
