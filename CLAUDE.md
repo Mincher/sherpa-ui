@@ -33,7 +33,10 @@ npm run build:watch:ts    # tsc --watch — TS only, no asset copy
 # Type check (no emit)
 npm run type-check
 
-# Lint TypeScript
+# Lint TypeScript. Includes the DOM-FREE BOUNDARY: nine core modules
+# (store, stores, validate, pointer, chart-datum, format-tick, live-stores,
+# data-source) may not touch document/window/customElements/storage — they are
+# the half of the data layer a server, a test or an MCP tool imports.
 npm run lint
 npm run lint:fix
 

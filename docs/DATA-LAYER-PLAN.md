@@ -1799,7 +1799,7 @@ break it silently, and no test would notice.
 | Step | Work | Why here |
 |---|---|---|
 | **N1** ✅ | A Node test that imports the layer and runs the operations above | **DONE 2026-09-16** — `test/unit/headless-data-layer.test.mjs`, run by `npm run test:node`. 5 tests: pure functions, store + source query and mutate, headless `bind()`, and a schema mapping an external shape. Proven to catch a regression: adding one `document.querySelector` to `store.js` fails it |
-| **N2** | A lint rule: no DOM globals in `store.ts` / `validate.ts` / `data-source.ts` | states the boundary where it can be enforced, not just described |
+| **N2** ✅ | A lint rule: no DOM globals in `store.ts` / `validate.ts` / `data-source.ts` | **DONE 2026-09-17.** `no-restricted-globals` on the nine headless modules. Does NOT ban `EventTarget`/`CustomEvent`/`Event` (Node globals since Node 15 — checked, not assumed) nor TYPE-only `HTMLElement` (erased at compile time). `stores.ts` got its own narrower override: `LocalStore` is browser-only by design and already degrades via `try/catch → null`, so it is headless-SAFE but not storage-free |
 | **N3** | Publish the layer as a separate entry point (`sherpa-ui/data`) | so a server imports it without pulling in `customElements`. `src/index.ts` currently registers every component on import |
 | **N4** | An MCP tier that drives a headless source | needs N3 (a clean import) and P1–P3 (parity). The layer itself is ready |
 
