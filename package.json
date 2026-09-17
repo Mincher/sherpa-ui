@@ -29,6 +29,7 @@
     "mcp-server/"
   ],
   "scripts": {
+    "prepare": "husky",
     "clean": "rm -rf dist",
     "build": "node scripts/build-reforged.mjs",
     "build:watch": "node scripts/build-reforged.mjs --watch",

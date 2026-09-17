@@ -1,62 +1,21 @@
 {
-  "compilerOptions": {
-    // Target & Module
-    "target": "ES2022",
-    "module": "ES2022",
-    "lib": ["ES2022", "ESNext.Temporal", "DOM", "DOM.Iterable"],
-    "moduleResolution": "bundler",
-    "types": ["@web/test-runner"],
+  /* The BASE config is `tsconfig.reforged.json` — that is what `npm run
+     type-check` and `build:watch:ts` run, and therefore what "does this
+     compile" means in this repo.
 
-    // Emit
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
-    "importHelpers": false,
+     This file exists for ONE consumer: `.eslintrc.json`'s
+     `parserOptions.project`, which needs a tsconfig to resolve types for the
+     type-aware rules. It used to be a full second copy of the compiler
+     options, and the copy had drifted: `lib: ES2022` against the real
+     `ES2024`, so `toSorted` and `Map.groupBy` in `src/core/store.ts` were
+     errors here and fine there. It also set `"types": ["@web/test-runner"]`
+     for a package that is not installed — the project moved to Playwright —
+     which made `tsc -p tsconfig.json` fail outright with TS2688 and silently
+     degraded every type-aware lint rule.
 
-    // Strict Mode (all enabled)
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "useUnknownInCatchVariables": true,
-
-    // Additional Checks
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-
-    // Decorators
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": false,
-
-    // Interop
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-
-    // Advanced
-    "skipLibCheck": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.d.ts"
-  ]
+     Extending instead of copying means there is one answer to "what are the
+     compiler options", and it cannot drift again. */
+  "extends": "./tsconfig.reforged.json",
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.d.ts"]
 }
