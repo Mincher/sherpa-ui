@@ -148,3 +148,7 @@ states:
   - $type: state
     name: fill
     selector: ":host([data-fill])"
+$extensions:
+  sherpa:
+    figmaName: Stack
+    category: container

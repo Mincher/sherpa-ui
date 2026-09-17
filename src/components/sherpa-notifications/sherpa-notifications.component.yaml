@@ -107,6 +107,7 @@ tokens:
   empty.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
+    figmaName: Notifications
     methods:
       - $type: method
         name: show
@@ -119,6 +120,7 @@ $extensions:
         name: toggle
         args: "trigger?: HTMLElement"
         description: Open if shut, shut if open — what a bell click does.
+    category: container
     jsProps:
       - name: unreadCount
         type: string
