@@ -108,19 +108,26 @@ export function validateDef(def, opts = {}) {
           return k === target || k.endsWith(target);
         });
         if (!known) {
-          /* Not in the shared sheet. Before calling it dead, check whether the
-             component DEFINES it itself — all 14 that surfaced here do, on
-             `:host`, re-pointed per size (`--sherpa-button-space-gap`,
-             `--sherpa-switch-size-width`). Nothing is broken; the name simply
-             takes the SHARED `--sherpa-*` prefix for a component-private value,
-             which CLAUDE.md reserves `--_*` for. Say that, because "the
-             collection may have been removed" would send someone looking for a
-             Figma collection that was correctly deleted. */
+          /* Not in the shared sheet — but that is not the whole question.
+             A COMPONENT-SCOPED collection (Figma's `structure`, `switch`,
+             `navigation`, `input`) is projected by `project-tokens.mjs` into the
+             component's OWN `sherpa:tokens` region rather than into tokens.css,
+             so `--sherpa-button-space-gap` is a real projected token that simply
+             lives somewhere else. It is NOT a misnamed private value, and
+             renaming it to `--_*` is undone by the next projection — I tried,
+             and the next `--all` run put every name straight back.
+
+             So: defined in the component's own CSS ⇒ scoped, say where it comes
+             from and move on. Defined nowhere ⇒ genuinely dead. */
           const ownCss = componentCss(def.name);
-          const selfDefined = ownCss && new RegExp(`--sherpa-${nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`).test(ownCss);
-          out.push(selfDefined
-            ? warn('token-private', `"${nm}" (${key}) is component-private — ${def.name}.css defines it on :host. Private values use the --_* prefix, not --sherpa-*`, key)
-            : warn('token', `token "${nm}" (${key}) is not declared in tokens.css and ${def.name}.css does not define it — the name is dead`, key));
+          const scoped = ownCss
+            && /sherpa:tokens \(generated/.test(ownCss)
+            && new RegExp(`--sherpa-${nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`).test(ownCss);
+          // A scoped token is CORRECT, so it is not a finding. Five components
+          // carry a projected region today: button (structure), input-text
+          // (input), nav + nav-item (navigation), switch (switch).
+          if (scoped) continue;
+          out.push(warn('token', `token "${nm}" (${key}) is not declared in tokens.css, and ${def.name}.css has no projected region defining it — the name is dead`, key));
           continue;
         }
       }
