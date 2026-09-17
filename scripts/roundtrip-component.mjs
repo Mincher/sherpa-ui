@@ -43,129 +43,15 @@ import yaml from 'js-yaml';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindingsMap } from './lib/css-reader.mjs';
+import { htmlDiff } from './lib/html-structure.mjs';
+import { parseObserved } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
 
-// ── tiny HTML template parser (structure only) ─────────────────────────────────
-// We only need the shape compileDef produces: nested tags with class/part/attrs,
-// self-closing-less elements, and <slot [name]> children. Good enough for the
-// deterministic markup both sides emit — not a general HTML parser.
-function parseTemplates(html) {
-  const templates = {};
-  const re = /<template id="([^"]+)">([\s\S]*?)<\/template>/g;
-  let m;
-  while ((m = re.exec(html))) templates[m[1]] = parseNodes(m[2].trim());
-  return templates;
-}
-function parseNodes(src) {
-  const nodes = [];
-  let i = 0;
-  const len = src.length;
-  while (i < len) {
-    // skip whitespace / comments between tags
-    while (i < len && /\s/.test(src[i])) i++;
-    if (i >= len) break;
-    if (src.startsWith('<!--', i)) { i = src.indexOf('-->', i) + 3; continue; }
-    if (src[i] !== '<') { // stray text — ignore (labels use ::after, no text nodes)
-      const next = src.indexOf('<', i);
-      i = next === -1 ? len : next;
-      continue;
-    }
-    // an opening tag
-    const close = src.indexOf('>', i);
-    const raw = src.slice(i + 1, close);
-    const selfClosing = raw.endsWith('/');
-    const inner = selfClosing ? raw.slice(0, -1).trim() : raw.trim();
-    const sp = inner.search(/\s/);
-    const tag = (sp === -1 ? inner : inner.slice(0, sp)).toLowerCase();
-    const attrStr = sp === -1 ? '' : inner.slice(sp + 1);
-    const attrs = parseAttrs(attrStr);
-    i = close + 1;
-
-    if (selfClosing || voidTag(tag)) {
-      nodes.push({ tag, attrs, children: [] });
-      continue;
-    }
-    // `<slot>` is a CONTAINER (may hold hand-authored fallback content). Consume its
-    // matching `</slot>` so the fallback isn't mis-parsed as phantom sibling nodes,
-    // then DROP the fallback — compileDef emits empty slots, so fallback CONTENT is
-    // accepted, documented residue. Name + attr-set + position still round-trip.
-    if (tag === 'slot') {
-      const endIdx = findMatchingClose(src, i, 'slot', '</slot>');
-      nodes.push({ tag, attrs, children: [] });
-      i = endIdx + '</slot>'.length;
-      continue;
-    }
-    // find matching close tag (no nesting of same tag inside our simple markup)
-    const endTag = `</${tag}>`;
-    const endIdx = findMatchingClose(src, i, tag, endTag);
-    const childSrc = src.slice(i, endIdx);
-    nodes.push({ tag, attrs, children: parseNodes(childSrc) });
-    i = endIdx + endTag.length;
-  }
-  return nodes;
-}
-function findMatchingClose(src, from, tag, endTag) {
-  // handle same-tag nesting by depth counting
-  let depth = 1, i = from;
-  const openRe = new RegExp(`<${tag}(?=[\\s>/])`, 'g');
-  while (i < src.length) {
-    const nextOpen = src.indexOf(`<${tag}`, i);
-    const nextClose = src.indexOf(endTag, i);
-    if (nextClose === -1) return src.length;
-    if (nextOpen !== -1 && nextOpen < nextClose && /[\s>/]/.test(src[nextOpen + 1 + tag.length] || '>')) {
-      depth++; i = nextOpen + 1;
-    } else {
-      depth--; if (depth === 0) return nextClose; i = nextClose + endTag.length;
-    }
-  }
-  return src.length;
-}
-function voidTag(t) { return ['br', 'hr', 'img', 'input', 'meta', 'link'].includes(t); }
-function parseAttrs(s) {
-  const attrs = {};
-  const re = /([:\w-]+)(?:="([^"]*)")?/g;
-  let m;
-  while ((m = re.exec(s))) { if (m[1]) attrs[m[1]] = m[2] ?? ''; }
-  return attrs;
-}
-
-// normalise a node for structural compare: tag + class + part + attr set + slot
-function normNode(n) {
-  const a = { ...n.attrs };
-  const out = { tag: n.tag };
-  if (n.tag === 'slot') out.slotName = a.name ?? '';
-  out.class = a.class ?? '';
-  out.part = a.part ?? '';
-  delete a.class; delete a.part;
-  out.attrs = Object.fromEntries(Object.entries(a).sort());
-  out.children = (n.children ?? []).map(normNode);
-  return out;
-}
-function nodeDiff(gen, real, path, diffs) {
-  if (!gen || !real) { diffs.push(`${path}: node present on one side only (gen=${!!gen} real=${!!real})`); return; }
-  for (const k of ['tag', 'class', 'part', 'slotName']) {
-    if ((gen[k] ?? '') !== (real[k] ?? '')) diffs.push(`${path}: ${k} "${gen[k] ?? ''}" (gen) ≠ "${real[k] ?? ''}" (real)`);
-  }
-  const ga = JSON.stringify(gen.attrs), ra = JSON.stringify(real.attrs);
-  if (ga !== ra) diffs.push(`${path}: attrs ${ga} (gen) ≠ ${ra} (real)`);
-  const gc = gen.children ?? [], rc = real.children ?? [];
-  if (gc.length !== rc.length) diffs.push(`${path}: ${gc.length} children (gen) ≠ ${rc.length} (real)`);
-  const n = Math.max(gc.length, rc.length);
-  for (let i = 0; i < n; i++) nodeDiff(gc[i], rc[i], `${path} > ${(gc[i]?.tag || rc[i]?.tag)}[${i}]`, diffs);
-}
-
 function checkHtml(genHtml, realHtml) {
-  const g = parseTemplates(genHtml), r = parseTemplates(realHtml);
   const diffs = [];
-  const ids = new Set([...Object.keys(g), ...Object.keys(r)]);
-  for (const id of ids) {
-    if (!g[id] || !r[id]) { diffs.push(`template "${id}" present on one side only`); continue; }
-    const gn = g[id].map(normNode), rn = r[id].map(normNode);
-    if (gn.length !== rn.length) diffs.push(`template "${id}": ${gn.length} root nodes (gen) ≠ ${rn.length} (real)`);
-    for (let i = 0; i < Math.max(gn.length, rn.length); i++) nodeDiff(gn[i], rn[i], `${id}[${i}]`, diffs);
-  }
+  htmlDiff(genHtml, realHtml, diffs);
   return diffs;
 }
 
@@ -196,8 +82,11 @@ function tsFacts(ts) {
   f.class = (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null;
   f.css = (/static override css = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
   f.html = (/static override html = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
-  const obs = /static override observed = \[([^\]]*)\]/.exec(ts);
-  f.observed = obs ? obs[1].split(',').map((s) => s.trim().replace(/^'|'$/g, '')).filter(Boolean) : [];
+  // The SHARED reader — it strips comments and expands a `...SPREAD` of a
+  // module-level const. This used to be a bare regex here, and both of those
+  // fixes had landed in the spec generator only, so this script disagreed with
+  // the gate on 5 of 58 components.
+  f.observed = parseObserved(ts);
   f.define = (/customElements\.define\('([^']+)'/.exec(ts) || [])[1] ?? null;
   return f;
 }
