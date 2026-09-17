@@ -48,12 +48,19 @@ test('a sortable header cycles none → asc → desc, each a different painted g
 
     // The sort control is an icon-only <sherpa-quick-filter> now, so the glyph
     // is TWO shadow roots down: the chip writes its data-icon-start into its
-    // own `.caret-icon`, which holds the real <i>. Reading the chip's attribute
-    // alone would not prove the glyph paints, which is the whole point here.
+    // own `.caret-icon`. Reading the chip's attribute alone would not prove the
+    // glyph paints, which is the whole point here.
+    //
+    // The classes go on `.caret-icon` ITSELF, not a child <i>. That changed
+    // when the three hand-rolled icon writers were replaced by the base class's
+    // `writeIcon`, which puts FA classes on the target — any element can carry
+    // them, and building a child with createElement is forbidden. This test
+    // kept reading `.caret-icon i`, found nothing, and reported "the glyph does
+    // not paint" when it painted perfectly.
     const read = () => [...el.shadowRoot.querySelectorAll('.head-cell')].map((th) => {
       const cell = th as HTMLElement;
       const chip = cell.querySelector('.head-sort') as HTMLElement;
-      const i = chip.shadowRoot!.querySelector('.caret-icon i') as HTMLElement | null;
+      const i = chip.shadowRoot!.querySelector('.caret-icon') as HTMLElement | null;
       const before = i ? getComputedStyle(i, '::before') : null;
       return {
         field: cell.dataset['field'],
