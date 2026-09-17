@@ -2545,7 +2545,7 @@ applied to data:
 |---|---|---|
 | **V7** ✅ | Apply the schema on `load()`, not just writes | **DONE 2026-09-16.** `checkRows()` on the base store, wired into all four `load()`s. A schema now RENAMES, COERCES and DEFAULTS on the way in, so the hand-written adapter store the plan sketched is no longer needed |
 | **V8** ✅ | Drop-and-report for bad rows: a field on `LoadResult` AND a getter on `DataSource` | **DONE 2026-09-16.** `LoadResult` gained `dropped` + `issues` (absent when nothing dropped, so a host tests the field rather than comparing to zero) and `DataSource` gained `result`. `total` drops with the rows, or a pager offers a page that renders empty |
-| **V9** | Derive a column's `type` from the schema where one is given | the grid's `type` and the schema's already say the same thing in two places |
+| **V9** | Derive a column's `type` from the schema where one is given | **BLOCKED, and now understood.** `rules()` builds a map of opaque CLOSURES — there is no declared `type` to read. It needs rules to carry a tag (`number().type === 'number'`) AND a `date()` rule, which does not exist. Attempted 2026-09-17 and stopped: no example paired a schema with a grid, so it would have been a bridge to an empty road. The schema on the records store landed instead |
 | **V10** | `sample` — check the first N rows on a bulk load | so a 10k-row load is not 10k parses |
 
 **V7 is the one that matters** and is small: `load()` already has the rows and
