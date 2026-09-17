@@ -587,3 +587,106 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
   // contract that lets it sit in a headless entry point at all.
   assert.equal(session.persist('/theme/mode'), false);
 });
+
+test('RestStore sends the query to the server and trusts the answer', async () => {
+  /* THE STORE THAT CARRIES EVERY QUERY TO A REAL BACKEND, and it had NO test —
+     the one place where `LoadOptions` becomes a request and a response becomes
+     rows. Plan step Q2 (a translator per backend) sits on this seam, and the
+     plan says build those on demand; testing the seam itself is not speculative.
+
+     `fetch` is a Node global, so this runs headless with a stub and no server. */
+  const { RestStore } = await import('../../dist/core/stores.js');
+
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    return {
+      ok: true,
+      status: 200,
+      // `headers` is not optional: #request reads `content-length` to spot a
+      // 204 with no body. A stub without it throws before the assertions run.
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ items: [{ id: 1, n: 'a' }, { id: 2, n: 'b' }], count: 57 }),
+    };
+  };
+
+  try {
+    const store = new RestStore({
+      url: 'https://api.test/customers',
+      key: 'id',
+      rowsPath: 'items',
+      totalPath: 'count',
+    });
+
+    const result = await store.load({
+      skip: 25,
+      take: 25,
+      sort: [{ field: 'n', direction: 'desc' }],
+      filter: ['status', 'eq', 'active'],
+      search: 'ada',
+    });
+
+    const url = new URL(calls[0]);
+    // THE WHOLE QUERY reaches the server. A missing parameter here means the
+    // server pages or sorts something other than what the user asked for.
+    assert.equal(url.searchParams.get('skip'), '25');
+    assert.equal(url.searchParams.get('take'), '25');
+    assert.equal(url.searchParams.get('search'), 'ada');
+    assert.deepEqual(JSON.parse(url.searchParams.get('sort')),
+      [{ field: 'n', direction: 'desc' }]);
+    assert.deepEqual(JSON.parse(url.searchParams.get('filter')),
+      ['status', 'eq', 'active']);
+
+    // The ROWS come from `rowsPath`, and the TOTAL from the server — 57, not 2.
+    // A store that returned rows.length here would make every pager say
+    // "page 1 of 1" over a corpus of 57.
+    assert.deepEqual(result.rows.map((r) => r.n), ['a', 'b']);
+    assert.equal(result.total, 57);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('a custom buildQuery is the seam a backend translator plugs into', async () => {
+  const { RestStore } = await import('../../dist/core/stores.js');
+
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    return { ok: true, status: 200, headers: new Headers(), json: async () => [] };
+  };
+
+  try {
+    /* A TOY OData TRANSLATOR — the shape plan step Q2 describes: a pure
+       function, `LoadOptions` in, a request out. Written here rather than
+       shipped, because the plan says build a real one ON DEMAND and there is no
+       backend in this repo demanding one. What matters is that the SEAM works. */
+    const toOData = (options) => {
+      const q = new URLSearchParams();
+      if (options.take != null) q.append('$top', String(options.take));
+      if (options.skip) q.append('$skip', String(options.skip));
+      if (options.sort?.length) {
+        q.append('$orderby', options.sort
+          .map((s) => `${s.field} ${s.direction ?? 'asc'}`).join(','));
+      }
+      if (Array.isArray(options.filter) && options.filter.length === 3) {
+        const [field, , value] = options.filter;
+        q.append('$filter', `${field} eq '${value}'`);
+      }
+      return q;
+    };
+
+    const store = new RestStore({ url: 'https://api.test/People', buildQuery: toOData });
+    await store.load({ take: 10, skip: 20, sort: [{ field: 'name' }], filter: ['city', 'eq', 'Oslo'] });
+
+    const url = new URL(calls[0]);
+    assert.equal(url.searchParams.get('$top'), '10');
+    assert.equal(url.searchParams.get('$skip'), '20');
+    assert.equal(url.searchParams.get('$orderby'), 'name asc');
+    assert.equal(url.searchParams.get('$filter'), "city eq 'Oslo'");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
