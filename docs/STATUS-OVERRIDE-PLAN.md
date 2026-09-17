@@ -3,9 +3,9 @@
 > **Status 2026-09-16: THIS IS THE MODEL THAT SHIPPED.** Verified against
 > `tokens.css`: 222 `--_status-*` properties and `[data-status]` blocks are
 > live, and CLAUDE.md's "Status cascade" section documents the result.
-> `CONTENT-COLLECTION-MIGRATION.md` proposed a competing model (a first-class
-> `Content` collection) which has **zero** variables in the code — it was
-> superseded, and is marked so.
+> A competing model was proposed once (a first-class `Content` collection) and
+> never shipped — it has **zero** variables in the code. That plan doc was
+> deleted 2026-09-17; this is the model that won.
 >
 > Branch line below says `sherpa-reforged`; that was true when written.
 

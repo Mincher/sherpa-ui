@@ -80,4 +80,7 @@ components/
 
 - [CSS-FILE-TEMPLATE.md](../CSS-FILE-TEMPLATE.md)
 - [COMPONENT-TEMPLATE.md](../COMPONENT-TEMPLATE.md)
-- [.github/instructions/copilot-instructions.md](../../.github/instructions/copilot-instructions.md)
+- `.github/instructions/copilot-instructions.md` — DELETED 2026-09-17. It had
+  become a second source of truth that contradicted CLAUDE.md on rules which
+  cost hours (`--focus-ring()`, `FormManager`, `patterns/`, `apex-2-*` themes,
+  `data-variant`), and nothing referenced it. `CLAUDE.md` is the one now.

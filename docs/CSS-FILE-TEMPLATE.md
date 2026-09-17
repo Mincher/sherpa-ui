@@ -6,8 +6,8 @@
 
 This document is the single source of truth for **file shape**, **nesting
 policy**, and **shared sheet usage**. For *what* each layer owns (HTML vs CSS
-vs JS), see `.github/copilot-instructions.md`. For the documentation header
-format, see `docs/COMPONENT-API-STANDARD.md`.
+vs JS), see `CLAUDE.md`. For the documentation header format, see
+`docs/COMPONENT-API-STANDARD.md`.
 
 ---
 

@@ -17,7 +17,9 @@
  * unreviewable diff. This compares instead, and touches only what moved.
  *
  * ── The live snapshot ───────────────────────────────────────────────────────
- * Produced by a figma_execute read (see docs/HANDOVER-TODO-2026-09-11.md item 7):
+ * Produced by a figma_execute read over the variable collections — every leaf's
+ * per-mode value, resolved one level (a `{slug.dotted.path}` string is an alias
+ * left unresolved on purpose, so a re-point shows up as a changed TARGET):
  *
  *   { "<collection-slug>": {
  *       slug, primaryMode,
