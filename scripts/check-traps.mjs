@@ -28,7 +28,15 @@
 import { readFileSync, existsSync, globSync } from 'node:fs';
 
 const DOC = 'docs/TRAPS.md';
-const SOURCES = ['src/components/*/*.ts', 'src/core/*.ts'];
+/**
+ * Everywhere a citation may live.
+ *
+ * CSS is in here, and had to be added BEFORE the first `/* TRAP … *​/` was
+ * written into a stylesheet — a gate that does not scan a file cannot catch a
+ * dangling pointer in it, and an unenforced check is the failure this whole
+ * mechanism exists to prevent.
+ */
+const SOURCES = ['src/components/*/*.ts', 'src/core/*.ts', 'src/components/*/*.css'];
 
 /** `### T-some-id` opens a trap; `Site:` lines list the files that cite it. */
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;

@@ -64,10 +64,6 @@
   padding: var(--sherpa-switch-size-padding, 2px);
   border-style: solid;
   border-color: var(--_border);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);

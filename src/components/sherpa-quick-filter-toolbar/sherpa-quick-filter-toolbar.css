@@ -320,10 +320,6 @@
     var(--sherpa-display-mode-space-xs, 8px);
   border-style: solid;
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);

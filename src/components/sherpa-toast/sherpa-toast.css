@@ -73,10 +73,6 @@
   padding: var(--sherpa-theme-padding-lg, 16px);
   border-style: solid;
   border-color: var(--_border);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);

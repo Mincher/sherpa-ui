@@ -25,10 +25,6 @@
   min-block-size: var(--sherpa-structure-height, 32px);
   border-style: solid;
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: var(--sherpa-style-surface-base, #ffffff);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }

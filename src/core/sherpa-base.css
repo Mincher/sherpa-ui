@@ -241,3 +241,35 @@
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
+
+/* ── Per-edge border widths ──────────────────────────────────────────────
+   The four Figma Border-collection weights, applied. `border-width` alone
+   cannot express them: each edge has its own variable so a component can carry
+   a different weight per side, and the Grouping collection re-points them by
+   position (a snapped control pair, a table cell, a stacked accordion).
+
+   Written out TWENTY-SIX times across twenty stylesheets before this — four
+   byte-identical lines each, which `fallow` reported as a duplicated block and
+   was right about. Same shape as `.sherpa-snap-group` above: one definition,
+   many users.
+
+   THE COLOUR IS NOT HERE, deliberately. All 26 sites set `border-color` to
+   something different — `--_border`, a Style token, a Theme token,
+   `transparent`, a `--_status-border` fallback chain — so folding it in would
+   mean one wrong default plus 26 overrides. The WIDTHS are the part that never
+   varied. `border-style: solid` is here because a width with no style draws
+   nothing and all 26 paired them.
+
+   SEVEN SITES STILL WRITE THE WIDTHS INLINE, and must: a bare `:host` cannot
+   wear a class named in its own stylesheet (accordion, container, data-grid), a
+   rule gated on a host attribute has no element to tag (`sherpa-list`'s
+   `.body`, `sherpa-quick-filter`'s `.count`), and two target a bare tag inside
+   a cloned prototype. Adding the class to only some of the 26 is how the first
+   attempt at this silently un-bordered eight rules. */
+.sherpa-border-edges {
+  border-style: solid;
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+}

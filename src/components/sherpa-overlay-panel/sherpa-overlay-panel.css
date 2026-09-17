@@ -80,10 +80,6 @@
   background: var(--_surface);
   border-style: solid;
   border-color: var(--_border);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   /* Rounded on the LEADING edge only, square on the trailing one — the Grouping
      "snap-right-edge" shape. The panel is docked to the right of the window, so
      its right corners meet an edge they must sit flush against while its left
