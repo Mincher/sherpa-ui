@@ -274,6 +274,25 @@ Always write: `var(--sherpa-space-sm, 12px)`. The fallback is required — and t
 fallback value **must equal the on-grid value the token resolves to** (a stale
 off-grid fallback is drift even though it only surfaces if the token goes missing).
 
+**Component-SCOPED tokens are a fourth case, and they look like a mistake.**
+`scripts/project-tokens.mjs` maps four Figma collections into the CSS of the
+component that owns them — into its own generated `sherpa:tokens` region, not
+into `tokens.css`:
+
+| collection | lands in |
+|---|---|
+| `structure` | `sherpa-button.css` |
+| `input` | `sherpa-input-text.css` |
+| `navigation` | `sherpa-nav.css` **and** `sherpa-nav-item.css` |
+| `switch` | `sherpa-switch.css` |
+
+So `--sherpa-button-space-gap` is a real projected token that happens to live
+next to the one component that uses it. It is **not** a private value wearing the
+shared prefix, and renaming it to `--_*` is undone by the next projection.
+**Everything above `/* == end sherpa:tokens == */` belongs to Figma** — edit it
+there and re-project. `npm run lint:css` already lints only the authored region
+below that marker, for the same reason.
+
 ### Spacing grid
 
 All sizing, spacing, and radius follow an **8px grid** with a **4px sub-grid** for
