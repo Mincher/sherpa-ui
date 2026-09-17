@@ -1,6 +1,7 @@
 /**
  * Data tools — the data layer's surface, for an agent pointing Sherpa at a backend.
  *
+ *   scaffold_schema — sample rows → a draft schema, every inference MARKED
  *   validate_schema — run a schema over sample rows: mapped / rejected / WHY
  *
  * The other tools in this server answer "what does this component look like".
@@ -55,7 +56,170 @@ function ruleNames(dl) {
     .filter((n) => typeof dl[n] === "function");
 }
 
+/* ══ schema inference (M3) ═══════════════════════════════════════════════════
+ * Read a column of sample values and propose rules for it.
+ *
+ * Every proposal is EVIDENCE-BASED and carries its evidence, because a draft
+ * schema is going onto a Store where it will drop real rows. A guess presented
+ * as a fact is worse than a gap: the gap gets filled, the guess gets shipped.
+ * The same ruling the spec generator reached about event detail types — an
+ * honest `unknown` beats a confident wrong answer.
+ *
+ * What is NEVER inferred, and why:
+ *   - `email` / `url` from a FIELD NAME. A field called `email` holding
+ *     `"n/a"` would start rejecting rows the backend considers fine. Only the
+ *     VALUES may argue for a format rule, and only when every one agrees.
+ *   - `min`/`max` from the observed range. Ten sample rows between 0 and 100
+ *     say nothing about the eleventh; a bound invented from a sample is a
+ *     rule the backend never agreed to.
+ *   - `required` from a field being present. Present in five rows is not the
+ *     same as never absent — unless it is the KEY, where blank is a defect by
+ *     definition (see rule 1 of DATA-SOURCE-RULES).
+ */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isAbsent(v) { return v === undefined || v === null || v === ''; }
+
+/** Infer one field's rules from every value the samples show for it. */
+function inferField(field, values, rowCount, keyField) {
+  const present = values.filter((v) => !isAbsent(v));
+  const rules = [];
+  const notes = [];
+
+  if (!present.length) {
+    return { rules: [], notes: [`every sample value is empty — nothing to infer`], confident: false };
+  }
+
+  // REQUIRED: only for the key, and only when the samples actually back it.
+  // Elsewhere "present in every sample row" is not evidence of "never absent".
+  const alwaysPresent = present.length === rowCount;
+  if (field === keyField) {
+    rules.push('required');
+    notes.push(alwaysPresent
+      ? `the key — blank or duplicate keys are what byKey/update/remove disagree about`
+      : `the key, but ${rowCount - present.length} sample row(s) are already missing it`);
+  } else if (alwaysPresent) {
+    notes.push(`present in all ${rowCount} sample rows — add "required" only if the backend guarantees it`);
+  }
+
+  // NUMBER: every present value is one. `"42"` counts — a JSON backend that
+  // sends numbers as strings is common, and `number()` accepts either.
+  const allNumeric = present.every((v) => typeof v === 'number'
+    || (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))));
+  const anyString = present.some((v) => typeof v === 'string');
+  if (allNumeric) {
+    rules.push('number');
+    notes.push(anyString
+      ? `all ${present.length} values are numeric, some as strings — number() accepts both`
+      : `all ${present.length} values are numbers`);
+    const nums = present.map(Number);
+    notes.push(`observed range ${Math.min(...nums)}..${Math.max(...nums)} — NOT proposed as min/max; a sample cannot bound a backend`);
+  }
+
+  // EMAIL / URL: from the VALUES, never the field name, and only on unanimity.
+  if (!allNumeric && present.every((v) => typeof v === 'string' && EMAIL_RE.test(v))) {
+    rules.push('email');
+    notes.push(`all ${present.length} values look like email addresses`);
+  } else if (!allNumeric && present.every((v) => typeof v === 'string' && /^https?:\/\//i.test(v))) {
+    rules.push('url');
+    notes.push(`all ${present.length} values are http(s) URLs`);
+  }
+
+  // ONE OF: a small, closed set repeated across the sample reads as an enum.
+  // Needs repetition — N distinct values in N rows is just N values.
+  const distinct = [...new Set(present.map((v) => String(v)))];
+  if (!allNumeric && distinct.length > 1 && distinct.length <= 6 && present.length >= distinct.length * 2) {
+    rules.push({ oneOf: distinct });
+    notes.push(`only ${distinct.length} distinct values across ${present.length} — looks like an enum, CONFIRM it is closed`);
+  }
+
+  const types = [...new Set(present.map((v) => (Array.isArray(v) ? 'array' : typeof v)))];
+  if (types.length > 1) notes.push(`⚠️ MIXED types in the sample: ${types.join(', ')}`);
+  if (types.includes('object') || types.includes('array')) {
+    notes.push(`nested — reach it with a dotted path (\`${field}.someKey\`) anywhere a field name goes`);
+  }
+
+  return { rules, notes, confident: rules.length > 0 };
+}
+
 export function register(server) {
+  // ── scaffold_schema — sample rows → a DRAFT, every inference marked ──
+  server.registerTool(
+    "scaffold_schema",
+    {
+      title: "Draft a Schema From Sample Rows",
+      description:
+        "Read sample rows and propose a Sherpa schema, with the EVIDENCE for every rule and an explicit list of what was NOT inferred. A draft, not an answer: it goes on a Store where it will drop real rows, so each proposal says what it saw. Deliberately conservative — `email`/`url` come from the VALUES and never from a field name, `min`/`max` are never invented from an observed range, and `required` is proposed only for the key. Feed the result to `validate_schema` against a different page of rows to check it.",
+      inputSchema: {
+        rows: z
+          .string()
+          .describe("Sample rows as a JSON array of plain objects — a real page of a real response. More rows means better evidence."),
+        key: z
+          .string()
+          .optional()
+          .describe("The identity field (default \"id\")."),
+      },
+    },
+    async ({ rows, key }) => {
+      const dl = await loadDataLayer();
+      if (!dl) return err(dataLayerError());
+
+      let rowList;
+      try { rowList = JSON.parse(rows); } catch (e) { return err(`rows is not valid JSON: ${e.message}`); }
+      if (!Array.isArray(rowList)) return err("rows must be a JSON array of objects.");
+      if (!rowList.length) return err("rows is empty — pass at least one sample row.");
+      if (rowList.some((r) => !r || typeof r !== "object" || Array.isArray(r))) {
+        return err("every row must be a plain object — that is what a Sherpa record is.");
+      }
+
+      const keyField = key ?? "id";
+      const fields = [];
+      for (const r of rowList) for (const f of Object.keys(r)) if (!fields.includes(f)) fields.push(f);
+      if (!fields.length) return err("the sample rows have no fields.");
+
+      const schema = {};
+      const evidence = [];
+      for (const f of fields) {
+        const values = rowList.map((r) => r[f]);
+        const { rules, notes } = inferField(f, values, rowList.length, keyField);
+        if (rules.length) schema[f] = rules;
+        const missing = values.filter(isAbsent).length;
+        evidence.push({ field: f, rules, notes, missing });
+      }
+
+      const lines = [];
+      lines.push(`## scaffold_schema — ${fields.length} field(s) from ${rowList.length} row(s)\n`);
+      lines.push("### The draft\n");
+      lines.push("```json");
+      lines.push(JSON.stringify(schema, null, 2));
+      lines.push("```\n");
+
+      lines.push("### Why each rule\n");
+      for (const e of evidence) {
+        const head = e.rules.length
+          ? `**\`${e.field}\`** → ${e.rules.map((r) => (typeof r === "string" ? r : Object.keys(r)[0])).join(", ")}`
+          : `**\`${e.field}\`** → no rule proposed`;
+        lines.push(head + (e.missing ? `  _(${e.missing} of ${rowList.length} rows empty)_` : ""));
+        for (const n of e.notes) lines.push(`  - ${n}`);
+      }
+      lines.push("");
+
+      lines.push("### What was NOT inferred, deliberately\n");
+      lines.push("- **`min`/`max` from an observed range.** Ten rows between 0 and 100 say nothing about the eleventh. A bound invented from a sample is a rule your backend never agreed to.");
+      lines.push("- **`email`/`url` from a field NAME.** A field called `email` holding `\"n/a\"` would start dropping rows the backend considers fine. Only unanimous VALUES argue for a format rule.");
+      lines.push("- **`required` from a field being present.** Present in every sample row is not the same as never absent — except for the key, where blank is a defect by definition.");
+      lines.push("- **Renames, coercions and defaults.** A schema can do all three on the way in, but only you know the target shape.");
+      lines.push("");
+
+      lines.push("### Next\n");
+      lines.push(`1. Check the draft against a DIFFERENT page of rows: \`validate_schema\` with this schema. A draft that only fits the rows it was drawn from has proved nothing.`);
+      lines.push(`2. Put it on the STORE, not a form: \`new ArrayStore(rows, { key: '${keyField}', schema })\`. The same records arrive from a dialog, a paste and a REST response.`);
+      lines.push("\nSee `sherpa://data-rules` for the whole contract.");
+
+      return ok(lines.join("\n"));
+    }
+  );
+
   // ── validate_schema — the ORACLE: does this data fit this schema? ──
   server.registerTool(
     "validate_schema",
