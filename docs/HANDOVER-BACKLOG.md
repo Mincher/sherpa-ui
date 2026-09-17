@@ -279,6 +279,13 @@ What is known wrong, from the 2026-09-16 sweep:
 A rewrite should start from `schemas/component.v1.json` and the 58 real specs,
 not from what the old tools did.
 
+**Two things are already waiting for it:**
+
+- `sherpa://data-rules` (2026-09-17) — the data contract an agent needs, served
+  the same way `sherpa://rules` is. Keep it.
+- `sherpa-ui/data` (2026-09-17) — a DOM-free entry point, which is what the
+  MCP instance tier (plan step N4) needed in order to drive a headless source.
+
 ## Owed from earlier passes
 
 - **Sweep every component's projected properties for mode/extension resolution

@@ -2629,7 +2629,7 @@ each inference so it can be checked rather than skimmed.
 
 | Step | Work | Why here |
 |---|---|---|
-| **M1** | `explain_source` — what Sherpa expects of a row, and why | the knowledge an agent needs is not written down anywhere yet. Mostly a DOC: `sherpa://rules` already works by serving a markdown file, so this is "write the page, register the resource" — and the page helps people too |
+| **M1** ✅ | `explain_source` — what Sherpa expects of a row, and why | **DONE 2026-09-17.** `docs/DATA-SOURCE-RULES.md`, served as `sherpa://data-rules`. Seven rules with the reason for each; every claim checked against the code rather than written from memory. Linked from CLAUDE.md, because a doc nothing points at is how the last one rotted |
 | **M2** | `validate_schema` — run a schema over sample rows, report mapped / rejected / why | the ORACLE. Without it an agent is guessing; with it the loop closes. **Cheap**: `validate()` is already exported from `core/validate.ts`, is DOM-free, and the MCP already imports Node modules from `scripts/lib/` — so the tool is a thin wrapper, not new machinery |
 | **M3** | `scaffold_schema` — sample rows → a draft, inferences marked | least valuable of the three alone; genuinely useful after M2 |
 | **M4** | Read a backend's OpenAPI / JSON Schema where it exists | strictly better than inferring from a sample. Do this before M3 if the backends have one |
