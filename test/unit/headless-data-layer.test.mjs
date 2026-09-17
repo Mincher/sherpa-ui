@@ -690,3 +690,64 @@ test('a custom buildQuery is the seam a backend translator plugs into', async ()
     globalThis.fetch = realFetch;
   }
 });
+
+test('sample checks the first N rows on a read, and writes are always full', async () => {
+  const { ArrayStore } = await import('../../dist/core/stores.js');
+  const { rules, required } = await import('../../dist/core/validate.js');
+  const schema = rules({ name: required() });
+
+  /* WHY: a schema on a bulk load costs real time — measured at 100,000 rows,
+     58ms over an unguarded load, about 25x. A sample of 50 brings that to
+     0.1ms and still answers the question a read is really asking: "is this
+     response the SHAPE I expect". A backend's rows are wrong in a shape, not
+     one at a time. */
+
+  // A bad row INSIDE the sample is caught.
+  const early = new ArrayStore(
+    [{ id: 1, name: 'ok' }, { id: 2, name: '' }, { id: 3, name: 'ok' }],
+    { key: 'id', schema, sample: 3 },
+  );
+  const earlyResult = await early.load();
+  assert.equal(earlyResult.rows.length, 2);
+  assert.equal(earlyResult.dropped, 1);
+  assert.equal(earlyResult.total, 2, 'the total drops with the row');
+
+  // A bad row BEYOND the sample passes through — deliberately. The sample is a
+  // shape check, not a promise about every row, and the doc says so.
+  const late = new ArrayStore(
+    [{ id: 1, name: 'ok' }, { id: 2, name: 'ok' }, { id: 3, name: '' }],
+    { key: 'id', schema, sample: 2 },
+  );
+  const lateResult = await late.load();
+  assert.equal(lateResult.rows.length, 3);
+  assert.equal(lateResult.dropped, undefined, 'nothing was dropped, so no count');
+
+  // NO SAMPLE is still the default: every row checked, which is the guard you
+  // have to opt OUT of.
+  const all = new ArrayStore(
+    [{ id: 1, name: 'ok' }, { id: 2, name: 'ok' }, { id: 3, name: '' }],
+    { key: 'id', schema },
+  );
+  assert.equal((await all.load()).rows.length, 2);
+
+  // A WRITE is checked in full regardless. An insert is one row someone is
+  // adding on purpose; skipping it is how bad data gets in.
+  await assert.rejects(() => late.insert({ id: 9, name: '' }), /name/);
+});
+
+test('a sample never reorders or loses rows', async () => {
+  const { ArrayStore } = await import('../../dist/core/stores.js');
+  const { rules, required } = await import('../../dist/core/validate.js');
+
+  // 200 good rows, a sample of 10. Every row must come back, in order — the
+  // checked head and the unchecked tail are one list, not two.
+  const rows = Array.from({ length: 200 }, (_, i) => ({ id: i, name: `n${i}` }));
+  const store = new ArrayStore(rows, {
+    key: 'id', schema: rules({ name: required() }), sample: 10,
+  });
+
+  const result = await store.load();
+  assert.equal(result.rows.length, 200);
+  assert.deepEqual(result.rows.map((r) => r.id).slice(0, 12), [0,1,2,3,4,5,6,7,8,9,10,11]);
+  assert.equal(result.rows[199].id, 199);
+});

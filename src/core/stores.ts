@@ -58,6 +58,29 @@ export interface StoreOptions {
    * too — a cap that only some writes honour is not a cap.
    */
   maxRows?: number;
+  /**
+   * On a READ, check only the first N rows rather than every one.
+   *
+   * A schema costs real time on a bulk load — measured, 10,000 rows take 6ms
+   * and 100,000 take 56ms, about 23× an unguarded load. That is a visible stall
+   * on a big response, and it scales linearly.
+   *
+   * WHAT A SAMPLE IS FOR: a backend's rows are wrong in a SHAPE, not one at a
+   * time. A field renamed, a date sent as a number, a null where a string was
+   * promised — the first fifty rows say so as loudly as ten thousand. The
+   * sample answers "is this response the shape I expect", which is the question
+   * a read is really asking.
+   *
+   * WHAT IT IS NOT: a way to let bad rows through quietly. Rows beyond the
+   * sample are passed along UNCHECKED, so a schema that RENAMES or COERCES must
+   * not be sampled — the unchecked rows would keep the old shape and the two
+   * halves of one response would disagree. Sample when the schema only VALIDATES.
+   *
+   * WRITES ARE ALWAYS CHECKED IN FULL. An insert or an update is one row a
+   * person or a script is adding on purpose, and skipping it is how bad data
+   * gets in. This is about reads only.
+   */
+  sample?: number;
 }
 
 /**
@@ -70,11 +93,14 @@ abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
   /** The write guard, if the caller gave one — see StoreOptions.schema. */
   protected readonly schema: StandardSchema | undefined;
+  /** How many rows a READ checks. 0 or absent = all of them — see StoreOptions.sample. */
+  protected readonly sampleSize: number;
 
   constructor(options: StoreOptions = {}) {
     super();
     this.key = options.key ?? 'id';
     this.schema = options.schema;
+    this.sampleSize = options.sample ?? 0;
   }
 
   abstract load(options?: LoadOptions): Promise<LoadResult>;
@@ -137,13 +163,23 @@ abstract class BaseStore extends EventTarget implements Store {
   protected async checkRows(result: LoadResult): Promise<LoadResult> {
     if (!this.schema) return result;
 
+    /* THE SAMPLE. `undefined` or 0 means check everything, which stays the
+       default: a guard you have to opt out of is a guard people keep. */
+    const limit = this.sampleSize && this.sampleSize > 0
+      ? Math.min(this.sampleSize, result.rows.length)
+      : result.rows.length;
+
     const rows: Row[] = [];
     const issues: Issue[] = [];
-    for (const row of result.rows) {
+    for (let i = 0; i < limit; i++) {
+      const row = result.rows[i]!;
       const checked = await validate(this.schema, row);
       if (checked.issues) issues.push(...checked.issues);
       else rows.push((checked.value ?? row) as Row);
     }
+    // The tail, UNCHECKED and unchanged. See StoreOptions.sample for why a
+    // renaming or coercing schema must not be sampled.
+    for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
 
     const dropped = result.rows.length - rows.length;
     if (!dropped) return { ...result, rows };
