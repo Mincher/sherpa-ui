@@ -153,8 +153,15 @@ it. Never `--core-*` in component CSS — always a semantic alias with a hardcod
 Use `token_for(property, value)` to pick each one (Step 1).
 
 ### figma block
-Leave it to `merge-figma.mjs` once a Figma component exists. For a code-only component it
-stays minimal; the build-figma skill and `merge-figma.mjs --force` fill it in later.
+`$extensions.sherpa.figmaName` + `category`, and the spec generator PRESERVES them —
+it cannot derive a Figma binding from code, so whatever is there survives a regen.
+Set them by hand once the Figma component exists. To check them against the live
+file, export it first and pass the JSON:
+`node scripts/resync-figma.mjs <live-figma.json> --check`.
+
+(`merge-figma.mjs` was retired 2026-09-02 and DELETED 2026-09-17. The binding used to
+live in a separate `*.def.json`; it now lives in the component's own
+`.component.yaml`.)
 
 ---
 
@@ -247,8 +254,10 @@ structural gates *don't* catch):
 - **Screenshot and judge it as a designer** — the build skill's Gate E: no phantom bar, no
   clipped text, two-tone status icons render, status colour actually shows.
 
-When `build-figma-component` finishes, run `merge-figma.mjs --force` to fill this def's
-`figma` block from the built component, and point `name-map.json` at it (`status: matched`).
+When `build-figma-component` finishes, set `$extensions.sherpa.figmaName` (and
+`category`) in the component's `.component.yaml`. The spec generator preserves both,
+so a regen will not lose them. To verify against the live file, export it and run
+`node scripts/resync-figma.mjs <live-figma.json> --check`.
 
 ---
 

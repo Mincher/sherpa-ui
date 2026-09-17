@@ -161,7 +161,7 @@ function scaffold(name, category) {
       instanceProps: [],
       modePins: {},
       figmaEvents: [],
-      note: "TODO: fill via merge-figma.mjs once a Figma component exists.",
+      note: "TODO: set $extensions.sherpa.figmaName + category once the Figma component exists. The spec generator PRESERVES them — it cannot derive a Figma binding from code.",
     },
 
     _todo: [
