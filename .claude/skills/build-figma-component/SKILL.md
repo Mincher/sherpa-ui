@@ -289,7 +289,7 @@ Bind the component-scoped collection: `Button::surface/default`, `Button::border
 the variant components aren't already children of the target page. Sequence:
 
 ```js
-const page = figma.root.children.find(p => p.name === 'sherpa-<name>');
+const page = figma.root.children.find(p => p.name === '✅ <Title Case>');
 await figma.setCurrentPageAsync(page);          // GATE — see §7
 const v1 = figma.createComponent(); page.appendChild(v1); v1.name = 'State=Collapsed';
 const v2 = figma.createComponent(); page.appendChild(v2); v2.name = 'State=Expanded';
@@ -310,8 +310,18 @@ Slots for slots accepting component instances.
 
 ## 6. Placement & naming (non-negotiable)
 
-- Every component lives on its **own page** named exactly `sherpa-<name>` (matches the
-  element name). One component (or one component set) per page.
+- Every component lives on its **own page** named `✅ Title Case` — `✅ Button`,
+  `✅ Menu`, `✅ Stack`. **Not** `sherpa-<name>`: this doc said that until 2026-09-17
+  and the live file has never used it (49 pages use the tick, 1 stray does not).
+  One component (or one component set) per page.
+- Pages are grouped by `———  SECTION  ———` divider pages: FOUNDATIONS, CONTROLS,
+  CONTAINERS, NAVIGATION, DATA GRID, BACKLOG / NOT BUILT, DEPRECATED. Insert a new
+  page **next to its closest sibling**, inside the right section:
+  ```js
+  const names = figma.root.children.map(p => p.name);
+  const page = figma.createPage(); page.name = '✅ Stack';
+  figma.root.insertChild(names.indexOf('✅ Toolbar') + 1, page);   // beside its sibling
+  ```
 - The Figma component NODE name is Title Case (`Section Header`), the PAGE is `sherpa-section-header`.
 - Set a `description` on every component/set (used by MCP schema parse) referencing the
   `sherpa-<name>` element and its status/variant wiring.
@@ -326,7 +336,7 @@ Run these; do not report "done" until all pass.
 Immediately after creating/combining, assert the node's page:
 ```js
 let pg = node; while (pg.parent && pg.type !== 'PAGE') pg = pg.parent;
-if (pg.name !== 'sherpa-<name>') throw new Error(`WRONG PAGE: on ${pg.name}`);
+if (pg.name !== '✅ <Title Case>') throw new Error(`WRONG PAGE: on ${pg.name}`);
 ```
 And confirm no *other* page gained stray components this call.
 
@@ -397,4 +407,10 @@ master, screenshot an untouched sibling component that uses it.
 | Shared icon master corrupted after a build | wrote a single fill to a shared multi-region master | Gate F: never write single paint to a mixed master; screenshot a sibling |
 | Green gates, visibly broken component | Gate D was "check it looks ok" — too soft to fail anything | Gate E forces explicit critical checks (phantom bar, clipping, two-tone icon) |
 | Every instance shows the component's DEFAULT text, ignoring the per-instance/set value | a second `node.componentPropertyReferences = {visible: …}` OVERWROTE the earlier `{characters: …}` — the assignment REPLACES the whole refs object, it does not merge | set ALL refs for a node in ONE literal: `node.componentPropertyReferences = { characters: labelKey, visible: isMaxKey }`. Gate B: read back `textNode.componentPropertyReferences` and assert `characters` is present |
+| `setProperties` "silently fails" — the BOOLEAN stays false | matched the key with `startsWith('hasLeading')`, which also matches **`hasLeadingControl`** — the wrong property got flipped | match the part before the `#` EXACTLY: `Object.keys(p).find(k => k.split('#')[0] === name)` |
+| Content added to a slot, but nothing renders | the slot's own `visible` is driven by a BOOLEAN prop (`hasLeading`) that is false — the child reads `visible:true` inside a hidden SLOT | read `slot.visible`, not just the child's; turn the BOOLEAN on |
+| Text in a trailing slot clips | the slot was `layoutSizingHorizontal:'FIXED'` at its default width (16px) and the content is wider | set the slot to HUG after appending |
+| An emptied slot still eats space | removing a slot's children does not collapse the slot | `slot.visible = false` |
+| A composed dot/pip reads as a hollow ring | the default Tag `Type=dot` binds `Style::style-surface/base` (white) + a border — it is the DEFAULT tag, not an accent one | bind the ink the CODE uses and clear `strokes` |
+| `V()` throws on a name that "should" exist | guessed the token name (`content/body/3`); Theme uses a `base` / `+1..+4` range (`content/body/+1`) | read what the EQUIVALENT existing node binds and copy it, rather than guessing a name |
 | "Extension override didn't take" (but it did) | read back via base var's `valuesByMode` — extension overrides are NOT stored there (only base-mode keys appear), so it looks unchanged | the write via `setValueForMode(extModeId, …)` DOES work; VERIFY by rendering a swatch pinned to the extension mode (`setExplicitVariableModeForCollection`) + screenshot, never by reading valuesByMode. (`createVariable` inside an extension still genuinely throws — extensions only re-value inherited vars.) |
