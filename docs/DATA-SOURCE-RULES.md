@@ -144,6 +144,13 @@ no adapter and no dependency.
 A schema can also **rename, coerce and default** on the way in, which is how an
 external shape becomes a Sherpa row without a hand-written mapping layer.
 
+**On a big response, sample it.** `{ schema, sample: 50 }` checks the first 50
+rows instead of all of them — measured at 100,000 rows, that is 0.1ms instead of
+58ms. A backend is wrong in a SHAPE, not one row at a time, so fifty rows answer
+the question. Two rules: a schema that RENAMES or COERCES must not be sampled
+(the unchecked tail would keep the old shape), and writes are always checked in
+full regardless.
+
 ---
 
 ## 6. What the source adds
