@@ -2406,8 +2406,8 @@ and filters the merged feed exactly as it would one collection.
 
 | Step | Work | Why here |
 |---|---|---|
-| **S9** | `LiveStore` accepts an inner store (`into`) instead of always creating one | several sockets into ONE feed is impossible today; each live store makes its own `ArrayStore`. Small change, no new concept — the re-dispatch already treats inner and outer as one | **DO** — the socket work is on this branch already |
-| **S10** | `maxRows` on `ArrayStore`, oldest-out | a live feed grows without bound; the only genuinely new piece S9 needs | with S9 |
+| **S9** ✅ | `LiveStore` accepts an inner store (`into`) instead of always creating one | **DONE 2026-09-17.** `LiveStore` takes `into`. A store passed in is NOT owned — its own `rows`/`key` win, since it may already hold another socket's messages |
+| **S10** ✅ | `maxRows` on `ArrayStore`, oldest-out | **DONE 2026-09-17.** Oldest by INSERTION ORDER, not by any field — the store does not know which field means "when". Enforced on insert, in the constructor and in setRows: a cap only some writes honour is not a cap |
 
 #### What stays true in every case
 
@@ -2420,7 +2420,7 @@ and filters the merged feed exactly as it would one collection.
 
 | Step | Work | Why here |
 |---|---|---|
-| **S7** | `bind(el, { into: 'name' })` — a source owns one NAMED part of a component's payload | THREE cases need it: a summary panel (case 3), a chart with one series per backend (case 5), and a multi-socket feed (case 6, already on this branch). Without it the last write replaces the whole payload — the same last-write-wins problem `ignore` patches elsewhere. Also lets F2 skip per part | **DO** — over the 3-use bar |
+| **S7** ✅ | `bind(el, { into: 'name' })` — a source owns one NAMED part of a component's payload | **DONE 2026-09-17.** `bind(el, { into: "series.0" })`. A dotted path — a numeric segment builds an array, a named one an object — and the merge lives on the ELEMENT behind a Symbol, because two SOURCES feed one component and neither can see the other. The pre-fix behaviour (`{ series: [[99]] }`, first source gone) is kept as a test |
 
 ### Schemas as the ADAPTER for an external source
 
