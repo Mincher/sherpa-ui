@@ -45,10 +45,13 @@ npm run lint:fix
 npm run lint:css
 npm run lint:css:strict
 
-# Validate the component specs against schemas/component.v1.json.
-# RUNS IN THE PRE-COMMIT HOOK — a spec that does not match blocks the commit.
-npm run spec:validate
-npm run spec:check         # coverage + round-trip table, writes nothing
+# Check the component specs. Two halves, and BOTH must pass:
+#   validate   — the spec matches schemas/component.v1.json
+#   round-trip — the spec regenerates the source it was made from
+# `spec:check` RUNS IN THE PRE-COMMIT HOOK and writes nothing. A spec that does
+# not match, or that no longer describes its component, blocks the commit.
+npm run spec:check
+npm run spec:validate      # the schema half alone
 
 # Format component CSS
 npm run format
@@ -110,6 +113,23 @@ intersects the comment with what the TypeScript actually dispatches (`emit()`,
 public but can never invent one. `scripts/resync-figma.mjs --check`
 reports drift between a spec and Figma. (`scripts/generate-defs.mjs` was deleted
 2026-09-16 — it had been a stub that only printed an error.)
+
+**The same rule holds for PROPS.** A bare (non-`data-*`) name in the `Public API:`
+comment must be used as an attribute somewhere in the TS, CSS or HTML, or it is
+dropped and reported. Two wrapped sentences had become props —
+`stretch — ONE wide control fills the row` is the tail of `data-align`'s
+description — because any lowercase word before an em-dash reads like an entry.
+A `data-*` name is unambiguous enough to stand on its own; anything else has to
+be found in the code.
+
+**A spec's `anatomy` has three forms.** `root` (one node tree), `roots` (a
+template with 2+ sibling roots), and `byTemplate` (a map of template id → that
+template's own roots). The third is for a component whose templates are genuinely
+DIFFERENT trees — `sherpa-input-text` swaps `<input>` for `<textarea>`,
+`sherpa-nav-item`'s `promo` renames every class. `showWhen` can only add or
+remove a node against one shared tree, so it cannot express a changed tag, class
+or part. Prefer `root`/`roots`; the generator falls back to `byTemplate` on its
+own and says so in a note.
 
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 

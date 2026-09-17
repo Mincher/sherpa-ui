@@ -3155,9 +3155,9 @@ The only group anyone could pick up today:
   separately.
 - **O4** — write the `data-x` / `x-change` / `data-x-locked` convention into
   CLAUDE.md. It is a real ratified rule that lives only in a memory file.
-- **C3** — 22 of 58 specs fail the round-trip, unchanged all session. Mostly CSS
-  drift, and reviewing it is a day's work on its own.
-- **C4** — make the round-trip a gate, which C3 has to land first.
+- ~~**C3**~~ ✅ — 58/58 round-trip. It was NOT CSS drift: all 22 were generator
+  and compiler gaps. See the spec table below.
+- ~~**C4**~~ ✅ — the round-trip is a gate, in `spec:check` and the pre-commit hook.
 
 **O4 is the cheapest thing on this list and the most quietly valuable**: a rule
 nobody can read is a rule that gets broken by the next person.
@@ -3229,12 +3229,38 @@ again — which is the spec doing its job.
 |---|---|---|
 | **C1** ✅ | Strip comments before parsing `observed` | **DONE 2026-09-16.** The "flaky nav schema" was this: a comment in the array became a prop name |
 | **C2** ✅ | Record METHODS in the spec — name, arguments, description | **DONE 2026-09-16.** `$extensions.sherpa.methods` plus a `js-methods` capability, re-derived from the TS like `jsProps` so a removed method disappears rather than lingering. The MCP's `get_component` serves the whole spec, so an agent now sees the seven verbs a data grid accepts and what each is for |
-| **C3** | Regenerate all 58 and review the drift | 22 fail; the churn is ~800 lines of real CSS drift and deserves its own pass, not a ride-along |
-| **C4** | Make the round-trip a GATE, once C3 lands | it catches exactly the class of mistake C1 and my `Public API` omission both were — cheap, and only possible once the baseline is clean |
+| **C3** ✅ | Classify all 22 round-trip failures, then fix the cause | **DONE 2026-09-17. The premise here was wrong.** "~800 lines of real CSS drift" was a guess made from the diff size and never checked. Not one of the 22 was CSS, and only three were drift at all. Five generator/compiler gaps accounted for every one — see below |
+| **C4** ✅ | Make the round-trip a GATE, once C3 lands | **DONE 2026-09-17.** `anyFail` read `r.valid` and never `r.rtOk`, so `--check` printed the failures and exited 0 anyway. One line, plus `spec:check` in the pre-commit hook in place of `spec:validate` (418ms vs 277ms, and it covers both halves) |
 
-**C1 and C2 are done.** C3 and C4 remain: 22 specs still fail round-trip on
-pre-existing CSS drift, which wants its own reviewed pass rather than riding
-along with feature work.
+**C1–C4 are all done.** 58/58 validate, 58/58 round-trip, enforced on commit.
+
+### What the 22 actually were
+
+Classifying them first — rather than regenerating and reading the churn — is
+what turned "a day's work of CSS review" into five fixes:
+
+| Cause | Components | Diffs |
+|---|---|---|
+| Slot FALLBACK content dropped by the generator | 12 | 42 |
+| Divergent templates unrepresentable (`showWhen` can only add/remove) | 3 | 21 |
+| Prose read as a prop (`stretch`, `scale`) | 2 | 2 |
+| `...MIRRORED` read as a literal attribute name | 2 | 2 |
+| A top-level `<slot>` filtered out as "stray" | 1 | 1 |
+
+Only three components had genuine drift, and all three were the same shape: an
+attribute observed in the code and missing from the `Public API:` comment
+(`data-sort-field`/`-direction`/`data-group-field`, `data-drill-from`,
+`data-rules`/`inputmode`/`autocomplete`).
+
+The third anatomy form, `byTemplate`, came out of this: a map of template id →
+that template's own roots, for a component whose templates are different trees
+rather than one tree with optional nodes. `showWhen` cannot express a changed
+tag, class or part, so input-text, nav-item and button could never round-trip.
+
+**The lesson matches the one the specs themselves taught.** A generated artefact
+rots silently; a CHECK on a generated artefact rots silently too, and in the same
+way — it stays green, or it stays red and nobody can fail it. C4 existed because
+of C1; C3 turned out to be C4's absence, three months on.
 
 ## Next — parity (API equals interaction)
 
