@@ -24,6 +24,7 @@
  * whose data/props bind that pointer re-populate. No direct element references.
  */
 import { renderElement, type ElementNode, type Populatable } from './render-element.js';
+import { SessionStore } from './session.js';
 
 /** A `{ "$state": "/pointer" }` binding into the view state blob. */
 interface StateRef {
@@ -76,7 +77,7 @@ export interface ViewDefinition {
 /** Result of rendering a view: the top element plus the live state store. */
 export interface RenderedView {
   el: HTMLElement;
-  state: StateStore;
+  state: SessionStore;
   /**
    * Every element this view built, by the id the definition gave it.
    *
@@ -95,35 +96,6 @@ function isStateRef(v: unknown): v is StateRef {
   return v != null && typeof v === 'object' && typeof (v as StateRef).$state === 'string';
 }
 
-function decodeToken(t: string): string {
-  return t.replace(/~1/g, '/').replace(/~0/g, '~');
-}
-
-function getPointer(root: unknown, pointer: string): unknown {
-  if (pointer === '') return root;
-  if (pointer[0] !== '/') return undefined;
-  let cur: unknown = root;
-  for (const raw of pointer.slice(1).split('/')) {
-    if (cur == null || typeof cur !== 'object') return undefined;
-    cur = (cur as Record<string, unknown>)[decodeToken(raw)];
-  }
-  return cur;
-}
-
-function setPointer(root: Record<string, unknown>, pointer: string, value: unknown): void {
-  if (pointer === '' || pointer[0] !== '/') return;
-  const tokens = pointer.slice(1).split('/').map(decodeToken);
-  const leaf = tokens.pop();
-  if (leaf === undefined) return;
-  let cur: Record<string, unknown> = root;
-  for (const k of tokens) {
-    const next = cur[k];
-    if (next == null || typeof next !== 'object') cur[k] = {};
-    cur = cur[k] as Record<string, unknown>;
-  }
-  cur[leaf] = value;
-}
-
 function readDetail(accessor: string | undefined, detail: unknown): unknown {
   if (!accessor || accessor === '$detail') return detail;
   const path = accessor.replace(/^\$detail\.?/, '');
@@ -137,43 +109,20 @@ function readDetail(accessor: string | undefined, detail: unknown): unknown {
 }
 
 /** Two pointers overlap when one is a prefix of the other. */
-function pointersOverlap(a: string, b: string): boolean {
-  return a === b || a.startsWith(b + '/') || b.startsWith(a + '/');
-}
-
 /**
- * Reactive state store. Holds the view's state blob; a `set` at a pointer re-runs
- * every subscriber whose pointer overlaps (a prefix either way).
+ * Reactive state store — a view's state blob.
+ *
+ * THE SAME CLASS AS `SessionStore`, and now literally so. It was written here
+ * because a view definition's `$state` pointers needed somewhere to read and
+ * write; an app needs exactly that for its own session state, and nobody
+ * looking for "where does an app keep what it knows about itself" would open a
+ * module named for view rendering.
+ *
+ * Kept as a NAME rather than a second class, because a view's state blob really
+ * is a session store scoped to one view — same pointers, same subscriptions,
+ * and `persist()` is as useful here as it is at app level.
  */
-export class StateStore {
-  #data: Record<string, unknown>;
-  #subs = new Set<{ pointer: string; run: (value: unknown) => void }>();
-
-  constructor(initial: Record<string, unknown> = {}) {
-    this.#data = structuredClone(initial);
-  }
-
-  get(pointer: string): unknown {
-    return getPointer(this.#data, pointer);
-  }
-
-  set(pointer: string, value: unknown): void {
-    setPointer(this.#data, pointer, value);
-    for (const sub of this.#subs) {
-      if (pointersOverlap(sub.pointer, pointer)) sub.run(this.get(sub.pointer));
-    }
-  }
-
-  subscribe(pointer: string, run: (value: unknown) => void): () => void {
-    const sub = { pointer, run };
-    this.#subs.add(sub);
-    return () => this.#subs.delete(sub);
-  }
-
-  snapshot(): Record<string, unknown> {
-    return structuredClone(this.#data);
-  }
-}
+export { SessionStore as StateStore };
 
 /** A populatable reforged element. */
 
@@ -195,7 +144,7 @@ export function renderView(view: ViewDefinition): RenderedView {
   if (!view || typeof view !== 'object' || !view.elements || typeof view.root !== 'string') {
     throw new Error('renderView: a view with { root, elements } is required');
   }
-  const store = new StateStore(view.state ?? {});
+  const store = new SessionStore(view.state ?? {});
   const built = new Map<string, HTMLElement>();
 
   const build = (id: string): HTMLElement => {

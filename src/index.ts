@@ -55,6 +55,18 @@ export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
 export {
   renderView,
   StateStore,
+} from './core/render-view.js';
+// The app-level state store: what an app knows about ITSELF — theme, selected
+// customer, open panel — addressed by JSON pointer so one value can have many
+// readers. `StateStore` above is the same class under its original name.
+export {
+  SessionStore,
+  type PersistOptions as SessionPersistOptions,
+} from './core/session.js';
+export {
+  getPointer, setPointer, pointersOverlap,
+} from './core/pointer.js';
+export {
   type ViewDefinition,
   type ViewElement,
   type RenderedView,

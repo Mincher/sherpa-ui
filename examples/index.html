@@ -71,7 +71,7 @@
                         data-dismissible></sherpa-overlay-panel>
 
   <script type="module">
-    import { installIcons, ArrayStore, DataSource } from '../dist/index.js';
+    import { installIcons, ArrayStore, DataSource, SessionStore } from '../dist/index.js';
 
     // Font Awesome must be in the DOCUMENT too, not just adopted into shadow roots:
     // the class rules reach shadow DOM via sharedStyles, but the @font-face — and any
@@ -358,30 +358,45 @@
        The choice is remembered in localStorage — a theme a user has to re-pick on
        every page load is not a preference. Wrapped, because storage throws in a
        private window and a failed WRITE must not stop the theme changing. */
-    const MODE_KEY = 'sherpa-examples-mode';
+    /* THE SESSION STORE holds it, and `persist` does the remembering.
+
+       This was a key constant, a try/catch to read, a try/catch to write, and a
+       wrapper to keep the two in step — four pieces to get right, for ONE
+       preference, in an example every consumer would copy. `persist` restores
+       on registration too, so the stored mode is already on before anything
+       subscribes and there is no flash of the wrong theme. */
+    const session = new SessionStore({ theme: { mode: document.documentElement.dataset.mode ?? 'light' } });
+    session.persist('/theme/mode');
+
     /* The button shows what you will GET, not what you have: a moon offers dark,
        a sun offers light. `data-mode` lives on <html>, which CSS inside the
-       header's shadow root cannot select, so the glyph is set from here. */
-    const syncModeIcon = (mode) => {
+       header's shadow root cannot select, so the glyph is set from here.
+
+       ONE SUBSCRIBER does both jobs — the attribute and the glyph — so there is
+       no `setMode` wrapper to keep in step with anything. Anything that changes
+       the mode, from anywhere, lands here. */
+    session.subscribe('/theme/mode', (mode) => {
+      document.documentElement.dataset.mode = mode;
       const btn = document.querySelector('sherpa-app-header')?.shadowRoot
         ?.querySelector('.theme-toggle');
       btn?.setAttribute('data-icon-start',
         mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon');
       btn?.setAttribute('aria-label',
         mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-    };
-    const setMode = (mode) => {
-      document.documentElement.dataset.mode = mode;
-      syncModeIcon(mode);
-      try { localStorage.setItem(MODE_KEY, mode); } catch { /* storage unavailable */ }
-    };
-    try {
-      const saved = localStorage.getItem(MODE_KEY);
-      if (saved === 'light' || saved === 'dark') document.documentElement.dataset.mode = saved;
-    } catch { /* storage unavailable — the markup's own data-mode stands */ }
-    // The header defines asynchronously, so the first sync waits for it.
+    });
+    /* Apply whatever persist() restored, then again once the header has
+       actually RENDERED.
+
+       `whenDefined` is not enough: it resolves when the class registers, and
+       SherpaElement builds its shadow root asynchronously after that — so a
+       glyph written on `whenDefined` lands before the button exists. After a
+       reload that left the theme dark, the mode was right and the icon still
+       offered dark. `rendered` is the promise that means the DOM is there. */
+    const resync = () => session.set('/theme/mode', session.get('/theme/mode'));
+    resync();
     void customElements.whenDefined('sherpa-app-header')
-      .then(() => syncModeIcon(document.documentElement.dataset.mode));
+      .then(() => document.querySelector('sherpa-app-header')?.rendered)
+      .then(resync);
 
     /* Ask N-zo opens the assistant panel.
        Its markup is the CHAT template, fetched on first open and kept — a person
@@ -425,7 +440,7 @@
     });
 
     document.addEventListener('theme-toggle', () => {
-      setMode(document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark');
+      session.set('/theme/mode', session.get('/theme/mode') === 'dark' ? 'light' : 'dark');
     });
 
     // Back/forward → load without pushing.
