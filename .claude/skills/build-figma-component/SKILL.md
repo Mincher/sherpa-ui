@@ -20,7 +20,9 @@ Target file: `UnBEepLWb6d7b9ykm33j2s` (Sherpa-UI). All work is via
 **Official Figma skills** (read on demand via `mcp__claude_ai_Figma__get_figma_skill`, no
 OAuth needed for these resource reads): `skill://figma/figma-use/SKILL.md` (Plugin API
 rules) and `.../references/variable-patterns.md` (variable create/bind/alias/scope) codify
-the same API surface this bridge uses. They confirm our hard-won rules and add: **always
+the same API surface this bridge uses. Read them THERE — the vendored copies under
+`.claude/skills/figma-*` were deleted 2026-09-17, and `FIGMA-CONSOLE-MAP.md` beside this
+file translates their `use_figma` calls to the figma-console bridge. They confirm our hard-won rules and add: **always
 set `variable.scopes` explicitly** (default `ALL_SCOPES` pollutes every picker — use
 `["TEXT_FILL"]`, `["GAP"]`, `["CORNER_RADIUS"]`, `["FRAME_FILL","SHAPE_FILL"]`, etc.);
 COLOR *variable values* take `{r,g,b,a}` but *paint* colors take `{r,g,b}` (opacity at
