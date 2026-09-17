@@ -1,6 +1,8 @@
 /**
  * Data tools — the data layer's surface, for an agent pointing Sherpa at a backend.
  *
+ *   run_query       — drive a real headless DataSource and show what a component gets
+ *   import_schema   — a backend's JSON Schema / OpenAPI → a Sherpa schema
  *   scaffold_schema — sample rows → a draft schema, every inference MARKED
  *   validate_schema — run a schema over sample rows: mapped / rejected / WHY
  *
@@ -270,6 +272,185 @@ function rulesFromProperty(doc, name, node, isRequired, unsupported) {
 }
 
 export function register(server) {
+  // ── run_query — actually RUN it, headless (N4) ──
+  server.registerTool(
+    "run_query",
+    {
+      title: "Run a Query Against Sample Rows",
+      description:
+        "Build a real ArrayStore + DataSource over sample rows, apply a query, and show exactly what a bound component would receive — rows, `total` before paging, and the groups if grouped. This is the real data layer running in Node, not a simulation, so `[field, op, value]` filters, dotted paths, sorting, search and paging behave here precisely as they will in the browser. Use it to check a filter grammar before wiring it, or to see why a grid is empty.",
+      inputSchema: {
+        rows: z.string().describe("The records, as a JSON array of plain objects."),
+        filter: z
+          .string()
+          .optional()
+          .describe('A filter as JSON: `["status","eq","active"]`, or `["and",["health","lt",60],["tickets","gt",2]]`. Operators: eq ne lt lte gt gte contains notcontains startswith endswith in notin between.'),
+        sort: z
+          .string()
+          .optional()
+          .describe('Sort as JSON: `[{"field":"spend","direction":"desc"}]`.'),
+        search: z.string().optional().describe("Free-text search term."),
+        searchFields: z.string().optional().describe('Which fields the search looks in, as a JSON array: `["name","email"]`.'),
+        group: z.string().optional().describe("Group by this field."),
+        pageSize: z.number().optional().describe("Rows per page (default 25)."),
+        page: z.number().optional().describe("1-based page number (default 1)."),
+        key: z.string().optional().describe('The identity field (default "id").'),
+      },
+    },
+    async (args) => {
+      const dl = await loadDataLayer();
+      if (!dl) return err(dataLayerError());
+
+      let rowList;
+      try { rowList = JSON.parse(args.rows); } catch (e) { return err(`rows is not valid JSON: ${e.message}`); }
+      if (!Array.isArray(rowList)) return err("rows must be a JSON array of objects.");
+      if (!rowList.length) return err("rows is empty — pass at least one record.");
+
+      /* CHECK THE OPERATORS FIRST. `matchesFilter`'s switch has no `default`
+         branch, so an unknown op falls through, returns undefined, and rejects
+         EVERY row — a silent empty grid that looks like missing data. The layer
+         should arguably throw; until it does, catch it here rather than hand
+         back "0 rows" and let someone hunt their backend. */
+      const OPS = new Set(['eq','ne','lt','lte','gt','gte','contains','notcontains',
+        'startswith','endswith','in','notin','between']);
+      const badOps = [];
+      const walkOps = (node) => {
+        if (!Array.isArray(node)) return;
+        if (typeof node[0] === 'string' && ['and','or','not'].includes(node[0].toLowerCase())) {
+          node.slice(1).forEach(walkOps);
+          return;
+        }
+        if (node.length === 3 && typeof node[1] === 'string' && !OPS.has(node[1])) badOps.push(node[1]);
+        else node.forEach(walkOps);
+      };
+
+      const parsed = {};
+      for (const f of ["filter", "sort", "searchFields"]) {
+        if (args[f] === undefined || args[f] === "") continue;
+        try { parsed[f] = JSON.parse(args[f]); }
+        catch (e) { return err(`${f} is not valid JSON: ${e.message}`); }
+      }
+
+      if (parsed.filter) {
+        walkOps(parsed.filter);
+        if (badOps.length) {
+          return err(`unknown filter operator(s): ${[...new Set(badOps)].map((o) => `"${o}"`).join(", ")}.\n\n`
+            + `An unknown operator matches NOTHING — every row is rejected and the grid looks empty, which reads as missing data.\n\n`
+            + `The operators, in full: ${[...OPS].join(" ")}. They are DevExtreme's names deliberately — a vocabulary a backend author has probably met.`);
+        }
+      }
+
+      const keyField = args.key ?? "id";
+      const pageSize = args.pageSize ?? 25;
+      const page = Math.max(1, args.page ?? 1);
+      let sortNote = null;
+      let actualPage = page;
+
+      let source, result, totalPages;
+      try {
+        const store = new dl.ArrayStore(rowList, { key: keyField });
+        // `searchFields` is a CONSTRUCTOR option, not a setter — checked against
+        // data-source.ts rather than assumed by symmetry with setSearch.
+        source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
+        // Set the query the way a host does, then load ONCE — this is the real
+        // path, so an invalid filter fails here exactly as it would in the app.
+        if (parsed.filter) source.setFilter(parsed.filter);
+        if (parsed.sort) {
+          // setSort takes (field, direction), NOT a SortSpec array.
+          const first = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
+          if (first) source.setSort(first.field ?? null, first.direction ?? 'asc');
+          if (Array.isArray(parsed.sort) && parsed.sort.length > 1) {
+            sortNote = `only the FIRST sort was applied — \`setSort\` takes one field`;
+          }
+        }
+        if (args.search) source.setSearch(args.search);
+        if (args.group) source.setGroup(args.group);
+        await source.load();
+        /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
+           discarded — every other setter is part of building the query, but the
+           page is a position WITHIN a result that does not exist yet. Measured:
+           setPage(2) then load() lands on page 1; load() then setPage(2) lands
+           on page 2. `setPage` runs its own load, so await the settle. */
+        if (page > 1) {
+          source.setPage(page);
+          await new Promise((r) => setTimeout(r, 0));
+        }
+        result = source.result;
+        totalPages = source.totalPages;
+        // READ THE PAGE BACK. Asking for page 9 of 2 does not fail — the source
+        // resets to page 1 — so reporting the page that was REQUESTED would
+        // print "page 9 of 2" over the rows of page 1.
+        actualPage = source.state?.page ?? page;
+      } catch (e) {
+        return err(`the query failed: ${e.message}\n\nThe grammar is \`[field, op, value]\` — a filter is DATA, not a predicate, so it can be sent to a backend. See \`sherpa://data-rules\`.`);
+      }
+
+      const rows = result.rows ?? [];
+      const total = result.total ?? 0;
+      const pages = totalPages ?? 1;   // the source's own count, not one recomputed here
+
+      const lines = [];
+      lines.push(`## run_query — ${rows.length} row(s) of ${total}\n`);
+      lines.push(`- **total** ${total} — the count BEFORE paging, which is the number a pager needs to say "page ${actualPage} of ${pages || 1}"`);
+      lines.push(`- **page** ${actualPage} of ${pages || 1}, ${pageSize} per page`);
+      if (actualPage !== page) lines.push(`- ⚠️ page ${page} was asked for; there ${pages === 1 ? "is only 1 page" : `are only ${pages}`}, so the source reset to page ${actualPage}`);
+      if (total !== rowList.length) lines.push(`- narrowed from ${rowList.length} input row(s) by the query`);
+      if (sortNote) lines.push(`- ⚠️ ${sortNote}`);
+      if (result.dropped) lines.push(`- ⚠️ **${result.dropped} row(s) DROPPED** by a schema — see \`issues\``);
+      lines.push("");
+
+      if (!rows.length) {
+        lines.push("### No rows came back\n");
+        lines.push(total
+          ? `${total} row(s) MATCH but none are on page ${actualPage} — there ${pages === 1 ? "is 1 page" : `are ${pages} pages`}.`
+          : "Nothing matched. Check the filter's VALUE type: `['health','lt','60']` compares a string, `['health','lt',60]` a number.");
+        lines.push("");
+      } else {
+        lines.push("### What a bound component receives\n");
+        lines.push("```json");
+        lines.push(JSON.stringify(rows.slice(0, 10), null, 2));
+        lines.push("```");
+        if (rows.length > 10) lines.push(`_…${rows.length - 10} more on this page_`);
+        lines.push("");
+      }
+
+      if (args.group && result.groups) {
+        const g = result.groups;
+        lines.push(`### Grouped by \`${args.group}\`\n`);
+        const entries = Array.isArray(g) ? g : Object.entries(g).map(([k, v]) => ({ key: k, items: v }));
+        for (const e of entries.slice(0, 12)) {
+          const k = e.key ?? e[0];
+          const n = (e.items ?? e.rows ?? e[1] ?? []).length;
+          lines.push(`- \`${String(k)}\` — ${n} row(s)`);
+        }
+        if (entries.length > 12) lines.push(`- …${entries.length - 12} more groups`);
+        lines.push("");
+      }
+
+      lines.push("### The query that ran\n");
+      lines.push("```js");
+      lines.push(`const store  = new ArrayStore(rows, { key: '${keyField}' });`);
+      lines.push(`const source = new DataSource({ store, pageSize: ${pageSize} });`);
+      if (parsed.filter) lines.push(`source.setFilter(${JSON.stringify(parsed.filter)});`);
+      if (parsed.sort) {
+        // Echo the call that ACTUALLY ran. Printing `setSort([{…}])` because
+        // that is how the argument arrived would hand back code that does not
+        // work — the echoed snippet is the tool's real output, not its input.
+        const f = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
+        lines.push(`source.setSort(${JSON.stringify(f?.field ?? null)}, ${JSON.stringify(f?.direction ?? 'asc')});`);
+      }
+      if (args.search) lines.push(`source.setSearch(${JSON.stringify(args.search)}${parsed.searchFields ? `, ${JSON.stringify(parsed.searchFields)}` : ""});`);
+      if (args.group) lines.push(`source.setGroup(${JSON.stringify(args.group)});`);
+      if (actualPage > 1) lines.push(`source.setPage(${actualPage});`);
+      lines.push(`await source.load();   // source.rows, source.total`);
+      lines.push("```\n");
+      lines.push("This is the REAL data layer running in Node — the same code the browser runs, so what you see here is what a bound component gets.");
+      lines.push("\nSee `sherpa://data-rules` for the filter grammar and the Store contract.");
+
+      return ok(lines.join("\n"));
+    }
+  );
+
   // ── import_schema — read the backend's OWN description (M4) ──
   server.registerTool(
     "import_schema",
