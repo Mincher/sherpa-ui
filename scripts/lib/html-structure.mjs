@@ -34,11 +34,11 @@ export function parseTemplates(html) {
   return templates;
 }
 
-export function voidTag(t) {
+function voidTag(t) {
   return ['br', 'hr', 'img', 'input', 'meta', 'link'].includes(t);
 }
 
-export function parseAttrs(s) {
+function parseAttrs(s) {
   const attrs = {};
   const re = /([:\w-]+)(?:="([^"]*)")?/g;
   let m;
@@ -70,7 +70,7 @@ function commentRanges(src) {
   }
 }
 
-export function findMatchingClose(src, from, tag, endTag) {
+function findMatchingClose(src, from, tag, endTag) {
   const comments = commentRanges(src);
   // A hit inside a comment is TEXT, not markup — step past the whole comment and
   // look again, rather than counting it.
@@ -100,7 +100,7 @@ export function findMatchingClose(src, from, tag, endTag) {
   return src.length;
 }
 
-export function parseNodes(src) {
+function parseNodes(src) {
   const nodes = [];
   let i = 0;
   const len = src.length;
@@ -139,7 +139,7 @@ export function parseNodes(src) {
  * set, and child order. Everything else is formatting, and comparing it would
  * fail on whitespace.
  */
-export function normNode(n) {
+function normNode(n) {
   const a = { ...n.attrs };
   const out = { tag: n.tag };
   if (n.tag === 'slot') out.slotName = a.name ?? '';
@@ -152,7 +152,7 @@ export function normNode(n) {
 }
 
 /** Walk two normalised nodes in step, pushing a line per difference. */
-export function nodeDiff(gen, real, path, diffs) {
+function nodeDiff(gen, real, path, diffs) {
   if (!gen || !real) { diffs.push(`${path}: node present on one side only`); return; }
   for (const k of ['tag', 'class', 'part', 'slotName']) {
     if ((gen[k] ?? '') !== (real[k] ?? '')) diffs.push(`${path}: ${k} "${gen[k] ?? ''}"≠"${real[k] ?? ''}"`);

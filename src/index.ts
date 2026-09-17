@@ -72,88 +72,17 @@ export {
   type RenderedView,
 } from './core/render-view.js';
 /* ── Data layer ──────────────────────────────────────────────────────── */
-export {
-  applyOptions,
-  compareValues,
-  filterRows,
-  groupRows,
-  matchesFilter,
-  readField,
-  searchRows,
-  sortRows,
-  type Filter,
-  type FilterClause,
-  type FilterGroup,
-  type FilterOp,
-  type LoadOptions,
-  type LoadResult,
-  type Row,
-  type RowGroup,
-  type SortDirection,
-  type SortSpec,
-  type Store,
-  type StoreChangeDetail,
-} from './core/store.js';
-export {
-  ArrayStore,
-  HttpError,
-  JsonStore,
-  LocalStore,
-  RestStore,
-  ValidationError,
-  type JsonStoreOptions,
-  type LocalStoreOptions,
-  type RestStoreOptions,
-  type StoreOptions,
-} from './core/stores.js';
-export {
-  DataSource,
-  type BindOptions,
-  type DataChangeDetail,
-  type DataSourceOptions,
-  type ViewState,
-} from './core/data-source.js';
-// Keeping a view state across a reload — a HELPER, not part of DataSource, so
-// a host chooses whether and where its view state persists.
-export {
-  persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
-  viewOptions, onViewPicked,
-  loadSavedViews, saveViewAs, deleteSavedView,
-  type PersistOptions, type ViewSnapshot, type ApplyReport,
-  type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
-  type SavedViewStore,
-} from './core/persist-view.js';
-export {
-  EventStore,
-  SocketStore,
-  type EventStoreOptions,
-  type LiveStoreOptions,
-  type PushMessage,
-  type SocketStoreOptions,
-} from './core/live-stores.js';
-export {
-  custom,
-  email,
-  issuesFor,
-  isSchema,
-  isValid,
-  max,
-  min,
-  number,
-  oneOf,
-  pattern,
-  required,
-  rules,
-  url,
-  validate,
-  validateField,
-  type FieldRules,
-  type Issue,
-  type Result,
-  type Rule,
-  type RuleMap,
-  type StandardSchema,
-} from './core/validate.js';
+/* ── Data layer ────────────────────────────────────────────────────────
+   Re-exported WHOLESALE from the headless entry point rather than listed
+   again. These 82 lines were a byte-for-byte copy of `src/data.ts`, so every
+   new store, rule or query helper had to be added to two lists — and the one
+   that got forgotten would be missing from `sherpa-ui` while present in
+   `sherpa-ui/data`, which is the harder half to notice.
+
+   `sherpa-ui/data` stays the DOM-free door (a node test proves it imports no
+   component); this line simply means the component entry point offers the
+   same data layer without restating it. */
+export * from './data.js';
 
 export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';

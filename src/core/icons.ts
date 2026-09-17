@@ -40,7 +40,6 @@ export const ORGANISE_ICONS = {
   sortDesc: 'fa-solid fa-arrow-down-wide-short',
 } as const;
 
-export type OrganiseIcon = keyof typeof ORGANISE_ICONS;
 
 /**
  * Rows in a filter menu that are NOT values, as a selector.

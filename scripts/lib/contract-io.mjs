@@ -43,19 +43,3 @@ export function loadContract(path) {
   throw new Error(`No contract file found for ${path} (looked for .yaml/.yml/.json)`);
 }
 
-/**
- * Write an authored contract as YAML to <stem>.yaml.
- * Returns the path written. Does not delete a legacy .json sibling — the
- * migration step does that once the round-trip check passes.
- */
-export function writeContract(path, data) {
-  const out = `${stem(path)}.yaml`;
-  const body = yaml.dump(data, {
-    lineWidth: 100,      // wrap long prose, not mid-token
-    noRefs: true,        // never emit YAML anchors/aliases — keep it literal
-    quotingType: '"',
-    forceQuotes: false,
-  });
-  writeFileSync(out, body);
-  return out;
-}

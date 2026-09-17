@@ -18,7 +18,7 @@ export function isRef(s) {
 }
 
 /** "{a.b.c}" → "a.b.c"; a bare "a.b.c" → "a.b.c" (idempotent). */
-export function refPath(ref) {
+function refPath(ref) {
   if (typeof ref !== 'string') throw new TypeError(`ref must be a string, got ${typeof ref}`);
   const m = /^\{([^}]+)\}$/.exec(ref.trim());
   return m ? m[1] : ref.trim();
@@ -28,7 +28,7 @@ export function refPath(ref) {
  * Walk a dot-path into a plain object. Returns the value at the path, or
  * `undefined` if any segment is missing. Does NOT unwrap DTCG.
  */
-export function walkPath(root, path) {
+function walkPath(root, path) {
   const parts = String(path).split('.');
   let node = root;
   for (const p of parts) {
@@ -45,7 +45,7 @@ export function walkPath(root, path) {
  *   resolveComponentRef(spec, "{props}")          → the props array
  *   resolveComponentRef(spec, "{$extensions.sherpa.figmaName}") → "Switch"
  */
-export function resolveComponentRef(spec, ref) {
+function resolveComponentRef(spec, ref) {
   return walkPath(spec, refPath(ref));
 }
 
@@ -60,7 +60,7 @@ export function resolveComponentRef(spec, ref) {
  * --sherpa-* semantic alias consumed with a hardcoded fallback in component
  * CSS. resolveTokenRef leaves them for resolveRef to route (returns undefined).
  */
-export function resolveTokenRef(tokens, ref, { unwrap = true } = {}) {
+function resolveTokenRef(tokens, ref, { unwrap = true } = {}) {
   const path = refPath(ref);
   if (path.startsWith('sherpa.')) return undefined; // alias namespace, not a token path
   const node = walkPath(tokens, path);
@@ -115,7 +115,7 @@ export function resolveRef(ref, { spec, tokens } = {}) {
  * ({sherpa.*}) are terminal — returned as { alias } — since they're a CSS seam,
  * not a token value.
  */
-export function resolveTokenChain(tokens, ref, seen = new Set()) {
+function resolveTokenChain(tokens, ref, seen = new Set()) {
   const path = refPath(ref);
   if (path.startsWith('sherpa.')) return { alias: path.slice('sherpa.'.length) };
   if (seen.has(path)) throw new Error(`cyclic token ref: ${[...seen, path].join(' → ')}`);

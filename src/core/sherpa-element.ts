@@ -24,11 +24,6 @@
  */
 
 /** Shared stylesheets adopted into every component's shadow root, in order. */
-export interface SharedStyleSources {
-  /** URLs whose CSS is adopted into every shadow root (base reset, tokens, functions). */
-  shared: URL[];
-}
-
 /** A parsed template map: id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
 

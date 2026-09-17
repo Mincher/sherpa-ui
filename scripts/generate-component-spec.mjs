@@ -66,9 +66,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
-import {
-  parseTemplates, parseNodes, parseAttrs, voidTag, findMatchingClose, normNode, nodeDiff, htmlDiff,
-} from './lib/html-structure.mjs';
+import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
 import { parseObserved } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
