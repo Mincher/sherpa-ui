@@ -328,6 +328,28 @@ re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
 `ThemeManager` handles persistence. There is no `light-dark()` in component CSS — the
 display-mode layer owns mode handling.
 
+### Shared CSS lives in `sherpa-base.css`
+
+It is adopted into EVERY shadow root, so a class defined there works in all 58
+components. Reach for it when the same rule appears in a third component —
+`.chart-tip` (the five charts) and `.sherpa-snap-group` both got there that way.
+
+`.sherpa-snap-group` on a WRAPPER squares its children's inner corners so a row
+of controls reads as one object. By POSITION (`:first-child` / `:last-child`),
+not by `[data-snap]`, so a re-order survives. Each child keeps its own
+`data-snap` as the honest description of what it is.
+
+**What does NOT belong there: a `:host` rule.** Only 22 of the 58 components
+want a border at all, so a blanket `:host` rule draws one on 36 that do not.
+Shared CSS is opt-in by class.
+
+**And the per-edge border chain is NOT duplication, though it looks it.** The
+four `border-*-width: var(--sherpa-border-{top,bottom,left,right})` lines appear
+in 21 components and cannot become a `border-width` shorthand: the edges
+genuinely differ in 17 of the 21 `[data-group]` modes, so a `grid-mid-start`
+cell shares a hairline with its neighbour instead of doubling it. The VALUES are
+defined once, in `tokens.css`. Leave them.
+
 ### Status cascade (`[data-status]`)
 
 Setting `data-status="critical|warning|success|info|urgent"` on any ancestor emits `--_status-*` custom properties that inherit through Shadow DOM. Components consume them via fallback chains — no per-component status blocks are needed:
