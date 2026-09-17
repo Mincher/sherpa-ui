@@ -5,7 +5,9 @@
  * Encodes the rules from docs/DEF-TO-FIGMA-BUILD-RULES.md so an AI can't ship a
  * def that repeats a known defect.
  */
-import { loadOntology, loadNameMap, loadComponentNames } from './data.mjs';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { loadOntology, loadNameMap, loadComponentNames, loadCssTokenNames, PATHS } from './data.mjs';
 import { roleForToken, scopeAllows, explainToken } from './resolve.mjs';
 
 const err = (code, msg, where) => ({ level: 'error', code, msg, where });
@@ -32,10 +34,27 @@ function allRoots(def) {
   return a.root ? [a.root] : [];
 }
 
+/**
+ * A component's own stylesheet, or `null`. Cached — the token loop asks per
+ * alias and a component has many. Returns null rather than throwing, so a def
+ * for a component that does not exist yet still validates.
+ */
+const _cssCache = new Map();
+function componentCss(name) {
+  if (!name) return null;
+  if (_cssCache.has(name)) return _cssCache.get(name);
+  const p = join(PATHS.components, name, `${name}.css`);
+  let css = null;
+  try { css = existsSync(p) ? readFileSync(p, 'utf8') : null; } catch { css = null; }
+  _cssCache.set(name, css);
+  return css;
+}
+
 export function validateDef(def, opts = {}) {
   const ontology = opts.ontology ?? loadOntology();
   const nameMap = opts.nameMap ?? loadNameMap();
   const components = new Set(opts.components ?? loadComponentNames());
+  const cssTokens = opts.cssTokens ?? loadCssTokenNames();
   const out = [];
 
   // ── shape basics ──
@@ -72,8 +91,45 @@ export function validateDef(def, opts = {}) {
       // Normalise both (drop collection, unify / and -) and compare.
       const norm = (s) => s.toLowerCase().replace(/^.*::/, '').replace(/[/-]/g, '');
       const target = norm(nm);
+
+      /* DOES THIS TOKEN EXIST? Ask the generated sheet, not the ontology.
+         `docs/ontology/tokens` was deleted 2026-09-16 (it described collections
+         that no longer existed), so `loadOntology()` returns `{}` — and this
+         check read "no entry" as "wrong name" and warned about EVERY token in
+         EVERY component: 1173 warnings, 99% of them false, burying 14 real ones.
+         A validator that is wrong 99% of the time is worse than no validator.
+
+         `tokens.css` is re-projected from Figma, so it cannot rot by hand. An
+         EMPTY set means the sheet is missing and the question is unanswerable —
+         stay quiet, rather than condemning everything. */
+      if (cssTokens.size) {
+        const known = [...cssTokens].some((t) => {
+          const k = norm(t.replace('--sherpa-', ''));
+          return k === target || k.endsWith(target);
+        });
+        if (!known) {
+          /* Not in the shared sheet. Before calling it dead, check whether the
+             component DEFINES it itself — all 14 that surfaced here do, on
+             `:host`, re-pointed per size (`--sherpa-button-space-gap`,
+             `--sherpa-switch-size-width`). Nothing is broken; the name simply
+             takes the SHARED `--sherpa-*` prefix for a component-private value,
+             which CLAUDE.md reserves `--_*` for. Say that, because "the
+             collection may have been removed" would send someone looking for a
+             Figma collection that was correctly deleted. */
+          const ownCss = componentCss(def.name);
+          const selfDefined = ownCss && new RegExp(`--sherpa-${nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:`).test(ownCss);
+          out.push(selfDefined
+            ? warn('token-private', `"${nm}" (${key}) is component-private — ${def.name}.css defines it on :host. Private values use the --_* prefix, not --sherpa-*`, key)
+            : warn('token', `token "${nm}" (${key}) is not declared in tokens.css and ${def.name}.css does not define it — the name is dead`, key));
+          continue;
+        }
+      }
+
+      /* ROLE and CAVEAT still come from the ontology, because tokens.css carries
+         only names. With no ontology there is nothing to say, so both checks
+         below simply do not fire — a missing answer, not a wrong one. */
       const hit = Object.keys(ontology).find((id) => norm(id).endsWith(target) || norm(id) === target);
-      if (!hit) { out.push(warn('token', `token "${nm}" (${key}) not found in ontology — verify the name`, key)); continue; }
+      if (!hit) continue;
       const role = ontology[hit].role;
       if (expected && role && role !== expected && !(expected === 'surface' && role === 'palette') && !(expected === 'space' && role === 'size')) {
         out.push(warn('token-role', `${key} binds "${nm}" (role=${role}) but property implies ${expected}`, key));
@@ -108,9 +164,21 @@ export function validateDef(def, opts = {}) {
     }
   }
 
-  // ── events well-formed ──
+  /* ── events well-formed ──
+     A NATIVE event name is a single word by definition, and re-dispatching one
+     is the convention, not a breach of it: CLAUDE.md's naming contract lists
+     `change`/`input` as standard shared events in the same sentence that sets
+     the `noun-verb` rule. The rule demanded a hyphen from all of them and
+     produced 12 warnings across 10 components, every one false. A component
+     that re-dispatches `change` is doing exactly what the contract asks. */
+  const NATIVE_EVENTS = new Set([
+    'change', 'input', 'close', 'open', 'toggle', 'submit', 'reset', 'select',
+    'focus', 'blur', 'invalid', 'cancel', 'search',
+  ]);
   for (const e of def.events ?? []) {
-    if (!/^[a-z]+(-[a-z]+)+$/.test(e.name)) out.push(warn('event-name', `event "${e.name}" should be unprefixed noun-verb`, e.name));
+    if (!NATIVE_EVENTS.has(e.name) && !/^[a-z]+(-[a-z]+)+$/.test(e.name)) {
+      out.push(warn('event-name', `event "${e.name}" should be unprefixed noun-verb (or a re-dispatched native event)`, e.name));
+    }
     if (e.cancelable && !e.default) out.push(warn('event-default', `cancelable event "${e.name}" should document its default action`, e.name));
   }
 

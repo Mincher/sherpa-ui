@@ -3113,14 +3113,16 @@ has this shape.
 
 ## WHAT IS ACTUALLY LEFT — audited 2026-09-17
 
-44 of 57 steps done. The audit moved five of them without writing any code: they
-had been satisfied by work done under another number, and nobody had checked.
+**48 of 57 steps done.** The audit moved five of them without writing any code:
+they had been satisfied by work done under another number, and nobody had
+checked. Re-counted 2026-09-17 — it read 44, which was stale by four.
 
 **Q1** was done by N2's lint rule. **P4** is done in substance — 23 specs carry
 `$extensions.sherpa.methods`, so a component's callable surface IS in the
 contract. **O2**, **O3** and **O7** were swept and came back clean.
 
-The thirteen that remain fall into four groups, and only one is ordinary work:
+The nine that remain are **M2 M3 M4 N4 P5 Q2 Q3 S8 V9**, and not one of them can
+be picked up today:
 
 ### Waiting on the MCP rewrite (5) — N4, M2, M3, M4, P5
 
@@ -3147,20 +3149,27 @@ backend arrives.
 Deriving a column's `type` from a schema needs rules to CARRY a type tag —
 `rules()` builds opaque closures — and a `date()` rule that does not exist.
 
-### Ordinary work (4) — O1, O4, C3, C4
+### Ordinary work — NONE LEFT (2026-09-17)
 
-The only group anyone could pick up today:
+All four closed. This section listed O1 and O4 as open after they had already
+been settled, which is the same failure the audit itself found five times: a
+step is done and the list saying otherwise is what everyone reads.
 
-- **O1** — `data-locked` into `SherpaElement`. Three components implement it
-  separately.
-- **O4** — write the `data-x` / `x-change` / `data-x-locked` convention into
-  CLAUDE.md. It is a real ratified rule that lives only in a memory file.
-- ~~**C3**~~ ✅ — 58/58 round-trip. It was NOT CSS drift: all 22 were generator
-  and compiler gaps. See the spec table below.
-- ~~**C4**~~ ✅ — the round-trip is a gate, in `spec:check` and the pre-commit hook.
+- **O1** ✅ — **not needed, the premise was false.** It claimed three components
+  implement `data-locked` separately. Only ONE reads it (`sherpa-quick-filter`);
+  the grid and the toolbar SET it on chips they host. That is the convention
+  working, not three copies of it. (`aa51db52`)
+- **O4** ✅ — the ownership convention is in CLAUDE.md, under "State ownership".
+  (`092a695a`)
+- **C3** ✅ — 58/58 round-trip. It was NOT CSS drift: all 22 were generator and
+  compiler gaps. See the spec table below. (`e4ab83dc`)
+- **C4** ✅ — the round-trip is a gate, in `spec:check` and the pre-commit hook.
+  (`8bc346af`)
 
-**O4 is the cheapest thing on this list and the most quietly valuable**: a rule
-nobody can read is a rule that gets broken by the next person.
+**What is left is the three groups above, and none of them is ordinary work**:
+five wait on the MCP rewrite, three are deliberately on demand, one is blocked on
+a `date()` rule that does not exist. The next real move is the MCP rewrite, which
+unblocks the largest group and two things already queued behind it.
 
 ## Component SPECS have fallen behind the data layer
 

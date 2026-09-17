@@ -18,6 +18,9 @@ const P = {
   // machine dump — stays JSON
   graph: join(ROOT, 'scripts', 'figma-data', 'variable-graph.json'),
   components: join(ROOT, 'src', 'components'),
+  // The GENERATED token sheet — re-projected from Figma by project-tokens.mjs,
+  // so it is the one list of token names that cannot go stale by hand.
+  tokensCss: join(ROOT, 'src', 'styles', 'tokens', 'tokens.css'),
 };
 
 const _cache = {};
@@ -26,6 +29,32 @@ const readAuthored = (base) => { try { return loadContract(base); } catch { retu
 
 export function loadOntology() {
   return (_cache.ontology ??= readAuthored(P.ontology) ?? {});
+}
+/**
+ * Every `--sherpa-*` token name declared in the generated sheet, as a Set.
+ *
+ * This is the answer to "is this token real". The ONTOLOGY used to answer it and
+ * cannot any more: `docs/ontology/tokens` was deleted 2026-09-16 because it
+ * described collections that no longer existed, so `loadOntology()` honestly
+ * returns `{}` — and every caller that read "no entry" as "wrong name" started
+ * reporting all 115 def token aliases as suspect. 1173 warnings, 1157 of them
+ * false, hiding 14 real ones.
+ *
+ * `tokens.css` is re-projected from Figma and gated, so it cannot rot the way a
+ * hand-written ontology did. It carries only the NAME — no role, no caveat —
+ * which is exactly the question the name check asks.
+ *
+ * Returns an EMPTY set if the sheet is missing; callers must treat that as "I
+ * cannot answer" and stay quiet, never as "nothing is real".
+ */
+export function loadCssTokenNames() {
+  return (_cache.cssTokens ??= (() => {
+    const set = new Set();
+    if (!existsSync(P.tokensCss)) return set;
+    const css = readFileSync(P.tokensCss, 'utf8');
+    for (const m of css.matchAll(/^\s*(--sherpa-[a-z0-9-]+)\s*:/gm)) set.add(m[1]);
+    return set;
+  })());
 }
 export function loadStructure() {
   return (_cache.structure ??= readAuthored(P.structure) ?? {});
