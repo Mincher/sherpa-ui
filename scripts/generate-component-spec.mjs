@@ -1345,7 +1345,12 @@ function run() {
       }
     }
   }
-  const anyFail = rows.some((r) => r.error || !r.valid);
+  /* The ROUND-TRIP counts as a failure, not just the schema check.
+     `r.rtOk` was printed in the table and in the detail block but never reached
+     this line, so `--check` exited 0 with 22 components failing and sat that way
+     for a whole branch. A report nobody can fail is a report nobody reads —
+     the same ruling that put `spec:validate` in the pre-commit hook. */
+  const anyFail = rows.some((r) => r.error || !r.valid || !r.rtOk);
   process.exit(anyFail ? 1 : 0);
 }
 

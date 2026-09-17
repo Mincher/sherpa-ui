@@ -12,19 +12,27 @@ fi
 # The component specs are the contract the MCP and every agent reads. Nothing
 # validated them until 2026-09-16, and they had rotted badly: 31 of 58 declared
 # events their component never emits, because the generator was scraping English
-# prose for identifiers. Cheap to check (a second), and the only thing standing
-# between a fixed spec and the next silent drift.
-echo "📋 Validating component specs..."
-# QUIET ON SUCCESS. 58 green ticks on every commit is noise that trains people to
+# prose for identifiers. Cheap to check, and the only thing standing between a
+# fixed spec and the next silent drift.
+#
+# `spec:check` (not `spec:validate`) — it does BOTH halves:
+#   validate   the spec matches schemas/component.v1.json
+#   round-trip the spec regenerates the source it came from
+# The round-trip is the half that catches a spec which is well-formed but no
+# longer describes its component. It had been reported and never enforced, so 22
+# of 58 failed it for a whole branch with every commit passing. 418ms for all 58.
+echo "📋 Checking component specs (schema + round-trip)..."
+# QUIET ON SUCCESS. A 58-row table on every commit is noise that trains people to
 # scroll past the one line that matters. The output is captured and printed only
 # when something fails.
-SPEC_OUT=$(npm run spec:validate --silent 2>&1)
+SPEC_OUT=$(npm run spec:check --silent 2>&1)
 SPEC_RESULT=$?
 
 if [ $SPEC_RESULT -ne 0 ]; then
-  echo "$SPEC_OUT" | grep -v '^✅' 
-  echo "❌ A component spec does not match schemas/component.v1.json. Commit blocked."
-  echo "   Regenerate it: node scripts/generate-component-spec.mjs <name>"
+  echo "$SPEC_OUT" | grep -vE '^sherpa-[a-z-]+ +PASS +PASS'
+  echo "❌ A component spec is invalid or no longer round-trips. Commit blocked."
+  echo "   See the details above, then regenerate: node scripts/generate-component-spec.mjs <name>"
+  echo "   A round-trip failure usually means the SOURCE changed and the spec did not."
   exit 1
 fi
 
