@@ -1800,8 +1800,8 @@ break it silently, and no test would notice.
 |---|---|---|
 | **N1** ✅ | A Node test that imports the layer and runs the operations above | **DONE 2026-09-16** — `test/unit/headless-data-layer.test.mjs`, run by `npm run test:node`. 5 tests: pure functions, store + source query and mutate, headless `bind()`, and a schema mapping an external shape. Proven to catch a regression: adding one `document.querySelector` to `store.js` fails it |
 | **N2** ✅ | A lint rule: no DOM globals in `store.ts` / `validate.ts` / `data-source.ts` | **DONE 2026-09-17.** `no-restricted-globals` on the nine headless modules. Does NOT ban `EventTarget`/`CustomEvent`/`Event` (Node globals since Node 15 — checked, not assumed) nor TYPE-only `HTMLElement` (erased at compile time). `stores.ts` got its own narrower override: `LocalStore` is browser-only by design and already degrades via `try/catch → null`, so it is headless-SAFE but not storage-free |
-| **N3** | Publish the layer as a separate entry point (`sherpa-ui/data`) | so a server imports it without pulling in `customElements`. `src/index.ts` currently registers every component on import |
-| **N4** | An MCP tier that drives a headless source | needs N3 (a clean import) and P1–P3 (parity). The layer itself is ready |
+| **N3** ✅ | Publish the layer as a separate entry point (`sherpa-ui/data`) | **DONE 2026-09-17.** `src/data.ts` + a `./data` export. 46 exports, zero components — asserted, since one would drag in customElements. Storage (`persistView`, `SessionStore`) comes through deliberately: both degrade via `try/catch → null`, and a server restoring a saved view needs the SHAPE more than the browser's storage. Measured first: `dist/index.js` really does fail in Node, and all ten core modules already import cleanly |
+| **N4** | An MCP tier that drives a headless source | **UNBLOCKED 2026-09-17** — N3 gives the clean import it needed, and P1-P3 landed earlier. Waits on the MCP rewrite (see HANDOVER-BACKLOG), since the current tools target a format with no files |
 
 **N1 and N2 are small and should come first.** The capability exists; what is
 missing is anything stopping it being lost.
