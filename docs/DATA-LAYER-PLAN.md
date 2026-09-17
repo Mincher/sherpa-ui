@@ -3212,7 +3212,7 @@ before then.
 | Step | Work | Why here |
 |---|---|---|
 | **Q1** | Keep `src/core/store.ts` DOM-free, as a rule | it is what lets a SERVER import `applyOptions` / `filterRows` / `sortRows` and answer a query identically to the browser. Free today; easy to lose by accident |
-| **Q2** | A translator per real backend — `toOData`, `toSql`, `toGraphQL` | the `buildQuery` seam already takes them. Pure functions: `LoadOptions` in, a request out. **Build on demand, never speculatively** |
+| **Q2** | A translator per real backend — `toOData`, `toSql`, `toGraphQL` | **SEAM PROVEN 2026-09-17, translators still on demand.** Attempted, and the plan's own rule answered it: nothing in this repo uses `RestStore`, so three translators would be guessing at three servers nobody has. What WAS missing is that `RestStore` — the one place a `LoadOptions` becomes a request — had **zero tests**. Now covered headless: the whole query reaches the server, the server's total is believed (not `rows.length`), and a custom `buildQuery` works, shown with a toy OData translator IN THE TEST. Build a real one when a real backend arrives |
 | **Q3** | Server-side group / sort / filter | **DEFERRED, and for the right reason.** Measured 2026-09-16 — see below. Needs a `LoadResult` shape for genuinely grouped payloads (nested rows, per-group counts), which must not be invented before a real backend asks |
 
 Two rules that hold whenever Q2 is picked up: a translator **parameterises,
