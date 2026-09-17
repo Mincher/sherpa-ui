@@ -168,9 +168,7 @@ export class SherpaPagination extends SherpaElement {
     // composedPath, not closest: the click starts inside the sherpa-button's OWN
     // shadow root, so `event.target` is its inner <button> and `closest` from
     // there never reaches this component's `.btn` host.
-    const btn = event
-      .composedPath()
-      .find((n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('btn'));
+    const btn = this.pathFind(event, '.btn');
     if (!btn || btn.hasAttribute('disabled')) return;
 
     switch (btn.dataset['action']) {

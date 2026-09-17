@@ -280,6 +280,12 @@ export class SherpaInputText extends SherpaElement {
    * The two components took different forms until now, which is a trap for
    * anyone composing one into the other: the same attribute name meant two
    * different things.
+   *
+   * NOT `SherpaElement.writeIcon`, deliberately. `writeIcon`'s glyph sink is
+   * `textContent`; this component's is the `data-glyph` attribute, because its
+   * CSS draws the character with `content: attr(data-glyph)` (see the
+   * `.icon[data-glyph]::before` rule). Migrating would empty that attribute and
+   * the raw-character icons would vanish.
    */
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);

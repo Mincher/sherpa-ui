@@ -549,6 +549,41 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
+   * The first element on a composed event's path that matches — the reliable
+   * way to ask "what was actually clicked".
+   *
+   * `event.target` RETARGETS at a shadow boundary: a click inside a child
+   * component arrives at the host, so `target.closest('.row')` misses the row
+   * it came from. `composedPath()` is the un-retargeted list, and walking it is
+   * the only way to see through the boundary.
+   *
+   * This was written out 26 times across 9 components, in three spellings, and
+   * they had drifted: `sherpa-quick-filter-toolbar` looked for the same element
+   * by `tagName === 'SHERPA-QUICK-FILTER'` in one handler and
+   * `localName === 'sherpa-quick-filter'` in another. Both work; having two is
+   * how a third appears.
+   *
+   * Takes a SELECTOR because that is what a caller means — `'.row'`,
+   * `'sherpa-quick-filter'`, `'[data-id]'` — rather than a hand-written
+   * predicate that has to re-narrow the type each time.
+   *
+   * A component whose rows live in its OWN shadow tree should keep using
+   * `target.closest()`: nothing crossed a boundary, and `closest` says so.
+   * `sherpa-data-grid` does this in 11 places, correctly.
+   */
+  protected pathFind<T extends Element = HTMLElement>(event: Event, selector: string): T | null {
+    for (const node of event.composedPath()) {
+      if (node instanceof Element && node.matches(selector)) return node as T;
+    }
+    return null;
+  }
+
+  /** Did the event pass through an element matching `selector`? */
+  protected pathHas(event: Event, selector: string): boolean {
+    return this.pathFind(event, selector) !== null;
+  }
+
+  /**
    * Render an icon value — a Font Awesome class list OR a single raw glyph.
    *
    * ONE policy, because there were three. Font Awesome draws its glyph from a

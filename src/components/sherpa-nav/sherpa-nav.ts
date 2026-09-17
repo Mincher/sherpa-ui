@@ -369,7 +369,16 @@ export class SherpaNav extends SherpaElement {
     return rows;
   }
 
-  /** Set an icon as FA classes when it looks like one, else as a text glyph. */
+  /**
+   * Set an icon as FA classes when it looks like one, else as a text glyph.
+   *
+   * NOT `SherpaElement.writeIcon`, and this is the one place that is correct.
+   * `writeIcon` styles the element it is GIVEN; `.brand-icon` wraps a
+   * `<slot name="brand-icon">` holding a default `<i class="fa-solid fa-cubes">`,
+   * so adding classes to the wrapper would leave that fallback showing beside
+   * the real mark. The host must be emptied first, which is why this builds a
+   * child — the one sanctioned `createElement` in the component layer.
+   */
   #applyIcon(host: Element, value: string): void {
     if (/\bfa-/.test(value)) {
       host.replaceChildren();

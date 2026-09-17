@@ -548,12 +548,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // wraps its own inner <div class="chip">, which sits lower in the path and
     // matched first — and #chipPicks on that bare div finds no calendar, so the
     // label was rebuilt from an empty pick list every time.
-    const chip = event
-      .composedPath()
-      .find(
-        (n): n is HTMLElement =>
-          n instanceof HTMLElement && n.tagName === 'SHERPA-QUICK-FILTER',
-      );
+    const chip = this.pathFind(event, 'sherpa-quick-filter');
     if (!chip) return;
     this.#syncDateLabel(chip);
     // A date chip turns itself ON by picking — it has no body toggle to switch
@@ -1344,12 +1339,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // inner <input> and is RETARGETED at each shadow boundary it crosses — by
     // the time it reaches this listener `target` is the toolbar itself, and
     // `closest` from there finds no switch at all.
-    const sw = event
-      .composedPath()
-      .find(
-        (n): n is HTMLElement =>
-          n instanceof HTMLElement && n.classList.contains('qf-range-switch'),
-      );
+    const sw = this.pathFind(event, '.qf-range-switch');
     if (!sw) return;
     const on = (sw as HTMLElement & { checked: boolean }).checked;
     const menu = sw.closest('sherpa-menu');
@@ -1436,12 +1426,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // contains a <div class="chip"> too, and it comes FIRST on the path — so
     // matching the class found that inner div, which carries no data-id, and
     // every remove silently bailed.
-    const chip = event
-      .composedPath()
-      .find(
-        (n): n is HTMLElement =>
-          n instanceof HTMLElement && n.localName === 'sherpa-quick-filter',
-      );
+    const chip = this.pathFind(event, 'sherpa-quick-filter');
     const id = chip?.dataset['id'];
     if (!id) return;
     event.stopImmediatePropagation();
@@ -1839,9 +1824,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * quick-filter name. A menu on a plain button reports for itself.
    */
   #onAddCommit = (event: Event): void => {
-    const add = event
-      .composedPath()
-      .find((n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('add-btn'));
+    const add = this.pathFind(event, '.add-btn');
     if (!add) return;
     event.stopImmediatePropagation();
     const picked = (event as CustomEvent).detail?.values as string[] | undefined;

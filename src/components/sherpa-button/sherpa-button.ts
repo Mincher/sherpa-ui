@@ -60,28 +60,22 @@ export class SherpaButton extends SherpaElement {
     if (slot) slot.textContent = value ?? '';
   }
 
-  #syncIcons(): void {
-    this.#applyIcon('.icon-start', this.dataset['iconStart']);
-    this.#applyIcon('.icon-end', this.dataset['iconEnd']);
-  }
-
   /**
-   * Apply a Font Awesome icon: data-icon-* is an FA class string (e.g.
-   * "fa-solid fa-floppy-disk"). Set it as CSS classes on the <i> (keeping its
-   * structural `icon icon-start|end` classes); CSS `:host([data-icon-*])` controls
-   * visibility. Legacy single-glyph text values (no "fa-" token) fall back to text.
+   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk"), set as CSS
+   * classes on the `<i>`; CSS `:host([data-icon-*])` controls visibility. A
+   * legacy single-glyph value (no "fa-" token) falls back to text.
+   *
+   * `writeIcon` is the shared writer. This used to rebuild `className` from a
+   * hard-coded `base` string — which works only while nothing else touches
+   * those classes, and silently drops anything that does. `writeIcon` removes
+   * the `fa-*` classes and leaves the rest, so the structural
+   * `icon icon-start|end` survive because they were never removed.
    */
-  #applyIcon(sel: string, value: string | undefined): void {
-    const el = this.$(sel);
-    if (!el) return;
-    const base = sel === '.icon-start' ? 'icon icon-start' : 'icon icon-end';
-    if (value && /\bfa-/.test(value)) {
-      el.className = `${base} ${value}`;
-      el.textContent = '';
-    } else {
-      el.className = base;
-      el.textContent = value ?? ''; // back-compat: a raw glyph char
-    }
+  #syncIcons(): void {
+    const start = this.$('.icon-start');
+    const end = this.$('.icon-end');
+    if (start) this.writeIcon(start, this.dataset['iconStart'] ?? '');
+    if (end) this.writeIcon(end, this.dataset['iconEnd'] ?? '');
   }
 
   #syncDisabled(): void {
