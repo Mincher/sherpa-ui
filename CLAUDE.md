@@ -82,7 +82,7 @@ npm run mcp               # stdio transport — connect from Claude Desktop / Cu
 - **Web Components** — Custom Elements + Shadow DOM + HTML Templates. No framework, no virtual DOM, zero runtime dependencies.
 - **TypeScript** strict mode, compiled to ES2022 ES modules (`dist/components/`).
 - **CSS** with design tokens sourced from Figma Variables.
-- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the ontology, and the build rules. (There is no `patterns/` directory on this branch — `examples/` is the working reference instead.)
+- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the data layer and the build rules. (There is no `patterns/` directory on this branch — `examples/` is the working reference instead.)
 
 ### Component anatomy (three source files + one generated def)
 
@@ -431,12 +431,12 @@ button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-**18 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
+**17 tools** across five modules, **6 `sherpa://` resources**, and **3 guided
 prompts**. Run with `npm run mcp` (stdio).
 
 | Module | Tools |
 |---|---|
-| `tools/discover.js` | `list_components`, `get_component`, `browse_ontology`, `explain_token` |
+| `tools/discover.js` | `list_components`, `get_component`, `find_token` |
 | `tools/generate.js` | `scaffold_def`, `validate_def`, `compile_def`, `token_for` |
 | `tools/verify.js` | `audit_component`, `check_bindings` |
 | `tools/data.js` | `run_query`, `import_schema`, `scaffold_schema`, `validate_schema` |
@@ -454,9 +454,9 @@ no arbitrary script** — a caller names an element, a method and JSON arguments
 the page-side code lives in the repo. Nothing launches until a tool asks, and
 `browser_close` ends it.
 
-Resources (7): `sherpa://data-rules` (what Sherpa expects of your data),
-`sherpa://def/{name}`, `sherpa://ontology/{id}`, `sherpa://rules`, and
-`sherpa://component/{name}/` in `ts`, `html` and `css`. Prompts:
+Resources (6): `sherpa://data-rules` (what Sherpa expects of your data),
+`sherpa://def/{name}`, `sherpa://rules`, and `sherpa://component/{name}/` in
+`ts`, `html` and `css`. Prompts:
 `generate_component`, `debug_component`, `review_component_usage`.
 
 The component contract it reads is `<name>.component.yaml`; tokens come from

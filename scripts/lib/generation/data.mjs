@@ -1,6 +1,14 @@
 /**
  * data.mjs — cached loaders for the generation lib's reference data.
- * The ontology, name-map, and variable graph. Loaded once, cached.
+ * The component specs, the name-map, and the generated token sheet. Loaded
+ * once, cached.
+ *
+ * There is no ontology loader. `docs/ontology/` was deleted 2026-09-16 for
+ * having rotted, `loadOntology()` returned `{}` for a year of callers that read
+ * that as "this token is wrong", and the scripts that built it went
+ * 2026-09-17. Token NAMES come from `loadCssTokenNames()` — the generated
+ * sheet, which cannot go stale by hand. ROLE and PURPOSE have no source, and
+ * that is now a stated gap rather than a silent null.
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -12,7 +20,6 @@ import { specToDef } from '../component-to-def.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const P = {
   // authored files — YAML preferred, resolved via loadContract (JSON fallback)
-  ontology: join(ROOT, 'docs', 'ontology', 'tokens'),
   nameMap: join(ROOT, 'scripts', 'figma-data', 'name-map'),
   components: join(ROOT, 'src', 'components'),
   // The GENERATED token sheet — re-projected from Figma by project-tokens.mjs,
@@ -23,18 +30,13 @@ const P = {
 const _cache = {};
 const readAuthored = (base) => { try { return loadContract(base); } catch { return null; } };
 
-export function loadOntology() {
-  return (_cache.ontology ??= readAuthored(P.ontology) ?? {});
-}
 /**
  * Every `--sherpa-*` token name declared in the generated sheet, as a Set.
  *
- * This is the answer to "is this token real". The ONTOLOGY used to answer it and
- * cannot any more: `docs/ontology/tokens` was deleted 2026-09-16 because it
- * described collections that no longer existed, so `loadOntology()` honestly
- * returns `{}` — and every caller that read "no entry" as "wrong name" started
- * reporting all 115 def token aliases as suspect. 1173 warnings, 1157 of them
- * false, hiding 14 real ones.
+ * This is the answer to "is this token real", and the only one there is. The
+ * ontology used to answer it; when it was deleted, every caller that read "no
+ * entry" as "wrong name" reported all 115 def token aliases as suspect — 1173
+ * warnings, 1157 of them false, hiding 14 real ones.
  *
  * `tokens.css` is re-projected from Figma and gated, so it cannot rot the way a
  * hand-written ontology did. It carries only the NAME — no role, no caveat —

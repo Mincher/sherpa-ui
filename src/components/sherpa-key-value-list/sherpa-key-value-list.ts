@@ -39,18 +39,10 @@ export class SherpaKeyValueList extends SherpaElement {
     this.#render();
   }
 
+  // The prototype's own data-text attributes name the fields; there is nothing
+  // left to write by hand.
   #render(): void {
-    const dl = this.$('.list');
-    const tpl = this.$<HTMLTemplateElement>('template.pair-tpl');
-    if (!dl || !tpl) return;
-
-    dl.replaceChildren();
-    for (const pair of this.#pairs) {
-      const frag = tpl.content.cloneNode(true) as DocumentFragment;
-      frag.querySelector('.key')!.textContent = pair.key;
-      frag.querySelector('.value')!.textContent = pair.value;
-      dl.appendChild(frag);
-    }
+    this.renderRows('.list', 'template.pair-tpl', this.#pairs);
   }
 }
 

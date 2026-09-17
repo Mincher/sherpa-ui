@@ -11,7 +11,7 @@
  */
 import { z } from "zod/v3";
 import {
-  loadOntology, loadComponentNames, loadDef, loadNameMap, loadCssTokenNames,
+  loadComponentNames, loadDef, loadNameMap, loadCssTokenNames,
 } from "../../scripts/lib/generation/data.mjs";
 import { compileDef } from "../../scripts/lib/generation/compile-def.mjs";
 
@@ -56,46 +56,6 @@ function expand(term) {
   return SYNONYMS[term] ? [term, SYNONYMS[term]] : [term];
 }
 
-/** Match a user query against ontology ids (fuzzy: by name, ignoring collection; synonym-aware). */
-function findEntries(ontology, query) {
-  const q = query.toLowerCase();
-  const ids = Object.keys(ontology);
-  // exact id, then name-suffix, then substring (each term synonym-expanded)
-  const exact = ids.filter((id) => id.toLowerCase() === q);
-  if (exact.length) return exact.map((id) => ontology[id]);
-  const byName = ids.filter((id) => (id.split("::")[1] ?? "").toLowerCase() === q);
-  if (byName.length) return byName.map((id) => ontology[id]);
-  // direct substring first
-  let hits = ids.filter((id) => id.toLowerCase().includes(q));
-  if (hits.length) return hits.map((id) => ontology[id]);
-  // else synonym-expand each segment and require ALL segments to match (AND, not OR)
-  const segs = q.split(/[\s/]+/).filter(Boolean);
-  hits = ids.filter((id) => {
-    const name = id.toLowerCase();
-    return segs.every((seg) => expand(seg).some((t) => name.includes(t)));
-  });
-  return hits.map((id) => ontology[id]);
-}
-
-function renderEntry(e) {
-  const lines = [];
-  lines.push(`# ${e.id}`);
-  lines.push(`**${e.purpose}**`);
-  lines.push("");
-  lines.push(`- role: \`${e.role}\`  ·  tier: \`${e.tier}\`  ·  type: ${e.resolvedType}`);
-  lines.push(`- scope: ${e.scope?.length ? e.scope.join(", ") : "open (ALL_SCOPES)"}`);
-  lines.push(`- ✅ when to use: ${e.whenToUse}`);
-  lines.push(`- ❌ when NOT: ${e.whenNOT}`);
-  if (e.aliasedFrom && Object.keys(e.aliasedFrom).length) {
-    const a = Object.entries(e.aliasedFrom).map(([m, v]) => `${m} → ${v}`).join("  ·  ");
-    lines.push(`- aliased from: ${a}`);
-  }
-  if (e.consumedBy?.length) lines.push(`- consumed by: ${e.consumedBy.join(", ")}`);
-  if (e.caveat) lines.push(`- ⚠️ CAVEAT: ${e.caveat}`);
-  if (e.seeAlso?.length) lines.push(`- see also: ${e.seeAlso.join(", ")}`);
-  if (e.needsReview) lines.push(`- ⚠️ needs human review (opaque name, no direct consumer)`);
-  return lines.join("\n");
-}
 
 // ── component summary from a def ──────────────────────────────────────
 
@@ -158,93 +118,46 @@ export function register(server) {
     }
   );
 
-  // ── explain_token — "what is X for, and when not?" ─────────────────
+  // ── find_token — which tokens exist, by name ───────────────────────
   server.registerTool(
-    "explain_token",
+    "find_token",
     {
-      title: "Explain a Design Token",
+      title: "Find a Design Token by Name",
       description:
-        "Explain what a design-system variable/token is FOR — its purpose, when to use it, when NOT to, what it aliases, and its siblings. The 'understanding' layer: ask by token name (e.g. 'content/heading', 'status-surface/default', 'control-border/accent'). Synonym-aware ('heading' → title, 'bg' → surface).",
+        "Search the generated `tokens.css` for token names containing a fragment — 'surface', 'border-accent', 'space', 'content/body'. Synonym-aware: 'heading' finds 'title', 'bg' finds 'surface'. Returns the real declared names, grouped by family, so you can bind one that exists. For \"which token resolves to 12px\" use `token_for` instead.",
       inputSchema: {
-        token: z.string().describe("A token/variable name or fragment (e.g. 'content/heading', 'status-surface')"),
+        query: z.string().describe("A fragment of a token name, e.g. 'surface' or 'border-accent'. Empty lists every token."),
       },
     },
-    async ({ token }) => {
+    async ({ query }) => {
       try {
-        const o = loadOntology();
-        const matches = findEntries(o, token);
-        if (!matches.length) {
-          /* An EMPTY ontology is not the same as an unmatched token.
-             `docs/ontology/tokens` was deleted 2026-09-16 (it described removed
-             collections), so this returned "no entry matching X — try a
-             fragment like surface" to someone who had just typed `surface`.
-             That reads as "your token is wrong" when the truth is "I have no
-             list". Answer what tokens.css CAN answer — the name — and say
-             plainly what is missing. */
-          if (!Object.keys(o).length) {
-            const hits = matchingCssTokens(token);
-            const head = `No ontology is loaded — \`docs/ontology/tokens\` was deleted 2026-09-16, so PURPOSE, ROLE and CAVEAT are unavailable for every token.`;
-            return ok(hits.length
-              ? `${head}\n\nFrom the generated \`tokens.css\`, ${hits.length} token(s) match "${token}":\n` +
-                hits.slice(0, 40).map((t) => `  ${t}`).join("\n") +
-                (hits.length > 40 ? `\n  …${hits.length - 40} more` : "") +
-                `\n\nThe NAME is real; what it is for is not recorded anywhere right now.`
-              : `${head}\n\nNo token in \`tokens.css\` matches "${token}" either, so the name itself is likely wrong.`);
-          }
-          return ok(`No ontology entry matching "${token}". Try a fragment like "surface", "border", "content", "status", "space".`);
+        const hits = expand(String(query ?? "").toLowerCase()).flatMap((t) => matchingCssTokens(t));
+        const names = [...new Set(hits)].sort();
+        if (!names.length) {
+          return ok(`No token name contains "${query}".\n\n`
+            + `\`src/styles/tokens/tokens.css\` declares ${matchingCssTokens("").length} tokens. `
+            + `Try a shorter fragment — 'surface', 'border', 'content', 'space', 'size', 'rounding'.`);
         }
-        if (matches.length > 8) {
-          return ok(
-            `${matches.length} tokens match "${token}". Narrow it. First 8:\n` +
-              matches.slice(0, 8).map((e) => `  ${e.id} — ${e.role}`).join("\n")
-          );
+        // Group by the family (the segment after --sherpa-) so a long list reads.
+        const byFamily = {};
+        for (const n of names) {
+          const fam = n.replace("--sherpa-", "").split("-")[0];
+          (byFamily[fam] ??= []).push(n);
         }
-        return ok(matches.map(renderEntry).join("\n\n---\n\n"));
+        const lines = [`${names.length} token(s) match "${query}":\n`];
+        for (const [fam, list] of Object.entries(byFamily).sort()) {
+          lines.push(`### ${fam} (${list.length})`);
+          for (const n of list.slice(0, 30)) lines.push(`  ${n}`);
+          if (list.length > 30) lines.push(`  …${list.length - 30} more`);
+          lines.push("");
+        }
+        lines.push("These are NAMES, read from the generated `tokens.css`. What each token is FOR");
+        lines.push("is not recorded anywhere: the ontology that carried purpose, role and caveat");
+        lines.push("was deleted 2026-09-16 for having rotted, and is not coming back. Read the");
+        lines.push("component CSS that already binds one to see it in use.");
+        return ok(lines.join("\n"));
       } catch (e) {
-        return err(`explain_token: ${e.message}`);
-      }
-    }
-  );
-
-  // ── browse_ontology — by role / tier ───────────────────────────────
-  server.registerTool(
-    "browse_ontology",
-    {
-      title: "Browse the Design-System Ontology",
-      description:
-        "List tokens by role (surface | border | content | space | radius | size | effect | palette | chart | type) and/or tier (core | style | component | override). Use to discover what fills / borders / text-inks exist before binding.",
-      inputSchema: {
-        role: z.string().optional().describe("Filter by role: surface, border, content, space, radius, size, effect, palette, chart, type"),
-        tier: z.string().optional().describe("Filter by tier: core, style, component, override, reference, semantic"),
-      },
-    },
-    async ({ role, tier }) => {
-      try {
-        const o = loadOntology();
-        let entries = Object.values(o);
-        if (role) entries = entries.filter((e) => e.role === role.toLowerCase());
-        if (tier) entries = entries.filter((e) => e.tier === tier.toLowerCase());
-        if (!entries.length) {
-          // Same distinction as explain_token: no ontology ≠ no tokens.
-          if (!Object.keys(o).length) {
-            const all = matchingCssTokens("");
-            return ok(
-              `No ontology is loaded — \`docs/ontology/tokens\` was deleted 2026-09-16, so tokens cannot be filtered by role or tier.\n\n` +
-              `The generated \`tokens.css\` declares ${all.length} token name(s); use \`token_for\` or read \`src/styles/tokens/tokens.css\` directly.`,
-            );
-          }
-          return ok(`No tokens with role=${role ?? "*"} tier=${tier ?? "*"}.`);
-        }
-        // group by role for readability
-        const byRole = {};
-        for (const e of entries) (byRole[e.role] ??= []).push(e.id);
-        let out = `${entries.length} token(s)` + (role ? ` role=${role}` : "") + (tier ? ` tier=${tier}` : "") + `:\n\n`;
-        for (const [r, ids] of Object.entries(byRole)) {
-          out += `## ${r} (${ids.length})\n` + ids.slice(0, 40).map((id) => `  ${id}`).join("\n") + (ids.length > 40 ? `\n  …${ids.length - 40} more` : "") + "\n\n";
-        }
-        return ok(out.trimEnd());
-      } catch (e) {
-        return err(`browse_ontology: ${e.message}`);
+        return err(`find_token: ${e.message}`);
       }
     }
   );

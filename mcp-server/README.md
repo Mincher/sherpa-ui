@@ -4,7 +4,7 @@ Structured access to the Sherpa design system for an AI agent: what a component
 IS, what a caller can DO to it, whether your data will fit, and — against a
 local page — the live screen itself.
 
-**18 tools · 7 resources · 3 prompts.** Every name below is registered in the
+**17 tools · 6 resources · 3 prompts.** Every name below is registered in the
 code; if a tool is not listed here it does not exist.
 
 > This file replaced a 752-line version on 2026-09-17 that documented 20 tools,
@@ -57,13 +57,12 @@ Same shape, in the client's MCP settings — `command: node`, `args:
 |---|---|---|
 | `list_components` | `category?` | Every component, grouped, with its Figma binding |
 | `get_component` | `name`, `include?` | One component in full: spec, compiled TS/HTML/CSS, Figma shape |
-| `explain_token` | `token` | What a design token is for |
-| `browse_ontology` | `role?`, `tier?` | Tokens by role and tier |
+| `find_token` | `query` | Which token NAMES exist, by fragment. Synonym-aware |
 
-**The last two are degraded.** `docs/ontology/` was deleted 2026-09-16 for
-having rotted, so purpose/role/caveat have no source. Both now say that and fall
-back to the token NAMES in the generated `tokens.css`, rather than answering "not
-found" for a token that is perfectly real.
+There is no "what is this token FOR" tool. The ontology that carried purpose,
+role and caveat was deleted 2026-09-16 for having rotted, and its build scripts
+followed on 2026-09-17. `find_token` answers the question that still has a
+source — does this name exist — from the generated `tokens.css`.
 
 ### Generate — author a new one · `tools/generate.js`
 
@@ -81,8 +80,8 @@ found" for a token that is perfectly real.
 | `audit_component` | `name` | The def rules, plus every `element.property → token` binding |
 | `check_bindings` | `name` | Rule 9: does every geometry/colour property bind a token |
 
-Both report what they could NOT check rather than guessing — with no ontology,
-role and scope are unavailable, and they say so.
+Both check token NAMES against the generated `tokens.css`. Neither checks role
+or scope: there is no ontology and no plan for one.
 
 ### Data — will my data work · `tools/data.js`
 
@@ -138,7 +137,6 @@ with `npm run preview`.
 | `sherpa://rules` | The def→Figma build rules, plus the component spec schema |
 | `sherpa://def/{name}` | One component's def, read from its `.component.yaml` |
 | `sherpa://component/{name}/ts` · `/html` · `/css` | The shipped source |
-| `sherpa://ontology/{id}` | One token's ontology entry — **empty today**, see above |
 
 ## Prompts
 

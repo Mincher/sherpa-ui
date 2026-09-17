@@ -2,7 +2,6 @@
  * Resources — the def-driven read surface.
  *
  *   sherpa://def/{name}               — a component's <name>.component.yaml, as a def
- *   sherpa://ontology/{id}            — one design-system token's ontology entry
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
  *   sherpa://data-rules               — docs/DATA-SOURCE-RULES.md
@@ -11,7 +10,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { loadDef, loadOntology } from "../../scripts/lib/generation/data.mjs";
+import { loadDef } from "../../scripts/lib/generation/data.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -29,7 +28,6 @@ const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
     ? fs.readdirSync(COMPONENTS_DIR).filter((n) => n.startsWith("sherpa-")).sort()
     : [];
-// loadOntology imported from the generation lib (YAML preferred, JSON fallback).
 // Serve the def as JSON text — thin YAML is hydrated to the full def first, so
 // the resource contract (application/json) is unchanged for consumers.
 const readDef = (name) => {
@@ -66,32 +64,6 @@ export function register(server) {
     }
   );
 
-  // ── sherpa://ontology/{id} — one token's ontology entry ─────────────
-  server.registerResource(
-    "Token Ontology",
-    new ResourceTemplate("sherpa://ontology/{id}", {
-      list: async () => ({
-        resources: Object.values(loadOntology()).map((e) => ({
-          uri: `sherpa://ontology/${encodeURIComponent(e.id)}`,
-          name: e.id,
-          description: e.purpose,
-          mimeType: "application/json",
-        })),
-      }),
-    }),
-    { description: "Purpose/usage ontology for a Sherpa design-system variable", mimeType: "application/json" },
-    async (uri, { id }) => {
-      const o = loadOntology();
-      const entry = o[decodeURIComponent(id)];
-      return {
-        contents: [{
-          uri: uri.href,
-          mimeType: "application/json",
-          text: entry ? JSON.stringify(entry, null, 2) : `{"error":"Unknown token: ${id}"}`,
-        }],
-      };
-    }
-  );
 
   // ── sherpa://component/{name}/{kind} — shipped source files ─────────
   // The def itself is served by sherpa://def/{name} above; here just the code.

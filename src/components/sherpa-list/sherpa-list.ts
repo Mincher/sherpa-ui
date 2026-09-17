@@ -65,19 +65,13 @@ export class SherpaList extends SherpaElement {
   }
 
   #render(): void {
-    // `own-children`: clear only the previously-stamped rows. A blanket
-    // replaceChildren() would take the <slot> beside them with it.
-    this.renderList(
-      '.body', 'template.row-tpl', this.#rows,
-      (li, row) => {
-        const item = li.querySelector('sherpa-list-item') as HTMLElement;
-        item.dataset['label'] = row.title;
-        if (row.description) item.dataset['description'] = row.description;
-        if (row.active) item.setAttribute('data-current', '');
-        if (row.interactive) item.setAttribute('data-interactive', '');
-      },
-      { clear: 'own-children', ownSel: '.body > .row-item' },
-    );
+    // The row prototype declares its own field mapping. `own-children`: clear only
+    // the previously-stamped rows — a blanket replaceChildren() would take the
+    // <slot> beside them with it.
+    this.renderRows('.body', 'template.row-tpl', this.#rows, {
+      clear: 'own-children',
+      ownSel: '.body > .row-item',
+    });
     this.#syncEmpty();
   }
 

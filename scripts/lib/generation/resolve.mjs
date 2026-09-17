@@ -5,7 +5,6 @@
  */
 import { tokenForValue as _tokenForValue, shouldBind, PROP_MAP } from '../../audit-bindings.mjs';
 import { roleFromScopes, deriveScopes } from '../scope-rules.mjs';
-import { loadOntology } from './data.mjs';
 
 /** Which Core token should a hardcoded PROPERTY=VALUE bind to? (null if off-scale.) */
 export function tokenForValue(property, value) {
@@ -13,17 +12,12 @@ export function tokenForValue(property, value) {
 }
 export { shouldBind, PROP_MAP };
 
-/** The ontology role for a token id ("Collection::name"), or derived from scopes. */
-export function roleForToken(id) {
-  const ont = loadOntology();
-  if (ont[id]) return ont[id].role;
-  return null;
-}
-
-/** Full ontology entry for a token id (purpose, whenNOT, caveat, …). */
-export function explainToken(id) {
-  return loadOntology()[id] ?? null;
-}
+/* `roleForToken` and `explainToken` lived here and are GONE (2026-09-17).
+   Both read the ontology, which was deleted 2026-09-16 for having rotted, so
+   both returned `null` for every input — and their callers read that null as
+   "this token is wrong". A function that can only answer null is not a
+   degraded answer, it is a trap. Token NAMES are checked against the generated
+   `tokens.css` instead (`loadCssTokenNames`); ROLE and SCOPE have no source. */
 
 /** Figma property → the scope(s) a bound variable MUST include. */
 const PROPERTY_SCOPE = {

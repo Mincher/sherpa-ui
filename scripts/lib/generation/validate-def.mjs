@@ -7,8 +7,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadOntology, loadNameMap, loadComponentNames, loadCssTokenNames, PATHS } from './data.mjs';
-import { roleForToken, scopeAllows, explainToken } from './resolve.mjs';
+import { loadNameMap, loadComponentNames, loadCssTokenNames, PATHS } from './data.mjs';
 
 const err = (code, msg, where) => ({ level: 'error', code, msg, where });
 const warn = (code, msg, where) => ({ level: 'warning', code, msg, where });
@@ -51,7 +50,6 @@ function componentCss(name) {
 }
 
 export function validateDef(def, opts = {}) {
-  const ontology = opts.ontology ?? loadOntology();
   const nameMap = opts.nameMap ?? loadNameMap();
   const components = new Set(opts.components ?? loadComponentNames());
   const cssTokens = opts.cssTokens ?? loadCssTokenNames();
@@ -73,22 +71,14 @@ export function validateDef(def, opts = {}) {
     }
   }
 
-  // ── Rule 9 / tokens: every token entry must resolve to a real ontology token + right role ──
-  const PROP_ROLE = {
-    background: 'surface', surface: 'surface', fill: 'surface',
-    borderColor: 'border', border: 'border', color: 'content',
-    borderRadius: 'radius', borderWidth: 'border',
-    gap: 'space', paddingBlock: 'space', paddingInline: 'space', padding: 'space',
-    fontSize: 'type', fontWeight: 'type', size: 'size',
-  };
+  // ── Rule 9 / tokens: every token a def binds must be a REAL token name ──
   for (const [key, tok] of Object.entries(def.tokens ?? {})) {
     const prop = key.split('.').pop();
-    const expected = PROP_ROLE[prop];
     // token can be a string alias or {override, fallback}
     const names = typeof tok === 'string' ? [tok] : [tok.override, tok.fallback].filter(Boolean);
     for (const nm of names) {
-      // ontology keys are "Collection::name/path"; def uses dash-joined short names.
-      // Normalise both (drop collection, unify / and -) and compare.
+      // A def spells a token dash-joined and unprefixed; tokens.css spells it
+      // `--sherpa-a-b-c`. Normalise both before comparing.
       const norm = (s) => s.toLowerCase().replace(/^.*::/, '').replace(/[/-]/g, '');
       const target = norm(nm);
 
@@ -132,20 +122,17 @@ export function validateDef(def, opts = {}) {
         }
       }
 
-      /* ROLE and CAVEAT still come from the ontology, because tokens.css carries
-         only names. With no ontology there is nothing to say, so both checks
-         below simply do not fire — a missing answer, not a wrong one. */
-      const hit = Object.keys(ontology).find((id) => norm(id).endsWith(target) || norm(id) === target);
-      if (!hit) continue;
-      const role = ontology[hit].role;
-      if (expected && role && role !== expected && !(expected === 'surface' && role === 'palette') && !(expected === 'space' && role === 'size')) {
-        out.push(warn('token-role', `${key} binds "${nm}" (role=${role}) but property implies ${expected}`, key));
-      }
-      // Rule 4: a control LABEL (color) must not bind status-content directly
-      if (prop === 'color' && /status-content/.test(nm)) {
-        const cav = explainToken(hit)?.caveat;
-        out.push(err('button-content', `control label binds status-content ("${nm}") — light-on-light bug (Rule 4). Bind control-content instead.${cav ? ' ' + cav.slice(0, 80) : ''}`, key));
-      }
+      /* Rule 4 used to live here: a control LABEL must not bind
+         `status-content` directly, because a status surface plus status ink is
+         the light-on-light bug. It is GONE, and so is the thing it guarded —
+         `grep status-content src/styles/tokens/tokens.css` returns 0, and no
+         def binds such a name. The rule now guards a vocabulary that was
+         retired with the Status collection.
+
+         Kept as a note rather than a check, because the LESSON is still true:
+         text that must stay legible on a status fill binds `control-content`,
+         which is the axis that re-points with the surface. The check itself
+         could only ever match a name that cannot occur. */
     }
   }
 

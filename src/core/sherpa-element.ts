@@ -211,6 +211,46 @@ export interface PropDef {
 /** A component's whole declared attribute surface. */
 export type PropMap = Readonly<Record<string, PropDef>>;
 
+/* ── Declarative rows: the row-template attributes ───────────────────────── */
+
+/**
+ * `renderRows()` fills a cloned prototype from the item's own fields, driven by
+ * attributes in the template rather than a `fill` callback:
+ *
+ *   data-text="label"        textContent ← item.label
+ *   data-icon="glyph"        writeIcon()  ← item.glyph (FA class list or one glyph)
+ *   data-attr-value="id"     setAttribute('value', item.id)
+ *   data-when-current="on"   the bare attribute `data-current` exists if item.on is truthy
+ *   data-index="data-index"  setAttribute('data-index', String(loop position))
+ *
+ * A field name may carry `??` fallbacks — `data-text="header??field"` is
+ * `item.header ?? item.field`, the aliasing six stamp sites hand-wrote.
+ *
+ * WHAT IT DELIBERATELY CANNOT DO: compute. No maths, no formatting, no reading
+ * the component's own state. A row whose value is derived keeps its `fill`
+ * callback, because a template that could compute would be an expression
+ * language, and the decisions — not the markup — are where the code lives.
+ */
+export type RowTemplate = 'declarative';
+
+/** Prefix→meaning for the row-template attributes, in the order they are applied. */
+const ROW_TEXT = 'data-text';
+const ROW_ICON = 'data-icon';
+const ROW_INDEX = 'data-index';
+const ROW_ATTR = 'data-attr-';
+const ROW_WHEN = 'data-when-';
+
+/** Resolve `"header??field"` against an item: the first field that is not null. */
+function fieldValue(item: unknown, expr: string): unknown {
+  if (item == null || typeof item !== 'object') return undefined;
+  const record = item as Record<string, unknown>;
+  for (const name of expr.split('??')) {
+    const value = record[name.trim()];
+    if (value != null) return value;
+  }
+  return undefined;
+}
+
 /** Base class for every `sherpa-*` component. */
 export abstract class SherpaElement extends HTMLElement {
   /**
@@ -710,6 +750,104 @@ export abstract class SherpaElement extends HTMLElement {
       fill(node, item, i);
       container.appendChild(node);
     });
+  }
+
+  /**
+   * Stamp a list DECLARATIVELY: the prototype's own attributes say what each
+   * field fills, so there is no `fill` callback.
+   *
+   *   <li data-attr-value="id"><span data-text="label"></span></li>
+   *
+   * See `RowTemplate` for the whole attribute vocabulary. Same plumbing as
+   * `renderList` — which this delegates to — so `clear: 'own-children'` behaves
+   * identically for a container that also holds a `<slot>`.
+   *
+   * Writes are ATTRIBUTES, never properties, and they happen BEFORE the row is
+   * appended. That ordering matters for a row containing a `<sherpa-*>` child: a
+   * cloned custom element has not upgraded yet, so a property write would land on
+   * a plain HTMLElement and vanish when it does upgrade. An attribute survives,
+   * because upgrading replays `attributeChangedCallback` for what is already there.
+   * This is the trap sherpa-quick-filter-toolbar hit and works around with a
+   * deferred replay queue; declaring rows avoids it by construction.
+   *
+   * `after` is the escape hatch for a row that is ALMOST declarative — the one
+   * derived value, run after the declared writes. Reach for it before abandoning
+   * the whole row to a hand-written `fill`.
+   */
+  protected renderRows<T>(
+    containerSel: string,
+    tplSel: string,
+    items: readonly T[],
+    opts?: {
+      clear?: 'replace' | 'own-children';
+      ownSel?: string;
+      after?: (node: HTMLElement, item: T, index: number) => void;
+    },
+  ): void {
+    const container = this.$(containerSel);
+    const tpl = this.$<HTMLTemplateElement>(tplSel);
+    if (!container || !tpl?.content.firstElementChild) return;
+
+    if (opts?.clear === 'own-children') {
+      for (const node of this.$$(opts.ownSel ?? `${containerSel} > *`)) node.remove();
+    } else {
+      container.replaceChildren();
+    }
+
+    // The whole FRAGMENT is cloned, not its firstElementChild: a semantic pair
+    // like <dt>+<dd> is two sibling roots, and stamping only the first would
+    // silently drop the value half of every row.
+    items.forEach((item, index) => {
+      const frag = tpl.content.cloneNode(true) as DocumentFragment;
+      for (const root of [...frag.children]) {
+        this.#fillRow(root as HTMLElement, item, index);
+      }
+      // `after` gets the first root — the row element for a single-root prototype,
+      // which is every case that needs it.
+      const first = frag.firstElementChild as HTMLElement | null;
+      if (first) opts?.after?.(first, item, index);
+      container.appendChild(frag);
+    });
+  }
+
+  /** Apply every row-template attribute on a cloned row and its descendants. */
+  #fillRow(node: HTMLElement, item: unknown, index: number): void {
+    // The row root can carry the attributes too, so it is part of its own sweep.
+    for (const el of [node, ...node.querySelectorAll<HTMLElement>('*')]) {
+      // Snapshot: the loop removes the directives as it consumes them, and a live
+      // NamedNodeMap would skip entries when one is taken out mid-iteration.
+      for (const { name, value } of [...el.attributes]) {
+        if (name === ROW_TEXT) {
+          el.textContent = this.#rowText(item, value);
+          el.removeAttribute(name);
+        } else if (name === ROW_ICON) {
+          this.writeIcon(el, this.#rowText(item, value));
+          el.removeAttribute(name);
+        } else if (name === ROW_INDEX) {
+          el.removeAttribute(name);
+          el.setAttribute(value, String(index));
+        } else if (name.startsWith(ROW_ATTR)) {
+          const target = name.slice(ROW_ATTR.length);
+          const resolved = fieldValue(item, value);
+          el.removeAttribute(name);
+          // An absent field leaves the attribute off entirely rather than writing
+          // "undefined" — CSS selecting on presence must see the truth.
+          if (resolved != null) el.setAttribute(target, String(resolved));
+        } else if (name.startsWith(ROW_WHEN)) {
+          const target = name.slice(ROW_WHEN.length);
+          el.removeAttribute(name);
+          // Truthy field → the BARE attribute. The five hand-written
+          // `if (row.active) setAttribute('data-current', '')` sites, declared.
+          if (fieldValue(item, value)) el.setAttribute(`data-${target}`, '');
+        }
+      }
+    }
+  }
+
+  /** A field's value as row text: absent and null both render as empty. */
+  #rowText(item: unknown, expr: string): string {
+    const value = fieldValue(item, expr);
+    return value == null ? '' : String(value);
   }
 
   /** Dispatch a bubbling, composed CustomEvent (crosses the shadow boundary). */
