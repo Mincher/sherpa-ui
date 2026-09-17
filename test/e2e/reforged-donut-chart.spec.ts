@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /** sherpa-donut-chart — one closed SVG ring-segment path per slice; centre label; pie variant. */
 
@@ -31,12 +31,6 @@ const SHARE_FN = `(el) => {
   return Math.round((sweep / 360) * 100);
 }`;
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('draws one real SVG path per slice, spanning its share', async ({ page }) => {
   const r = await page.evaluate(async (shareSrc) => {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * The data layer — Store, DataSource, and binding many components to one source.
@@ -9,12 +9,6 @@ import { test, expect } from '@playwright/test';
  * where half the rules are proven against a different runtime.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 /**
  * The eight demo rows every test below shares.

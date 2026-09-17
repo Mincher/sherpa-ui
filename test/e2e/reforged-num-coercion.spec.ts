@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * Numeric attribute coercion — SherpaElement.num() / coerceNum().
@@ -20,12 +20,6 @@ import { test, expect } from '@playwright/test';
  * — absent, empty, whitespace, unparseable — is ABSENT. A real 0 is a value.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 /** Stamp one element with attributes, wait for it to settle, hand it back. */
 async function build(page: import('@playwright/test').Page, tag: string, attrs: Record<string, string>) {

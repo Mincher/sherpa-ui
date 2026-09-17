@@ -1,13 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /** sherpa-quick-filter — a chip that toggles active on click; ai type uses brand purple. */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('clicking toggles data-current and fires quick-filter-click', async ({ page }) => {
   const r = await page.evaluate(async () => {

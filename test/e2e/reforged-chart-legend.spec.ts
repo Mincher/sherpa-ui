@@ -1,13 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /** sherpa-chart-legend — rows from populate(); swatch colour by categorical index; click event. */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('renders a row per item with label + value and categorical swatches', async ({ page }) => {
   const r = await page.evaluate(async () => {

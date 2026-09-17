@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-gauge-chart — data-value drives the band's sweep + the needle angle.
@@ -38,12 +38,6 @@ const FRAC_FN = `(el) => {
   return Math.round((sweep / 180) * 1000) / 1000;
 }`;
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('data-value sets the band sweep and needle angle', async ({ page }) => {
   const r = await page.evaluate(async (fracSrc) => {

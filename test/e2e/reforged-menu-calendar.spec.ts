@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * A CALENDAR IS A MENU — the composition, checked where it can actually break.
@@ -19,14 +19,6 @@ import { test, expect } from '@playwright/test';
  *     menu's own.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 /** Mount a calendar menu, open it, and hand back the live nodes' measurements. */
 async function openCalendarMenu(page: import('@playwright/test').Page) {
@@ -197,7 +189,7 @@ test('a date filter chip opens a calendar menu, picks a day, and jumps to today'
   expect(r.afterToday).toBe(r.todayIso);
 });
 
-test('a calendar menu shows no heading; the footer buttons are default size', async ({ page }) => {
+test('a calendar heads its own two-row header; the footer buttons are default size', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const read = async (html: string) => {
@@ -218,13 +210,34 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
                  look: b.getAttribute('data-look'),
                  shown: getComputedStyle(b).display !== 'none' };
       };
+      // The CENTRE, not the top: the heading is 16 tall and the icon pair 24,
+      // and the grid centres both — same row, different tops.
+      const rowOf = (c: string) => {
+        const e = m.shadowRoot.querySelector('.' + c) as HTMLElement | null;
+        if (!e) return null;
+        const b = e.getBoundingClientRect();
+        return Math.round(b.top + b.height / 2);
+      };
+      const stepper = m.querySelector('.cal-header') as HTMLElement | null;
       const out = {
         heading: getComputedStyle(m.shadowRoot.querySelector('.heading')!).display,
+        headingY: rowOf('heading'), actionsY: rowOf('header-actions'),
+        row1Bottom: (() => {
+          const a = m.shadowRoot.querySelector('.header-actions') as HTMLElement | null;
+          return a ? Math.round(a.getBoundingClientRect().bottom) : null;
+        })(),
+        headerW: Math.round((m.shadowRoot.querySelector('.header') as HTMLElement).getBoundingClientRect().width),
+        stepper: stepper
+          ? { y: Math.round(stepper.getBoundingClientRect().top),
+              w: Math.round(stepper.getBoundingClientRect().width) }
+          : null,
         ariaLabel: (m.shadowRoot.querySelector('.menu') as HTMLElement).getAttribute('aria-label'),
-        // The LEFT button, whichever this variant has: a calendar shows Today
-        // there, a list shows Clear.
-        left: btn('today').shown ? btn('today') : btn('clear'),
+        // The footer's LEFT position. Only a calendar fills it now (Today);
+        // Clear moved to the header, so a list footer's left slot is empty.
+        today: btn('today'),
         cancel: btn('cancel'), apply: btn('apply'),
+        // The HEADER pair, icon-only at data-size="sm".
+        headerClear: btn('clear'),
       };
       m.hide();
       return out;
@@ -235,29 +248,58 @@ test('a calendar menu shows no heading; the footer buttons are default size', as
     };
   });
 
-  // The two variants' headers hold DIFFERENT things and never both: the List
-  // header is one TEXT node, the Calendar header is prev · month · next. The
-  // month button already names the view, so a heading is a second title.
+  // BOTH variants head their card. A calendar used to hide its heading on the
+  // reasoning that the month button already names the view — but the month
+  // names the MONTH, while the heading names the FIELD ("Created"), and with
+  // the Clear/Remove pair in the header there was a row of unlabelled chrome
+  // sitting above the grid.
   expect(r.list.heading).not.toBe('none');
-  expect(r.calendar.heading).toBe('none');
+  expect(r.calendar.heading).not.toBe('none');
 
-  // Hidden, not dropped — the name still has to reach a screen reader, so it
-  // moves onto the card itself.
+  // The name still reaches a screen reader from the card itself too.
   expect(r.calendar.ariaLabel).toBe('Created');
 
-  // Read off the footer instances (1156:29251 / 1144:28602): all three are the
-  // button's DEFAULT size at 32 tall, matching the Container Footer's own
+  // A CALENDAR HEADER IS TWO ROWS: heading and the action pair share row 1, and
+  // the slotted stepper takes the whole of row 2. A list header is one row with
+  // nothing slotted into it.
+  expect(r.calendar.headingY).toBe(r.calendar.actionsY);
+  expect(r.calendar.stepper!.y).toBeGreaterThan(r.calendar.headingY!);
+  // …with a row gap of the header's own 12, wider than the 4 between the
+  // heading and the icon pair sharing row 1.
+  expect(r.calendar.stepper!.y - r.calendar.row1Bottom!).toBe(12);
+  // …spanning the header's full width, so the month button stretches between
+  // the two hugging arrows rather than the trio bunching at the start.
+  expect(r.calendar.stepper!.w).toBe(r.calendar.headerW);
+  expect(r.list.stepper).toBeNull();
+
+  // Read off the footer instances (1156:29251 / 1144:28602): the decision pair is
+  // the button's DEFAULT size at 32 tall, matching the Container Footer's own
   // 32-tall slots. They used to carry data-size="sm".
   for (const shape of [r.list, r.calendar]) {
-    for (const b of [shape.left, shape.cancel, shape.apply]) {
+    for (const b of [shape.cancel, shape.apply]) {
       expect(b.h).toBe(32);
       expect(b.size).toBeNull();
     }
-    // Apply is the only saturated one; the left button is NOT transparent —
-    // Figma pins Style=default on it, where the code had a transparent look.
+    // Apply is the only saturated one.
     expect(shape.apply.look).toBe('saturated');
     expect(shape.cancel.look).toBeNull();
-    expect(shape.left.look).toBeNull();
+  }
+
+  // Only a calendar fills the footer's left slot, and Today is a default-size
+  // labelled button like the pair beside it.
+  expect(r.calendar.today.shown).toBe(true);
+  expect(r.list.today.shown).toBe(false);
+  expect(r.calendar.today.h).toBe(32);
+  expect(r.calendar.today.size).toBeNull();
+  expect(r.calendar.today.look).toBeNull();
+
+  // CLEAR IS THE HEADER'S NOW — icon-only, a size up from the drill-back's xs
+  // so the glyph is not lost beside a heading, and transparent because it is
+  // chrome in the header rather than a control in an action bar.
+  for (const shape of [r.list, r.calendar]) {
+    expect(shape.headerClear.shown).toBe(true);
+    expect(shape.headerClear.size).toBe('sm');
+    expect(shape.headerClear.look).toBe('transparent');
   }
 });
 
@@ -401,7 +443,8 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
     const box = (m: HTMLElement & { shadowRoot: ShadowRoot }, c: string) => {
       const el = m.shadowRoot.querySelector('.' + c) as HTMLElement;
       const b = el.getBoundingClientRect();
-      return { shown: getComputedStyle(el).display !== 'none', x: Math.round(b.left), w: Math.round(b.width) };
+      return { shown: getComputedStyle(el).display !== 'none', x: Math.round(b.left),
+               y: Math.round(b.top), w: Math.round(b.width) };
     };
 
     const cal = await open('<sherpa-menu id="m" data-type="calendar" data-commit data-clearable>' +
@@ -435,10 +478,13 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   });
 
   // Figma's two footers differ in exactly one position: the Calendar's `left`
-  // slot holds "Today", the List's is empty. So Today REPLACES Clear on a
-  // calendar rather than joining it — one control there, as the node has.
+  // slot holds "Today", the List's is empty. Clear no longer competes for that
+  // position at all — it is an icon button in the HEADER — so a calendar shows
+  // both, each in its own region.
   expect(r.calendar.today.shown).toBe(true);
-  expect(r.calendar.clear.shown).toBe(false);
+  expect(r.calendar.clear.shown).toBe(true);
+  // …and the header's Clear sits ABOVE the footer's Today, not beside it.
+  expect(r.calendar.clear.y).toBeLessThan(r.calendar.today.y);
 
   // Today is on the LEFT, away from the pair a thumb reaches for.
   expect(r.calendar.today.x).toBeLessThan(r.calendar.cancel.x);
@@ -457,13 +503,13 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   // It stays OPEN — Today picks a date, it does not commit one. Apply does that.
   expect(r.stillOpen).toBe(true);
 
-  // A LIST menu is unchanged: Figma leaves its left slot empty, and a clearable
-  // one still offers Clear there.
+  // A LIST menu leaves the footer's left slot empty, as Figma has it, and a
+  // clearable one offers Clear from the header instead.
   expect(r.listFooter.today.shown).toBe(false);
   expect(r.listFooter.clear.shown).toBe(true);
 });
 
-test('Remove is a footer button after Today, and the card widens to hold it', async ({ page }) => {
+test('Remove is a header icon button; the footer keeps Today and the committing pair', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
@@ -473,10 +519,9 @@ test('Remove is a footer button after Today, and the card widens to hold it', as
     // `removable: true` is the OPT-IN for the "Remove" affordance —
     // without it a chip offers no way off the bar, which is what the view
     // SELECTOR wants and what a data filter does not.
-    // `commit: true` so all FOUR footer buttons are up at once — this test is
-    // about their ORDER and the card width that has to hold them. A chip left on
-    // the auto-apply default shows only Today and Remove (asserted below), which
-    // would not exercise either.
+    // `commit: true` so every control is up at once — the header pair AND the
+    // three footer buttons. This test is about which region each one lands in,
+    // their order inside it, and the card width that has to hold the footer.
     el.populate([
       { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date', removable: true, commit: true },
@@ -502,14 +547,21 @@ test('Remove is a footer button after Today, and the card widens to hold it', as
       .shadowRoot!.querySelector('.row') as HTMLElement;
     const grid = cal.shadowRoot.querySelector('.cal-days') as HTMLElement;
 
-    const order = ['today', 'remove', 'cancel', 'apply'].map(
-      (c) => rect(menu.shadowRoot.querySelector('.' + c)!).x,
-    );
+    const header = menu.shadowRoot.querySelector('.header') as HTMLElement;
+    const box = (c: string) => {
+      const b = menu.shadowRoot.querySelector('.' + c) as HTMLElement;
+      const r2 = b.getBoundingClientRect();
+      return {
+        x: Math.round(r2.left), y: Math.round(r2.top),
+        shown: getComputedStyle(b).display !== 'none',
+        inHeader: header.contains(b),
+        size: b.getAttribute('data-size'),
+        label: b.getAttribute('aria-label'),
+      };
+    };
     const before = {
-      order,
-      shown: ['today', 'remove', 'cancel', 'apply'].map(
-        (c) => getComputedStyle(menu.shadowRoot.querySelector('.' + c)!).display !== 'none',
-      ),
+      clear: box('clear'), remove: box('remove'),
+      today: box('today'), cancel: box('cancel'), apply: box('apply'),
       card: rect(card), footer: rect(footerRow), grid: rect(grid),
       chips: [...el.shadowRoot.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']),
     };
@@ -526,19 +578,38 @@ test('Remove is a footer button after Today, and the card widens to hold it', as
     };
   });
 
-  // All four are present on a COMMITTING date chip's menu.
-  expect(r.before.shown).toEqual([true, true, true, true]);
+  // All five are present on a COMMITTING, removable date chip's menu.
+  for (const b of [r.before.clear, r.before.remove, r.before.today, r.before.cancel, r.before.apply]) {
+    expect(b.shown).toBe(true);
+  }
 
-  // Today, then Remove, then the committing pair — Will's order.
-  const [today, remove, cancel, apply] = r.before.order as [number, number, number, number];
-  expect(today).toBeLessThan(remove);
-  expect(remove).toBeLessThan(cancel);
-  expect(cancel).toBeLessThan(apply);
+  // REMOVE IS THE HEADER'S, with Clear beside it. The footer is left with the
+  // three buttons Figma's Calendar variant actually has.
+  expect(r.before.clear.inHeader).toBe(true);
+  expect(r.before.remove.inHeader).toBe(true);
+  expect(r.before.today.inHeader).toBe(false);
+  expect(r.before.cancel.inHeader).toBe(false);
+  expect(r.before.apply.inHeader).toBe(false);
 
-  // THE CARD GREW. A calendar card hugs its content, and four buttons are wider
-  // than a 224 day grid — under `max-content` the card sized to the GRID alone
-  // and the footer ran off its edge.
-  expect(r.before.card.w).toBeGreaterThan(r.before.grid.w);
+  // Clear first, then Remove — the reversible action before the destructive one.
+  expect(r.before.clear.x).toBeLessThan(r.before.remove.x);
+  // Both icon-only at data-size="sm", named for a screen reader by aria-label
+  // because there is no text to read.
+  for (const b of [r.before.clear, r.before.remove]) expect(b.size).toBe('sm');
+  expect(r.before.clear.label).toBe('Clear');
+  expect(r.before.remove.label).toBe('Remove');
+
+  // The header sits ABOVE the footer, so the pair never competes with Apply.
+  expect(r.before.remove.y).toBeLessThan(r.before.apply.y);
+
+  // Today, then the committing pair.
+  expect(r.before.today.x).toBeLessThan(r.before.cancel.x);
+  expect(r.before.cancel.x).toBeLessThan(r.before.apply.x);
+
+  // THE CARD STILL HOLDS ITS FOOTER. A calendar card hugs its content, and
+  // under `max-content` it once sized to the day GRID alone, letting the footer
+  // run off its edge.
+  expect(r.before.card.w).toBeGreaterThanOrEqual(r.before.grid.w);
   expect(r.before.footer.r).toBeLessThanOrEqual(r.before.card.r);
 
   // And it removes the filter.

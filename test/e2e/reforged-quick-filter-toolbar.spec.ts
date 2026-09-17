@@ -1,13 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /** sherpa-quick-filter-toolbar — chips from populate(); toggling emits the active set (composedPath). */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('renders a quick-filter chip per filter, honouring initial active', async ({ page }) => {
   const r = await page.evaluate(async () => {

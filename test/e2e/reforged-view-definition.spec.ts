@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * VIEW DEFINITIONS — a whole configured screen, as data.
@@ -12,12 +12,6 @@ import { test, expect } from '@playwright/test';
  * piece of a view savable.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('renderElement applies `state` through the component OWN API, after its data', async ({ page }) => {
   // `props` sets attributes and `data` sets the populate payload. Neither can

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * The DOCUMENT reset — tokens.css owns the page, so an app does not.
@@ -13,12 +13,6 @@ import { test, expect } from '@playwright/test';
  * different page background writes ONE unlayered rule and wins.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('the page has no margin and a full-height chain', async ({ page }) => {
   const r = await page.evaluate(() => {

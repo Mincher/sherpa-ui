@@ -1,13 +1,7 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /** sherpa-toolbar — leading / trailing slot regions collapse when empty (data-has-*). */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('lays out leading / trailing slot regions', async ({ page }) => {
   const r = await page.evaluate(async () => {

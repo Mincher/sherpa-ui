@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-empty-state on the reforged base — title / description text sync, the
@@ -7,14 +7,6 @@ import { test, expect } from '@playwright/test';
  * action region.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('data-heading and data-description write the text nodes', async ({ page }) => {
   const r = await page.evaluate(async () => {

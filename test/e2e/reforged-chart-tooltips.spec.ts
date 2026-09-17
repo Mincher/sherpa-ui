@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * Chart mark tooltips — the shared .chart-tip rules in core/sherpa-base.css.
@@ -10,14 +10,6 @@ import { test, expect } from '@playwright/test';
  * SILENTLY — the tip drops to the viewport corner rather than erroring.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('the shared tip rules resolve: anchored, flippable, hidden until hover', async ({ page }) => {
   const r = await page.evaluate(async () => {

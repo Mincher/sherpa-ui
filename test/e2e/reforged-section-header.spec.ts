@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-section-header on the reforged base — the title-sync pattern (data-heading
@@ -6,14 +6,6 @@ import { test, expect } from '@playwright/test';
  * data-has-{slot} reflection for description / actions / a custom heading.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('data-heading writes the heading text', async ({ page }) => {
   const text = await page.evaluate(async () => {

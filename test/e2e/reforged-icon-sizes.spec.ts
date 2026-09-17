@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * AN ICON'S GLYPH MUST BE THE SIZE OF ITS BOX.
@@ -27,14 +27,6 @@ import { test, expect } from '@playwright/test';
  * a class name, because the box and the glyph are not always the same element.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('every button size paints its glyph at its own icon-size token', async ({ page }) => {
   const r = await page.evaluate(async () => {

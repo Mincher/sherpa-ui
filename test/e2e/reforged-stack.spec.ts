@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-stack — a run of items in one direction, with a token gap.
@@ -8,12 +8,6 @@ import { test, expect } from '@playwright/test';
  * pure CSS, so "the rule is in the file" proves nothing about whether it applied.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 /** Build a stack with three 40px boxes and hand back the run + the items. */
 async function build(page: import('@playwright/test').Page, attrs: string, itemAttrs = '') {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-loader on the reforged base — an attribute-only spinner. Proves the a11y
@@ -7,14 +7,6 @@ import { test, expect } from '@playwright/test';
  * expressible in CSS (the animation is gated behind a @media block).
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('sets status role and a polite live region on the host', async ({ page }) => {
   const r = await page.evaluate(async () => {

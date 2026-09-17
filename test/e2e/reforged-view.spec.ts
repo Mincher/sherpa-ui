@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * renderElement + renderView on the reforged base — the JSON→view path. Proves the
@@ -7,12 +7,6 @@ import { test, expect } from '@playwright/test';
  * tree with reactive $state binding, `writes` wiring, and the light-DOM view frame.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('renderElement builds an element with props, slots and children', async ({ page }) => {
   const r = await page.evaluate(async () => {

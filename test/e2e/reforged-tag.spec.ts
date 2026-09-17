@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-tag on the reforged base — the Figma Tag: a NEUTRAL pill by default
@@ -6,13 +6,6 @@ import { test, expect } from '@playwright/test';
  * Covers the neutral default, status colouring, the dismissible close button + event,
  * and the dot-type indicator.
  */
-
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('default is a neutral pill: white surface, grey border, dark text', async ({ page }) => {
   const r = await page.evaluate(async () => {

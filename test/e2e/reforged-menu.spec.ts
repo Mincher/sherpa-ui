@@ -509,7 +509,13 @@ test('the select-all row cycles ALL → NONE, and reads the set rather than the 
   expect(r.partial).toEqual({ state: 'some', label: 'Select all', values: ['a'] });
 
   // some → ALL → none → ALL. The set is never left stuck.
-  expect(r.fromSome).toEqual({ state: 'all', label: 'Clear all', values: ['a', 'b', 'c'] });
+  //
+  // The LABEL never flips. It used to read "Clear all" once everything was on,
+  // which made the row the menu's clear as well as its select-all — a second
+  // place to do what the header's Clear button does, and one that moved under
+  // the reader depending on what was ticked. The BOX still says which state the
+  // set is in; the words say what the row is for.
+  expect(r.fromSome).toEqual({ state: 'all', label: 'Select all', values: ['a', 'b', 'c'] });
   expect(r.cleared).toEqual({ state: 'none', label: 'Select all', values: [] });
   expect(r.again.state).toBe('all');
 

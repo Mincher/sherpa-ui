@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-nav on the reforged base — the primary navigation rail rebuilt to the
@@ -8,12 +8,6 @@ import { test, expect } from '@playwright/test';
  * (The view frame is the light-DOM `.sherpa-view` grid — see reforged-view.spec.ts.)
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('legacy array populate() renders items and marks the active one', async ({ page }) => {
   const r = await page.evaluate(async () => {

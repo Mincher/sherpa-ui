@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-container[data-rows] — a card sized in LAYOUT GRID ROWS.
@@ -12,12 +12,6 @@ import { test, expect } from '@playwright/test';
  * to do this in its own <style> block, which every app then had to copy.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('the height is N row units plus the gutters between them', async ({ page }) => {
   const r = await page.evaluate(async () => {

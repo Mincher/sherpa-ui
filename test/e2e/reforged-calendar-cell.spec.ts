@@ -1,18 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-calendar-cell — the Figma "Calendar Cell" (276:16589), which Will split
  * onto the Calendar page as one of the visual parts a calendar is built FROM.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('each State paints the fill the node names, on the inner content box', async ({ page }) => {
   const r = await page.evaluate(async () => {

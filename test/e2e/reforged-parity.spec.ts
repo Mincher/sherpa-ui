@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * PARITY — anything a person can do by clicking, a caller can do by calling.
@@ -12,12 +12,6 @@ import { test, expect } from '@playwright/test';
  * judging each one — some are derived data and correctly read-only.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('transfer-list: what was moved across can be put back', async ({ page }) => {
   // `selected` was a GETTER ONLY, so a saved view could record what a reader

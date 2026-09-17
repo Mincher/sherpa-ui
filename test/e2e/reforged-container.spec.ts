@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-container on the reforged base — the composition surface. Exercises the
@@ -8,12 +8,6 @@ import { test, expect } from '@playwright/test';
  * reflects data-has-error and shows the overlay through CSS).
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('header/footer regions collapse when empty, appear when slotted', async ({ page }) => {
   const r = await page.evaluate(async () => {

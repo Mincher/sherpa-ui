@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * Token layer proof — the Figma-projected token layer (Primitives → Core →
@@ -7,12 +7,6 @@ import { test, expect } from '@playwright/test';
  * consolidated Figma taxonomy; values are the Figma-resolved ones.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('semantic tokens resolve through the display-mode + style layers in the light DOM', async ({ page }) => {
   const v = await page.evaluate(() => {

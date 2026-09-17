@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-app-shell — the app frame: the nav rail OVERLAID down the left edge at full
@@ -7,12 +7,6 @@ import { test, expect } from '@playwright/test';
  * the content instead of reflowing the page) and grows only when it is latched open.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('the nav rail is a full-height overlay; the header is sticky inside the scroller', async ({ page }) => {
   const r = await page.evaluate(async () => {

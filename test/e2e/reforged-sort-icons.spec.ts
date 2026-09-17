@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * THE SORT INDICATOR IS A TRI-STATE, AND ONE MAP OWNS IT.
@@ -19,14 +19,6 @@ import { test, expect } from '@playwright/test';
  * the same four pairs, and this file asserts they have not drifted apart.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(
-    () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
-  );
-});
 
 test('a sortable header cycles none → asc → desc, each a different painted glyph', async ({ page }) => {
   const r = await page.evaluate(async () => {

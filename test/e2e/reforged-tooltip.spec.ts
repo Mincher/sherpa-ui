@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './harness';
 
 /**
  * sherpa-tooltip on the reforged base — a CSS-driven hover/focus tooltip. Show/hide
@@ -7,12 +7,6 @@ import { test, expect } from '@playwright/test';
  * hover, carries the text, and sets the a11y association.
  */
 
-const HARNESS = '/test/reforged/harness.html';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto(HARNESS);
-  await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
-});
 
 test('mirrors data-text into the bubble and sets aria-describedby', async ({ page }) => {
   const r = await page.evaluate(async () => {
