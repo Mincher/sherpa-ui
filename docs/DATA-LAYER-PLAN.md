@@ -2706,9 +2706,9 @@ component's.
 
 | Step | Work | Why here |
 |---|---|---|
-| **S4** | Promote `StateStore` to `core/session.ts` | it already IS this; it is in a file named for view rendering and nobody would look there |
-| **S5** | Move theme mode onto it | the clearest duplicate: hand-rolled `localStorage` + try/catch in an example, which every app would copy |
-| **S6** | Persisted pointers — `session.persist('/theme/mode')` | so rule 3 is a capability rather than a convention |
+| **S4** ✅ | Promote `StateStore` to `core/session.ts` | **DONE 2026-09-17.** `core/session.ts`, with `StateStore` kept as a re-export — a view's state blob IS a session store scoped to one view. The three JSON Pointer helpers moved to `core/pointer.ts` with it |
+| **S5** ✅ | Move theme mode onto it | **DONE 2026-09-17.** Two lines and one subscriber, replacing a key constant, two try/catch blocks and a `setMode` wrapper. It exposed a real bug: the glyph synced on `whenDefined`, which resolves before the shadow root exists, so a reloaded dark theme showed the wrong icon |
+| **S6** ✅ | Persisted pointers — `session.persist('/theme/mode')` | **DONE 2026-09-17.** `persist(pointer)` RESTORES on registration, so the value is in place before anything subscribes. Defaults to SHARED storage — the opposite of `persistView`, because a preference is about the person, not one screen |
 
 #### The case that makes it worth building: surviving a reload
 
