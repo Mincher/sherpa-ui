@@ -2782,7 +2782,7 @@ new backing, not a new architecture.
 |---|---|---|
 | **S1** ✅ | Move the `ArrayStore` out of `records.js` into a module the views import | **DONE 2026-09-17.** `examples/views/records-data.js` — records, columns, plans and the ONE store at module level. Measured through the real Add dialog and the router's own nav: add → 5 pages, leave and return → still 5. Was 4, record gone |
 | **S2** ✅ | Say the rule in the docs: **stores are app-level, sources are query-level** | **DONE 2026-09-17.** Stated at the top of `records-data.js`, where anyone copying the example will read it |
-| **S3** | A second view over the SAME store | **UNBLOCKED by S1** — the store is app-level now, so a second view importing `customerStore` shares the records. Still owed: the second view |
+| **S3** ✅ | A second view over the SAME store | **DONE 2026-09-17.** The dashboard's customer summary binds a second DataSource over the app-level `customerStore`. Adding a customer on Records moves three figures on the dashboard (100→101 customers, 21→22 trials, 12,312→12,313 seats). Verified by breaking it: a per-view copy leaves the dashboard reading 100 while Records holds 101 |
 
 S1 and S2 are small. **S3 is the one that proves it**, and it pairs naturally
 with step 14a (rewiring the dashboard).
