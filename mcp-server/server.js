@@ -9,6 +9,7 @@
  *   Generate  scaffold_def · validate_def · compile_def · token_for
  *   Verify    audit_component · check_bindings
  *   Data      run_query · import_schema · scaffold_schema · validate_schema
+ *   Drive     component_api · call_component · read_component · browser_close
  *   Resources sherpa://def/{name} · sherpa://ontology/{id}
  *             · sherpa://component/{name}/{ts|html|css|def} · sherpa://rules
  *   Prompts   generate_component · review_component_usage · debug_component
@@ -20,6 +21,7 @@ import { register as registerDiscoverTools } from "./tools/discover.js";
 import { register as registerGenerateTools } from "./tools/generate.js";
 import { register as registerVerifyTools }   from "./tools/verify.js";
 import { register as registerDataTools }     from "./tools/data.js";
+import { register as registerDriveTools }    from "./tools/drive.js";
 import { register as registerResources }     from "./resources/index.js";
 import { register as registerPrompts }       from "./prompts/index.js";
 
@@ -39,6 +41,8 @@ export async function createServer() {
   registerVerifyTools(server);
   // Data-layer tools — thin wrappers over `sherpa-ui/data` (dist/data.js).
   registerDataTools(server);
+  // Instance tier — the callable surface, and a localhost browser to reach it.
+  registerDriveTools(server);
 
   // Resources + prompts
   registerResources(server);

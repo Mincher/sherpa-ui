@@ -78,6 +78,21 @@ export function loadComponentNames() {
  * props/events/tokens; the Figma binding (figmaName, category, figma summary) is
  * lifted from `$extensions.sherpa`.
  */
+/**
+ * The RAW spec — `<name>.component.yaml` as written, or null.
+ *
+ * `loadDef` converts a spec into the shape `compileDef` walks, and that
+ * conversion drops `$extensions` entirely: the compiler has no use for a Figma
+ * name or a method list. But the METHODS live there, and they are the whole
+ * callable surface — 45 of them across 23 components — so anything asking
+ * "what can a caller DO to this" has to read the spec, not the def.
+ */
+export function loadSpec(name) {
+  const specPath = join(P.components, name, `${name}.component.yaml`);
+  if (!existsSync(specPath)) return null;
+  try { return yaml.load(readFileSync(specPath, 'utf8')) ?? null; } catch { return null; }
+}
+
 export function loadDef(name) {
   const specPath = join(P.components, name, `${name}.component.yaml`);
   if (!existsSync(specPath)) return null;
