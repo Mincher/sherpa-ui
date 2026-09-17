@@ -112,6 +112,20 @@ reports drift between a spec and Figma. (`scripts/generate-defs.mjs` was deleted
 
 **The golden rule:** can this be done in HTML or CSS before writing JS? If yes, do it there.
 
+### Two entry points
+
+```js
+import { SherpaButton } from 'sherpa-ui';        // components — needs a DOM
+import { ArrayStore, DataSource } from 'sherpa-ui/data';  // the data layer — no DOM
+```
+
+`sherpa-ui` exports all 58 components, and importing a component DEFINES a
+custom element — so it throws `HTMLElement is not defined` in Node.
+`sherpa-ui/data` (`src/data.ts`) is the same stores, query, validation, live
+connections and saved views with no components and no DOM, for a server, a test
+or an MCP tool. `npm run lint` enforces the boundary; a node test proves the
+entry point stays clean.
+
 ### `SherpaElement` base class (`src/core/sherpa-element.ts`)
 
 All components extend this. It handles template fetching (with class-level cache), shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support.

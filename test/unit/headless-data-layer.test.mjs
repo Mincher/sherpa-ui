@@ -550,3 +550,40 @@ test('several live stores can feed ONE shared store', async () => {
   assert.deepEqual(ids(await lone.load()), ['c1']);
   assert.deepEqual(ids(await feed.load()), ['a1', 'b1']);
 });
+
+test('the `sherpa-ui/data` entry point is importable and usable in Node', async () => {
+  /* WHAT THIS GUARDS: `dist/index.js` exports all 58 components, and importing
+     a component DEFINES a custom element — so `import 'sherpa-ui'` throws
+     "HTMLElement is not defined" in Node. The data layer was always headless;
+     there was no DOOR into it until this entry point existed.
+
+     Importing it is not enough to prove anything, so this also runs a query. */
+  const data = await import('../../dist/data.js');
+
+  // NO COMPONENTS. A single component export would drag in customElements and
+  // undo the whole point.
+  const componentExports = Object.keys(data).filter(
+    (k) => k.startsWith('Sherpa') && k !== 'SherpaToast',
+  );
+  assert.deepEqual(componentExports, [], 'the data entry point exports no components');
+
+  // …and the layer WORKS, not merely loads.
+  const store = new data.ArrayStore(
+    [{ id: 1, n: 'b' }, { id: 2, n: 'a' }, { id: 3, n: 'c' }],
+    { key: 'id' },
+  );
+  const source = new data.DataSource({ store });
+  source.setState({ sort: [{ field: 'n', direction: 'asc' }], filter: ['n', 'ne', 'c'] });
+  await source.load();
+  assert.deepEqual(source.result.rows.map((r) => r.n), ['a', 'b']);
+
+  // Validation, the session store and a view snapshot all come through it too —
+  // the four things a server or an MCP tool actually needs.
+  assert.equal(typeof data.rules, 'function');
+  assert.equal(typeof data.applyViewSnapshot, 'function');
+  const session = new data.SessionStore({ theme: { mode: 'dark' } });
+  assert.equal(session.get('/theme/mode'), 'dark');
+  // persist() degrades with no storage rather than throwing — that is the
+  // contract that lets it sit in a headless entry point at all.
+  assert.equal(session.persist('/theme/mode'), false);
+});
