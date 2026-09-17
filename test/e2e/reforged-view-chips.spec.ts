@@ -175,3 +175,47 @@ test('a record added on one view changes the summary on another', async ({ page 
   expect(after.trials).toBe(before.trials! + 1);
   expect(after.seats).toBe(before.seats! + 1);
 });
+
+/**
+ * THE SCHEMA IS ON THE STORE, so every way in is guarded.
+ *
+ * A form is not the only way a record arrives: the Add dialog, a paste, a REST
+ * response and a script all reach the same records. A rule enforced in one
+ * screen is not a rule — so it sits on the store, where nothing gets past it.
+ *
+ * The example carried no schema at all until 2026-09-17, which meant the whole
+ * validation half of the data layer (steps V1-V8) was built, tested and
+ * demonstrated nowhere.
+ */
+test('the records store refuses a record its schema rejects', async ({ page }) => {
+  await page.goto('http://localhost:4200/?view=records');
+  await page.waitForFunction(() => {
+    const g = document.querySelector('sherpa-data-grid');
+    return (g?.shadowRoot?.querySelectorAll('tbody tr').length ?? 0) > 0;
+  }, undefined, { timeout: 15000 });
+
+  const r = await page.evaluate(async () => {
+    const { customerStore } = await import('/examples/views/records-data.js');
+    const before = (await customerStore.load()).total;
+
+    // NO EMAIL — and email is the KEY, so a blank one would collide with the
+    // next blank one. The store is what stops it.
+    let refused: string | null = null;
+    try {
+      await customerStore.insert({ name: 'No Email', email: '', seats: 1 });
+    } catch (e) { refused = String(e); }
+    const afterBad = (await customerStore.load()).total;
+
+    // A GOOD row still goes in, so the guard is a rule and not a wall.
+    await customerStore.insert({
+      name: 'Fine Person', email: `ok-${Date.now()}@example.com`, seats: 2, health: 50,
+    });
+    const afterGood = (await customerStore.load()).total;
+
+    return { before, afterBad, afterGood, refused };
+  });
+
+  expect(r.afterBad, 'the bad row never landed').toBe(r.before);
+  expect(r.refused, 'and it said which field and why').toContain('email');
+  expect(r.afterGood).toBe(r.before! + 1);
+});

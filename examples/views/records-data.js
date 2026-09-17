@@ -18,7 +18,7 @@
  * means. A real product would put a REST or LocalStore here instead; the shape
  * and the lifetime are the same.
  */
-import { ArrayStore } from '../../dist/index.js';
+import { ArrayStore, rules, required, number, email } from '../../dist/index.js';
 
 /* ── Data: 100 customers ──────────────────────────────────────────── */
 const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
@@ -121,10 +121,35 @@ export const columns = [
   { field: 'lastSeen',    header: 'Last seen', sortable: true, type: 'date' },
 ];
 /**
+ * What a customer record MUST look like.
+ *
+ * On the STORE rather than on the form, because a form is not the only way a
+ * record arrives: the Add dialog, a paste, a REST response and a script all
+ * reach the same records, and a rule enforced in one screen is not a rule.
+ *
+ * It runs on READS as well as writes (step V7), so a malformed row from a
+ * backend is dropped and REPORTED — `LoadResult.dropped` and `.issues` — rather
+ * than reaching a grid that has no idea what to draw. The add flow still
+ * validates in the dialog, because that is where a person can be told what is
+ * wrong while they can still fix it; this is the line nothing crosses.
+ */
+export const customerSchema = rules({
+  name: required(),
+  // The KEY. A blank one collides with the next blank one, which is why the add
+  // flow fills one in rather than leaving it empty.
+  email: [required(), email()],
+  seats: number(),
+  health: number(),
+});
+
+/**
  * The one store every view of these records shares.
  *
  * Keyed by EMAIL because that is what identifies a customer here — an inserted
  * row with a blank email would collide with the next blank one, which is why
  * the add flow fills one in.
  */
-export const customerStore = new ArrayStore(customers, { key: 'email' });
+export const customerStore = new ArrayStore(customers, {
+  key: 'email',
+  schema: customerSchema,
+});
