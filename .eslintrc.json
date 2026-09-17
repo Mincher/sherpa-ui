@@ -106,6 +106,59 @@
       }
     },
     {
+      // THE HEADLESS HALF of the data layer. These modules run with no DOM —
+      // in Node, in a test, in an MCP tool, on a server — and
+      // test/unit/headless-data-layer.test.mjs proves it by importing them
+      // directly. That property is easy to lose in one line and impossible to
+      // notice: the browser tests would still pass.
+      //
+      // NOT BANNED: EventTarget, CustomEvent and Event, which are Node globals
+      // since Node 15 and are how a store announces a change. Nor TYPE-only
+      // uses of HTMLElement — a type annotation is erased at compile time and
+      // never runs, which is why data-source.ts is on this list despite naming
+      // HTMLElement in a signature.
+      "files": [
+        "src/core/store.ts",
+        "src/core/validate.ts",
+        "src/core/pointer.ts",
+        "src/core/chart-datum.ts",
+        "src/core/format-tick.ts",
+        "src/core/live-stores.ts",
+        "src/core/data-source.ts"
+      ],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          { "name": "document", "message": "This module must run with NO DOM — it is the half of the data layer a server, a test or an MCP tool imports. Take the element as an argument instead." },
+          { "name": "window", "message": "This module must run with NO DOM. Use `globalThis` if you truly need the global scope." },
+          { "name": "customElements", "message": "This module must run with NO DOM — nothing here may define or look up a component." },
+          { "name": "localStorage", "message": "This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design." },
+          { "name": "sessionStorage", "message": "This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design." },
+          { "name": "getComputedStyle", "message": "This module must run with NO DOM." },
+          { "name": "requestAnimationFrame", "message": "This module must run with NO DOM. Use a microtask or a timer if the work must be deferred." }
+        ]
+      }
+    },
+    {
+      // stores.ts is HEADLESS-SAFE but not storage-free. `LocalStore` reaches
+      // localStorage behind a `try/catch → null`, so in Node it degrades to an
+      // empty store rather than throwing — which the headless test proves by
+      // importing it. So the DOM ban applies, and the storage ban does not.
+      "files": [
+        "src/core/stores.ts"
+      ],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          { "name": "document", "message": "stores.ts must run with NO DOM — it is imported by tests, servers and MCP tools." },
+          { "name": "window", "message": "stores.ts must run with NO DOM. Use `globalThis` if you truly need the global scope." },
+          { "name": "customElements", "message": "stores.ts must run with NO DOM." },
+          { "name": "getComputedStyle", "message": "stores.ts must run with NO DOM." },
+          { "name": "requestAnimationFrame", "message": "stores.ts must run with NO DOM." }
+        ]
+      }
+    },
+    {
       "files": [
         "**/*.examples.ts"
       ],
