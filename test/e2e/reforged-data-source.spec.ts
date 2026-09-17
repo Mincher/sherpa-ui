@@ -823,3 +823,93 @@ test('one AbortController tears down every binding it was given', async ({ page 
   expect(r.after).toEqual(['kept']);
   expect(r.afterLate).toEqual(['kept']);
 });
+
+/**
+ * `into` — TWO SOURCES, one component, neither clobbering the other.
+ *
+ * A line chart showing "ours" and "market" from two backends needs no join:
+ * the series sit side by side on a shared x-axis, and no row is merged with
+ * another. What it needs is for each source to own ONE PART of the payload.
+ *
+ * Without it the second bind's `populate()` replaces the first's, which is the
+ * same last-write-wins problem `ignore` patches on the event side.
+ *
+ * The merge lives on the ELEMENT because neither source can see the other —
+ * the element is the only thing both can reach.
+ */
+test('two sources each own a named part of one payload', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+
+    // A plain element that just records every payload it is handed.
+    const seen: unknown[] = [];
+    const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
+    el.populate = (d: unknown) => seen.push(JSON.parse(JSON.stringify(d)));
+    document.getElementById('root')!.replaceChildren(el);
+
+    const ours = new DataSource({ store: new ArrayStore([{ id: 1, n: 10 }], { key: 'id' }) });
+    const market = new DataSource({ store: new ArrayStore([{ id: 1, n: 99 }], { key: 'id' }) });
+
+    ours.bind(el, { readonly: true, into: 'series.0', as: (rows) => rows.map((x) => x['n']) });
+    market.bind(el, { readonly: true, into: 'series.1', as: (rows) => rows.map((x) => x['n']) });
+    await ours.load();
+    await market.load();
+
+    // …and a NAMED part beside the indexed ones, to prove the path builds an
+    // object where the segment is a name and an array where it is a number.
+    const meta = new DataSource({ store: new ArrayStore([{ id: 1, n: 7 }], { key: 'id' }) });
+    meta.bind(el, { readonly: true, into: 'totals.rows', as: (rows) => rows.length });
+    await meta.load();
+
+    return { last: seen[seen.length - 1], count: seen.length };
+  });
+
+  // BOTH series survive — the second source did not replace the first.
+  expect(r.last).toEqual({ series: [[10], [99]], totals: { rows: 1 } });
+  // Every push hands over the whole draft, so the component always sees a
+  // complete payload rather than a fragment it has to merge itself.
+  expect(r.count).toBeGreaterThanOrEqual(3);
+});
+
+test('WITHOUT into, the second source clobbers the first — the bug into fixes', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const seen: unknown[] = [];
+    const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
+    el.populate = (d: unknown) => seen.push(JSON.parse(JSON.stringify(d)));
+    document.getElementById('root')!.replaceChildren(el);
+
+    const ours = new DataSource({ store: new ArrayStore([{ id: 1, n: 10 }], { key: 'id' }) });
+    const market = new DataSource({ store: new ArrayStore([{ id: 1, n: 99 }], { key: 'id' }) });
+    // The same two binds as the test above, MINUS `into`.
+    const as = (rows: Record<string, unknown>[]) => ({ series: [rows.map((x) => x['n'])] });
+    ours.bind(el, { readonly: true, as });
+    market.bind(el, { readonly: true, as });
+    await ours.load();
+    await market.load();
+    return seen[seen.length - 1];
+  });
+
+  // "Ours" is GONE. This is the state of the world before `into`, kept as a
+  // test so the reason for the option cannot be forgotten — and so a future
+  // change that quietly made plain binds merge would be caught too.
+  expect(r).toEqual({ series: [[99]] });
+});
+
+test('a bind WITHOUT into still replaces the whole payload', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const seen: unknown[] = [];
+    const el = document.createElement('div') as HTMLElement & { populate?: (d: unknown) => void };
+    el.populate = (d: unknown) => seen.push(d);
+    document.getElementById('root')!.replaceChildren(el);
+
+    const src = new DataSource({ store: new ArrayStore([{ id: 1, n: 5 }], { key: 'id' }) });
+    src.bind(el, { readonly: true, as: (rows) => ({ rows: rows.length }) });
+    await src.load();
+    return seen[seen.length - 1];
+  });
+
+  // No draft, no wrapping — the ordinary path is untouched.
+  expect(r).toEqual({ rows: 1 });
+});

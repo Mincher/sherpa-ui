@@ -68,6 +68,27 @@ export interface DataSourceOptions {
 /** What a component may do with the source it is bound to. */
 export interface BindOptions {
   /**
+   * Write into ONE NAMED PART of the component's payload, not all of it.
+   *
+   * A component fed by TWO sources — a chart with a series per backend, a panel
+   * summarising two datasets, a feed with a socket per stream — otherwise gets
+   * the last writer's payload and loses the other's. Same last-write-wins
+   * problem `ignore` patches on the event side.
+   *
+   *   ours.bind(chart,   { into: 'series.0', as: (r) => toSeries(r, 'Ours') });
+   *   market.bind(chart, { into: 'series.1', as: (r) => toSeries(r, 'Market') });
+   *
+   * A dotted path, so `series.0` is the first entry of the payload's `series`
+   * array — the shape `LineData` already has. A numeric segment builds an ARRAY,
+   * a named one an OBJECT, so the path describes the payload rather than
+   * requiring the component to change.
+   *
+   * THE MERGE LIVES ON THE ELEMENT, because neither source can see the other.
+   * Each writes its own part into a shared draft hung off the element, and the
+   * whole draft is populated. A source that never uses `into` is untouched.
+   */
+  into?: string;
+  /**
    * Unbind when this signal aborts — the PLATFORM'S OWN teardown token.
    *
    * `addEventListener` already takes one, so a caller with several bindings
@@ -180,6 +201,8 @@ export class DataSource extends EventTarget {
       steerOnly: boolean;
       off: () => void;
       as?: BindOptions['as'];
+      /** The named part of the payload this bind owns — see BindOptions.into. */
+      into?: string;
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
     }
@@ -603,6 +626,7 @@ export class DataSource extends EventTarget {
       steerOnly: options.steerOnly ?? false,
       off,
       ...(options.as ? { as: options.as } : {}),
+      ...(options.into ? { into: options.into } : {}),
     });
 
     // The platform removes the listeners; this drops the binding itself, which
@@ -742,8 +766,61 @@ export class DataSource extends EventTarget {
     // populate() waits for the first render itself, so a component bound before
     // it has upgraded still gets its rows.
     const adapt = entry?.as;
-    el.populate?.(adapt ? adapt(this.#result.rows, this) : this.#result.rows);
+    const payload = adapt ? adapt(this.#result.rows, this) : this.#result.rows;
+
+    // ONE NAMED PART, when the bind asked for one — see BindOptions.into.
+    if (entry?.into) {
+      el.populate?.(mergeInto(el, entry.into, payload));
+      return;
+    }
+    el.populate?.(payload);
   }
+}
+
+/**
+ * The shared draft each `into` bind writes its own part of.
+ *
+ * ON THE ELEMENT, not in the source, because the point of `into` is that two
+ * SOURCES feed one component and neither can see the other. The element is the
+ * only thing both can reach.
+ *
+ * A Symbol so it cannot collide with anything a component or a host puts on its
+ * own element, and a WeakMap would be equivalent — this is simply local to the
+ * one function that reads it.
+ */
+const DRAFT = Symbol('sherpa:into-draft');
+
+/**
+ * Write `value` at `path` in the element's shared draft, and return the draft.
+ *
+ * `series.0` → `{ series: [value] }`, `totals.open` → `{ totals: { open: … } }`.
+ * A NUMERIC segment builds an array and a named one an object, so the path
+ * describes the payload the component already takes rather than asking it to
+ * change shape.
+ *
+ * The draft is MUTATED and handed back, not rebuilt: a component holding the
+ * previous object still sees the update, and the source's rows-identity guard
+ * upstream already decides whether a push is worth making at all.
+ */
+function mergeInto(el: Populatable, path: string, value: unknown): unknown {
+  const host = el as unknown as Record<symbol, unknown>;
+  const segments = path.split('.').filter(Boolean);
+  if (!segments.length) return value;
+
+  const first = segments[0]!;
+  // The ROOT follows the same rule as any segment: a numeric first segment
+  // means the payload itself is an array.
+  host[DRAFT] ??= /^\d+$/.test(first) ? [] : {};
+  let node = host[DRAFT] as Record<string | number, unknown>;
+
+  for (let i = 0; i < segments.length - 1; i++) {
+    const key = segments[i]!;
+    const nextIsIndex = /^\d+$/.test(segments[i + 1]!);
+    node[key] ??= nextIsIndex ? [] : {};
+    node = node[key] as Record<string | number, unknown>;
+  }
+  node[segments[segments.length - 1]!] = value;
+  return host[DRAFT];
 }
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
