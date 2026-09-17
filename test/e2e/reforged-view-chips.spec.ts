@@ -102,3 +102,76 @@ test.describe('view definitions set the filter bar', () => {
     expect(chips.find((c) => c.id === 'customer')?.on).toBe(true);
   });
 });
+
+/**
+ * TWO VIEWS, ONE STORE — plan step S3.
+ *
+ * The dashboard's customer summary and the Records grid read the SAME
+ * `customerStore`. Adding a customer on Records changes the numbers on the
+ * dashboard, because there is only one set of records and both views are
+ * looking at it.
+ *
+ * This is the thing a per-view store cannot do at all. Before S1 the store was
+ * built inside `records.js`'s `init()`, so the dashboard could not have shared
+ * it even in principle — and the summary was six hardcoded strings that no
+ * change could touch.
+ *
+ * Runs against the EXAMPLES server (:4200); `npm run serve:examples` must be up.
+ */
+test('a record added on one view changes the summary on another', async ({ page }) => {
+  const nav = async (view: string) => {
+    // The ROUTER'S path — pushState, no reload. Setting window.location is a
+    // full reload and would wipe the store by design, proving nothing.
+    await page.evaluate((v) => {
+      const n = document.querySelector('sherpa-nav')!;
+      (n.shadowRoot!.querySelector(`[data-href="?view=${v}"]`) as HTMLElement)?.click();
+    }, view);
+    await page.waitForTimeout(1200);
+  };
+
+  await page.goto('http://localhost:4200/?view=dashboard');
+  await page.waitForFunction(() => {
+    const el = document.querySelector('#kv');
+    return (el?.shadowRoot?.textContent ?? '').includes('Customers');
+  }, undefined, { timeout: 15000 });
+
+  const summary = () => page.evaluate(() => {
+    const text = (document.querySelector('#kv')?.shadowRoot?.textContent ?? '')
+      .replace(/\s+/g, ' ').trim();
+    const read = (label: string) => {
+      const m = new RegExp(`${label} ([\\d,]+)`).exec(text);
+      return m ? Number(m[1]!.replace(/,/g, '')) : null;
+    };
+    return { customers: read('Customers'), trials: read('Trials'), seats: read('Seats sold') };
+  });
+
+  const before = await summary();
+
+  // Add one on RECORDS, through the view's own dialog.
+  await nav('records');
+  await page.waitForFunction(() => {
+    const g = document.querySelector('sherpa-data-grid');
+    return (g?.shadowRoot?.querySelectorAll('tbody tr').length ?? 0) > 0;
+  }, undefined, { timeout: 15000 });
+  await page.evaluate(async () => {
+    const root = document.querySelector('sherpa-app-shell')!;
+    (root.querySelector('#add-btn') as HTMLElement)?.dispatchEvent(
+      new CustomEvent('button-click', { bubbles: true, composed: true }));
+    await new Promise((r) => setTimeout(r, 200));
+    const name = root.querySelector('#f-name') as HTMLElement & { value?: string };
+    if (name) name.value = 'Probe Person';
+    (root.querySelector('#save-btn') as HTMLElement)?.dispatchEvent(
+      new CustomEvent('button-click', { bubbles: true, composed: true }));
+    await new Promise((r) => setTimeout(r, 400));
+  });
+
+  await nav('dashboard');
+  const after = await summary();
+
+  expect(before.customers, 'the summary reads the store, not a constant').toBeGreaterThan(0);
+  expect(after.customers).toBe(before.customers! + 1);
+  // The new customer is a TRIAL on the Free plan, so two figures move — which
+  // shows the summary is DERIVED from the rows rather than a count nudged by one.
+  expect(after.trials).toBe(before.trials! + 1);
+  expect(after.seats).toBe(before.seats! + 1);
+});

@@ -13,6 +13,7 @@ import {
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
+import { customerStore } from './records-data.js';
 import {
   alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
 } from './dashboard-data.js';
@@ -73,14 +74,28 @@ export async function init(root) {
 
 
   // ── Summary key/value stats. ────────────────────────────────────────
-  const summary = [
-    { key: 'Sites monitored', value: '42' },
-    { key: 'Devices online',  value: '1,238 / 1,284' },
-    { key: 'Mean response',   value: '142 ms' },
-    { key: 'Tickets today',   value: '19' },
-    { key: 'Automations run', value: '3,472' },
-    { key: 'Last sync',       value: '2 min ago' },
-  ];
+  /* THE CUSTOMER SUMMARY — read from the SAME store the Records page uses.
+
+     This was six hardcoded strings ("Sites monitored: 42"), which is the exact
+     thing this file's own header warns about: totals held AS DATA that no
+     change can touch. Add a customer on Records and these numbers used to sit
+     there lying.
+
+     The point of S3: a store is APP-LEVEL, so a second view is one import away,
+     and both views see the same records. Two views, one truth — which is the
+     thing a per-view store cannot do at all. */
+  const customerSummary = (rows) => {
+    const count = (field, value) => rows.filter((r) => r[field] === value).length;
+    const seats = rows.reduce((n, r) => n + (Number(r.seats) || 0), 0);
+    return [
+      { key: 'Customers',   value: String(rows.length) },
+      { key: 'Active',      value: String(count('status', 'active')) },
+      { key: 'Trials',      value: String(count('status', 'trial')) },
+      { key: 'Churned',     value: String(count('status', 'churned')) },
+      { key: 'Seats sold',  value: seats.toLocaleString() },
+      { key: 'Enterprise',  value: String(count('plan', 'Enterprise')) },
+    ];
+  };
 
   // ── Wait for the view's elements to define, then populate. ──────────
   await Promise.all([
@@ -184,7 +199,15 @@ export async function init(root) {
     { label: 'Sessions', colorIndex: 1 },
     { label: 'Incidents', colorIndex: 2 },
   ]);
-  $('#kv')?.populate(summary);
+  /* BOUND, not populated once. A second DataSource over the shared customer
+     store — its own query, the app's records. `readonly` because a summary
+     reads; it does not steer. */
+  const customerSource = new DataSource({ store: customerStore });
+  // NOT `bindEl` — that binds to the ALERTS source. This element's rows come
+  // from a different store, which is the whole point of the demonstration.
+  const kv = $('#kv');
+  if (kv) customerSource.bind(kv, { readonly: true, as: customerSummary, signal: page.signal });
+  void customerSource.load();
 
   // ── Legends toggle their chart ──────────────────────────────────────
   // A legend does not know what it labels, so the page joins them up: the legend
