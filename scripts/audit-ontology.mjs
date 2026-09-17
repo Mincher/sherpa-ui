@@ -17,7 +17,35 @@ import { fileURLToPath } from 'node:url';
 import { loadContract } from './lib/contract-io.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ont = loadContract(join(ROOT, 'docs/ontology/tokens'));   // YAML preferred
+/* The ontology, or a usable message.
+
+   `docs/ontology/` was DELETED 2026-09-16: it described collections that no
+   longer existed, and a generated artefact nobody regenerates answers
+   confidently and wrongly. This script is kept deliberately (see
+   docs/HANDOVER-BACKLOG.md) because it is the only way to rebuild the audit
+   from Figma — but until the ontology is back it cannot run, and it used to
+   say so by throwing `No contract file found` out of a library three frames
+   down. Say it here instead, with the way out. */
+let ont;
+try {
+  ont = loadContract(join(ROOT, 'docs/ontology/tokens'));   // YAML preferred
+} catch {
+  console.error(`audit-ontology: the ontology is not present.
+
+\`docs/ontology/tokens.{yaml,json}\` was deleted 2026-09-16 — it had rotted, and a
+stale generated artefact is worse than none.
+
+To rebuild it:
+  1. re-export the Figma variables into scripts/figma-data/variable-graph.json
+     (the committed copy is from 2026-08-14: 908 entries against 1366 token
+     declarations in tokens.css today, so it would rebuild the WRONG answer)
+  2. node scripts/build-ontology.mjs
+
+Until then, token NAMES can be checked against the generated tokens.css —
+\`loadCssTokenNames()\` in scripts/lib/generation/data.mjs — but ROLE and SCOPE,
+which is what this script audits, have no source.`);
+  process.exit(2);
+}
 
 const args = process.argv.slice(2);
 const fileArg = args[args.indexOf('--file') + 1];

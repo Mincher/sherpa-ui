@@ -4,11 +4,12 @@
  *   audit_component — bindings + ontology accuracy for a built component
  *   check_bindings  — the "every property binds a variable" audit (Rule 9)
  *
- * A FULL audit reads the LIVE Figma bindings (via the bridge) and runs them
- * through scripts/audit-ontology.mjs. The MCP has no live Figma, so these tools
- * run the def-side check (the token map + ontology roles + scope rules) and
- * return the RULE / expected shape for the live pass — which the
- * build-figma-component skill runs against the real file.
+ * A FULL audit would read the LIVE Figma bindings (via the bridge) and check
+ * each one's role against the ontology. THAT IS NOT AVAILABLE: `docs/ontology/`
+ * was deleted 2026-09-16 for having rotted, so `scripts/audit-ontology.mjs`
+ * exits 2 with instructions rather than running. These tools do the def-side
+ * check — token NAMES against the generated tokens.css, plus the rules that
+ * need no ontology — and say plainly what they cannot answer.
  */
 import { z } from "zod/v3";
 import {
@@ -117,7 +118,7 @@ export function register(server) {
     {
       title: "Audit a Built Component",
       description:
-        "Re-check a BUILT component against the design-system rules: runs validate_def on its def (reuse, token roles, the control-content vs status-content flip, status-container aliasing, event shape) AND reports each element.property→token binding with its ontology role. A full LIVE audit reads real Figma bindings via the bridge (scripts/audit-ontology.mjs) — that runs through the build-figma-component skill; this tool returns the def-side result + the live rule.",
+        "Re-check a BUILT component against the design-system rules: runs validate_def on its def (reuse, token roles, the control-content vs status-content flip, status-container aliasing, event shape) AND reports each element.property→token binding with its ontology role. Note: the ROLE half of this audit needs the ontology, which was deleted 2026-09-16 for having rotted — token names are checked against the generated tokens.css instead, and role/scope are reported as unavailable rather than guessed.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
       },
@@ -149,8 +150,8 @@ export function register(server) {
           out += "\n";
         }
 
-        out += `\n### Live audit (Figma bridge)\n`;
-        out += `The full binding audit reads the REAL Figma component's \`boundVariables\` and runs them through \`scripts/audit-ontology.mjs\` (each binding's property-implied role vs the ontology role). That needs the live file — run it via the **build-figma-component** skill's verify gate. This tool checked the def against the same rules.`;
+        out += `\n### What this audit could NOT check\n`;
+        out += `The ROLE half of this audit is unavailable: it needs \`docs/ontology/\`, deleted 2026-09-16 for having rotted, and rebuilding it needs a fresh Figma variable export (the committed graph is from 2026-08-14). \`scripts/audit-ontology.mjs\` exits with those instructions rather than running. What IS checked above: every token name against the generated \`tokens.css\`, plus every rule that needs no ontology.`;
 
         return ok(out);
       } catch (e) {
