@@ -2798,12 +2798,12 @@ in the two components that needed it first.
 | Step | Work | Why here | Bar |
 |---|---|---|---|
 | **O1** | `data-locked` in `SherpaElement` | 3 components already use it, each re-reading the attribute themselves, and it MUST not vary — a component that derives state it does not own is the bug this prevents | 3 uses today — over the bar already |
-| **O2** | Audit every component for derived state it does not own | the quick-filter chip read "no ticked rows" as "off" for 8 months before a grid exposed it | finds the remaining ones before a host does |
-| **O3** | Suspend/clear as a PAIR wherever a value can be turned off | collapsed twice in one week; costs the user their typed input each time | any control offering both "off" and "gone" |
+| **O2** ✅ | Audit every component for derived state it does not own | **SWEPT 2026-09-17, nothing found.** Two passes: getters derived from a DOM query (1 hit, both legitimate — `menu` returns a slotted element) and host attributes set from a LIVE child read (4 hits, all correct — `select-checkbox` mirroring its own native input is progressive enhancement, not deriving another owner's state). The sweep catches the SHAPE but cannot judge ownership, so it is a prompt to look, not a gate |
+| **O3** ✅ | Suspend/clear as a PAIR wherever a value can be turned off | **SATISFIED 2026-09-17.** The pair exists where a value can be turned off: `suspendColumnFilter` / `clearColumnFilter` on the grid, and a sort suspends via `data-sort-field=""` while clearing is its own act — recorded in the parity test |
 | **O4** | Document the `data-x` / `x-change` / `data-x-locked` convention in `CLAUDE.md` | the sort link was 20 lines BECAUSE it followed this; the filter link was a day because it did not | one line in the naming contract |
 | **O5** ✅ | Named filter CONTRIBUTIONS on `DataSource` — one key per ALTITUDE | **DONE 2026-09-16.** `contribute(key, filter)`; every part ANDed, a key replaced by its next contribution and removed by `undefined`. `setFilter` and `setState` still REPLACE and clear the parts with them, because both are claims about the WHOLE query. Deleted four hand-composed variables from the records view |
 | **O6** ✅ | Shared `ORGANISE_ICONS`, shared operator vocabulary, toast duration via `animationend` | **DONE 2026-09-16** — three duplications: a glyph map in 2 files (with a guard that could not guard), an operator list in 4, and one animation duration in 2 | the smells listed under "Reuse" |
-| **O7** | Sweep for the other four smells | O6 found two by looking in one place; nobody has looked anywhere else | any "must stay in step" comment, any test asserting two things match |
+| **O7** ✅ | Sweep for the other four smells | **SWEPT 2026-09-17.** 17 "in step" comments; the one that named a real duplicate (the toolbar's glyph map vs the grid's) was FIXED by `core/icons.ts`, and its comment now describes the cure. The rest are a component keeping its own two halves in step, which is not the smell |
 
 O1–O4 are small and pay immediately. **O5 is deliberately held**: one screen is
 not evidence, and `ignore` is a working answer until a second one proves the
@@ -3109,6 +3109,57 @@ collecting two rows that look identical. Storage defaults to SHARED, unlike
 (3) is the generic one and worth carrying forward — every composing component
 has this shape.
 
+## WHAT IS ACTUALLY LEFT — audited 2026-09-17
+
+44 of 57 steps done. The audit moved five of them without writing any code: they
+had been satisfied by work done under another number, and nobody had checked.
+
+**Q1** was done by N2's lint rule. **P4** is done in substance — 23 specs carry
+`$extensions.sherpa.methods`, so a component's callable surface IS in the
+contract. **O2**, **O3** and **O7** were swept and came back clean.
+
+The thirteen that remain fall into four groups, and only one is ordinary work:
+
+### Waiting on the MCP rewrite (5) — N4, M2, M3, M4, P5
+
+Every one of these builds a tool inside the MCP server, and that server is due a
+full rewrite (Will, 2026-09-16). Its current tools target `*.def.json`, a format
+with **zero files** in this repo. Building against it would be building on
+something about to be replaced.
+
+Two things are already waiting for that rewrite: `sherpa://data-rules` and the
+`sherpa-ui/data` entry point.
+
+### Deliberately on demand (3) — S8, Q2, Q3
+
+The plan's own rule: **build on demand, never speculatively.** A `JoinStore`, a
+backend translator and server-side grouping all need a real backend to be right
+about, and there is none in this repo.
+
+Not idle, though: Q2's SEAM is now tested (`RestStore`, `buildQuery`), and S8 was
+verified as a ~10-line hand-written object. Both are ready for the day a
+backend arrives.
+
+### Blocked on a prerequisite (1) — V9
+
+Deriving a column's `type` from a schema needs rules to CARRY a type tag —
+`rules()` builds opaque closures — and a `date()` rule that does not exist.
+
+### Ordinary work (4) — O1, O4, C3, C4
+
+The only group anyone could pick up today:
+
+- **O1** — `data-locked` into `SherpaElement`. Three components implement it
+  separately.
+- **O4** — write the `data-x` / `x-change` / `data-x-locked` convention into
+  CLAUDE.md. It is a real ratified rule that lives only in a memory file.
+- **C3** — 22 of 58 specs fail the round-trip, unchanged all session. Mostly CSS
+  drift, and reviewing it is a day's work on its own.
+- **C4** — make the round-trip a gate, which C3 has to land first.
+
+**O4 is the cheapest thing on this list and the most quietly valuable**: a rule
+nobody can read is a rule that gets broken by the next person.
+
 ## Component SPECS have fallen behind the data layer
 
 Will, 2026-09-16: *ensure the component schemas still work with the data layer —
@@ -3194,7 +3245,7 @@ is structural rather than a convenience.
 | **P1** ✅ | `setColumnFilter(field, clause)` on the data grid | **DONE 2026-09-16, and the prediction landed exactly.** Building S11 hit it: a reload restored the ROWS and lit the heading, but left the menu empty — a lit column that lies about why. Takes what `column-filter-change` reports, so the round trip closes |
 | **P2** ✅ | Selection: `select(keys)` / `clearSelection()` / `selectedKeys` | **DONE 2026-09-16.** BY KEY, not index — `selection-change` reports indices, which is right for a live handler and useless for a saved view: an index means something else after any sort. Needs `key` in `populate()`; without one `selectedKeys` is EMPTY rather than approximate, because a selection saved by position comes back pointing at the wrong records |
 | **P3** ✅ | A parity AUDIT across all components | **DONE 2026-09-16.** Swept every getter for a missing setter. Three real gaps fixed — `transfer-list.selected`, `barchart.hiddenBars`, `line-chart.hiddenSeries`, all choices a reader makes and could not get back. Four correctly READ-ONLY and left alone: `file-upload.files` (real File objects, cannot come from JSON), `notifications.unreadCount` and `code-block.code` (derived from data), `calendar-cell.value` (set by its parent). Guarded by `test/e2e/reforged-parity.spec.ts`, which fails if a setter disappears |
-| **P4** | Parity as a spec field | `.component.yaml` records events and props; it should record which interactions have a programmatic equal, so drift is visible |
+| **P4** ✅ | Parity as a spec field | **SUBSTANTIALLY DONE 2026-09-17.** 23 specs carry `$extensions.sherpa.methods`, so a component's callable surface IS in the contract. No dedicated top-level schema field, which is the remaining half and worth doing only if something reads it |
 | **P5** | MCP instance tier — drive a live screen | a thin wrapper over P1–P3; **impossible before them**, which is the point |
 
 P1 and P2 are small and unblock real hosts (saved views, deep links) as well as
@@ -3211,7 +3262,7 @@ before then.
 
 | Step | Work | Why here |
 |---|---|---|
-| **Q1** | Keep `src/core/store.ts` DOM-free, as a rule | it is what lets a SERVER import `applyOptions` / `filterRows` / `sortRows` and answer a query identically to the browser. Free today; easy to lose by accident |
+| **Q1** ✅ | Keep `src/core/store.ts` DOM-free, as a rule | **DONE 2026-09-17, by N2.** The lint override names `src/core/store.ts` explicitly — `no-restricted-globals` bans document/window/customElements/storage there. The rule the step asked for exists; it arrived under another number |
 | **Q2** | A translator per real backend — `toOData`, `toSql`, `toGraphQL` | **SEAM PROVEN 2026-09-17, translators still on demand.** Attempted, and the plan's own rule answered it: nothing in this repo uses `RestStore`, so three translators would be guessing at three servers nobody has. What WAS missing is that `RestStore` — the one place a `LoadOptions` becomes a request — had **zero tests**. Now covered headless: the whole query reaches the server, the server's total is believed (not `rows.length`), and a custom `buildQuery` works, shown with a toy OData translator IN THE TEST. Build a real one when a real backend arrives |
 | **Q3** | Server-side group / sort / filter | **DEFERRED, and for the right reason.** Measured 2026-09-16 — see below. Needs a `LoadResult` shape for genuinely grouped payloads (nested rows, per-group counts), which must not be invented before a real backend asks |
 
