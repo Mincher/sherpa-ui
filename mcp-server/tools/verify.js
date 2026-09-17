@@ -12,7 +12,7 @@
  */
 import { z } from "zod/v3";
 import {
-  loadDef, loadComponentNames, loadOntology,
+  loadDef, loadComponentNames, loadOntology, loadCssTokenNames,
 } from "../../scripts/lib/generation/data.mjs";
 import { validateDef } from "../../scripts/lib/generation/validate-def.mjs";
 import { scopeAllows } from "../../scripts/lib/generation/resolve.mjs";
@@ -54,8 +54,21 @@ function findOntId(ontology, alias) {
  * with the token it binds, the ontology role, and whether that role fits the
  * property (Rule 9 — every geometry/colour property binds a resolving token).
  */
-function bindingReport(def, ontology) {
+function bindingReport(def, ontology, cssTokens) {
   const rows = [];
+  /* The ontology answers ROLE and SCOPE. It cannot answer "does this token
+     exist" any more — `docs/ontology/tokens` was deleted 2026-09-16 and
+     `loadOntology()` returns `{}`, which made this report mark ALL 1173 bindings
+     across all 58 components `unknown-token`. A report that condemns everything
+     says nothing. With no ontology, the existence question goes to `tokens.css`
+     (generated from Figma, so it cannot rot by hand) and role/scope are reported
+     as unknown — a missing answer, not a wrong one. */
+  const haveOntology = Object.keys(ontology).length > 0;
+  const cssNorm = [...(cssTokens ?? [])].map((t) => norm(t.replace("--sherpa-", "")));
+  const declaredInCss = (alias) => {
+    const t = norm(alias);
+    return cssNorm.some((k) => k === t || k.endsWith(t));
+  };
   for (const [key, tok] of Object.entries(def.tokens ?? {})) {
     const prop = key.split(".").pop();
     const expectRole = PROP_ROLE[prop];
@@ -67,7 +80,13 @@ function bindingReport(def, ontology) {
 
     let status = "ok";
     const notes = [];
-    if (!ontId) { status = "unknown-token"; notes.push(`"${alias}" not in ontology`); }
+    if (!ontId && haveOntology) { status = "unknown-token"; notes.push(`"${alias}" not in ontology`); }
+    else if (!ontId) {
+      // No ontology at all. Answer what CAN be answered — does the name exist —
+      // and say plainly that role and scope are unavailable.
+      if (declaredInCss(alias)) { status = "ok"; notes.push("role/scope unknown — no ontology loaded"); }
+      else { status = "undeclared-token"; notes.push(`"${alias}" is not declared in tokens.css`); }
+    }
     else {
       if (expectRole && role && role !== expectRole
         && !(expectRole === "surface" && role === "palette")
@@ -112,7 +131,7 @@ export function register(server) {
         }
         const ontology = loadOntology();
         const { ok: passed, errors, warnings } = validateDef(def);
-        const rows = bindingReport(def, ontology);
+        const rows = bindingReport(def, ontology, loadCssTokenNames());
 
         const fmt = (o) => `  [${o.code}] ${o.msg}${o.where ? `  (@ ${o.where})` : ""}`;
         let out = `## audit_component — ${name}\n\n`;
@@ -159,7 +178,7 @@ export function register(server) {
           return ok(`Component "${name}" has no def.\n\nAvailable: ${avail}`);
         }
         const ontology = loadOntology();
-        const rows = bindingReport(def, ontology);
+        const rows = bindingReport(def, ontology, loadCssTokenNames());
         const bad = rows.filter((r) => r.status !== "ok");
 
         let out = `## check_bindings — ${name}\n\n`;

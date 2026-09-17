@@ -3,7 +3,7 @@
  *
  * Thin wrappers over scripts/lib/generation/*.
  *
- *   scaffold_def  — a starter def with the right shape (COMPONENT-DEFINITION-STANDARD)
+ *   scaffold_def  — a starter def with the right shape (schemas/component.v1.json)
  *   validate_def  — run every design-system rule; returns errors + warnings
  *   compile_def   — def → { ts, html, css }
  *   token_for     — which Core token to bind for a hardcoded property=value (the meticulous rule)
@@ -32,7 +32,7 @@ function classFor(name) {
 }
 
 /**
- * A starter def following COMPONENT-DEFINITION-STANDARD. Shape varies by
+ * A starter def matching schemas/component.v1.json. Shape varies by
  * category so the AI starts from the right skeleton (a control gets a
  * data-status prop + status token fallbacks; a container gets container-* etc).
  */
@@ -183,7 +183,7 @@ export function register(server) {
     {
       title: "Scaffold a Component Def",
       description:
-        "Return a starter <name>.def.json following COMPONENT-DEFINITION-STANDARD — the right skeleton for the category (a control gets data-status + status token fallbacks; a container gets container-* tokens). Edit the TODOs, then validate_def → compile_def.",
+        "Return a starter def matching schemas/component.v1.json — the right skeleton for the category (a control gets data-status + status token fallbacks; a container gets container-* tokens). Edit the TODOs, then validate_def → compile_def.",
       inputSchema: {
         name: z.string().describe("Component element name (sherpa-<kebab>, e.g. sherpa-badge)"),
         category: z.enum(["control", "container", "content", "data", "nav", "chart"])
@@ -214,7 +214,7 @@ export function register(server) {
       description:
         "Check a def against every design-system rule (docs/DEF-TO-FIGMA-BUILD-RULES.md): reuse existing components, tokens resolve to real ontology entries with the right role, control labels bind control-content not status-content (the Button bug), status containers alias through status, events well-formed. Returns errors (must fix) + warnings.",
       inputSchema: {
-        def: z.string().describe("The component def as a JSON string (the full <name>.def.json content)"),
+        def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.yaml)"),
       },
     },
     async ({ def: defInput }) => {

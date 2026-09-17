@@ -11,12 +11,29 @@
  */
 import { z } from "zod/v3";
 import {
-  loadOntology, loadComponentNames, loadDef, loadNameMap,
+  loadOntology, loadComponentNames, loadDef, loadNameMap, loadCssTokenNames,
 } from "../../scripts/lib/generation/data.mjs";
 import { compileDef } from "../../scripts/lib/generation/compile-def.mjs";
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
+
+/**
+ * Token NAMES from the generated `tokens.css` that contain `query`.
+ *
+ * The fallback for every ontology answer. `tokens.css` is re-projected from
+ * Figma, so it always knows which names are real — it simply knows nothing about
+ * what they are FOR. That is a smaller answer than the ontology gave, and an
+ * honest one; the ontology's failure mode was a confident wrong answer.
+ *
+ * An empty query returns every name.
+ */
+function matchingCssTokens(query) {
+  const q = String(query ?? "").toLowerCase().replace(/[\/-]/g, "");
+  const all = [...loadCssTokenNames()].sort();
+  if (!q) return all;
+  return all.filter((t) => t.toLowerCase().replace(/[\/-]/g, "").includes(q));
+}
 
 // ── ontology helpers (ported from the old ontology.js — synonym bridge + caveat) ──
 
@@ -157,6 +174,23 @@ export function register(server) {
         const o = loadOntology();
         const matches = findEntries(o, token);
         if (!matches.length) {
+          /* An EMPTY ontology is not the same as an unmatched token.
+             `docs/ontology/tokens` was deleted 2026-09-16 (it described removed
+             collections), so this returned "no entry matching X — try a
+             fragment like surface" to someone who had just typed `surface`.
+             That reads as "your token is wrong" when the truth is "I have no
+             list". Answer what tokens.css CAN answer — the name — and say
+             plainly what is missing. */
+          if (!Object.keys(o).length) {
+            const hits = matchingCssTokens(token);
+            const head = `No ontology is loaded — \`docs/ontology/tokens\` was deleted 2026-09-16, so PURPOSE, ROLE and CAVEAT are unavailable for every token.`;
+            return ok(hits.length
+              ? `${head}\n\nFrom the generated \`tokens.css\`, ${hits.length} token(s) match "${token}":\n` +
+                hits.slice(0, 40).map((t) => `  ${t}`).join("\n") +
+                (hits.length > 40 ? `\n  …${hits.length - 40} more` : "") +
+                `\n\nThe NAME is real; what it is for is not recorded anywhere right now.`
+              : `${head}\n\nNo token in \`tokens.css\` matches "${token}" either, so the name itself is likely wrong.`);
+          }
           return ok(`No ontology entry matching "${token}". Try a fragment like "surface", "border", "content", "status", "space".`);
         }
         if (matches.length > 8) {
@@ -190,7 +224,17 @@ export function register(server) {
         let entries = Object.values(o);
         if (role) entries = entries.filter((e) => e.role === role.toLowerCase());
         if (tier) entries = entries.filter((e) => e.tier === tier.toLowerCase());
-        if (!entries.length) return ok(`No tokens with role=${role ?? "*"} tier=${tier ?? "*"}.`);
+        if (!entries.length) {
+          // Same distinction as explain_token: no ontology ≠ no tokens.
+          if (!Object.keys(o).length) {
+            const all = matchingCssTokens("");
+            return ok(
+              `No ontology is loaded — \`docs/ontology/tokens\` was deleted 2026-09-16, so tokens cannot be filtered by role or tier.\n\n` +
+              `The generated \`tokens.css\` declares ${all.length} token name(s); use \`token_for\` or read \`src/styles/tokens/tokens.css\` directly.`,
+            );
+          }
+          return ok(`No tokens with role=${role ?? "*"} tier=${tier ?? "*"}.`);
+        }
         // group by role for readability
         const byRole = {};
         for (const e of entries) (byRole[e.role] ??= []).push(e.id);
@@ -211,7 +255,7 @@ export function register(server) {
     {
       title: "Get a Component (def + code + Figma shape)",
       description:
-        "The full picture for one component: its def.json (structure, props, tokens, events), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, reusing it as a nested child, or building it in Figma.",
+        "The full picture for one component: its component.yaml spec (structure, props, tokens, events), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, reusing it as a nested child, or building it in Figma.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
         include: z.enum(["all", "def", "code", "figma"]).optional()

@@ -1,7 +1,7 @@
 /**
  * Resources — the def-driven read surface.
  *
- *   sherpa://def/{name}               — a component's <name>.def.json
+ *   sherpa://def/{name}               — a component's <name>.component.yaml, as a def
  *   sherpa://ontology/{id}            — one design-system token's ontology entry
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
@@ -17,7 +17,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
 const RULES_PATH = path.join(ROOT, "docs", "DEF-TO-FIGMA-BUILD-RULES.md");
-const STANDARD_PATH = path.join(ROOT, "docs", "COMPONENT-DEFINITION-STANDARD.md");
+/* The def's SHAPE. `docs/COMPONENT-DEFINITION-STANDARD.md` used to hold it and
+   no longer exists — the shape now lives in the JSON Schema, which is checked on
+   every commit and therefore cannot drift from what the specs actually contain.
+   A prose standard nobody validates is the artefact this repo keeps re-learning
+   about. */
+const STANDARD_PATH = path.join(ROOT, "schemas", "component.v1.json");
 const DATA_RULES_PATH = path.join(ROOT, "docs", "DATA-SOURCE-RULES.md");
 
 const listComponents = () =>
@@ -48,7 +53,7 @@ export function register(server) {
           })),
       }),
     }),
-    { description: "The <name>.def.json — the shared source of truth for a Sherpa component", mimeType: "application/json" },
+    { description: "The component def, read from <name>.component.yaml — the shared source of truth for a Sherpa component", mimeType: "application/json" },
     async (uri, { name }) => {
       const src = readDef(name);
       return {
@@ -134,7 +139,7 @@ export function register(server) {
       const rules = fs.existsSync(RULES_PATH) ? fs.readFileSync(RULES_PATH, "utf8") : "(DEF-TO-FIGMA-BUILD-RULES.md not found)";
       const standard = fs.existsSync(STANDARD_PATH) ? fs.readFileSync(STANDARD_PATH, "utf8") : "";
       const text = standard
-        ? `${rules}\n\n---\n\n# Appendix: Component Definition Standard\n\n${standard}`
+        ? `${rules}\n\n---\n\n# Appendix: the component spec SCHEMA\n\nThe shape every \`<name>.component.yaml\` must match. Validated on every commit by \`npm run spec:check\`, so it describes what the specs really contain.\n\n\`\`\`json\n${standard}\n\`\`\``
         : rules;
       return {
         contents: [{
