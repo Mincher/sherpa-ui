@@ -640,10 +640,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   #onResize = (): void => {
-    // ONE measure per frame. A resize drag fires this per pixel, and each pass
-    // reads layout — batching to an animation frame is what keeps a drag from
-    // forcing a hundred synchronous reflows.
-    if (this.#frame != null) return;
+    /* ONE measure per frame. A resize drag fires this per pixel, and each pass
+       reads layout — batching to an animation frame is what keeps a drag from
+       forcing a hundred synchronous reflows.
+
+       RESCHEDULE, never drop. This used to `return` when a frame was already
+       pending, which throws away the LATEST width and measures against the
+       first one that arrived. On the initial layout the observer fires twice —
+       the bar at an intermediate width, then at its real one — and the second
+       was discarded, so the fold ran on a `clientWidth` of 92 where the truth
+       was 48. It folded three chips, stopped, and left the bar overflowing by
+       2px about five runs in six. Every "flaky fold" symptom traces here.
+
+       Cancelling and re-queueing keeps the one-measure-per-frame guarantee
+       (still at most one reflow per frame) while measuring the width that
+       actually won. */
+    if (this.#frame != null) cancelAnimationFrame(this.#frame);
     this.#frame = requestAnimationFrame(() => {
       this.#frame = null;
       this.#reflow();

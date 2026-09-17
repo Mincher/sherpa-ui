@@ -843,13 +843,14 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     await apply(add);
     const afterAdd = { chips: chips(), offered: offered() };
 
-    // …then take one back off through its own menu's "Remove" BUTTON,
-    // which lives in the menu's footer (shadow DOM), not in the chip's list.
+    // …then take one back off through its own menu's "Remove" BUTTON, which
+    // lives in the menu's HEADER (shadow DOM), not in the chip's list. It is
+    // icon-only, so its name is the aria-label, not its text.
     const health = sr.querySelector('.chip[data-id="health"]') as HTMLElement;
     const healthMenu = health.querySelector('sherpa-menu')!;
     await (healthMenu as unknown as { rendered: Promise<void> }).rendered;
     const removeBtn = healthMenu.shadowRoot!.querySelector('.remove') as HTMLElement;
-    const removeLabel = removeBtn.textContent!.trim();
+    const removeLabel = removeBtn.getAttribute('aria-label');
     removeBtn.click();
     await new Promise((res) => setTimeout(res, 200));
 
@@ -1071,16 +1072,21 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
   // The projected stepper still drives the calendar it was stamped from.
   expect(r.steppedTo).not.toBe(r.before.monthLabel);
 
-  // TODAY is the left footer button on a calendar menu, and Clear is not —
-  // Figma's Calendar footer puts Today in that slot and holds ONE control
-  // there. It jumps the calendar to today rather than emptying it.
+  // TODAY is the left footer button on a calendar menu — Figma's Calendar
+  // footer puts it in that slot. It jumps the calendar to today rather than
+  // emptying it.
   expect(r.before.todayShown).not.toBe('none');
-  expect(r.before.clearShown).toBe('none');
   expect(r.afterToday).toBe(r.todayIso);
 
-  // The way back OFF the bar is a footer button, AFTER Today. A date chip had
-  // neither before: no remove row (the branch returned past it) and, once Clear
-  // moved aside for Today, no way out at all.
+  // CLEAR is offered TOO, now that it no longer competes for that slot: it is
+  // an icon button in the menu's HEADER. A date chip was the one kind with no
+  // way back to "no date" short of removing the chip, because Clear was a
+  // footer button and Today had already taken the only footer position.
+  expect(r.before.clearShown).not.toBe('none');
+
+  // The way OFF the bar is the second header icon button, beside Clear. A date
+  // chip had neither before: no remove row (the branch returned past it) and no
+  // footer position left to put one in.
   expect(r.before.removable).toBe(true);
   expect(r.before.removeShown).not.toBe('none');
 });
@@ -1851,6 +1857,20 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
     for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
+    /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
+       the bar having finished measuring: the ResizeObserver fires more than
+       once on first layout, and reading `data-folded` between two passes
+       catches a count that is about to change. That is what made this test look
+       flaky — `start` captured 3, the bar settled on 4, and the "badge never
+       moves" assertion compared the two. */
+    let last = '';
+    for (let i = 0; i < 25; i++) {
+      const now = el.getAttribute('data-folded') ?? '';
+      if (now && now === last) break;
+      last = now;
+      await new Promise((res) => requestAnimationFrame(() => res(null)));
+      await new Promise((res) => setTimeout(res, 40));
+    }
     const menu = sr.querySelector('.overflow-chip sherpa-menu');
     if (!menu) return { err: 'no overflow menu' };
 
@@ -1923,6 +1943,20 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
     const sr = el.shadowRoot!;
     for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
       await new Promise((res) => setTimeout(res, 100));
+    }
+    /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
+       the bar having finished measuring: the ResizeObserver fires more than
+       once on first layout, and reading `data-folded` between two passes
+       catches a count that is about to change. That is what made this test look
+       flaky — `start` captured 3, the bar settled on 4, and the "badge never
+       moves" assertion compared the two. */
+    let last = '';
+    for (let i = 0; i < 25; i++) {
+      const now = el.getAttribute('data-folded') ?? '';
+      if (now && now === last) break;
+      last = now;
+      await new Promise((res) => requestAnimationFrame(() => res(null)));
+      await new Promise((res) => setTimeout(res, 40));
     }
     // RE-QUERY every time. A row can be re-stamped when the fold is recomputed,
     // and a handle held across that reports the OLD element's state.
@@ -2119,4 +2153,68 @@ test('data-group-field sets the Group chip, and an off chip reports nothing', as
   // No echo. The write came from outside; telling the outside what it just did
   // would bounce the value between a host wired both ways.
   expect(r.changes).toEqual([]);
+});
+
+/**
+ * THE BAR MUST COME TO REST FITTING.
+ *
+ * Not "the fold looks right" — the measurable thing: after everything settles,
+ * `scrollWidth` must not exceed `clientWidth`. A bar that rests overflowing is
+ * clipping a chip nobody can see or reach.
+ *
+ * It did, about one run in four, and every "flaky fold" symptom traced here.
+ * The cause was in `#onResize`: it DROPPED a resize that arrived while a frame
+ * was already pending. On first layout the ResizeObserver fires twice — the bar
+ * at an intermediate width, then at its real one — so the second was discarded
+ * and the fold ran against a `clientWidth` of 92 where the truth was 48. Three
+ * chips folded, the loop stopped, and 2px stayed clipped.
+ *
+ * Guarded HERE rather than left to the tests that tripped over it: those assert
+ * a badge does not move, and would pass on a wrong-but-stable count. This
+ * asserts the outcome the fold exists to produce.
+ */
+test('the bar comes to rest fitting, not overflowing', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.setAttribute('data-type', 'data');
+    // Narrow enough that chips MUST fold — the case the measuring exists for.
+    el.style.cssText = 'max-inline-size: 300px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'active', label: 'Active', type: 'data' },
+      { id: 'trial', label: 'Trial', type: 'data' },
+      { id: 'churned', label: 'Churned', type: 'data' },
+      { id: 'plan', label: 'Plan', type: 'data', options: [{ value: 'pro', label: 'Pro' }] },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    /* A PLAIN WAIT, deliberately — NOT a loop that waits for `data-folded` to
+       stop changing.
+
+       That loop is right for a test about something else, but it would hide the
+       bug this one exists for: it keeps pumping frames until the fold settles,
+       which gives a dropped resize a later frame to be corrected in. A reader
+       does not pump frames. They look at the bar.
+
+       400ms is far longer than the two reflows need; if the bar is still wrong
+       here, it is wrong for good. */
+    await new Promise((res) => setTimeout(res, 400));
+
+    const chips = el.shadowRoot!.querySelector('.chips') as HTMLElement;
+    return {
+      folded: el.getAttribute('data-folded'),
+      scroll: chips.scrollWidth,
+      client: chips.clientWidth,
+    };
+  });
+
+  // The same 1px of slack `#overflowing()` allows for sub-pixel rounding.
+  expect(r.scroll, `rests overflowing: ${r.scroll} > ${r.client} (folded ${r.folded})`)
+    .toBeLessThanOrEqual(r.client + 1);
+  // And it really did fold — a bar that fits because nothing rendered proves
+  // nothing about the measuring.
+  expect(Number(r.folded)).toBeGreaterThan(0);
 });
