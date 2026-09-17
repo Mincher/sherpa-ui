@@ -145,7 +145,17 @@ active filter hides it, the pagination totals, and the same gap in edit/delete.
 
 ---
 
-## Specs declare an event's NAME but never its DETAIL
+## ~~Specs declare an event's NAME but never its DETAIL~~ — DONE 2026-09-17
+
+Built. 33 specs now carry a `detail` block read from the `emit()` call sites,
+types inferred only where they cannot be anything else. The
+`quick-filter-change` collision is visible in the contract: the chip declares
+`{ scope, values }`, the toolbar `{ scope, active, values, picked, custom, id,
+source }`.
+
+Original note follows.
+
+### Specs declared an event's NAME but never its DETAIL
 
 `schemas/component.v1.json:297` defines a `detail` field on an event. **Zero of
 the 58 specs use it.** So the contract every agent and the MCP reads says
