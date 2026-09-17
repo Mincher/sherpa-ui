@@ -1212,7 +1212,7 @@ The sort link works because it already follows one. Generalise it:
 |---|---|---|
 | `data-<thing>` | host → component | the VALUE. The component draws it. |
 | `<thing>-change` | component → host | the INTENT. "The user asked for this." |
-| `data-<thing>-locked` | host → component | the host owns it; report, never set |
+| `data-locked` | host → component | the host owns the STATE; report, never set. ONE attribute for the whole component — the `data-<thing>-locked` spelling written here until 2026-09-17 has never existed in code |
 
 An event is a **request**, not a notification of a change already made. That
 distinction is what makes one column sortable at a time without a coordinator:
@@ -2800,7 +2800,7 @@ in the two components that needed it first.
 | **O1** | `data-locked` in `SherpaElement` | 3 components already use it, each re-reading the attribute themselves, and it MUST not vary — a component that derives state it does not own is the bug this prevents | 3 uses today — over the bar already |
 | **O2** ✅ | Audit every component for derived state it does not own | **SWEPT 2026-09-17, nothing found.** Two passes: getters derived from a DOM query (1 hit, both legitimate — `menu` returns a slotted element) and host attributes set from a LIVE child read (4 hits, all correct — `select-checkbox` mirroring its own native input is progressive enhancement, not deriving another owner's state). The sweep catches the SHAPE but cannot judge ownership, so it is a prompt to look, not a gate |
 | **O3** ✅ | Suspend/clear as a PAIR wherever a value can be turned off | **SATISFIED 2026-09-17.** The pair exists where a value can be turned off: `suspendColumnFilter` / `clearColumnFilter` on the grid, and a sort suspends via `data-sort-field=""` while clearing is its own act — recorded in the parity test |
-| **O4** | Document the `data-x` / `x-change` / `data-x-locked` convention in `CLAUDE.md` | the sort link was 20 lines BECAUSE it followed this; the filter link was a day because it did not | one line in the naming contract |
+| **O4** ✅ | Document the `data-x` / `x-change` / `data-x-locked` convention in `CLAUDE.md` | **DONE 2026-09-17.** A 'State ownership' section in CLAUDE.md, beside the naming contract. Writing it CORRECTED the rule: the real attribute is `data-locked`, one per component, not `data-<thing>-locked` — which this plan and the memory both claimed and no component has ever used |
 | **O5** ✅ | Named filter CONTRIBUTIONS on `DataSource` — one key per ALTITUDE | **DONE 2026-09-16.** `contribute(key, filter)`; every part ANDed, a key replaced by its next contribution and removed by `undefined`. `setFilter` and `setState` still REPLACE and clear the parts with them, because both are claims about the WHOLE query. Deleted four hand-composed variables from the records view |
 | **O6** ✅ | Shared `ORGANISE_ICONS`, shared operator vocabulary, toast duration via `animationend` | **DONE 2026-09-16** — three duplications: a glyph map in 2 files (with a guard that could not guard), an operator list in 4, and one animation duration in 2 | the smells listed under "Reuse" |
 | **O7** ✅ | Sweep for the other four smells | **SWEPT 2026-09-17.** 17 "in step" comments; the one that named a real duplicate (the toolbar's glyph map vs the grid's) was FIXED by `core/icons.ts`, and its comment now describes the cure. The rest are a component keeping its own two halves in step, which is not the smell |

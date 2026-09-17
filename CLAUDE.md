@@ -332,6 +332,45 @@ Two components deviate and are **not** the pattern to copy: `sherpa-button`
 `sherpa-pagination` route through a private `--_border-focus` because they also
 need an error state — acceptable, since the resolved value is the same.
 
+### State ownership — every value has exactly ONE owner
+
+Ratified 2026-09-16, after four of five bugs in one week turned out to be the
+same mistake.
+
+**A component is a REPORTER for anything a host might also control, and an OWNER
+only of what nothing outside it can see.** A grid owns its scroll position; it
+REPORTS its sort, because a toolbar chip can set that too.
+
+**The recurring bug is DERIVING state you do not own.** The quick-filter chip
+worked out its own on/off from its menu's ticked rows — right while the chip
+owns the filter, wrong the moment a grid does.
+
+The convention, in three parts:
+
+| | |
+|---|---|
+| `data-<thing>` | the value, IN |
+| `<thing>-change` | the INTENT, out — a request, not a notification |
+| `data-locked` | the host owns the state; report the interaction, never set it |
+
+`data-locked` is **one attribute for the whole component**, not per value —
+`sherpa-quick-filter` implements it; the grid and the toolbar set it. A locked
+chip still emits its event; it simply stops writing its own `data-current`.
+
+Three more primitives exist for the same problem, all in use:
+
+- **`ignore: ['event']` on `bind()`** — this VIEW owns this event, so the source
+  gets no listener at all. `readonly` was too blunt: it silences everything.
+- **suspend ≠ clear.** "Off" keeps the value; "gone" deletes it. Collapsing them
+  cost a user their typed filter. A sort suspends with `data-sort-field=""` and
+  clears by being replaced.
+- **a read-back getter** — `grid.columnClause(field)`. The one that gets
+  forgotten: a host that SET something needs to ask what the component now holds.
+
+> Before shipping a component interaction, ask what a caller with no pointer
+> would type to do the same thing. If there is no answer, it is not finished.
+> `test/unit/parity-sweep.test.mjs` enforces the half of this that is mechanical.
+
 ### Events
 
 Always `bubbles: true`. Add `composed: true` for events that must cross shadow DOM boundaries to application code:
