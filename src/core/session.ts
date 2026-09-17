@@ -1,19 +1,10 @@
 /**
  * session.ts — the app-level state store: one value, many readers.
  *
- * The third tier. A STORE holds records, a DATA SOURCE holds one query over
- * them, and this holds everything else an app knows about itself: which theme
- * is on, which customer is selected, which panel is open, who is signed in.
- *
- * It was already written — as `StateStore` in `render-view.ts`, where it is the
- * blob a view definition's `$state` pointers read and write. That was the right
- * class in the wrong file: nobody looking for "where does an app keep its
- * session state" would open a module named for view rendering. Same class,
- * addressable name, plus the one capability an app actually needs from it.
- *
- * ADDRESSED BY JSON POINTER (`/theme/mode`), not by a flat key, so a subscriber
- * can watch a branch and hear about anything beneath it. That is what lets one
- * value have many readers without them knowing about each other.
+ * TRAP T-session-store-is-the-third-tier — records, then one query over them,
+ * then everything else an app knows about itself, addressed by JSON pointer.
+ * TRAP T-state-store-is-the-session-store — `render-view.ts` re-exports this
+ * class as `StateStore`; it is not a second one.
  */
 import { getPointer, setPointer, pointersOverlap } from './pointer.js';
 
@@ -22,10 +13,8 @@ export interface PersistOptions {
   /**
    * Share across TABS via localStorage rather than keeping it per tab.
    *
-   * Default TRUE here, and that is the opposite of `persistView`'s default —
-   * deliberately. A view's state is about one screen in one tab; a session
-   * preference is about the person, and a theme that re-picks itself in a second
-   * tab is a bug the reader has to fix by hand every time.
+   * Default TRUE — TRAP T-session-persist-defaults-shared, the opposite of
+   * `persistView`'s default and deliberately so.
    */
   shared?: boolean;
   /** The storage key. Defaults to `sherpa:session:<pointer>`. */
@@ -34,11 +23,8 @@ export interface PersistOptions {
 
 const PREFIX = 'sherpa:session:';
 
-/**
- * Web Storage throws in a private window, with site data blocked, and during
- * preview or thumbnail capture — so every access is wrapped. A failure means
- * the value is not kept, never that the app breaks.
- */
+/** TRAP T-storage-access-throws — every access is wrapped; a failure only means
+ *  the value is not kept. */
 function storage(shared: boolean): Storage | null {
   try {
     return shared ? localStorage : sessionStorage;
@@ -50,10 +36,7 @@ function storage(shared: boolean): Storage | null {
 /**
  * What an app knows about itself, addressed by pointer.
  *
- *   const session = new SessionStore({ theme: { mode: 'light' } });
- *   session.persist('/theme/mode');          // remembered across reloads
- *   session.subscribe('/theme', (v) => …);   // hears /theme/mode too
- *   session.set('/theme/mode', 'dark');
+ * TRAP T-session-store-is-the-third-tier.
  */
 export class SessionStore {
   #data: Record<string, unknown>;
@@ -74,9 +57,8 @@ export class SessionStore {
     for (const sub of this.#subs) {
       if (pointersOverlap(sub.pointer, pointer)) sub.run(this.get(sub.pointer));
     }
-    // …then write through, for this pointer or any ancestor of it. Setting
-    // `/theme` must persist a `/theme/mode` that was registered, or a branch
-    // write would silently lose what a leaf write keeps.
+    // …then write through, for this pointer or any ANCESTOR of it —
+    // TRAP T-session-store-is-the-third-tier.
     for (const [p, where] of this.#persisted) {
       if (pointersOverlap(p, pointer)) this.#write(p, where);
     }
@@ -95,15 +77,8 @@ export class SessionStore {
   /**
    * Remember this pointer across reloads.
    *
-   * RESTORES IMMEDIATELY if a stored value exists, so the caller does not have
-   * to read it back — a theme picked last week should already be on before
-   * anything subscribes. Returns whether it restored, for a caller that wants
-   * to tell a first-time visitor apart from a returning one.
-   *
-   * This exists because the alternative is what every app was writing: a key
-   * constant, a try/catch to read, a try/catch to write, and a wrapper to keep
-   * the two in step. Four pieces to get right per preference, and the examples
-   * were teaching it.
+   * RESTORES IMMEDIATELY if a stored value exists, and returns whether it did —
+   * TRAP T-session-persist-defaults-shared.
    */
   persist(pointer: string, options: PersistOptions = {}): boolean {
     const shared = options.shared ?? true;
@@ -120,8 +95,8 @@ export class SessionStore {
     if (raw == null) return false;
 
     try {
-      // A stored value outlives the code that wrote it, so a shape this version
-      // does not understand is DROPPED rather than half-applied.
+      // An unreadable shape is DROPPED, not half-applied —
+      // TRAP T-session-persist-defaults-shared.
       this.set(pointer, JSON.parse(raw));
       return true;
     } catch {
@@ -147,7 +122,7 @@ export class SessionStore {
       if (value === undefined) storage(where.shared)?.removeItem(where.key);
       else storage(where.shared)?.setItem(where.key, JSON.stringify(value));
     } catch {
-      /* full, blocked, or a private window — the value is not kept */
+      /* full, blocked, or a private window — TRAP T-storage-access-throws */
     }
   }
 }

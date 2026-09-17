@@ -5,7 +5,6 @@
  * item. The separators between crumbs are drawn by CSS. The last crumb is the
  * current page, so it has no link. Clicking any crumb fires breadcrumb-select.
  *
- * @fires breadcrumb-select — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -39,18 +38,16 @@ export class SherpaBreadcrumbs extends SherpaElement {
     this.#render();
   }
 
+  // The label and the index are declared on the prototype. Only the last-crumb
+  // rule is left here, because it depends on the LIST's length rather than on
+  // the crumb — the trail's own end is not a field any row carries.
   #render(): void {
-    this.renderList('.crumbs', 'template.crumb-tpl', this.#crumbs, (row, crumb, i) => {
-      row.dataset['index'] = String(i);
-      const link = row.querySelector<HTMLAnchorElement>('.link')!;
-      link.textContent = crumb.label;
-
-      const isCurrent = i === this.#crumbs.length - 1;
-      if (isCurrent) {
-        link.setAttribute('aria-current', 'page');
-      } else if (crumb.href) {
-        link.setAttribute('href', crumb.href);
-      }
+    this.renderRows('.crumbs', 'template.crumb-tpl', this.#crumbs, {
+      after: (row, crumb, i) => {
+        const link = row.querySelector<HTMLAnchorElement>('.link')!;
+        if (i === this.#crumbs.length - 1) link.setAttribute('aria-current', 'page');
+        else if (crumb.href) link.setAttribute('href', crumb.href);
+      },
     });
   }
 

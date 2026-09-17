@@ -13,11 +13,6 @@
  *   new DataSource({ store: feed }).bind(notifications);
  *   feed.connect();
  *
- * @element sherpa-notifications
- * @attr {string} data-empty-text — what to say when there is nothing
- *
- * @fires notification-click — a row was activated. bubbles + composed. detail: { id, notification }
- * @fires notification-read  — Mark all read was pressed. bubbles + composed. detail: { ids }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -114,22 +109,18 @@ export class SherpaNotifications extends SherpaElement {
     // `own-children`, not `replace`: the header slot holding "Mark all read" is a
     // fixed part of the template and lives in the same light DOM the rows are
     // stamped into. Emptying the menu took it with them.
-    this.renderList('.menu', 'template.notification-tpl', this.#items, (node, item) => {
-      node.dataset['id'] = item.id;
-      // The list item names itself from data-label / data-description — its own
-      // API, so there is no inner element for this to reach into.
-      node.dataset['label'] = item.label ?? item.title ?? '';
-      if (item.description) node.dataset['description'] = item.description;
-      // UNREAD is a host flag, so CSS paints the row and the pip together off
-      // one attribute rather than this file touching either.
-      node.toggleAttribute('data-unread', !!item.unread);
-
-      const icon = node.querySelector<HTMLElement>('.notification-icon');
-      if (icon) icon.className = `notification-icon ${item.icon ?? 'fa-solid fa-circle-info'}`;
-
-      const time = node.querySelector<HTMLElement>('.notification-time');
-      if (time) time.textContent = item.time ?? '';
-    }, { clear: 'own-children', ownSel: '.menu > .notification, .menu > .empty' });
+    // The prototype declares id, label (with its data-title alias), description,
+    // the unread flag and the time. Only the icon is left: it replaces the whole
+    // className rather than writing an attribute, because the glyph and the
+    // element's own `.notification-icon` class share that one property.
+    this.renderRows('.menu', 'template.notification-tpl', this.#items, {
+      clear: 'own-children',
+      ownSel: '.menu > .notification, .menu > .empty',
+      after: (node, item) => {
+        const icon = node.querySelector<HTMLElement>('.notification-icon');
+        if (icon) icon.className = `notification-icon ${item.icon ?? 'fa-solid fa-circle-info'}`;
+      },
+    });
   }
 
   #onClick = (event: Event): void => {

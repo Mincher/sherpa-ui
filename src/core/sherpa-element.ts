@@ -1,29 +1,10 @@
 /**
  * sherpa-element.ts — the one base class, rebuilt from first principles.
  *
- * It does four things and nothing more:
- *   1. Fetch the component's HTML template (cached once per class) and its CSS.
- *   2. Adopt stylesheets into the shadow root (shared, deduped).
- *   3. Run a guarded lifecycle: onRender → onConnect, plus onChange / onDisconnect.
- *   4. Expose populate() → renderData() as the single data path.
- *
- * Everything a component can be seen doing lives in its CSS, selected off `data-*`
- * attributes. JS is the last resort — this class exists so a component author never
- * has to write plumbing, only behaviour.
- *
- * Contract for subclasses:
- *   static css      = new URL('./sherpa-foo.css',  import.meta.url);
- *   static html     = new URL('./sherpa-foo.html', import.meta.url);
- *   static props    = { 'data-heading': { type: 'string', kind: 'content', to: '.title' } };
- *   static observed = ['disabled'];                    // native attrs + own-handling ones
- *   onRender()        // shadow ready — cache refs, wire host listeners (fires exactly once)
- *   onChange(name, old, val)  // an observed attribute changed (after first render)
- *   onConnect()       // once, after the first render completes
- *   onDisconnect()    // teardown — timers, observers
- *   renderData(data)  // populate() payload
+ * TRAP T-base-class-does-four-things — the four things it does, and the
+ * subclass contract (`css`/`html`/`props`/`observed` + the five hooks).
  */
 
-/** Shared stylesheets adopted into every component's shadow root, in order. */
 /** A parsed template map: id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
 
@@ -63,9 +44,10 @@ function loadHtml(url: string): Promise<string> {
 
 /**
  * Parse an HTML string into a map of `<template id="...">` → innerHTML. Returns
- * null when there are no id'd templates (a single flat template), so the caller
- * can fall back to the raw markup. Cloning prototypes (`<template class="...">`,
- * no id) are deliberately ignored here — they belong to the component's own body.
+ * null when there are no id'd templates (a single flat template).
+ *
+ * TRAP T-cloning-prototypes-have-no-id — a `<template class>` row prototype is
+ * ignored here, which is why it must not carry an `id`.
  */
 export function parseTemplates(html: string): TemplateMap {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -89,14 +71,9 @@ export interface NumOptions {
 /**
  * Coerce a raw attribute string to a number, or return `fallback`.
  *
- * Exported so the data layer can parse a record field by exactly the same rule a
- * component parses an attribute — the `format-tick.ts` precedent: one shared
- * function so two callers cannot read the same value two different ways.
- *
- * ABSENT means: null, undefined, empty, whitespace-only, or unparseable. A real
- * 0 is a value, not an absence. The clamp runs only on a value that parsed — a
- * fallback is returned as given, so a caller's chosen default is never silently
- * moved by its own bounds.
+ * TRAP T-coerce-and-clamp-are-shared — exported so the data layer parses by the
+ * same rule; ABSENT is null/undefined/empty/whitespace/unparseable, a real 0
+ * survives, and the clamp runs only on a value that parsed.
  */
 export function coerceNum(raw: string | null | undefined, fallback: number, opts?: NumOptions): number {
   // Trim first: ' ' is not absent to Number() — it coerces to 0.
@@ -110,20 +87,9 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
 /**
  * Rebuild `el` as before + `<mark class="match">` + after, around one hit.
  *
- * ONE SHAPE for a search highlight. The data grid and nav-item both wrote this
- * — the grid's own comment says it copied nav-item's — and the five lines were
- * identical: `createElement('mark')`, `className = 'match'`, then
- * `replaceChildren(text, mark, text)`.
- *
- * TEXT NODES, never innerHTML: a `<mark>` is CONTENT, not structure, and a
- * label that happens to contain `<` would otherwise be parsed as markup.
- *
- * THE MARK TAKES THE HAYSTACK'S CASING, not the needle's — a reader typing
- * "ana" against a row reading "Ana" sees "Ana" stay itself. That is why this
- * slices `text` rather than writing the needle back.
- *
- * Returns the `<mark>`, because nav-item then wraps it in a `Range` for the
- * CSS Custom Highlight layer. A caller that just wants the mark drawn ignores it.
+ * TRAP T-mark-match-is-one-shape — ONE shape for a search highlight: text
+ * nodes not innerHTML, the HAYSTACK's casing, and the `<mark>` returned for
+ * nav-item's `Range`.
  */
 export function markMatch(el: Element, text: string, at: number, length: number): HTMLElement {
   const mark = document.createElement('mark');
@@ -140,11 +106,8 @@ export function markMatch(el: Element, text: string, at: number, length: number)
 /**
  * Apply the min/max bounds from `opts`, if any.
  *
- * EXPORTED, like `coerceNum`, because six components had written their own
- * `#clamp` — and they were not the same function. Each wrapped a real
- * `Math.min(max, Math.max(min, …))` in its own extras: progress-bar parses a
- * string first, pagination truncates, data-grid rounds and falls back to a
- * default width. Merging them would have been wrong; sharing the BOUNDS is not.
+ * TRAP T-coerce-and-clamp-are-shared — exported for the same reason
+ * `coerceNum` is.
  */
 export function clampNum(value: number, opts?: NumOptions): number {
   let out = value;
@@ -157,16 +120,9 @@ export function clampNum(value: number, opts?: NumOptions): number {
 
 /**
  * How a declared attribute is REALISED — the same three-way split the generated
- * `<name>.component.yaml` already uses, so the code and the contract agree:
+ * `<name>.component.yaml` already uses, so the code and the contract agree.
  *
- *   content    — JS writes it into the shadow DOM (the base class does it here)
- *   style      — CSS selects on it; JS never reads it. DECLARED ONLY.
- *   visibility — presence toggles a CSS rule. Declared only, like style.
- *
- * Only `content` generates any work. `style` and `visibility` exist so the
- * attribute is TYPED and observable — a JS→CSS write path (`this.set()`), and a
- * place to hang non-CSS use later — without tempting anyone to add a JS branch
- * for something CSS already handles correctly.
+ * TRAP T-declared-only-means-css-owns-it — only `content` does any work.
  */
 export type PropKind = 'content' | 'style' | 'visibility';
 
@@ -179,16 +135,14 @@ export interface PropDef {
   kind: PropKind;
   /**
    * Shadow-DOM selector this attribute's text is written into. `content` only.
-   * Without it a `content` prop is observed but not auto-written — for a component
-   * that needs its own handling in `onChange`.
+   * Without it a `content` prop is observed but not auto-written.
    */
   to?: string;
   /** Write EVERY match rather than the first. A few templates repeat a node per layout. */
   all?: boolean;
   /**
    * Skip the write when this selector matches INSIDE the target. Guards content the
-   * component put there for its own reasons — a projected `[slot]`, or a `<mark>`
-   * left by a search highlight that a textContent write would erase.
+   * component put there for its own reasons — TRAP T-slot-guards-only-when-filled.
    */
   skipWhen?: string;
   /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
@@ -196,10 +150,8 @@ export interface PropDef {
   /**
    * How the value is RENDERED. Default is plain text.
    *
-   * `'icon'` accepts both forms a Sherpa icon attribute has always allowed: a Font
-   * Awesome class list ("fa-solid fa-tag") or a single raw glyph character ("+").
-   * Without it, an FA class list is printed as literal text — which is exactly
-   * what chip, tag, list-item and container-header used to do.
+   * TRAP T-icon-value-takes-two-forms — `'icon'` takes an FA class list OR one
+   * raw glyph; without it an FA list prints as literal text.
    */
   as?: 'text' | 'icon';
   /** Allowed values for an `enum`. Documentation + spec parity; not enforced at runtime. */
@@ -215,21 +167,10 @@ export type PropMap = Readonly<Record<string, PropDef>>;
 
 /**
  * `renderRows()` fills a cloned prototype from the item's own fields, driven by
- * attributes in the template rather than a `fill` callback:
+ * attributes in the template rather than a `fill` callback.
  *
- *   data-text="label"        textContent ← item.label
- *   data-icon="glyph"        writeIcon()  ← item.glyph (FA class list or one glyph)
- *   data-attr-value="id"     setAttribute('value', item.id)
- *   data-when-current="on"   the bare attribute `data-current` exists if item.on is truthy
- *   data-index="data-index"  setAttribute('data-index', String(loop position))
- *
- * A field name may carry `??` fallbacks — `data-text="header??field"` is
- * `item.header ?? item.field`, the aliasing six stamp sites hand-wrote.
- *
- * WHAT IT DELIBERATELY CANNOT DO: compute. No maths, no formatting, no reading
- * the component's own state. A row whose value is derived keeps its `fill`
- * callback, because a template that could compute would be an expression
- * language, and the decisions — not the markup — are where the code lives.
+ * TRAP T-row-template-cannot-compute — the five attributes, the `??` field
+ * fallback, and why there is no maths or formatting in a template.
  */
 export type RowTemplate = 'declarative';
 
@@ -255,8 +196,8 @@ function fieldValue(item: unknown, expr: string): unknown {
 export abstract class SherpaElement extends HTMLElement {
   /**
    * URL of this component's CSS. Subclasses override. The projected component-scoped
-   * token block is inlined at the TOP of this file (a marked, auto-regenerated region
-   * written by scripts/project-tokens.mjs) — there is no separate <comp>.tokens.css.
+   * token block is inlined at the TOP of that file (written by
+   * scripts/project-tokens.mjs) — there is no separate <comp>.tokens.css.
    */
   static css?: URL;
   /** URL of this component's HTML template. Subclasses override. */
@@ -265,9 +206,9 @@ export abstract class SherpaElement extends HTMLElement {
   static observed: string[] = [];
   /**
    * Component tier (naming standard, ratified 2026-09-02): `standalone` = a shipped
-   * product component; `sub-component` = a design-only building block used only inside
-   * a parent (excluded from the public catalog / sandbox picker, still registered so it
-   * renders inside its parent). Sub-components also carry `@tier sub-component` in JSDoc.
+   * product component; `sub-component` = a design-only building block used only
+   * inside a parent — excluded from the public catalog / sandbox picker, still
+   * registered so it renders inside its parent, and carrying `@tier sub-component`.
    */
   static tier: 'standalone' | 'sub-component' = 'standalone';
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
@@ -276,31 +217,35 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Declared attributes — the component's public surface, as data rather than code.
    *
-   * Every key is observed automatically, and every `content` entry with a `to`
-   * selector is written into the shadow DOM by the base class. That replaces the
-   * hand-written `#syncX()` method and the `onChange` if-chain that used to pair
-   * with each one.
-   *
-   * `style` / `visibility` entries generate NO work — they are declared so the
-   * attribute is typed and observable. CSS keeps owning them.
+   * Every key is observed automatically; a `content` entry with a `to` selector
+   * is written into the shadow DOM here.
+   * TRAP T-declared-only-means-css-owns-it — `style`/`visibility` do no work.
    */
   static props: PropMap = {};
 
   /**
-   * Observed = the declared props PLUS anything in `observed`.
+   * The attributes `templateId` reads — so changing one RE-STAMPS the tree.
    *
-   * `observed` stays for native attributes (`disabled`, `value`, `min`) and for
-   * attributes a component reacts to in its own `onChange` without a text write.
-   * Deduped, so declaring an attribute in both is harmless.
+   * TRAP T-variant-attrs-or-one-way-door — a multi-template component MUST list
+   * them; left empty the variant is whatever the element was born with.
+   */
+  static variantAttrs: readonly string[] = [];
+
+  /**
+   * Observed = the declared props PLUS `variantAttrs` PLUS anything in `observed`.
+   *
+   * `observed` stays for native attributes and for attributes a component reacts
+   * to in its own `onChange`. Deduped, so declaring in both is harmless.
    */
   static get observedAttributes(): string[] {
     const defs = Object.values(this.props);
     return [
       ...new Set([
         ...Object.keys(this.props),
-        // A fallback source has to be observed too, or changing data-heading would
-        // not re-sync a data-label that falls back to it.
+        // A fallback source is observed too, or a data-heading change would not
+        // re-sync a data-label that falls back to it.
         ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
+        ...this.variantAttrs,
         ...this.observed,
       ]),
     ];
@@ -317,22 +262,19 @@ export abstract class SherpaElement extends HTMLElement {
   #connected = false;
 
   /**
+   * The template id currently STAMPED, so a later attribute change can tell
+   * whether the component now wants a different tree.
+   *
+   * TRAP T-template-id-read-once-was-permanent — read once, a component kept
+   * its FIRST tree for life.
+   */
+  #stampedTemplate: string | null = null;
+
+  /**
    * Aborted on disconnect, and REPLACED on every connect.
    *
-   * Pass it to anything that takes one — `addEventListener`, `ResizeObserver`
-   * has no signal but `bind()` and the data layer's helpers do — and the
-   * teardown is done. No stored handler references, no paired
-   * `removeEventListener`, no list of functions to loop in `onDisconnect`.
-   *
-   * A list of teardowns is a list someone forgets: that is not a guess, it is
-   * what happened in the data layer when a second list appeared beside the
-   * first and the teardown dropped it.
-   *
-   * FRESH PER CONNECT, which is the whole subtlety. `connectedCallback` fires
-   * again after `disconnectedCallback` — moving an element in the DOM does
-   * exactly that — so one controller for the element's whole life would leave a
-   * re-attached component wired to nothing, silently. Read `this.signal` inside
-   * `onRender`/`onConnect`, never cache it in a field.
+   * TRAP T-abort-controller-per-connect — FRESH PER CONNECT, and never cached
+   * in a field.
    */
   #ac = new AbortController();
 
@@ -367,30 +309,62 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * A signal that aborts when this element leaves the DOM — see `#ac`.
    *
-   *   this.addEventListener('click', this.#onClick, { signal: this.signal });
-   *   new ResizeObserver(…);  // no signal; still needs onDisconnect
-   *
-   * READ IT WHERE YOU USE IT. It is replaced on every connect, so a copy kept
-   * in a field goes stale the first time the element is moved.
+   * READ IT WHERE YOU USE IT — TRAP T-abort-controller-per-connect.
    */
   protected get signal(): AbortSignal {
     return this.#ac.signal;
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
-    // Ignore no-op writes and anything before the first render — onRender reads
-    // the initial attribute state itself.
+    // No-op writes and anything before the first render: onRender reads the
+    // initial attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
-    // A declared prop re-syncs itself. onChange still fires, so a component can do
-    // extra work for the same attribute (sync an aria-* value, re-measure) without
-    // also having to write the text.
+    // A declared prop re-syncs itself; onChange still fires afterwards.
     const Ctor = this.constructor as typeof SherpaElement;
     for (const [prop, def] of Object.entries(Ctor.props)) {
-      // The prop itself, and any prop that FALLS BACK to it — data-label falling
-      // back to data-heading has to re-sync when data-heading is what changed.
+      // The prop itself, and any prop that FALLS BACK to it.
       if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
     }
     this.onChange(name, oldVal, newVal);
+    // TRAP T-restamp-runs-after-on-change
+    this.#restampIfVariantChanged();
+  }
+
+  /**
+   * Re-stamp when the wanted template is no longer the stamped one.
+   *
+   * TRAP T-restamp-runs-after-on-change — cheap on the common path, and the
+   * template map is already parsed and cached.
+   */
+  #restampIfVariantChanged(): void {
+    const Ctor = this.constructor as typeof SherpaElement;
+    const wanted = this.templateId;
+    // A component with one template never opts in; only a CHANGE re-stamps.
+    if (wanted === null || wanted === this.#stampedTemplate) return;
+
+    // Parsed at first render and cached per URL — a re-stamp costs no fetch.
+    const map = templateCache.get(Ctor.html?.href ?? '');
+    if (!map?.has(wanted)) return;
+
+    this.#stamp(map.get(wanted)!, wanted);
+  }
+
+  /**
+   * Write a template body into the shadow root and run the setup that belongs to
+   * THAT tree — shared by the first render and by a variant re-stamp.
+   *
+   * TRAP T-restamp-does-not-abort — this does NOT abort `#ac`, and why
+   * `onRender` is re-run.
+   */
+  #stamp(body: string, id: string | null): void {
+    this.root.innerHTML = body;
+    this.#stampedTemplate = id;
+    this.#hasRendered = true;
+    // Declared props are written BEFORE onRender, so a component's own setup
+    // reads a populated shadow tree.
+    this.#syncAllProps();
+    this.onRender();
+    this.#wireSlots();
   }
 
   /* ── Bootstrap: fetch template + styles, stamp shadow, run lifecycle ── */
@@ -398,20 +372,13 @@ export abstract class SherpaElement extends HTMLElement {
   async #bootstrap(): Promise<void> {
     const Ctor = this.constructor as typeof SherpaElement;
 
-    // Adopt styles and fetch HTML in parallel; await styles before writing DOM
-    // (prevents a flash of unstyled content).
+    // Styles awaited before any DOM write — no flash of unstyled content.
     const styling = this.#adoptStyles(Ctor);
     const markup = Ctor.html ? loadHtml(Ctor.html.href) : Promise.resolve('');
     const [, html] = await Promise.all([styling, markup]);
 
-    this.root.innerHTML = this.#resolveTemplate(Ctor, html);
-
-    this.#hasRendered = true;
-    // Declared props are written BEFORE onRender, so a component's own setup can
-    // read a populated shadow tree rather than racing the base class for it.
-    this.#syncAllProps();
-    this.onRender();
-    this.#wireSlots();
+    const [body, id] = this.#resolveTemplate(Ctor, html);
+    this.#stamp(body, id);
     this.#resolveRendered();
 
     if (!this.#connected && this.isConnected) {
@@ -422,14 +389,11 @@ export abstract class SherpaElement extends HTMLElement {
 
   /** Build the adopted-stylesheet list: shared sheets first, then this component's CSS. */
   async #adoptStyles(Ctor: typeof SherpaElement): Promise<void> {
-    // Yield a microtask so top-level module init (e.g. index.ts setting
-    // SherpaElement.sharedStyles) has run before we read it — an element present
-    // in the initial HTML can upgrade before that assignment executes.
+    // TRAP T-shared-sheets-settle-independently
     await Promise.resolve();
     const urls = [...Ctor.sharedStyles.map((u) => u.href)];
     if (Ctor.css) urls.push(Ctor.css.href); // includes the inlined scoped-token region
-    // Load per-sheet with isolation: a failed/slow shared sheet (e.g. a cross-origin
-    // CDN like Font Awesome) must NOT drop the others. Settle each, keep what loaded.
+    // TRAP T-shared-sheets-settle-independently — settle each, keep what loaded.
     const results = await Promise.allSettled(urls.map(loadSheet));
     const sheets = results
       .filter((r): r is PromiseFulfilledResult<CSSStyleSheet> => r.status === 'fulfilled')
@@ -437,19 +401,26 @@ export abstract class SherpaElement extends HTMLElement {
     this.root.adoptedStyleSheets = sheets;
   }
 
-  /** Pick the template body: the id from `templateId`, else the first, else raw html. */
-  #resolveTemplate(Ctor: typeof SherpaElement, html: string): string {
+  /**
+   * Pick the template body: the id from `templateId`, else the first, else raw html.
+   *
+   * It returns the id ALONGSIDE the body — TRAP
+   * T-template-id-read-once-was-permanent.
+   */
+  #resolveTemplate(Ctor: typeof SherpaElement, html: string): [string, string | null] {
     const key = Ctor.html?.href;
-    if (!key) return '';
+    if (!key) return ['', null];
     let map = templateCache.get(key);
     if (map === undefined) {
       map = parseTemplates(html);
       templateCache.set(key, map);
     }
-    if (!map) return html; // single flat template
+    if (!map) return [html, null]; // single flat template
     const wanted = this.templateId;
-    if (wanted && map.has(wanted)) return map.get(wanted)!;
-    return map.values().next().value ?? html;
+    if (wanted && map.has(wanted)) return [map.get(wanted)!, wanted];
+    // The FIRST template's REAL id — TRAP T-template-id-read-once-was-permanent.
+    const [id, body] = map.entries().next().value ?? [null, html];
+    return [body, id];
   }
 
   /**
@@ -471,10 +442,8 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   #reflectSlot(slot: HTMLSlotElement): void {
-    // assignedNodes() WITHOUT flatten returns only nodes the light DOM actually
-    // assigned — NOT the slot's fallback content. (flatten:true would count a
-    // slot's own default children as "present", collapsing them by their own
-    // data-has-* rule.)
+    // TRAP T-slot-guards-only-when-filled — assignedNodes() WITHOUT flatten, so
+    // a slot's own fallback content is never counted as "present".
     const has = slot.assignedNodes().some((n) => {
       if (n.nodeType === Node.TEXT_NODE) return (n.textContent ?? '').trim().length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
@@ -489,11 +458,8 @@ export abstract class SherpaElement extends HTMLElement {
    * The single entry point for data. Waits for the first render, then hands the
    * payload to renderData(). Idempotent to call before render — it defers.
    *
-   * Returns a promise that settles once renderData() HAS RUN. `rendered` only
-   * says the shadow tree exists; populate() chains onto it, so awaiting
-   * `rendered` can resolve BEFORE the data is in the DOM. A caller that reads
-   * back what it just populated must await this, not `rendered`. Fire-and-forget
-   * callers can keep ignoring it.
+   * TRAP T-populate-settles-after-render-data — await THIS, not `rendered`, to
+   * read back what you just populated.
    */
   populate(data: unknown): Promise<void> {
     return this.rendered.then(() => this.renderData(data));
@@ -502,12 +468,8 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Override to render a data payload. Default is a no-op (attribute-only).
    *
-   * MAY RETURN A PROMISE, and `populate()` chains onto it. Most components
-   * render synchronously and return nothing. A COMPOSING one does not: an app
-   * header's data lands in slotted children, so its own `renderData` finishing
-   * says nothing about whether the chips exist. Returning the children's
-   * promises is what keeps populate()'s contract true — it settles when the
-   * data is in the DOM — for a component whose DOM is somebody else's.
+   * MAY RETURN A PROMISE, which `populate()` chains onto — TRAP
+   * T-populate-settles-after-render-data.
    */
   protected renderData(_data: unknown): Promise<void> | void {
     /* no-op by default */
@@ -518,25 +480,9 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Read a NUMBER from an attribute, with a fallback and an optional clamp.
    *
-   * The one place the library parses a numeric attribute, because doing it by
-   * hand went wrong four different ways:
-   *
-   *   Number('')        === 0     — NOT NaN. An EMPTY attribute (which template
-   *                                 engines emit freely) read as a real 0, so
-   *                                 `data-min=""` pinned a chart's y-floor to 0
-   *                                 and `data-ticks=""` silently meant "no axis".
-   *   Number('' ?? 100) === 0     — `??` only catches undefined, never ''. A
-   *                                 gauge's `data-max=""` read 0, not 100.
-   *   parseInt('0') || 1 === 1    — `||` folds "0", "" and garbage together, so a
-   *                                 legitimate 0 was indistinguishable from absent.
-   *   Number(null)      === 0     — an absent attribute read as index 0, which
-   *                                 would act on the FIRST row rather than none.
-   *
-   * So: anything that is not a finite number — absent, empty, whitespace, or
-   * unparseable — is treated as ABSENT and returns `fallback`. A real 0 survives.
-   *
-   * Accepts the attribute name in either form (`data-max` or `max`); native
-   * attributes work unprefixed, matching the naming contract.
+   * TRAP T-number-coercion — the ONE numeric parse; by hand it went wrong four
+   * ways. Anything not a finite number is ABSENT; a real 0 survives. Takes
+   * either form (`data-max` or `max`).
    */
   protected num(attr: string, fallback: number, opts?: NumOptions): number {
     return coerceNum(this.getAttribute(attr), fallback, opts);
@@ -545,10 +491,8 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Write an attribute from JS, so CSS can react to a data change.
    *
-   * The declared counterpart of `this.dataset['len'] = String(count)` — which
-   * sherpa-sparkline already does by hand to tell its CSS how many points it drew.
-   * `null`, `undefined` and `false` REMOVE the attribute (so `:host([data-x])`
-   * stops matching); `true` sets it empty (a bare boolean attribute).
+   * TRAP T-set-removes-on-falsy — `null`/`undefined`/`false` REMOVE it; `true`
+   * sets it empty.
    */
   protected set(attr: string, value: string | number | boolean | null | undefined): void {
     if (value == null || value === false) this.removeAttribute(attr);
@@ -560,9 +504,8 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Write one declared `content` prop into the shadow DOM.
    *
-   * Absent, empty and a missing target are all the same: write `''`, which lets the
-   * component's own `:empty` / `data-has-*` CSS collapse the node. The base class
-   * never hides anything itself — CSS owns visibility.
+   * TRAP T-empty-write-lets-css-collapse — absent, empty and a missing target
+   * all write `''`; CSS owns the collapsing.
    */
   #syncProp(name: string, def: PropDef): void {
     if (def.kind !== 'content' || !def.to) return;
@@ -575,8 +518,7 @@ export abstract class SherpaElement extends HTMLElement {
         : (raw ?? fallback);
 
     for (const el of def.all ? this.$$(def.to) : [this.$(def.to)]) {
-      // `skipWhen` protects content the component owns: a projected [slot], or a
-      // <mark> a search highlight left behind. A textContent write would erase it.
+      // TRAP T-slot-guards-only-when-filled
       if (!el || this.#guarded(el, def)) continue;
       if (def.as === 'icon') this.writeIcon(el, text);
       else el.textContent = text === 'NaN' ? '' : text;
@@ -587,24 +529,8 @@ export abstract class SherpaElement extends HTMLElement {
    * The first element on a composed event's path that matches — the reliable
    * way to ask "what was actually clicked".
    *
-   * `event.target` RETARGETS at a shadow boundary: a click inside a child
-   * component arrives at the host, so `target.closest('.row')` misses the row
-   * it came from. `composedPath()` is the un-retargeted list, and walking it is
-   * the only way to see through the boundary.
-   *
-   * This was written out 26 times across 9 components, in three spellings, and
-   * they had drifted: `sherpa-quick-filter-toolbar` looked for the same element
-   * by `tagName === 'SHERPA-QUICK-FILTER'` in one handler and
-   * `localName === 'sherpa-quick-filter'` in another. Both work; having two is
-   * how a third appears.
-   *
-   * Takes a SELECTOR because that is what a caller means — `'.row'`,
-   * `'sherpa-quick-filter'`, `'[data-id]'` — rather than a hand-written
-   * predicate that has to re-narrow the type each time.
-   *
-   * A component whose rows live in its OWN shadow tree should keep using
-   * `target.closest()`: nothing crossed a boundary, and `closest` says so.
-   * `sherpa-data-grid` does this in 11 places, correctly.
+   * TRAP T-composed-path-not-target — `target` RETARGETS at a shadow boundary;
+   * written out 26 times across 9 components before this existed.
    */
   protected pathFind<T extends Element = HTMLElement>(event: Event, selector: string): T | null {
     for (const node of event.composedPath()) {
@@ -621,25 +547,9 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Render an icon value — a Font Awesome class list OR a single raw glyph.
    *
-   * ONE policy, because there were three. Font Awesome draws its glyph from a
-   * `::before` on a class, so an FA value has to become CLASSES; a raw character
-   * has to become TEXT. Getting that backwards is silent: the class list prints
-   * as literal text ("fa-solid fa-tag"), which is what chip, tag, list-item and
-   * container-header all did, or the glyph vanishes.
-   *
-   * Classes go on the target ITSELF rather than a child `<i>`. Four components
-   * used to build that child with `createElement`, which CLAUDE.md forbids, and
-   * the child is not needed: any element can carry the FA classes.
-   *
-   * The target's own structural classes are preserved — only previously-applied
-   * `fa-*` classes are removed, so a re-render never accumulates two icons.
-   *
-   * PROTECTED, not private, because a declared `as: 'icon'` prop cannot cover
-   * every case: nav and nav-item choose their target at runtime, the quick
-   * filter writes the same glyph into two slots, and the app header renders one
-   * from `#sync`. Those four each wrote their own copy of this — byte for byte,
-   * minus the fa-* cleanup — so the rule is: reach for THIS, never build an
-   * `<i>` with createElement.
+   * ONE policy, because there were three — TRAP T-icon-value-takes-two-forms.
+   * TRAP T-write-icon-is-protected-not-private — why it is protected, and why
+   * nothing may build an `<i>`.
    */
   protected writeIcon(el: Element, value: string): void {
     for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
@@ -654,12 +564,8 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Is this target guarded against a write?
    *
-   * `skipWhen` names a selector INSIDE the target. Two cases, and the difference
-   * matters: a plain element (a `<mark>` a search highlight left, a projected
-   * `[slot]` attribute) guards by merely existing, but a `<slot>` guards only when
-   * a consumer has actually FILLED it. A `<slot>` in the template is the normal
-   * state — treating its presence as a guard would stop the attribute working at
-   * all, which is why `assignedNodes()` is checked rather than the tag alone.
+   * TRAP T-slot-guards-only-when-filled — a plain element guards by existing, a
+   * `<slot>` only once a consumer has FILLED it.
    */
   #guarded(el: Element, def: PropDef): boolean {
     if (!def.skipWhen) return false;
@@ -690,16 +596,9 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Clone a `<template class="…">` prototype's first element.
    *
-   * The one way to stamp a repeating row. Three null policies were in use — an
-   * early return, a `!` on the LOOKUP (which throws the moment a template is
-   * renamed), and an unguarded optional chain — and every one of them then
-   * asserted `content.firstElementChild!` regardless. That assertion is the real
-   * hazard: a template whose first node is a comment or whitespace-only text
-   * yields `null!`, and the crash lands at the next property access, far from the
-   * cause.
-   *
-   * Returns `null` when the template is missing or empty. A caller that cannot
-   * proceed without it should return early; there is nothing to assert.
+   * TRAP T-clone-returns-null-never-asserts — returns `null` when the template
+   * is missing or empty; the `firstElementChild!` assertion three call sites
+   * shared is the hazard.
    */
   protected clone<T extends Element = HTMLElement>(sel: string): T | null {
     const tpl = this.$<HTMLTemplateElement>(sel);
@@ -712,20 +611,9 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * Stamp a list: clear the container, clone the prototype per item, fill, append.
    *
-   * The four steps every data-driven list repeats. What each row then BECOMES is
-   * the caller's business and stays in `fill` — a roving tabindex, an aria-current,
-   * a per-column type. Only the plumbing is shared.
-   *
-   * The template is looked up ONCE and reused for the whole run, so a long list
-   * costs one shadow query rather than one per row.
-   *
-   * `clear: 'own-children'` removes only nodes matching `ownSel` instead of
-   * emptying the container. sherpa-list needs it: its rows sit beside a `<slot>`,
-   * and `replaceChildren()` would take the slot with them.
-   *
-   * The index passed to `fill` is the loop position. A component stamping a
-   * DIFFERENT index — sherpa-barchart writes each datum's original position while
-   * iterating a filtered list — writes it inside `fill` from its own data.
+   * TRAP T-render-list-keeps-fill-in-the-caller — only the plumbing is shared;
+   * `clear: 'own-children'` exists for rows that sit beside a `<slot>`, and the
+   * index is the LOOP position.
    */
   protected renderList<T>(
     containerSel: string,
@@ -756,23 +644,11 @@ export abstract class SherpaElement extends HTMLElement {
    * Stamp a list DECLARATIVELY: the prototype's own attributes say what each
    * field fills, so there is no `fill` callback.
    *
-   *   <li data-attr-value="id"><span data-text="label"></span></li>
-   *
-   * See `RowTemplate` for the whole attribute vocabulary. Same plumbing as
-   * `renderList` — which this delegates to — so `clear: 'own-children'` behaves
-   * identically for a container that also holds a `<slot>`.
-   *
-   * Writes are ATTRIBUTES, never properties, and they happen BEFORE the row is
-   * appended. That ordering matters for a row containing a `<sherpa-*>` child: a
-   * cloned custom element has not upgraded yet, so a property write would land on
-   * a plain HTMLElement and vanish when it does upgrade. An attribute survives,
-   * because upgrading replays `attributeChangedCallback` for what is already there.
-   * This is the trap sherpa-quick-filter-toolbar hit and works around with a
-   * deferred replay queue; declaring rows avoids it by construction.
-   *
-   * `after` is the escape hatch for a row that is ALMOST declarative — the one
-   * derived value, run after the declared writes. Reach for it before abandoning
-   * the whole row to a hand-written `fill`.
+   * See `RowTemplate` for the vocabulary; `clear: 'own-children'` behaves as in
+   * `renderList`.
+   * TRAP T-custom-element-upgrade — writes are ATTRIBUTES, never properties.
+   * TRAP T-row-fragment-cloned-whole — the whole fragment is cloned; `after` is
+   * the escape hatch.
    */
   protected renderRows<T>(
     containerSel: string,
@@ -810,12 +686,28 @@ export abstract class SherpaElement extends HTMLElement {
     });
   }
 
+  /**
+   * Clone ONE row from a prototype and fill it declaratively — `renderRows` for
+   * a component that cannot use a single container.
+   *
+   * TRAP T-clone-row-is-for-two-destinations — the one case, and the boundary.
+   */
+  protected cloneRow<T extends Element = HTMLElement>(
+    tplSel: string,
+    item: unknown,
+    index = 0,
+  ): T | null {
+    const row = this.clone<T>(tplSel);
+    if (row) this.#fillRow(row as unknown as HTMLElement, item, index);
+    return row;
+  }
+
   /** Apply every row-template attribute on a cloned row and its descendants. */
   #fillRow(node: HTMLElement, item: unknown, index: number): void {
     // The row root can carry the attributes too, so it is part of its own sweep.
     for (const el of [node, ...node.querySelectorAll<HTMLElement>('*')]) {
-      // Snapshot: the loop removes the directives as it consumes them, and a live
-      // NamedNodeMap would skip entries when one is taken out mid-iteration.
+      // Snapshot — the loop removes each directive, and a live NamedNodeMap
+      // would skip entries. TRAP T-row-fragment-cloned-whole.
       for (const { name, value } of [...el.attributes]) {
         if (name === ROW_TEXT) {
           el.textContent = this.#rowText(item, value);
@@ -830,14 +722,12 @@ export abstract class SherpaElement extends HTMLElement {
           const target = name.slice(ROW_ATTR.length);
           const resolved = fieldValue(item, value);
           el.removeAttribute(name);
-          // An absent field leaves the attribute off entirely rather than writing
-          // "undefined" — CSS selecting on presence must see the truth.
+          // An absent field leaves the attribute OFF, never "undefined".
           if (resolved != null) el.setAttribute(target, String(resolved));
         } else if (name.startsWith(ROW_WHEN)) {
           const target = name.slice(ROW_WHEN.length);
           el.removeAttribute(name);
-          // Truthy field → the BARE attribute. The five hand-written
-          // `if (row.active) setAttribute('data-current', '')` sites, declared.
+          // Truthy field → the BARE attribute (five hand-written sites, declared).
           if (fieldValue(item, value)) el.setAttribute(`data-${target}`, '');
         }
       }

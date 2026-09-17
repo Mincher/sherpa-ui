@@ -10,16 +10,6 @@
  * column; gap: …` in its own stylesheet for a form, a settings page, a dialog
  * footer or a row of cards.
  *
- * @attr {enum}    data-direction  block (default) | inline
- * @attr {enum}    data-gap        none | sm | md | lg (default) | xl | 2xl
- * @attr {enum}    data-align      start | center | end | stretch (default) | between
- * @attr {boolean} data-wrap       inline only — items wrap and share the line
- * @attr {boolean} data-scroll     the run scrolls when taller than its room
- * @attr {boolean} data-measure    cap the width at a reading measure and centre it
- * @attr {boolean} data-fill       take the parent's height; the data-grow child gets the spare
- * @attr {boolean} data-grow       ON A CHILD — that item takes the spare space
- * @slot (default) the items
- * @fires nothing — it is a layout surface; slotted controls emit their own events.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

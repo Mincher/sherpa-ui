@@ -13,13 +13,6 @@
  * that; this file's only job is to mirror the rail's state onto the host so the
  * CSS has something to key off.
  *
- * @attr {enum}    data-nav-state  collapsed | hover | default | pinned | settings
- *                                 (mirrored from the rail; drives the content inset)
- * @attr {boolean} data-no-header  drop the header row; content spans full height
- * @slot nav       replace the default <sherpa-nav>
- * @slot header    replace the default <sherpa-app-header>
- * @slot (default) the view content
- * @fires nothing — it re-broadcasts nothing; the rail's own events still bubble.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

@@ -4,7 +4,6 @@
  * CSS handles the look — the colour, the style, and the dot type (data-type="dot").
  * The only behaviour is the optional close button (data-dismissible), which fires
  * tag-remove so the app can remove it, plus mirroring the data-icon glyph value.
- * @fires tag-remove — the dismiss button is clicked. bubbles + composed.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -18,6 +17,9 @@ export class SherpaTag extends SherpaElement {
   static override props = {
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },
   } as const;
+
+  /** `data-dismissible` picks the tree, so a change to it has to re-stamp. */
+  static override variantAttrs = ['data-dismissible'];
 
   /** The dismissible template adds the close button; default is a plain pill. */
   protected override get templateId(): string | null {

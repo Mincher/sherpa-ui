@@ -6,7 +6,6 @@
  * CSS handles it. JS only writes the heading text. The one bit of behaviour is the
  * close button, which fires callout-dismiss.
  *
- * @fires callout-dismiss — detail: none
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

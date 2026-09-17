@@ -6,16 +6,6 @@
  * their events and flips the sort direction / expanded state on click. Content
  * is a slot; alignment and numeric formatting are the consumer's choice.
  *
- * @element sherpa-grid-cell
- * @attr {enum}    data-type            cell | header | filter | group
- * @attr {boolean} data-has-checkbox    show the leading selection checkbox
- * @attr {boolean} data-has-actions     show the trailing sort + menu buttons
- * @attr {enum}    data-sort-direction  asc | desc (header sort state)
- * @attr {boolean} data-expanded        group open state
- *
- * @fires sort-change  — the sort button is clicked. bubbles + composed. detail: { direction: 'asc' | 'desc' }
- * @fires menu-open    — the menu button is clicked. bubbles + composed. detail: {}
- * @fires group-toggle — the group toggle is clicked. bubbles + composed. detail: { expanded: boolean }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

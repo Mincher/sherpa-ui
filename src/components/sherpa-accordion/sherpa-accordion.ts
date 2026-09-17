@@ -9,14 +9,6 @@
  * composed `toggle` (the native one bubbles inside the shadow root but is NOT
  * composed, so app code wouldn't otherwise see it).
  *
- * @element sherpa-accordion
- * @attr {string}  data-heading     — the summary title (a slotted [slot=heading] overrides it)
- * @attr {string}  data-description — optional secondary line under the title (a slotted [slot=description] overrides it)
- * @attr {boolean} open             — native disclosure state (read/write; drives [open] visuals)
- * @attr {enum}    data-status      — status colour cascade (critical | warning | success | info | urgent)
- *
- * @fires toggle — every open/close. bubbles + composed. detail: { open: boolean }
- *
  * @prop {boolean} open — whether the disclosure is expanded (delegates to <details>)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

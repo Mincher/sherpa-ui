@@ -1,14 +1,10 @@
 /**
  * sherpa-list-item — one row inside a sherpa-list.
  *
- * From left to right: a leading area (drag handle, expand toggle, checkbox or
- * radio, icon), then a label and description, then a trailing slot. Each leading
- * bit is turned on with a data-* flag and shown by CSS. JS writes the text and
- * icon, keeps the expand and select states in sync, handles clicks and keyboard,
- * and fires the matching events.
- *
- * Set data-interactive to make the row clickable: clicking it (or pressing Enter
- * or Space) marks it the current row and fires item-click.
+ * Left to right: a leading area (drag handle, expand toggle, checkbox or radio,
+ * icon), then a label and description, then a trailing slot. Each leading bit is
+ * turned on with a data-* flag and shown by CSS. data-interactive makes the row
+ * clickable — it then marks itself current and fires item-click.
  *
  * Public API:
  *   data-label / data-description   text (data-heading is a back-compat alias for data-label)
@@ -20,10 +16,6 @@
  *   disabled                        disabled state
  *
  * @tier sub-component
- * @fires item-click  — detail: { label }
- * @fires item-expand — detail: { expanded }
- * @fires item-select — detail: { selected }
- * @fires item-drag   — detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -32,9 +24,8 @@ export class SherpaListItem extends SherpaElement {
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
   static override props = {
-    // `all`: the title and description appear TWICE in the template — once inside
-    // the <button> and once in the static content span — so both must be written.
-    // `fallbackAttr`: data-heading is the legacy alias for data-label.
+    // `all`: title + description appear TWICE (inside the <button> and in the
+    // static content span). `fallbackAttr`: data-heading is the legacy alias.
     'data-label': { type: 'string', kind: 'content', to: '.title', all: true, fallbackAttr: 'data-heading' },
     'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
@@ -42,11 +33,7 @@ export class SherpaListItem extends SherpaElement {
 
   static override observed = ['data-expanded', 'data-selected'];
 
-  /**
-   * The label as the click event reports it — the same data-label → data-heading
-   * chain the declared prop above uses. Kept because the EVENT carries the text,
-   * not just the DOM.
-   */
+  /** The label the EVENT carries — the declared prop's own data-label → data-heading chain. */
   #labelText(): string { return this.dataset['label'] ?? this.dataset['heading'] ?? ''; }
 
   override onRender(): void {
@@ -59,8 +46,8 @@ export class SherpaListItem extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    // Text is written by the declared props above; these two mirror STATE onto a
-    // native control and an aria value, which is not a textContent write.
+    // The declared props write the text; these two mirror STATE onto a native
+    // control and an aria value, which is not a textContent write.
     if (name === 'data-expanded') this.#syncExpanded();
     else if (name === 'data-selected') this.#syncSelected();
   }

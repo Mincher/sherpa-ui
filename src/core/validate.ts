@@ -6,27 +6,8 @@
  * different timing and different consequences, but "what is wrong with this"
  * should not be three different questions.
  *
- * ## The contract is Standard Schema's
- *
- * `standardschema.dev` is a community INTERFACE CONVENTION — not a spec, not a
- * TC39 proposal — under which a schema advertises a `~standard` property holding
- * a `validate` function. Zod, Valibot and ArkType all implement it.
- *
- * It is duck-typed, so Sherpa can accept any of them WITHOUT importing anything
- * and without gaining a dependency. `rules()` below builds a schema of the same
- * shape, so a caller who wants nothing extra uses the built-in and a caller who
- * already has Zod passes that instead — through the same door:
- *
- *   new ArrayStore(rows, { schema: rules({ email: [required(), email()] }) })
- *   new ArrayStore(rows, { schema: zodSchema })
- *
- * Two details of that contract are honoured here and matter downstream:
- *
- *  - `validate()` may return a result OR a promise of one. Every caller must
- *    handle both — which is also what makes an async rule ("is this username
- *    taken?") work through the same door as a synchronous one.
- *  - An issue is `{ message, path? }`. Sherpa's own Issue stays compatible
- *    rather than inventing a different shape.
+ * TRAP T-standard-schema-is-duck-typed — the contract is Standard Schema's, and
+ * accepting Zod / Valibot / ArkType costs no dependency.
  */
 
 /* ── The answer ─────────────────────────────────────────────────────── */
@@ -34,9 +15,8 @@
 /**
  * One thing that is wrong.
  *
- * `path` is Standard Schema's, and it is an ARRAY because a value can be nested:
- * `['address', 'postcode']` names a field inside a field. A top-level value has
- * no path at all.
+ * `path` is Standard Schema's — an array, because a value can be nested. A
+ * top-level value has no path at all.
  */
 export interface Issue {
   message: string;
@@ -47,9 +27,7 @@ export interface Issue {
  * What a validation says.
  *
  * Standard Schema's own shape: `issues` ABSENT means valid, and the parsed
- * `value` is then present. That is deliberately not a `valid: boolean` — a
- * schema may COERCE ("42" → 42), and the caller needs what it settled on rather
- * than only whether it passed.
+ * `value` is then present — TRAP T-standard-schema-is-duck-typed.
  */
 export type Result<T = unknown> =
   | { value: T; issues?: undefined }
@@ -65,6 +43,8 @@ export function isValid<T>(result: Result<T>): result is { value: T; issues?: un
 /**
  * The duck type. Declared, never imported — that is what keeps this
  * zero-dependency while still accepting Zod, Valibot and ArkType.
+ *
+ * TRAP T-standard-schema-is-duck-typed.
  */
 export interface StandardSchema<Input = unknown, Output = Input> {
   readonly '~standard': {
@@ -86,8 +66,8 @@ export function isSchema(value: unknown): value is StandardSchema {
 /**
  * Run a schema and always hand back a promise.
  *
- * A caller that awaits works with a synchronous schema too, so nothing has to
- * branch on which kind it was given.
+ * A caller that awaits works with a synchronous schema too, so nothing branches
+ * on which kind it was given.
  */
 export async function validate<T>(
   schema: StandardSchema<unknown, T>,
@@ -101,21 +81,16 @@ export async function validate<T>(
 /**
  * One check on one value.
  *
- * Returns a message when the value is WRONG and nothing when it is fine, which
- * reads the way the rule is named: `required()` returns "Required" when it is
- * missing.
- *
- * It may be async, so "is this username taken?" is the same kind of thing as
- * "is this a number" and needs no second mechanism.
+ * Returns a message when the value is WRONG and nothing when it is fine. It may
+ * be async, so "is this username taken?" needs no second mechanism.
  */
 export type Rule = (value: unknown) => string | undefined | Promise<string | undefined>;
 
 /**
  * Is this value absent?
  *
- * Empty string counts, because a text input that has been cleared holds `''` and
- * a reader means the same thing by it as by never typing. Zero and `false` do
- * NOT count — they are answers.
+ * TRAP T-every-rule-but-required-passes-absent — `''` counts, zero and `false`
+ * do not.
  */
 function absent(value: unknown): boolean {
   return value == null || value === '' || (Array.isArray(value) && value.length === 0);
@@ -124,10 +99,8 @@ function absent(value: unknown): boolean {
 /**
  * There has to be something here.
  *
- * Every other rule PASSES an absent value, so a field can be optional and still
- * be constrained when filled. Only this one objects to emptiness, which is what
- * lets `[min(3)]` mean "if you write something, write three characters" and
- * `[required(), min(3)]` mean "write something, and make it three".
+ * TRAP T-every-rule-but-required-passes-absent — only this rule objects to
+ * emptiness, which is what makes an optional-but-constrained field possible.
  */
 export function required(message = 'Required'): Rule {
   return (value) => (absent(value) ? message : undefined);
@@ -166,8 +139,8 @@ export function max(limit: number, message?: string): Rule {
  * What `min`/`max` compare.
  *
  * A NUMBER is its own size; a string or an array is its length. Anything else
- * has no meaningful size, and returns null so the rule passes rather than
- * inventing a comparison — a rule that cannot judge should not object.
+ * returns null so the rule passes —
+ * TRAP T-every-rule-but-required-passes-absent.
  */
 function sizeOf(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
@@ -191,10 +164,8 @@ export function pattern(re: RegExp, message = 'Wrong format'): Rule {
 /**
  * Looks like an email address.
  *
- * Deliberately loose: `something@something.something`. A stricter regex rejects
- * addresses that are real (RFC 5322 allows quoted strings and comments), and the
- * only way to know an address works is to send to it. This catches typing a name
- * into the email box, which is what a client-side check is for.
+ * TRAP T-email-check-is-deliberately-loose — a stricter regex rejects real
+ * addresses, and only sending to one proves it works.
  */
 export function email(message = 'Enter a valid email address'): Rule {
   return pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, message);
@@ -222,8 +193,7 @@ export function oneOf(allowed: readonly unknown[], message?: string): Rule {
 /**
  * Anything else.
  *
- * The escape hatch, and the reason the rule set stays small: a check nobody else
- * needs does not have to be in the library to be usable.
+ * The escape hatch, and why the rule set stays small.
  */
 export function custom(check: Rule): Rule {
   return check;
@@ -241,13 +211,11 @@ export type RuleMap = Readonly<Record<string, FieldRules>>;
  * Turn rules into a Standard Schema.
  *
  * So the built-in and a third-party schema are the SAME kind of thing to every
- * caller. A store takes `{ schema }` and never asks which it was given.
+ * caller — TRAP T-standard-schema-is-duck-typed. Rules on one field run IN ORDER
+ * and stop at the first failure
+ * (TRAP T-every-rule-but-required-passes-absent).
  *
  *   rules({ email: [required(), email()], seats: number() })
- *
- * Rules on one field run IN ORDER and stop at the first failure. A field that is
- * empty should say "Required", not "Required" and "Must be at least 3
- * characters" — the second is noise when the first is the reason.
  */
 export function rules<T extends Record<string, unknown> = Record<string, unknown>>(
   map: RuleMap,
@@ -267,7 +235,7 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
             const message = await rule(record[field]);
             if (message) {
               issues.push({ message, path: [field] });
-              // FIRST failure only, per field — see above.
+              // FIRST failure only, per field.
               break;
             }
           }
@@ -282,9 +250,8 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
 /**
  * Run one field's rules on its own.
  *
- * For a field validating itself as it is typed, where building a whole record
- * to check one value would be the wrong shape. Same rules, same messages — the
- * form and the field cannot disagree about what is allowed.
+ * For a field validating itself as it is typed. Same rules, same messages —
+ * TRAP T-every-rule-but-required-passes-absent.
  */
 export async function validateField(
   fieldRules: FieldRules,
@@ -301,8 +268,7 @@ export async function validateField(
 /**
  * Every issue for one field, as a message list.
  *
- * A form-level summary needs to point at fields; this is the lookup that makes
- * that cheap, and it flattens the path so a caller compares plain strings.
+ * Flattens the path so a form-level summary compares plain strings.
  */
 export function issuesFor(result: Result, field: string): string[] {
   return (result.issues ?? [])

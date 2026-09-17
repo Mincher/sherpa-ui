@@ -5,11 +5,6 @@
  * line, and data-align sets how they spread across it. There's no JS behaviour;
  * CSS handles the alignment and hides the footer when it's empty.
  *
- * @element sherpa-container-footer
- * @attr {enum} data-align — start | end (default) | between
- *
- * @slot (default) — footer action controls (reflects data-has-content)
- *
  * Fires: nothing — slotted controls emit their own events.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

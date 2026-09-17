@@ -4,7 +4,6 @@
  * CSS handles how it looks — the styles, sizes, states, and the disabled look.
  * This file only sets sensible defaults, copies the label and icon into place,
  * and fires button-click when someone clicks it.
- * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -18,6 +17,9 @@ export class SherpaButton extends SherpaElement {
     'data-badge',
     'disabled',
   ];
+
+  /** `data-type` picks the tree, so a change to it has to re-stamp. */
+  static override variantAttrs = ['data-type'];
 
   /** Icon-only buttons stamp the `icon` template; everything else the default. */
   protected override get templateId(): string | null {

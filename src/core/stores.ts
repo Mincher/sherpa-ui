@@ -30,55 +30,22 @@ export interface StoreOptions {
   /**
    * Check every row the store WRITES, and refuse the ones that fail.
    *
-   * A Standard Schema — `rules({...})` from validate.ts, or a Zod / Valibot /
-   * ArkType schema. It is duck-typed, so passing one adds no dependency here.
-   *
-   * The guard belongs at the STORE rather than at the form, because a form is
-   * not the only way a record arrives: a REST response, a paste, a script and a
-   * second UI all reach the same records, and a rule enforced in one screen is
-   * not a rule. The form should still validate — it is where a person can be
-   * told what is wrong while they can still fix it — but this is the line
-   * nothing crosses.
+   * TRAP T-schema-guard-belongs-at-the-store — a rule enforced in one screen is
+   * not a rule.
    */
   schema?: StandardSchema;
   /**
    * Keep at most this many rows, dropping the OLDEST first.
    *
-   * A live feed grows without bound: a socket delivering an alert a second
-   * fills a tab's memory overnight, and nobody scrolls to hour three anyway.
-   * This is the one genuinely new piece a shared feed needs.
-   *
-   * OLDEST-OUT, by insertion order rather than by any field — a feed's order is
-   * the order things happened, and the store does not know which field means
-   * "when". A view that wants a different order sorts; the cap is about how much
-   * is kept, not about what is shown.
-   *
-   * Applies on INSERT. Rows handed to the constructor or to `setRows()` are the
-   * caller's own statement of what the store holds, and are trimmed to the cap
-   * too — a cap that only some writes honour is not a cap.
+   * TRAP T-max-rows-is-oldest-out-by-insertion — insertion order, not a field,
+   * and every write honours it.
    */
   maxRows?: number;
   /**
    * On a READ, check only the first N rows rather than every one.
    *
-   * A schema costs real time on a bulk load — measured, 10,000 rows take 6ms
-   * and 100,000 take 56ms, about 23× an unguarded load. That is a visible stall
-   * on a big response, and it scales linearly.
-   *
-   * WHAT A SAMPLE IS FOR: a backend's rows are wrong in a SHAPE, not one at a
-   * time. A field renamed, a date sent as a number, a null where a string was
-   * promised — the first fifty rows say so as loudly as ten thousand. The
-   * sample answers "is this response the shape I expect", which is the question
-   * a read is really asking.
-   *
-   * WHAT IT IS NOT: a way to let bad rows through quietly. Rows beyond the
-   * sample are passed along UNCHECKED, so a schema that RENAMES or COERCES must
-   * not be sampled — the unchecked rows would keep the old shape and the two
-   * halves of one response would disagree. Sample when the schema only VALIDATES.
-   *
-   * WRITES ARE ALWAYS CHECKED IN FULL. An insert or an update is one row a
-   * person or a script is adding on purpose, and skipping it is how bad data
-   * gets in. This is about reads only.
+   * TRAP T-schema-sample-cost — what a sample is for, and when it must NOT be
+   * used. Writes are always checked in full.
    */
   sample?: number;
 }
@@ -87,7 +54,7 @@ export interface StoreOptions {
  * Shared plumbing: the key field, and announcing a change.
  *
  * Extends EventTarget so `change` is a real DOM event — no emitter to write, and
- * a DataSource subscribes with the same addEventListener it uses for everything.
+ * a DataSource subscribes with its usual addEventListener.
  */
 abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
@@ -120,16 +87,8 @@ abstract class BaseStore extends EventTarget implements Store {
   /**
    * Check a row against the schema, THROWING if it fails.
    *
-   * A throw, not a `false`: an invalid write is an error the caller has to
-   * handle, and a boolean return is the kind of thing a caller forgets to read —
-   * the record would then silently not be saved while the UI said it was.
-   *
-   * Returns the schema's own PARSED value, because a schema may coerce ("42" →
-   * 42) and the store should record what the schema settled on rather than what
-   * arrived.
-   *
-   * No schema means no check: a store without one behaves exactly as it always
-   * did, so this cannot break an existing caller.
+   * TRAP T-schema-guard-belongs-at-the-store — a throw not a `false`, the PARSED
+   * value back, and no schema means no check.
    */
   protected async check(values: Row): Promise<Row> {
     if (!this.schema) return values;
@@ -141,24 +100,8 @@ abstract class BaseStore extends EventTarget implements Store {
   /**
    * Check ROWS ARRIVING, dropping the ones the schema refuses.
    *
-   * The read counterpart of `check()`, and deliberately not the same shape.
-   *
-   * A WRITE throws: the caller handed over one row, it is wrong, and telling
-   * them is the only useful answer. A READ cannot — one bad row in a thousand
-   * would empty a grid, and a backend that adds a null next month would take
-   * the screen down. So a bad row is DROPPED and COUNTED, and the count
-   * travels on the LoadResult where a host can see it.
-   *
-   * A silent drop would be worse than a bad row: a schema that quietly rejects
-   * 40% of a response looks like a backend outage. That is why `dropped` is
-   * reported rather than merely handled.
-   *
-   * The schema's PARSED value is kept, not the input — a schema may rename
-   * `customer_name` to `name` and coerce `"900"` to `900`, and that mapping is
-   * the point of having one on a read at all.
-   *
-   * No schema means no check: a store without one behaves exactly as it always
-   * did.
+   * TRAP T-read-check-drops-where-a-write-throws — one bad row in a thousand
+   * must not empty a grid, so it is dropped and counted. No schema, no check.
    */
   protected async checkRows(result: LoadResult): Promise<LoadResult> {
     if (!this.schema) return result;
@@ -170,6 +113,7 @@ abstract class BaseStore extends EventTarget implements Store {
       : result.rows.length;
 
     const rows: Row[] = [];
+    // The first few issues only — TRAP T-read-check-drops-where-a-write-throws.
     const issues: Issue[] = [];
     for (let i = 0; i < limit; i++) {
       const row = result.rows[i]!;
@@ -177,8 +121,7 @@ abstract class BaseStore extends EventTarget implements Store {
       if (checked.issues) issues.push(...checked.issues);
       else rows.push((checked.value ?? row) as Row);
     }
-    // The tail, UNCHECKED and unchanged. See StoreOptions.sample for why a
-    // renaming or coercing schema must not be sampled.
+    // The tail, UNCHECKED and unchanged — TRAP T-schema-sample-cost.
     for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
 
     const dropped = result.rows.length - rows.length;
@@ -187,12 +130,10 @@ abstract class BaseStore extends EventTarget implements Store {
     return {
       ...result,
       rows,
-      // The TOTAL drops with them. A pager counting rows that were never shown
-      // would offer a page that renders empty.
+      // TRAP T-dropped-rows-must-be-countable — the total drops with the rows,
+      // and only the first few issues travel.
       total: Math.max(0, result.total - dropped),
       dropped,
-      // The first few only. A broken backend produces one issue per row, and a
-      // host wants to know WHAT is wrong, not to receive ten thousand copies.
       issues: issues.slice(0, 5),
     };
   }
@@ -206,8 +147,8 @@ abstract class BaseStore extends EventTarget implements Store {
 /**
  * A write the schema refused.
  *
- * Carries the ISSUES, not just a message, so a form can put each one beside the
- * field it belongs to — a single "invalid" string would force the UI to guess.
+ * Carries the ISSUES, not just a message —
+ * TRAP T-schema-guard-belongs-at-the-store.
  */
 export class ValidationError extends Error {
   readonly issues: ReadonlyArray<Issue>;
@@ -225,10 +166,8 @@ export class ValidationError extends Error {
 /**
  * Records held in memory.
  *
- * The array is COPIED in, and every row handed out is a copy too. A consumer
- * mutating a row it was given must not silently rewrite the store's own record —
- * that is the bug where a grid's edit appears to work and then vanishes on the
- * next reload, because the "change" was never actually recorded.
+ * TRAP T-array-store-copies-both-ways — an edit that appears to work and then
+ * vanishes on the next reload is a row handed out by reference.
  */
 export class ArrayStore extends BaseStore {
   #rows: Row[];
@@ -244,8 +183,8 @@ export class ArrayStore extends BaseStore {
   /**
    * Drop the oldest rows past the cap.
    *
-   * Returns the array it was given, trimmed in place where it can be — the
-   * caller always owns a fresh copy by the time this runs.
+   * TRAP T-max-rows-is-oldest-out-by-insertion. The caller always owns a fresh
+   * copy by the time this runs.
    */
   #trim(rows: Row[]): Row[] {
     if (!this.#maxRows || rows.length <= this.#maxRows) return rows;
@@ -260,7 +199,7 @@ export class ArrayStore extends BaseStore {
 
   load(options: LoadOptions = {}): Promise<LoadResult> {
     const result = applyOptions(this.#rows, options);
-    // Copies out, for the same reason as copies in.
+    // Copies out — TRAP T-array-store-copies-both-ways.
     return this.checkRows({ ...result, rows: result.rows.map((r) => ({ ...r })) });
   }
 
@@ -273,9 +212,8 @@ export class ArrayStore extends BaseStore {
     // CHECKED FIRST, so a refused row is never pushed and never announced.
     const row = { ...(await this.check(values)) };
     this.#rows.push(row);
-    // …then hold the cap. A live feed inserts for ever; this is where it would
-    // grow without bound. Trimmed BEFORE the announce, so a listener that reads
-    // the store sees the same rows the store will hand out.
+    // …then hold the cap, BEFORE the announce —
+    // TRAP T-max-rows-is-oldest-out-by-insertion.
     this.#rows = this.#trim(this.#rows);
     this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
     return { ...row };
@@ -284,12 +222,8 @@ export class ArrayStore extends BaseStore {
   async update(key: unknown, values: Row): Promise<Row> {
     const i = this.#rows.findIndex((r) => sameKey(readField(r, this.key), key));
     if (i < 0) throw new Error(`ArrayStore: no row with ${this.key} ${String(key)}`);
-    // MERGE, not replace: an update carries the fields that changed, and a caller
-    // sending one field must not blank the rest.
-    //
-    // The MERGED row is what gets checked, not the patch. A schema sees whole
-    // records, so checking `{ seats: 4 }` alone would fail every `required` rule
-    // for a field the update simply did not mention.
+    // MERGE, not replace, and the MERGED row is what gets checked —
+    // TRAP T-array-store-copies-both-ways.
     const row = await this.check({ ...this.#rows[i]!, ...values });
     this.#rows[i] = row;
     this.announce({ type: 'update', key, row: { ...row } });
@@ -308,9 +242,8 @@ export class ArrayStore extends BaseStore {
 /**
  * Key comparison.
  *
- * A key arrives as a string far more often than not — from an attribute, a URL,
- * a `data-id`. `'7' === 7` is false and would report a row as missing, so numbers
- * and numeric strings compare as equal. Everything else is strict.
+ * TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false and would report
+ * a row as missing.
  */
 function sameKey(a: unknown, b: unknown): boolean {
   if (a === b) return true;
@@ -335,8 +268,7 @@ export interface JsonStoreOptions extends StoreOptions {
  * A JSON document fetched once, then queried in memory.
  *
  * The fetch happens on the FIRST load and is shared by every caller that arrives
- * while it is in flight — three bound components all loading at once must not
- * make three requests.
+ * while it is in flight — three bound components must not make three requests.
  */
 export class JsonStore extends BaseStore {
   #inner: ArrayStore;
@@ -348,8 +280,8 @@ export class JsonStore extends BaseStore {
     super(options);
     this.#options = options;
     this.#inner = new ArrayStore([], options);
-    // Forward the inner store's changes as our own, so a consumer subscribes to
-    // the store it was handed rather than having to know one wraps another.
+    // Forward the inner store's changes as our own, so a consumer never has to
+    // know one store wraps another.
     this.#inner.addEventListener('change', (e) => {
       this.announce((e as CustomEvent<StoreChangeDetail>).detail);
     });
@@ -370,8 +302,8 @@ export class JsonStore extends BaseStore {
       ...init,
       signal: AbortSignal.timeout(timeout),
     });
-    // fetch does NOT reject on 404 or 500 — it resolves with ok === false. A
-    // missing endpoint would otherwise read as an empty result set.
+    // TRAP T-fetch-does-not-reject-on-404 — a missing endpoint would otherwise
+    // read as an empty result set.
     if (!response.ok) {
       throw new Error(`JsonStore: ${url} responded ${response.status} ${response.statusText}`);
     }
@@ -382,8 +314,8 @@ export class JsonStore extends BaseStore {
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     await this.#ensure();
-    // The inner ArrayStore holds no schema of its own (see #ensure), so the
-    // check happens once, here — never twice.
+    // The inner ArrayStore holds no schema of its own, so the check happens once,
+    // here — TRAP T-schema-guard-belongs-at-the-store.
     return this.checkRows(await this.#inner.load(options));
   }
 
@@ -447,10 +379,8 @@ export interface RestStoreOptions extends StoreOptions {
 /**
  * Records behind an HTTP endpoint.
  *
- * The SERVER does the filtering, sorting and paging — that is the point of a
- * remote store, and re-doing it on the client would page through data the client
- * does not have. So `load` passes the options through as query parameters and
- * trusts what comes back.
+ * TRAP T-rest-update-is-patch-not-put — the SERVER filters, sorts and pages, and
+ * `load` passes the options through as query parameters.
  */
 export class RestStore extends BaseStore {
   #options: RestStoreOptions;
@@ -465,13 +395,12 @@ export class RestStore extends BaseStore {
     const suffix = query.size ? `?${query}` : '';
     const body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
     const rows = rowsAt(body, this.#options.rowsPath);
-    // A server that reports its own total is believed; one that does not leaves
-    // only the page length, which is the honest answer for an unknown corpus.
+    // A reported total is believed; otherwise the page length —
+    // TRAP T-rest-update-is-patch-not-put.
     const reported = this.#options.totalPath ? readPath(body, this.#options.totalPath) : undefined;
     const total = typeof reported === 'number' ? reported : rows.length;
-    // THE LEAST TRUSTWORTHY PATH IN THE SYSTEM — rows from somewhere else,
-    // over a wire, shaped by a backend this code does not own. If a schema is
-    // going to be applied anywhere on a read, it is here.
+    // THE LEAST TRUSTWORTHY PATH IN THE SYSTEM —
+    // TRAP T-read-check-drops-where-a-write-throws.
     return this.checkRows({ rows, total });
   }
 
@@ -480,26 +409,22 @@ export class RestStore extends BaseStore {
     try {
       return await this.#request<Row>(url, { method: 'GET' });
     } catch (error) {
-      // A 404 means "no such row", which is an ANSWER, not a failure.
+      // A 404 is an ANSWER — TRAP T-fetch-does-not-reject-on-404.
       if (error instanceof HttpError && error.status === 404) return undefined;
       throw error;
     }
   }
 
   async insert(values: Row): Promise<Row> {
-    // CHECKED BEFORE SENDING. A round trip to learn what the client already knew
-    // is a wasted request, and a server that accepts a bad row leaves the UI
-    // showing something the rules forbid.
+    // CHECKED BEFORE SENDING, and again on the way back —
+    // TRAP T-schema-guard-belongs-at-the-store.
     const checked = await this.check(values);
     const row = await this.#request<Row>(this.#options.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(checked),
     });
-    // …and CHECKED AGAIN on the way back. A response is data from somewhere
-    // else: the server may return a shape this app does not accept, and a bad
-    // record reaching the UI is the failure the guard exists to stop. The
-    // server's own row wins when it sends one, since it may have filled in an id.
+    // The server's own row wins when it sends one — it may have filled in an id.
     const saved = row ? await this.check(row) : checked;
     this.announce({ type: 'insert', key: readField(saved, this.key), row: saved });
     return saved;
@@ -508,16 +433,13 @@ export class RestStore extends BaseStore {
   async update(key: unknown, values: Row): Promise<Row> {
     const url = `${this.#options.url}/${encodeURIComponent(String(key))}`;
     const row = await this.#request<Row>(url, {
-      // PATCH, not PUT: an update carries the fields that CHANGED, and PUT means
-      // "replace the whole record", which would blank everything not sent.
+      // TRAP T-rest-update-is-patch-not-put — PUT would blank everything not sent.
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(values),
     });
-    // The RESPONSE is checked, the patch is not. A PATCH body is a fragment — a
-    // schema sees whole records, so checking `{ seats: 4 }` would fail every
-    // `required` rule for a field this update simply did not mention. What comes
-    // back IS the whole record, and that is what reaches the UI.
+    // The RESPONSE is checked, the patch is not —
+    // TRAP T-rest-update-is-patch-not-put.
     const saved = row ? await this.check(row) : values;
     this.announce({ type: 'update', key, row: saved });
     return saved;
@@ -537,7 +459,8 @@ export class RestStore extends BaseStore {
       signal: AbortSignal.timeout(this.#options.timeout ?? 30_000),
     });
     if (!response.ok) throw new HttpError(response.status, response.statusText, url);
-    // 204 No Content is the usual answer to a DELETE, and has no body to parse.
+    // 204 and content-length 0 have no body to parse —
+    // TRAP T-fetch-does-not-reject-on-404.
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       return undefined as T;
     }
@@ -570,8 +493,8 @@ function readPath(body: unknown, path: string): unknown {
 /**
  * The default query shape: `skip`, `take`, and `sort`/`filter` as JSON.
  *
- * Deliberately plain. Every API names these differently, so the point is to have
- * ONE obvious default and an easy override, not to guess a convention.
+ * Deliberately plain: ONE obvious default and an easy override, because every
+ * API names these differently.
  */
 function defaultQuery(options: LoadOptions): URLSearchParams {
   const q = new URLSearchParams();
@@ -597,13 +520,8 @@ export interface LocalStoreOptions extends StoreOptions {
 /**
  * Records in Web Storage — for saved views, column state and preferences.
  *
- * NOT for bulk data. Web Storage is synchronous and blocks the main thread, holds
- * strings only, and caps around 5MB. It is here because "remember this user's
- * saved views" is a real need that does not deserve a server.
- *
- * Every access is wrapped: storage throws in a private window, with site data
- * blocked, and during preview or thumbnail capture. A store that cannot read
- * behaves as empty rather than taking the page down with it.
+ * TRAP T-local-store-is-not-for-bulk-data — synchronous, strings only, ~5MB, and
+ * every access can throw.
  */
 export class LocalStore extends BaseStore {
   #options: LocalStoreOptions;
@@ -627,8 +545,8 @@ export class LocalStore extends BaseStore {
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? (parsed as Row[]) : [];
     } catch {
-      // Unreadable or corrupt storage reads as empty rather than throwing — the
-      // page must still work when a user has cleared site data mid-session.
+      // Unreadable or corrupt storage reads as empty —
+      // TRAP T-local-store-is-not-for-bulk-data.
       return [];
     }
   }
@@ -637,8 +555,8 @@ export class LocalStore extends BaseStore {
     try {
       this.#storage?.setItem(this.#options.name, JSON.stringify(rows));
     } catch {
-      // Quota exceeded, or storage blocked. Nothing useful to do here; the
-      // in-memory result of the call is still returned to the caller.
+      // Quota exceeded, or storage blocked —
+      // TRAP T-storage-access-throws.
     }
   }
 
@@ -664,7 +582,8 @@ export class LocalStore extends BaseStore {
     const rows = this.#read();
     const i = rows.findIndex((r) => sameKey(readField(r, this.key), key));
     if (i < 0) throw new Error(`LocalStore: no row with ${this.key} ${String(key)}`);
-    // The MERGED row is checked, not the patch — see ArrayStore.update.
+    // The MERGED row is checked, not the patch —
+    // TRAP T-array-store-copies-both-ways.
     const row = await this.check({ ...rows[i]!, ...values });
     rows[i] = row;
     this.#write(rows);

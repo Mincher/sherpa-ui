@@ -1,43 +1,16 @@
 /**
  * sherpa-calendar — a date picker.
  *
- * It has three views: days, months, and years. Clicking the header label zooms
- * out (day → month → year); picking a month or year zooms back in. The prev/next
- * arrows move by a month in the day view, a year in the month view, and a decade
- * in the year view. data-min / data-max set the range of days you can pick, and
- * data-available narrows that to the days a host says exist in its data. It
- * also decides which month an UNPICKED calendar opens on — see
- * #availableAnchor — because opening on a month those days do not reach shows
- * a grid of disabled cells and no way to leave it.
+ * data-min / data-max bound the pickable days; data-available narrows that to
+ * the days a host says exist in its data. Each cell's look is CSS.
  *
- * TYPE (data-type = single | range) mirrors the Figma Calendar `Type` axis:
- *   single (default) — one day. data-value holds it as YYYY-MM-DD.
- *   range            — two-click start→end selection. data-value-start /
- *                      data-value-end hold the two ends (YYYY-MM-DD). Days
- *                      between get data-in-range; the two ends get data-range-end.
- *
- * hasTime (data-has-time) mirrors the Figma boolean: shows a native
- * <input type="time"> in the footer. When set, data-value carries the time too as
- * YYYY-MM-DDThh:mm (single mode); the grid still keys off the date part.
- *
- * data-view (day | month | year) is the code's own zoom mechanism — it is the
- * equivalent of the Figma Calendar's Grid-collection swap (the grid the component
- * shows). It is NOT the Figma Type axis and is intentionally kept.
- *
- * All three views share one cell template, and CSS shows whichever view is
- * active. Each cell's look — selected, today, in-range, out of range, blank — is CSS.
- *
- * @fires datetime-change  detail: { value: string }              — a single day (or its date+time) was chosen
- * @fires range-select     detail: { start: string, end: string } — a range completed (both ends chosen)
- * @fires calendar-cancel  detail: {}                             — the footer Cancel button was pressed
- * @fires calendar-apply   detail: { value: string }             — the footer Apply button confirmed the current value
+ * TRAP T-calendar-view-is-not-the-figma-type — data-type is Figma's axis,
+ * data-view is the code's own zoom; data-has-time adds the time tail.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-// Each grid cell is a composed sherpa-calendar-cell — Figma's own "Calendar
-// Cell" component — so it must be defined.
+// Composed, as Figma instances them: a Calendar Cell per grid cell, and three
+// snapped Buttons for the stepper — so both must be defined.
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
-// The month stepper is three composed Buttons (Figma's Calendar header is a
-// snapped Button group, not a row of bare arrows), so they must be defined.
 import '../sherpa-button/sherpa-button.js';
 
 const MONTHS = [
@@ -78,9 +51,8 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * True while the USER's own click is writing a value.
    *
-   * onChange re-anchors the view to whatever value arrives, which is right for a
-   * host setting one — the day should be on screen — and wrong for a click,
-   * where the day is already on screen and moving to it moves everything else.
+   * TRAP T-picking-stops-the-grid-following — onChange follows a HOST's value,
+   * never the user's own click.
    */
   #picking = false;
 
@@ -89,8 +61,7 @@ export class SherpaCalendar extends SherpaElement {
       ?? this.#availableAnchor();
     if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     if (!this.dataset['view']) this.dataset['view'] = 'day';
-    // EMBEDDED: the stepper is projected into the host's own `header` slot, so
-    // it must exist before its listeners are bound.
+    // EMBEDDED: project the stepper before binding, so it exists to bind to.
     if (this.hasAttribute('data-embedded')) this.#projectHeader();
     for (const el of this.#headerEls('.cal-prev')) el.addEventListener('click', this.#onPrev);
     for (const el of this.#headerEls('.cal-next')) el.addEventListener('click', this.#onNext);
@@ -108,11 +79,8 @@ export class SherpaCalendar extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-value' || name === 'data-value-start') {
-      // JUMP TO THE VALUE only when a HOST set it. A user's own click writes the
-      // same attribute, and re-anchoring on that moved the grid under them:
-      // picking a start date in a RANGE calendar's right-hand month scrolled
-      // that month to the left, so the days they were about to click as the end
-      // were suddenly somewhere else. Stepping is theirs to do.
+      // JUMP TO THE VALUE only when a HOST set it.
+      // TRAP T-picking-stops-the-grid-following
       if (!this.#picking) {
         const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
         if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
@@ -145,15 +113,11 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * One header control, wherever it lives.
    *
-   * A calendar has ONE header, but `data-embedded` moves it out of this shadow
-   * root and into the host's — so every listener and the label sync have to
-   * reach either side of the boundary. Returning a list rather than an element
-   * keeps both cases on one code path instead of branching at each call.
+   * TRAP T-slot-assigns-direct-children-only — an embedded header is a sibling
+   * in the PARENT, so a list keeps both sides of the boundary on one path.
    */
   #headerEls(sel: string): HTMLElement[] {
     const own = this.$<HTMLElement>(sel);
-    // The projected stepper is a sibling in the PARENT, not a descendant here
-    // (see #projectHeader for why), so it is looked for there.
     const projected = (this.parentElement ?? this).querySelector<HTMLElement>(
       `:scope > .cal-header-projected ${sel}`,
     );
@@ -163,17 +127,12 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * Put the month stepper in the HOST's header slot.
    *
-   * A clone of the light-DOM prototype carries `slot="header"`, so a sherpa-menu
-   * renders it in its own header region — the Calendar node's first of three.
-   * Idempotent: a re-render must not stack a second stepper.
+   * TRAP T-slot-assigns-direct-children-only — it goes into the PARENT, not
+   * into this element, or the slot never assigns it. Idempotent.
    */
   #projectHeader(): void {
     const header = this.clone('template.cal-header-tpl');
     if (!header) return;
-    // Into the PARENT, not into this element. `slot="header"` only assigns a
-    // DIRECT child of the slot's own host — a node one level deeper (inside the
-    // calendar, inside the menu) is never assigned, which is exactly what
-    // happened: the stepper existed, worked, and rendered nowhere.
     const host = this.parentElement ?? this;
     if (host.querySelector(':scope > .cal-header-projected')) return;
     host.appendChild(header);
@@ -194,10 +153,8 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * What the stepper says in day view.
    *
-   * A RANGE calendar shows two months, so the label names both — stepping it
-   * moves the pair, and a header reading only the left one would say the wrong
-   * thing about half of what is on screen. The year is stated once when the two
-   * share it, which is eleven months in twelve.
+   * TRAP T-range-header-names-both-months — a range names both months, and
+   * states the year once when they share it.
    */
   #dayLabel(): string {
     const left = `${MONTHS[this.#viewMonth]}`;
@@ -210,9 +167,7 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   #cell(): HTMLElement {
-    // Five callers treat a cell as guaranteed, so this stays non-nullable — but it
-    // now fails HERE with the selector named, rather than handing back `null!` and
-    // crashing at whichever property the caller touches first.
+    // Fails HERE with the selector named, not at whichever property is touched first.
     const cell = this.clone('template.cal-cell-tpl');
     if (!cell) throw new Error('sherpa-calendar: template.cal-cell-tpl is missing or empty');
     return cell;
@@ -221,15 +176,8 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * Stamp the day grid.
    *
-   * A RANGE calendar draws TWO months side by side — Figma's Type=range
-   * (268:13874) is a 15-track grid: seven day columns, a divider, seven more. A
-   * range is a span between two dates, and picking one whose ends fall in
-   * different months through a single month that has to be stepped is the case
-   * the second month exists for.
-   *
-   * Both months go into ONE grid rather than two, so every cell is a real 1fr of
-   * the same track set and the two halves cannot drift apart by a pixel. Each
-   * month is stamped into its own columns by `#stampMonth`.
+   * TRAP T-two-months-share-one-grid — a range draws two months into ONE grid,
+   * and `data-two-up` goes on the grid, not the host.
    */
   #renderDays(): void {
     const grid = this.$('.cal-days');
@@ -237,9 +185,6 @@ export class SherpaCalendar extends SherpaElement {
     grid.replaceChildren();
 
     const twoUp = this.#type === 'range';
-    // `data-two-up` is what CSS reads for the 15-track template. Written on the
-    // GRID and the caption row rather than the host, so the month and year
-    // views — which share the host — are untouched by it.
     grid.toggleAttribute('data-two-up', twoUp);
     this.$('.cal-weekdays')?.toggleAttribute('data-two-up', twoUp);
 
@@ -247,50 +192,19 @@ export class SherpaCalendar extends SherpaElement {
     if (!twoUp) return;
 
     // The month AFTER the one in view, which is what a range reads forward into.
-    // Date normalises December + 1 to January of the next year on its own.
     const next = new Date(this.#viewYear, this.#viewMonth + 1, 1);
     this.#stampMonth(grid, next.getFullYear(), next.getMonth(), 9);
   }
 
   /**
-   * Stamp one month's cells into the grid, starting at `column`.
+   * The month to OPEN ON when nothing is picked yet — the latest available day.
    *
-   * `column` is the 1-based grid column its Mondays sit in: 1 for the left month
-   * and 9 for the right, leaving track 8 as the divider Figma draws between them.
-   * Only the FIRST cell of each week needs placing — the rest flow after it — but
-   * every cell states its column so a month with a blank-led first week cannot
-   * slide into its neighbour.
-   */
-  /**
-   * The days that EXIST in the data, when a host has named them.
-   *
-   * `data-min`/`data-max` describe a SPAN, which is the wrong shape for "only
-   * these days have records": a column of order dates is a scatter, not a range,
-   * and a span would leave every empty day in between selectable. This is the
-   * set, as a comma-separated ISO list.
-   *
-   * Absent means EVERY day is selectable — a host that does not compute
-   * availability gets the behaviour it always had, and `data-available=""`
-   * (empty, not missing) genuinely means nothing is selectable.
-   */
-  /**
-   * The month to OPEN ON when nothing is picked yet.
-   *
-   * Today, normally. But a host that supplied `data-available` has said which
-   * days exist in its data, and opening on a month holding none of them shows
-   * a grid where every cell is disabled — nothing to click, and no hint that
-   * the days are elsewhere. A chip driven by such a calendar could never take
-   * a value at all, so it sat in the amber "on but filtering nothing" state
-   * looking broken.
-   *
-   * So: the LATEST available day, which is the most recent data and the end a
-   * reader usually wants. Stepping back from there is one click; finding a
-   * populated month from two years away is not.
+   * TRAP T-calendar-anchors-where-the-data-is — data-available is a SET, and
+   * opening on a month it does not reach shows a grid of disabled cells.
    */
   #availableAnchor(): [number, number, number] | null {
     const days = this.#availableDays();
     if (!days?.size) return null;
-    // ISO strings sort chronologically as text, so `max` is a plain compare.
     let latest = '';
     for (const d of days) if (d > latest) latest = d;
     return parseIso(latest);
@@ -307,9 +221,14 @@ export class SherpaCalendar extends SherpaElement {
     );
   }
 
+  /**
+   * Stamp one month's cells into the grid, starting at `column`.
+   *
+   * TRAP T-two-months-share-one-grid — `column` is 1 or 9 in the shared
+   * 15-track grid, and every cell states its own column and row.
+   */
   #stampMonth(grid: HTMLElement, y: number, m: number, column: number): void {
-    // Monday-first grid: convert JS getDay() (0=Sun) to a Mon=0…Sun=6 index so
-    // the first column is Monday, matching the Figma weekday header.
+    // Mon=0…Sun=6, so column 1 is Monday as in the Figma weekday header.
     const firstWeekday = (new Date(y, m, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const min = this.dataset['min'] ?? '';
@@ -317,17 +236,12 @@ export class SherpaCalendar extends SherpaElement {
     const available = this.#availableDays();
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
-    // Selection depends on type. In single mode a lone selected day; in range
-    // mode a start / end pair (with an optional in-between band).
+    // single mode: one day. range mode: a start/end pair + the band between.
     const single = this.#type === 'single' ? datePart(this.dataset['value']) : '';
     const start = this.#type === 'range' ? datePart(this.dataset['valueStart']) : '';
     const end = this.#type === 'range' ? datePart(this.dataset['valueEnd']) : '';
 
-    // Where each cell lands. `slot` walks 0..6 and wraps into the next ROW, so a
-    // cell is always in its own month's seven tracks — and the two months start
-    // on row 1 together rather than the second flowing on after the first. Left
-    // to auto-flow they stacked: September's five rows then October's five,
-    // nine deep instead of five across.
+    // Where each cell lands — TRAP T-two-months-share-one-grid.
     let slot = 0;
     let row = 1;
     const place = (cell: HTMLElement): void => {
@@ -353,16 +267,14 @@ export class SherpaCalendar extends SherpaElement {
       cell.setAttribute('data-label', String(d));
       cell.dataset['value'] = iso;
       cell.dataset['iso'] = iso;
-      // `data-state` is the cell component's own API, mirroring the node's State
-      // axis. The older data-today / data-selected flags stay alongside it: the
-      // calendar's own CSS still reads them for the month and year grids.
+      // TRAP T-cell-state-is-the-only-paint — data-state is what the cell paints
+      // from; the older flags stay for the month and year grids' own CSS.
       if (iso === todayIso) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
         cell.setAttribute('aria-current', 'date');
       }
-      // Out of the allowed SPAN, or not in the available SET. Both disable the
-      // cell; the set is checked only when a host supplied one.
+      // Out of the SPAN, or not in the SET (checked only when a host gave one).
       const outOfSpan = (min && iso < min) || (max && iso > max);
       const notInData = available != null && !available.has(iso);
       if (outOfSpan || notInData) cell.setAttribute('disabled', '');
@@ -379,10 +291,8 @@ export class SherpaCalendar extends SherpaElement {
         if (isStart || isEnd) {
           cell.setAttribute('data-selected', '');
           cell.setAttribute('data-range-end', '');
-          // The two ENDS keep their outer corners and square the ones that meet
-          // the band — which is why the code's range half is three states where
-          // the node draws one. A single-day range is both ends at once, so it
-          // stays fully rounded.
+          // TRAP T-cell-state-is-the-only-paint — three states where the node
+          // draws one; a single-day range is both ends at once.
           cell.setAttribute(
             'data-state',
             isStart && isEnd ? 'selected' : isStart ? 'range-start' : 'range-end',
@@ -409,11 +319,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
-      // TODAY first, SELECTED second — the same order the day grid uses, so a
-      // month that is both reads as selected. `data-state` is the cell
-      // component's own API and the only thing it paints from; `data-today` and
-      // `data-selected` alone set no state and the cell drew plain, which is why
-      // the current month and year looked like every other.
+      // TODAY first, SELECTED second — TRAP T-cell-state-is-the-only-paint.
       if (now.getFullYear() === this.#viewYear && now.getMonth() === i) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -440,7 +346,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
-      // TODAY first, SELECTED second — see #renderMonths.
+      // TODAY first, SELECTED second — TRAP T-cell-state-is-the-only-paint.
       if (year === nowY) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -539,7 +445,7 @@ export class SherpaCalendar extends SherpaElement {
   #pickRange(iso: string): void {
     const start = datePart(this.dataset['valueStart']);
     const end = datePart(this.dataset['valueEnd']);
-    // The grid must NOT follow the value the user just clicked — see #picking.
+    // TRAP T-picking-stops-the-grid-following — the grid must not follow a click.
     this.#picking = true;
     try {
       if (!start || (start && end)) {
@@ -557,8 +463,8 @@ export class SherpaCalendar extends SherpaElement {
       this.#render();
       this.emit('range-select', { start: s, end: e });
     } finally {
-      // `finally`, so an early return or a listener that throws still clears it
-      // — a stuck flag would leave the calendar ignoring its host for good.
+      // `finally`: a stuck flag would ignore the host for good.
+      // TRAP T-picking-stops-the-grid-following
       this.#picking = false;
     }
   }
@@ -584,20 +490,14 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * Jump to today and select it.
    *
-   * PUBLIC, because when this calendar is embedded the Today button is not in
-   * this shadow root — it belongs to the host's footer (Figma's Calendar footer
-   * puts it in the Container Footer's `left` slot), and the host has to be able
-   * to reach the behaviour without reaching into private state.
+   * TRAP T-embedded-footer-needs-a-public-verb — an embedded calendar's Today
+   * button lives in the HOST's footer, so the behaviour needs a public door.
    */
   today(): void {
     this.#onToday();
   }
 
-  /**
-   * Today — jump the view to today's month and select today (single mode) or
-   * begin a fresh range at today (range mode). Reuses the normal pick path so
-   * datetime-change / range-select still fire.
-   */
+  /** Today — jump there and pick it, via the normal pick path so events fire. */
   #onToday = (): void => {
     const now = new Date();
     this.#viewYear = now.getFullYear();

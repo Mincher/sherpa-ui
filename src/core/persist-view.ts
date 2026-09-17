@@ -1,21 +1,9 @@
 /**
  * Keep a DataSource's view state across a page reload.
  *
- * An accidental refresh throws away every filter, sort and page a person set,
- * and they start again. This is the smallest thing that stops that.
- *
  *   const off = persistViewState(source, 'records');
  *
- * It is a HELPER, not a feature of `DataSource`. Where a view state is kept —
- * and whether it should survive a reload at all — is the host's decision: a
- * dashboard may want it, a wizard may not, and a saved-views table on a server
- * is a third answer. A source that wrote to storage itself would make that
- * choice for every app that ever binds one.
- *
- * `sessionStorage` BY DEFAULT, and that is the important part: two tabs on the
- * same screen filtered differently is a feature, not a bug, and `localStorage`
- * would make them fight. Pass `{ shared: true }` for the rarer case where a
- * filter genuinely belongs to the person rather than to the tab.
+ * TRAP T-persist-defaults-per-tab — a helper, and sessionStorage by default.
  */
 import type { DataSource, ViewState } from './data-source.js';
 import { applyState } from './render-element.js';
@@ -24,14 +12,13 @@ import { renderView, type ViewDefinition, type RenderedView } from './render-vie
 export interface PersistOptions {
   /**
    * Share the state across TABS via localStorage rather than keeping it per
-   * tab. Off by default — see the note above.
+   * tab. Off by default — see TRAP T-persist-defaults-per-tab.
    */
   shared?: boolean;
   /**
    * Stop persisting when this aborts — the same platform token `bind()` takes.
    *
-   * One controller can then tear down every binding, listener and persister a
-   * view made, instead of a list of teardown functions to keep in step.
+   * TRAP T-signal-not-a-teardown-list — one controller, not a list of teardowns.
    */
   signal?: AbortSignal;
 }
@@ -40,9 +27,9 @@ export interface PersistOptions {
 const PREFIX = 'sherpa:view:';
 
 /**
- * Web Storage throws in a private window, with site data blocked, and during
- * preview or thumbnail capture — so every access is wrapped. A failure means
- * the state is not kept, never that the page breaks.
+ * The storage a persister writes to, or `null` when it is unavailable.
+ *
+ * TRAP T-storage-access-throws — why every access in this file is wrapped.
  */
 function storage(shared: boolean): Storage | null {
   try {
@@ -55,26 +42,9 @@ function storage(shared: boolean): Storage | null {
 /**
  * Keep a whole view — the query AND every component's state — across a reload.
  *
- *   const off = persistView('records',
- *     { source, elements: { grid } },
- *     { grid: () => ({ setColumnFilter: …, select: [grid.selectedKeys] }) });
- *
- * Restores on the way in, then saves on every change.
- *
- * ONE SNAPSHOT, not a key per concern. This started as two: `persistViewState`
- * for the source and a hand-written `sessionStorage` line for the grid's column
- * filters — with a third needed for selection and a fourth for the toolbar's
- * chips. Four shapes, four restore paths, one idea. A saved view, a preset, a
- * deep link and an agent's request are the same object, so they get the same
- * mechanism.
- *
- * WHAT EACH ELEMENT CONTRIBUTES is a function the caller supplies, because only
- * the caller knows which of a component's properties are view state and which
- * are incidental. Guessing would restore someone's scroll position a week
- * later. Each returns an `ElementNode.state` block — the same shape
- * `renderElement` takes, so a saved view and a preset are interchangeable.
- *
- * Returns a function that stops saving, the same way `bind()`'s does.
+ * TRAP T-one-snapshot-not-a-key-per-concern — one shape, and the caller names
+ * what each element contributes.
+ * TRAP T-persist-view-returns-a-teardown — the worked example, and the teardown.
  */
 export function persistView(
   name: string,
@@ -89,15 +59,12 @@ export function persistView(
   const key = PREFIX + name;
   if (!store) return () => {};
 
-  // RESTORE FIRST, so the source loads once with the remembered state rather
-  // than loading empty and then loading again.
+  // TRAP T-restore-before-first-load — one load, not an empty one then a second.
   try {
     const raw = store.getItem(key);
     if (raw) applyViewSnapshot(JSON.parse(raw) as ViewSnapshot, targets);
   } catch {
-    // Unreadable, not JSON, or a shape this code no longer understands. A view
-    // that cannot be restored is one the user starts without — exactly where
-    // they were before this existed.
+    // TRAP T-storage-access-throws — unreadable, not JSON, or an old shape.
     try { store.removeItem(key); } catch { /* storage unavailable */ }
   }
 
@@ -111,9 +78,8 @@ export function persistView(
         const state = contribute();
         if (state && Object.keys(state).length) elements[id] = state;
       } catch {
-        // A contributor that threw — a component mid-teardown, a getter that
-        // needs data it does not have yet. Skipped rather than losing the whole
-        // snapshot over one element.
+        // A component mid-teardown, or a getter needing data it lacks. Skipped
+        // rather than losing the whole snapshot over one element.
       }
     }
     if (Object.keys(elements).length) snapshot.elements = elements;
@@ -121,16 +87,12 @@ export function persistView(
     try {
       store.setItem(key, JSON.stringify(snapshot));
     } catch {
-      // Quota, or storage revoked mid-session. Not keeping the view is a
-      // smaller problem than throwing inside an event handler.
+      // TRAP T-storage-access-throws — quota, or storage revoked mid-session.
     }
   };
 
-  // SAVE ON THE SOURCE'S `change`, which fires after a load completes — the one
-  // moment the state is both settled and known to be loadable. A host whose
-  // view has no source calls the returned `save` itself.
-  // DataSource extends EventTarget, so the signal is honoured natively — no
-  // second way to say "stop".
+  // SAVE ON THE SOURCE'S `change` — see
+  // TRAP T-restore-before-first-load. A view with no source calls `save` itself.
   targets.source?.addEventListener(
     'change', save,
     options.signal ? { signal: options.signal } : undefined,
@@ -155,32 +117,23 @@ export function persistViewState(
 /**
  * A whole VIEW DEFINITION — the query AND every component's state.
  *
- * A preset shipped with the app, a saved configuration a user made, a deep
- * link, or what an agent asks for over MCP. All four are this same object;
- * that is the point of having one shape rather than a storage key per concern.
+ * TRAP T-one-snapshot-not-a-key-per-concern — a preset, a saved configuration,
+ * a deep link and an agent's MCP request are all this one object.
  */
 export interface ViewSnapshot {
-  /**
-   * The version of the SHAPE, not of the data.
-   *
-   * A saved view outlives the code that made it. An unrecognised version is
-   * ignored whole rather than half-applied, because a definition applied in
-   * part leaves a screen in a state nobody designed.
-   */
+  /** The version of the SHAPE, not of the data. An unrecognised one is ignored WHOLE. */
   v: 1;
   /** The query — a `DataSource`'s ViewState. Restored via `setState()`. */
   source?: Partial<ViewState>;
   /**
    * Per-element state, keyed by an id the CALLER chooses — the same ids a
-   * `renderView` definition uses, so the two agree.
-   *
-   * Each value is an `ElementNode.state` block: property or method names on
-   * that element, applied through its own public API.
+   * `renderView` definition uses. Each value is an `ElementNode.state` block,
+   * applied through the element's own public API.
    */
   elements?: Record<string, Record<string, unknown>>;
 }
 
-/** What `applyViewSnapshot` could not do — see its return. */
+/** What `applyViewSnapshot` could not do — see TRAP T-apply-degrades-never-throws. */
 export interface ApplyReport {
   /** Element ids named by the snapshot that the caller did not supply. */
   missingElements: string[];
@@ -191,18 +144,7 @@ export interface ApplyReport {
 /**
  * Apply a whole view definition: the query, then each element's state.
  *
- * DEGRADES rather than throws. A saved view outlives its code — a component
- * renamed, a column dropped, a method gone — and one stale key must not stop
- * the rest being restored. What could not be applied comes back in the report,
- * so a host can tell the user rather than leave them guessing.
- *
- *   const report = applyViewSnapshot(snapshot, { source, elements: { grid } });
- *   if (report.missingElements.length) … // tell someone
- *
- * ORDER MATTERS and is fixed here: the SOURCE first, so the rows a component's
- * state refers to are on their way, then each element. Within an element,
- * `applyState` waits for `rendered` — a grid cannot filter a column it does not
- * have yet.
+ * TRAP T-apply-degrades-never-throws — reported, not thrown; source first.
  */
 export function applyViewSnapshot(
   snapshot: ViewSnapshot,
@@ -222,9 +164,7 @@ export function applyViewSnapshot(
       report.missingElements.push(id);
       continue;
     }
-    // Deferred, because a component applies its own state after `rendered` —
-    // the report cannot say what a not-yet-rendered element will skip, so it
-    // reports only what it can know now.
+    // TRAP T-apply-degrades-never-throws — deferred to `rendered`.
     const skipped = applyState(el, state);
     if (skipped.length) report.skipped[id] = skipped;
   }
@@ -235,21 +175,8 @@ export function applyViewSnapshot(
 /**
  * Read the current state BACK into a definition — the other half of applying one.
  *
- * A saved view is useless if only a developer can write one. This is what a
- * "Save this view" button calls, and what an agent calls to describe what it is
- * looking at.
- *
- *   const snapshot = captureView({ source, elements: { grid, chart } });
- *
- * WHAT IT READS is named per element, because only the caller knows which of a
- * component's properties are view state and which are incidental. A grid's
- * column filters belong in a saved view; its scroll position does not.
- *
- *   captureView({ elements: { grid } }, { grid: ['columnClause', 'selectedKeys'] })
- *
- * Omit the map and each element contributes nothing — deliberately, because
- * guessing would put transient state in a saved view and a reader would find
- * their scroll position restored a week later.
+ * TRAP T-capture-reads-only-what-is-named — omitting the map reads nothing.
+ * TRAP T-capture-is-the-save-button — who calls it, and why parity demands it.
  */
 export function captureView(
   targets: {
@@ -272,9 +199,7 @@ export function captureView(
     for (const key of keys) {
       if (!(key in target)) continue;
       const value = target[key];
-      // A getter that is a FUNCTION is not readable state — `columnClause` needs
-      // a field argument, so a caller wanting it must name the setter form
-      // instead. Skipping beats storing "[object Function]".
+      // TRAP T-capture-reads-only-what-is-named — a FUNCTION is not state.
       if (typeof value === 'function') continue;
       out[key] = value;
     }
@@ -295,14 +220,7 @@ export function clearViewState(name: string, options: PersistOptions = {}): void
 }
 
 /* ── Saved views as a LIBRARY ───────────────────────────────────────────
-   A page rarely has one saved view; it has a set, offered in a chip, and
-   picking one applies it. Both example pages wrote that by hand and wrote it
-   the same way — the chip options derived from the set, a listener reading
-   `detail.values.view[0]`, an apply, and a warn when a stale definition could
-   not be fully restored.
-
-   Four small pieces of one idea, copied. The third copy is where a vocabulary
-   starts to drift, so it lives here instead. */
+   TRAP T-view-library-is-one-vocabulary — four pieces both pages copied. */
 
 /** One saved view in a set: what it is called, and what it does. */
 export interface SavedView {
@@ -312,22 +230,7 @@ export interface SavedView {
   /**
    * This view's OWN CONTENT AND LAYOUT, when it differs from its neighbours'.
    *
-   * A preset is not always the same screen with different rows. "Capacity
-   * planning" may want a storage histogram and a forecast table where "Fleet
-   * overview" wants four metric tiles and a donut — different components, in a
-   * different arrangement, not the same components re-populated.
-   *
-   * OPTIONAL, and most views should omit it. A set of views over one screen is
-   * the common case and the cheap one: nothing is torn down, every component
-   * keeps its identity, and `snapshot.elements` configures what is already
-   * there. Only a view that needs DIFFERENT components declares content.
-   *
-   * It is a `ViewDefinition` — the shape `renderView` already builds — because
-   * "a screen described as data" is a problem this repo solved once. A second
-   * shape for it would be a second thing to learn, serialise and get wrong.
-   *
-   * The snapshot still applies afterwards, so a view can build its own grid AND
-   * arrive with a column already filtered.
+   * TRAP T-view-content-is-a-view-definition — applied before the snapshot.
    */
   content?: ViewDefinition;
 }
@@ -345,15 +248,8 @@ export interface ViewOption {
 /**
  * The View chip's options, DERIVED from the views themselves.
  *
- * A hand-written option list is a second place the label lives, and the two
- * drift: a view renamed in one file still reads by its old name in the chip.
- * Deriving them means there is only ever one name.
- *
- *   filters: globalFilters(viewOptions(MY_VIEWS, 'all'))
- *
- * `currentId` marks which is showing. It defaults to the FIRST view, because a
- * set with nothing selected leaves the chip blank and a reader looking at data
- * no view claims.
+ * TRAP T-view-library-is-one-vocabulary — why they are derived, and why
+ * `currentId` defaults to the FIRST view.
  */
 export function viewOptions(views: ViewLibrary, currentId?: string): ViewOption[] {
   const ids = Object.keys(views);
@@ -375,11 +271,8 @@ export interface ViewPick {
   report: ApplyReport;
   /**
    * The content this view built, when it declared its own — its root element
-   * and its live state store.
-   *
-   * Undefined for a view that shares the screen, which is most of them. A host
-   * uses it to reach the elements it just created: they did not exist when the
-   * listener was wired, so `targets.elements` could not name them.
+   * and its live state store. Undefined for a view that shares the screen,
+   * which is most of them. See TRAP T-content-first-original-once.
    */
   rendered?: RenderedView;
 }
@@ -387,28 +280,10 @@ export interface ViewPick {
 /**
  * Wire a View chip to a library: pick one, and the screen reconfigures.
  *
- * The listener both example pages wrote by hand, in one place:
- *
- *   const off = onViewPicked(header, VIEWS, { source, elements: { grid } });
- *
- * `views` may be a FUNCTION, and should be whenever the set can grow. A library
- * is re-read on every pick, so a view the reader saves after this call still
- * resolves; pass the object only for a fixed set of presets.
- *
- * READS `detail.values.view[0]`, the View chip's id — the one convention a
- * view toolbar has. A change naming no view is ignored rather than treated as
- * "no view", because you are always in some view and the other chips on that
- * bar fire the same event.
- *
- * A stale definition is REPORTED, never thrown: a saved view outlives its code,
- * and one gone method must not stop the rest being restored. The default is to
- * warn, which is what both pages did; pass `onIncomplete` to tell the reader
- * instead, and `after` to do the work only that page knows about — re-composing
- * a query from named parts, say.
- *
- * Returns an unsubscribe, like `bind()`, so a view that leaves the DOM stops
- * listening. Matching that shape matters more than saving the line: a caller
- * should not have to remember which of our functions hand back a teardown.
+ * TRAP T-library-re-read-on-every-pick — pass a FUNCTION if the set can grow.
+ * TRAP T-values-carries-two-shapes — reads `detail.values.view[0]` off the BAR.
+ * TRAP T-apply-degrades-never-throws — `onIncomplete` replaces the default warn.
+ * TRAP T-on-view-picked-replaces-hand-wiring — the example, and the teardown.
  */
 export function onViewPicked(
   host: EventTarget | null | undefined,
@@ -441,75 +316,41 @@ export function onViewPicked(
 ): () => void {
   if (!host) return () => {};
 
-  /* The content region's ORIGINAL children, kept so a view without content can
-     hand the page back what it had. Null until a view first replaces them. */
+  /* The content region's ORIGINAL children — TRAP T-content-first-original-once.
+     Null until a view first replaces them. */
   let original: ChildNode[] | null = null;
 
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent).detail as
       { scope?: string; values?: Record<string, readonly string[]> } | undefined;
 
-    /* THE BAR'S event, not a single chip's. `values` carries two shapes on this
-       event name — a bare string[] from a chip, a Record<id, string[]> from the
-       toolbar — and reading one as the other is a bug that has already shipped
-       once (a view turned a sort pick into a filter and emptied the grid).
-
-       This USED to be safe by accident: `['name']['view']` is undefined, so a
-       chip's array fell through the next line. Accidental safety is the kind
-       that stops working when a shape changes slightly. */
+    /* TRAP T-values-carries-two-shapes — the BAR'S event, not a chip's. */
     if (detail?.scope && detail.scope !== 'bar') return;
 
     const id = detail?.values?.['view']?.[0];
     if (!id) return;
-    // RE-READ every time when given a function. A library GROWS — a reader
-    // saves a view and it joins the set — and a listener holding the object it
-    // was wired with would never see one. The dashboard's Save button wired the
-    // presets and then could not restore anything the reader had saved.
+    // TRAP T-library-re-read-on-every-pick — a captured object never grows.
     const library = typeof views === 'function' ? views() : views;
     const view = library[id];
     if (!view) return;
 
-    /* CONTENT FIRST, when the view brings its own. A preset is not always the
-       same screen with different rows — one may want a histogram and a forecast
-       table where another wants metric tiles and a donut.
-
-       Built BEFORE the snapshot because the snapshot configures what is on
-       screen, and for this view that is what we are about to create. Applying
-       first would set state on the outgoing screen and then throw it away.
-
-       The host says WHERE via `into`. Without it the content is built and handed
-       back unplaced, which is honest: this function knows what a view wants, not
-       where a page keeps it. */
+    /* TRAP T-content-first-original-once — content before snapshot. */
     let rendered: RenderedView | undefined;
     const host = options.into;
 
     if (view.content) {
       rendered = renderView(view.content);
       if (host) {
-        /* REMEMBER WHAT WAS THERE, once, before the first replacement.
-           A set of views is usually MIXED: most share the page's own content
-           and one or two bring their own. Without this, the first view that
-           brought content kept the screen for good — picking any other view
-           moved the data while capacity's grid stayed on display, which is the
-           exact lie this whole feature exists to prevent.
-
-           Captured on the FIRST swap only, so it holds the page's own content
-           rather than the previous view's. */
+        // TRAP T-content-first-original-once — FIRST swap only; replaceChildren.
         if (!original) original = [...host.childNodes];
-        // replaceChildren, not append: switching view REPLACES the content. A
-        // view that leaves its predecessor's charts on screen is two views at
-        // once.
         host.replaceChildren(rendered.el);
       }
-      // Elements this view just built are addressable by the ids it used, so a
-      // snapshot can configure them. They did not exist when the listener was
-      // wired, so `targets.elements` could not have named them.
+      // Addressable by the ids this view used, so the snapshot can configure
+      // elements that did not exist when the listener was wired.
       targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
     } else if (host && original) {
-      /* NO CONTENT of its own, so it wants the page's — put it back.
-         The nodes are re-attached, not rebuilt: they are the same elements the
-         page bound at init, so every bind still points at them and nothing has
-         to be re-wired. */
+      /* NO CONTENT of its own, so it wants the page's — RE-ATTACHED, not
+         rebuilt, so every existing bind still points at them. */
       host.replaceChildren(...original);
     }
 
@@ -520,14 +361,12 @@ export function onViewPicked(
 
     if (report.missingElements.length || Object.keys(report.skipped).length) {
       if (options.onIncomplete) options.onIncomplete(pick);
-      // A definition that could not be fully applied is worth saying out loud
-      // rather than leaving a reader to wonder why half the screen moved.
+      // TRAP T-apply-degrades-never-throws — said out loud, not swallowed.
       else console.warn('view applied with gaps', report);
     }
   };
 
-  // The signal goes straight to the platform, which is the whole point of
-  // reusing it rather than inventing a second way to say "stop".
+  // TRAP T-signal-not-a-teardown-list — straight to the platform.
   host.addEventListener(
     'quick-filter-change', listener,
     options.signal ? { signal: options.signal } : undefined,
@@ -550,17 +389,15 @@ export type SavedViewStore = Record<string, SavedView>;
 /**
  * Read a page's user-saved views.
  *
- * Returns `{}` when there are none, or when storage is unreadable — a reader
- * whose saved views cannot be loaded gets the presets, which is exactly where
- * they were before the feature existed.
+ * Returns `{}` when there are none, or when storage is unreadable — see
+ * TRAP T-storage-access-throws. A reader then gets the presets.
  */
 export function loadSavedViews(page: string, options: PersistOptions = {}): SavedViewStore {
   try {
     const raw = storage(options.shared ?? true)?.getItem(SAVED_PREFIX + page);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as SavedViewStore;
-    // A stored object is only trustworthy in SHAPE, never in content: it
-    // outlives the code that wrote it, and a hand-edited one is a plain string.
+    // TRAP T-storage-access-throws — trustworthy in SHAPE, never in content.
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
     return {};
@@ -570,22 +407,9 @@ export function loadSavedViews(page: string, options: PersistOptions = {}): Save
 /**
  * Save what is on screen as a NEW named view, and hand back the whole set.
  *
- * `reads` names which of each element's properties are view state, exactly as
- * `captureView` takes it — only the caller knows which of a component's
- * properties belong in a saved view and which are incidental. A grid's column
- * filters do; its scroll position does not.
- *
- *   const views = saveViewAs('dashboard', 'Q3 capacity',
- *     { source, elements: { header } }, { header: ['values'] });
- *
- * The id is DERIVED from the label, so a reader saving "Q3 capacity" twice
- * updates it rather than collecting two entries that look identical in the
- * chip. Returns the full store so a caller can re-populate the chip in the
- * same breath — a saved view nobody can pick is not saved.
- *
- * Storage defaults to SHARED (localStorage): a view a reader took the trouble
- * to name should outlive the tab. `persistView`'s "where was I" state defaults
- * the other way, and deliberately.
+ * TRAP T-capture-reads-only-what-is-named — how `reads` is shaped.
+ * TRAP T-persist-defaults-per-tab — SHARED here, unlike `persistView`.
+ * TRAP T-save-view-as-returns-the-whole-set — why the whole store comes back.
  */
 export function saveViewAs(
   page: string,
@@ -604,8 +428,7 @@ export function saveViewAs(
   views[viewId(trimmed)] = {
     label: trimmed,
     snapshot: captureView(targets, reads),
-    // A view of a screen the reader BUILT has to remember that screen, or
-    // re-opening it would restore the state onto whatever was there instead.
+    // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
     ...(options.content ? { content: options.content } : {}),
   };
 
@@ -620,9 +443,7 @@ export function deleteSavedView(
   options: PersistOptions = {},
 ): SavedViewStore {
   const views = loadSavedViews(page, options);
-  // REBUILT WITHOUT IT, rather than `delete views[id]`. A dynamic delete on a
-  // parsed-JSON object is the one shape that can carry a prototype key through
-  // — and this object came from storage, which a person can edit.
+  // TRAP T-derived-id-makes-resave-an-update — REBUILT, never `delete`.
   const kept = Object.fromEntries(Object.entries(views).filter(([key]) => key !== id));
   writeSavedViews(page, kept, options);
   return kept;
@@ -631,14 +452,10 @@ export function deleteSavedView(
 /**
  * A stable id from a label — lowercase, words joined by a hyphen.
  *
- * Deriving it rather than generating one is what makes saving the same name
- * twice an UPDATE. A random id would leave a reader with two "Q3 capacity"
- * rows and no way to tell them apart.
+ * TRAP T-derived-id-makes-resave-an-update — and the pure-punctuation fallback.
  */
 function viewId(label: string): string {
   const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  // A label of pure punctuation still needs an id. Falling back to the raw
-  // label keeps it addressable rather than colliding on an empty key.
   return slug || label;
 }
 
@@ -650,6 +467,6 @@ function writeSavedViews(
   try {
     storage(options.shared ?? true)?.setItem(SAVED_PREFIX + page, JSON.stringify(views));
   } catch {
-    // Full, blocked, or a private window. The view is not kept; nothing breaks.
+    // TRAP T-storage-access-throws — the view is not kept; nothing breaks.
   }
 }

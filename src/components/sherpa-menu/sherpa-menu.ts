@@ -1,67 +1,28 @@
 /**
  * sherpa-menu — a floating list of choices or actions.
  *
- * Built on the native popover API, so the browser owns the top layer, the Escape
- * key, the outside-click dismiss and focus.
+ * Built on the native popover API, so the browser owns the top layer, the
+ * Escape key, the outside-click dismiss and focus. PLACEMENT is the one thing
+ * it cannot do — TRAP T-anchor-cross-root; `#place()` measures the trigger into
+ * --_x / --_y and flips at an edge.
  *
- * Placement is the one thing the browser cannot do for us. CSS anchor positioning
- * only resolves an `anchor-name` inside a single tree, and the trigger always lives
- * in a DIFFERENT shadow root from this card, so `position-anchor` finds nothing and
- * the card drops to the viewport corner. Instead `#place()` measures the trigger and
- * writes viewport coordinates into --_x / --_y, which the card consumes as
- * `position: fixed` offsets. It flips when the card would fall off an edge.
+ * TRAP T-menu-rows-stay-native-controls — the rows are real form controls,
+ * slotted from the light DOM.
  *
- * Rows stay real form controls, slotted from the light DOM:
- *   values   <label><input type="checkbox|radio" value="…" /> Label</label>
  *   actions  <button type="button" value="…">Label</button>
- * A multi-select field is checkbox rows; a single-select field is radio rows; an
- * action menu is buttons. Keyboard and screen-reader behaviour come for free.
- *
- * @element sherpa-menu
- * @attr {string}  data-heading  optional heading (upper-case 10/16)
- * @attr {enum}    data-select   multiple (default) | single
- * @attr {enum}    data-align    start (default) | end — which trigger edge to line up with
- * @attr {string}  data-bounds   a CSS selector for the region the card must stay
- *                inside (the app's content area, say). Resolved from the
- *                document. Defaults to the viewport.
- * @attr {boolean} data-removable show a "Remove" footer button (after Today)
- * @attr {boolean} data-commit   show the Cancel/Apply pair and DEFER changes
- *                until Apply (without it, every row tick commits immediately).
- *                It does NOT alone decide whether the footer ROW appears —
- *                Today, Clear and Remove share that row and each raises
- *                it on its own flag, so an auto-applying calendar menu still has
- *                a footer holding Today and Remove.
- * @attr {boolean} open          reflects/controls the popover
- *
- * @slot (default) — the rows
- *
- * @fires menu-change — the selection was COMMITTED. detail: { values: string[] }
- * @fires menu-apply  — Apply was clicked. detail: { values: string[] }
- * @fires menu-cancel — Cancel was clicked; values already restored. detail: {}
- * @fires menu-clear — Clear was clicked; the selection is already empty. detail: {}
- * @fires menu-back   — the back arrow of a DRILLED menu was pressed. detail: {}
- *
- * @attr {enum} data-type — list (default) | calendar. The Menu set's own `Type`
- *   axis: `calendar` widens the card and runs the list region horizontally.
- * @fires menu-select — an action row was clicked. detail: { value, label }
- * @fires menu-open   — detail: {}
- * @fires menu-close  — detail: {}
  *
  * @prop {string[]} values — the checked row values (read/write)
+ *
+ * @see TRAP T-footer-row-raises-on-any-flag
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
-// The drill trail composes the real breadcrumbs component, as sherpa-app-header
-// does — a second hand-rolled trail would drift from it.
+// TRAP T-menu-composes-real-components — breadcrumbs, input-text, button and
+// container-footer are real components, imported here because the page may not
+// have.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
-// The search field is the composed Input Field (atom), as the Menu node
-// instances it — not a hand-rolled input.
 import '../sherpa-input-text/sherpa-input-text.js';
-// The Apply/Cancel footer composes real buttons, so the menu must register them —
-// it cannot rely on the page having imported them.
 import '../sherpa-button/sherpa-button.js';
-// The footer IS Figma's Container Footer instance, so the menu composes that
-// component rather than drawing an action row of its own.
 import '../sherpa-container-footer/sherpa-container-footer.js';
 
 export class SherpaMenu extends SherpaElement {
@@ -92,9 +53,8 @@ export class SherpaMenu extends SherpaElement {
   /**
    * The values the menu opened with, for Cancel to restore.
    *
-   * Captured on OPEN rather than on first change: a user who ticks, unticks and
-   * then cancels must land back where they started, not at the state after the
-   * first edit.
+   * TRAP T-cancel-baseline-captured-on-open — on OPEN, not on first change; and
+   * Apply rewrites it while Cancel restores it BEFORE reporting.
    */
   #baseline: string[] = [];
 
@@ -108,43 +68,34 @@ export class SherpaMenu extends SherpaElement {
     if (!card) return;
     // The browser announces its own open/close, so we just mirror it out.
     card.addEventListener('toggle', this.#onToggle as EventListener);
-    // Rows live in the light DOM, so listen on the host and let events bubble up.
+    // Rows are LIGHT DOM — listen on the host and let events bubble up. TRAP
+    // T-menu-rows-stay-native-controls.
     this.addEventListener('change', this.#onChange);
     this.$('.drill-back')?.addEventListener('click', this.#onBack);
-    // The PARENT crumb is the same way out as the back arrow — a trail whose
-    // links did nothing would be decoration. Only the first crumb is a link
-    // (the last is where you are), so any select here means "go back".
+    // The PARENT crumb is the same way out as the back arrow — TRAP
+    // T-drill-crumbs-carry-no-href.
     this.$('.drill-crumbs')?.addEventListener('breadcrumb-select', this.#onBack);
-    // The ROWS can be replaced wholesale — the overflow menu drills in by
-    // swapping its list for another filter's — so the select-all row's state
-    // and label have to follow them. slotchange fires exactly when they move in
-    // or out, which show() alone does not cover: a drill happens after it.
+    // TRAP T-rows-changed-re-places-next-frame — slotchange is the only hook a
+    // drill has; show() happens before it.
     this.$('.rows slot')?.addEventListener('slotchange', this.#onRowsChanged);
     this.addEventListener('click', this.#onClick);
-    // The footer and the header actions are in the SHADOW root, so their clicks
-    // are listened for there.
+    // The footer and header actions are in the SHADOW root.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     this.$('.clear')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
-    // The search is a composed <sherpa-input-text>, which re-dispatches the
-    // inner control's `input`. Listening on the component rather than reaching
-    // into its shadow root for the raw <input>.
+    // The search is a composed <sherpa-input-text> — TRAP
+    // T-menu-composes-real-components.
     this.$('.search')?.addEventListener('input', this.#onSearch);
   }
 
   /**
    * Narrow the rows to those whose text contains what was typed.
    *
-   * SUBSTRING, case-insensitively, on the row's own text — a menu search is a
-   * "find", so typing "ows" should still reach "Windows". Matching from the
-   * start would make a long label unreachable by its distinctive part.
-   *
-   * It filters the rows it ALREADY HAS: no re-query, and a row hidden by a
-   * search keeps whatever is ticked on it and comes back with it. That is what
-   * makes searching safe inside a committing menu — you can narrow, tick,
-   * clear the search, tick again, and Apply once.
+   * TRAP T-menu-search-is-a-substring-find — a substring "find" over the rows it
+   * already has, so a hidden row keeps its tick; `data-no-matches` only while
+   * a query is present.
    */
   #onSearch = (): void => {
     // `value` is a property on sherpa-input-text, mirrored from its control.
@@ -157,8 +108,7 @@ export class SherpaMenu extends SherpaElement {
       row.toggleAttribute('data-filtered-out', !hit);
       if (hit) shown += 1;
     }
-    // Only while SEARCHING: an empty menu with no query is empty because the
-    // caller passed no rows, which is a different thing from "nothing found".
+    // TRAP T-menu-search-is-a-substring-find — only WHILE searching.
     this.toggleAttribute('data-no-matches', !!q && shown === 0);
   };
 
@@ -176,13 +126,9 @@ export class SherpaMenu extends SherpaElement {
   /** Open the menu. Pass the trigger to place it under (and to measure against). */
   show(trigger?: HTMLElement): void {
     if (trigger) this.#trigger = trigger;
-    // Point the select-all row at the set BEFORE the card is painted, so a menu
-    // opens with its box already reading all / some / none rather than blank.
-    // The rows are slotted light DOM that a host stamps, so there is no render
-    // pass of ours to hang this on — opening is the moment the set is known.
+    // TRAP T-show-then-measure — sync the select-all box before paint, and show
+    // BEFORE measuring: a closed popover is `display: none` and measures 0.
     this.#syncSelectAll();
-    // Show FIRST, then measure. A closed popover is `display: none`, so its own
-    // size reads as 0 and a pre-show measurement cannot flip correctly.
     this.#card()?.showPopover();
     this.#place();
   }
@@ -210,10 +156,8 @@ export class SherpaMenu extends SherpaElement {
   /**
    * What the menu currently holds.
    *
-   * Usually the checked rows. A NUMBER menu has no rows — its content is one
-   * field, or a two-ended slider when its Range switch is on — so it reports
-   * that instead: one value, or the two ends. Both are strings, like every row
-   * value, so a consumer reads one array whatever the menu is.
+   * TRAP T-menu-value-is-not-always-rows — usually the checked rows, but a
+   * NUMBER or CALENDAR menu has none and reports for itself.
    */
   get values(): string[] {
     const numeric = this.#numericValues();
@@ -226,10 +170,9 @@ export class SherpaMenu extends SherpaElement {
   }
 
   /**
-   * A NUMBER menu's value, or null when this is not one.
-   *
-   * A range spanning the WHOLE of its bounds excludes nothing, so it reports no
-   * value at all — otherwise a filter that is not filtering would read as active.
+   * A NUMBER menu's value, or null when this is not one — TRAP
+   * T-menu-value-is-not-always-rows. A range spanning its WHOLE bounds excludes
+   * nothing, so it reports no value.
    */
   #numericValues(): string[] | null {
     const field = this.querySelector<HTMLInputElement>('input[type="number"]');
@@ -246,19 +189,13 @@ export class SherpaMenu extends SherpaElement {
     return raw === '' ? [] : [raw];
   }
   /**
-   * A CALENDAR menu's value, or null when this is not one.
-   *
-   * A calendar holds its pick in its own attributes, not in checked inputs —
-   * so a date menu reported NO values, and every chip fed by one read as "on
-   * but filtering nothing": the amber warning state, on a filter that was
-   * working. The same shape `#numericValues` exists for, and for the same
-   * reason: a menu whose body is not a list of rows still has a value.
+   * A CALENDAR menu's value, or null when this is not one — TRAP
+   * T-menu-value-is-not-always-rows.
    */
   #calendarValues(): string[] | null {
     const cal = this.querySelector<HTMLElement>('sherpa-calendar');
     if (!cal) return null;
-    // A RANGE reports both ends, and only once both are picked — half a span
-    // is not a span, and reporting one end would read as a single-day filter.
+    // A RANGE reports both ends, and only once BOTH are picked.
     const start = cal.dataset['valueStart'];
     const end = cal.dataset['valueEnd'];
     if (start && end) return [start, end];
@@ -276,12 +213,9 @@ export class SherpaMenu extends SherpaElement {
   /**
    * Every value row's control (light DOM — the rows are slotted).
    *
-   * The SELECT-ALL row is excluded. It is a control OVER the set, not a member
-   * of it: counted in, `values` would carry a phantom "qf-all" entry, Apply
-   * would commit it as a picked value, and the count badge would be one too
-   * high with everything ticked.
+   * TRAP T-select-all-is-not-a-value — the select-all row is a control OVER the
+   * set, so it is excluded here and its label never changes.
    */
-  // The rows that carry a VALUE — see NON_VALUE_ROWS for what is excluded and why.
   #inputs(): HTMLInputElement[] {
     return Array.from(
       this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
@@ -291,9 +225,8 @@ export class SherpaMenu extends SherpaElement {
   /**
    * The breadcrumb trail shown when the list has been drilled into.
    *
-   * Two crumbs: where it came from, then where it is. The trail is a real
-   * <sherpa-breadcrumbs>, which draws the separator and the current-crumb
-   * treatment itself, so there is nothing to compose here beyond the data.
+   * TRAP T-drill-crumbs-carry-no-href — a real `<sherpa-breadcrumbs>`, two
+   * crumbs, and no `href`: one would hash the URL and dismiss the popover.
    */
   #syncCrumb(): void {
     const crumbs = this.$<HTMLElement & { populate(d: unknown): void }>('.drill-crumbs');
@@ -303,22 +236,15 @@ export class SherpaMenu extends SherpaElement {
       crumbs.populate([]);
       return;
     }
-    // NO href on either. The trail here navigates nothing — it goes back a level
-    // inside a menu that must stay open — and an <a href="#"> both appended a
-    // hash to the URL and dismissed the popover on the way out. sherpa-breadcrumbs
-    // fires `breadcrumb-select` for an href-less crumb just the same, which is
-    // the whole signal needed.
+    // TRAP T-drill-crumbs-carry-no-href
     crumbs.populate([{ label: from }, { label: this.dataset['heading'] ?? '' }]);
   }
 
   #sync(): void {
     this.#syncCrumb();
-    // The heading TEXT is a declared prop. data-heading stays observed because it
-    // also names the card for a screen reader and the radio group below.
-    // A CALENDAR shows no heading — its header holds the month stepper and
-    // nothing else (Figma 1156:29240: the two variants' headers are exclusive).
-    // The name still has to reach a screen reader, so it moves to the card's
-    // own label rather than being silently dropped with the text.
+    // TRAP T-calendar-header-has-no-heading — the heading text is a declared
+    // prop, but the NAME still has to reach a screen reader, and a single-select
+    // menu's radios need a shared name so the browser enforces one at a time.
     const card = this.#card();
     const name = this.dataset['heading'] ?? '';
     if (card && name) card.setAttribute('aria-label', name);
@@ -336,21 +262,11 @@ export class SherpaMenu extends SherpaElement {
   }
 
   /**
-   * Put the card under its trigger.
+   * The box the card must stay inside — the viewport, or a host's `data-bounds`.
    *
-   * Everything here is in VIEWPORT coordinates, because the card is
-   * `position: fixed` in the top layer — no scroll offset and no containing block
-   * can move it. `getBoundingClientRect()` on the trigger gives exactly that, and
-   * it works across shadow boundaries where a CSS anchor name does not.
-   */
-  /**
-   * The box the card must stay inside — the viewport, or the region a host
-   * names with `data-bounds`.
-   *
-   * The selector is resolved from the DOCUMENT, so it can name a box in the
-   * app's own tree rather than one inside this component. A selector that
-   * matches nothing falls back to the viewport rather than trapping the card in
-   * a zero-sized box.
+   * TRAP T-bounds-clamp-to-the-viewport — viewport coordinates throughout, the
+   * selector resolves from the DOCUMENT, and a missing or zero-sized box falls
+   * back to the viewport.
    */
   #bounds(): { left: number; top: number; right: number; bottom: number } {
     const viewport = {
@@ -381,19 +297,12 @@ export class SherpaMenu extends SherpaElement {
     const t = trigger.getBoundingClientRect();
     const c = card.getBoundingClientRect();
     const gap = SherpaMenu.OFFSET;
-    // THE BOUNDS the card must stay inside.
+    // TRAP T-card-max-height-follows-the-side — cap `--_max-h` to the room on
+    // the side the card landed on, flip to the roomier side, and never run off
+    // the top.
     //
-    // The viewport by default, but a host can name a narrower box with
-    // `data-bounds` — a CSS selector for the region the menu belongs to, such as
-    // an app's content area. A menu that hangs over the nav or out of a panel
-    // reads as belonging to neither, and the window's edges say nothing about
-    // where the content actually stops.
-    //
-    // NOT CSS anchor positioning, whose `position-try` would do exactly this
-    // clamping for free: `anchor-name` resolves inside ONE tree, and every
-    // Sherpa trigger is in the caller's shadow root while the card is in this
-    // one. Re-probed on Chromium 153 — supported, and it silently drops the card
-    // at the viewport's far corner.
+    // TRAP T-bounds-clamp-to-the-viewport — the viewport by default, or a
+    // host's `data-bounds`.
     const bounds = this.#bounds();
     const vw = bounds.right;
     const vh = bounds.bottom;
@@ -404,11 +313,7 @@ export class SherpaMenu extends SherpaElement {
     let y = t.bottom + gap;
     if (y + c.height > vh && t.top - gap - c.height >= 0) y = t.top - gap - c.height;
 
-    // Cap the card to the room it actually has on the side it landed on, and let
-    // `.rows` scroll inside that. Without this a long list (a Sort menu offers two
-    // rows per column) ran off the bottom of the screen and took the Apply/Cancel
-    // footer with it — the CSS cap was a flat 60vh, which knows nothing about where
-    // the trigger sits. Flip to the roomier side when neither fits comfortably.
+    // TRAP T-card-max-height-follows-the-side
     const room = Math.max(below, above);
     if (c.height > below && above > below) y = Math.max(gap, t.top - gap - Math.min(c.height, above));
     card.style.setProperty('--_max-h', `${Math.max(120, Math.round(room))}px`);
@@ -419,10 +324,7 @@ export class SherpaMenu extends SherpaElement {
     if (x + c.width > vw) x = vw - c.width - gap;
     if (x < bounds.left + gap) x = bounds.left + gap;
 
-    // Never off the top either. The vertical flip above can put a tall card
-    // above the trigger and past the start edge, which is where a drilled
-    // calendar landed — taller than the list it replaced, with the same y it was
-    // placed at.
+    // Never off the top — TRAP T-card-max-height-follows-the-side.
     if (y < bounds.top + gap) y = bounds.top + gap;
 
     card.style.setProperty('--_x', `${Math.round(x)}px`);
@@ -435,27 +337,15 @@ export class SherpaMenu extends SherpaElement {
     // While open, follow the trigger — a scroll or a resize moves it. `capture`
     // catches scrolls in any ancestor, which do not bubble.
     if (open) {
-      // Snapshot for Cancel. On OPEN, so a tick-untick-cancel round trip lands
-      // back at the original selection rather than at the first edit.
+      // TRAP T-open-menu-resize-closes — SCROLL repositions (capture: ancestor
+      // scrolls do not bubble), RESIZE closes, and a ResizeObserver on the CARD
+      // re-places a body that grows. Snapshot for Cancel on OPEN.
       this.#baseline = this.values;
-      // SCROLL repositions — the trigger moved, and the card should follow it.
+      // TRAP T-open-menu-resize-closes
       window.addEventListener('scroll', this.#reposition, { capture: true, passive: true });
-      // RESIZE CLOSES. A repositioned card is fine when only the trigger moved,
-      // but a resize can rebuild what is underneath it: a toolbar folds chips
-      // away, a grid re-columns, a container query swaps a layout. The card
-      // would then be pointing at something that is no longer there, or holding
-      // rows that have been moved out from under it. Closing is honest and puts
-      // everything back where it belongs.
+      // RESIZE CLOSES — TRAP T-open-menu-resize-closes.
       window.addEventListener('resize', this.#onViewportResize, { passive: true });
-      // THE CARD'S OWN SIZE can change while it is open, and then the placement
-      // it was given no longer fits. A date menu's Range switch turns one month
-      // into two — 274px becomes 485 — and the card kept its left edge and ran
-      // straight off the screen. A number menu's Range switch does the same in
-      // miniature.
-      //
-      // Watching the card rather than re-placing from each control that might
-      // grow it: the menu cannot know what a host slotted into it, and every
-      // future body that changes size gets this for free.
+      // TRAP T-open-menu-resize-closes — a ResizeObserver on the CARD.
       this.#cardResize ??= new ResizeObserver(() => this.#place());
       const card = this.#card();
       if (card) this.#cardResize.observe(card);
@@ -468,7 +358,7 @@ export class SherpaMenu extends SherpaElement {
     this.emit(open ? 'menu-open' : 'menu-close', {});
   };
 
-  /** Watches the card's own box, so a body that grows is re-placed. */
+  /** Watches the card's own box — TRAP T-open-menu-resize-closes. */
   #cardResize: ResizeObserver | null = null;
 
   #reposition = (): void => {
@@ -488,10 +378,7 @@ export class SherpaMenu extends SherpaElement {
   /**
    * The label a select-all row wears.
    *
-   * ONE label, not two. The row used to say "Clear all" once everything was on,
-   * which made it both the select-all control AND the menu's clear — a second
-   * place to do what the header's Clear button now does, and one that moved
-   * under the reader depending on what was ticked.
+   * TRAP T-select-all-is-not-a-value — ONE label, always "Select all".
    */
   static readonly ALL_LABEL = 'Select all';
 
@@ -503,27 +390,12 @@ export class SherpaMenu extends SherpaElement {
   /**
    * Tick or clear every value row, and relabel the select-all row.
    *
-   * Handled HERE rather than in the toolbar that stamps the row, because a
-   * native `change` is not composed: it stops at this element, which is the
-   * shadow host the rows are slotted into, and never reaches the toolbar.
-   *
-   * It writes the other rows' checked state and lets the ordinary change path
-   * carry it, rather than setting `values` directly: a committing menu holds a
-   * DRAFT, and writing the set here would commit a selection the user has not
-   * applied. Ticking the boxes is what the user would have done by hand, so the
-   * draft, the count and Cancel all behave as they always did.
+   * TRAP T-select-all-ticks-boxes-not-values — handled here because a native
+   * `change` is not composed, and it writes the BOXES rather than `values` so a
+   * committing menu's draft still works.
    */
   #onSelectAll(input: HTMLInputElement): void {
-    // Read the SET, not the box.
-    //
-    // A native checkbox that is indeterminate reports `checked === false` after
-    // a click, so trusting the box turned "some are picked" into "clear them" —
-    // and the row then stuck at NONE, because clearing an already-empty set is a
-    // no-op the next click repeats. The set is the truth.
-    //
-    // Unticking it EMPTIES the set, the way any checkbox unticks what it turned
-    // on — but the row never RELABELS itself to "Clear all", because emptying
-    // the menu is the header's Clear button and one action belongs in one place.
+    // TRAP T-indeterminate-reports-false — read the SET, not the box.
     const boxes = this.#inputs();
     const on = boxes.some((b) => !b.checked);
     for (const box of boxes) box.checked = on;
@@ -536,9 +408,8 @@ export class SherpaMenu extends SherpaElement {
    * Point the select-all row at the set it describes: ticked for all, INDETERMINATE
    * for some, empty for none — and labelled with what a click would do next.
    *
-   * `indeterminate` is a PROPERTY, not an attribute: there is no
-   * `indeterminate=""` in HTML, so it has to be written on the element every
-   * time the set moves.
+   * TRAP T-indeterminate-is-a-property — there is no `indeterminate=""`, so it
+   * is rewritten every time the set moves.
    */
   #syncSelectAll(): void {
     const all = this.#allRow();
@@ -552,23 +423,23 @@ export class SherpaMenu extends SherpaElement {
   }
 
   /**
-   * The back arrow was pressed — say so, and let the owner put the list back.
+   * The slotted rows changed — re-read the select-all row and re-place the card.
    *
-   * The menu does not know what it drilled INTO, only that it did: the rows came
-   * from somewhere else and only that somewhere can take them home. So this is a
-   * report, not an action. `menu-back` is composed, which the button's own click
-   * is not — it starts inside this shadow root and would never reach the
-   * component that filled the menu.
+   * TRAP T-rows-changed-re-places-next-frame — `slotchange` is the only hook a
+   * drill has, and the card is re-measured next frame.
    */
   #onRowsChanged = (): void => {
     this.#syncSelectAll();
-    // RE-PLACE. A drill swaps a 240px list for content of its own size — a
-    // calendar is half as wide again — and the card was positioned while it was
-    // still the list. Left alone it kept the old x and ran off the side of the
-    // screen. Measured on the next frame, so the new rows have been laid out.
+    // TRAP T-rows-changed-re-places-next-frame
     if (this.open) requestAnimationFrame(() => this.#place());
   };
 
+  /**
+   * The back arrow was pressed — say so, and let the owner put the list back.
+   *
+   * TRAP T-menu-back-is-a-report — the menu cannot know what it drilled into,
+   * and the button's own click is not composed.
+   */
   #onBack = (event: Event): void => {
     event.stopPropagation();
     this.emit('menu-back', {});
@@ -577,10 +448,8 @@ export class SherpaMenu extends SherpaElement {
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input) return;
-    // A menu's content is not always a list of boxes. A NUMBER filter slots a
-    // plain <input type="number"> and a range slider, and their native change is
-    // not composed either — it stops at this element just as a checkbox's does.
-    // Without this, typing a value moved nothing downstream at all.
+    // TRAP T-native-change-stops-at-the-host — a native `change` is not
+    // composed, and a NUMBER menu's field and slider are value shapes too.
     const numeric = input.type === 'number' || input.tagName === 'SHERPA-SLIDER';
     if (!numeric && input.type !== 'checkbox' && input.type !== 'radio') return;
     // The SELECT-ALL row drives every other row, so it is handled before the
@@ -592,9 +461,8 @@ export class SherpaMenu extends SherpaElement {
     // A value row moved, so the select-all row's own state has moved with it —
     // ticking the last unticked box makes it "all", not "some".
     this.#syncSelectAll();
-    // A COMMITTING menu holds the change as a draft — the row is ticked in the UI,
-    // but nothing downstream hears about it until Apply. Otherwise every tick is a
-    // commit, which is the behaviour a menu without a footer has always had.
+    // A COMMITTING menu holds the change as a DRAFT until Apply — TRAP
+    // T-cancel-baseline-captured-on-open.
     if (this.#commits) return;
     this.emit('menu-change', { values: this.values });
   };
@@ -605,7 +473,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   #onApply = (): void => {
-    // The draft becomes the committed state, so a later Cancel cannot undo it.
+    // TRAP T-cancel-baseline-captured-on-open — Apply rewrites the baseline.
     this.#baseline = this.values;
     this.emit('menu-apply', { values: this.values });
     this.emit('menu-change', { values: this.values });
@@ -613,8 +481,7 @@ export class SherpaMenu extends SherpaElement {
   };
 
   #onCancel = (): void => {
-    // Restore what the menu opened with, THEN report — a listener reading
-    // `values` in the handler must see the restored set, not the discarded one.
+    // TRAP T-cancel-baseline-captured-on-open — restore, THEN report.
     this.values = this.#baseline;
     this.emit('menu-cancel', {});
     this.hide();
@@ -623,11 +490,8 @@ export class SherpaMenu extends SherpaElement {
   /**
    * Empty the selection and report it.
    *
-   * Clears BOTH kinds of content a menu can hold: the value rows' checkboxes,
-   * and a slotted calendar's date attributes. A committing menu stays OPEN —
-   * clearing is a change to the draft, not a decision, so the reader can pick
-   * again or Cancel out of it. Without data-commit there is no draft, so it
-   * commits immediately like any other tick.
+   * TRAP T-clear-empties-both-body-shapes — the checkboxes AND a slotted
+   * calendar's date attributes; a committing menu stays open.
    */
   #onClear = (): void => {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
@@ -635,18 +499,15 @@ export class SherpaMenu extends SherpaElement {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }
     this.emit('menu-clear', {});
-    // Report the emptied state the same way a tick does, so a host that is not
-    // committing sees the change at once.
+    // Report the emptied state the same way a tick does.
     if (!this.#commits) this.emit('menu-change', { values: this.values });
   };
 
   /**
    * Today — drive the slotted calendar to today.
    *
-   * The BUTTON is the menu's (Figma puts Today in the Calendar footer's `left`
-   * slot) while the BEHAVIOUR is the calendar's, so this calls the calendar's
-   * public `today()` rather than reaching into it. Stays OPEN, like a day
-   * click: Today picks a date, it does not commit one — Apply still does that.
+   * TRAP T-today-and-remove-are-menu-chrome — the button is the menu's, the
+   * behaviour the calendar's, and it stays OPEN.
    */
   #onToday = (): void => {
     for (const cal of this.querySelectorAll<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
@@ -655,11 +516,8 @@ export class SherpaMenu extends SherpaElement {
   };
 
   /**
-   * Remove — the header button form of the action ROW.
-   *
-   * Emits exactly what a `<button value="remove">` row emits, so a host listens
-   * for one event whichever shape its menu is. A calendar menu has no rows, and
-   * this is how it still offers the action.
+   * Remove — the header button form of the action ROW, emitting exactly what a
+   * `<button value="remove">` row does. TRAP T-today-and-remove-are-menu-chrome.
    */
   #onRemove = (): void => {
     this.emit('menu-select', { value: 'remove', label: 'Remove' });
@@ -667,8 +525,7 @@ export class SherpaMenu extends SherpaElement {
   };
 
   #onClick = (event: Event): void => {
-    // Only plain action rows close the menu; value rows stay open so several can
-    // be picked in one visit.
+    // Only plain ACTION rows close the menu; value rows stay open.
     const button = (event.target as HTMLElement).closest('button');
     if (!button || button.disabled) return;
     this.emit('menu-select', { value: button.value, label: button.textContent?.trim() ?? '' });

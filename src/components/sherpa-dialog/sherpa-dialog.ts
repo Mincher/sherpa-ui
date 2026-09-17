@@ -7,13 +7,6 @@
  * optional data-heading, and re-dispatches the native `close` event as a
  * composed one (the native close does not cross the shadow boundary).
  *
- * @element sherpa-dialog
- * @attr {string}  data-heading — convenience header label (a slotted [slot=header] overrides it)
- * @attr {boolean} open         — read reflects dialog.open; set → showModal()/close()
- * @attr {enum}    data-status  — status colour cascade (critical | warning | success | info | urgent)
- *
- * @fires close — the dialog closed (ESC, backdrop, close()). bubbles + composed. detail: { }
- *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

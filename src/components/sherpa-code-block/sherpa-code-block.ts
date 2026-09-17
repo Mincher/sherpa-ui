@@ -9,7 +9,6 @@
  * Set data-line-numbers to show a left gutter of line numbers; the numbers are
  * derived from the code's line count (CSS reveals the gutter — JS only fills it).
  *
- * @fires code-copy — the copy control is used. bubbles + composed. detail: { code: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

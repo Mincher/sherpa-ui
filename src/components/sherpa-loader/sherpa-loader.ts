@@ -5,11 +5,6 @@
  * optional background panel. The only JS is for screen readers: it makes the
  * loader announce itself when it appears or its label changes.
  *
- * @element sherpa-loader
- * @attr {enum}    data-size         sm | md | lg   (default md)
- * @attr {enum}    data-orientation  horizontal | vertical
- * @attr {boolean} data-panel        solid surface background for full-area states
- * @slot label — loading text shown beside the spinner
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

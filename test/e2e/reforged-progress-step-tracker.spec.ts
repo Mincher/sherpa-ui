@@ -41,3 +41,34 @@ test('advancing data-current-step re-marks the states', async ({ page }) => {
   });
   expect(states).toEqual(['done', 'done', 'active']);
 });
+
+// The label and description are the step's only CONTENT, and nothing else here
+// read them — so a wrong field name drew three numbered but nameless steps and
+// every state assertion still passed.
+test('each step shows its label, its description and its 1-based number', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-progress-step-tracker') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([
+      { label: 'Details', description: 'Who you are' },
+      { label: 'Review' },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const pick = (sel: string): (string | null)[] =>
+      Array.from(el.shadowRoot!.querySelectorAll(sel)).map((n) => n.textContent);
+    return {
+      labels: pick('.step .label'),
+      descriptions: pick('.step .description'),
+      numbers: pick('.step .number'),
+    };
+  });
+  expect(r.labels).toEqual(['Details', 'Review']);
+  // An absent description renders empty rather than "undefined".
+  expect(r.descriptions).toEqual(['Who you are', '']);
+  // Counted from one — the position, not the index.
+  expect(r.numbers).toEqual(['1', '2']);
+});

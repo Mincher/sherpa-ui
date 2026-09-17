@@ -6,9 +6,6 @@
  * only if you actually typed something. Two default leading buttons (attach + lab)
  * each fire their own event; set data-no-leading-actions to hide them. An `extras`
  * slot holds extra consumer controls beside them. CSS handles the look.
- * @fires prompt-submit — the prompt is submitted. bubbles + composed. detail: { text: string }
- * @fires composer-attach — the attach (paperclip) button is pressed. bubbles + composed. detail: {}
- * @fires composer-lab — the lab (flask) button is pressed. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

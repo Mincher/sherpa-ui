@@ -22,25 +22,7 @@
  * with its own <details>/<summary> chevron is the separate `sherpa-accordion`
  * component, so this header needs no `accordion` variant of its own.
  *
- * @element sherpa-container-header
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
- * @attr {string}  data-type      — default | panel (default: default)
- * @attr {string}  data-heading      — heading text (or use the `heading` slot)
- * @attr {string}  data-description  — secondary text below the heading
- * @attr {string}  data-icon         — a glyph before the title
- * @attr {boolean} data-draggable    — show the drag handle
- * @attr {boolean} data-dismissible  — show the close button
- * @attr {boolean} data-collapsible  — show the collapse toggle
- * @attr {boolean} data-collapsed    — collapsed state (opt-in; absent = expanded default)
- *
- * @slot heading  — custom heading element (replaces the default .title)
- * @slot icon     — custom icon element
- * @slot actions  — extra trailing action controls
- * @slot metadata — bottom metadata strip (Panel) / secondary content (Default)
- *
- * @fires header-dismiss  — the close button is clicked. bubbles + composed. detail: {}
- * @fires header-collapse — the collapse toggle fires. bubbles + composed. detail: { collapsed: boolean }
- * @fires header-drag     — the drag handle is pressed. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 // The drag / collapse / close controls are composed sherpa-buttons.

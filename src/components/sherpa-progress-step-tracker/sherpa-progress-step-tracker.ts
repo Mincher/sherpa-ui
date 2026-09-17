@@ -6,7 +6,6 @@
  * to match, with connector lines between the steps. JS only holds the steps and
  * the current position; the rest is CSS.
  *
- * @fires step-click  detail: { index: number, label: string }
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -63,12 +62,13 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
     track.replaceChildren();
     this.#steps.forEach((step, i) => {
-      const item = stepTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      const button = item.querySelector<HTMLElement>('.step')!;
-      button.dataset['index'] = String(i);
-      button.querySelector('.number')!.textContent = String(i + 1);
-      button.querySelector('.label')!.textContent = step.label;
-      button.querySelector('.description')!.textContent = step.description ?? '';
+      // The label, description and index are declared on the prototype. The
+      // NUMBER is not a field — it is the position counted from one — and the
+      // connector is a second prototype woven BETWEEN the steps, which is
+      // structure rather than content.
+      const item = this.cloneRow('template.step-tpl', step, i);
+      if (!item) return;
+      item.querySelector('.number')!.textContent = String(i + 1);
       track.appendChild(item);
       if (i < this.#steps.length - 1 && connTpl) {
         track.appendChild(connTpl.content.firstElementChild!.cloneNode(true));

@@ -14,36 +14,11 @@
  * light DOM (<sherpa-breadcrumbs slot="breadcrumbs">, <sherpa-quick-filter-toolbar
  * slot="filters">) and populate() feeds them their data.
  *
- * @element sherpa-app-header
- * @attr {string}  data-heading       the view title (data-title is accepted too)
- * @attr {string}  data-icon          view icon — an FA class list
- * @attr {boolean} data-back          show the back button
- * @attr {boolean} data-ai            show the "Ask N-zo" button
- * @attr {string}  data-ai-label      its label (default "Ask N-zo")
- * @attr {boolean} data-labs          show the labs (beaker) button
- * @attr {boolean} data-theme-toggle  show the light/dark button
- * @attr {string}  data-notifications unread count — shows the bell + badge
- * @attr {boolean} data-account       show the account button
- * @attr {boolean} data-help          show the support (headset) button
- * @attr {boolean} data-menu          show the app-switcher button
- * @attr {boolean} data-loading       run the loading bar
- *
- * @fires back-click         — detail: {}
- * @fires ai-click           — detail: {}
- * @fires labs-click         — detail: {}
- * @fires theme-toggle       — detail: {}
- * @fires notifications-open — detail: {}
- * @fires account-click      — detail: {}
- * @fires help-click         — detail: {}
- * @fires menu-click         — detail: {}
- * @fires breadcrumb-click   — detail: { index, label, href }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import type { Populatable } from '../../core/render-element.js';
-// Every action is a composed sherpa-button, exactly as Figma instances them, so
-// it must be defined. The header used to hand-roll eight plain <button> elements
-// with ~50 lines of CSS re-implementing the component — which is precisely how
-// the two drifted apart.
+// Every action is a composed sherpa-button, so it must be defined here.
+// TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
 
 interface Crumb { label: string; href?: string }
@@ -57,8 +32,8 @@ interface AppHeaderConfig {
 
 /** Every plain action button: its class → the event it fires.
  *
- * In FIGMA'S ORDER (App Header 150:3690 `Actions` slot), so the list reads like
- * the bar does. There is no chat button — the code had invented one. */
+ * In FIGMA'S ORDER (App Header 150:3690 `Actions` slot) — TRAP
+ * T-header-actions-are-composed-buttons. */
 const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
@@ -88,10 +63,8 @@ export class SherpaAppHeader extends SherpaElement {
     this.#sync();
     // One listener per plain action — each just announces itself.
     for (const [sel, event] of ACTIONS) {
-      // `button-click`, not the native `click`. sherpa-button suppresses its own
-      // event when disabled, where a raw click listener would still fire on the
-      // host element — the actions are composed sherpa-buttons now, so the
-      // component's event is the honest signal.
+      // `button-click`, not the native `click` — TRAP
+      // T-header-actions-are-composed-buttons.
       this.$(sel)?.addEventListener('button-click', () => this.emit(event, {}));
     }
     // Re-dispatch a slotted breadcrumbs' selection as our own header event.
@@ -112,23 +85,15 @@ export class SherpaAppHeader extends SherpaElement {
     if (Array.isArray(cfg.filters)) {
       waits.push(this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters));
     }
-    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist.
-    // The base class's contract is that populate() settles when the data is in
-    // the DOM — but this header's data lands in slotted CHILDREN, and stamping
-    // them was fire-and-forget. A caller that repopulated the bar and then set
-    // the chips wrote into a toolbar that had not rebuilt them yet, and the
-    // write silently went nowhere.
+    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist —
+    // this header's data lands in slotted CHILDREN.
+    // TRAP T-populate-settles-after-render-data
     return waits.length ? Promise.all(waits).then(() => undefined) : undefined;
   }
 
   /* ── The filter bar, reachable ─────────────────────────────────────
-     The toolbar is slotted in the LIGHT DOM, so a host CAN reach it with a
-     querySelector. It should not have to: the header is what a view holds a
-     reference to, and a saved view that must know the toolbar's tag name to
-     set a filter is a view coupled to this header's internals.
-
-     PARITY. Anything a reader can click here, a caller must be able to call —
-     a saved view, a deep link, a test, an agent with no pointer. */
+     TRAP T-header-owns-the-filter-bar-surface — the header re-exposes the
+     toolbar's surface so a saved view is not coupled to its tag name. */
 
   /** The toolbar's picks, or `{}` when no toolbar is slotted. */
   get values(): Record<string, readonly string[]> {
@@ -138,11 +103,8 @@ export class SherpaAppHeader extends SherpaElement {
   /**
    * Set every filter chip — `{ region: ['emea'] }`.
    *
-   * REPLACES the set: a chip the caller does not name is switched off, because
-   * a view definition is a whole statement about the bar, not a patch on
-   * whatever was showing before it.
-   *
-   * Silent, like the toolbar's own setter: the caller already knows.
+   * REPLACES the set, and is silent — TRAP
+   * T-header-owns-the-filter-bar-surface.
    */
   set values(next: Record<string, readonly string[]>) {
     const bar = this.#toolbar();
@@ -157,8 +119,8 @@ export class SherpaAppHeader extends SherpaElement {
   async #stamp(slot: string, tag: string, data: unknown): Promise<void> {
     const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
     if (!el) return; // consumer must slot the empty host; we never create one
-    // A child that has not upgraded yet has no `rendered` to wait on, so give
-    // the custom-element registry a turn first.
+    // A child that has not upgraded yet has no `rendered` to wait on.
+    // TRAP T-header-owns-the-filter-bar-surface
     if (!el.rendered) await new Promise<void>((res) => queueMicrotask(res));
     await Promise.resolve(el.rendered);
     await Promise.resolve(el.populate?.(data));
@@ -167,8 +129,8 @@ export class SherpaAppHeader extends SherpaElement {
   /* ── Sync data-* → DOM ──────────────────────────────────────────── */
 
   #sync(): void {
-    // A Font Awesome class list becomes CLASSES, a raw character becomes TEXT —
-    // one policy, in the base class, rather than a copy here.
+    // FA class list → classes, raw character → text; the policy is in the base
+    // class rather than copied here.
     const icon = this.$('.view-icon');
     if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
 

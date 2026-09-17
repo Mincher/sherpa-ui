@@ -131,3 +131,20 @@ test('removing a file fires file-remove with the removed file', async ({ page })
   expect(r.removedName).toBe('drop.txt');
   expect(r.rows).toBe(1);
 });
+
+// The row's name comes from `File.name`, which lives on the PROTOTYPE rather
+// than being an own property — so a field reader that enumerated own keys would
+// render every row blank. Nothing else asserted the name, so breaking it was
+// silent.
+test('each row shows its real file name', async ({ page }) => {
+  const names = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-file-upload') as FileEl;
+    el.setAttribute('data-multiple', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    { const dt = new DataTransfer(); for (const n of ['invoice.pdf', 'photo.png']) dt.items.add(new File(["x"], n, { type: "text/plain" })); el.shadowRoot!.querySelector(".drop-zone")!.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true })); }
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return [...el.shadowRoot!.querySelectorAll('.file-name')].map((n) => n.textContent);
+  });
+  expect(names).toEqual(['invoice.pdf', 'photo.png']);
+});

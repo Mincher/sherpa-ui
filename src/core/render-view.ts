@@ -50,17 +50,11 @@ export interface ViewElement {
   /**
    * State applied through the element's OWN PUBLIC API, after it has its data.
    *
-   * The same field `ElementNode.state` carries, and it was missing here — so a
-   * view definition could build a whole unique layout and then not set a grid's
-   * column filter, which is the thing view definitions exist for. `props` sets
-   * attributes and `data` sets the populate payload; neither reaches a method
-   * or an accessor.
+   * The same field `ElementNode.state` carries —
+   * TRAP T-state-is-the-saved-view-half.
    *
    *   grid: { type: 'sherpa-data-grid', data: {…},
    *           state: { setColumnFilter: ['name', ['name', 'contains', 'ana']] } }
-   *
-   * A key the element does not expose is SKIPPED, not thrown — a saved view
-   * outlives the code that made it.
    */
   state?: Record<string, unknown>;
 }
@@ -81,13 +75,8 @@ export interface RenderedView {
   /**
    * Every element this view built, by the id the definition gave it.
    *
-   * The registry is the view's own addressing scheme, so handing it back is
-   * what lets a caller reach one element without knowing the layout: a saved
-   * view's snapshot configures `elements.grid`, and this is how "grid" becomes
-   * an element. The map was always built internally; not returning it made the
-   * ids write-only.
-   *
-   * A live map, not a copy of the tree — reading it never re-renders.
+   * TRAP T-view-elements-registry-is-returned — the ids were write-only until
+   * this was handed back; a live map, not a copy of the tree.
    */
   elements: Record<string, HTMLElement>;
 }
@@ -108,23 +97,12 @@ function readDetail(accessor: string | undefined, detail: unknown): unknown {
   return cur;
 }
 
-/** Two pointers overlap when one is a prefix of the other. */
 /**
  * Reactive state store — a view's state blob.
  *
- * THE SAME CLASS AS `SessionStore`, and now literally so. It was written here
- * because a view definition's `$state` pointers needed somewhere to read and
- * write; an app needs exactly that for its own session state, and nobody
- * looking for "where does an app keep what it knows about itself" would open a
- * module named for view rendering.
- *
- * Kept as a NAME rather than a second class, because a view's state blob really
- * is a session store scoped to one view — same pointers, same subscriptions,
- * and `persist()` is as useful here as it is at app level.
+ * TRAP T-state-store-is-the-session-store — a re-export, not a second class.
  */
 export { SessionStore as StateStore };
-
-/** A populatable reforged element. */
 
 /** Run `fn` once the element has rendered. */
 function whenRendered(el: Populatable, fn: () => void): void {
@@ -230,10 +208,8 @@ export function renderView(view: ViewDefinition): RenderedView {
 
   if (!shell) return { el: bodyEl, state: store, elements };
 
-  // A view with nav/header regions is framed by a light-DOM view container: a
-  // two-column grid (nav rail + main column, header row over scrolling body)
-  // styled by the global `.sherpa-view` utility class. Regions are ordered
-  // children marked with a data-region attribute the utility grid places.
+  // A light-DOM frame styled by the global `.sherpa-view` utility grid; each
+  // region is an ordered child carrying a data-region the grid places.
   const shellEl = document.createElement('div');
   shellEl.className = 'sherpa-view';
   for (const [key, region] of [
@@ -248,6 +224,6 @@ export function renderView(view: ViewDefinition): RenderedView {
   }
   bodyEl.dataset['region'] = 'body';
   shellEl.appendChild(bodyEl);
-  // Re-read: the shell regions above build elements the body did not reach.
+  // Re-read — see TRAP T-view-elements-registry-is-returned.
   return { el: shellEl, state: store, elements: Object.fromEntries(built) };
 }

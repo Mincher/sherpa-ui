@@ -13,14 +13,6 @@
  * square only the corners that MEET, which one Figma variant cannot express on
  * its own (it is drawn as the middle of a run).
  *
- * @element sherpa-calendar-cell
- * @attr {enum}    data-state   today | selected | range-start | range-mid | range-end
- * @attr {string}  data-label   the number to show (or use the default slot)
- * @attr {string}  data-value   the ISO date this cell stands for
- * @attr {boolean} data-outside this day belongs to the neighbouring month
- * @attr {boolean} disabled     native — outside the calendar's min/max
- *
- * @fires cell-click — the cell was pressed. bubbles + composed. detail: { value }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

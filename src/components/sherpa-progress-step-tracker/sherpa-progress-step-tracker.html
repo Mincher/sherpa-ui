@@ -18,14 +18,14 @@
 
   <template class="step-tpl">
     <li class="step-item">
-      <button type="button" class="step" part="step">
+      <button type="button" class="step" part="step" data-index="data-index">
         <span class="marker" part="marker">
           <span class="number"></span>
           <span class="check" aria-hidden="true">✓</span>
         </span>
         <span class="text">
-          <span class="label"></span>
-          <span class="description"></span>
+          <span class="label" data-text="label"></span>
+          <span class="description" data-text="description"></span>
         </span>
       </button>
     </li>

@@ -22,19 +22,11 @@
  * closed; its children indent to the next tier, carry NO icon (only top-level rows
  * do), and are hidden entirely in the 40px collapsed rail.
  *
- * @element sherpa-nav
- * @attr {enum}    data-nav-state  collapsed (default) | hover | default | pinned | settings
- * @attr {string}  data-active-id  id of the current item
- * @attr {boolean} data-searchable show the search field (auto-set with a product)
- *
- * @fires nav-select       — detail: { id, label, icon } (icon absent on a child row)
- * @fires nav-search       — detail: { query }
- * @fires nav-state-change — detail: { state }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
-/** What a stamped row actually shows. `icon` is undefined on a child row (by
- *  design — a child is told apart by its indent, never by an icon). */
+/** What a stamped row actually shows. `icon` is undefined on a child row —
+ *  TRAP T-nav-child-rows-carry-no-icon. */
 export interface NavRowInfo {
   id: string;
   label: string | undefined;
@@ -45,9 +37,8 @@ export interface NavEntry {
   id: string;
   label: string;
   /**
-   * Leading icon — a Font Awesome class list. EVERY top-level item has one; CHILD
-   * items do not (the design distinguishes a child by its indent, not by a second
-   * icon column). The rail drops an icon set on a child rather than rendering it.
+   * Leading icon — a Font Awesome class list, on TOP-LEVEL items only.
+   * TRAP T-nav-child-rows-carry-no-icon — a child's icon is dropped.
    */
   icon?: string;
   href?: string;
@@ -55,10 +46,9 @@ export interface NavEntry {
   /** Show the trailing indicator dot (Figma "Indicator (atom)"). */
   indicator?: boolean;
   /**
-   * Nested items. A parent gets the Figma hasChildren chevron, and its children are
-   * stamped one tier deeper. Prefer this over setting `tier` by hand: the rail can
-   * then collapse the children with the parent and hide them in the 40px rail,
-   * which a flat list of hand-tiered rows cannot express.
+   * Nested items. A parent gets the Figma hasChildren chevron, and its children
+   * are stamped one tier deeper. Prefer this over a hand-set `tier` —
+   * TRAP T-nav-child-rows-carry-no-icon.
    */
   children?: NavEntry[];
   /**
@@ -149,12 +139,8 @@ export class SherpaNav extends SherpaElement {
     if (name === 'data-active-id') this.#applyActive();
     if (name === 'data-nav-state') {
       this.#applyState();
-      /* SETTINGS mode shows a DIFFERENT list — its own pages, and no quick items.
-         #renderQuick and #renderSections have always branched on the mode, but
-         nothing re-ran them when the mode changed, so the rail claimed to be in
-         settings while still showing the product tree. Only the settings edge
-         re-stamps: the other four modes share one list, and re-rendering on every
-         hover would throw away each parent's expanded state. */
+      // Only the SETTINGS EDGE re-stamps — TRAP
+      // T-nav-state-writes-only-the-attribute.
       const was = oldValue === 'settings';
       const now = newValue === 'settings';
       if (was !== now && this.#hasContent()) {
@@ -172,10 +158,7 @@ export class SherpaNav extends SherpaElement {
     return (this.dataset['navState'] as NavState) ?? 'collapsed';
   }
   set state(value: NavState) {
-    // Through the state machine, so a host setting the mode is announced exactly
-    // as the rail's own pin and settings buttons are. Writing the attribute here
-    // instead left `nav-state-change` unfired, so the app-shell's content inset
-    // never moved and every host had to re-dispatch the event by hand.
+    // Through the state machine — TRAP T-nav-state-writes-only-the-attribute.
     this.#setState(value);
   }
 
@@ -194,17 +177,13 @@ export class SherpaNav extends SherpaElement {
   }
 
   /* ── State machine ──────────────────────────────────────────────────
-     Every transition funnels through #setState so the event fires once and the
-     header buttons stay in step with the attribute. */
+     Every transition funnels through #setState — TRAP
+     T-nav-state-writes-only-the-attribute. */
 
   #setState(next: NavState): void {
     const previous = this.state;
     if (previous === next) return;
-    // Writing the attribute is the ONLY step: onChange owns the settings re-render
-    // now, so a host that sets `nav.dataset.navState` by hand — which the example
-    // app does to follow the URL — gets the same swap this path does. It used to
-    // live here, which is why that host ended up in settings mode still showing
-    // the product tree.
+    // Writing the attribute is the ONLY step; onChange owns the re-render.
     this.dataset['navState'] = next;
     this.emit('nav-state-change', { state: next });
   }
@@ -242,9 +221,8 @@ export class SherpaNav extends SherpaElement {
   };
 
   #onPin = (): void => {
-    // Un-pinning from SETTINGS hands the rail back to hover — the pointer is still
-    // over it, so collapsing under the cursor would feel broken. Un-pinning from
-    // the pinned rail drops it back to the icon rail.
+    // Un-pinning from SETTINGS hands the rail back to hover: the pointer is
+    // still over it, so collapsing under the cursor would feel broken.
     if (this.state === 'settings') {
       this.#setState('hover');
       return;
@@ -280,7 +258,7 @@ export class SherpaNav extends SherpaElement {
 
   #renderBrand(): void {
     const iconSlot = this.$('.brand-icon');
-    // A product icon may be an FA class list or a glyph; a slotted icon wins.
+    // A slotted icon wins — TRAP T-brand-icon-must-empty-its-host.
     if (iconSlot && this.#config.product?.icon && !iconSlot.querySelector('[slot]')) {
       this.#applyIcon(iconSlot, this.#config.product.icon);
     }
@@ -292,9 +270,8 @@ export class SherpaNav extends SherpaElement {
     const list = this.$('.quick');
     if (!list) return;
     list.replaceChildren();
-    // SETTINGS mode has no quick items. Home / Recent / Favorites are shortcuts
-    // into the PRODUCT tree, and settings is a different place — offering them
-    // there would jump the user out of the section they are configuring.
+    // SETTINGS mode has NO quick items — TRAP
+    // T-nav-state-writes-only-the-attribute.
     if (this.state === 'settings') return;
     const quick = this.#config.quickItems ?? DEFAULT_QUICK;
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
@@ -324,16 +301,15 @@ export class SherpaNav extends SherpaElement {
       content.appendChild(el);
     }
     // Parents start closed, so their children must start hidden.
+    // TRAP T-parent-chain-walk-not-a-selector
     this.#syncRowVisibility();
   }
 
   /**
    * Stamp an entry and all of its descendants into a FLAT list of rows.
    *
-   * Flat, not nested, because the Figma rail is one flat column of 24-tall rows and
-   * indentation alone conveys depth — there is no nested container to draw. Each row
-   * records `data-parent` and `data-depth` so the rail can hide a child when its
-   * parent is collapsed, and hide every child in the 40px rail.
+   * TRAP T-parent-chain-walk-not-a-selector — flat because the Figma rail is,
+   * and `data-parent` / `data-depth` are what make depth recoverable.
    */
   #buildRows(entry: NavEntry, depth: 1 | 2 | 3, parentId?: string): HTMLElement[] {
     const row = this.clone('template.item-tpl');
@@ -344,9 +320,7 @@ export class SherpaNav extends SherpaElement {
 
     const item = row.querySelector('sherpa-nav-item') as HTMLElement;
     item.dataset['label'] = entry.label;
-    // EVERY top-level item carries an icon; a CHILD never does — the design tells a
-    // child apart by its indent, so a second icon column would only add noise. An
-    // icon set on a child entry is deliberately dropped rather than honoured.
+    // depth === 1 only — TRAP T-nav-child-rows-carry-no-icon.
     if (entry.icon && depth === 1) item.dataset['icon'] = entry.icon;
     if (entry.href) item.dataset['href'] = entry.href;
     if (entry.badge) item.dataset['badge'] = entry.badge;
@@ -372,12 +346,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Set an icon as FA classes when it looks like one, else as a text glyph.
    *
-   * NOT `SherpaElement.writeIcon`, and this is the one place that is correct.
-   * `writeIcon` styles the element it is GIVEN; `.brand-icon` wraps a
-   * `<slot name="brand-icon">` holding a default `<i class="fa-solid fa-cubes">`,
-   * so adding classes to the wrapper would leave that fallback showing beside
-   * the real mark. The host must be emptied first, which is why this builds a
-   * child — the one sanctioned `createElement` in the component layer.
+   * TRAP T-brand-icon-must-empty-its-host — NOT `writeIcon`: the wrapper holds
+   * a `<slot>` with a fallback `<i>`, so it must be emptied first.
    */
   #applyIcon(host: Element, value: string): void {
     if (/\bfa-/.test(value)) {
@@ -406,10 +376,8 @@ export class SherpaNav extends SherpaElement {
    * What a row shows: its label, and its icon if it has one.
    *
    * Read back off the stamped ROW, not off the config, so it is true for a rail
-   * filled any way — populate(), or hand-authored rows in the light DOM. A child
-   * row carries no icon by design, so `icon` is undefined there; a consumer
-   * mirroring this (the app header does) must then show no icon rather than keep
-   * the last one.
+   * filled any way — populate(), or hand-authored rows in the light DOM.
+   * TRAP T-nav-child-rows-carry-no-icon — `icon` is undefined on a child row.
    */
   entry(id: string): NavRowInfo | null {
     const row = this.$$<HTMLElement>('.nav-row').find((r) => r.dataset['id'] === id);
@@ -429,9 +397,7 @@ export class SherpaNav extends SherpaElement {
     const id = row?.dataset['id'];
     if (!id) return;
     this.setAttribute('data-active-id', id);
-    // The label and the icon ride along: a consumer that mirrors the selection
-    // (an app header showing the view name) should not have to re-look-up the
-    // row, and must not have to keep its own copy of the nav config in step.
+    // The label and the icon ride along — TRAP T-nav-child-rows-carry-no-icon.
     this.emit('nav-select', { id, ...this.entry(id) });
   };
 
@@ -446,12 +412,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Decide which child rows are showing, and write `data-hidden` for CSS to act on.
    *
-   * A row shows when EVERY ancestor above it is expanded. That is a walk up the
-   * data-parent chain, not something a selector can express: the children are flat
-   * siblings of their parent, so `:has()` could only tell that SOME sibling is shut
-   * and would hide unrelated branches. Deriving it here also means a closed
-   * grandparent correctly hides a grandchild whose own parent is open, with no
-   * cascade of extra state to keep in step.
+   * TRAP T-parent-chain-walk-not-a-selector — a walk up `data-parent`, because
+   * `:has()` on flat siblings would hide unrelated branches.
    */
   #syncRowVisibility(): void {
     const rows = this.$$<HTMLElement>('.nav-row');
@@ -497,10 +459,8 @@ export class SherpaNav extends SherpaElement {
   };
 
   /* ── Search filtering + native highlighting ──────────────────────────
-     Typing narrows the rail to matching rows and highlights the matched text with
-     the CSS Custom Highlight API — a real Highlight of Ranges, styled by
-     ::highlight(sherpa-nav-match). No marker elements are injected, so the rows'
-     own DOM and their FA icons are untouched. */
+     TRAP T-nav-search-uses-a-real-highlight — the CSS Custom Highlight API, and
+     why each row has to highlight its own label. */
 
   #filter(rawQuery: string): void {
     const query = rawQuery.trim().toLowerCase();
@@ -511,10 +471,9 @@ export class SherpaNav extends SherpaElement {
       }) | null;
       const label = item?.dataset['label'] ?? '';
       const match = !query || label.toLowerCase().includes(query);
-      // CSS owns the hiding; JS only marks the row.
+      // CSS owns the hiding; JS only marks the row. Each row highlights its own
+      // label — TRAP T-nav-search-uses-a-real-highlight.
       row.toggleAttribute('data-filtered-out', !match);
-      // Each row highlights its OWN label: a custom highlight is not painted for
-      // shadow text unless it is registered and styled inside that same tree.
       item?.highlight?.(match ? query : null);
     }
 

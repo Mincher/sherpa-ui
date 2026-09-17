@@ -2,17 +2,12 @@
  * sherpa-select-card — a selectable card with header / content / footer slots.
  *
  * The whole card is one big option. Clicking it toggles [data-selected]; CSS
- * draws the selected ring. The footer carries two pre-placed select controls —
- * a sherpa-select-radio and a sherpa-select-checkbox — and CSS shows exactly
- * one based on data-select-mode (radio by default, checkbox for multi-select).
- * Both are kept in sync with the card's selected state so the visible target
- * flips with the card. When a consumer slots their own footer, that control is
- * theirs to wire; the card still reports selection through the change event.
+ * draws the selected ring. Everything visual lives in CSS off data-* — JS only
+ * sets attributes.
  *
- * Radios sharing a `name` group up: selecting one card deselects its siblings
- * (mirroring sherpa-select-radio, which native grouping can't do across shadow
- * roots). Everything visual lives in CSS off data-* — JS only sets attributes.
- * @fires change — selection changes. bubbles + composed. detail: { selected: boolean, value: string }
+ * TRAP T-select-card-keeps-both-footer-controls — BOTH footer controls exist and
+ * are kept in sync, and radio grouping is done by hand because native grouping
+ * cannot cross shadow roots.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
@@ -59,8 +54,8 @@ export class SherpaSelectCard extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    // data-label / data-description are declared props — they no longer reach
-    // here, so the trailing `else` cannot catch them.
+    // data-label / data-description are declared props and no longer reach here,
+    // so the trailing `else` cannot catch them.
     if (name === 'data-select-mode') {
       this.#syncRole();
       this.#syncControl();
@@ -82,9 +77,9 @@ export class SherpaSelectCard extends SherpaElement {
 
   /**
    * Mirror the card's name / value / disabled / selected onto BOTH pre-placed
-   * footer controls (radio + checkbox). CSS shows only one — but keeping both in
-   * sync means switching data-select-mode never surfaces a stale control. A
-   * slotted footer overrides the defaults, so this is a no-op then (no controls).
+   * footer controls (radio + checkbox).
+   *
+   * TRAP T-select-card-keeps-both-footer-controls
    */
   #syncControl(): void {
     const controls = this.$$<FooterControl>('.footer-control');
@@ -107,8 +102,8 @@ export class SherpaSelectCard extends SherpaElement {
 
   #onCardClick = (event: MouseEvent): void => {
     if (this.hasAttribute('disabled')) return;
-    // A click that lands on a footer control itself already fires its own
-    // change (→ #onControlChange); don't double-toggle from the card too.
+    // TRAP T-select-card-keeps-both-footer-controls — a control's own change
+    // already handles it; don't double-toggle from the card too.
     const path = event.composedPath();
     for (const control of this.$$('.footer-control')) {
       if (path.includes(control)) return;
@@ -132,7 +127,7 @@ export class SherpaSelectCard extends SherpaElement {
     this.#setSelected(control.checked);
   };
 
-  /** Toggle for radios means "select" (can't unselect by re-click); checkboxes flip. */
+  /** TRAP T-select-card-keeps-both-footer-controls — a radio selects, a checkbox flips. */
   #toggle(): void {
     if (this.#isCheckbox()) this.#setSelected(!this.hasAttribute('data-selected'));
     else this.#setSelected(true);
@@ -145,7 +140,9 @@ export class SherpaSelectCard extends SherpaElement {
     this.emit('change', { selected: next, value: this.value });
   }
 
-  /** Deselect sibling radio cards sharing this card's name (document-wide). */
+  /** Deselect sibling radio cards sharing this name — document-wide, since
+   *  native grouping cannot cross shadow roots.
+   *  TRAP T-select-card-keeps-both-footer-controls */
   #deselectGroup(): void {
     const name = this.getAttribute('name');
     if (!name) return;

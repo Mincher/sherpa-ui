@@ -12,8 +12,6 @@
  * options; set data-error to show the message (or set data-status to re-ink it
  * via the status cascade).
  *
- * @fires change — the selection changed. bubbles + composed.
- *   detail: { value } (string[] when multiple, else string | null)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';

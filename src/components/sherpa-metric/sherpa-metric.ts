@@ -6,14 +6,6 @@
  * the trend direction. The little trend chart is a sherpa-sparkline inside; it's
  * imported here so it's ready before this tile draws.
  *
- * @element sherpa-metric
- * @attr {string} data-label — the metric name
- * @attr {string} data-value — the formatted value string
- * @attr {string} data-delta — the change text (e.g. "+12.5%")
- * @attr {enum}   data-trend — up | down | flat (colours the delta, shows the arrow)
- * @attr {enum}   data-status — SET BY THE COMPONENT from the trend, not by the
- *                caller: up → success, down → critical, flat/none → unset.
- *
  * @method populate(data: MetricData) — the single data path
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -23,10 +15,7 @@ interface MetricData {
   /**
    * The metric's name.
    *
-   * `label`, matching the attribute (`data-label`) and every other populate
-   * shape in the library — `label` is the word in 7 of 13. This component used
-   * to take `name` and write it straight into `dataset['label']`, translating
-   * its own vocabulary in the one line where both spellings met.
+   * TRAP T-populate-label-not-name
    */
   label?: string;
   /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
@@ -51,8 +40,7 @@ export class SherpaMetric extends SherpaElement {
   static override observed = ['data-label', 'data-value', 'data-delta'];
 
   override onRender(): void {
-    // Reflect any attributes set before the shadow DOM was ready.
-    this.#sync();
+    this.#sync(); // reflect attributes set before the shadow DOM was ready
   }
 
   override onChange(): void {
@@ -63,12 +51,12 @@ export class SherpaMetric extends SherpaElement {
   protected override renderData(source: unknown): void {
     const data = (source ?? {}) as MetricData;
 
-    // `label` wins; `name` is the legacy spelling and still honoured.
+    // TRAP T-populate-label-not-name — `label` wins; `name` is still honoured.
     const label = data.label ?? data.name;
     if (label != null) this.dataset['label'] = String(label);
     if (data.value != null) this.dataset['value'] = String(data.value);
 
-    // Derive delta text + trend from deltaPercent when not given explicitly.
+    // TRAP T-metric-status-follows-the-trend — derived when not given.
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
@@ -101,18 +89,10 @@ export class SherpaMetric extends SherpaElement {
   }
 
   /**
-   * STATUS IS TIED TO THE TREND (Will's rule), so the component sets it — a
-   * caller passing its own data-status would be duplicating something the data
-   * already says, and the two could disagree.
+   * Set data-status from the trend, or remove it.
    *
-   *   up    → success   (a rise is good news)
-   *   down  → critical  (a fall is bad news)
-   *   flat  → default   (nothing to report)
-   *   none  → default   (a raw data point with no relevant trend)
-   *
-   * "Default" means NO data-status at all, not data-status="default": the
-   * --_status-* cascade only emits for a named status, so removing the attribute
-   * is what returns the tile to its neutral surface and ink.
+   * TRAP T-metric-status-follows-the-trend — the component owns this, and
+   * "default" means NO attribute at all.
    */
   #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
     const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;

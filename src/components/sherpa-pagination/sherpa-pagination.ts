@@ -1,21 +1,11 @@
 /**
  * sherpa-pagination — results-size + page navigation control.
  *
- * A "results" zone (a "Rows per page" label + a native <select> for the page
- * size) sits beside a "controls" zone: first (««) + prev (‹) buttons, a native
- * number <input> for the current page, "of N" total text, and next (›) + last
- * (»») buttons. Both native controls work without JS; JS only stamps the select
- * options, clamps values, reflects state, and emits events. First/prev disable
- * at page 1 and next/last at the last page (native `disabled` → inactive tokens).
- *
- * @element sherpa-pagination
- * @attr {number} data-page          — current 1-based page (default 1)
- * @attr {number} data-total-pages   — total page count (default 1)
- * @attr {number} data-page-size     — active rows-per-page value (default 25)
- * @attr {string} data-rows-options  — comma list of rows choices, e.g. "10,25,50"
- *
- * @fires page-change      — bubbles + composed. detail: { page }
- * @fires page-size-change — bubbles + composed. detail: { pageSize }
+ * A "results" zone (a "Rows per page" label + a native <select>) sits beside a
+ * "controls" zone: first / prev, a native number <input> for the current page,
+ * "of N", then next / last. Both native controls work without JS; JS stamps the
+ * options, clamps, reflects state, and emits. First/prev disable at page 1 and
+ * next/last at the last page.
  *
  * @prop {number} page        — current page (read/write)
  * @prop {number} totalPages  — total page count (read/write)
@@ -32,7 +22,7 @@ export class SherpaPagination extends SherpaElement {
   static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
 
   override onRender(): void {
-    // Delegated click for the four nav buttons — they live in our own shadow tree.
+    // Delegated click for the four nav buttons.
     this.$('.controls')?.addEventListener('click', this.#onClick);
     this.$('.rows')?.addEventListener('change', this.#onRowsChange);
     this.$('.page-input')?.addEventListener('change', this.#onPageInput);
@@ -47,8 +37,7 @@ export class SherpaPagination extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
-  // Pages are 1-BASED, so 1 is both the default and the floor: 0 and a negative
-  // are not "a page" at all, and clamping them up is the only sane reading.
+  // TRAP T-pages-are-one-based-and-default-to-25 — 1 is the default AND the floor.
   get totalPages(): number {
     return this.num('data-total-pages', 1, { min: 1, int: true });
   }
@@ -68,16 +57,11 @@ export class SherpaPagination extends SherpaElement {
 
   get pageSize(): number {
     const opts = this.#rowsOptions();
-    // NaN is the "not given" sentinel — an absent size is chosen from the options
-    // below, so there is no static default to hand num(). min: 1 because a page
-    // of 0 rows is not a page: `data-page-size="0"` used to read back as 0 and
-    // hand the caller a divide-by-zero.
+    // TRAP T-nan-is-the-not-given-sentinel — and min: 1, because a
+    // `data-page-size="0"` used to read back as 0 and hand back a /0.
     const raw = this.num('data-page-size', NaN, { min: 1, int: true });
     if (Number.isFinite(raw)) return raw;
-    // 25 by default, not the first option. 10 rows is a thin slice of a real
-    // table — it fills less than half a panel and makes paging the main way to
-    // read the data. A host can still name any size with data-page-size, and a
-    // set that does not offer 25 falls back to its own first option.
+    // TRAP T-pages-are-one-based-and-default-to-25 — 25, not the first option.
     const preferred = SherpaPagination.DEFAULT_PAGE_SIZE;
     return opts.includes(preferred) ? preferred : (opts[0] ?? preferred);
   }
@@ -101,11 +85,8 @@ export class SherpaPagination extends SherpaElement {
   /**
    * A page number: whole, and within 1..totalPages.
    *
-   * `Math.trunc(n) || 1` used to stand in for the NaN guard — and `||` folds 0,
-   * NaN and -0 together, which is the exact trick `coerceNum`'s doc comment
-   * calls out as the reason it exists. It happened to be harmless here (page 0
-   * is invalid anyway, so both paths give 1), but it hid its reasoning behind a
-   * coincidence. The NaN case is now stated.
+   * TRAP T-pages-are-one-based-and-default-to-25 — the NaN case is STATED, not
+   * folded into a `|| 1`.
    */
   #clamp(n: number): number {
     if (!Number.isFinite(n)) return 1;
@@ -150,10 +131,8 @@ export class SherpaPagination extends SherpaElement {
     const select = this.$<HTMLSelectElement>('.rows');
     if (select) select.value = String(this.pageSize);
 
-    // Boundary disabling. The controls are composed <sherpa-button>s, which take
-    // `disabled` as an ATTRIBUTE and mirror it onto their own inner <button> —
-    // a `.disabled` PROPERTY on the host is not the native one and would set an
-    // expando that nothing reads.
+    // Boundary disabling. A composed <sherpa-button> takes `disabled` as an
+    // ATTRIBUTE; a `.disabled` PROPERTY on the host is an expando nothing reads.
     for (const [sel, off] of [
       ['.first', page <= 1],
       ['.prev', page <= 1],
@@ -165,9 +144,8 @@ export class SherpaPagination extends SherpaElement {
   }
 
   #onClick = (event: Event): void => {
-    // composedPath, not closest: the click starts inside the sherpa-button's OWN
-    // shadow root, so `event.target` is its inner <button> and `closest` from
-    // there never reaches this component's `.btn` host.
+    // TRAP T-composed-path-not-target — the click starts inside the composed
+    // button's OWN shadow root, so `closest` never reaches our `.btn` host.
     const btn = this.pathFind(event, '.btn');
     if (!btn || btn.hasAttribute('disabled')) return;
 

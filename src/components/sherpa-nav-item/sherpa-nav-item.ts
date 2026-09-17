@@ -1,17 +1,9 @@
 /**
  * sherpa-nav-item — one row in a navigation menu.
  *
- * Use this when you're building a nav by hand (sherpa-nav makes its own rows).
- * Each row has a leading icon (data-icon), a label (data-label), and an optional
- * badge (data-badge) or your own trailing content. Set data-href to make it a link.
- *
- * The "promo" style makes a bigger call-to-action row with an icon, a heading
- * (data-label), and a description (data-description).
- *
- * CSS handles the look; JS writes the text, sets the link, and fires the click.
- *
- * Expandable items (data-expandable) grow a trailing chevron caret. Clicking it
- * fires item-expand and toggles data-expanded, which CSS rotates the caret from.
+ * Use this when building a nav by hand (sherpa-nav makes its own rows). CSS
+ * handles the look; JS writes the text, sets the link, and fires the click.
+ * The "promo" type is a bigger CTA row with a heading and a description.
  *
  * Public API:
  *   data-icon        leading icon glyph
@@ -27,8 +19,6 @@
  *   disabled         disabled state
  *
  * @tier sub-component
- * @fires item-click — detail: { label, href }
- * @fires item-expand — detail: { expanded }
  */
 import { SherpaElement, markMatch } from '../../core/sherpa-element.js';
 
@@ -49,6 +39,9 @@ export class SherpaNavItem extends SherpaElement {
     'data-expandable',
     'data-expanded',
   ];
+
+  /** `data-type` picks the tree, so a change to it has to re-stamp. */
+  static override variantAttrs = ['data-type'];
 
   /** This row's custom-highlight name, assigned on first use. */
   #highlightName: string | null = null;
@@ -91,19 +84,16 @@ export class SherpaNavItem extends SherpaElement {
   #sync(): void {
     const promo = this.dataset['type'] === 'promo';
 
-    // Both the <button> and the <a href> row carry the icon/label — write to both.
+    // TRAP T-nav-item-writes-to-both-rows — $$ everywhere, and the icon cannot
+    // go through setAll because an FA class list is not text.
     const setAll = (sel: string, text: string): void => {
       for (const el of this.$$(sel)) el.textContent = text;
     };
-    // Icons are Font Awesome class lists ("fa-solid fa-house"); anything else is
-    // treated as a literal glyph. Writing an FA class list as text would render the
-    // class names, which is why this can't go through setAll.
     for (const el of this.$$(promo ? '.promo-icon' : '.icon')) {
       this.writeIcon(el, this.dataset['icon'] ?? '');
     }
-    // Skip the label while a search mark is in place — rewriting textContent would
-    // wipe the <mark> highlight() just built. highlight() re-reads data-label itself,
-    // so the two never disagree.
+    // Skip a marked label: a textContent write would wipe highlight()'s <mark>,
+    // and highlight() re-reads data-label itself so the two never disagree.
     for (const el of this.$$(promo ? '.promo-heading' : '.label')) {
       if (el.querySelector('mark.match')) continue;
       el.textContent = this.dataset['label'] ?? '';
@@ -112,15 +102,11 @@ export class SherpaNavItem extends SherpaElement {
     if (promo) {
       setAll('.promo-description', this.dataset['description'] ?? '');
     } else {
-      // BOTH rows carry a badge (the <button> row and the <a href> row; CSS shows
-      // one). `this.$('.badge')` returns only the FIRST, which is the hidden
-      // <button> row on a link item — so the visible badge stayed empty while a
-      // zero-width offscreen one held the text. Same trap as the label above.
+      // TRAP T-nav-item-writes-to-both-rows
       setAll('.badge', this.dataset['badge'] ?? '');
     }
 
-    // The <a href> row is a real link when data-href is set; CSS shows it in
-    // place of the <button> row via :host([data-href]).
+    // The <a href> row is a real link when data-href is set.
     const link = this.$<HTMLAnchorElement>(promo ? '.promo-link' : '.nav-link');
     if (link) {
       const href = this.dataset['href'];
@@ -135,8 +121,8 @@ export class SherpaNavItem extends SherpaElement {
       else el.removeAttribute('aria-current');
     }
 
-    // The chevron is a real toggle button, so it must announce its own state and
-    // say WHAT it expands. CSS handles the rotation; this is the a11y half.
+    // The chevron is a real toggle button: it announces its state and what it
+    // expands. CSS owns the rotation; this is the a11y half.
     const expand = this.$('.expand');
     if (expand) {
       const open = this.hasAttribute('data-expanded');
@@ -148,20 +134,8 @@ export class SherpaNavItem extends SherpaElement {
   /**
    * Mark a substring of this row's label as a search match.
    *
-   * Two mechanisms, deliberately together:
-   *
-   *  1. The CSS Custom Highlight API — the right tool, and the one Will asked for.
-   *     Each row registers its OWN uniquely-named highlight and styles it in its own
-   *     root, because a single shared Highlight holding ranges from many shadow trees
-   *     paints nothing.
-   *  2. A real <mark> around the matched text — the VISIBLE result today. Chromium
-   *     (verified on 153) does not paint custom highlights for text inside a shadow
-   *     root, however the highlight is registered: a hard-coded ::highlight() paints
-   *     on light-DOM text and is ignored here. <mark> is also the semantic element
-   *     for a search hit, so assistive tech announces it.
-   *
-   * When the engine gains shadow-DOM highlight painting, (1) lights up for free and
-   * (2) can be dropped without touching callers.
+   * TRAP T-custom-highlight-not-painted-in-shadow — the <mark> AND the Custom
+   * Highlight are both required; neither is redundant.
    *
    * Pass a null/empty query to clear the mark.
    */
@@ -170,9 +144,7 @@ export class SherpaNavItem extends SherpaElement {
     const needle = query?.trim() ?? '';
     const at = needle ? full.toLowerCase().indexOf(needle.toLowerCase()) : -1;
 
-    // BOTH rows carry a label (the <button> row and the <a href> row; CSS shows one).
-    // Marking only the first would mark the HIDDEN one — which is exactly why the
-    // highlight appeared to do nothing on link rows.
+    // TRAP T-nav-item-writes-to-both-rows — marking only the first marks the hidden one.
     const labels = this.$$(this.dataset['type'] === 'promo' ? '.promo-heading' : '.label');
     if (!labels.length) return;
 
@@ -217,8 +189,7 @@ export class SherpaNavItem extends SherpaElement {
     if (this.#highlightStyled || !this.shadowRoot) return;
     this.#highlightStyled = true;
     const sheet = new CSSStyleSheet();
-    // The TRANSPARENT ACTIVE purple — the same tint as the <mark> fallback in the
-    // CSS, so whichever one the engine paints, the hit looks identical.
+    // TRAP T-custom-highlight-not-painted-in-shadow — the same tint as the <mark>.
     sheet.replaceSync(
       `::highlight(${name}){background-color:var(--sherpa-theme-surface-active-transparent,#c046ff4d);` +
         `color:var(--sherpa-theme-content-body-base,#0c0b11)}`,
@@ -230,8 +201,6 @@ export class SherpaNavItem extends SherpaElement {
     // Leave no orphan entry in the document-level registry.
     this.#clearHighlight();
   }
-
-  /** Render an icon as FA classes on an <i> when it looks like one, else as text. */
 
   /* ── Interaction ──────────────────────────────────────────────── */
 
@@ -251,12 +220,9 @@ export class SherpaNavItem extends SherpaElement {
   }
 
   #onClick = (event: MouseEvent): void => {
-    // A click on the trailing expand chevron toggles expansion, not navigation.
-    //
-    // Read composedPath(), NOT event.target. This listener is on the HOST, so by
-    // the time the event arrives the target has been RETARGETED to the host itself
-    // — `event.target.closest('.expand')` then searches the host's light DOM, finds
-    // nothing, and every chevron click fell through to navigation instead.
+    // A chevron click toggles expansion, not navigation.
+    // TRAP T-composed-path-not-target — a host listener sees a RETARGETED target,
+    // so every chevron click fell through to navigation.
     const path = event.composedPath();
     const onChevron = path.some(
       (n) => n instanceof Element && n.classList.contains('expand'),

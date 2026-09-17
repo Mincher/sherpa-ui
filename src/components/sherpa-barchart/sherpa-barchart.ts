@@ -6,10 +6,8 @@
  * tallest) and its colour. CSS grows each bar up from the baseline. Clicking a
  * bar fires bar-click.
  *
- * `setBarHidden(index, hidden)` drops a bar so a chart legend can toggle it. The
- * y-max then comes from what is left, so the remaining bars use the full height.
- *
- * @fires bar-click — a bar is clicked. bubbles + composed. detail: { index: number, label: string, value: number }
+ * `setBarHidden(index, hidden)` drops a bar so a chart legend can toggle it.
+ * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -21,10 +19,8 @@ const DEFAULT_TICKS = 4;
 /**
  * One bar.
  *
- * An ALIAS of the shared `ChartDatum`, not a copy: a bar, a donut slice and a
- * legend row are the same three fields, and three names for one shape meant
- * crossing between them cost a `.map()` that rebuilt each object identically.
- * The name stays because it reads better at a call site.
+ * TRAP T-chart-datum-aliases-are-not-copies — an ALIAS of `ChartDatum`, not a
+ * copy; the name stays because it reads better at a call site.
  */
 export type BarDatum = ChartDatum;
 
@@ -53,8 +49,7 @@ export class SherpaBarchart extends SherpaElement {
   /** populate([{ label, value, colorIndex? }]) — the bars. */
   protected override renderData(data: unknown): void {
     this.#data = Array.isArray(data) ? (data as BarDatum[]) : [];
-    // Fresh data means the old indices point at different bars, so a stale hide
-    // would silently drop the wrong category.
+    // TRAP T-hiding-a-series-rescales-the-axis — a stale hide drops the wrong bar.
     this.#hidden.clear();
     this.#render();
   }
@@ -62,9 +57,7 @@ export class SherpaBarchart extends SherpaElement {
   /**
    * Hide or show one bar, so a chart legend can toggle it.
    *
-   * Hiding RE-SCALES the chart: the y-max comes from the visible bars, so leaving
-   * a hidden category in the maximum would squash everything that is left against
-   * a ceiling nobody can see.
+   * TRAP T-hiding-a-series-rescales-the-axis
    */
   setBarHidden(index: number, hidden = true): void {
     if (hidden) this.#hidden.add(index);
@@ -80,17 +73,8 @@ export class SherpaBarchart extends SherpaElement {
   /**
    * Hide exactly these bars, by index — a saved view, a preset, an agent.
    *
-   * Clicking a legend swatch to hide a series is real VIEW STATE: it is what
-   * this reader wants to look at, and it belongs in a saved view beside the
-   * filter and the sort. It was a getter only, so that choice could be read and
-   * never put back — half an API.
-   *
-   * REPLACES rather than adds, like every other restore here: a saved view says
-   * "this is what is hidden", not "also hide these". An empty array shows
-   * everything.
-   *
-   * Out-of-range indices are KEPT rather than filtered — the data may not have
-   * arrived yet, and an index that matches nothing hides nothing.
+   * TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES, and an
+   * out-of-range index is kept.
    */
   set hiddenBars(indices: readonly number[]) {
     this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
@@ -104,14 +88,12 @@ export class SherpaBarchart extends SherpaElement {
     const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
-    // Bars a legend has switched off are dropped entirely, and the scale comes
-    // from what is LEFT — keeping a hidden category in the max would squash
-    // everything visible against a ceiling nobody can see.
+    // TRAP T-hiding-a-series-rescales-the-axis
     const shown = this.#data
       .map((d, i) => ({ d, i }))
       .filter(({ i }) => !this.#hidden.has(i));
 
-    // NaN is the "not given" sentinel — an absent max is DERIVED from the bars.
+    // TRAP T-nan-is-the-not-given-sentinel — an absent max is DERIVED.
     const explicitMax = this.num('data-max', NaN);
     const max = Number.isFinite(explicitMax) && explicitMax > 0
       ? explicitMax
@@ -123,8 +105,7 @@ export class SherpaBarchart extends SherpaElement {
     xAxis?.replaceChildren();
     for (const { d, i } of shown) {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      // The ORIGINAL index, so bar-click still names the datum the caller gave us
-      // even when earlier categories are hidden.
+      // TRAP T-hiding-a-series-rescales-the-axis — the ORIGINAL index.
       col.dataset['index'] = String(i);
       const hue = seriesVar(i, d.colorIndex);
       const bar = col.querySelector<HTMLElement>('.bar')!;
@@ -132,16 +113,14 @@ export class SherpaBarchart extends SherpaElement {
       bar.style.setProperty('--_hue', hue);
       bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
 
-      // The hover tooltip. The only thing JS supplies is the anchor NAME — CSS
-      // cannot derive a per-mark `anchor-name`, and everything else about the
-      // tip's placement is declarative (see .chart-tip in core/sherpa-base.css).
+      // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS supplies the anchor NAME
+      // and nothing else about the placement.
       col.style.setProperty('--_anchor', `--bar-mark-${i}`);
       col.querySelector('.chart-tip-label')!.textContent = d.label;
       col.querySelector('.chart-tip-value')!.textContent = formatTick(d.value);
       bars.appendChild(col);
 
-      // The category label is a SIBLING of the plot now, in the x-axis row, so it
-      // renders below the baseline rule instead of on top of the bars.
+      // A SIBLING of the plot, in the x-axis row, so it lands below the baseline.
       if (xAxis && xTpl) {
         const label = xTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         label.textContent = d.label;
@@ -153,10 +132,8 @@ export class SherpaBarchart extends SherpaElement {
   /**
    * Stamp the y-axis values, top (max) to bottom (0).
    *
-   * Descending because the axis is inverted relative to the DOM's flow: the
-   * highest value is at the TOP of the plot but the FIRST child in the column.
-   * CSS spaces them with `justify-content: space-between` on a zero-height cell,
-   * so each label's centre lands on its own gridline.
+   * TRAP T-y-axis-width-is-fixed-not-measured — descending, and CSS spaces them
+   * with space-between on a zero-height cell so each centre lands on its line.
    */
   #renderYAxis(max: number, shownCount: number): void {
     const axis = this.$('.y-axis');
@@ -164,30 +141,19 @@ export class SherpaBarchart extends SherpaElement {
     if (!axis || !tpl) return;
 
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
-    // Clear FIRST, before the early return below: turning the axis off has to take
-    // the old ticks with it, or a data-ticks="0" would leave the previous scale
-    // on screen labelling nothing.
+    // TRAP T-y-axis-width-is-fixed-not-measured — clear FIRST (before the early
+    // return), write the flag rather than inferring it, count from the SHOWN
+    // bars, and hand CSS the ONE `--_bands` the gradient and the labels share.
     axis.replaceChildren();
-    // The flag CSS gates on — an absent data-ticks must not mean "no axis", and a
-    // data-ticks="0" must, so the state has to be written rather than inferred.
-    // Counted from the SHOWN bars: hiding every category via the legend must
-    // take the axis with them, not leave a scale labelling nothing.
     this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
-    // The gridline gradient repeats every 1/bands of the plot, so the lines and
-    // the labels are both driven by this ONE number.
     this.style.setProperty('--_bands', String(steps));
     if (steps <= 0 || shownCount <= 0) return;
 
-    // One label per division BOUNDARY — steps+1 of them, positioned at the SAME
-    // percentage its gridline is drawn at (tickPercent), so the two cannot drift.
     const boundaries = Array.from({ length: steps + 1 }, (_, i) => i);
     this.renderList('.y-axis', 'template.ytick-tpl', boundaries, (tick, i) => {
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
       tick.querySelector('.y-value')!.textContent = formatTick((max * i) / steps);
     });
-    // The axis width is FIXED in CSS and long labels truncate — nothing measured
-    // here. Sizing it from the data made the plot wiggle whenever a value crossed
-    // a digit boundary.
   }
 
   #onClick = (event: Event): void => {

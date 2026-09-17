@@ -36,4 +36,21 @@ if [ $SPEC_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# docs/TRAPS.md holds the facts that cost hours, moved out of the source so the
+# code reads as code. A comment cannot lie about the line beneath it; a doc can.
+# This is the gate that makes moving them safe — it fails on a dangling pointer,
+# an orphaned entry, or a Site list that no longer matches who cites it.
+#
+# Without it this would be the round-trip check all over again: reported for
+# three months, enforced never, 22 of 58 failing the whole time.
+echo "🪤 Checking docs/TRAPS.md against the code..."
+TRAPS_OUT=$(npm run check:traps --silent 2>&1)
+TRAPS_RESULT=$?
+
+if [ $TRAPS_RESULT -ne 0 ]; then
+  echo "$TRAPS_OUT"
+  echo "❌ A trap and its citation have drifted. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

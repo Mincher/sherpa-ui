@@ -1,17 +1,8 @@
 /**
  * store.ts — where records come from.
  *
- * A Store is STATELESS: it reads and writes records and remembers nothing about
- * how they are being viewed. Sorting, filtering, grouping and paging are the
- * DataSource's job (see data-source.ts), so one store can back several views of
- * the same records without them fighting over a shared cursor.
- *
- * That split is DevExtreme's, which Apex already uses — so the mental model
- * transfers. What is NOT borrowed is the size: no OData, no remote grouping, no
- * query-builder language. A store answers `load(options)` and four CRUD calls.
- *
- * Every store extends EventTarget, so "tell everyone the records changed" is the
- * platform's own dispatchEvent rather than a subscriber list written by hand.
+ * TRAP T-store-is-stateless — the Store/DataSource split, and why `change`
+ * means "reload".
  */
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
@@ -29,12 +20,7 @@ export interface SortSpec {
 /**
  * A filter, in the one shape the whole layer speaks.
  *
- * `[field, op, value]` rather than a function, because a filter has to survive
- * being sent to a server: a RestStore turns it into a query string, an ArrayStore
- * runs it in memory, and both read the SAME declaration. A predicate function
- * could only ever run on the client.
- *
- * Groups nest: `['and', [...], [...]]`. `or` is the same shape.
+ * TRAP T-filter-is-data-not-a-predicate — and why `OP_LABELS` sits beside it.
  */
 export type FilterOp =
   | 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'
@@ -45,12 +31,7 @@ export type FilterOp =
 /**
  * How each operator READS to a person.
  *
- * Beside `FilterOp` on purpose: the keys ARE the operators, so a control can
- * build its picker from this map and whatever it reports back is already a
- * clause the store understands. No translation table exists to drift.
- *
- * Every query-building surface shares it — the data grid's column menu today,
- * a Filter Panel later. A second copy anywhere is a second vocabulary.
+ * TRAP T-filter-is-data-not-a-predicate — a second copy is a second vocabulary.
  */
 export const OP_LABELS: Record<FilterOp, string> = {
   eq: 'Equals',
@@ -71,13 +52,7 @@ export const OP_LABELS: Record<FilterOp, string> = {
 /**
  * The operators each COLUMN TYPE can sensibly answer.
  *
- * DevExtreme's binary operations, split by what the question means. Offering
- * "greater than" on a name column invites a comparison the reader cannot
- * reason about; offering "starts with" on a spend column is not a question at
- * all.
- *
- * `between` is absent from both: it is the RANGE mode, because a span needs two
- * inputs and a single condition list cannot grow one.
+ * TRAP T-ops-follow-the-column-type — and why `between` is in neither list.
  */
 export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
   text: ['contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne'],
@@ -112,27 +87,17 @@ export interface LoadResult {
   /**
    * Rows the store's schema REFUSED, and so did not hand over.
    *
-   * Absent when nothing was dropped — which is the normal case, and means a
-   * host can test for the field rather than compare a count to zero.
-   *
-   * A read cannot throw the way a write does: one bad row in a thousand must
-   * not empty a grid. But a silent drop is worse than a bad row, because a
-   * schema quietly rejecting 40% of a response looks like a backend outage. So
-   * the count travels with the rows and a host can surface it.
+   * TRAP T-dropped-rows-must-be-countable — a silent drop is worse.
    */
   dropped?: number;
-  /**
-   * Why the dropped rows were refused — the first few only.
-   *
-   * A broken backend produces one issue per row; ten thousand copies of "name
-   * is required" tell a host nothing the first one did not.
-   */
+  /** Why the dropped rows were refused — the FIRST FEW only. */
   issues?: ReadonlyArray<{ readonly message: string; readonly path?: ReadonlyArray<PropertyKey> }>;
 }
 
 /**
  * The store interface. Identical whatever backs it, so a view can be moved from
  * an in-memory array to an HTTP endpoint without touching the components.
+ * TRAP T-store-is-stateless
  */
 export interface Store extends EventTarget {
   load(options?: LoadOptions): Promise<LoadResult>;
@@ -148,10 +113,8 @@ export interface Store extends EventTarget {
 /**
  * Fired when a store's records change — after an insert, update or remove.
  *
- * `detail` names what happened so a listener can be cheap about it, but a
- * DataSource simply reloads: deciding whether a changed row still matches the
- * current filter, and where it now sorts, is exactly the work the source already
- * does, and re-deriving is cheaper than getting that wrong.
+ * TRAP T-store-is-stateless — `detail` names what happened, but a DataSource
+ * simply RELOADS.
  */
 export interface StoreChangeDetail {
   type: 'insert' | 'update' | 'remove';
@@ -164,9 +127,8 @@ export interface StoreChangeDetail {
 /**
  * Read a field from a row, following dots into nested objects.
  *
- * `'customer.name'` reaches into a nested record, which an agent or API payload
- * routinely has. A field with no dot is a plain lookup, so the common case costs
- * one property read.
+ * `'customer.name'` reaches into a nested record, as an agent or API payload
+ * routinely has. No dot is a plain lookup, so the common case costs one read.
  */
 export function readField(row: Row, field: string): unknown {
   if (!field.includes('.')) return row[field];
@@ -183,20 +145,15 @@ export function readField(row: Row, field: string): unknown {
 /**
  * ONE comparator for the whole library.
  *
- * The reason this exists is recorded in the data-layer plan: the grid, the
- * quick-filter toolbar and the example app each had their own compare, and they
- * DISAGREED — one passed `{ numeric: true }` and one did not, so "item 2" and
- * "item 10" ordered differently depending on which control you used.
- *
- * A single Intl.Collator instance is reused for the whole sort. `localeCompare`
- * re-derives the locale rules on every call, which is markedly slower across a
- * few hundred rows.
+ * TRAP T-one-collator-for-the-library — three compares disagreed; nulls last.
  */
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
 /**
  * Compare two field values. Nulls sort LAST in either direction — "no value" is
  * not a small value, and flipping the sort should not march the blanks to the top.
+ *
+ * TRAP T-one-collator-for-the-library — one shared collator, nulls last.
  */
 export function compareValues(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
@@ -211,17 +168,14 @@ export function compareValues(a: unknown, b: unknown): number {
 /**
  * Sort rows by a list of specs, first spec wins and later ones break ties.
  *
- * `toSorted` rather than `sort`: the caller's array must not be reordered under
- * it, because a store's records are shared by every source reading them.
- * Null direction is treated as ascending, matching `data-sort-direction`.
+ * TRAP T-one-collator-for-the-library — `toSorted`, never `sort`.
  */
 export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[] {
   if (!specs.length) return [...rows];
   return rows.toSorted((a, b) => {
     for (const spec of specs) {
       const dir = spec.direction === 'desc' ? -1 : 1;
-      // Nulls are pinned last by compareValues, so the direction must NOT flip
-      // them — a blank belongs at the bottom whichever way the column runs.
+      // TRAP T-one-collator-for-the-library — the direction must NOT flip nulls.
       const av = readField(a, spec.field);
       const bv = readField(b, spec.field);
       if (av == null || bv == null) {
@@ -241,10 +195,7 @@ export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[
 /**
  * Every FIELD one filter touches, in the order it first appears.
  *
- * A filter is a tree, so a bound component cannot just read `filter[0]` to find
- * out which of its columns are being narrowed. This flattens it. Used to tell
- * the grid which headers to mark active — the column doing something to the
- * view has to say so, and only the source knows what the filter is.
+ * TRAP T-filter-fields-flattens-the-tree — a grid needs a flat column list.
  */
 export function filterFields(filter: Filter | undefined): string[] {
   const out: string[] = [];
@@ -256,8 +207,7 @@ export function filterFields(filter: Filter | undefined): string[] {
       return;
     }
     const [field] = f as FilterClause;
-    // A field can appear in more than one clause (a range is two), and the
-    // header only needs to know THAT it is filtered, not how many times.
+    // TRAP T-filter-fields-flattens-the-tree — a range is two clauses.
     if (typeof field === 'string' && !out.includes(field)) out.push(field);
   };
   walk(filter);
@@ -300,8 +250,7 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
     case 'notin':
       return !Array.isArray(value) || !value.some((v) => looseEqual(actual, v));
     case 'between': {
-      // Inclusive, and order-insensitive — a date range picked backwards is a
-      // range, not an empty result.
+      // TRAP T-loose-equal-is-case-insensitive — backwards is still a range.
       if (!Array.isArray(value) || value.length !== 2 || actual == null) return false;
       const [lo, hi] = compareValues(value[0], value[1]) <= 0
         ? [value[0], value[1]]
@@ -314,10 +263,7 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
 /**
  * Compare for filtering, not for sorting.
  *
- * A filter value arrives as a STRING far more often than not — from an attribute,
- * a query string, a chip's `value`. `'pro' === 'Pro'` is false and would quietly
- * filter everything away, so string comparison here is case-insensitive. A
- * strictly-typed comparison stays available through `lt`/`gt`.
+ * TRAP T-loose-equal-is-case-insensitive — `'pro' === 'Pro'` is false.
  */
 function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
@@ -362,9 +308,7 @@ export interface RowGroup {
 /**
  * Group rows by a field, preserving the order they arrive in.
  *
- * Order matters: rows are grouped AFTER sorting, so the groups come out in sort
- * order and the rows within each group keep theirs. `Map.groupBy` keeps insertion
- * order, which is exactly that.
+ * TRAP T-pipeline-order-and-no-grouping — grouped AFTER sorting.
  */
 export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
   const grouped = Map.groupBy(rows, (row) => {
@@ -379,14 +323,7 @@ export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
 /**
  * Apply search → filter → sort, then page.
  *
- * The order is not arbitrary. Narrowing comes first so the sort runs over fewer
- * rows; paging comes LAST because the page is a window onto the final order, and
- * `total` has to count the matches, not the page.
- *
- * Grouping is deliberately NOT applied here. A grouped view still needs the flat
- * rows — sherpa-data-grid sorts by the group field and stamps a heading row when
- * the value changes — so the group field is applied as a leading SORT and the
- * consumer decides what to draw.
+ * TRAP T-pipeline-order-and-no-grouping — paging last; grouping is a SORT.
  */
 export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): LoadResult {
   let out: Row[] = [...rows];
@@ -394,9 +331,7 @@ export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): L
   if (options.search) out = searchRows(out, options.search, options.searchFields);
   if (options.filter) out = filterRows(out, options.filter);
 
-  // The GROUP field sorts first, so rows sharing a group value are adjacent and a
-  // consumer can find each group in one pass. The sort specs then order rows
-  // WITHIN their group.
+  // The GROUP field sorts FIRST — see TRAP T-pipeline-order-and-no-grouping.
   const specs: SortSpec[] = options.group
     ? [{ field: options.group, direction: 'asc' }, ...(options.sort ?? [])]
     : (options.sort ?? []);

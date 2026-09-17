@@ -6,20 +6,6 @@
  * CSS handles that. JS does just two things: write the tip text into the bubble,
  * and link it to the trigger so screen readers read it out.
  *
- * @element sherpa-tooltip
- * @attr {string} data-text      — tip text (or use the `tip` slot for rich content)
- * @attr {enum}   data-placement — top (default) | bottom | left | right
- * @attr {string} data-anchor — a selector (resolved in this element's own root)
- *                for the box the tip describes, when wrapping it is not
- *                possible. Defaults to this element.
- * @attr {boolean} data-floating — place the bubble in the TOP LAYER from measured
- *                coordinates rather than relative to the host. For a tooltip
- *                inside a box that clips, where the absolute bubble is cut off.
- *
- * @slot (default) — the trigger the tooltip describes
- * @slot tip       — rich tip content (overrides data-text)
- *
- * @fires nothing — visibility is CSS-driven.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -128,10 +114,7 @@ export class SherpaTooltip extends SherpaElement {
   /**
    * Put the floating bubble above its trigger, centred, and inside the viewport.
    *
-   * Measured rather than anchored: CSS `anchor-name` resolves inside ONE tree
-   * and this bubble is in the tooltip's shadow root while the trigger is
-   * slotted from the caller's. Re-probed on Chromium 153 — supported, and it
-   * silently drops the box at the viewport's far corner.
+   * Measured rather than anchored — TRAP T-anchor-cross-root.
    */
   #place(): void {
     const bubble = this.$<HTMLElement>('.bubble');

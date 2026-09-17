@@ -12,8 +12,6 @@
  *
  * Shortcut: SherpaToast.info/success/warning/critical(message, opts?) makes a
  * toast, adds it to the page, and hands it back.
- * @fires toast-dismiss — the toast is dismissed (close or auto). bubbles + composed. detail: {}
- * @fires toast-action  — the action link is clicked. bubbles + composed. detail: {}
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -23,11 +21,7 @@ export interface ToastOptions {
   duration?: number;
   /** Where to append the toast. Defaults to the shared top-right stack. */
   container?: HTMLElement;
-  /**
-   * The second line, under the heading (data-value). The toast has always
-   * rendered it; only the factory had no way to pass it, so an app wanting both
-   * lines had to build the element by hand and lose the shared stack with it.
-   */
+  /** The second line, under the heading (data-value). */
   value?: string;
   /** An action link in the toast (data-action). Fires toast-action when clicked. */
   action?: string;
@@ -36,13 +30,8 @@ export interface ToastOptions {
 /**
  * A SAFETY NET for the leave animation, not its duration.
  *
- * The removal waits for `animationend`, so CSS owns the timing and JS never
- * needs to know it. This only covers the case where the animation never runs
- * at all — `display: none`, a reduced-motion setting that cancels it, a
- * browser that skips animations on a hidden tab — where waiting for an event
- * that will not fire would leave the node in the DOM forever.
- *
- * Generous on purpose: it must never beat a real animation to the finish.
+ * TRAP T-css-owns-the-leave-duration — generous on purpose, and it must never
+ * beat a real animation to the finish.
  */
 const LEAVE_FALLBACK_MS = 1000;
 /** The default auto-dismiss delay. */
@@ -54,9 +43,8 @@ export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
   static override props = {
-    // `skipWhen`: the heading span CONTAINS a <slot>, so a consumer's slotted
-    // heading must survive. The guard fires only when that slot is actually
-    // filled — an empty slot is the normal state, not an override.
+    // `skipWhen`: the heading span CONTAINS a <slot>, so a slotted heading must
+    // survive — TRAP T-slot-guards-only-when-filled.
     // `fallbackAttr`: data-message is the legacy alias for data-heading.
     'data-heading': {
       type: 'string', kind: 'content', to: '.heading',
@@ -74,8 +62,7 @@ export class SherpaToast extends SherpaElement {
   }
 
   override onConnect(): void {
-    // num(), not Number(): an EMPTY data-duration used to read as 0, which the
-    // `> 0` test then treated as "no auto-dismiss" — a toast that never left.
+    // TRAP T-css-owns-the-leave-duration — num(), not Number().
     const duration = this.num('data-duration', DEFAULT_DURATION);
     if (duration > 0) {
       this.#timer = setTimeout(() => this.dismiss(), duration);
@@ -89,8 +76,9 @@ export class SherpaToast extends SherpaElement {
 
   /**
    * Dismiss the toast: stop the timer, announce, play the leave animation, then
-   * remove the node. The event fires immediately so app code isn't kept waiting on
-   * the animation.
+   * remove the node.
+   *
+   * TRAP T-css-owns-the-leave-duration — the event fires immediately.
    */
   dismiss(): void {
     if (this.#timer) {
@@ -101,12 +89,8 @@ export class SherpaToast extends SherpaElement {
     this.emit('toast-dismiss');
     this.toggleAttribute('data-leaving', true);
 
-    // CSS OWNS THE DURATION. This used to be `setTimeout(…, LEAVE_MS)` with a
-    // 160 that had to be kept in step with `sherpa-toast-out` by hand — two
-    // copies of one number, and a race if either moved. `animationend` is the
-    // platform's own answer: the animation says when it is done.
-    //
-    // `once`, and a fallback in case the animation never runs at all.
+    // TRAP T-css-owns-the-leave-duration — `once`, plus a fallback for the case
+    // where the animation never runs at all.
     let done = false;
     const finish = (): void => {
       if (done) return;
@@ -134,8 +118,8 @@ export class SherpaToast extends SherpaElement {
     if (options.value !== undefined) toast.dataset['value'] = options.value;
     if (options.action !== undefined) toast.dataset['action'] = options.action;
     const host = options.container ?? SherpaToast.#stack();
-    // Inside the shared stack the container owns the corner, so the toast returns
-    // to normal flow and the column spaces them.
+    // In the shared stack the CONTAINER owns the corner, so the toast returns to
+    // normal flow and the column spaces them.
     if (host.classList.contains('sherpa-toast-stack')) toast.dataset['stacked'] = '';
     host.appendChild(toast);
     return toast;

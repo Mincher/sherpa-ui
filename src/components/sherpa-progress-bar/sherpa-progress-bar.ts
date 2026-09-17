@@ -6,12 +6,6 @@
  * the indeterminate sweep) and mirrors the label; CSS styles the vendor
  * pseudo-elements. No manual role/aria, no JS-driven width.
  *
- * @element sherpa-progress-bar
- * @attr {number}  value               — 0–100 completion (native <progress value>)
- * @attr {boolean} data-indeterminate  — animated sweep when the duration is unknown
- * @attr {string}  data-label          — accessible task label (also drives aria-label)
- * @attr {enum}    data-status         — critical | warning | success | info (colours the fill)
- *
  * @prop {number} value — the current percentage (read/write, clamped 0–100)
  */
 import { SherpaElement, clampNum } from '../../core/sherpa-element.js';

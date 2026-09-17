@@ -6,14 +6,6 @@
  * tab switches to it and fires tab-change. The arrow keys move between tabs, and
  * Home/End jump to the first and last; Enter or Space opens a tab.
  *
- * @element sherpa-tabs
- * @attr {string} data-current-id — id of the currently active tab / panel
- *
- * @slot (default) — the tab panels; each child should carry data-tab="<id>"
- * @slot detail    — trailing content beside the tab strip
- *
- * @fires tab-change — bubbles + composed. detail: { id }
- *
  * @prop {string} currentId — currently active tab id (read/write)
  * @method select(id) — activate a tab by id
  */
@@ -79,13 +71,16 @@ export class SherpaTabs extends SherpaElement {
   /* ── Private ─────────────────────────────────────────────────────────── */
 
   #render(): void {
-    this.renderList('.tabs', 'template.tab-tpl', this.#tabs, (btn, tab, i) => {
-      btn.dataset['id'] = tab.id;
-      btn.id = `tab-${tab.id}`;
-      btn.setAttribute('aria-controls', `panel-${tab.id}`);
-      btn.querySelector('.label')!.textContent = tab.label;
-      // Roving tabindex — only the first tab is tab-reachable until active applies.
-      btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
+    // The id and the label are declared on the prototype. What is left is the
+    // a11y wiring, which is derived rather than copied: two ids built AROUND the
+    // tab's own, and a roving tabindex that depends on the position.
+    this.renderRows('.tabs', 'template.tab-tpl', this.#tabs, {
+      after: (btn, tab, i) => {
+        btn.id = `tab-${tab.id}`;
+        btn.setAttribute('aria-controls', `panel-${tab.id}`);
+        // Roving tabindex — only the first tab is tab-reachable until active applies.
+        btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
+      },
     });
     this.#applyCurrent();
   }

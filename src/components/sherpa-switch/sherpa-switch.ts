@@ -9,13 +9,6 @@
  * re-dispatches the input's native `change` as a composed `change` (the native one
  * bubbles inside the shadow root but is NOT composed, so app code wouldn't see it).
  *
- * @element sherpa-switch
- * @attr {boolean} checked    — native on/off value (read/write; drives :checked visuals)
- * @attr {enum}    data-type — default (rectangular, ON/OFF label) | simple (pill)
- * @attr {boolean} disabled   — native disabled state (reflected onto the inner input)
- *
- * @fires change — every toggle. bubbles + composed. detail: { checked: boolean }
- *
  * @prop {boolean} checked  — whether the switch is on (delegates to the inner input)
  * @prop {boolean} disabled — disabled state (reflects host attr + inner input)
  */

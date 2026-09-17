@@ -41,9 +41,13 @@
     Enter/Space-activatable — rather than a div with a click listener.
   -->
   <template class="notification-tpl">
-    <sherpa-list-item class="notification" data-interactive>
+    <sherpa-list-item class="notification" data-interactive
+                      data-attr-data-id="id"
+                      data-attr-data-label="label??title"
+                      data-attr-data-description="description"
+                      data-when-unread="unread">
       <i class="notification-icon" slot="leading" aria-hidden="true"></i>
-      <span class="notification-time" slot="trailing"></span>
+      <span class="notification-time" slot="trailing" data-text="time"></span>
       <span class="notification-pip" slot="trailing" aria-hidden="true"></span>
     </sherpa-list-item>
   </template>

@@ -34,47 +34,17 @@ export interface ElementNode {
   /**
    * State applied through the component's OWN PUBLIC API, after it has its data.
    *
-   * `props` sets attributes and `data` sets the populate payload. Neither can
-   * express what a component exposes as a METHOD or an accessor — a grid's
-   * column filters (`setColumnFilter`), its selection (`select`), a chart's
-   * hidden series (`hiddenSeries`), a transfer list's chosen values.
-   *
-   * That is the half a SAVED VIEW needs. A reader who filters a column and
-   * reloads should find it filtered; a preset called "Overdue invoices" should
-   * arrive configured; an agent should be able to ask for a view by describing
-   * it. All three are the same data, and this is the field that carries it.
-   *
-   *   { type: 'sherpa-data-grid',
-   *     data: { columns, rows },
-   *     state: { columnFilters: { name: ['name', 'contains', 'ana'] } } }
-   *
-   * Each key is a property or method NAME on the element. A method is CALLED
-   * with the value (spread when it is an array of arguments); an accessor is
-   * ASSIGNED. Applied after `populate()`, because a grid cannot filter a column
-   * it does not have yet.
-   *
-   * A key the component does not expose is SKIPPED, not thrown: a saved view
-   * outlives the code that made it, and one stale key must not stop the rest
-   * being applied. See `renderElement`'s return for how to learn what was
-   * skipped.
+   * TRAP T-state-is-the-saved-view-half — why methods/accessors need their own
+   * field, and why an unknown key is skipped rather than thrown.
    */
   state?: Record<string, unknown>;
 }
 
-/** An element that can be populated (all reforged components qualify). */
 /**
  * An element that takes a data payload — the one shape, declared once.
  *
- * Every `SherpaElement` is one; the optional members are what lets a plain
- * `HTMLElement` be passed where one is expected, and be skipped rather than
- * crash.
- *
- * `rendered` MATTERS AND WAS MISSING HERE. This file declared the interface
- * without it while data-source, render-view and app-header each declared their
- * own copy WITH it — so this was the odd one out, and the reason
- * `renderElement` populated synchronously while everything else waited for the
- * element to exist. Four declarations of one idea, and the shortest one was
- * silently a different contract.
+ * TRAP T-populatable-declared-four-times — `rendered` was missing here and the
+ * shortest of four copies was a different contract.
  */
 export interface Populatable extends HTMLElement {
   populate?: (data: unknown) => void | Promise<void>;
@@ -89,30 +59,15 @@ function applyAttr(el: HTMLElement, name: string, value: unknown): void {
 }
 
 /**
- * Build a live element from an element node. Recurses into slots (named-slot
- * fills) and children (default-slot content), and populates from data. Returns
- * the element synchronously; data population resolves after the element renders
- * (populate() defers internally via the base class's `rendered`).
- */
-/**
  * Apply a `state` block through an element's own public API.
  *
- * Returns the keys it could NOT apply, so a caller can report them. A saved
- * view outlives the code that made it — a column that no longer exists, a
- * component that lost a method — and one stale key must not stop the rest. The
- * same reason a bad ROW is dropped and counted rather than thrown.
- *
- * Exported because a definition is also applied to elements that already exist:
- * `renderView` builds them, but a saved view loaded later has to reach a live
- * screen.
+ * Returns the keys it could NOT apply — TRAP T-state-is-the-saved-view-half.
+ * Exported because a saved view loaded later has to reach a live screen.
  */
 /**
  * Is this value a LIST OF CALLS rather than one argument list?
  *
- * `[['name', clause], ['plan', clause]]` is two calls; `[['a@x']]` is one call
- * whose single argument is an array. They are told apart by whether EVERY entry
- * is itself an array AND there is more than one — a single nested array stays
- * one call, which keeps the common case unambiguous.
+ * TRAP T-state-value-may-be-a-call-list — every entry an array AND more than one.
  */
 function isCallList(value: unknown): boolean {
   return Array.isArray(value) && value.length > 1 && value.every((v) => Array.isArray(v));
@@ -123,9 +78,7 @@ export function applyState(el: HTMLElement, state: Record<string, unknown>): str
   const target = el as unknown as Record<string, unknown>;
 
   for (const [key, value] of Object.entries(state)) {
-    // `in` walks the prototype chain, which is where a component's accessors
-    // and methods live — `key in el` is true for `hiddenSeries`, false for a
-    // name nothing defines.
+    // `in` walks the prototype chain, where a component's accessors and methods live.
     if (!(key in target)) {
       skipped.push(key);
       continue;
@@ -134,15 +87,7 @@ export function applyState(el: HTMLElement, state: Record<string, unknown>): str
     try {
       const current = target[key];
       if (typeof current === 'function') {
-        // A METHOD. An array is its ARGUMENT LIST, so `setColumnFilter` takes
-        // two and `select` takes one — which is why a single-argument method
-        // wanting an array is written as a nested array.
-        //
-        // CALLED REPEATEDLY when the value is an array of argument lists. A
-        // `state` block is a map, so one method cannot appear twice — and
-        // `setColumnFilter` has to run once per filtered column. Nesting the
-        // calls is the honest answer; inventing a `setColumnFilter:name` key
-        // would be a second vocabulary nothing else understands.
+        // A METHOD — TRAP T-state-value-may-be-a-call-list.
         const fn = current as (...a: unknown[]) => unknown;
         const calls = isCallList(value) ? (value as unknown[][]) : [Array.isArray(value) ? value : [value]];
         for (const args of calls) fn.apply(el, args);
@@ -151,8 +96,7 @@ export function applyState(el: HTMLElement, state: Record<string, unknown>): str
         target[key] = value;
       }
     } catch {
-      // A setter that refused — a value of the wrong shape, an index out of
-      // range. Counted rather than thrown, for the same reason as above.
+      // A setter that refused — counted, not thrown.
       skipped.push(key);
     }
   }
@@ -186,15 +130,8 @@ export function renderElement(node: ElementNode): HTMLElement {
     el.populate(node.data);
   }
 
-  // STATE LAST, and asynchronously, because it goes through the component's own
-  // API and that needs the component to be ready: `populate()` waits for the
-  // first render itself, so a grid has no columns to filter until after it
-  // resolves. Applying synchronously here set a column filter on a grid with no
-  // columns, which silently did nothing.
-  //
-  // `el.rendered` reads straight off Populatable now. It used to need an inline
-  // `as { rendered?: … }` cast, because THIS file's copy of the interface was
-  // the one missing the member.
+  // TRAP T-state-applies-after-rendered — synchronous apply filtered a grid
+  // that had no columns yet, and did nothing.
   if (node.state) {
     const state = node.state;
     void Promise.resolve(el.rendered).then(() => {

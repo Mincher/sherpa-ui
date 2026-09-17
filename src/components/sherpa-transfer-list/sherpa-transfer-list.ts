@@ -6,7 +6,6 @@
  * flag. Tick some rows, then use the arrow buttons in the middle to move them
  * across. Each move fires transfer-change with the values now on the right.
  *
- * @fires transfer-change — detail: { selected: string[], moved: string[], direction: 'add' | 'remove' }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -109,11 +108,14 @@ export class SherpaTransferList extends SherpaElement {
     targetList.replaceChildren();
 
     for (const item of this.#items) {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      row.dataset['value'] = item.value;
-      const listItem = row.querySelector('sherpa-list-item') as HTMLElement;
-      listItem.dataset['heading'] = item.label;
-      listItem.toggleAttribute('data-selected', this.#staged.has(item.value));
+      // The value and the heading are declared on the prototype. Which PANE the
+      // row lands in, and the staged tick, are not fields the item carries —
+      // `selected` is the pane, and `#staged` is this component's own draft.
+      const row = this.cloneRow('template.row-tpl', item);
+      if (!row) continue;
+      row
+        .querySelector('sherpa-list-item')!
+        .toggleAttribute('data-selected', this.#staged.has(item.value));
       (item.selected ? targetList : sourceList).appendChild(row);
     }
     // Empty-state visibility is CSS, keyed on whether a pane has rows.

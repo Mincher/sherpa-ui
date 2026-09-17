@@ -10,8 +10,6 @@
  * The `actions` slot (trailing steppers/buttons) needs no JS — SherpaElement
  * auto-sets data-has-actions on the host from slot presence and CSS gates it.
  *
- * @fires input — on each keystroke. detail: { value: string }
- * @fires change — on commit (blur/enter). detail: { value: string }
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { validateField, type FieldRules } from '../../core/validate.js';
@@ -40,10 +38,8 @@ export class SherpaInputText extends SherpaElement {
   /**
    * THIS ELEMENT IS A FORM CONTROL.
    *
-   * Without it the field is invisible to the form around it: its value is left
-   * out of FormData, `form.reset()` does not clear it, and `form.checkValidity()`
-   * reports nothing about it. The real <input> is inside a shadow root, and a
-   * form cannot see through one — that is the gap ElementInternals closes.
+   * TRAP T-shadow-input-needs-element-internals — a form cannot see an <input>
+   * through a shadow root, so without this the field is invisible to it.
    */
   static readonly formAssociated = true;
 
@@ -65,6 +61,9 @@ export class SherpaInputText extends SherpaElement {
     this.#internals = this.attachInternals();
   }
 
+  /** Both attributes pick the tree, so a change to either has to re-stamp. */
+  static override variantAttrs = ['data-type', 'data-multiline'];
+
   /**
    * Template selection: the bare inline field (`minimal`), the auto-growing
    * textarea (`multiline`), or the full molecule (`default`). `minimal` wins —
@@ -82,10 +81,7 @@ export class SherpaInputText extends SherpaElement {
     this.#syncAttrs();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
-    // VALIDATE ON BLUR, not on every keystroke. Telling someone their email is
-    // wrong while they are still typing the @ is nagging; telling them when they
-    // leave the field is help. Once a field has ERRED, #onInput re-checks on
-    // every keystroke so the message clears the moment it is fixed.
+    // VALIDATE ON BLUR — TRAP T-validate-on-blur-then-every-keystroke.
     this.#control?.addEventListener('blur', this.#onBlur);
     this.#syncValue();
   }
@@ -101,17 +97,8 @@ export class SherpaInputText extends SherpaElement {
    * Link the control to its own label, description and error for a screen
    * reader.
    *
-   * `aria-describedby` is what makes the hint and the error text reach someone
-   * who cannot see them beside the box. The ids are per INSTANCE, because two
-   * fields on a page would otherwise both claim `#description` and a reader
-   * would be told the wrong thing.
-   *
-   * NOTE what is NOT here: `role="alert"` or `aria-live` on the message.
-   * Putting either on the element `aria-describedby` points at causes
-   * DOUBLE-SPEAK in JAWS and NVDA — the live region fires, then the description
-   * fires again on focus — and has been seen to make VoiceOver drop the
-   * association entirely. A live region belongs on a form-level summary, once,
-   * on a failed submit.
+   * TRAP T-describedby-must-not-be-a-live-region — per-instance ids, and no
+   * `role="alert"` / `aria-live` on the message this points at.
    */
   #syncIds(): void {
     const control = this.#control;
@@ -121,9 +108,7 @@ export class SherpaInputText extends SherpaElement {
     const message = this.$('.message');
     if (desc) desc.id = `${uid}-description`;
     if (message) message.id = `${uid}-message`;
-    // Both, in reading order: the hint explains the field, the error says what
-    // went wrong with it. An empty one is harmless — a describedby pointing at
-    // empty text announces nothing.
+    // Both, in reading order — TRAP T-describedby-must-not-be-a-live-region.
     control.setAttribute('aria-describedby', `${uid}-description ${uid}-message`);
   }
 
@@ -132,13 +117,8 @@ export class SherpaInputText extends SherpaElement {
   /**
    * Tell the FORM what this field holds and whether it is acceptable.
    *
-   * Two separate things, both through ElementInternals:
-   *  - `setFormValue` puts the value into FormData under the host's `name`.
-   *  - `setValidity` is what `form.checkValidity()` and a submit both read.
-   *
-   * The ANCHOR (third argument) is the inner control, so the browser scrolls to
-   * and focuses the real box when a submit is blocked — without it the focus
-   * lands on the host and the caret is nowhere.
+   * TRAP T-shadow-input-needs-element-internals — setFormValue + setValidity,
+   * why the third argument is the inner control, and why `customError`.
    */
   #syncValue(): void {
     const control = this.#control;
@@ -147,14 +127,10 @@ export class SherpaInputText extends SherpaElement {
 
     const message = this.dataset['error'] ?? '';
     if (message) {
-      // `customError`, because this message came from OUR rules. The native
-      // flags (valueMissing, patternMismatch) describe the browser's own checks,
-      // and claiming one of those would misreport why it failed.
       this.#internals.setValidity({ customError: true }, message, control);
       return;
     }
-    // No message of ours — defer to the control's OWN native validity, which is
-    // already doing `required`, `pattern`, `minlength` and the rest for free.
+    // No message of ours — defer to the control's OWN native validity.
     if (!control.validity.valid) {
       this.#internals.setValidity(control.validity, control.validationMessage, control);
       return;
@@ -167,9 +143,8 @@ export class SherpaInputText extends SherpaElement {
   /**
    * Check this field and show the result.
    *
-   * Runs the NATIVE constraints first — `required`, `pattern`, `minlength` are
-   * mirrored onto the real control and the browser already checks them — then
-   * `data-rules`, which is where a rule the platform has no idea about goes.
+   * NATIVE constraints first, then `data-rules` — TRAP
+   * T-validate-on-blur-then-every-keystroke.
    *
    * Returns true when the field is acceptable, so a caller can gate a submit on
    * it without reading the DOM.
@@ -178,9 +153,6 @@ export class SherpaInputText extends SherpaElement {
     const control = this.#control;
     if (!control) return true;
 
-    // NATIVE FIRST. It is free, it is localised by the browser, and a field with
-    // `required` should say the browser's own "Please fill in this field" rather
-    // than a second wording of our own.
     if (!control.validity.valid) {
       this.#setError(control.validationMessage);
       return false;
@@ -200,13 +172,8 @@ export class SherpaInputText extends SherpaElement {
   /**
    * The rule sets a host has registered by name.
    *
-   * `data-rules` names one rather than carrying it: an attribute is a string,
-   * and a rule is a function. Naming keeps the markup declarative while the
-   * rules stay real code — and two fields checking the same thing share one
-   * definition rather than two copies that can drift.
-   *
-   *   SherpaInputText.defineRules('email', [required(), email()]);
-   *   <sherpa-input-text data-rules="email">
+   * TRAP T-rules-are-named-not-carried — an attribute is a string and a rule is
+   * a function, and an unknown name is not an error.
    */
   static #ruleSets = new Map<string, FieldRules>();
 
@@ -216,9 +183,7 @@ export class SherpaInputText extends SherpaElement {
 
   static async #runNamed(name: string, value: unknown): Promise<string | undefined> {
     const ruleSet = SherpaInputText.#ruleSets.get(name);
-    // An unknown name is NOT an error. A field naming a rule set the app has not
-    // registered yet (script order, a lazy view) should stay usable rather than
-    // refusing every value — the store's own guard is the line that must hold.
+    // An unknown name is NOT an error — TRAP T-rules-are-named-not-carried.
     if (!ruleSet) return undefined;
     return validateField(ruleSet, value);
   }
@@ -227,8 +192,8 @@ export class SherpaInputText extends SherpaElement {
   #setError(message: string): void {
     if (message) this.dataset['error'] = message;
     else delete this.dataset['error'];
-    // aria-invalid is the OTHER half of the announcement: describedby says what
-    // is wrong, this says THAT something is.
+    // The other half of the announcement — TRAP
+    // T-describedby-must-not-be-a-live-region.
     this.#control?.setAttribute('aria-invalid', message ? 'true' : 'false');
     this.#syncValue();
   }
@@ -271,21 +236,8 @@ export class SherpaInputText extends SherpaElement {
   /**
    * Put one icon on the field.
    *
-   * Accepts either form, matching sherpa-button: a Font Awesome class list
-   * ("fa-solid fa-magnifying-glass") or a raw character ("+"). Only the
-   * character path can go through `data-glyph`, whose CSS is
-   * `content: attr(data-glyph)` — handed a class list it printed the class list
-   * as text, which is exactly what a menu's search field showed.
-   *
-   * The two components took different forms until now, which is a trap for
-   * anyone composing one into the other: the same attribute name meant two
-   * different things.
-   *
-   * NOT `SherpaElement.writeIcon`, deliberately. `writeIcon`'s glyph sink is
-   * `textContent`; this component's is the `data-glyph` attribute, because its
-   * CSS draws the character with `content: attr(data-glyph)` (see the
-   * `.icon[data-glyph]::before` rule). Migrating would empty that attribute and
-   * the raw-character icons would vanish.
+   * TRAP T-input-icon-sink-is-data-glyph — a class list or a raw character, and
+   * why this is NOT `SherpaElement.writeIcon`.
    */
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
@@ -332,13 +284,9 @@ export class SherpaInputText extends SherpaElement {
   }
 
   #onInput = (): void => {
-    // The FORM's copy of the value follows every keystroke, so a submit mid-typing
-    // sends what is on screen rather than what was there at the last blur.
+    // The FORM's copy follows every keystroke; the CHECK only once it has erred.
+    // TRAP T-validate-on-blur-then-every-keystroke
     this.#syncValue();
-    // RE-CHECK ONLY ONCE IT HAS ERRED. Validating from the first keystroke tells
-    // someone their email is wrong while they are still typing the @; once a
-    // message is already showing, the opposite is true — it should disappear the
-    // moment they fix it rather than linger until they leave the field.
     if (this.dataset['error']) void this.validate();
     this.emit('input', { value: this.value });
   };

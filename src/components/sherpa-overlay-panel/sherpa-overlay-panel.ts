@@ -14,22 +14,6 @@
  * dialog, keeps `open` in sync, renders data-icon/data-heading, wires the toolbar
  * buttons to events, and re-dispatches the native `close` event as a composed one.
  *
- * @element sherpa-overlay-panel
- * @attr {string}  data-icon      — glyph before the title (shows the icon slot area)
- * @attr {string}  data-heading   — link-style header title text
- * @attr {boolean} open           — read reflects dialog.open; set → show()/close()
- * @attr {boolean} data-collapsed — collapsed state (body/footer folded; toggle reflects it)
- * @attr {boolean} data-collapsible — show the collapse toggle
- * @attr {boolean} data-expandable  — show the expand button
- * @attr {boolean} data-external    — show the external-link button
- * @attr {boolean} data-dismissible — show the close button
- * @attr {enum}    data-status    — status colour cascade (critical | warning | success | info | urgent)
- *
- * @fires panel-collapse — the collapse toggle was pressed. bubbles + composed. detail: { collapsed: boolean }
- * @fires panel-expand   — the expand button was pressed. bubbles + composed. detail: { }
- * @fires panel-external — the external-link button was pressed. bubbles + composed. detail: { }
- * @fires close          — the panel closed (close()). bubbles + composed. detail: { }
- *
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';

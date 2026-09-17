@@ -1,36 +1,8 @@
 /**
  * data-source.ts — one place that owns how records are being VIEWED.
  *
- * A Store holds records and remembers nothing (store.ts). A DataSource is the
- * stateful half: it holds the filter, sort, group, search and page, applies them
- * on every load, and tells everyone bound to it when the result changes.
- *
- * ## Why this exists
- *
- * The same sort used to be written three times — in sherpa-data-grid, in the
- * quick-filter toolbar, and again in the app wiring them together. The two
- * compares were not even identical, so "item 2" and "item 10" ordered differently
- * depending on which control you used. A DataSource makes the sort ONE value, so
- * two controls cannot disagree about it.
- *
- * ## Binding is two-way
- *
- *   source → component   populate(rows) + data-* attribute writes
- *   component → source   its existing noun-verb events (sort-change, page-change…)
- *
- * Both halves already existed. The events are ratified and composed; the
- * attribute names are the standard ones. No component needed a new API for this.
- *
- * ## Many components, one source
- *
- *   const sales = new DataSource({ store });
- *   sales.bind(grid);       // rows in, sort/filter out
- *   sales.bind(toolbar);    // chips in, filter out
- *   sales.bind(pager);      // page in, total out
- *   sales.bind(chart, { readonly: true });   // sees the data, never steers it
- *
- * One filter change re-populates every bound component. The grid's own header
- * arrow and the toolbar's Sort chip become two views of one value.
+ * TRAP T-one-comparator-one-source — why view state lives here, not per control.
+ * TRAP T-view-state-lives-in-one-object — the worked example.
  */
 import { filterFields } from './store.js';
 import type { Populatable } from './render-element.js';
@@ -70,43 +42,13 @@ export interface BindOptions {
   /**
    * Write into ONE NAMED PART of the component's payload, not all of it.
    *
-   * A component fed by TWO sources — a chart with a series per backend, a panel
-   * summarising two datasets, a feed with a socket per stream — otherwise gets
-   * the last writer's payload and loses the other's. Same last-write-wins
-   * problem `ignore` patches on the event side.
-   *
-   *   ours.bind(chart,   { into: 'series.0', as: (r) => toSeries(r, 'Ours') });
-   *   market.bind(chart, { into: 'series.1', as: (r) => toSeries(r, 'Market') });
-   *
-   * A dotted path, so `series.0` is the first entry of the payload's `series`
-   * array — the shape `LineData` already has. A numeric segment builds an ARRAY,
-   * a named one an OBJECT, so the path describes the payload rather than
-   * requiring the component to change.
-   *
-   * THE MERGE LIVES ON THE ELEMENT, because neither source can see the other.
-   * Each writes its own part into a shared draft hung off the element, and the
-   * whole draft is populated. A source that never uses `into` is untouched.
+   * TRAP T-into-merges-on-the-element — two sources, one component, one draft.
    */
   into?: string;
   /**
    * Unbind when this signal aborts — the PLATFORM'S OWN teardown token.
    *
-   * `addEventListener` already takes one, so a caller with several bindings
-   * has one thing to abort rather than a list of functions to remember:
-   *
-   *   const ac = new AbortController();
-   *   source.bind(chart, { readonly: true, signal: ac.signal });
-   *   source.bind(grid,  { signal: ac.signal });
-   *   …
-   *   ac.abort();   // both gone
-   *
-   * A list of unbind functions is a list someone forgets. That is not
-   * hypothetical: a second list appeared on the dashboard when a view began
-   * building its own content, and the teardown dropped only the first — so
-   * leaving the page left the source pushing rows into a detached grid.
-   *
-   * An ALREADY-ABORTED signal binds nothing, which is what a caller who
-   * cancelled before this ran should get.
+   * TRAP T-signal-not-a-teardown-list — one abort, not a list someone forgets.
    */
   signal?: AbortSignal;
   /**
@@ -120,53 +62,22 @@ export interface BindOptions {
    * STEER ONLY — the component's events reach the source, but no rows are ever
    * pushed back to it.
    *
-   * The mirror of `readonly`, and the case the quick-filter toolbar needs: its
-   * `populate()` means "here are your CHIPS", not "here are your rows", so a
-   * plain bind overwrote the bar with records and it came back holding only
-   * Group and Sort. Without this, such a component has to be hand-wired with a
-   * listener per event — which is the six-handler tangle the whole layer exists
-   * to remove.
-   *
-   * It still receives the STATE attributes (data-sort-field and the rest), so
-   * the toolbar's Sort chip and the grid's header arrow stay two views of one
-   * value.
+   * TRAP T-steer-only-populate-means-chips — its populate() takes chips.
    */
   steerOnly?: boolean;
   /**
    * Events from this component the source must NOT act on.
    *
-   * `readonly` is all-or-nothing; this is the scalpel. The case it exists for
-   * is a view that translates ONE of a component's events itself: the records
-   * page turns the quick-filter toolbar's chips into a filter by hand, because
-   * only it knows that two picks on a date column mean a range — and only it
-   * can combine those chips with the data grid's column filters.
-   *
-   * Without this both write `filter`, and the LAST one wins. The source hears
-   * `quick-filter-change` and sets the filter from the chips alone, throwing
-   * away whatever else the view had folded in. Naming the event here leaves
-   * `sort-change` and `group-change` working as they always did.
-   *
-   *   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'] });
+   * TRAP T-ignore-is-the-scalpel — a view that owns one event owns it outright.
    */
   ignore?: readonly string[];
   /**
    * Reshape the rows before they reach this component.
    *
-   * Components ask for different shapes: a chart wants `[{ label, value }]`, the
-   * data grid wants `{ columns, rows }`. Rather than force one shape on every
-   * component — which would mean changing 21 of them — the ADAPTER lives at the
-   * binding, where the mismatch actually is.
-   *
-   *   source.bind(grid,  { as: (rows) => ({ columns, rows }) });
-   *   source.bind(chart, { as: (rows) => rows.map(toSlice) });
-   *
-   * It also receives the source, so an adapter can read the total or the state —
-   * a "N of M" summary needs both.
+   * TRAP T-adapter-lives-at-the-binding — 21 components, one shape each.
    */
   as?: (rows: Row[], source: DataSource) => unknown;
 }
-
-/** A populatable element — every Sherpa data component answers this. */
 
 /** What `change` carries, for a listener that wants the result without asking. */
 export interface DataChangeDetail extends LoadResult {
@@ -176,9 +87,7 @@ export interface DataChangeDetail extends LoadResult {
 /**
  * The events a bound component may send UP to the source.
  *
- * Only these. A component fires plenty more (`row-click`, `bar-click`) that are
- * the app's business, not the source's — a source that listened to everything
- * would turn every click into a reload.
+ * TRAP T-steering-events-are-a-closed-list — why `row-click` is not here.
  */
 const STEERING_EVENTS = [
   'sort-change',
@@ -209,41 +118,21 @@ export class DataSource extends EventTarget {
   >();
   #result: LoadResult = { rows: [], total: 0 };
   #autoLoad: boolean;
-  /**
-   * The load in flight. A source is steered by controls a person can use quickly
-   * — three filter chips in a second — and each change starts a load. Holding the
-   * latest lets a slower earlier response be DISCARDED rather than overwriting a
-   * newer one, which is the classic out-of-order bug.
-   */
+  // TRAP T-in-flight-ticket-discards-stale — three keys, and why not one.
+  /** The load in flight, as a ticket the response is checked against. */
   #inFlight: symbol | null = null;
-
-  /**
-   * The ViewState the last COMPLETED load asked for, serialised.
-   *
-   * A load whose key matches this is asking a question already answered, so it
-   * is skipped — see `load()`. Recorded only after a response wins the
-   * in-flight race, so a discarded one cannot make the next request skip.
-   */
+  /** The ViewState the last COMPLETED load asked for, serialised. */
   #lastLoadKey: string | null = null;
   /** Has any load completed? Until one has, nothing may be skipped. */
   #loaded = false;
-  /**
-   * The key of the load currently in flight.
-   *
-   * Separate from `#lastLoadKey`, which is only written on COMPLETION — a burst
-   * of identical writes all run before the first finishes, so the completed key
-   * cannot stop them and this can.
-   */
+  /** The key of the load currently in flight. */
   #inFlightKey: string | null = null;
   /** A coalesced load is queued for the end of this tick — see `#schedule`. */
   #scheduled = false;
   /**
    * The named parts of the filter, in contribution order — see `contribute`.
    *
-   * A Map so a key is replaced rather than appended, and so iteration order is
-   * stable: the composed filter should not re-order itself between loads, or
-   * `#stateKey()` would see a change where there is none and F1's skip would
-   * stop working.
+   * TRAP T-parts-order-must-be-stable — a Map, and why the order matters.
    */
   #parts = new Map<string, Filter>();
 
@@ -260,11 +149,8 @@ export class DataSource extends EventTarget {
       pageSize: options.pageSize ?? null,
       ...(options.filter ? { filter: options.filter } : {}),
     };
-    // Records changing under us is a reload — deciding whether a changed row
-    // still matches the filter, and where it now sorts, is exactly this class's
-    // job, and re-deriving beats getting that wrong.
-    // The store's own rows changed — an insert, an update, a socket message.
-    // FORCED, because the ViewState is identical and the answer is not.
+    // The store's rows changed — an insert, an update, a socket message. FORCED,
+    // because the ViewState is identical and the answer is not.
     this.store.addEventListener('change', () => void this.load({ force: true }));
   }
 
@@ -279,28 +165,10 @@ export class DataSource extends EventTarget {
    * Restore a whole view state at once — a saved view, a deep link, or what a
    * reload threw away.
    *
-   * MERGED, not replaced: a caller restoring a filter and a sort must not
-   * silently reset the page size to null. Every field is optional, and what is
-   * not named keeps the value it had.
-   *
-   * ONE load, whatever was set. The six individual setters coalesce within a
-   * tick (see `#schedule`), and so does this — restoring six fields does not
-   * mean six queries.
-   *
-   * It does NOT persist anything. Where a state is kept, and whether it should
-   * survive a reload at all, is the host's decision — `sessionStorage` per tab,
-   * a URL, a saved-views table on a server. A source that wrote to storage
-   * would make that choice for every app that ever binds one.
+   * TRAP T-set-state-merges-page-last — merge, page last, and no persistence.
    */
   setState(next: Partial<ViewState>): void {
     if ('filter' in next) {
-      // A restored filter REPLACES, and clears the named parts with it — the
-      // same claim `setFilter` makes. A saved view says what the whole query
-      // is; leaving a stale contribution behind would AND something the
-      // definition never mentioned into it.
-      //
-      // A host that composes by contribution restores the PARTS rather than
-      // the whole: `contribute('view', snapshot.source.filter)` after this.
       this.#parts.clear();
       if (next.filter) this.#state.filter = next.filter;
       else delete this.#state.filter;
@@ -320,13 +188,7 @@ export class DataSource extends EventTarget {
    * The whole of the last load's answer — rows, total, and anything else the
    * store reported.
    *
-   * `rows` and `total` have their own getters because they are what a component
-   * needs; this is for what a HOST needs. A schema that refused rows reports
-   * `dropped` and `issues` here, and without a way to read them a store could
-   * count them and nobody would ever know — which is worse than not counting.
-   *
-   * A copy of the container, so a caller cannot steer the source by writing to
-   * it. The rows inside are the same objects `rows` hands out.
+   * TRAP T-result-is-the-hosts-half — for a HOST, and a copy.
    */
   get result(): LoadResult {
     return { ...this.#result };
@@ -352,9 +214,8 @@ export class DataSource extends EventTarget {
   /**
    * Set the sort. `null` clears it.
    *
-   * A page is a window onto an ORDER, so changing the order invalidates the
-   * window — every narrowing or re-ordering change returns to page 1. Staying on
-   * page 7 of a freshly filtered list shows the user an empty panel.
+   * A page is a window onto an ORDER, so every narrowing or re-ordering change
+   * returns to page 1 — page 7 of a freshly filtered list is an empty panel.
    */
   setSort(field: string | null, direction: SortDirection = 'asc'): void {
     this.#state.sort = field ? [{ field, direction }] : [];
@@ -371,14 +232,7 @@ export class DataSource extends EventTarget {
   /**
    * Replace the WHOLE filter.
    *
-   * The blunt instrument, and still the right one when a single writer owns the
-   * whole query. Where several do — an app header, a view toolbar, a grid's
-   * columns, a saved view — use `contribute()`, which lets each own its own
-   * part instead of the last one winning.
-   *
-   * Setting a filter directly CLEARS every contribution, because the two are
-   * different claims about the same value and quietly ANDing them would make
-   * `setFilter` not mean what it says.
+   * TRAP T-contribute-beats-last-writer — and why this clears contributions.
    */
   setFilter(filter: Filter | undefined): void {
     this.#parts.clear();
@@ -388,23 +242,8 @@ export class DataSource extends EventTarget {
   /**
    * Own ONE NAMED PART of the filter.
    *
-   *   source.contribute('chips',   filterFromChips(...));
-   *   source.contribute('columns', ['and', ...clauses]);
-   *   source.contribute('view',    preset.filter);
-   *
-   * Every part is ANDed. A key is replaced by its next contribution and removed
-   * by `undefined`, so each writer changes only what it owns and cannot clobber
-   * another's.
-   *
-   * WHY THIS EXISTS. A real screen has several filter sources at different
-   * altitudes — the app header, the view's own toolbar, a grid's column
-   * headings, a saved view — and they all write one `filter`. With `setFilter`
-   * alone the last writer wins, so every view ends up rebuilding the whole
-   * filter by hand from variables it keeps in step itself. The records example
-   * had FOUR of those before this existed.
-   *
-   * Provenance survives to the edge as a bonus: "clear just the column filters"
-   * is `contribute('columns', undefined)` rather than a recomposition.
+   * TRAP T-contribute-beats-last-writer — every part is ANDed; `undefined`
+   * removes one.
    */
   contribute(key: string, filter: Filter | undefined): void {
     if (filter) this.#parts.set(key, filter);
@@ -452,19 +291,7 @@ export class DataSource extends EventTarget {
   /**
    * COALESCE the writes in one tick into a single load.
    *
-   * Every setter above calls this rather than `load()` directly. A person
-   * typing produces a filter per keystroke, and each is a DIFFERENT question —
-   * so F1's identical-key guard cannot help. Six keystrokes over 20,000 rows
-   * meant six full filter-and-sort passes, five of whose answers were thrown
-   * away before anyone saw them.
-   *
-   * A microtask, not a timer. It waits for the current synchronous run to
-   * finish and no longer: a view that sets a filter, a sort and a page in one
-   * handler gets ONE load, and a keystroke still queries on its own tick. A
-   * debounce would be a policy about how fast people type, which is the
-   * caller's to decide, not this layer's.
-   *
-   * `load()` stays immediate and public: a caller that awaits it means it.
+   * TRAP T-coalesce-microtask-not-debounce — a microtask, and why not a timer.
    */
   #schedule(): void {
     if (this.#scheduled) return;
@@ -498,33 +325,19 @@ export class DataSource extends EventTarget {
   /**
    * Re-read from the store and push the result to every bound component.
    *
-   * Emits `loading` first so a bound sherpa-container can show its overlay, then
-   * `change` — or `error`, which is a STATE, not a throw: a failed load must not
-   * take down the caller that merely changed a filter.
+   * TRAP T-error-is-a-state-not-a-throw — a failed load keeps the last rows.
    */
   async load(options: { force?: boolean } = {}): Promise<LoadResult> {
     // SKIP A LOAD THAT WOULD ASK THE SAME QUESTION TWICE.
-    //
-    // Measured before this existed: twenty filter writes with the SAME value
-    // cost the same 667ms as twenty real ones, and produced 120 populates
-    // across six bound components for zero change on screen. A filter chip
-    // re-emitting its state, a view re-applying a filter it already applied,
-    // a toolbar syncing back an attribute it was just given — all of them
-    // arrive here as a load, and all of them are free to ignore.
-    //
-    // `force` is how a load that MUST happen says so, and the store's own
-    // `change` listener passes it: an insert leaves the ViewState untouched
-    // and changes the answer, so without it every mutation would be swallowed.
+    // TRAP T-no-op-load-guard — 667ms, 120 populates, six components, zero
+    // change on screen. `force` is how a load that MUST happen says so, and the
+    // store's `change` listener passes it.
+    // TRAP T-in-flight-ticket-discards-stale — why ANSWERED and ASKED are two
+    // separate checks.
     const key = this.#stateKey();
     if (!options.force) {
-      // Already ANSWERED — the last completed load asked exactly this.
-      if (key === this.#lastLoadKey && this.#loaded) return this.#result;
-      // Already ASKED — a load for this same key is in flight. This is the
-      // case that matters: a burst of writes all fire before any completes, so
-      // #lastLoadKey is still stale for every one of them. Without this, 20
-      // identical writes in one tick produced 20 store reads even though the
-      // first was already fetching the answer.
-      if (key === this.#inFlightKey) return this.#result;
+      if (key === this.#lastLoadKey && this.#loaded) return this.#result;  // answered
+      if (key === this.#inFlightKey) return this.#result;                  // asked
     }
 
     const ticket = Symbol('load');
@@ -534,22 +347,16 @@ export class DataSource extends EventTarget {
 
     try {
       const result = await this.store.load(this.#loadOptions());
-      // A response that is not the latest is DISCARDED. Without this, a slow
-      // first filter landing after a fast second one would show the wrong rows.
+      // Not the latest → DISCARDED, and the key recorded only by the winner.
       if (this.#inFlight !== ticket) return this.#result;
       this.#result = result;
-      // Recorded only on a load that COMPLETED and won the race, so a
-      // discarded response cannot make the next identical request skip.
       this.#lastLoadKey = key;
       this.#loaded = true;
 
-      // A page can fall past the end when a filter narrows the set — re-clamp and
-      // reload once rather than showing an empty page.
+      // TRAP T-error-is-a-state-not-a-throw — re-clamp and reload ONCE, FORCED.
       const pages = this.totalPages;
       if (this.#state.pageSize && this.#state.page > pages) {
         this.#state.page = pages;
-        // FORCED: the state just changed, but so did #lastLoadKey above — and
-        // re-clamping must re-read whatever the new page holds.
         return this.load({ force: true });
       }
 
@@ -561,6 +368,7 @@ export class DataSource extends EventTarget {
       );
       return result;
     } catch (error) {
+      // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
       if (this.#inFlight !== ticket) return this.#result;
       this.dispatchEvent(new CustomEvent('error', { detail: { error } }));
       return this.#result;
@@ -576,11 +384,9 @@ export class DataSource extends EventTarget {
   /**
    * The current ViewState as one comparable string.
    *
-   * JSON, not a hand-rolled concatenation: `filter` is a nested tree, so there
-   * is no shorter honest way to compare two of them. Key ORDER is stable
-   * because every field is written by this class in a fixed order, and the
-   * cost is a few hundred bytes against a load that would otherwise re-filter
-   * the whole collection.
+   * JSON, because `filter` is a nested tree. Key order is stable — every field
+   * is written by this class in a fixed order — and a few hundred bytes beats
+   * re-filtering the whole collection.
    */
   #stateKey(): string {
     return JSON.stringify(this.#loadOptions());
@@ -597,8 +403,7 @@ export class DataSource extends EventTarget {
    */
   bind(el: Populatable, options: BindOptions = {}): () => void {
     if (this.#bound.has(el)) return () => this.unbind(el);
-    // Already cancelled: bind nothing, and hand back a no-op rather than a
-    // function that would unbind something this call never did.
+    // TRAP T-signal-not-a-teardown-list — an aborted signal binds nothing.
     if (options.signal?.aborted) return () => {};
 
     const readonlyBind = options.readonly ?? false;
@@ -607,10 +412,7 @@ export class DataSource extends EventTarget {
     const ignored = new Set(options.ignore ?? []);
     if (!readonlyBind) {
       for (const type of STEERING_EVENTS) {
-        // An IGNORED event gets no listener at all, rather than a listener that
-        // returns early — so a view that owns an event owns it outright, with
-        // no chance of the source having already acted by the time the view's
-        // own handler runs.
+        // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
         if (ignored.has(type)) continue;
         const handler = ((event: Event) => this.#steer(type, event as CustomEvent)) as EventListener;
         el.addEventListener(type, handler);
@@ -629,13 +431,10 @@ export class DataSource extends EventTarget {
       ...(options.into ? { into: options.into } : {}),
     });
 
-    // The platform removes the listeners; this drops the binding itself, which
-    // is what stops the source pushing rows. `once` so an abort cannot leave a
-    // listener on the signal for an element that is already gone.
+    // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
     options.signal?.addEventListener('abort', () => this.unbind(el), { once: true });
 
-    // Populate straight away with whatever is already loaded, so a component
-    // bound late is not blank until the next change.
+    // Whatever is already loaded, so a component bound late is not blank.
     this.#push(el);
     if (this.#autoLoad && !this.#result.rows.length) void this.load();
 
@@ -656,8 +455,7 @@ export class DataSource extends EventTarget {
   /**
    * Turn one component's event into a state change.
    *
-   * The detail shapes are the components' own, already ratified — this reads
-   * them, it does not ask components to send anything new.
+   * TRAP T-steering-events-are-a-closed-list — the detail shapes are ratified.
    */
   #steer(type: (typeof STEERING_EVENTS)[number], event: CustomEvent): void {
     const detail = (event.detail ?? {}) as Record<string, unknown>;
@@ -716,10 +514,7 @@ export class DataSource extends EventTarget {
   /**
    * Give one component the rows and the view state.
    *
-   * The state is written as ATTRIBUTES, which is what makes a shared sort visible
-   * without a JS branch anywhere: the grid's header arrow is drawn from
-   * `data-sort-field` / `data-sort-direction` in CSS, so writing them here makes
-   * the toolbar's Sort chip and the grid's own header two views of one value.
+   * TRAP T-push-writes-state-as-attributes — and `data-filter-fields`.
    */
   #push(el: Populatable): void {
     const { sort, group, page, pageSize, filter } = this.#state;
@@ -728,43 +523,29 @@ export class DataSource extends EventTarget {
     setAttr(el, 'data-sort-field', first?.field);
     setAttr(el, 'data-sort-direction', first ? (first.direction ?? 'asc') : undefined);
     setAttr(el, 'data-group-field', group ?? undefined);
-    // WHICH fields the filter touches — not the filter itself. A grid marks
-    // those columns' headers active, so a filter set from the toolbar ABOVE the
-    // grid still shows up on the columns it is narrowing. Without this the grid
-    // only ever knew about filters typed into its own header row, and a chip
-    // change silently shrank the table with nothing to say why.
+    // WHICH fields the filter touches, not the filter itself — see
+    // TRAP T-push-writes-state-as-attributes.
     const fields = filterFields(filter);
     setAttr(el, 'data-filter-fields', fields.length ? fields.join(' ') : undefined);
     setAttr(el, 'data-page', pageSize ? String(page) : undefined);
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
     setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);
 
-    // …but the ROWS are pushed only where they mean something. A steer-only
-    // component's populate() takes something else entirely — the quick-filter
-    // toolbar's means "here are your CHIPS" — so feeding it records replaced the
-    // bar with data. The state attributes above still reach it, which is what
-    // keeps its Sort chip and the grid's header arrow one value.
+    // …but the ROWS go only where they mean something.
+    // TRAP T-steer-only-populate-means-chips — the attributes still reach it.
     const entry = this.#bound.get(el);
     if (entry?.steerOnly) return;
 
-    // SKIP A PUSH THAT WOULD HAND OVER THE SAME ROWS AGAIN.
-    //
-    // A component rebuilds its shadow DOM from whatever populate() gives it, so
-    // pushing rows it already holds is a full rebuild for no change. Measured:
-    // six bound components, twenty no-op loads, 120 populates.
-    //
-    // The guard is on the ROWS ARRAY, not on the adapted payload. `applyOptions`
-    // returns a NEW array per load, so a fresh array means a fresh answer —
-    // while an `as` adapter builds a new object every call by construction, so
-    // comparing its output would never match and the guard would never fire.
-    //
-    // A store that mutates its rows in place would defeat this, which is why
-    // ArrayStore copies (`[...rows]`) rather than sorting the caller's array.
+    // SKIP A PUSH THAT WOULD HAND OVER THE SAME ROWS AGAIN. Six bound
+    // components, twenty no-op loads, 120 populates.
+    // TRAP T-no-op-load-guard — and why ArrayStore copies rather than sorting in
+    // place.
+    // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
     if (entry && entry.lastRows === this.#result.rows) return;
     if (entry) entry.lastRows = this.#result.rows;
 
-    // populate() waits for the first render itself, so a component bound before
-    // it has upgraded still gets its rows.
+    // populate() waits for the first render itself, so a component bound
+    // before it upgraded still gets its rows.
     const adapt = entry?.as;
     const payload = adapt ? adapt(this.#result.rows, this) : this.#result.rows;
 
@@ -780,13 +561,7 @@ export class DataSource extends EventTarget {
 /**
  * The shared draft each `into` bind writes its own part of.
  *
- * ON THE ELEMENT, not in the source, because the point of `into` is that two
- * SOURCES feed one component and neither can see the other. The element is the
- * only thing both can reach.
- *
- * A Symbol so it cannot collide with anything a component or a host puts on its
- * own element, and a WeakMap would be equivalent — this is simply local to the
- * one function that reads it.
+ * TRAP T-into-merges-on-the-element — on the ELEMENT, and why a Symbol.
  */
 const DRAFT = Symbol('sherpa:into-draft');
 
@@ -794,13 +569,8 @@ const DRAFT = Symbol('sherpa:into-draft');
  * Write `value` at `path` in the element's shared draft, and return the draft.
  *
  * `series.0` → `{ series: [value] }`, `totals.open` → `{ totals: { open: … } }`.
- * A NUMERIC segment builds an array and a named one an object, so the path
- * describes the payload the component already takes rather than asking it to
- * change shape.
- *
- * The draft is MUTATED and handed back, not rebuilt: a component holding the
- * previous object still sees the update, and the source's rows-identity guard
- * upstream already decides whether a push is worth making at all.
+ * MUTATED and handed back, not rebuilt — see
+ * TRAP T-into-merges-on-the-element.
  */
 function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   const host = el as unknown as Record<symbol, unknown>;
@@ -808,8 +578,7 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   if (!segments.length) return value;
 
   const first = segments[0]!;
-  // The ROOT follows the same rule as any segment: a numeric first segment
-  // means the payload itself is an array.
+  // The ROOT follows the same rule: a numeric first segment means an array.
   host[DRAFT] ??= /^\d+$/.test(first) ? [] : {};
   let node = host[DRAFT] as Record<string | number, unknown>;
 
@@ -832,12 +601,7 @@ function setAttr(el: HTMLElement, name: string, value: string | undefined): void
 /**
  * Turn a quick-filter toolbar's change detail into a Filter.
  *
- * Its detail is `{ active: string[], values: Record<string, string[]> }` —
- * `active` names the toggle chips that are on, `values` the menu chips' picks.
- * Each chip's id IS its field, by construction in the toolbar.
- *
- * A chip narrows with OR across its own values, and chips narrow with AND across
- * each other: "Plan is Pro or Enterprise, AND Region is EMEA".
+ * TRAP T-toggle-chips-have-no-field — OR within a chip, AND across them.
  */
 function filterFromChips(detail: Record<string, unknown>): Filter | undefined {
   const clauses: Filter[] = [];
@@ -850,10 +614,7 @@ function filterFromChips(detail: Record<string, unknown>): Filter | undefined {
     }
   }
 
-  // Toggle chips have no field of their own — the toolbar's own example maps them
-  // onto one column (a status). They are reported so an app can act on them, but
-  // a source cannot guess the column, so they are deliberately NOT turned into a
-  // clause here. `active` reaches the app through the event as it always did.
+  // TRAP T-toggle-chips-have-no-field — `active` becomes no clause here.
 
   if (!clauses.length) return undefined;
   return clauses.length === 1 ? clauses[0]! : ['and', ...clauses];

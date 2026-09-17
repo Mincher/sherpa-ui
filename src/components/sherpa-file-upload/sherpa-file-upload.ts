@@ -7,11 +7,6 @@
  * file picker; you can also drop files onto the zone. CSS handles the drag
  * highlight and disabled look; JS holds the files and fires the events.
  *
- * @fires file-add          detail: { added: File[], files: File[] }
- * @fires file-remove       detail: { removed: File, files: File[] }
- * @fires file-clear        detail: {}
- * @fires file-upload-start detail: { files: File[] }
- * @fires files-change      detail: { files: File[] }   (kept for back-compat)
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -122,10 +117,12 @@ export class SherpaFileUpload extends SherpaElement {
   }
 
   #render(): void {
-    this.renderList('.file-list', 'template.file-item-tpl', this.#files, (row, file, i) => {
-      row.dataset['index'] = String(i);
-      row.querySelector('.file-name')!.textContent = file.name;
-      row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
+    // The name and the index are declared on the prototype. The SIZE is not —
+    // a raw byte count is unreadable, and formatting it is a computation.
+    this.renderRows('.file-list', 'template.file-item-tpl', this.#files, {
+      after: (row, file) => {
+        row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
+      },
     });
     this.toggleAttribute('data-has-files', this.#files.length > 0);
   }

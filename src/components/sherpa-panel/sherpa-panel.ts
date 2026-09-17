@@ -7,10 +7,6 @@
  * behaviour to adopt, so this file is minimal: it just renders the optional
  * data-heading. Everything else — surface, regions, collapsed state — is CSS.
  *
- * @element sherpa-panel
- * @attr {string}  data-heading   — convenience header label (a slotted [slot=header] overrides it)
- * @attr {boolean} data-collapsed — hides the body/footer, leaving the header
- * @attr {enum}    data-status    — status colour cascade (critical | warning | success | info | urgent)
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
