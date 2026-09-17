@@ -1,14 +1,21 @@
 # Sherpa-UI — component specifications
 
-The **contract** for each `sherpa-*` component: what it should DO and which variations it
-should support. Grounded in `docs/DESIGN-SYSTEM-FIGMA-REFERENCE.md` (the structural
-inventory), live Figma, the component descriptions, and existing code/docs. This is the
-target the implementation + visual-diff pass must meet — where code diverges, the code is
-wrong unless a `_divergence` note says otherwise.
+What each `sherpa-*` component should DO, and which variations it should support —
+the INTENT, grounded in `docs/DESIGN-SYSTEM-FIGMA-REFERENCE.md`, live Figma and the
+component descriptions.
 
-> **Event-name ratification (2026-09-08):** where an event name in this doc disagreed with the
-> name a component actually fires, **the code wins** — the names below have been updated to the
-> real dispatched event. Do not rename events in code to match an older spec draft.
+> **This is not the machine contract.** Each component's `<name>.component.yaml` is:
+> generated from its own HTML/CSS/TS, git-tracked, and gated by `npm run spec:check`
+> in the pre-commit hook (schema + round-trip). That file is what the MCP and every
+> agent read, and it cannot drift without failing a commit.
+>
+> This doc holds what a generated spec CANNOT: why a component exists, what it is for,
+> and where Figma and the code deliberately differ. Read it for intent; read the yaml
+> for the surface.
+>
+> **Where the two disagree, THE CODE WINS.** Ratified 2026-09-08 for event names after
+> a prose-scraping generator put phantom events into 31 of 58 specs — one declared an
+> event literally called `nothing`. Do not rename anything in code to match a line here.
 
 ## Entry format (agreed on the Button pilot)
 
@@ -446,27 +453,17 @@ Each component gets:
 
 ## sherpa-tabs  (Figma "Tab Group")
 - **Purpose:** switch between sibling views; one tab active.
-- **Anatomy:** `<div role="tablist">` (tablist SLOT of `sherpa-tab`) + slotted panels.
+- **Anatomy:** `<div role="tablist">` + a cloned `<button role="tab">` per tab + slotted panels.
 - **Variants:** none.
-- **Properties:** Figma `tablist` (SLOT); code `data-active` (index/id), JS wiring.
+- **Properties:** Figma `tablist` (SLOT); code `data-current-id`, filled by `populate([{id,label}])`.
 - **Appearance / status:** tab surface = a SURFACE not a control (active tab reads as raised surface); n/a `data-look`.
 - **Sizing / geometry:** no size axis; snap where a tab abuts panel edge.
 - **States:** active (aria-selected) / hover / :focus-visible / disabled. CSS-owned off `data-active`.
 - **Behaviour + events:** roving-tab keyboard; selecting fires **`tab-change`** (detail { index/id }). GAP: Figma `tab-load` (lazy panel) not in code.
-- **Composition:** composes sherpa-tab; wraps panels.
+- **Composition:** stamps its own tab buttons from a cloning prototype; wraps slotted panels.
 - **Notes / divergences:** active tab styled as surface (ratified earlier). `tab-load` missing.
-
-## sherpa-tab
-- **Purpose:** one clickable tab inside a Tab Group.
-- **Anatomy:** `<button role="tab">` › optional icon · label · optional count.
-- **Variants:** none.
-- **Properties:** `data-label` (T), `data-active` (B), native disabled.
-- **Appearance / status:** surface-like (see Tab Group); n/a `data-look`.
-- **Sizing / geometry:** no size axis; snap-aware in the strip.
-- **States:** active / hover / :focus-visible / disabled. CSS-owned.
-- **Behaviour + events:** click bubbles to Tab Group (which fires `tab-change`); no own event.
-- **Composition:** composed-by Tab Group.
-- **Notes / divergences:** thin; state driven by parent.
+  Figma's `sherpa-tab` sub-component was never built — the strip stamps `<button>`s, so
+  there is no per-tab element to document.
 
 ## sherpa-pagination
 - **Purpose:** page through a long list/grid (prev/next + page numbers + result count).
