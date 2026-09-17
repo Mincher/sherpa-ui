@@ -22,7 +22,6 @@ import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { html, render } from './html.mjs';
 import { componentUsage } from './component-usage.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -83,14 +82,5 @@ app.get('/:view', (req, res) => {
   res.redirect(302, `/?view=${view}`);
 });
 
-// A tiny index that lists the views (uses the html helper, kept from the old server).
-app.get('/index', (_req, res) =>
-  res.type('html').send(
-    render(html`<!doctype html><html><head><meta charset="utf-8"><title>Sherpa-UI examples</title></head>
-      <body><h1>Sherpa-UI examples</h1><ul>${VIEWS.map(
-        (v) => html`<li><a href="/${v}">${v}</a></li>`,
-      )}</ul></body></html>`),
-  ),
-);
 
 app.listen(PORT, () => console.log(`Sherpa-UI examples → http://localhost:${PORT}`));

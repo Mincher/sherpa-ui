@@ -9,6 +9,13 @@
  * Extracted from `render-view.ts` when `SessionStore` needed the same three
  * functions. They are the standard's, not ours, so there is exactly one right
  * implementation and no reason for two.
+ *
+ * DO NOT MERGE THIS INTO `session.ts`, though it is this file's only internal
+ * importer and an audit will suggest it. `pointer.ts` is on the DOM-FREE list
+ * in `.eslintrc.json` — a server, a test or an MCP tool imports it — while
+ * `session.ts` reaches for `localStorage` directly and is browser-only by
+ * design. Folding one into the other would move guarded code into an unguarded
+ * file and quietly lose the guarantee. One file per boundary is the point.
  */
 
 /**
