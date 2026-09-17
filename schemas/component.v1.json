@@ -26,12 +26,13 @@
     },
     "element": { "$ref": "#/$defs/element" },
     "anatomy": {
-      "description": "The Shadow-DOM node tree the component renders. Either a single `root` node (with recursive `children`) OR — for components whose <template> has 2+ sibling root nodes — a `roots` array of node trees rendered in order. Exactly one of `root`/`roots` is present. Drives HTML generation (one <template> per templates[]). Round-trips to the real .html structure.",
+      "description": "The Shadow-DOM node tree the component renders. One of three forms: a single `root` node (with recursive `children`); a `roots` array, for a <template> with 2+ sibling root nodes, rendered in order; or `byTemplate`, a map of template id → that template's own roots, for a component whose templates are DIFFERENT trees rather than one tree with optional nodes. Exactly one form is present. Drives HTML generation (one <template> per templates[]). Round-trips to the real .html structure.",
       "type": "object",
       "additionalProperties": false,
       "oneOf": [
         { "required": ["root"] },
-        { "required": ["roots"] }
+        { "required": ["roots"] },
+        { "required": ["byTemplate"] }
       ],
       "properties": {
         "root": { "$ref": "#/$defs/node" },
@@ -40,6 +41,16 @@
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/node" }
+        },
+        "byTemplate": {
+          "description": "Per-template roots, keyed by template id, for a component whose extra templates are DIFFERENT trees — sherpa-input-text swaps its <input> for a <textarea>, sherpa-nav-item's `promo` renames every class, sherpa-button's `icon` drops four of five children. `showWhen` can only ADD or REMOVE a node against one shared tree, so it cannot express a changed tag, class or part, and those three components could never round-trip. Each value is that template's ordered sibling roots, exactly as `roots` is for a single template. Mutually exclusive with `root`/`roots`.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/node" }
+          }
         }
       }
     },

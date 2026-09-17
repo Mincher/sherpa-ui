@@ -77,6 +77,10 @@ const NATIVE_ATTRS = new Set([
   'disabled', 'name', 'value', 'required', 'readonly', 'placeholder',
   'checked', 'min', 'max', 'step', 'minlength', 'maxlength', 'pattern',
   'multiple', 'href', 'target', 'type', 'rows', 'cols', 'autocomplete',
+  // `indeterminate` is an IDL property with no content attribute, but the select
+  // controls observe it as one — and a name missing here never gets a reactive
+  // kind, so it lands as kind:style and drops out of the generated observed list.
+  'indeterminate', 'open', 'hidden', 'selected', 'inputmode',
 ]);
 
 // ══ file loading ═══════════════════════════════════════════════════════════════
@@ -185,14 +189,22 @@ function parseNodes(src) {
   return nodes;
 }
 
-/** Build a bare <slot> child node { slot, attrs? } — dropping the `name` attr (it
- *  becomes `slot`) and any FALLBACK content (compileDef emits an empty slot). Keeps
- *  every other attr (notably data-accepts) so name + attr-set + position round-trip. */
+/** Build a bare <slot> child node { slot, attrs?, children? } — dropping the `name`
+ *  attr (it becomes `slot`) and keeping every other attr (notably data-accepts) so
+ *  name + attr-set + position round-trip.
+ *
+ *  FALLBACK CONTENT is kept as `children`, which is what it is: the nodes the slot
+ *  shows when nothing is projected into it. Dropping it was the single largest
+ *  round-trip gap — 42 diffs across 12 components, every one of them a `<slot>`
+ *  wrapping a default `<i class="glyph">` or similar. A slot node has no other use
+ *  for `children`, so no new field is needed. */
 function slotChildNode(n) {
   const a = { ...n.attrs };
   const out = { slot: a.name ?? '' };
   delete a.name;
   if (Object.keys(a).length) out.attrs = a;
+  const kids = (n.children ?? []).map((c) => htmlNodeToAnatomy(c));
+  if (kids.length) out.children = kids;
   return out;
 }
 /** True when a <slot> can collapse onto its parent as `parent.slot` — the legacy
@@ -353,6 +365,13 @@ function parsePublicApi(comment) {
     // hyphenated name first removes the chance to backtrack into it.
     if (!mm) mm = /^(data-[\w-]+(?:\s*\/\s*data-[\w-]+)*)\s+(.*)$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s*[—-]\s*(.*)$/.exec(entry);
+    // A names-only entry, single or slashed, whose description wrapped onto the
+    // next line and folded in behind a single space. `name / disabled / required`
+    // matched none of the rules above — no 2-space column, no `data-` prefix, no
+    // dash — so three real native attributes were dropped from both select
+    // controls without a word. Take the leading slash list, keep the rest as the
+    // description.
+    if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)+)(?:\s+(.*))?$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*)\s*$/.exec(entry) ? [entry, entry.trim(), ''] : null;
     if (!mm) continue;
     const names = mm[1].split('/').map((s) => s.trim()).filter(Boolean);
@@ -740,14 +759,46 @@ function parseTsMethods(ts) {
  * writing down next to it.
  */
 function parseObserved(ts) {
-  const m = /static override observed\s*=\s*\[([\s\S]*?)\]/.exec(ts ?? '');
+  const src = ts ?? '';
+  const m = /static override observed\s*=\s*\[([\s\S]*?)\]/.exec(src);
   if (!m) return [];
-  return m[1]
+  const out = [];
+  for (const raw of m[1]
     .replace(/\/\*[\s\S]*?\*\//g, '')   // block comments
     .replace(/\/\/[^\n]*/g, '')           // line comments
+    .split(',')) {
+    const tok = raw.trim().replace(/^['"]|['"]$/g, '');
+    if (!tok) continue;
+    /* `...MIRRORED` spreads a const array declared above — the select controls
+       share one list of native attributes they copy onto the inner <input>.
+       Read as a literal it became an attribute called `...MIRRORED`, so both
+       components failed the round-trip for ever. Expand it from the file. */
+    const spread = /^\.\.\.\s*([A-Za-z_$][\w$]*)$/.exec(tok);
+    if (spread) {
+      out.push(...expandArrayConst(src, spread[1]));
+      continue;
+    }
+    out.push(tok);
+  }
+  return out;
+}
+
+/**
+ * Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
+ *
+ * Returns `[]` when the name is not a plain array of literals here — an import,
+ * a computed value, a call. An honest gap beats a guessed one, the same ruling
+ * that leaves an un-inferable event detail as `unknown`.
+ */
+function expandArrayConst(src, name) {
+  const re = new RegExp(`const\\s+${name}\\s*=\\s*\\[([\\s\\S]*?)\\]`);
+  const m = re.exec(src);
+  if (!m) return [];
+  return m[1]
     .split(',')
-    .map((x) => x.trim().replace(/^['"]|['"]$/g, ''))
-    .filter(Boolean);
+    .map((x) => x.trim())
+    .filter((x) => /^(['"]).*\1$/.test(x))
+    .map((x) => x.slice(1, -1));
 }
 
 function generateSpec(name) {
@@ -790,8 +841,13 @@ function generateSpec(name) {
   // ── anatomy + templates ───────────────────────────────────────────────────────
   let anatomy = null;
   if (defaultTree && defaultTree.length) {
-    // the root element(s) — ignore stray comment-only nodes and top-level <slot>s
-    const roots = defaultTree.filter((n) => n.tag !== 'slot');
+    /* The root element(s). A top-level `<slot>` is kept — it is real markup, not
+       stray: `sherpa-loader`'s template is a spinner `<div>` beside a
+       `<slot name="label" class="label">`, and dropping the slot left ONE root,
+       so the second node disappeared from the spec and the round-trip reported a
+       node "present on one side only" for ever. Only genuinely empty nodes are
+       skipped. */
+    const roots = defaultTree.filter((n) => n.tag);
     if (roots.length === 1) anatomy = { root: htmlNodeToAnatomy(roots[0]) };
     else if (roots.length > 1) {
       // Multi-root <template>: emit the ordered list of sibling root node trees.
@@ -799,28 +855,49 @@ function generateSpec(name) {
       anatomy = { roots: roots.map((r) => htmlNodeToAnatomy(r)) };
     }
 
-    // Multi-template union: compileDef renders ONE anatomy filtered by showWhen per
-    // template. For each additional template that's an ADDITIVE superset of default
-    // (same nodes + extra trailing children), fold the extras in with `showWhen`.
-    // Non-additive templates (subset / divergent trees) can't be expressed and are
-    // reported as gaps. (Multi-root defaults do NOT run this merge — showWhen union
-    // is single-root only; extra templates on a multi-root component are reported.)
+    /* Multi-template union. compileDef renders ONE anatomy per template, filtered
+       by `showWhen`, so an extra template can only ADD or REMOVE a node against
+       the default tree. Where that is enough — the template is an ADDITIVE
+       superset — fold the extras in with `showWhen` and keep the compact single
+       tree, which is byte-stable for every component that has always passed.
+
+       Where it is NOT enough, fall back to `byTemplate`: one entry per template,
+       each with its own roots. `showWhen` cannot express a changed TAG, CLASS or
+       PART, and three components need exactly that — input-text swaps `<input>`
+       for `<textarea>`, nav-item's `promo` renames every class, button's `icon`
+       drops four of five children. They were reported as permanent gaps and
+       failed the round-trip for ever; the honest answer is to record both trees
+       rather than to pretend one covers both. */
+    const extraIds = templateIds.filter((t) => t !== 'default');
+    const needsByTemplate = [];
     if (anatomy && roots.length === 1) {
-      for (const tid of templateIds) {
-        if (tid === 'default') continue;
-        const otherRoots = (templatesObj[tid] || []).filter((n) => n.tag !== 'slot');
-        if (otherRoots.length !== 1) { notes.push(`template "${tid}" has ${otherRoots.length} roots — not merged (anatomy from default only)`); continue; }
+      for (const tid of extraIds) {
+        const otherRoots = (templatesObj[tid] || []).filter((n) => n.tag);
+        if (otherRoots.length !== 1) { needsByTemplate.push(tid); continue; }
         const merged = mergeShowWhen(anatomy.root, htmlNodeToAnatomy(otherRoots[0]), tid);
         if (merged.additive) anatomy.root = merged.node;
-        else notes.push(`template "${tid}" is not an additive superset of default (subset/divergent tree) — not round-trippable via showWhen`);
+        else needsByTemplate.push(tid);
       }
     } else if (anatomy && anatomy.roots) {
-      // Multi-root default: any additional template is NOT folded in (showWhen
-      // union is single-root only). Report each as an unmerged gap.
+      // A multi-root default cannot run the showWhen union at all (it aligns one
+      // tree against one tree), so every extra template needs its own entry.
+      needsByTemplate.push(...extraIds);
+    }
+    if (anatomy && needsByTemplate.length) {
+      /* Any template that needs its own tree forces the WHOLE anatomy into
+         `byTemplate` — the three forms are mutually exclusive, and a half-merged
+         anatomy (a `root` carrying showWhen for one template plus a map for
+         another) would have two sources of truth for the same template. Start
+         from the default's roots BEFORE any showWhen folding, so a template that
+         did merge is still emitted from its own markup. */
+      const byTemplate = {};
       for (const tid of templateIds) {
-        if (tid === 'default') continue;
-        notes.push(`template "${tid}" not merged — default is multi-root (showWhen union is single-root only)`);
+        const tRoots = (templatesObj[tid] || []).filter((n) => n.tag);
+        if (tRoots.length) byTemplate[tid] = tRoots.map((r) => htmlNodeToAnatomy(r));
       }
+      if (!byTemplate['default']) byTemplate['default'] = roots.map((r) => htmlNodeToAnatomy(r));
+      anatomy = { byTemplate };
+      notes.push(`anatomy uses byTemplate — template(s) ${needsByTemplate.join(', ')} are divergent trees, not additive supersets of default`);
     }
   } else if (html) {
     notes.push('no <template id="default"> — cannot derive anatomy');
@@ -850,16 +927,40 @@ function generateSpec(name) {
      and explaining why in a comment left the dead prop in its spec, because the
      explanation contains the name. So look for the three ways an attribute is
      really used: selected in CSS (`[data-x`), written in HTML (`data-x=`), or
-     read in TS (`dataset['x']` / `dataset.x`, its camelCase spelling). */
+     read in TS (`dataset['x']` / `dataset.x`, its camelCase spelling).
+
+     A DOUBLE-quoted match is not proof. `"stretch"` is the VALUE in
+     `:host([data-align="stretch"])` and `"scale"` is the VALUE in
+     `class="scale"` — both read as "used" under a bare substring test, which is
+     how two prose fragments became props. Single quotes are kept because that is
+     how TypeScript spells an attribute NAME (`'value-start'` in an `observed`
+     list); CSS and HTML use double quotes for values, so the two spellings
+     separate name from value on their own. */
   const attrInUse = (nm) => {
     const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     return sourceText.includes(`[${nm}`)          // CSS selector
       || sourceText.includes(`${nm}=`)            // HTML attribute
       || sourceText.includes(`'${nm}'`)           // getAttribute / observed list
-      || sourceText.includes(`"${nm}"`)
       || sourceText.includes(`dataset['${camel}']`)
       || sourceText.includes(`dataset.${camel}`);
   };
+  /* The SAME check on props the COMMENT produced, and it has to run FIRST.
+     `Public API:` is prose, and a wrapped sentence whose first word is followed
+     by an em-dash reads exactly like an entry — `stretch — ONE wide control
+     fills the row` is the tail of `data-align`'s description, and `scale — it is
+     a TICK` is the tail of `data-label`'s. Both became props. A `data-*` name is
+     unambiguous enough to stand on its own; a bare lowercase word has to be
+     found in the code, which is the rule the events already follow: the comment
+     may describe what the source does, never invent it.
+
+     ORDER MATTERS. The carried-prop sweep below spares anything still present in
+     `apiProps`, so dropping a phantom afterwards leaves the prior spec's copy of
+     it alive and the phantom survives regeneration for ever. */
+  for (const nm of Object.keys(apiProps)) {
+    if (nm.startsWith('data-') || attrInUse(nm)) continue;
+    delete apiProps[nm];
+    notes.push(`dropped prose prop "${nm}" — read from the Public API comment, but the source never uses it as an attribute`);
+  }
   const carriedButGone = Object.keys(priorProps).filter(
     (nm) => !(nm in apiProps) && !attrInUse(nm),
   );
@@ -974,7 +1075,13 @@ function generateSpec(name) {
   let element = null;
   // For a multi-root <template> the "element the component IS" is taken from the
   // FIRST root node (best-effort — the component has no single interactive root).
-  const primaryRoot = anatomy?.root ?? anatomy?.roots?.[0];
+  // A `byTemplate` anatomy takes it from the DEFAULT template's first root: the
+  // element a component is does not change with which template is showing, and
+  // reading only `root`/`roots` dropped the whole `element:` block (with its
+  // native provides — keyboard, focus, click) from all three such components.
+  const primaryRoot = anatomy?.root
+    ?? anatomy?.roots?.[0]
+    ?? anatomy?.byTemplate?.['default']?.[0];
   const rootEl = primaryRoot?.el;
   if (rootEl) {
     const em = generateSpec._elementMap[rootEl] || {};

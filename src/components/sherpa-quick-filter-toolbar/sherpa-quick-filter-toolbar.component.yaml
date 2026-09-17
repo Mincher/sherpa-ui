@@ -149,10 +149,28 @@ props:
     kind: style
     description: the ★ is lit (view type)
   - $type: prop
+    name: data-group-field
+    type: string
+    kind: content
+    description: the field the Group chip points at (the standard name)
+  - $type: prop
     name: data-no-actions
     type: string
     kind: style
     description: hide the built-in cluster entirely (host owns the trailing end)
+  - $type: prop
+    name: data-sort-direction
+    type: enum
+    kind: content
+    values:
+      - asc
+      - desc
+    description: asc  | desc
+  - $type: prop
+    name: data-sort-field
+    type: string
+    kind: content
+    description: the field the Sort chip points at (the standard name)
   - $type: prop
     name: data-type
     type: enum

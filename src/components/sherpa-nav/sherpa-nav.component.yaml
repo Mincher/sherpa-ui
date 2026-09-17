@@ -44,6 +44,9 @@ anatomy:
                     aria-hidden: "true"
                   children:
                     - slot: brand-icon
+                      children:
+                        - el: i
+                          class: fa-solid fa-cubes
                 - el: span
                   class: product
                   part: product

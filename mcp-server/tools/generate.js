@@ -252,7 +252,8 @@ export function register(server) {
       try {
         const def = parseDef(defInput);
         if (!def.name) return err("def has no `name`");
-        if (!def.anatomy?.root) return err("def has no `anatomy.root` — compile_def needs one. Run scaffold_def for the shape.");
+        // Any of the three anatomy forms is enough — see compile-def's anatomyRoots().
+        if (!def.anatomy?.root && !def.anatomy?.roots && !def.anatomy?.byTemplate) return err("def has no anatomy (`root`, `roots` or `byTemplate`) — compile_def needs one. Run scaffold_def for the shape.");
         const { ts, html, css } = compileDef(def);
         const name = def.name;
         const out =

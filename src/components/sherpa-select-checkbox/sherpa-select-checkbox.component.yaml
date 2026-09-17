@@ -52,11 +52,6 @@ props:
     kind: style
     description: label text to the right of the box (or default slot)
   - $type: prop
-    name: indeterminate
-    type: string
-    kind: style
-    description: mixed state (JS property → input.indeterminate; CSS :indeterminate)
-  - $type: prop
     name: checked
     type: boolean
     native: true
@@ -64,9 +59,36 @@ props:
     default: false
     description: native checked state (also a JS property)
   - $type: prop
+    name: disabled
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, mirrored to the inner control
+  - $type: prop
+    name: indeterminate
+    type: string
+    native: true
+    kind: content
+    description: mixed state (JS property → input.indeterminate; CSS :indeterminate)
+  - $type: prop
+    name: name
+    type: string
+    native: true
+    kind: content
+    description: native attributes, mirrored to the inner control
+  - $type: prop
+    name: required
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, mirrored to the inner control
+  - $type: prop
     name: value
     type: string
     native: true
+    kind: content
     default: "\"on\""
     description: submitted value when checked
 states:

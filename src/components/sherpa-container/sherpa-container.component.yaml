@@ -41,12 +41,23 @@ anatomy:
         - slot: loading
           attrs:
             class: state-loading
+          children:
+            - el: span
+              class: spinner
+              attrs:
+                aria-label: Loading
         - slot: empty
           attrs:
             class: state-empty
+          children:
+            - el: span
+              class: state-text
         - slot: error
           attrs:
             class: state-error
+          children:
+            - el: span
+              class: state-text
 props:
   - $type: prop
     name: data-elevation

@@ -25,36 +25,48 @@ templates:
   - default
   - icon
 anatomy:
-  root:
-    el: button
-    class: trigger
-    part: trigger
-    attrs:
-      type: button
-    children:
-      - el: i
-        class: icon icon-start
+  byTemplate:
+    default:
+      - el: button
+        class: trigger
+        part: trigger
         attrs:
-          aria-hidden: "true"
-      - el: span
-        class: label
-        slot: ""
-      - el: i
-        class: icon icon-end
+          type: button
+        children:
+          - el: i
+            class: icon icon-start
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: label
+            slot: ""
+          - el: i
+            class: icon icon-end
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: badge
+            children:
+              - slot: badge
+                attrs:
+                  data-accepts: badge
+          - el: span
+            class: menu-slot
+            children:
+              - slot: menu
+                attrs:
+                  data-accepts: menu
+    icon:
+      - el: button
+        class: trigger
+        part: trigger
         attrs:
-          aria-hidden: "true"
-      - el: span
-        class: badge
+          type: button
         children:
-          - slot: badge
+          - el: i
+            class: icon icon-start
             attrs:
-              data-accepts: badge
-      - el: span
-        class: menu-slot
-        children:
-          - slot: menu
-            attrs:
-              data-accepts: menu
+              aria-hidden: "true"
 props:
   - $type: prop
     name: data-badge

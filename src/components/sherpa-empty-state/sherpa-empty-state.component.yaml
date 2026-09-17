@@ -30,6 +30,9 @@ anatomy:
           aria-hidden: "true"
         children:
           - slot: icon
+            children:
+              - el: span
+                class: glyph
       - el: div
         class: heading
         part: heading
@@ -42,6 +45,10 @@ anatomy:
             part: message
             children:
               - slot: ""
+                children:
+                  - el: p
+                    class: message-text
+                    part: message-text
       - el: div
         class: actions
         part: actions
@@ -56,6 +63,10 @@ anatomy:
           - slot: small-print
             attrs:
               data-accepts: text
+            children:
+              - el: p
+                class: small-print-text
+                part: small-print-text
 props:
   - $type: prop
     name: data-description

@@ -76,7 +76,10 @@ props:
     description: — status colour cascade (critical | warning | success | info | urgent)
   - $type: prop
     name: open
-    type: string
+    type: boolean
+    native: true
+    kind: content
+    default: false
     description: — native boolean (current disclosure state; drives [open] visuals)
 states:
   - $type: state

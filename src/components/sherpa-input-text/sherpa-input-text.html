@@ -28,7 +28,9 @@
     data-icon-end      trailing icon glyph inside the control row (CSS-gated)
     placeholder       native placeholder
     value             native value (also a JS property)
-    name / required / disabled / readonly / minlength / maxlength / pattern
+    data-rules        names a validation rule the platform has no idea about
+                      (e.g. "email") — see the TS for the rule set
+    name / required / disabled / readonly / minlength / maxlength / pattern / inputmode / autocomplete
                       native attributes, reflected to the inner control
 
   Slots:

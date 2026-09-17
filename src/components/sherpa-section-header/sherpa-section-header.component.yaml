@@ -28,6 +28,10 @@ anatomy:
           part: lead
           children:
             - slot: heading
+              children:
+                - el: h2
+                  class: title
+                  part: title
             - el: div
               class: description
               part: description

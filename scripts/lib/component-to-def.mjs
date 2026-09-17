@@ -82,10 +82,13 @@ export function specToDef(spec) {
     description: spec.$description ?? '',
   };
 
-  // anatomy carries EITHER a single `root` node OR (multi-root <template>) a
-  // `roots` array of sibling node trees. Pass whichever through unchanged —
-  // compileDef renders each root in order.
-  if (Array.isArray(spec.anatomy?.roots)) def.anatomy = { roots: spec.anatomy.roots };
+  // anatomy carries ONE of three forms: a single `root` node, a `roots` array of
+  // sibling node trees (a multi-root <template>), or `byTemplate` — a map of
+  // template id → that template's own roots, for a component whose templates are
+  // different trees. Pass whichever through unchanged; compileDef renders each
+  // root in order and picks the right entry per template.
+  if (spec.anatomy?.byTemplate) def.anatomy = { byTemplate: spec.anatomy.byTemplate };
+  else if (Array.isArray(spec.anatomy?.roots)) def.anatomy = { roots: spec.anatomy.roots };
   else if (spec.anatomy?.root) def.anatomy = { root: spec.anatomy.root };
   if (Array.isArray(spec.templates)) def.templates = spec.templates;
 

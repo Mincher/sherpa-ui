@@ -139,9 +139,13 @@ props:
     kind: style
     description: >-
       the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header.
-      data-drill-from names the list that was replaced. Drilling IN PLACE rather than opening a
-      second card means one box to position, nothing to close on a pointer crossing a gap, and no
-      way for two cards to disagree about what is ticked.
+      Drilling IN PLACE rather than opening a second card means one box to position, nothing to
+      close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked.
+  - $type: prop
+    name: data-drill-from
+    type: string
+    kind: content
+    description: names the list that was replaced — the breadcrumb's text
   - $type: prop
     name: data-heading
     type: string
@@ -178,7 +182,10 @@ props:
       else is the same menu.
   - $type: prop
     name: open
-    type: string
+    type: boolean
+    native: true
+    kind: content
+    default: false
     description: "native-ish boolean: reflects/controls the popover"
 states:
   - $type: state

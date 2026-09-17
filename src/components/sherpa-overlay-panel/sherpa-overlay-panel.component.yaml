@@ -123,7 +123,10 @@ props:
       by opt-in data-* flags (CSS-gated):
   - $type: prop
     name: open
-    type: string
+    type: boolean
+    native: true
+    kind: content
+    default: false
     description: native boolean (read reflects dialog.open; set → show()/close())
 states:
   - $type: state

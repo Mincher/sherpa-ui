@@ -28,6 +28,13 @@ anatomy:
         part: header
         children:
           - slot: header
+            children:
+              - el: span
+                class: label
+                part: label
+              - el: span
+                class: description
+                part: description
       - el: div
         class: body
         part: body
@@ -37,6 +44,13 @@ anatomy:
         part: footer
         children:
           - slot: footer
+            children:
+              - el: sherpa-select-radio
+                class: footer-control control-radio
+                part: footer-control
+              - el: sherpa-select-checkbox
+                class: footer-control control-checkbox
+                part: footer-control
 props:
   - $type: prop
     name: data-description

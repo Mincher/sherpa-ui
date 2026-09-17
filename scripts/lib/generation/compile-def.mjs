@@ -24,11 +24,24 @@ const tokenVar = (t) =>
 
 // ── HTML: walk anatomy → one <template> per templates[] ────────────────
 const VOID_TAGS = new Set(['br', 'hr', 'img', 'input', 'meta', 'link']);
-/** Render a bare `<slot>` node (a slot child node: { slot, attrs? } with no `el`). */
-function slotTag(node) {
+/**
+ * Render a bare `<slot>` node (a slot child node: { slot, attrs?, children? }).
+ *
+ * `children` on a slot node is its FALLBACK content — what the slot shows when
+ * nothing is projected in. It renders INLINE, with no padding between the tags,
+ * because that is how it is hand-written: `<slot name="icon"><i class="glyph">
+ * </i></slot>` sits on one line. Breaking it across lines would put text nodes
+ * inside the slot and change what the browser shows.
+ */
+function slotTag(node, forTemplate = 'default') {
   const a = { name: node.slot || undefined, ...node.attrs };
   const s = attrStr(a);
-  return s ? `<slot ${s}></slot>` : `<slot></slot>`;
+  const open = s ? `<slot ${s}>` : '<slot>';
+  const inner = (node.children ?? [])
+    .map((c) => renderNode(c, forTemplate, 0))
+    .filter(Boolean)
+    .join('');
+  return `${open}${inner}</slot>`;
 }
 function renderNode(node, forTemplate, indent) {
   const pad = '  '.repeat(indent);
@@ -36,10 +49,9 @@ function renderNode(node, forTemplate, indent) {
   if (node.showWhen && node.showWhen !== forTemplate) return '';
 
   // A bare slot child node — no `el`, just a `slot` name (+ optional attrs like
-  // data-accepts). Rendered as an empty <slot> at its position (fallback content
-  // is hand-authored and not reproduced here).
+  // data-accepts, + optional `children`: its fallback content).
   if (node.el === undefined && node.component === undefined && node.slot !== undefined) {
-    return `${pad}${slotTag(node)}`;
+    return `${pad}${slotTag(node, forTemplate)}`;
   }
 
   if (node.component) {
@@ -70,8 +82,21 @@ function renderNode(node, forTemplate, indent) {
   return `${open}${inner}</${node.el}>`;
 }
 
-/** The anatomy's root node(s) as an ordered array — `roots` (multi) or `[root]` (single). */
-function anatomyRoots(def) {
+/**
+ * The anatomy's root node(s) for ONE template, as an ordered array.
+ *
+ * Three forms, in order of specificity: `byTemplate[tid]` (this template has its
+ * own tree), `roots` (one multi-root tree shared by every template), `root` (one
+ * single-root tree shared by every template). A `byTemplate` map with no entry
+ * for `tid` falls back to its `default` entry, so a template that happens to
+ * match the default need not repeat it.
+ */
+function anatomyRoots(def, tid = 'default') {
+  const by = def.anatomy?.byTemplate;
+  if (by) {
+    const own = by[tid] ?? by['default'];
+    return Array.isArray(own) ? own : [];
+  }
   if (Array.isArray(def.anatomy?.roots)) return def.anatomy.roots;
   return def.anatomy?.root ? [def.anatomy.root] : [];
 }
@@ -79,12 +104,11 @@ function anatomyRoots(def) {
 function compileHtml(def) {
   const templates = def.templates?.length ? def.templates : ['default'];
   const header = def.docs?.html ? `<!--\n${def.docs.html.split('\n').map((l) => '  ' + l).join('\n')}\n-->\n` : '';
-  const roots = anatomyRoots(def);
   const blocks = templates.map((tid) => {
     const forTemplate = tid === 'removable' ? 'removable' : tid;
     // Render each sibling root in order. Single-root path (one root) produces
     // byte-identical output to the previous `renderNode(def.anatomy.root, …)`.
-    const body = roots.map((r) => renderNode(r, forTemplate, 1)).filter(Boolean).join('\n');
+    const body = anatomyRoots(def, tid).map((r) => renderNode(r, forTemplate, 1)).filter(Boolean).join('\n');
     return `<template id="${tid}">\n${body}\n</template>`;
   });
   return header + blocks.join('\n\n') + '\n';
@@ -128,7 +152,16 @@ function compileTs(def, name, cls) {
     for (const l of node.listen ?? []) if (l.action === 'reemit') reemits.push({ node, l });
     (node.children ?? []).forEach(walk);
   };
-  anatomyRoots(def).forEach(walk);
+  // Reemit wiring is a property of the COMPONENT, not of one template, so walk
+  // every template's roots — a `byTemplate` anatomy keeps a different tree per
+  // template and a listener declared only in the second one would be missed.
+  // A node object is shared by reference when templates share a tree, so `seen`
+  // keeps one visit per node rather than one per template.
+  const seen = new Set();
+  const walkOnce = (node) => { if (seen.has(node)) return; seen.add(node); walk(node); };
+  for (const tid of (def.templates?.length ? def.templates : ['default'])) {
+    anatomyRoots(def, tid).forEach(walkOnce);
+  }
 
   const L = [];
   const fires = (def.events ?? []).map((e) => e.name).join(', ') || 'none';

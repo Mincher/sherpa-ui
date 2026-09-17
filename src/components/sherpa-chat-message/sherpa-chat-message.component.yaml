@@ -30,6 +30,9 @@ anatomy:
           aria-hidden: "true"
         children:
           - slot: avatar
+            children:
+              - el: span
+                class: avatar-glyph
       - el: div
         class: stack
         children:

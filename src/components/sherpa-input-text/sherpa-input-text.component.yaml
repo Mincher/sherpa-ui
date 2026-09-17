@@ -24,43 +24,94 @@ templates:
   - multiline
   - minimal
 anatomy:
-  root:
-    el: label
-    class: field
-    part: field
-    children:
-      - el: span
-        class: label
-        part: label
-      - el: span
-        class: description
-        part: description
-      - el: span
-        class: control-row
-        part: control-row
+  byTemplate:
+    default:
+      - el: label
+        class: field
+        part: field
         children:
           - el: span
-            class: icon icon-start
-            part: icon-start
-            attrs:
-              aria-hidden: "true"
+            class: label
+            part: label
+          - el: span
+            class: description
+            part: description
+          - el: span
+            class: control-row
+            part: control-row
+            children:
+              - el: span
+                class: icon icon-start
+                part: icon-start
+                attrs:
+                  aria-hidden: "true"
+              - el: input
+                class: control
+                part: control
+                attrs:
+                  type: text
+              - el: span
+                class: icon icon-end
+                part: icon-end
+                attrs:
+                  aria-hidden: "true"
+              - el: span
+                class: actions
+                part: actions
+                slot: actions
+          - el: span
+            class: message
+            part: message
+    multiline:
+      - el: label
+        class: field
+        part: field
+        children:
+          - el: span
+            class: label
+            part: label
+          - el: span
+            class: description
+            part: description
+          - el: span
+            class: control-row
+            part: control-row
+            children:
+              - el: span
+                class: icon icon-start
+                part: icon-start
+                attrs:
+                  aria-hidden: "true"
+              - el: textarea
+                class: control
+                part: control
+                attrs:
+                  rows: "3"
+              - el: span
+                class: icon icon-end
+                part: icon-end
+                attrs:
+                  aria-hidden: "true"
+              - el: span
+                class: actions
+                part: actions
+                slot: actions
+          - el: span
+            class: message
+            part: message
+    minimal:
+      - el: label
+        class: field field-minimal
+        part: field
+        children:
+          - el: span
+            class: label
+            part: label
           - el: input
             class: control
             part: control
             attrs:
               type: text
-          - el: span
-            class: icon icon-end
-            part: icon-end
-            attrs:
-              aria-hidden: "true"
-          - el: span
-            class: actions
-            part: actions
-            slot: actions
-      - el: span
-        class: message
-        part: message
 props:
   - $type: prop
     name: data-borderless
@@ -101,20 +152,86 @@ props:
     default: style only
     description: auto-growing <textarea>
   - $type: prop
+    name: data-rules
+    type: string
+    kind: content
+    description: >-
+      names a validation rule the platform has no idea about (e.g. "email") — see the TS for the
+      rule set
+  - $type: prop
     name: data-type
     type: string
     kind: style
     default: is the full molecule
     description: "\"minimal\" for the bare inline field"
   - $type: prop
+    name: autocomplete
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: disabled
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: inputmode
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: maxlength
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: minlength
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: name
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: pattern
+    type: string
+    native: true
+    kind: content
+    description: native attributes, reflected to the inner control
+  - $type: prop
     name: placeholder
     type: string
     native: true
+    kind: content
     description: native placeholder
+  - $type: prop
+    name: readonly
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, reflected to the inner control
+  - $type: prop
+    name: required
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, reflected to the inner control
   - $type: prop
     name: value
     type: string
     native: true
+    kind: content
     description: native value (also a JS property)
 states:
   - $type: state

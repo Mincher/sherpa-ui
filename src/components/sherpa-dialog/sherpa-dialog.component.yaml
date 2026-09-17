@@ -57,7 +57,10 @@ props:
     description: — status colour cascade (critical | warning | success | info | urgent)
   - $type: prop
     name: open
-    type: string
+    type: boolean
+    native: true
+    kind: content
+    default: false
     description: — native boolean (read reflects dialog.open; set → showModal()/close())
 states:
   - $type: state

@@ -123,11 +123,6 @@ props:
     kind: content
     default: false
     description: — disables the input, leading buttons + send button
-  - $type: prop
-    name: value
-    type: string
-    native: true
-    description: — JS property; clear() resets it
 states:
   - $type: state
     name: has-extras

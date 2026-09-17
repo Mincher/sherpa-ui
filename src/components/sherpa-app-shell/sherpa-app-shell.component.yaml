@@ -27,6 +27,8 @@ anatomy:
         part: nav
         children:
           - slot: nav
+            children:
+              - el: sherpa-nav
       - el: div
         class: frame
         part: frame
@@ -40,6 +42,8 @@ anatomy:
                 part: header
                 children:
                   - slot: header
+                    children:
+                      - el: sherpa-app-header
               - el: div
                 class: view
                 slot: ""

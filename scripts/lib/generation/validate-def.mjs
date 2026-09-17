@@ -18,6 +18,20 @@ function* walk(node, path = 'root') {
   for (const c of node.children ?? []) yield* walk(c, `${path} > ${c.class ?? c.component ?? c.el ?? '?'}`);
 }
 
+/**
+ * Every anatomy root, whichever of the three forms the def uses — `root`,
+ * `roots`, or `byTemplate`. These rules are about the NODES (an owned button
+ * needs a size, a text node needs a role), and a node is no less real for living
+ * in a second template, so all three forms must be walked.
+ */
+function allRoots(def) {
+  const a = def?.anatomy;
+  if (!a) return [];
+  if (a.byTemplate) return Object.values(a.byTemplate).flat();
+  if (Array.isArray(a.roots)) return a.roots;
+  return a.root ? [a.root] : [];
+}
+
 export function validateDef(def, opts = {}) {
   const ontology = opts.ontology ?? loadOntology();
   const nameMap = opts.nameMap ?? loadNameMap();
@@ -28,7 +42,7 @@ export function validateDef(def, opts = {}) {
   if (!def || typeof def !== 'object') return { ok: false, errors: [err('shape', 'def is not an object')], warnings: [] };
   if (!def.name || !/^sherpa-[a-z-]+$/.test(def.name)) out.push(err('name', `name must be sherpa-<kebab>, got "${def.name}"`));
   if (!def.category) out.push(warn('category', 'no category set'));
-  if (!def.anatomy?.root) out.push(warn('anatomy', 'no anatomy.root — def→code/Figma compile needs it'));
+  if (!allRoots(def).length) out.push(warn('anatomy', 'no anatomy roots — def→code/Figma compile needs them'));
 
   // ── Rule 1: reuse existing components (nested must be real) ──
   for (const n of def.nested ?? []) {
@@ -83,7 +97,7 @@ export function validateDef(def, opts = {}) {
   }
 
   // ── anatomy: owned nested buttons must carry size, text nodes need a role ──
-  for (const [node] of walk(def.anatomy?.root)) {
+  for (const [node] of allRoots(def).flatMap((r) => [...walk(r)])) {
     if (node.component === 'sherpa-button' && node.relationship === 'owned') {
       if (!node.attrs || !('data-size' in node.attrs)) {
         out.push(warn('button-size', `owned sherpa-button "${node.class ?? ''}" has no data-size — buttons must set a size so the size mode works (Rule 6)`, node.class));

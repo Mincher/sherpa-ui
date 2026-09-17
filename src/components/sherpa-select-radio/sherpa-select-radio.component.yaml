@@ -59,9 +59,30 @@ props:
     default: false
     description: native checked state (also a JS property)
   - $type: prop
+    name: disabled
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, mirrored to the inner control
+  - $type: prop
+    name: name
+    type: string
+    native: true
+    kind: content
+    description: native attributes, mirrored to the inner control
+  - $type: prop
+    name: required
+    type: boolean
+    native: true
+    kind: content
+    default: false
+    description: native attributes, mirrored to the inner control
+  - $type: prop
     name: value
     type: string
     native: true
+    kind: content
     description: submitted value when selected
 states:
   - $type: state

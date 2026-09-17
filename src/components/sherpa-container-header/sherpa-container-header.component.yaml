@@ -49,6 +49,10 @@ anatomy:
             part: labels
             children:
               - slot: heading
+                children:
+                  - el: span
+                    class: title
+                    part: title
               - el: span
                 class: description
                 part: description

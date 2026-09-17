@@ -235,7 +235,12 @@ export function register(server) {
         }
 
         if (include === "all" || include === "code") {
-          if (def.anatomy?.root) {
+          // An anatomy is present in any of its three forms — `root`, `roots`
+          // (a multi-root template), or `byTemplate` (a component whose
+          // templates are different trees). Checking only `root` skipped the
+          // compile step for sherpa-button, sherpa-input-text and
+          // sherpa-nav-item entirely.
+          if (def.anatomy?.root || def.anatomy?.roots || def.anatomy?.byTemplate) {
             try {
               const { ts, html, css } = compileDef(def);
               out += `## Compiled code (def → code)\n`;

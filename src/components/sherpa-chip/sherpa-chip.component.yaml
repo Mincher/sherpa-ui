@@ -31,6 +31,9 @@ anatomy:
           aria-hidden: "true"
         children:
           - slot: icon
+            children:
+              - el: i
+                class: glyph
       - el: span
         class: label
         slot: ""

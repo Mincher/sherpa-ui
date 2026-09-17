@@ -37,12 +37,6 @@ props:
       - between
       - stretch
     description: start | end  | between | stretch
-  - $type: prop
-    name: stretch
-    type: string
-    description: >-
-      ONE wide control fills the row (a chat composer, a search field), rather than a cluster of
-      buttons at one end.
 states:
   - $type: state
     name: has-content

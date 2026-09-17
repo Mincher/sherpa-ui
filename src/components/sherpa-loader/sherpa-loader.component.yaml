@@ -20,11 +20,14 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: spinner
-    attrs:
-      aria-hidden: "true"
+  roots:
+    - el: div
+      class: spinner
+      attrs:
+        aria-hidden: "true"
+    - slot: label
+      attrs:
+        class: label
 props:
   - $type: prop
     name: data-orientation

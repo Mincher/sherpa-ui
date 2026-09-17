@@ -59,6 +59,12 @@ anatomy:
             part: control
             children:
               - slot: control
+                children:
+                  - el: input
+                    class: checkbox
+                    attrs:
+                      type: checkbox
+                      aria-label: Select row
           - el: span
             class: leading
             part: leading

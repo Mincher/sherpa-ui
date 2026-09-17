@@ -25,66 +25,116 @@ templates:
   - default
   - promo
 anatomy:
-  roots:
-    - el: button
-      class: nav nav-button
-      part: row
-      attrs:
-        type: button
-      children:
-        - el: span
-          class: icon
-          part: icon
-          attrs:
-            aria-hidden: "true"
-        - el: span
-          class: content
-          part: content
-          children:
-            - el: span
-              class: label
-              part: label
-            - el: span
-              class: badge
-              part: badge
-              slot: trailing
-    - el: a
-      class: nav nav-link
-      part: row
-      children:
-        - el: span
-          class: icon
-          part: icon
-          attrs:
-            aria-hidden: "true"
-        - el: span
-          class: content
-          part: content
-          children:
-            - el: span
-              class: label
-              part: label
-            - el: span
-              class: badge
-              part: badge
-              slot: trailing
-    - el: button
-      class: expand
-      part: expand
-      attrs:
-        type: button
-        aria-label: Expand
-        aria-expanded: "false"
-      children:
-        - el: i
-          class: expand-chevron fa-solid fa-chevron-down
-          attrs:
-            aria-hidden: "true"
-    - el: span
-      class: dot
-      part: dot
-      attrs:
-        aria-hidden: "true"
+  byTemplate:
+    default:
+      - el: button
+        class: nav nav-button
+        part: row
+        attrs:
+          type: button
+        children:
+          - el: span
+            class: icon
+            part: icon
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: content
+            part: content
+            children:
+              - el: span
+                class: label
+                part: label
+              - el: span
+                class: badge
+                part: badge
+                slot: trailing
+      - el: a
+        class: nav nav-link
+        part: row
+        children:
+          - el: span
+            class: icon
+            part: icon
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: content
+            part: content
+            children:
+              - el: span
+                class: label
+                part: label
+              - el: span
+                class: badge
+                part: badge
+                slot: trailing
+      - el: button
+        class: expand
+        part: expand
+        attrs:
+          type: button
+          aria-label: Expand
+          aria-expanded: "false"
+        children:
+          - el: i
+            class: expand-chevron fa-solid fa-chevron-down
+            attrs:
+              aria-hidden: "true"
+      - el: span
+        class: dot
+        part: dot
+        attrs:
+          aria-hidden: "true"
+    promo:
+      - el: button
+        class: promo promo-button
+        part: row
+        attrs:
+          type: button
+        children:
+          - el: span
+            class: promo-icon
+            part: icon
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: promo-body
+            children:
+              - el: span
+                class: promo-heading
+                part: heading
+              - el: span
+                class: promo-description
+                part: description
+          - el: i
+            class: promo-chevron fa-solid fa-chevron-right
+            part: chevron
+            attrs:
+              aria-hidden: "true"
+      - el: a
+        class: promo promo-link
+        part: row
+        children:
+          - el: span
+            class: promo-icon
+            part: icon
+            attrs:
+              aria-hidden: "true"
+          - el: span
+            class: promo-body
+            children:
+              - el: span
+                class: promo-heading
+                part: heading
+              - el: span
+                class: promo-description
+                part: description
+          - el: i
+            class: promo-chevron fa-solid fa-chevron-right
+            part: chevron
+            attrs:
+              aria-hidden: "true"
 props:
   - $type: prop
     name: data-badge
