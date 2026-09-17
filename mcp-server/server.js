@@ -8,6 +8,7 @@
  *   Discover  list_components · explain_token · browse_ontology · get_component
  *   Generate  scaffold_def · validate_def · compile_def · token_for
  *   Verify    audit_component · check_bindings
+ *   Data      validate_schema
  *   Resources sherpa://def/{name} · sherpa://ontology/{id}
  *             · sherpa://component/{name}/{ts|html|css|def} · sherpa://rules
  *   Prompts   generate_component · review_component_usage · debug_component
@@ -18,6 +19,7 @@ import { log } from "./lib/logger.js";
 import { register as registerDiscoverTools } from "./tools/discover.js";
 import { register as registerGenerateTools } from "./tools/generate.js";
 import { register as registerVerifyTools }   from "./tools/verify.js";
+import { register as registerDataTools }     from "./tools/data.js";
 import { register as registerResources }     from "./resources/index.js";
 import { register as registerPrompts }       from "./prompts/index.js";
 
@@ -35,6 +37,8 @@ export async function createServer() {
   registerDiscoverTools(server);
   registerGenerateTools(server);
   registerVerifyTools(server);
+  // Data-layer tools — thin wrappers over `sherpa-ui/data` (dist/data.js).
+  registerDataTools(server);
 
   // Resources + prompts
   registerResources(server);
