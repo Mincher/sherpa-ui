@@ -1801,7 +1801,7 @@ break it silently, and no test would notice.
 | **N1** ✅ | A Node test that imports the layer and runs the operations above | **DONE 2026-09-16** — `test/unit/headless-data-layer.test.mjs`, run by `npm run test:node`. 5 tests: pure functions, store + source query and mutate, headless `bind()`, and a schema mapping an external shape. Proven to catch a regression: adding one `document.querySelector` to `store.js` fails it |
 | **N2** ✅ | A lint rule: no DOM globals in `store.ts` / `validate.ts` / `data-source.ts` | **DONE 2026-09-17.** `no-restricted-globals` on the nine headless modules. Does NOT ban `EventTarget`/`CustomEvent`/`Event` (Node globals since Node 15 — checked, not assumed) nor TYPE-only `HTMLElement` (erased at compile time). `stores.ts` got its own narrower override: `LocalStore` is browser-only by design and already degrades via `try/catch → null`, so it is headless-SAFE but not storage-free |
 | **N3** ✅ | Publish the layer as a separate entry point (`sherpa-ui/data`) | **DONE 2026-09-17.** `src/data.ts` + a `./data` export. 46 exports, zero components — asserted, since one would drag in customElements. Storage (`persistView`, `SessionStore`) comes through deliberately: both degrade via `try/catch → null`, and a server restoring a saved view needs the SHAPE more than the browser's storage. Measured first: `dist/index.js` really does fail in Node, and all ten core modules already import cleanly |
-| **N4** | An MCP tier that drives a headless source | **UNBLOCKED 2026-09-17** — N3 gives the clean import it needed, and P1-P3 landed earlier. Waits on the MCP rewrite (see HANDOVER-BACKLOG), since the current tools target a format with no files |
+| **N4** ✅ | An MCP tier that drives a headless source | **DONE 2026-09-17.** Builds a real ArrayStore + DataSource over sample rows and shows what a bound component receives. Four API assumptions were wrong and the code said so: `setSort(field, direction)` not a SortSpec array, `searchFields` is a CONSTRUCTOR option, there is no `groups` getter, and **`setPage` before the first `load()` is discarded** (every query setter calls `#resetPage()`, correctly). The tool reads the page BACK, so asking for page 9 of 2 prints page 2 with a warning rather than 'page 9 of 2' over the wrong rows |
 
 **N1 and N2 are small and should come first.** The capability exists; what is
 missing is anything stopping it being lost.
@@ -2630,9 +2630,9 @@ each inference so it can be checked rather than skimmed.
 | Step | Work | Why here |
 |---|---|---|
 | **M1** ✅ | `explain_source` — what Sherpa expects of a row, and why | **DONE 2026-09-17.** `docs/DATA-SOURCE-RULES.md`, served as `sherpa://data-rules`. Seven rules with the reason for each; every claim checked against the code rather than written from memory. Linked from CLAUDE.md, because a doc nothing points at is how the last one rotted |
-| **M2** | `validate_schema` — run a schema over sample rows, report mapped / rejected / why | the ORACLE. Without it an agent is guessing; with it the loop closes. **Cheap**: `validate()` is already exported from `core/validate.ts`, is DOM-free, and the MCP already imports Node modules from `scripts/lib/` — so the tool is a thin wrapper, not new machinery |
-| **M3** | `scaffold_schema` — sample rows → a draft, inferences marked | least valuable of the three alone; genuinely useful after M2 |
-| **M4** | Read a backend's OpenAPI / JSON Schema where it exists | strictly better than inferring from a sample. Do this before M3 if the backends have one |
+| **M2** ✅ | `validate_schema` — run a schema over sample rows, report mapped / rejected / why | **DONE 2026-09-17.** The ORACLE, and the plan was right that it is cheap — a thin wrapper over the same `validate()` a Store runs, so its answer is the app's answer. Reports WHY rows were rejected (grouped, with the offending rows printed), checks the KEY separately (a schema validates one field's value and cannot see the other rows, so a duplicate key is invisible to it), and names fields no rule checks |
+| **M3** ✅ | `scaffold_schema` — sample rows → a draft, inferences marked | **DONE 2026-09-17.** Every rule carries its evidence, and the tool prints what it REFUSED to infer: no `min`/`max` from an observed range, no `email`/`url` from a field NAME, no `required` from mere presence. Proven by drafting from four rows then validating against a different page |
+| **M4** ✅ | Read a backend's OpenAPI / JSON Schema where it exists | **DONE 2026-09-17.** `import_schema` walks a whole OpenAPI document (paths → 200 → items → `$ref`) or a bare schema. Eight keywords map onto a rule; the other ten are reported BY NAME AND FIELD, because a converter that quietly ignores `$ref` or `allOf` emits a schema that looks faithful and enforces half of what the backend promised |
 
 **Order matters and is not the obvious one.** M2 before M3: a generator without
 a checker produces confident, unverifiable output. And M1 before both, because
@@ -3113,76 +3113,46 @@ has this shape.
 
 ## WHAT IS ACTUALLY LEFT — audited 2026-09-17
 
-**48 of 57 steps done.** The audit moved five of them without writing any code:
-they had been satisfied by work done under another number, and nobody had
-checked. Re-counted 2026-09-17 — it read 44, which was stale by four.
+**53 of 57 steps done.** The five that waited on the MCP are all built; the
+four that remain are deferred on purpose and none can be picked up today.
 
-**Q1** was done by N2's lint rule. **P4** is done in substance — 23 specs carry
-`$extensions.sherpa.methods`, so a component's callable surface IS in the
-contract. **O2**, **O3** and **O7** were swept and came back clean.
+### Deliberately on demand (4) — S8, Q2, Q3, V9
 
-The nine that remain are **M2 M3 M4 N4 P5 Q2 Q3 S8 V9**, and not one of them can
-be picked up today:
+The plan's own rule: **build on demand, never speculatively.**
 
-### Waiting on the MCP rewrite (5) — N4, M2, M3, M4, P5
+- **S8** (a `JoinStore`), **Q2** (a backend translator) and **Q3**
+  (server-side grouping) all need a real backend to be right about, and there
+  is none in this repo. Not idle: Q2's SEAM is tested (`RestStore`,
+  `buildQuery`) and S8 was verified as a ~10-line hand-written object.
+- **V9** (derive a column's `type` from a schema) needs rules to CARRY a type
+  tag — `rules()` builds opaque closures — and a `date()` rule that does not
+  exist.
 
-Every one of these builds a tool inside the MCP server, and that server is due a
-full rewrite (Will, 2026-09-16).
+### The MCP tier — DONE 2026-09-17
 
-**Checked 2026-09-17, and the premise was half wrong.** The claim was that its
-tools "target `*.def.json`, a format with zero files in this repo". The
-DESCRIPTIONS said that; the CODE never did. `loadDef()` reads
-`<name>.component.yaml` — the real, generated, now-gated spec — and all 58 load
-cleanly, `byTemplate` included. All 10 tools and 7 resources register.
+Five steps, built in one pass on a server whose plumbing turned out to be
+sound. 18 tools now; the eight that matter here:
 
-What HAD rotted was everything the deleted ontology touched, and it was worse
-than a gap: `audit_component` marked all 1173 token bindings `unknown-token`,
-`explain_token` told a reader their correct token was not found, and
-`browse_ontology` answered "no tokens with role=surface". All three now answer
-from `tokens.css` and say plainly what is unavailable (`2592d402`). The eight
-stale `*.def.json` descriptions are corrected too.
+| Tool | Step | What it answers |
+|---|---|---|
+| `validate_schema` | M2 | will my data fit this schema, and WHY not |
+| `scaffold_schema` | M3 | what schema do these rows suggest, on what evidence |
+| `import_schema` | M4 | what does the backend's own spec promise |
+| `run_query` | N4 | what does a bound component actually receive |
+| `component_api` | P5 | what can a caller DO to this component |
+| `call_component` | P5 | do it, on a live element, and read the state back |
+| `read_component` | P5 | where is this screen right now |
+| `browser_close` | P5 | end the driven session |
 
-So the rewrite is a smaller job than it looked — the plumbing is sound, and the
-five steps below are new tools on a working base rather than work blocked behind
-a teardown. Two things are already waiting for it: `sherpa://data-rules` and the
-`sherpa-ui/data` entry point.
+They chain: import or scaffold a schema → validate it against real rows →
+run a real query through it → drive the screen that shows it.
 
-### Deliberately on demand (3) — S8, Q2, Q3
-
-The plan's own rule: **build on demand, never speculatively.** A `JoinStore`, a
-backend translator and server-side grouping all need a real backend to be right
-about, and there is none in this repo.
-
-Not idle, though: Q2's SEAM is now tested (`RestStore`, `buildQuery`), and S8 was
-verified as a ~10-line hand-written object. Both are ready for the day a
-backend arrives.
-
-### Blocked on a prerequisite (1) — V9
-
-Deriving a column's `type` from a schema needs rules to CARRY a type tag —
-`rules()` builds opaque closures — and a `date()` rule that does not exist.
-
-### Ordinary work — NONE LEFT (2026-09-17)
-
-All four closed. This section listed O1 and O4 as open after they had already
-been settled, which is the same failure the audit itself found five times: a
-step is done and the list saying otherwise is what everyone reads.
-
-- **O1** ✅ — **not needed, the premise was false.** It claimed three components
-  implement `data-locked` separately. Only ONE reads it (`sherpa-quick-filter`);
-  the grid and the toolbar SET it on chips they host. That is the convention
-  working, not three copies of it. (`aa51db52`)
-- **O4** ✅ — the ownership convention is in CLAUDE.md, under "State ownership".
-  (`092a695a`)
-- **C3** ✅ — 58/58 round-trip. It was NOT CSS drift: all 22 were generator and
-  compiler gaps. See the spec table below. (`e4ab83dc`)
-- **C4** ✅ — the round-trip is a gate, in `spec:check` and the pre-commit hook.
-  (`8bc346af`)
-
-**What is left is the three groups above, and none of them is ordinary work**:
-five wait on the MCP rewrite, three are deliberately on demand, one is blocked on
-a `date()` rule that does not exist. The next real move is the MCP rewrite, which
-unblocks the largest group and two things already queued behind it.
+**Four premises in this plan turned out to be false, and each was cheap to
+check and expensive to believe.** The MCP "targets a format with no files"
+(its descriptions did; the code never has). C3's 22 round-trip failures were
+"~800 lines of CSS drift" (not one was CSS). O1 said three components
+implement `data-locked` (one does). O4 was listed as open after it was done.
+Check the claim before doing the work it implies.
 
 ## Component SPECS have fallen behind the data layer
 
@@ -3296,7 +3266,7 @@ is structural rather than a convenience.
 | **P2** ✅ | Selection: `select(keys)` / `clearSelection()` / `selectedKeys` | **DONE 2026-09-16.** BY KEY, not index — `selection-change` reports indices, which is right for a live handler and useless for a saved view: an index means something else after any sort. Needs `key` in `populate()`; without one `selectedKeys` is EMPTY rather than approximate, because a selection saved by position comes back pointing at the wrong records |
 | **P3** ✅ | A parity AUDIT across all components | **DONE 2026-09-16.** Swept every getter for a missing setter. Three real gaps fixed — `transfer-list.selected`, `barchart.hiddenBars`, `line-chart.hiddenSeries`, all choices a reader makes and could not get back. Four correctly READ-ONLY and left alone: `file-upload.files` (real File objects, cannot come from JSON), `notifications.unreadCount` and `code-block.code` (derived from data), `calendar-cell.value` (set by its parent). Guarded by `test/e2e/reforged-parity.spec.ts`, which fails if a setter disappears |
 | **P4** ✅ | Parity as a spec field | **SUBSTANTIALLY DONE 2026-09-17.** 23 specs carry `$extensions.sherpa.methods`, so a component's callable surface IS in the contract. No dedicated top-level schema field, which is the remaining half and worth doing only if something reads it |
-| **P5** | MCP instance tier — drive a live screen | a thin wrapper over P1–P3; **impossible before them**, which is the point |
+| **P5** ✅ | MCP instance tier — drive a live screen | **DONE 2026-09-17.** Four tools: `component_api` (what is callable, no browser), `call_component` (call a method on a real element and read the state back), `read_component`, `browser_close`. LOCALHOST ONLY and no arbitrary script — a caller names an element, a method and JSON arguments. Proven end to end: `select(['c1','c3'])` on a live data grid, `selectedKeys` reading back. Caught a real bug: `specToDef` drops `$extensions`, where the methods live, so the def reported 0 methods for a grid that has 7 — new `loadSpec()` reads the raw spec |
 
 P1 and P2 are small and unblock real hosts (saved views, deep links) as well as
 agents. P3 is the one that finds what we have not noticed. **P5 is the reason

@@ -431,18 +431,32 @@ button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-**10 tools** across three modules, **4 `sherpa://` resource templates**, and
-**3 guided prompts**. Run with `npm run mcp` (stdio).
+**18 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
+prompts**. Run with `npm run mcp` (stdio).
 
 | Module | Tools |
 |---|---|
 | `tools/discover.js` | `list_components`, `get_component`, `browse_ontology`, `explain_token` |
 | `tools/generate.js` | `scaffold_def`, `validate_def`, `compile_def`, `token_for` |
 | `tools/verify.js` | `audit_component`, `check_bindings` |
+| `tools/data.js` | `run_query`, `import_schema`, `scaffold_schema`, `validate_schema` |
+| `tools/drive.js` | `component_api`, `call_component`, `read_component`, `browser_close` |
 
-Resources: `sherpa://data-rules` (what Sherpa expects of your data),
-`sherpa://def/{name}`, `sherpa://ontology/{id}`,
-`sherpa://component/{name}/{kind}`, `sherpa://rules`. Prompts:
+The **data** tools wrap `sherpa-ui/data` (`dist/data.js`), so their answers are
+the answers the app gives — the same `validate()` a Store runs, the same
+DataSource a component binds to. They need `npm run build`; a missing `dist/`
+is reported as that rather than as a module error.
+
+The **drive** tools are the instance tier: `component_api` reads a component's
+callable surface from its spec (no browser), and `call_component` /
+`read_component` reach a real element in a running page. **Localhost only, and
+no arbitrary script** — a caller names an element, a method and JSON arguments;
+the page-side code lives in the repo. Nothing launches until a tool asks, and
+`browser_close` ends it.
+
+Resources (7): `sherpa://data-rules` (what Sherpa expects of your data),
+`sherpa://def/{name}`, `sherpa://ontology/{id}`, `sherpa://rules`, and
+`sherpa://component/{name}/` in `ts`, `html` and `css`. Prompts:
 `generate_component`, `debug_component`, `review_component_usage`.
 
 The component contract it reads is `<name>.component.yaml`; tokens come from
