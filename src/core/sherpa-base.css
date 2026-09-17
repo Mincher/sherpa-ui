@@ -207,3 +207,37 @@
 .chart-mark { anchor-name: var(--_anchor); }
 .chart-mark:has(> .chart-anchor) { anchor-name: none; }
 .chart-anchor { anchor-name: var(--_anchor); }
+
+/* ══ A SNAPPED control group ════════════════════════════════════════════════
+ *
+ * Square every inner corner so a row of controls reads as one object, and keep
+ * the outer corners round. Put `.sherpa-snap-group` on the WRAPPER; its
+ * children need nothing.
+ *
+ * Written out three times before this — `.cal-header > *` in the calendar,
+ * `.pair > *` in pagination, `.view-group > *` in the quick-filter toolbar —
+ * twelve byte-identical lines under three different wrapper names, which is
+ * how the same idea ends up with three spellings and then three behaviours.
+ *
+ * BY POSITION, not by `[data-snap="…"]`, so the rule survives a re-order: a
+ * child that becomes first starts rounding its left edge without anyone
+ * re-labelling it. Each child keeps its own `data-snap` as the honest
+ * description of what it is; this writes the four corner variables directly so
+ * the group actually joins.
+ *
+ * The VALUES come from the token layer (`display-mode-border-rounding-base`) —
+ * this only decides which corners get them. */
+.sherpa-snap-group > * {
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
+}
+.sherpa-snap-group > :first-child {
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.sherpa-snap-group > :last-child {
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}

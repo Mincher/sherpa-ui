@@ -87,20 +87,9 @@
    written directly so the group actually joins.
 
    By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
-.cal-header > * {
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
-.cal-header > :first-child {
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-.cal-header > :last-child {
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
+/* The snapped-group corner rules used to be written out here. They are now
+   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
+   in three components under three wrapper names. `.cal-header` carries the class. */
 
 /* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
    8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */

@@ -220,20 +220,9 @@
    SQUARED. First child keeps its leading corners, last child its trailing ones,
    and anything between is square all round. Written by position rather than by
    `[data-snap="…"]` so the rule survives a re-order of the group. */
-.view-group > * {
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
-.view-group > :first-child {
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-.view-group > :last-child {
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
+/* The snapped-group corner rules used to be written out here. They are now
+   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
+   in three components under three wrapper names. `.view-group` carries the class. */
 
 /* The lit star takes the ACTIVE Style mode, set as data-status on the button
    itself (see #toggleFavourite) — not a colour written here.

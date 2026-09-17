@@ -166,20 +166,9 @@
    corner variables are written directly so the pair actually joins.
 
    By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
-.pair > * {
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
-.pair > :first-child {
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-.pair > :last-child {
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
+/* The snapped-group corner rules used to be written out here. They are now
+   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
+   in three components under three wrapper names. `.pair` carries the class. */
 
 /* ── Disabled fields ──────────────────────────────────────────────────── */
 :host([disabled]) .rows,
