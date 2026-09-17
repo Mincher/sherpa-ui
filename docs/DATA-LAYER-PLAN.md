@@ -2780,9 +2780,9 @@ new backing, not a new architecture.
 
 | Step | Work | Why here |
 |---|---|---|
-| **S1** | Move the `ArrayStore` out of `records.js` into a module the views import | leaving and returning to Records currently rebuilds every record and loses the view state; the store should outlive the view |
-| **S2** | Say the rule in the docs: **stores are app-level, sources are query-level** | it is not written anywhere, and the example teaches the opposite |
-| **S3** | A second view over the SAME store | proves records are shared and an edit in one is seen by the other — the thing a per-view store cannot do |
+| **S1** ✅ | Move the `ArrayStore` out of `records.js` into a module the views import | **DONE 2026-09-17.** `examples/views/records-data.js` — records, columns, plans and the ONE store at module level. Measured through the real Add dialog and the router's own nav: add → 5 pages, leave and return → still 5. Was 4, record gone |
+| **S2** ✅ | Say the rule in the docs: **stores are app-level, sources are query-level** | **DONE 2026-09-17.** Stated at the top of `records-data.js`, where anyone copying the example will read it |
+| **S3** | A second view over the SAME store | **UNBLOCKED by S1** — the store is app-level now, so a second view importing `customerStore` shares the records. Still owed: the second view |
 
 S1 and S2 are small. **S3 is the one that proves it**, and it pairs naturally
 with step 14a (rewiring the dashboard).
