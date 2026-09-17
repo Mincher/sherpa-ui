@@ -93,6 +93,10 @@ events:
     name: change
     bubbles: true
     composed: true
+    detail:
+      checked: unknown
+      indeterminate: unknown
+      value: unknown
 tokens:
   field.gap: "{sherpa.display-mode-space-xs}"
   field.color: "{sherpa.theme-content-body-base}"

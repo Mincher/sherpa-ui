@@ -103,6 +103,8 @@ events:
     name: cell-click
     bubbles: true
     composed: true
+    detail:
+      value: unknown
 tokens:
   cell.block-size: "{sherpa.display-mode-size-2xl}"
   content.border-radius: "{sherpa.display-mode-border-rounding-base}"

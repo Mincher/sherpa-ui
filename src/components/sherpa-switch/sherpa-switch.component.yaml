@@ -71,6 +71,8 @@ events:
     name: change
     bubbles: true
     composed: true
+    detail:
+      checked: unknown
     trigger:
       "on": change
       node: .input

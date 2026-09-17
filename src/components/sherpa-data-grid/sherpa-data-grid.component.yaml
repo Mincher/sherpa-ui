@@ -209,14 +209,23 @@ events:
     name: column-resize
     bubbles: true
     composed: true
+    detail:
+      field: unknown
+      width: unknown
   - $type: event
     name: sort-change
     bubbles: true
     composed: true
+    detail:
+      direction: unknown
+      field: unknown
   - $type: event
     name: row-click
     bubbles: true
     composed: true
+    detail:
+      index: unknown
+      row: unknown
     trigger:
       "on": click
       node: .body
@@ -224,18 +233,38 @@ events:
     name: selection-change
     bubbles: true
     composed: true
+    detail:
+      records: unknown
+      selected: unknown
   - $type: event
     name: column-filter-change
     bubbles: true
     composed: true
+    detail:
+      clause: unknown
+      field: unknown
+      from: unknown
+      header: unknown
+      label: unknown
+      op: unknown
+      to: unknown
+      value: unknown
   - $type: event
     name: filter-change
     bubbles: true
     composed: true
+    detail:
+      field: unknown
+      filters: unknown
+      value: unknown
+      visible: unknown
   - $type: event
     name: group-toggle
     bubbles: true
     composed: true
+    detail:
+      collapsed: unknown
+      value: unknown
   - $type: event
     name: menu-clear
     bubbles: true

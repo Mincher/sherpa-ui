@@ -171,6 +171,8 @@ events:
     name: header-collapse
     bubbles: true
     composed: true
+    detail:
+      collapsed: unknown
   - $type: event
     name: header-drag
     bubbles: true

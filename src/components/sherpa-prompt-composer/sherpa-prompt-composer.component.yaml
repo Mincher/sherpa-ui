@@ -153,6 +153,8 @@ events:
     name: prompt-submit
     bubbles: true
     composed: true
+    detail:
+      text: unknown
     trigger:
       "on": submit
       node: .form

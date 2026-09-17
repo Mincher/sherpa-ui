@@ -180,6 +180,9 @@ events:
     name: file-add
     bubbles: true
     composed: true
+    detail:
+      added: unknown
+      files: unknown
     trigger:
       "on": drop
       node: .drop-zone
@@ -187,6 +190,9 @@ events:
     name: file-remove
     bubbles: true
     composed: true
+    detail:
+      files: unknown
+      removed: unknown
     trigger:
       "on": click
       node: .file-remove
@@ -201,6 +207,8 @@ events:
     name: file-upload-start
     bubbles: true
     composed: true
+    detail:
+      files: unknown
     trigger:
       "on": click
       node: .upload
@@ -208,6 +216,8 @@ events:
     name: files-change
     bubbles: true
     composed: true
+    detail:
+      files: unknown
     trigger:
       "on": change
       node: .file-input

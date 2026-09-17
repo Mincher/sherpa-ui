@@ -53,14 +53,37 @@ anatomy:
             class: heading
             part: heading
           - slot: header
-      - el: sherpa-input-text
-        class: search
-        part: search
-        attrs:
-          data-icon-start: fa-solid fa-magnifying-glass
-          placeholder: Search
-          autocomplete: "off"
-          aria-label: Search this menu
+          - el: span
+            class: header-actions
+            part: header-actions
+            children:
+              - el: sherpa-button
+                class: clear
+                part: clear
+                attrs:
+                  data-type: icon
+                  data-size: sm
+                  data-look: transparent
+                  data-icon-start: fa-solid fa-circle-xmark
+                  aria-label: Clear
+              - el: sherpa-button
+                class: remove
+                part: remove
+                attrs:
+                  data-type: icon
+                  data-size: sm
+                  data-look: transparent
+                  data-status: critical
+                  data-icon-start: fa-solid fa-trash
+                  aria-label: Remove
+          - el: sherpa-input-text
+            class: search
+            part: search
+            attrs:
+              data-icon-start: fa-solid fa-magnifying-glass
+              placeholder: Search
+              autocomplete: "off"
+              aria-label: Search this menu
       - el: p
         class: no-matches
         part: no-matches
@@ -79,15 +102,6 @@ anatomy:
           - el: sherpa-button
             class: today
             part: today
-          - el: sherpa-button
-            class: remove
-            part: remove
-            attrs:
-              data-status: critical
-              data-icon-start: fa-solid fa-xmark
-          - el: sherpa-button
-            class: clear
-            part: clear
           - el: span
             class: footer-spacer
           - el: sherpa-button
@@ -174,20 +188,20 @@ states:
     name: has-header
     selector: ":host([data-has-header])"
   - $type: state
+    name: search
+    selector: ":host([data-search])"
+  - $type: state
+    name: clearable
+    selector: ":host([data-clearable])"
+  - $type: state
+    name: removable
+    selector: ":host([data-removable])"
+  - $type: state
     name: drill
     selector: ":host([data-drill])"
   - $type: state
     name: calendar
     selector: ":host([data-type=\"calendar\"])"
-  - $type: state
-    name: search
-    selector: ":host([data-search])"
-  - $type: state
-    name: removable
-    selector: ":host([data-removable])"
-  - $type: state
-    name: clearable
-    selector: ":host([data-clearable])"
   - $type: state
     name: no-matches
     selector: ":host([data-no-matches])"
@@ -211,10 +225,14 @@ events:
     name: menu-change
     bubbles: true
     composed: true
+    detail:
+      values: unknown
   - $type: event
     name: menu-apply
     bubbles: true
     composed: true
+    detail:
+      values: unknown
   - $type: event
     name: menu-cancel
     bubbles: true
@@ -227,6 +245,9 @@ events:
     name: menu-select
     bubbles: true
     composed: true
+    detail:
+      label: string
+      value: unknown
   - $type: event
     name: menu-back
     bubbles: true
@@ -256,6 +277,7 @@ tokens:
   heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
   remove.--_status-text: "{sherpa.theme-content-critical-1}"
   remove.--_status-border: "{sherpa.theme-border-critical-2}"
+  remove.--_status-icon: "{sherpa.theme-content-critical-1}"
   rows.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:

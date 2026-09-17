@@ -71,6 +71,11 @@ events:
     name: legend-item-click
     bubbles: true
     composed: true
+    detail:
+      active: unknown
+      index: unknown
+      indices: unknown
+      label: string
     trigger:
       "on": click
       node: .legend
@@ -78,6 +83,9 @@ events:
     name: legend-breakdown-change
     bubbles: true
     composed: true
+    detail:
+      active: unknown
+      hidden: unknown
 tokens:
   legend.column-gap: "{sherpa.display-mode-space-xs}"
   legend.row-gap: "{sherpa.display-mode-space-2xs}"

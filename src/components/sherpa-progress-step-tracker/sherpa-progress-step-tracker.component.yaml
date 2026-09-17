@@ -70,6 +70,9 @@ events:
     name: step-click
     bubbles: true
     composed: true
+    detail:
+      index: unknown
+      label: string
     trigger:
       "on": click
       node: .steps

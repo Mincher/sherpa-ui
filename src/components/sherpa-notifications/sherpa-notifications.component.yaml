@@ -85,10 +85,15 @@ events:
     name: notification-click
     bubbles: true
     composed: true
+    detail:
+      id: unknown
+      notification: unknown
   - $type: event
     name: notification-read
     bubbles: true
     composed: true
+    detail:
+      ids: unknown
 tokens:
   notification-icon.font-size: "{sherpa.theme-size-icon-xs}"
   notification-icon.color: "{sherpa.theme-content-body-1}"

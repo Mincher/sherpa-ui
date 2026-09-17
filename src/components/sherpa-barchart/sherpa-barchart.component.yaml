@@ -120,6 +120,10 @@ events:
     name: bar-click
     bubbles: true
     composed: true
+    detail:
+      index: unknown
+      label: string
+      value: number
     trigger:
       "on": click
       node: .bars

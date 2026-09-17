@@ -211,14 +211,27 @@ events:
     name: quick-filter-change
     bubbles: true
     composed: true
+    detail:
+      active: unknown
+      custom: unknown
+      id: unknown
+      picked: unknown
+      scope: string
+      source: string
+      values: unknown
   - $type: event
     name: group-change
     bubbles: true
     composed: true
+    detail:
+      field: unknown
   - $type: event
     name: filter-add
     bubbles: true
     composed: true
+    detail:
+      filters: unknown
+      ids: unknown
   - $type: event
     name: filter-clear
     bubbles: true
@@ -243,6 +256,8 @@ events:
     name: view-favorite
     bubbles: true
     composed: true
+    detail:
+      favourite: unknown
   - $type: event
     name: view-menu-open
     bubbles: true
@@ -255,10 +270,16 @@ events:
     name: sort-change
     bubbles: true
     composed: true
+    detail:
+      direction: unknown
+      field: unknown
   - $type: event
     name: filter-remove
     bubbles: true
     composed: true
+    detail:
+      filter: unknown
+      id: unknown
 tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
   bar.padding-block: "{sherpa.display-mode-space-2xs}"

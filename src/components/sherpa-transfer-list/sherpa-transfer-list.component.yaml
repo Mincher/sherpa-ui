@@ -135,6 +135,10 @@ events:
     name: transfer-change
     bubbles: true
     composed: true
+    detail:
+      direction: unknown
+      moved: unknown
+      selected: unknown
     trigger:
       "on": click
       node: .moves

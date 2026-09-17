@@ -116,6 +116,8 @@ events:
     name: change
     bubbles: true
     composed: true
+    detail:
+      value: unknown
     trigger:
       "on": change
       node: .options

@@ -147,6 +147,8 @@ events:
     name: panel-collapse
     bubbles: true
     composed: true
+    detail:
+      collapsed: unknown
   - $type: event
     name: panel-expand
     bubbles: true

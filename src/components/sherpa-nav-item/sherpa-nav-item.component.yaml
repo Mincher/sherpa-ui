@@ -203,10 +203,15 @@ events:
     name: item-click
     bubbles: true
     composed: true
+    detail:
+      href: unknown
+      label: string
   - $type: event
     name: item-expand
     bubbles: true
     composed: true
+    detail:
+      expanded: unknown
 tokens:
   nav.gap: "{sherpa.theme-gap-md}"
   icon.inline-size: "{sherpa.theme-size-icon-xs}"

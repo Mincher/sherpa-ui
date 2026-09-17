@@ -138,6 +138,9 @@ events:
     name: change
     bubbles: true
     composed: true
+    detail:
+      selected: unknown
+      value: unknown
 tokens:
   card.border-width: "{sherpa.display-mode-border-width-base}"
   body.color: "{sherpa.theme-content-body-1}"

@@ -413,6 +413,117 @@ function parseEnumValues(rest) {
   return m[1].split('|').map((s) => s.trim()).filter(Boolean);
 }
 
+/**
+ * A value expression → a type name, or `unknown`.
+ *
+ * DELIBERATELY TIMID. Only the shapes that cannot be anything else are named:
+ * a literal, a `??` fallback whose right side is a literal, a `!` / comparison,
+ * an array literal. Everything else — a bare identifier, a call, a property
+ * read — is `unknown`, because inferring it properly needs the type checker,
+ * and a WRONG type in a contract is worse than an honest gap. A caller who
+ * reads `unknown` looks; a caller who reads `string` and gets a number does not.
+ */
+function typeOfExpr(raw) {
+  const e = (raw ?? '').trim().replace(/\/\/.*$/gm, '').trim();
+  if (!e) return 'unknown';
+  if (/^(true|false)$/.test(e) || /^!/.test(e) || /[=!<>]==?|\b(?:&&|\|\|)\s*(?:true|false)\b/.test(e)) return 'boolean';
+  if (/^-?\d+(\.\d+)?$/.test(e)) return 'number';
+  if (/^['"`]/.test(e)) return 'string';
+  if (/^\[/.test(e)) return 'array';
+  // `x ?? ''` and `x ?? 0` state their own fallback type, which is the only
+  // type the field can take when the left side is absent.
+  const fallback = /\?\?\s*(.+)$/.exec(e);
+  if (fallback) {
+    const t = typeOfExpr(fallback[1]);
+    if (t !== 'unknown') return t;
+  }
+  return 'unknown';
+}
+
+/**
+ * What each event actually CARRIES — read from the `emit()` call sites.
+ *
+ * A spec used to declare that an event exists and nothing about its payload,
+ * even though `schemas/component.v1.json` has had a `detail` field all along.
+ * That is how three different `values` shapes hid behind one
+ * `quick-filter-change`: a bare `string[]` from a chip, a
+ * `Record<id, string[]>` from the bar, and `[]` beside an `id` from an overflow
+ * toggle. A host read one as another and emptied the grid on every sort.
+ *
+ * The detail is the half of an event contract a caller actually codes against.
+ *
+ * TOP-LEVEL KEYS ONLY, and the brace walk is why: `{ index, detail: { a, b } }`
+ * declares `index` and `detail`, not `a` and `b`. A regex over the whole body
+ * would have flattened nested shapes into a lie.
+ *
+ * An event emitted MORE THAN ONCE with different keys reports the UNION, which
+ * is honest — the payload really does vary — and the variance is visible rather
+ * than hidden behind whichever call site was read last.
+ */
+function emitDetails(ts) {
+  const out = new Map();
+  if (!ts) return out;
+
+  for (const m of ts.matchAll(/\bemit\(\s*['"`]([a-z][\w-]*)['"`]\s*,\s*\{/g)) {
+    const open = m.index + m[0].length - 1;
+    let depth = 0, close = -1;
+    for (let i = open; i < ts.length; i++) {
+      if (ts[i] === '{') depth++;
+      else if (ts[i] === '}') { depth--; if (depth === 0) { close = i; break; } }
+    }
+    if (close < 0) continue;
+
+    const keys = new Map();
+    let d = 0, token = '', pendingKey = '';
+    const shorthand = new Map();
+    const flush = () => {
+      if (pendingKey) keys.set(pendingKey, typeOfExpr(token));
+      else {
+        // No colon was seen for this entry, so the whole token is the key —
+        // `{ values }`. Anything with an operator in it is an expression that
+        // happened to sit between two commas, not a shorthand property.
+        const t = token.replace(/\/\/.*$/gm, '').trim();
+        if (/^[A-Za-z_$][\w$]*$/.test(t)) shorthand.set(t, 'unknown');
+      }
+      pendingKey = '';
+      token = '';
+    };
+    for (const ch of ts.slice(open + 1, close)) {
+      if ('{[('.includes(ch)) d++;
+      else if ('}])'.includes(ch)) d--;
+      if (d === 0 && ch === ',') { flush(); continue; }
+      if (d === 0) token += ch;
+      if (d === 0 && ch === ':' && !pendingKey) {
+        // The key is whatever sits on the last line before the colon, so a
+        // comment on the lines above cannot be mistaken for one.
+        const k = token.slice(0, -1).split('\n').pop().trim();
+        if (/^[A-Za-z_$][\w$]*$/.test(k)) pendingKey = k;
+        token = '';
+        continue;
+      }
+    }
+    flush();
+    /* Shorthand — `{ values }` carries no colon for the walk above to find, and
+       gives no expression to read a type from.
+
+       THE WALK HANDLES IT, not a comma split over the raw body. A split found
+       `held` inside `clause: held ? … : null` — the fragment between two commas
+       there IS a bare identifier — and wrote a payload field that does not
+       exist. The walk already knows the difference between a key and the middle
+       of an expression, so shorthand is collected the same way. */
+    for (const [k, t] of shorthand) if (!keys.has(k)) keys.set(k, t);
+
+    const prev = out.get(m[1]) ?? new Map();
+    for (const [k, t] of keys) {
+      // A field emitted twice with different inferences is `unknown`: the
+      // payload really does vary, and claiming one of the two would be a guess.
+      prev.set(k, prev.has(k) && prev.get(k) !== t ? 'unknown' : t);
+    }
+    out.set(m[1], prev);
+  }
+  return out;
+}
+
 /** Parse the `Fires:` line(s) → [name, …]. Handles `Fires: a, b` and multi-line lists. */
 function parseFires(comment) {
   const out = new Set();
@@ -829,9 +940,19 @@ function generateSpec(name) {
      contract — a caller can listen for it. Silence in a comment is an
      oversight, not a decision to make something private. */
   for (const n of emitted) eventNames.add(n);
+  const details = emitDetails(ts);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: true };
+    /* WHAT IT CARRIES. `unknown` for every field rather than a guessed type:
+       the emit site gives a NAME reliably and a type only by inference, and a
+       wrong type in a contract is worse than an honest "there is a field here".
+       The schema takes `field -> type name`, so the names are the half that is
+       always true. */
+    const keys = details.get(en);
+    if (keys?.size) {
+      ev.detail = Object.fromEntries([...keys].sort(([a], [b]) => a.localeCompare(b)));
+    }
     const trig = priorEvents[en]?.trigger;
     if (trig) {
       ev.trigger = {};

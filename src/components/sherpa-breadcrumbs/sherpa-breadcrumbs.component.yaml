@@ -52,6 +52,10 @@ events:
     name: breadcrumb-select
     bubbles: true
     composed: true
+    detail:
+      href: string
+      index: unknown
+      label: unknown
     trigger:
       "on": click
       node: .crumbs

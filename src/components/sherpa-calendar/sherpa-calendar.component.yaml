@@ -275,6 +275,8 @@ events:
     name: datetime-change
     bubbles: true
     composed: true
+    detail:
+      value: unknown
     trigger:
       "on": click
       node: .cal-prev
@@ -282,6 +284,9 @@ events:
     name: range-select
     bubbles: true
     composed: true
+    detail:
+      end: unknown
+      start: unknown
   - $type: event
     name: calendar-cancel
     bubbles: true
@@ -290,6 +295,8 @@ events:
     name: calendar-apply
     bubbles: true
     composed: true
+    detail:
+      value: string
 tokens:
   cal.gap: "{sherpa.theme-gap-sm}"
   cal.border-width: "{sherpa.display-mode-border-width-base}"

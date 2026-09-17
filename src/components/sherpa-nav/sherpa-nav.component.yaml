@@ -177,6 +177,8 @@ events:
     name: nav-select
     bubbles: true
     composed: true
+    detail:
+      id: unknown
     trigger:
       "on": item-click
       node: .rail
@@ -184,6 +186,8 @@ events:
     name: nav-search
     bubbles: true
     composed: true
+    detail:
+      query: unknown
     trigger:
       "on": input
       node: .search-input
@@ -191,6 +195,8 @@ events:
     name: nav-state-change
     bubbles: true
     composed: true
+    detail:
+      state: unknown
 tokens:
   rail.background: "{sherpa.navigation-nav-surface-default}"
   rail.color: "{sherpa.theme-content-body-base}"

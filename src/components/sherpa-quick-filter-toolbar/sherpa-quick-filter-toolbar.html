@@ -36,10 +36,11 @@
                 range), where applying per tick would fire several requests for
                 one unfinished selection.
 
-  The menu FOOTER is not the Apply/Cancel pair alone: Today (calendar), Clear
-  (data-clearable) and Remove (data-removable) live in the same row, and
-  any one of them raises it. An auto-applying date chip therefore keeps Today and
-  Remove and drops only Cancel/Apply.
+  CLEAR (data-clearable) and REMOVE (data-removable) are icon buttons in the
+  menu's HEADER, beside the heading — not footer buttons. The FOOTER holds the
+  decision pair (Cancel/Apply) plus Today on a calendar, and any one of those
+  raises it. So an auto-applying date chip keeps Today in the footer and both
+  header buttons, and drops only Cancel/Apply.
 
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)

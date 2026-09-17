@@ -142,6 +142,8 @@ events:
     name: sort-change
     bubbles: true
     composed: true
+    detail:
+      direction: unknown
   - $type: event
     name: menu-open
     bubbles: true
@@ -150,6 +152,8 @@ events:
     name: group-toggle
     bubbles: true
     composed: true
+    detail:
+      expanded: unknown
 tokens:
   cell.gap: "{sherpa.display-mode-space-xs}"
   cell.padding: "{sherpa.theme-padding-sm}"

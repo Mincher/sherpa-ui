@@ -95,6 +95,8 @@ events:
     name: code-copy
     bubbles: true
     composed: true
+    detail:
+      code: unknown
     trigger:
       "on": click
       node: .copy

@@ -125,14 +125,45 @@
  * label stretches and the two steppers hug. */
 /* The header HOLDS the heading now (Will moved it inside), so it is shown when
    either the heading has text OR something is slotted — not on the slot alone. */
+/* ── THE HEADER IS TWO ROWS, ON EVERY MENU ───────────────────────────────
+ *
+ *   row 1   heading …………………………… Clear  Remove
+ *   row 2   the control that drives the card, full width
+ *
+ * Row 2 is a LIST's search field or a CALENDAR's month stepper — the same
+ * position for the same job. The search used to be a SIBLING of the header, so
+ * a list's header was one row with a field floating below it while a calendar's
+ * stepper sat inside the header beside the heading; two headers, two shapes,
+ * for one component.
+ *
+ * A grid, not a flex column: a column puts each of the four children on its own
+ * line, while two named areas keep the heading and the icon pair together on
+ * row 1 and give row 2 to whichever control is present. No wrapper element, so
+ * the template and its generated def stay one flat header. */
 .header { display: none; }
 :host([data-heading]) .header,
-:host([data-has-header]) .header {
-  display: flex;
+:host([data-has-header]) .header,
+:host([data-search]) .header,
+:host([data-clearable]) .header,
+:host([data-removable]) .header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "heading actions"
+    "control control";
   align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  /* A BIGGER ROW GAP than column gap. The two rows are different things — what
+     the card is, then the control that drives it — and at one 4px gap they read
+     as a single crowded block. The column gap stays 4px: the heading and the
+     icon pair beside it ARE one row. */
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
+  row-gap: var(--sherpa-display-mode-space-sm, 12px);
   flex: 0 0 auto;
 }
+.header .heading { grid-area: heading; }
+.header-actions { grid-area: actions; }
+.header .search { grid-area: control; }
+.header ::slotted(*) { grid-area: control; }
 /* ── Drill: the back arrow and the breadcrumb ────────────────────────
  * Both belong to data-drill only. An ordinary menu's header is the single
  * heading it always was.
@@ -153,37 +184,27 @@
    IS the heading, so showing both would say the same word twice. */
 :host([data-drill]) .heading { display: none; }
 
-/* A DRILLED header STACKS. The trail is about the menu — where you are and how
-   to get out — while anything slotted into the header belongs to the content: a
-   calendar's month stepper, for instance. Side by side in one row they competed
-   for the width and the stepper was squeezed; the trail takes its own line
-   above, which is also the order they are read in. */
-:host([data-drill]) .header {
-  flex-direction: column;
-  align-items: stretch;
-}
-/* …and the slotted control keeps the full line to itself. */
-:host([data-drill]) .header ::slotted(*) {
-  inline-size: 100%;
-}
+/* The trail takes the HEADING's place in the grid — it replaces the heading, so
+   it takes the heading's area and the action pair still sits beside it. The
+   control row below is unaffected: the trail is about the menu (where you are
+   and how to get out), the control is about the content, and stacking them is
+   also the order they are read in. */
+.drill-trail { grid-area: heading; }
 
-/* The heading takes the free space so a slotted control sits at the trailing
-   edge beside it — and a header with ONLY a stepper still fills its row. */
-.header .heading { flex: 1 1 auto; }
-.header ::slotted(*) { flex: 1 1 auto; }
 
-/* ── A CALENDAR HAS NO HEADING ───────────────────────────────────────────
- * Read from the set (1156:29240): the two variants' headers hold DIFFERENT
- * things and never both.
+/* ── A CALENDAR HEADS ITS OWN CARD ───────────────────────────────────────
+ * Figma's set (1156:29240) gives the two variants different headers:
  *
  *   Type=List      header FRAME → one TEXT node, "ACTIONS"
  *   Type=Calendar  header SLOT  → prev · month · next, and nothing else
  *
- * The month button already names the view, so a heading above it is a second
- * title for the same card. A caller still passes data-heading (a date chip
- * passes its column name, and that is what a screen reader announces via
- * aria-label), so the text is kept and only hidden. */
-:host([data-type="calendar"]) .heading { display: none; }
+ * A calendar used to HIDE its heading on the reasoning that the month button
+ * already names the view. It does not: the month names the MONTH, while the
+ * heading names the FIELD ("Created"), and with the Clear/Remove pair now in
+ * the header there was a row of unlabelled chrome floating above the grid.
+ *
+ * The two-row shape itself is the SHARED header grid above — a calendar's
+ * stepper lands in the same `control` row a list's search field does. */
 
 /* ── A SLOTTED STEPPER IS A SNAPPED GROUP, AND ONLY THIS FILE CAN SAY SO ──
  *
@@ -204,6 +225,12 @@
 .header ::slotted(.cal-header) {
   display: flex;
   align-items: center;
+  /* SPANS THE CARD. The group is row 2 of the calendar header and owns the full
+     width, so the month button (the flexible middle) stretches between the two
+     hugging arrows rather than the trio bunching at the start of the line. The
+     stretch itself is on the month clone in sherpa-calendar.html — ::slotted()
+     cannot reach a slotted element's children. */
+  justify-content: stretch;
   /* NO gap. The borders OVERLAP so the seam reads as one stroke rather than
      two, and CSS `gap` cannot be negative — the overlap is a negative margin,
      which has to sit on the buttons. `::slotted()` cannot reach them, so it is
@@ -251,37 +278,41 @@
  * `flex: 0 0 auto` keeps it OUT of the scroll: the rows scroll beneath it, and a
  * search that scrolled away with its own results would be useless. */
 .search { display: none; }
-:host([data-search]) .search {
-  display: block;
-  flex: 0 0 auto;
-}
+:host([data-search]) .search { display: block; }
 
 /* A row hidden by the search. CSS owns the hiding; JS only writes the flag — and
    `display: none` rather than a filter class so a hidden row is also out of the
    tab order and out of the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
 
-/* ── Clear ───────────────────────────────────────────────────────────────
- * Figma's Container Footer (Type=action-bar) splits into `left` and `right`
- * slots — "Today" on the left, Cancel/Apply on the right. Clear takes that left
- * position: a destructive-ish action belongs away from the one a thumb reaches
- * for, and the spacer is what pushes the pair apart.
- *
- * Both are hidden unless data-clearable, so an ordinary menu's footer is the
- * two buttons it always was. */
-/* ── The footer's LEFT position ──────────────────────────────────────────
- * Figma's two footers differ only here: the Calendar's `left` slot holds
- * "Today", the List's is empty. So a calendar menu shows Today and an ordinary
- * clearable menu shows Clear — one control, never both. */
+/* ── Clear, Remove, Today ────────────────────────────────────────────────
+ * CLEAR and REMOVE are the HEADER's now — icon-only, at its trailing edge.
+ * The footer is left holding the DECISION pair (Cancel · Apply) and, for a
+ * calendar, "Today" in Figma's `left` slot. Each of the three is opt-in and
+ * hidden by default, so a plain menu is the two buttons it always was. */
 .clear { display: none; }
 .today { display: none; }
 .remove { display: none; }
 .footer-spacer { display: none; }
 
-/* "Remove" is a FOOTER BUTTON for every menu shape, not a row in the
-   list. A calendar has no list for a row to sit in, and a row at the foot of a
-   long list scrolls away from the action it belongs beside. Opt-in, because only
-   a chip that can be taken off the bar has anything to remove. */
+/* ── THE HEADER ACTIONS ──────────────────────────────────────────────────
+ * Clear and Remove live in the HEADER now, icon-only, at the trailing edge.
+ * The group hugs (the heading takes the free space) and is hidden entirely
+ * unless one of the two is opted into, so a plain menu's header is the single
+ * heading it always was. */
+.header-actions { display: none; }
+:host([data-clearable]) .header-actions,
+:host([data-removable]) .header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  flex: 0 0 auto;
+}
+
+/* Opt-in, each on its own attribute: only a chip that can be taken off the bar
+   has anything to remove, and only a menu holding a value has anything to
+   clear. */
+:host([data-clearable]) .clear { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
 
 /* The CRITICAL ink, set here rather than left to the status cascade.
@@ -293,23 +324,21 @@
    boundary: the button's own fallback chain picks them up unchanged.
 
    Only the ink and the border. Removing a filter is destructive but it is not an
-   alarm, so the button keeps the footer's own surface rather than filling red. */
+   alarm, so the button keeps the header's own surface rather than filling red. */
 .remove {
   --_status-text: var(--sherpa-theme-content-critical-1, #b72200);
   --_status-border: var(--sherpa-theme-border-critical-2, #dd2c01);
+  --_status-icon: var(--sherpa-theme-content-critical-1, #b72200);
 }
 
-:host([data-clearable]) .clear { display: inline-flex; }
+/* A DRILLED header stacks its slotted control to full width, but the action
+   pair is the menu's own chrome, not content — it stays a hugging row. */
+:host([data-drill]) .header-actions { inline-size: auto; }
 
-/* A CALENDAR replaces Clear with Today, whether or not it is clearable: the
-   node puts Today in that slot, and two buttons there is not a layout Figma
-   has. Clearing a date is still reachable — picking a day again is the way
-   back, and the chip's own remove-filter row drops the filter entirely. */
+/* A CALENDAR keeps Today in the footer's left slot, as the node has it. Its
+   Clear is now the header's, same as every other menu. */
 :host([data-type="calendar"]) .today { display: inline-flex; }
-:host([data-type="calendar"]) .clear { display: none; }
 
-:host([data-clearable]) .footer-spacer,
-:host([data-removable]) .footer-spacer,
 :host([data-type="calendar"]) .footer-spacer {
   display: block;
   flex: 1 1 auto;
@@ -411,8 +440,6 @@
  * shows the row exactly when something is in it. */
 .footer { display: none; }
 :host([data-commit]) .footer,
-:host([data-removable]) .footer,
-:host([data-clearable]) .footer,
 :host([data-type="calendar"]) .footer { display: block; }
 
 /* Cancel and Apply are the COMMIT pair, so they hide with it. They used to need

@@ -100,6 +100,10 @@ events:
     name: slice-click
     bubbles: true
     composed: true
+    detail:
+      index: unknown
+      label: unknown
+      value: unknown
 tokens:
   layout.gap: "{sherpa.display-mode-space-lg}"
   slice.fill: "{sherpa.data-viz-series-1}"

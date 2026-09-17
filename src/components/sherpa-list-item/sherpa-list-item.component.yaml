@@ -210,6 +210,8 @@ events:
     name: item-click
     bubbles: true
     composed: true
+    detail:
+      label: unknown
     trigger:
       "on": click
       node: .row
@@ -217,6 +219,8 @@ events:
     name: item-expand
     bubbles: true
     composed: true
+    detail:
+      expanded: unknown
     trigger:
       "on": click
       node: .expand
@@ -224,6 +228,8 @@ events:
     name: item-select
     bubbles: true
     composed: true
+    detail:
+      selected: unknown
     trigger:
       "on": click
       node: .control

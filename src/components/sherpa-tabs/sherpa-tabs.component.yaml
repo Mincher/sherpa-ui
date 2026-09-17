@@ -76,6 +76,8 @@ events:
     name: tab-change
     bubbles: true
     composed: true
+    detail:
+      id: unknown
     trigger:
       "on": click
       node: .tabs

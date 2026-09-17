@@ -145,6 +145,8 @@ events:
     name: page-change
     bubbles: true
     composed: true
+    detail:
+      page: unknown
     trigger:
       "on": click
       node: .pager
@@ -152,6 +154,8 @@ events:
     name: page-size-change
     bubbles: true
     composed: true
+    detail:
+      pageSize: unknown
 tokens:
   results.gap: "{sherpa.display-mode-space-xs}"
   rows-label.color: "{sherpa.theme-content-body-base}"

@@ -152,10 +152,14 @@ events:
     name: input
     bubbles: true
     composed: true
+    detail:
+      value: unknown
   - $type: event
     name: change
     bubbles: true
     composed: true
+    detail:
+      value: unknown
 tokens:
   field.gap: "{sherpa.theme-gap-sm}"
   label.font-size: "{sherpa.font-size-body-small}"

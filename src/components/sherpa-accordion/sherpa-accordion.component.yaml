@@ -97,6 +97,8 @@ events:
     name: toggle
     bubbles: true
     composed: true
+    detail:
+      open: unknown
 tokens:
   header.gap: "{sherpa.theme-gap-sm}"
   header.padding: "{sherpa.theme-padding-md}"

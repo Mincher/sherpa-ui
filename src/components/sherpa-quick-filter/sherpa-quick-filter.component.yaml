@@ -198,6 +198,8 @@ events:
     name: quick-filter-click
     bubbles: true
     composed: true
+    detail:
+      active: unknown
     trigger:
       "on": click
       node: .chip
@@ -205,6 +207,9 @@ events:
     name: quick-filter-change
     bubbles: true
     composed: true
+    detail:
+      scope: string
+      values: unknown
 tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"
