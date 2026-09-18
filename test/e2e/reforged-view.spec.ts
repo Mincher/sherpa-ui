@@ -31,34 +31,56 @@ test('renderElement builds an element with props, slots and children', async ({ 
   expect(r.childButton).toBe(true);
 });
 
-test('renderView composes an id-addressed tree into the view frame', async ({ page }) => {
+test('a whole SCREEN is one element: the app shell, named like any other', async ({ page }) => {
+  /* TRAP T-the-shell-is-a-component-not-a-region-map.
+
+     renderView used to take a `shell: { nav, header, body }` option that
+     hand-built a <div class="sherpa-view"> and tagged each child with a
+     data-region. That was a SECOND implementation of `sherpa-app-shell` — which
+     already owns the frame, its nav state machine and its inset CSS, and which
+     every screen in examples/ used instead. The option had exactly one
+     consumer: this test.
+
+     The shell is now an ELEMENT in the registry like everything else. Nothing
+     had to be added to support it; the id registry already did. */
   const r = await page.evaluate(async () => {
     const { renderView } = await import('/dist/index.js');
-    const { el } = renderView({
-      root: 'body',
-      shell: { nav: 'nav', header: 'hdr' },
+    const { el, elements } = renderView({
+      root: 'shell',
       elements: {
+        shell: {
+          type: 'sherpa-app-shell',
+          slots: { nav: 'nav', header: 'hdr' },
+          children: ['body'],
+        },
+        nav: { type: 'sherpa-nav' },
+        hdr: { type: 'sherpa-app-header' },
         body: { type: 'sherpa-container', children: ['tag'] },
         tag: { type: 'sherpa-tag', props: {} },
-        nav: { type: 'sherpa-nav' },
-        hdr: { type: 'sherpa-container' },
       },
-    }) as { el: HTMLElement };
-    document.getElementById('root')!.appendChild(el);
+    }) as { el: HTMLElement; elements: Record<string, HTMLElement> };
+    document.getElementById('root')!.replaceChildren(el);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
-      frame: el.className,
-      navRegion: el.querySelector('[data-region="nav"]')?.tagName.toLowerCase() ?? null,
-      headerRegion: el.querySelector('[data-region="header"]')?.tagName.toLowerCase() ?? null,
-      bodyRegion: el.querySelector('[data-region="body"]')?.tagName.toLowerCase() ?? null,
-      bodyTag: !!el.querySelector('sherpa-container sherpa-tag'),
+      // THE ROOT IS THE COMPONENT, not a div wearing a class.
+      rootTag: el.tagName.toLowerCase(),
+      // Named slots are filled by ID, and the slot attribute proves projection.
+      navSlot: el.querySelector('sherpa-nav')?.getAttribute('slot') ?? null,
+      headerSlot: el.querySelector('sherpa-app-header')?.getAttribute('slot') ?? null,
+      // The body goes in the DEFAULT slot — no `slot` attribute at all.
+      bodySlot: el.querySelector('sherpa-container')?.getAttribute('slot'),
+      nested: !!el.querySelector('sherpa-container sherpa-tag'),
+      // Every id still comes back, the shell included.
+      ids: Object.keys(elements).sort(),
     };
   });
-  expect(r.frame).toBe('sherpa-view'); // light-DOM view frame, not a custom element
-  expect(r.navRegion).toBe('sherpa-nav');
-  expect(r.headerRegion).toBe('sherpa-container');
-  expect(r.bodyRegion).toBe('sherpa-container');
-  expect(r.bodyTag).toBe(true);
+
+  expect(r.rootTag).toBe('sherpa-app-shell');
+  expect(r.navSlot).toBe('nav');
+  expect(r.headerSlot).toBe('header');
+  expect(r.bodySlot).toBeNull();
+  expect(r.nested).toBe(true);
+  expect(r.ids).toEqual(['body', 'hdr', 'nav', 'shell', 'tag']);
 });
 
 test('$state data binding populates from state and re-populates on write', async ({ page }) => {

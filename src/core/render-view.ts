@@ -8,18 +8,25 @@
  * state-mediated wiring between elements.
  *
  *   {
- *     root: 'layout',
- *     shell: { nav: 'mainNav', header: 'appHeader' },
+ *     root: 'shell',
  *     state: { filter: null },
  *     elements: {
- *       layout: { type: 'sherpa-container', children: ['grid'] },
- *       grid:   { type: 'sherpa-data-grid', data: { $state: '/filter' } },
- *       qf:     { type: 'sherpa-quick-filter', writes: [{ on: 'change', to: '/filter' }] },
+ *       shell: { type: 'sherpa-app-shell',
+ *                slots: { nav: 'mainNav', header: 'appHeader' },
+ *                children: ['grid'] },
+ *       mainNav:   { type: 'sherpa-nav' },
+ *       appHeader: { type: 'sherpa-app-header', slots: { filters: 'qf' } },
+ *       grid: { type: 'sherpa-data-grid', data: { $state: '/filter' } },
+ *       qf:   { type: 'sherpa-quick-filter', writes: [{ on: 'change', to: '/filter' }] },
  *     },
  *   }
  *
+ * THE SHELL IS AN ELEMENT, not a special case — `sherpa-app-shell` has a YAML
+ * contract like every other component, so a view names it and fills its slots
+ * by id. See TRAP T-the-shell-is-a-component-not-a-region-map.
+ *
  * Identity is separate from layout: an element is placed by being referenced from
- * a parent's children / slots, or a shell region. Cross-element effects flow
+ * a parent's children / slots. Cross-element effects flow
  * THROUGH state: an element `writes` to a `$state` pointer on an event; consumers
  * whose data/props bind that pointer re-populate. No direct element references.
  */
@@ -62,8 +69,12 @@ export interface ViewElement {
 /** A whole view. */
 export interface ViewDefinition {
   view?: string;
+  /**
+   * The id of the element this view builds. For a full screen that is normally
+   * a `sherpa-app-shell` with its nav and header in its named slots — see
+   * TRAP T-the-shell-is-a-component-not-a-region-map.
+   */
   root: string;
-  shell?: { nav?: string; header?: string; body?: string };
   state?: Record<string, unknown>;
   elements: Record<string, ViewElement>;
 }
@@ -200,30 +211,14 @@ export function renderView(view: ViewDefinition): RenderedView {
     return el;
   };
 
-  const shell = view.shell;
-  const bodyId = shell?.body ?? view.root;
-  const bodyEl = build(bodyId);
-
-  const elements = Object.fromEntries(built);
-
-  if (!shell) return { el: bodyEl, state: store, elements };
-
-  // A light-DOM frame styled by the global `.sherpa-view` utility grid; each
-  // region is an ordered child carrying a data-region the grid places.
-  const shellEl = document.createElement('div');
-  shellEl.className = 'sherpa-view';
-  for (const [key, region] of [
-    ['nav', 'nav'],
-    ['header', 'header'],
-  ] as const) {
-    const elId = shell[key];
-    if (!elId) continue;
-    const regionEl = build(elId);
-    regionEl.dataset['region'] = region;
-    shellEl.appendChild(regionEl);
-  }
-  bodyEl.dataset['region'] = 'body';
-  shellEl.appendChild(bodyEl);
+  // ONE root, built like any other element.
+  // TRAP T-the-shell-is-a-component-not-a-region-map — this used to be two
+  // paths: a plain root, and a `shell: { nav, header, body }` option that
+  // hand-built a <div class="sherpa-view"> and tagged its children with
+  // data-region. That was a SECOND implementation of `sherpa-app-shell`, which
+  // already owns the frame, its nav state machine and its CSS — and which every
+  // real screen in examples/ used instead. The option had one consumer: a test.
+  const rootEl = build(view.root);
   // Re-read — see TRAP T-view-elements-registry-is-returned.
-  return { el: shellEl, state: store, elements: Object.fromEntries(built) };
+  return { el: rootEl, state: store, elements: Object.fromEntries(built) };
 }

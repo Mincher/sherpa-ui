@@ -3472,6 +3472,63 @@ keeps the common case unambiguous.
 
 - Site: `src/core/render-element.ts`
 
+### T-the-shell-is-a-component-not-a-region-map
+
+**`renderView` had a second implementation of `sherpa-app-shell` inside it**, and
+neither knew about the other.
+
+The option looked reasonable:
+
+```js
+renderView({ root: 'body', shell: { nav: 'mainNav', header: 'appHeader' }, … })
+```
+
+It built a `<div class="sherpa-view">`, tagged each child with a `data-region`,
+and let a global utility grid place them. Meanwhile `sherpa-app-shell` — a real
+component, with a `.component.yaml` contract, a `nav`/`header`/default slot
+trio, its own nav state machine and the CSS that insets content past the rail —
+did the same job properly.
+
+**The usage told the story.** Every screen in `examples/` used the component:
+`index.html`, `dashboard.js`, `records.js`, `settings.js`, `chat.js`. The
+`shell:` option had exactly one consumer, and it was the test for the `shell:`
+option.
+
+So the option is gone. A view names the shell like any other element:
+
+```js
+renderView({
+  root: 'shell',
+  elements: {
+    shell: { type: 'sherpa-app-shell',
+             slots: { nav: 'mainNav', header: 'appHeader' },
+             children: ['grid'] },
+    mainNav:   { type: 'sherpa-nav' },
+    appHeader: { type: 'sherpa-app-header', slots: { filters: 'qf' } },
+    grid: { type: 'sherpa-data-grid', data: { $state: '/rows' } },
+  },
+})
+```
+
+**Nothing had to be built to allow this.** The id registry already resolved
+slots and children by id; the shell path was a shortcut past machinery that
+already worked. Deleting it removed ~20 lines and a whole second vocabulary
+(`data-region`, `.sherpa-view`) from the layer's surface.
+
+**What `renderView` is FOR is the other three things**, and none of them is
+something a component could do:
+
+| | |
+|---|---|
+| the ID REGISTRY | elements reference each other by id, so two of them can share a value without being nested |
+| `$state` binding | a prop or a data payload reads a pointer and re-applies on every overlapping write |
+| `writes` wiring | an event writes into state; consumers react. No direct element references anywhere |
+
+`renderElement` takes an INLINE tree, which is why it cannot do any of that: in
+an inline tree, two siblings have no way to name each other.
+
+- Site: `src/core/render-view.ts`
+
 ### T-view-elements-registry-is-returned
 
 `RenderedView.elements` is every element the view built, by the id the definition

@@ -1216,14 +1216,29 @@ const shadowAliasLines = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
-// .sherpa-view frame utility — copied verbatim (consumed by src/core/render-view.ts).
+// .sherpa-view frame utility — NO CONSUMER AS OF 2026-09-18.
 // ════════════════════════════════════════════════════════════════════════════
+// It said "consumed by src/core/render-view.ts" until that stopped being true.
+// renderView's `shell:` option built a <div class="sherpa-view"> and was deleted
+// as a second implementation of `sherpa-app-shell`; a view now names the shell
+// COMPONENT like any other element. See TRAP
+// T-the-shell-is-a-component-not-a-region-map.
+//
+// The last line of the old comment already admitted the duplication: "mirrors
+// sherpa-app-shell.css, which does the same thing in the shadow DOM." It does,
+// and the component's copy is the one with a contract, a state machine and a
+// test.
+//
+// KEPT, not deleted, because a light-DOM frame is a real thing to want: an app
+// that cannot use a custom element (a server-rendered page, a host framework
+// that owns the root) has nowhere else to go. If nothing claims it, delete this
+// block and the `layout` layer's only bespoke output goes with it.
+//
 // The nav is an OVERLAY: absolutely positioned down the left edge at full height,
 // with the header/body inset by the COLLAPSED rail width only. Hovering the rail
 // then reveals it OVER the content instead of reflowing the page; the inset grows
 // only when the rail is latched open (pinned/settings). Widths are the Figma
-// Navigation nav-layout/width values (40 collapsed / 320 open) — mirrors
-// sherpa-app-shell.css, which does the same thing in the shadow DOM.
+// Navigation nav-layout/width values (40 collapsed / 320 open).
 const viewFrameBlock = `  .sherpa-view {
     --sherpa-view-nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);
     --sherpa-view-nav-open: 320px;
