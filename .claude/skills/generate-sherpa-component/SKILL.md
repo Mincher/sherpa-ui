@@ -43,7 +43,7 @@ the wrong role is exactly what these tools exist to stop.
                    bindings, reuse)
 ```
 
-1. **DISCOVER** — `list_components` + `explain_token` / `token_for`. Find what to reuse, find the right tokens.
+1. **DISCOVER** — `list_components` + `find_token` / `token_for`. Find what to reuse, find the right tokens.
 2. **AUTHOR** — `scaffold_def` then fill it: anatomy, props, slots, events, nested, tokens.
 3. **VALIDATE** — `validate_def`, in a **loop**, until `ok`. Every error is a real defect.
 4. **COMPILE CODE** — `compile_def` → TS/HTML/CSS, then hand-finish the CSS polish.
@@ -68,8 +68,11 @@ time — the cheapest place to catch it.
     wrong component is a **defect**, not a shortcut.
 - [ ] `get_component(name)` — for any component you'll **nest**, read its full def so you
       wire its real events and props (e.g. a nested Button emits `button-click`).
-- [ ] `explain_token(token)` — for any token you're unsure of, read its purpose / role /
-      whenNOT / caveat. `browse_ontology(role?, tier?)` lists tokens by role/tier.
+- [ ] `find_token(fragment)` — search the generated `tokens.css` for names containing a
+      fragment, synonym-aware ('heading' finds 'title', 'bg' finds 'surface'). It returns
+      names that REALLY EXIST. What each token is FOR is not recorded anywhere: the
+      ontology that carried purpose, role and caveat was deleted 2026-09-16 for having
+      rotted. Read the component CSS that already binds one to see it in use.
 - [ ] `token_for(property, value)` — the meticulous rule (Rule 9): given a property and the
       value you want, it returns **the token that RESOLVES to that value**. Use it for every
       geometry value (gap, padding, radius, stroke-width) and every colour. Do **not**
@@ -297,8 +300,7 @@ by the doc's own numbering so a citation matches:
 **Discover**
 - `list_components` — every component + def summary (reuse check, Rule 1)
 - `get_component(name)` — full def + code + Figma binding shape for a component you'll nest
-- `explain_token(token)` — purpose / role / whenNOT / caveat
-- `browse_ontology(role?, tier?)` — tokens by role/tier
+- `find_token(fragment)` — token NAMES from the generated `tokens.css`, synonym-aware
 - `token_for(property, value)` — the token that RESOLVES to a value (Rule 9)
 
 **Generate**

@@ -5,9 +5,15 @@
  * (the MCP + the generate-sherpa-component skill both call the shared lib).
  *
  *   list_components   — every component + its def summary
- *   explain_token     — purpose/role/whenNOT/caveat (ontology + synonym bridge)
- *   browse_ontology   — tokens by role / tier
+ *   find_token        — token NAMES from the generated tokens.css, synonym-aware
  *   get_component     — the full def + code + Figma binding shape
+ *
+ * THIS LIST IS THE REGISTRATIONS BELOW, and it was wrong until 2026-09-18: it
+ * promised `explain_token` and `browse_ontology`, two tools that went with the
+ * ontology in 2026-09-16, and omitted `find_token`, which replaced them. A
+ * header comment naming tools a caller cannot call is the same rot the specs
+ * had — see the round-trip gate in the pre-commit hook, which exists because a
+ * generated artefact drifted the same way.
  */
 import { z } from "zod/v3";
 import {
@@ -21,10 +27,10 @@ function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }
 /**
  * Token NAMES from the generated `tokens.css` that contain `query`.
  *
- * The fallback for every ontology answer. `tokens.css` is re-projected from
- * Figma, so it always knows which names are real — it simply knows nothing about
- * what they are FOR. That is a smaller answer than the ontology gave, and an
- * honest one; the ontology's failure mode was a confident wrong answer.
+ * `tokens.css` is re-projected from Figma, so it always knows which names are
+ * real — it simply knows nothing about what they are FOR. That is a smaller
+ * answer than the deleted ontology gave, and an honest one; the ontology's
+ * failure mode was a confident wrong answer.
  *
  * An empty query returns every name.
  */
@@ -35,7 +41,15 @@ function matchingCssTokens(query) {
   return all.filter((t) => t.toLowerCase().replace(/[\/-]/g, "").includes(q));
 }
 
-// ── ontology helpers (ported from the old ontology.js — synonym bridge + caveat) ──
+/* ── The synonym bridge — the ONE piece of the old ontology that survived ──────
+ *
+ * `explain_token` and `browse_ontology` are gone: they carried purpose, role and
+ * caveat per token, and that map rotted into confident wrong answers. What
+ * remains is the translation half, which cannot rot — it maps a word a person
+ * reaches for onto a token name that either exists in `tokens.css` or does not.
+ *
+ * `find_token`'s own output says so to the caller, in as many words.
+ */
 
 /**
  * Synonyms — words people reach for that are NOT the token's actual name. This

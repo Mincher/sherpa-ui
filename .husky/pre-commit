@@ -53,4 +53,20 @@ if [ $TRAPS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# An MCP tool module's header lists the tools it provides, and that list is what
+# a person reads before the code. One of them was wrong for two days: discover.js
+# promised `explain_token` and `browse_ontology`, deleted with the ontology, and
+# omitted `find_token`, which replaced them. Nothing noticed because nothing
+# looked — the same shape as the spec round-trip failure, so it gets the same
+# treatment: a gate that RUNS.
+echo "🔧 Checking MCP tool headers against their registrations..."
+MCP_OUT=$(npm run check:mcp --silent 2>&1)
+MCP_RESULT=$?
+
+if [ $MCP_RESULT -ne 0 ]; then
+  echo "$MCP_OUT"
+  echo "❌ An MCP tool header and its registrations have drifted. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

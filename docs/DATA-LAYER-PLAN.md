@@ -1087,7 +1087,8 @@ Two real gaps, both worth closing:
 ### The MCP tier — the same door, further out
 
 The MCP server already exposes component CONTRACTS (`get_component`,
-`explain_token`, `audit_component`). The natural next tier is component
+`find_token`, `audit_component` — this said `explain_token` until 2026-09-18,
+which had been deleted with the ontology). The natural next tier is component
 INSTANCES: an agent driving a live screen the way a host does.
 
 That tier is only buildable if the layer below it is complete. An MCP tool for

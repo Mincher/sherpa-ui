@@ -5,7 +5,7 @@
  * shared generation lib (scripts/lib/generation/*) — one implementation, two
  * surfaces (this MCP + the generate-sherpa-component skill).
  *
- *   Discover  list_components · explain_token · browse_ontology · get_component
+ *   Discover  list_components · find_token · get_component
  *   Generate  scaffold_def · validate_def · compile_def · token_for
  *   Verify    audit_component · check_bindings
  *   Data      run_query · import_schema · scaffold_schema · validate_schema
