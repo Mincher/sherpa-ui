@@ -9,8 +9,8 @@
  * it. The data layer was always headless; there was simply no door into it.
  *
  * Verified module by module: store, stores, validate, data-source, live-stores,
- * persist-view, pointer, session, chart-datum and format-tick all import
- * cleanly in Node today. `npm run lint` keeps them that way — see the
+ * persist-view, pointer, session, idb-store, view-sync, chart-datum and
+ * format-tick all import cleanly in Node today. `npm run lint` keeps them that way — see the
  * no-restricted-globals override in .eslintrc.json.
  *
  * WHAT IS HERE: everything that answers "what are the records, and which of
@@ -21,8 +21,8 @@
  * `installTokens`, `renderElement` and `renderView`. Those need a DOM by
  * definition; `sherpa-ui` is their door.
  *
- * TWO THINGS HERE STILL TOUCH STORAGE — `persistView` and `SessionStore` — and
- * that is deliberate. Both wrap every access in `try/catch → null`, so in Node
+ * FOUR THINGS HERE TOUCH STORAGE — `persistView`, `SessionStore`, `IdbStore`
+ * and `syncViews` — and that is deliberate. Both wrap every access in `try/catch → null`, so in Node
  * they degrade to "nothing was kept" rather than throwing. A server restoring a
  * saved view from a database needs the SHAPE (`ViewSnapshot`, `applyViewSnapshot`)
  * far more than it needs the browser's storage.
@@ -62,6 +62,25 @@ export {
   type RestStoreOptions,
   type StoreOptions,
 } from './core/stores.js';
+// The REAL local store — IndexedDB. Browser-only in behaviour, headless-SAFE to
+// import: `IdbStore.available` is false in Node and every method rejects rather
+// than throwing at module scope.
+// TRAP T-idb-is-the-only-real-local-store.
+export {
+  IdbStore,
+  IdbValidationError,
+  type IdbStoreOptions,
+} from './core/idb-store.js';
+// A view's state kept locally for speed and pushed onward on a schedule.
+// TRAP T-local-first-then-onward.
+export {
+  syncViews,
+  restViewRemote,
+  type RestViewRemoteOptions,
+  type SyncOptions,
+  type ViewRemote,
+  type ViewSync,
+} from './core/view-sync.js';
 export {
   DataSource,
   type BindOptions,

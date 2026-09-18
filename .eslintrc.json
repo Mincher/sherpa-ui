@@ -134,27 +134,39 @@
           { "name": "customElements", "message": "This module must run with NO DOM — nothing here may define or look up a component." },
           { "name": "localStorage", "message": "This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design." },
           { "name": "sessionStorage", "message": "This module must run with NO DOM. Storage belongs in persist-view.ts or session.ts, which are browser-only by design." },
+          { "name": "indexedDB", "message": "This module must run with NO DOM. IndexedDB belongs in idb-store.ts, which guards every access behind IdbStore.available." },
           { "name": "getComputedStyle", "message": "This module must run with NO DOM." },
           { "name": "requestAnimationFrame", "message": "This module must run with NO DOM. Use a microtask or a timer if the work must be deferred." }
         ]
       }
     },
     {
-      // stores.ts is HEADLESS-SAFE but not storage-free. `LocalStore` reaches
-      // localStorage behind a `try/catch → null`, so in Node it degrades to an
-      // empty store rather than throwing — which the headless test proves by
-      // importing it. So the DOM ban applies, and the storage ban does not.
+      // HEADLESS-SAFE but not storage-free. Each of these reaches a browser
+      // storage API behind a guard, so in Node it degrades rather than
+      // throwing — which the headless test proves by importing it. So the DOM
+      // ban applies, and the storage ban does not.
+      //
+      //   stores.ts     `LocalStore` → localStorage, `try/catch → null`
+      //   idb-store.ts  `IdbStore` → indexedDB, behind `IdbStore.available`
+      //   view-sync.ts  both, through the two above
+      //
+      // `localStorage`, `sessionStorage` and `indexedDB` are absent from THIS
+      // ban list and present in the one above, which is the whole distinction
+      // between the two: a module that may legitimately touch storage is
+      // listed here, and one that may not is listed there.
       "files": [
-        "src/core/stores.ts"
+        "src/core/stores.ts",
+        "src/core/idb-store.ts",
+        "src/core/view-sync.ts"
       ],
       "rules": {
         "no-restricted-globals": [
           "error",
-          { "name": "document", "message": "stores.ts must run with NO DOM — it is imported by tests, servers and MCP tools." },
-          { "name": "window", "message": "stores.ts must run with NO DOM. Use `globalThis` if you truly need the global scope." },
-          { "name": "customElements", "message": "stores.ts must run with NO DOM." },
-          { "name": "getComputedStyle", "message": "stores.ts must run with NO DOM." },
-          { "name": "requestAnimationFrame", "message": "stores.ts must run with NO DOM." }
+          { "name": "document", "message": "This module must run with NO DOM — it is imported by tests, servers and MCP tools." },
+          { "name": "window", "message": "This module must run with NO DOM. Use `globalThis` if you truly need the global scope." },
+          { "name": "customElements", "message": "This module must run with NO DOM." },
+          { "name": "getComputedStyle", "message": "This module must run with NO DOM." },
+          { "name": "requestAnimationFrame", "message": "This module must run with NO DOM." }
         ]
       }
     },

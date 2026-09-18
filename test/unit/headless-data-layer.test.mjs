@@ -586,6 +586,109 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
   // persist() degrades with no storage rather than throwing — that is the
   // contract that lets it sit in a headless entry point at all.
   assert.equal(session.persist('/theme/mode'), false);
+
+  // The LOCAL stores come through the same door, and degrade the same way.
+  assert.equal(typeof data.IdbStore, 'function');
+  assert.equal(typeof data.syncViews, 'function');
+});
+
+test('IdbStore is importable headless and REPORTS its absence rather than pretending', async () => {
+  /* TRAP T-idb-is-the-only-real-local-store. Node has no IndexedDB, so the
+     honest answer here is "unavailable" — not an empty store.
+
+     `LocalStore` reads as EMPTY when storage is gone, and that is right for
+     preferences: a missing preference is a default. It is WRONG for records.
+     An app that writes a customer into a store which silently kept nothing and
+     reported success has lost the customer, so this one rejects. */
+  const { IdbStore } = await import('../../dist/core/idb-store.js');
+
+  // Merely importing must not throw — a module that reached `indexedDB` at
+  // module scope would take a server down on import.
+  assert.equal(IdbStore.available, false, 'Node has no IndexedDB');
+
+  const store = new IdbStore({ name: 'customers', indexes: ['tier'] });
+  // Constructing is fine; it opens nothing until asked.
+  assert.equal(store.key, 'id', 'the default key field, as every store has');
+
+  // …and every call REJECTS rather than resolving to a lie.
+  await assert.rejects(() => store.load(), /IndexedDB is unavailable/);
+  await assert.rejects(() => store.insert({ id: 1 }), /IndexedDB is unavailable/);
+  await assert.rejects(() => store.putAll([{ id: 1 }]), /IndexedDB is unavailable/);
+
+  // A FAILED open is not cached — one rejection in a private window must not
+  // poison a session that is later granted storage. Proven by the second call
+  // failing the same way rather than with a different, cached error.
+  await assert.rejects(() => store.load(), /IndexedDB is unavailable/);
+
+  // close() on a store that never opened is a no-op, not a throw: a teardown
+  // path runs whether or not the thing it tears down ever started.
+  store.close();
+});
+
+test('syncViews works with no IndexedDB, no storage and no remote', async () => {
+  /* TRAP T-local-first-then-onward. The whole point of three tiers is that
+     losing the lower two leaves the top one working. In Node BOTH lower tiers
+     are gone, which is the harshest version of that and the easiest to test. */
+  const { syncViews } = await import('../../dist/core/view-sync.js');
+
+  const errors = [];
+  const sync = syncViews('records', { onError: (e, stage) => errors.push(stage) });
+
+  // No storage, no IndexedDB, no remote — so nothing is known, and nothing threw.
+  assert.deepEqual(await sync.all(), {});
+  assert.deepEqual(await sync.restore(), {});
+
+  // touch() and flush() are safe with no remote: a local-only app calls both.
+  sync.touch();
+  await sync.flush();
+  await sync.stop();
+  assert.deepEqual(errors, [], 'an absent tier is not an error — it is the design');
+});
+
+test('syncViews pushes to a remote, debounced, and a failed push is REPORTED not thrown', async () => {
+  /* The half that matters for "sync changes server side fairly regularly": a
+     burst of edits must be ONE request (T-sync-pushes-a-snapshot-not-a-diff),
+     and a rejecting server must not break the local save
+     (T-local-first-then-onward). */
+  const { syncViews } = await import('../../dist/core/view-sync.js');
+
+  const pushes = [];
+  let failNext = false;
+  const remote = {
+    pull: () => Promise.resolve({ shared: { label: 'Shared', snapshot: { v: 1 } } }),
+    push: (page, views) => {
+      pushes.push({ page, views });
+      return failNext
+        ? Promise.reject(new Error('503'))
+        : Promise.resolve();
+    },
+  };
+
+  const errors = [];
+  const sync = syncViews('records', {
+    remote,
+    interval: 20,
+    onError: (error, stage) => errors.push(stage),
+  });
+
+  // The remote's views come back even with no local tiers at all.
+  assert.deepEqual(Object.keys(await sync.restore()), ['shared']);
+
+  // THREE touches inside one interval is ONE push — that is the debounce.
+  sync.touch();
+  sync.touch();
+  sync.touch();
+  await new Promise((r) => setTimeout(r, 60));
+  assert.equal(pushes.length, 1, 'a burst of edits is one request');
+
+  // A REJECTING server is reported, and does not throw out of flush().
+  failNext = true;
+  sync.touch();
+  await sync.flush();
+  assert.equal(pushes.length, 2);
+  assert.deepEqual(errors, ['push'], 'the failure was reported, not thrown');
+
+  await sync.stop();
 });
 
 test('RestStore sends the query to the server and trusts the answer', async () => {

@@ -15,10 +15,17 @@
  *
  * A module-level `const` is the right lifetime for that: it is created once on
  * first import and lives as long as the tab, which is what "the app's records"
- * means. A real product would put a REST or LocalStore here instead; the shape
- * and the lifetime are the same.
+ * means.
+ *
+ * THE STORE HERE IS AN `IdbStore` — records in IndexedDB, so they survive a
+ * RELOAD and not merely a navigation. That is the difference this file was
+ * already half-way to making: moving the store out of `init()` stopped a
+ * record dying when the view did; putting it in IndexedDB stops it dying when
+ * the TAB does. Everything else is unchanged, which is the point of the Store
+ * interface — the two consumers (`records.js` and `dashboard.js`) each pass it
+ * to a `DataSource` and neither knows or cares what backs it.
  */
-import { ArrayStore, rules, required, number, email } from '../../dist/index.js';
+import { IdbStore, ArrayStore, rules, required, number, email } from '../../dist/index.js';
 
 /* ── Data: 100 customers ──────────────────────────────────────────── */
 const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
@@ -148,8 +155,56 @@ export const customerSchema = rules({
  * Keyed by EMAIL because that is what identifies a customer here — an inserted
  * row with a blank email would collide with the next blank one, which is why
  * the add flow fills one in.
+ *
+ * INDEXED on the columns the toolbar chips filter by. An index does not change
+ * an answer, only how much is read to reach it
+ * (`T-idb-index-narrows-it-never-answers-it`) — so adding one is safe and
+ * removing one is safe. **`version` must be bumped whenever this list changes**:
+ * IndexedDB builds indexes only during an upgrade, so a new name on an old
+ * version is silently absent and its filter quietly reads the whole store
+ * (`T-idb-open-is-a-handshake-not-a-call`).
+ *
+ * The FALLBACK is deliberate and is not a paper one: a private window, blocked
+ * site data, or a browser with IndexedDB disabled gets the in-memory store it
+ * always had. The app works; it simply forgets on reload. `IdbStore` REJECTS
+ * rather than reading as empty precisely so this choice is made HERE, in the
+ * open, instead of the app silently writing records into nothing
+ * (`T-idb-is-the-only-real-local-store`).
  */
-export const customerStore = new ArrayStore(customers, {
-  key: 'email',
-  schema: customerSchema,
-});
+export const customerStore = IdbStore.available
+  ? new IdbStore({
+    name: 'customers',
+    database: 'sherpa-examples',
+    key: 'email',
+    schema: customerSchema,
+    indexes: ['status', 'plan', 'tier', 'region', 'owner'],
+    version: 1,
+  })
+  : new ArrayStore(customers, { key: 'email', schema: customerSchema });
+
+/**
+ * Put the demo records in, but ONLY on a first run.
+ *
+ * The whole demonstration is that an edit survives a reload, so re-seeding on
+ * every load would erase exactly the thing being shown. `totalCount()` asking
+ * for nothing is the cheapest way to tell an empty store from a used one.
+ *
+ * `putAll` rather than 100 `insert()` calls: one transaction and ONE `change`
+ * event, where the loop would be 100 of each and would reload every bound
+ * component 100 times (`T-idb-bulk-is-one-transaction`).
+ *
+ * AWAITED BY THE VIEWS, not fired and forgotten — a grid that populates before
+ * the seed lands draws an empty table and never hears about it. Both views
+ * `await customersReady` before their first load.
+ */
+export const customersReady = (async () => {
+  try {
+    if (await customerStore.totalCount() === 0) {
+      await customerStore.putAll(customers);
+    }
+  } catch {
+    // Storage blocked mid-session, or a version clash with another tab. The
+    // ArrayStore fallback above never reaches here; an IdbStore that cannot
+    // seed shows an empty grid, which is honest — it has no records.
+  }
+})();

@@ -992,6 +992,7 @@ code that wrote it, and a hand-edited one is a plain string. Hence the
 - Site: `src/core/persist-view.ts`
 - Site: `src/core/session.ts`
 - Site: `src/core/stores.ts`
+- Site: `src/core/idb-store.ts`
 
 ### T-one-snapshot-not-a-key-per-concern
 
@@ -1033,6 +1034,7 @@ whose view has no source calls the returned `save` itself.
 `T-signal-not-a-teardown-list`).
 
 - Site: `src/core/persist-view.ts`
+- Site: `src/core/view-sync.ts`
 
 ### T-apply-degrades-never-throws
 
@@ -3897,6 +3899,7 @@ Every `findIndex`/`find` over the key field in this module goes through it, so
 `ArrayStore` and `LocalStore` cannot disagree about whether a row exists.
 
 - Site: `src/core/stores.ts`
+- Site: `src/core/idb-store.ts`
 
 ### T-fetch-does-not-reject-on-404
 
@@ -3954,6 +3957,187 @@ revoked) has nothing useful to do; the in-memory result of the call is still ret
 to the caller.
 
 - Site: `src/core/stores.ts`
+
+### T-idb-is-the-only-real-local-store
+
+There are now FOUR local stores, and only one of them holds records:
+
+| | holds | cap | sync? |
+|---|---|---|---|
+| `ArrayStore` | records, for one page load | memory | yes |
+| `LocalStore` | preferences and saved views | ~5MB | yes |
+| `SessionStore` | what the app knows about itself | ~5MB | yes |
+| **`IdbStore`** | **records, durably** | **disk** | **no** |
+
+`LocalStore` exists because "remember this user's saved views" does not deserve
+a server (`T-local-store-is-not-for-bulk-data`). `IdbStore` exists because
+"keep ten thousand customers on this device" does not either — and a grouped
+grid now needs every matching row in hand at once
+(`T-grouped-paging-belongs-to-the-view`), which Web Storage cannot carry.
+
+**AN ABSENT `IdbStore` REJECTS; IT DOES NOT READ AS EMPTY.** This is the one
+place the layer deliberately breaks the guard-and-degrade rule every other
+storage path follows, and it is the difference between a preference and a
+record:
+
+- a missing **preference** is a default, so `LocalStore` reading as empty is the
+  right answer and the page carries on
+- a missing **record** is data loss, so a store that silently kept nothing and
+  reported success would let an app write a customer into a void and call it
+  saved
+
+So `#db()` rejects with `IndexedDB is unavailable`, and `IdbStore.available` is
+the door a caller checks BEFORE building one. In Node that is false and the
+headless test proves every method rejects rather than resolving to a lie.
+
+A failed open is **not cached** — one rejection in a private window must not
+poison a session that is later granted storage.
+
+- Site: `src/core/idb-store.ts`
+
+### T-idb-open-is-a-handshake-not-a-call
+
+`indexedDB.open()` is a request, a version negotiation and possibly a schema
+migration. Three consequences, all of which have bitten every codebase that has
+used it:
+
+**1. The connection is held as a PROMISE, not a database.** Twenty concurrent
+loads on first paint would otherwise fire twenty `open()` calls and race twenty
+upgrade transactions. One promise, shared.
+
+**2. Indexes are built ONLY inside `onupgradeneeded`.** Adding a field to
+`indexes` on an existing database does nothing at all — the index is silently
+absent and every filter on it quietly reads the whole store. **Bump `version`
+when `indexes` changes.** The constructor cannot detect this: it has no way to
+know what the last version declared without opening, which is the thing it is
+deciding whether to do.
+
+**3. Another tab can ask for a higher version**, and is blocked until this one
+lets go. `onversionchange` closes the connection and drops the cached promise,
+so the next call re-opens at the new version. A tab that ignores this hangs the
+other one indefinitely.
+
+- Site: `src/core/idb-store.ts`
+
+### T-idb-index-narrows-it-never-answers-it
+
+**An index is a PRE-FILTER, never the answer.** `#readRows` uses one to read a
+slice instead of the whole store; `applyOptions` then filters, sorts, searches
+and pages exactly as it does for every other store.
+
+That is what makes an index safe to add or remove: it changes how much is read,
+never what comes back. `reforged-idb-store.spec.ts` asserts this directly, by
+running every filter shape against an indexed store and an unindexed one and
+demanding identical rows.
+
+`#rangeFor` therefore **refuses far more than it accepts**, because a wrong
+range drops matching rows and a missing one only costs time:
+
+| | narrows |
+|---|---|
+| `eq`, `gt`, `gte`, `lt`, `lte`, `between` on an indexed field | yes |
+| an `and` group | by any ONE arm; the rest still run in `applyOptions` |
+| an `or` group | **no** — a row matching the second arm may sit outside the first arm's range |
+| `contains`, `startswith`, `endswith` | **no** — see below |
+| an un-indexed field, a null value, a value IndexedDB rejects as a key | no |
+
+`startswith` looks expressible as `IDBKeyRange.bound(v, v + '\uffff')` and is
+not: it would need the store's collation to match `applyOptions`'s
+case-insensitive comparison, and it does not. A "Gold" row would be missed by a
+search for "gold".
+
+- Site: `src/core/idb-store.ts`
+
+### T-idb-clear-is-not-a-reset
+
+`clear()` deletes every RECORD. The object store and its indexes survive.
+
+So it is not a way out of `T-idb-open-is-a-handshake-not-a-call`: a changed
+`indexes` list still needs a `version` bump, whether or not the store was
+cleared first. Deleting the whole database is the only true reset, and this
+class deliberately does not offer one — a method that destroys another store's
+data because they happen to share a database name is not a method worth having.
+
+- Site: `src/core/idb-store.ts`
+
+### T-idb-bulk-is-one-transaction
+
+2,000 rows through `insert()` is 2,000 transactions and 2,000 `change` events,
+and a bound `DataSource` reloads on every one of them. `putAll` is one of each.
+
+**Every `await` that is not a request of this transaction happens BEFORE the
+transaction opens.** An IndexedDB transaction auto-commits the moment it stops
+having work, and awaiting anything else — a schema's async `validate` — is
+exactly that pause. So `putAll` checks every row first, then opens the
+transaction and writes without awaiting anything but its own completion.
+
+This is the seam a **sync down from a server** writes through, and what seeds a
+store on first run. `replace: true` clears first, for a full refresh where a row
+the server deleted must not survive locally.
+
+- Site: `src/core/idb-store.ts`
+
+### T-local-first-then-onward
+
+A view's state lives in THREE tiers, and each exists because the one below it
+cannot do that job:
+
+| tier | holds | why not the one below |
+|---|---|---|
+| Web Storage | the CURRENT view, per tab | it is the only **synchronous** one |
+| IndexedDB | every saved view, durably | it is the only one **without a ~5MB cap** |
+| a server | views that follow the user | it is the only one **another device sees** |
+
+`T-restore-before-first-load` requires the current view to be readable BEFORE
+the first load, or the page queries twice and blinks. IndexedDB is async and can
+never satisfy that. So `persistView` keeps its synchronous Web-Storage restore
+untouched and `syncViews` sits BEHIND it — this is why adding IndexedDB did not
+change `persist-view.ts` at all.
+
+**LOCAL WINS on a clash**, and the merge order in `restore()` is the reverse of
+what looks natural — remote first, so local overwrites it:
+
+```js
+{ ...remote, ...(await fromIdb()), ...loadSavedViews(page) }
+```
+
+A view the user edited on this device and has not pushed yet must not be
+replaced by the server's older copy. Reverse those spreads and the user's work
+vanishes on the next reload.
+
+**A FAILED PUSH IS NOT A FAILED SAVE.** The durable copy is written on `touch()`
+immediately; only the WIRE is debounced. A rejecting server is reported through
+`onError` and never thrown, because the view is already saved and the user is
+not waiting on the network. Nor is it retried on a timer — a retry loop against
+a rejecting server is a request storm nobody asked for, and the next `touch`
+carries the same snapshot anyway.
+
+An absent tier is not an error. With no IndexedDB, no storage and no remote —
+which is Node — every method still answers, with `{}`.
+
+- Site: `src/core/view-sync.ts`
+
+### T-sync-pushes-a-snapshot-not-a-diff
+
+`ViewRemote.push` takes the WHOLE set of a page's views, not a change list.
+
+A diff would need a merge on the server, a conflict policy, and a per-view
+version — three mechanisms to solve a problem that does not exist at this size.
+A page's saved views are kilobytes, a user edits them rarely, and the last write
+winning is what a person expects from "my saved views".
+
+The push is **debounced**, not batched: a burst of edits inside one interval is
+ONE request carrying the final state, rather than one request per edit. Default
+30 seconds — "fairly regularly", not "immediately", because nothing downstream
+is waiting on it.
+
+`ViewRemote` is an interface rather than a `RestStore` because a host's view
+endpoint is its own, and the two calls it needs are far narrower than a Store's
+five. `restViewRemote` is a ready-made HTTP one (GET to pull, PUT to push, and a
+404 read as "nothing saved yet") so that every host does not write the same
+twenty lines.
+
+- Site: `src/core/view-sync.ts`
 
 ### T-session-store-is-the-third-tier
 

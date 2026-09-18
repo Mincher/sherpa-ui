@@ -19,7 +19,7 @@
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
 } from '../../dist/index.js';
-import { customerStore, customers, columns, plans } from './records-data.js';
+import { customerStore, customersReady, customers, columns, plans } from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
@@ -41,6 +41,11 @@ export async function init(root) {
      records, which outlive a screen; a source holds one QUERY over them, which
      does not. */
   const store = customerStore;
+  /* THE SEED HAS TO LAND BEFORE THE FIRST LOAD. The store is IndexedDB now, so
+     "are there any records" is a question with a wait in it — a source that
+     loaded first would draw an empty grid and never hear that the seed arrived.
+     On a second visit this has already resolved and costs nothing. */
+  await customersReady;
   const source = new DataSource({
     store,
     // 25 to match sherpa-pagination's own default — a different number here

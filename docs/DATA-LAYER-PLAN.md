@@ -457,6 +457,7 @@ no monolithic Filter Builder control.
 | `JsonStore` | a JSON URL | fetch once, then behave as ArrayStore |
 | `RestStore` | an HTTP endpoint | `load` → GET, `insert` → POST, `update` → PATCH, `remove` → DELETE |
 | `LocalStore` | `localStorage` | for saved views and column state, not bulk data |
+| `IdbStore` | IndexedDB | **the real local store** — records, durably, no 5MB cap. Indexes, bulk writes, a row cap. REJECTS when IndexedDB is absent rather than reading as empty: a missing preference is a default, a missing record is data loss. `T-idb-is-the-only-real-local-store` |
 
 Every store, same shape:
 
@@ -2767,14 +2768,59 @@ it is ever wanted:
 
 | Want | Mechanism |
 |---|---|
-| a saved view that follows the user | `LocalStore` — already planned |
+| a saved view that follows the user | **`syncViews` — BUILT 2026-09-18.** See below |
 | "someone edited this record in another tab" | `storage` event, or `BroadcastChannel` |
 | one live query shared between tabs | a `SharedWorker` holding the store |
 
-**None of this is planned, and none should be built speculatively.** The note is
-here so the shape is not designed away: because `Store` is an `EventTarget` and
-DOM-free, a cross-tab store is a store that listens to `BroadcastChannel` — a
-new backing, not a new architecture.
+The last two are **not planned, and should not be built speculatively.** The note
+is here so the shape is not designed away: because `Store` is an `EventTarget`
+and DOM-free, a cross-tab store is a store that listens to `BroadcastChannel` —
+a new backing, not a new architecture.
+
+### View state: three tiers
+
+**BUILT 2026-09-18** — `src/core/view-sync.ts`, on the ruling that the current
+view and its components should be kept locally for fast interaction and synced
+onward "fairly regularly".
+
+| tier | holds | why it cannot be the one below |
+|---|---|---|
+| Web Storage | the CURRENT view, per tab | it is the only **synchronous** one |
+| IndexedDB | every saved view, durably | it is the only one **without a ~5MB cap** |
+| a server | views that follow the user | it is the only one **another device sees** |
+
+`persistView` was **not changed**. `T-restore-before-first-load` requires the
+current view to be readable BEFORE the first load, or the page queries twice and
+blinks; IndexedDB is async and can never satisfy that. So `syncViews` sits
+BEHIND the synchronous tier rather than replacing it — which is why adding a
+whole durable tier touched `persist-view.ts` not at all.
+
+```js
+const sync = syncViews('records', {
+  remote: restViewRemote({ url: '/api/views' }),   // omit for local-only
+  interval: 30_000,                                 // debounce, not a poll
+  signal,
+  onError: (error, stage) => report(error, stage),
+});
+await sync.restore();   // remote, then IndexedDB, then local — LOCAL WINS
+sync.touch();           // saved to IndexedDB NOW; pushed on the next tick
+```
+
+Two rules, both traps:
+
+- **LOCAL WINS on a clash** (`T-local-first-then-onward`). The merge is
+  `{ ...remote, ...idb, ...webStorage }` — remote FIRST so local overwrites it.
+  Reverse it and a view the user edited on this device, and has not pushed yet,
+  is replaced by the server's older copy.
+- **A failed push is not a failed save.** The durable copy is written on
+  `touch()`; only the wire is debounced. A rejecting server is reported through
+  `onError`, never thrown and never retried on a timer.
+
+`ViewRemote` is an interface — two methods, `pull` and `push` — because a host's
+view endpoint is its own. `restViewRemote` is a ready-made HTTP one so every
+host does not write the same twenty lines. The wire carries the WHOLE set, not a
+diff (`T-sync-pushes-a-snapshot-not-a-diff`): a page's saved views are
+kilobytes, and last-write-wins is what a person expects from "my saved views".
 
 ### The steps
 

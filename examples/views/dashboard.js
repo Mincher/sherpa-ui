@@ -13,7 +13,7 @@ import {
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
-import { customerStore } from './records-data.js';
+import { customerStore, customersReady } from './records-data.js';
 import {
   alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
 } from './dashboard-data.js';
@@ -206,8 +206,22 @@ export async function init(root) {
   // NOT `bindEl` — that binds to the ALERTS source. This element's rows come
   // from a different store, which is the whole point of the demonstration.
   const kv = $('#kv');
-  if (kv) customerSource.bind(kv, { readonly: true, as: customerSummary, signal: page.signal });
-  void customerSource.load();
+  /* SEED FIRST, THEN BIND — and the order is the whole fix.
+     The customer store is IndexedDB now, so "how many customers are there" has
+     a wait in it. `bind()` populates straight away with whatever the store
+     holds, so binding first painted "Customers 0" and only corrected it a tick
+     later. A zero that becomes 100 reads as a bug to anyone watching, and a
+     summary is six figures a reader believes on sight.
+     Not awaited at the TOP of init: the rest of the dashboard reads a different
+     store and must not queue behind this one. */
+  if (kv) {
+    void customersReady.then(() => {
+      // The page may have been navigated away from during the wait.
+      if (page.signal.aborted) return;
+      customerSource.bind(kv, { readonly: true, as: customerSummary, signal: page.signal });
+      return customerSource.load();
+    });
+  }
 
   // ── Legends toggle their chart ──────────────────────────────────────
   // A legend does not know what it labels, so the page joins them up: the legend
