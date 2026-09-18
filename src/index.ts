@@ -50,6 +50,14 @@ export function installTokens(): void {
 
 export { SherpaElement } from './core/sherpa-element.js';
 export { renderElement, applyState, type ElementNode } from './core/render-element.js';
+// A saved view's content is MARKUP, parsed through an allow-list on the way in.
+// TRAP T-saved-markup-is-untrusted-input.
+export {
+  parseViewMarkup,
+  checkViewMarkup,
+  type MarkupReport,
+  type ParseResult,
+} from './core/view-markup.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
 export {

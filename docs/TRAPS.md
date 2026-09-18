@@ -3472,6 +3472,69 @@ keeps the common case unambiguous.
 
 - Site: `src/core/render-element.ts`
 
+### T-saved-markup-is-untrusted-input
+
+**A saved view's content is MARKUP, and it is PARSED, never assigned.**
+
+The format question answered itself: every authored screen in this repo is
+already an HTML template dropped into `sherpa-app-shell`
+(`examples/templates/*.html`, four of them, none calling `renderView`). A saved
+view is the same thing a USER made instead of an author, so it is the same
+format. One way to describe a view, not two.
+
+**But the string does not come from this codebase.** It comes out of
+`localStorage`, out of IndexedDB, or off a server — and a person can edit all
+three. `innerHTML` on it runs whatever it contains. So
+`core/view-markup.ts` parses it through an allow-list:
+
+| | |
+|---|---|
+| any `sherpa-*` element | **allowed** — they are the vocabulary |
+| layout and text tags | **allowed** — `div`, `span`, `section`, `ul`, headings, `strong`… |
+| `data-*` | **allowed** — the public API of every component here |
+| `class`, `id`, `slot`, `part`, ARIA | allowed |
+| `<script>`, `<iframe>`, `<img>`, `<a>`, `<form>`, `<input>`, `<svg>` | **dropped, with the subtree** |
+| `on*` | **dropped** — an inline handler is a script |
+| `style` | **dropped** — it carries `url()`, and every visual here is a token or a `data-*` |
+
+Three things make this hold, and each is easy to get wrong:
+
+**1. `DOMParser`, not `innerHTML`.** The parsed document is INERT by
+specification: no script runs, no image loads, no stylesheet fetches — even for
+the nodes about to be dropped. Assigning first and cleaning after has already
+lost.
+
+**2. Elements are BUILT FRESH, never adopted.** `createElement(tag)` plus the
+attributes that pass, so only the allow-list ever crosses into the live
+document. Importing the parsed node would carry whatever the parser attached.
+
+**3. `on*` is refused EXPLICITLY**, not by omission. `onclick` is absent from
+the allow-list and would fail anyway — until someone widens a rule. This fails
+on purpose, which survives that.
+
+`setHTML` and the Sanitizer API would do some of this, but they are Chromium-only
+today, and a view needs a far narrower vocabulary than a general sanitiser
+targets. A small allow-list is an easier promise to keep.
+
+**Drops are REPORTED, never silent** — `parseViewMarkup` returns them and
+`onViewPicked` warns. A view that quietly lost half its content reads as a
+rendering bug, and the reader has no way to know it was refused.
+`checkViewMarkup` answers the same question WITHOUT building, for a host
+deciding whether to accept a saved view at all.
+
+**A `ViewDefinition` object is still accepted**, for the one thing markup cannot
+express: the `$state` bindings and `writes` wiring in
+`T-a-view-definition-is-data-the-render-is-not`. Markup describes a SHAPE; the
+object describes a shape plus its reactive plumbing. Most views only need the
+shape — the `capacity` preset's 40-line object became twelve lines of HTML.
+
+The snapshot still addresses elements BY ID, through their own API, exactly as
+before: markup carries real `id` attributes, and `onViewPicked` collects them
+from the host after the swap.
+
+- Site: `src/core/view-markup.ts`
+- Site: `src/core/persist-view.ts`
+
 ### T-a-view-definition-is-data-the-render-is-not
 
 **A `ViewDefinition` is a plain object. `renderView` is DOM work.** They were in

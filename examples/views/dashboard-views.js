@@ -68,46 +68,35 @@ export const DASHBOARD_VIEWS = {
        are nearly full, so it wants a TABLE and a distribution, and none of the
        donut, gauge or line series say anything useful about it.
 
-       `content` is a ViewDefinition — the shape renderView already builds — so
-       the components, their nesting and their spans all come from the same
-       object as the query. `renderView` creates them; `snapshot.elements` then
-       configures them through their own APIs, and the ids below are what that
-       snapshot addresses. */
-    content: {
-      root: 'layout',
-      elements: {
-        layout: { type: 'div', props: { class: 'sherpa-grid' }, children: ['histCard', 'gridCard'] },
+       `content` is the view's own MARKUP — the same HTML an authored template
+       holds — so the components, their nesting and their spans sit beside the
+       query that fills them. `snapshot.elements` then configures them through
+       their own APIs, addressing the ids in the markup. */
+    /* MARKUP, not an object. Every authored screen in examples/templates is
+       HTML dropped into the app shell, and a saved view is the same thing a
+       USER made instead of an author — so it is the same format. This used to
+       be a 40-line ViewDefinition describing the twelve lines below.
 
-        // A HISTOGRAM, not a donut: storage is a continuous quantity, and
-        // slicing a continuum into wedges says the bands are categories.
-        histCard: {
-          type: 'sherpa-container',
-          props: { 'data-span': '12', 'data-rows': '5' },
-          slots: { header: 'histHeader' },
-          children: ['hist'],
-        },
-        histHeader: {
-          type: 'sherpa-container-header',
-          props: { 'data-heading': 'Storage used, by band' },
-        },
-        hist: {
-          type: 'sherpa-barchart',
-          props: { id: 'hist', 'data-label': 'Devices per storage band' },
-        },
+       Parsed through the allow-list in core/view-markup.ts on the way in, and
+       the ids are what `snapshot.elements` addresses. */
+    content: `
+      <div class="sherpa-grid">
+        <!-- A HISTOGRAM, not a donut: storage is a continuous quantity, and
+             slicing a continuum into wedges says the bands are categories. -->
+        <sherpa-container data-span="12" data-rows="5">
+          <sherpa-container-header slot="header"
+            data-heading="Storage used, by band"></sherpa-container-header>
+          <sherpa-barchart id="hist"
+            data-label="Devices per storage band"></sherpa-barchart>
+        </sherpa-container>
 
-        gridCard: {
-          type: 'sherpa-container',
-          props: { 'data-span': '12', 'data-rows': '8' },
-          slots: { header: 'gridHeader' },
-          children: ['fullest'],
-        },
-        gridHeader: {
-          type: 'sherpa-container-header',
-          props: { 'data-heading': 'Fullest devices' },
-        },
-        fullest: { type: 'sherpa-data-grid', props: { id: 'fullest' } },
-      },
-    },
+        <sherpa-container data-span="12" data-rows="8">
+          <sherpa-container-header slot="header"
+            data-heading="Fullest devices"></sherpa-container-header>
+          <sherpa-data-grid id="fullest"></sherpa-data-grid>
+        </sherpa-container>
+      </div>
+    `,
     snapshot: {
       v: 1,
       source: {

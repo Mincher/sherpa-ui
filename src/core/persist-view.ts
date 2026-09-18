@@ -7,6 +7,7 @@
  */
 import type { DataSource, ViewState } from './data-source.js';
 import { applyState } from './render-element.js';
+import { parseViewMarkup } from './view-markup.js';
 import { renderView, type ViewDefinition, type RenderedView } from './render-view.js';
 
 export interface PersistOptions {
@@ -230,9 +231,16 @@ export interface SavedView {
   /**
    * This view's OWN CONTENT AND LAYOUT, when it differs from its neighbours'.
    *
-   * TRAP T-view-content-is-a-view-definition — applied before the snapshot.
+   * MARKUP — the same HTML an authored view is written in
+   * (`examples/templates/*.html`), because a saved view is the same thing a
+   * USER made instead of an author. Parsed through an allow-list on the way
+   * in: TRAP T-saved-markup-is-untrusted-input.
+   *
+   * A `ViewDefinition` object is still accepted, for a view that needs the
+   * `$state` and `writes` wiring markup cannot express —
+   * TRAP T-view-content-is-a-view-definition.
    */
-  content?: ViewDefinition;
+  content?: string | ViewDefinition;
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */
@@ -338,10 +346,35 @@ export function onViewPicked(
     let rendered: RenderedView | undefined;
     const host = options.into;
 
-    if (view.content) {
-      rendered = renderView(view.content);
+    if (typeof view.content === 'string') {
+      /* MARKUP — the common case, and the same HTML an authored view is
+         written in. PARSED through the allow-list, never assigned: this string
+         came out of storage or off a server and nothing here wrote it.
+         TRAP T-saved-markup-is-untrusted-input. */
+      const { fragment, report: dropped } = parseViewMarkup(view.content);
+      if (dropped.tags.length || dropped.attributes.length) {
+        // SAID OUT LOUD. A view that silently lost half its content looks like
+        // a rendering bug, and the reader has no way to know it was refused.
+        console.warn('view markup: dropped', dropped);
+      }
       if (host) {
         // TRAP T-content-first-original-once — FIRST swap only; replaceChildren.
+        if (!original) original = [...host.childNodes];
+        host.replaceChildren(fragment);
+      }
+      /* The snapshot addresses elements BY ID, and markup carries real ids, so
+         collect them the same way a definition's registry would. Scoped to the
+         host, because an id is only addressable once it is in the page. */
+      if (host) {
+        const byId: Record<string, HTMLElement> = {};
+        for (const el of host.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
+        targets = { ...targets, elements: { ...targets.elements, ...byId } };
+      }
+    } else if (view.content) {
+      /* AN OBJECT — for a view that needs the `$state` and `writes` wiring
+         markup cannot express. TRAP T-view-content-is-a-view-definition. */
+      rendered = renderView(view.content);
+      if (host) {
         if (!original) original = [...host.childNodes];
         host.replaceChildren(rendered.el);
       }
@@ -419,7 +452,7 @@ export function saveViewAs(
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
-  options: PersistOptions & { content?: ViewDefinition } = {},
+  options: PersistOptions & { content?: string | ViewDefinition } = {},
 ): SavedViewStore {
   const trimmed = label.trim();
   if (!trimmed) return loadSavedViews(page, options);
