@@ -42,7 +42,7 @@ export class SherpaKeyValueList extends SherpaElement {
   // The prototype's own data-text attributes name the fields; there is nothing
   // left to write by hand.
   #render(): void {
-    this.renderRows('.list', 'template.pair-tpl', this.#pairs);
+    this.renderItems('.list', 'template.pair-tpl', this.#pairs);
   }
 }
 

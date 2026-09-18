@@ -42,7 +42,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
   // rule is left here, because it depends on the LIST's length rather than on
   // the crumb — the trail's own end is not a field any row carries.
   #render(): void {
-    this.renderRows('.crumbs', 'template.crumb-tpl', this.#crumbs, {
+    this.renderItems('.crumbs', 'template.crumb-tpl', this.#crumbs, {
       after: (row, crumb, i) => {
         const link = row.querySelector<HTMLAnchorElement>('.link')!;
         if (i === this.#crumbs.length - 1) link.setAttribute('aria-current', 'page');

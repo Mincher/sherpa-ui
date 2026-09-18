@@ -46,7 +46,7 @@ function loadHtml(url: string): Promise<string> {
  * Parse an HTML string into a map of `<template id="...">` → innerHTML. Returns
  * null when there are no id'd templates (a single flat template).
  *
- * TRAP T-cloning-prototypes-have-no-id — a `<template class>` row prototype is
+ * TRAP T-cloning-prototypes-have-no-id — a `<template class>` item prototype is
  * ignored here, which is why it must not carry an `id`.
  */
 export function parseTemplates(html: string): TemplateMap {
@@ -163,23 +163,31 @@ export interface PropDef {
 /** A component's whole declared attribute surface. */
 export type PropMap = Readonly<Record<string, PropDef>>;
 
-/* ── Declarative rows: the row-template attributes ───────────────────────── */
+/* ── Declarative items: the item-template attributes ─────────────────────── */
+/*
+ * NOT "rows". Twelve components stamp from a prototype — a barchart's bars, a
+ * tab strip's tabs, a breadcrumb trail's crumbs, a legend's swatches — and only
+ * one of them has rows. A base-class name that implies a presentation is a name
+ * eleven components have to read past.
+ * TRAP T-the-base-class-names-nothing-visual.
+ */
 
 /**
- * `renderRows()` fills a cloned prototype from the item's own fields, driven by
- * attributes in the template rather than a `fill` callback.
+ * `renderItems()` fills a cloned prototype from the item's own fields, driven by
+ * attributes in the template rather than a `fill` callback. An ITEM is whatever
+ * the component repeats: a bar, a tab, a crumb, a legend swatch, a grid row.
  *
- * TRAP T-row-template-cannot-compute — the five attributes, the `??` field
+ * TRAP T-item-template-cannot-compute — the five attributes, the `??` field
  * fallback, and why there is no maths or formatting in a template.
  */
-export type RowTemplate = 'declarative';
+export type ItemTemplate = 'declarative';
 
 /** Prefix→meaning for the row-template attributes, in the order they are applied. */
-const ROW_TEXT = 'data-text';
-const ROW_ICON = 'data-icon';
-const ROW_INDEX = 'data-index';
-const ROW_ATTR = 'data-attr-';
-const ROW_WHEN = 'data-when-';
+const ITEM_TEXT = 'data-text';
+const ITEM_ICON = 'data-icon';
+const ITEM_INDEX = 'data-index';
+const ITEM_ATTR = 'data-attr-';
+const ITEM_WHEN = 'data-when-';
 
 /** Resolve `"header??field"` against an item: the first field that is not null. */
 function fieldValue(item: unknown, expr: string): unknown {
@@ -612,7 +620,7 @@ export abstract class SherpaElement extends HTMLElement {
    * Stamp a list: clear the container, clone the prototype per item, fill, append.
    *
    * TRAP T-render-list-keeps-fill-in-the-caller — only the plumbing is shared;
-   * `clear: 'own-children'` exists for rows that sit beside a `<slot>`, and the
+   * `clear: 'own-children'` exists for items that sit beside a `<slot>`, and the
    * index is the LOOP position.
    */
   protected renderList<T>(
@@ -644,13 +652,13 @@ export abstract class SherpaElement extends HTMLElement {
    * Stamp a list DECLARATIVELY: the prototype's own attributes say what each
    * field fills, so there is no `fill` callback.
    *
-   * See `RowTemplate` for the vocabulary; `clear: 'own-children'` behaves as in
+   * See `ItemTemplate` for the vocabulary; `clear: 'own-children'` behaves as in
    * `renderList`.
    * TRAP T-custom-element-upgrade — writes are ATTRIBUTES, never properties.
    * TRAP T-row-fragment-cloned-whole — the whole fragment is cloned; `after` is
    * the escape hatch.
    */
-  protected renderRows<T>(
+  protected renderItems<T>(
     containerSel: string,
     tplSel: string,
     items: readonly T[],
@@ -672,14 +680,14 @@ export abstract class SherpaElement extends HTMLElement {
 
     // The whole FRAGMENT is cloned, not its firstElementChild: a semantic pair
     // like <dt>+<dd> is two sibling roots, and stamping only the first would
-    // silently drop the value half of every row.
+    // silently drop the value half of every item.
     items.forEach((item, index) => {
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
       for (const root of [...frag.children]) {
-        this.#fillRow(root as HTMLElement, item, index);
+        this.#fillItem(root as HTMLElement, item, index);
       }
-      // `after` gets the first root — the row element for a single-root prototype,
-      // which is every case that needs it.
+      // `after` gets the first root — the item element for a single-root
+      // prototype, which is every case that needs it.
       const first = frag.firstElementChild as HTMLElement | null;
       if (first) opts?.after?.(first, item, index);
       container.appendChild(frag);
@@ -687,45 +695,45 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Clone ONE row from a prototype and fill it declaratively — `renderRows` for
-   * a component that cannot use a single container.
+   * Clone ONE item from a prototype and fill it declaratively — `renderItems`
+   * for a component that cannot use a single container.
    *
-   * TRAP T-clone-row-is-for-two-destinations — the one case, and the boundary.
+   * TRAP T-clone-item-is-for-two-destinations — the one case, and the boundary.
    */
-  protected cloneRow<T extends Element = HTMLElement>(
+  protected cloneItem<T extends Element = HTMLElement>(
     tplSel: string,
     item: unknown,
     index = 0,
   ): T | null {
-    const row = this.clone<T>(tplSel);
-    if (row) this.#fillRow(row as unknown as HTMLElement, item, index);
-    return row;
+    const node = this.clone<T>(tplSel);
+    if (node) this.#fillItem(node as unknown as HTMLElement, item, index);
+    return node;
   }
 
   /** Apply every row-template attribute on a cloned row and its descendants. */
-  #fillRow(node: HTMLElement, item: unknown, index: number): void {
+  #fillItem(node: HTMLElement, item: unknown, index: number): void {
     // The row root can carry the attributes too, so it is part of its own sweep.
     for (const el of [node, ...node.querySelectorAll<HTMLElement>('*')]) {
       // Snapshot — the loop removes each directive, and a live NamedNodeMap
       // would skip entries. TRAP T-row-fragment-cloned-whole.
       for (const { name, value } of [...el.attributes]) {
-        if (name === ROW_TEXT) {
-          el.textContent = this.#rowText(item, value);
+        if (name === ITEM_TEXT) {
+          el.textContent = this.#itemText(item, value);
           el.removeAttribute(name);
-        } else if (name === ROW_ICON) {
-          this.writeIcon(el, this.#rowText(item, value));
+        } else if (name === ITEM_ICON) {
+          this.writeIcon(el, this.#itemText(item, value));
           el.removeAttribute(name);
-        } else if (name === ROW_INDEX) {
+        } else if (name === ITEM_INDEX) {
           el.removeAttribute(name);
           el.setAttribute(value, String(index));
-        } else if (name.startsWith(ROW_ATTR)) {
-          const target = name.slice(ROW_ATTR.length);
+        } else if (name.startsWith(ITEM_ATTR)) {
+          const target = name.slice(ITEM_ATTR.length);
           const resolved = fieldValue(item, value);
           el.removeAttribute(name);
           // An absent field leaves the attribute OFF, never "undefined".
           if (resolved != null) el.setAttribute(target, String(resolved));
-        } else if (name.startsWith(ROW_WHEN)) {
-          const target = name.slice(ROW_WHEN.length);
+        } else if (name.startsWith(ITEM_WHEN)) {
+          const target = name.slice(ITEM_WHEN.length);
           el.removeAttribute(name);
           // Truthy field → the BARE attribute (five hand-written sites, declared).
           if (fieldValue(item, value)) el.setAttribute(`data-${target}`, '');
@@ -734,8 +742,8 @@ export abstract class SherpaElement extends HTMLElement {
     }
   }
 
-  /** A field's value as row text: absent and null both render as empty. */
-  #rowText(item: unknown, expr: string): string {
+  /** A field's value as item text: absent and null both render as empty. */
+  #itemText(item: unknown, expr: string): string {
     const value = fieldValue(item, expr);
     return value == null ? '' : String(value);
   }

@@ -66,7 +66,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
       // NUMBER is not a field — it is the position counted from one — and the
       // connector is a second prototype woven BETWEEN the steps, which is
       // structure rather than content.
-      const item = this.cloneRow('template.step-tpl', step, i);
+      const item = this.cloneItem('template.step-tpl', step, i);
       if (!item) return;
       item.querySelector('.number')!.textContent = String(i + 1);
       track.appendChild(item);

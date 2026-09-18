@@ -47,7 +47,7 @@ Therefore:
 
 Silent, and timing-dependent. `sherpa-quick-filter-toolbar` hit it and works
 around it with a deferred replay queue (`customLabels`), holding property writes
-until after the whole run is appended. `renderRows()` avoids it by construction:
+until after the whole run is appended. `renderItems()` avoids it by construction:
 attributes only, written before append.
 
 - Site: `src/core/sherpa-element.ts`
@@ -2015,9 +2015,52 @@ three.
 
 - Site: `src/core/sherpa-element.ts`
 
-### T-row-template-cannot-compute
+### T-the-base-class-names-nothing-visual
 
-`renderRows()` fills a cloned prototype from the item's own fields, driven by
+**A name on `SherpaElement` is read by all 58 components, so it must not imply
+one of them.**
+
+`renderRows()` and `cloneRow()` were the counter-example. Twelve components
+stamp items from a prototype:
+
+| | what it stamps |
+|---|---|
+| `sherpa-barchart` | bars |
+| `sherpa-tabs` | tabs |
+| `sherpa-breadcrumbs` | crumbs |
+| `sherpa-chart-legend` | swatches |
+| `sherpa-progress-step-tracker` | steps |
+| `sherpa-file-upload` | files |
+| `sherpa-notifications` | notifications |
+| `sherpa-pagination` | page options |
+| `sherpa-data-grid` | **rows** |
+| `sherpa-list` &middot; `sherpa-key-value-list` &middot; `sherpa-transfer-list` | list entries |
+
+One of the twelve has rows. The other eleven had to read past a name that
+described a table.
+
+So the base class says `renderItems`, `cloneItem`, `ItemTemplate` — and its
+internals say `#fillItem`, `ITEM_TEXT`, `ITEM_ATTR`. **An ITEM is whatever the
+component repeats.** The method's own signature already used that word
+(`items`, `item`, `index`); only the name disagreed.
+
+**What did NOT need changing, and why that matters:**
+
+- the template **ATTRIBUTES** (`data-text`, `data-icon`, `data-attr-*`,
+  `data-when-*`) were already presentation-free
+- `populate(data: unknown)` was already shape-agnostic
+- `DataSource`'s `rows`, `setSort`, `setPage` are **query** words, not UI words.
+  A `Row` there is a RECORD — a chart has rows of data and draws none
+
+So the leak was narrow: the base class's own vocabulary, and nothing else. A
+component naming its OWN parts is fine and stays — `sherpa-chart-legend` has
+real rollup rows, and `T-rollup-row-has-its-own-prototype` keeps its name.
+
+- Site: `src/core/sherpa-element.ts`
+
+### T-item-template-cannot-compute
+
+`renderItems()` fills a cloned prototype from the item's own fields, driven by
 attributes in the template rather than a `fill` callback:
 
 | attribute | effect |
@@ -2233,7 +2276,7 @@ costs one shadow query rather than one per row.
 
 `clear: 'own-children'` removes only nodes matching `ownSel` instead of
 emptying the container. `sherpa-list` needs it: its rows sit beside a `<slot>`,
-and `replaceChildren()` would take the slot with them. `renderRows` takes the
+and `replaceChildren()` would take the slot with them. `renderItems` takes the
 same option for the same reason.
 
 The index passed to `fill` is the LOOP position. A component stamping a
@@ -2244,13 +2287,13 @@ iterating a filtered list — writes it inside `fill` from its own data.
 
 ### T-row-fragment-cloned-whole
 
-`renderRows` clones the whole `<template>` FRAGMENT, not its
+`renderItems` clones the whole `<template>` FRAGMENT, not its
 `firstElementChild`: a semantic pair like `<dt>` + `<dd>` is two SIBLING roots,
 and stamping only the first would silently drop the value half of every row.
 
 `after` then gets the FIRST root — the row element for a single-root prototype,
 which is every case that needs it. It is the escape hatch for the ONE derived
-value a declarative template cannot compute (`T-row-template-cannot-compute`);
+value a declarative template cannot compute (`T-item-template-cannot-compute`);
 reach for it before abandoning the row to a hand-written `fill`.
 
 `#fillRow` sweeps the row ROOT as well as its descendants, because the root can
@@ -4866,18 +4909,18 @@ The two accepted value forms are `T-icon-value-takes-two-forms`.
 
 - Site: `src/core/sherpa-element.ts`
 
-### T-clone-row-is-for-two-destinations
+### T-clone-item-is-for-two-destinations
 
-`cloneRow` exists for a component that cannot use a SINGLE container, which is
-why `renderRows` alone was not enough.
+`cloneItem` exists for a component that cannot use a SINGLE container, which is
+why `renderItems` alone was not enough.
 
 `sherpa-transfer-list` is the case: each item goes to the source pane or the
 target pane depending on its own `selected` field, so there is no one container
 to stamp into.
 
-The row's FIELDS are still declared on the prototype (`T-row-template-cannot-compute`);
+The row's FIELDS are still declared on the prototype (`T-item-template-cannot-compute`);
 only the CHOICE OF PARENT stays in code. That is the boundary — a second reason to
-reach for this instead of `renderRows` would mean the declarative vocabulary is
+reach for this instead of `renderItems` would mean the declarative vocabulary is
 missing something.
 
 - Site: `src/core/sherpa-element.ts`

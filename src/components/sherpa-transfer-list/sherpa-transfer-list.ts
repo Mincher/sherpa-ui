@@ -111,7 +111,7 @@ export class SherpaTransferList extends SherpaElement {
       // The value and the heading are declared on the prototype. Which PANE the
       // row lands in, and the staged tick, are not fields the item carries —
       // `selected` is the pane, and `#staged` is this component's own draft.
-      const row = this.cloneRow('template.row-tpl', item);
+      const row = this.cloneItem('template.row-tpl', item);
       if (!row) continue;
       row
         .querySelector('sherpa-list-item')!

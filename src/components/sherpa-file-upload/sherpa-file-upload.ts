@@ -119,7 +119,7 @@ export class SherpaFileUpload extends SherpaElement {
   #render(): void {
     // The name and the index are declared on the prototype. The SIZE is not —
     // a raw byte count is unreadable, and formatting it is a computation.
-    this.renderRows('.file-list', 'template.file-item-tpl', this.#files, {
+    this.renderItems('.file-list', 'template.file-item-tpl', this.#files, {
       after: (row, file) => {
         row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
       },

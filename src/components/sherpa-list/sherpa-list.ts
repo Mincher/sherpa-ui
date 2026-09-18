@@ -68,7 +68,7 @@ export class SherpaList extends SherpaElement {
     // The row prototype declares its own field mapping. `own-children`: clear only
     // the previously-stamped rows — a blanket replaceChildren() would take the
     // <slot> beside them with it.
-    this.renderRows('.body', 'template.row-tpl', this.#rows, {
+    this.renderItems('.body', 'template.row-tpl', this.#rows, {
       clear: 'own-children',
       ownSel: '.body > .row-item',
     });

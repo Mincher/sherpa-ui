@@ -74,7 +74,7 @@ export class SherpaTabs extends SherpaElement {
     // The id and the label are declared on the prototype. What is left is the
     // a11y wiring, which is derived rather than copied: two ids built AROUND the
     // tab's own, and a roving tabindex that depends on the position.
-    this.renderRows('.tabs', 'template.tab-tpl', this.#tabs, {
+    this.renderItems('.tabs', 'template.tab-tpl', this.#tabs, {
       after: (btn, tab, i) => {
         btn.id = `tab-${tab.id}`;
         btn.setAttribute('aria-controls', `panel-${tab.id}`);

@@ -113,7 +113,7 @@ export class SherpaNotifications extends SherpaElement {
     // the unread flag and the time. Only the icon is left: it replaces the whole
     // className rather than writing an attribute, because the glyph and the
     // element's own `.notification-icon` class share that one property.
-    this.renderRows('.menu', 'template.notification-tpl', this.#items, {
+    this.renderItems('.menu', 'template.notification-tpl', this.#items, {
       clear: 'own-children',
       ownSel: '.menu > .notification, .menu > .empty',
       after: (node, item) => {
