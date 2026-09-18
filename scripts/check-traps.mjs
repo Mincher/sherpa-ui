@@ -35,8 +35,20 @@ const DOC = 'docs/TRAPS.md';
  * written into a stylesheet — a gate that does not scan a file cannot catch a
  * dangling pointer in it, and an unenforced check is the failure this whole
  * mechanism exists to prevent.
+ *
+ * THE TEST HARNESS AND THE PLAYWRIGHT CONFIG are in for the same reason, added
+ * the day the first trap was cited in one (`T-harness-serves-font-awesome-locally`,
+ * which explains why the harness serves Font Awesome from node_modules and why
+ * a retry exists). A rule about how the suite RUNS is as easy to undo as a rule
+ * about how a component renders, and it had no gate at all.
  */
-const SOURCES = ['src/components/*/*.ts', 'src/core/*.ts', 'src/components/*/*.css'];
+const SOURCES = [
+  'src/components/*/*.ts',
+  'src/core/*.ts',
+  'src/components/*/*.css',
+  'test/reforged/harness.html',
+  'playwright.config.ts',
+];
 
 /** `### T-some-id` opens a trap; `Site:` lines list the files that cite it. */
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;

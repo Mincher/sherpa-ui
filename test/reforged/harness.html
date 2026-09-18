@@ -5,12 +5,67 @@
   <title>Reforged harness</title>
   <!-- Light-DOM token layer: inherits into every shadow root. -->
   <link rel="stylesheet" href="/dist/styles/tokens/tokens.css" />
+  <!--
+    FONT AWESOME — the document @font-face, which is what actually DRAWS a glyph.
+
+    This is the same CDN URL src/index.ts uses, and the real app installs it the
+    same way (installIcons()). It is a <link> here rather than a call in the
+    module below because installIcons() appends the element and returns at once:
+    the module would then race the stylesheet, and `document.fonts.load()` would
+    resolve against a face the parser had not yet registered.
+
+    Why it must be here at all: SherpaElement.sharedStyles already adopts this
+    sheet into every shadow root, so the `.fa-*::before` CLASS RULES have always
+    worked in the harness — an icon reported the right `content` codepoint and
+    took a sensible width. What was missing is the @font-face, which lives only
+    in the document. So every glyph rendered as TOFU (an empty box) while every
+    measurement looked correct, and no test could tell a working icon from a
+    dead one.
+
+    That is the failure this exists to catch: a Font Awesome PRO glyph is absent
+    from the free webfont and fails SILENTLY — no warning, anywhere. A test can
+    only catch it if the real font is present to fail against.
+
+    SERVED LOCALLY, NOT FROM THE CDN — and that is the whole reason `npm test`
+    stopped being flaky. `src/index.ts` points at cdnjs, which is right for a
+    real app; in the harness it meant every one of 553 tests fetched the same
+    103KB sheet plus its webfonts, eight browser contexts at a time, each with
+    its own cache. The suite failed a RANDOM 1-18 tests per run on `page.goto`
+    timeouts, and the failing set changed every time — which is how a load
+    problem looks when read as a code problem.
+
+    The local file is the SAME 6.5.2 release, verified byte-for-byte against the
+    CDN's (103,009 bytes, `diff` clean). So this is the same test, minus the
+    network.
+
+    TRAP T-harness-serves-font-awesome-locally.
+  -->
+  <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
 </head>
 <body>
   <div id="root"></div>
   <script type="module">
     // The index wires SherpaElement.sharedStyles (base reset) and registers components.
     import '/dist/index.js';
+    import { SherpaElement } from '/dist/index.js';
+
+    /* THE SECOND CDN FETCH, and the one that is easy to miss.
+       The <link> above gives the DOCUMENT its @font-face. But sharedStyles
+       ALSO holds the cdnjs URL, and SherpaElement fetches it to adopt the
+       `.fa-*::before` class rules into every shadow root — a document <link>
+       does not reach a shadow root. Same 103KB, over the network, once per
+       page. Repointing the <link> alone left that one in place.
+
+       Rewritten HERE rather than in src/index.ts because the CDN is correct
+       for a real app: a consumer has no node_modules to serve from. It is only
+       the harness that has a local copy and 553 page loads.
+       TRAP T-harness-serves-font-awesome-locally. */
+    SherpaElement.sharedStyles = SherpaElement.sharedStyles.map((url) =>
+      url.href.includes('cdnjs.cloudflare.com')
+        ? new URL('/node_modules/@fortawesome/fontawesome-free/css/all.min.css', location.origin)
+        : url,
+    );
+
     await Promise.all([
       customElements.whenDefined('sherpa-button'),
       customElements.whenDefined('sherpa-tag'),
@@ -64,6 +119,34 @@
       customElements.whenDefined('sherpa-overlay-panel'),
       customElements.whenDefined('sherpa-panel'),
     ]);
+
+    /*
+     * …and WAIT for the webfont before saying ready — but NEVER for long.
+     *
+     * A test that measures an icon the moment components are defined races the
+     * font download, and the failure is a tofu box: indistinguishable from a
+     * genuinely dead glyph, so it would read as a real bug. `fonts.load()`
+     * resolves once the face is usable, which is the condition to wait on.
+     *
+     * THE RACE IS THE POINT, and it is not defensive padding. `fonts.load()`
+     * has no timeout of its own and does NOT reject on a slow network — it
+     * simply never settles, so a try/catch cannot save the harness from a
+     * third-party CDN having a bad minute. Only a ceiling can. Measured cost
+     * when the CDN is healthy: ~170ms from goto to __reforgedReady.
+     *
+     * Losing the race is harmless. The harness behaves exactly as it did before
+     * any of this was added: every layout test passes, and only an assertion
+     * about a glyph would notice — which is the assertion that should notice.
+     */
+    const FONT_MS = 3000;
+    await Promise.race([
+      Promise.all([
+        document.fonts.load('900 14px "Font Awesome 6 Free"'),   // fa-solid
+        document.fonts.load('400 14px "Font Awesome 6 Free"'),   // fa-regular
+      ]).catch(() => {}),
+      new Promise((r) => setTimeout(r, FONT_MS)),
+    ]);
+
     window.__reforgedReady = true;
 
     /**

@@ -17,7 +17,18 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  /* ONE RETRY EVERYWHERE, not only in CI.
+     A retry is a NET, not a fix, and the fix went in first: the harness used to
+     fetch Font Awesome from cdnjs on every one of 553 page loads, eight browser
+     contexts at a time, and the suite failed a random 1-18 tests per run on
+     `page.goto` timeouts. Serving that file from node_modules took the suite
+     from 1.3-5.5 minutes and always-some-failures to ~27 seconds and 559/559,
+     six runs out of seven. See TRAP T-harness-serves-font-awesome-locally.
+
+     This retry covers the seventh. It is deliberately 1, not 3: a test that
+     needs three goes is telling you something, and this must not become the
+     place that muffles it. */
+  retries: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
 
   use: {

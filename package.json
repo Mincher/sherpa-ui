@@ -1,7 +1,7 @@
 {
   "name": "sherpa-ui",
   "version": "2.1.0-beta.0",
-  "description": "Sherpa UI \u2014 A standards-based Web Component library and design token system (TypeScript)",
+  "description": "Sherpa UI — A standards-based Web Component library and design token system (TypeScript)",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -59,6 +59,7 @@
     "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.5.2",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",

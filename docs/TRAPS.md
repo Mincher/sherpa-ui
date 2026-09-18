@@ -1950,6 +1950,55 @@ not licence to add a JS status branch.
 
 - Site: `src/core/sherpa-element.ts`
 
+### T-harness-serves-font-awesome-locally
+
+**`npm test` used to fail a RANDOM 1-18 tests per run, and the failing set
+changed every time.** Six runs of identical code gave 18, 12, 6, 15, 1 and 7
+failures, with the suite taking anywhere from 55 seconds to 5.5 minutes.
+
+Every failure was the same shape: a 30-second `page.goto` timeout in a
+`beforeEach`, loading `test/reforged/harness.html`. No assertion ever failed.
+Running any affected spec ALONE passed it.
+
+**The cause was Font Awesome, fetched from cdnjs on every page load** — twice:
+
+| where | why |
+|---|---|
+| the harness `<link>` | the document `@font-face`, which is what DRAWS a glyph |
+| `SherpaElement.sharedStyles` | the `.fa-*::before` CLASS RULES, adopted into every shadow root — a document `<link>` does not reach one |
+
+That is 103KB plus webfont files, per page, times 553 tests, across eight
+browser contexts that each have their own cache. Repointing only the `<link>`
+fixes half of it; the `sharedStyles` fetch is the one that is easy to miss.
+
+Both now point at `/node_modules/@fortawesome/fontawesome-free/css/all.min.css`
+— the **same 6.5.2 release, verified byte-for-byte against the CDN's** (103,009
+bytes, `diff` clean). So the tests see identical CSS with no network at all, and
+run offline.
+
+Result: **~27 seconds, 559/559, six runs out of seven.**
+
+**`src/index.ts` still points at the CDN, deliberately.** That is correct for a
+real app — a consumer has no `node_modules` to serve from. Only the harness has
+a local copy and 553 page loads, so only the harness rewrites the URL.
+
+The `<link>` must stay a `<link>` rather than an `installIcons()` call: that
+function appends the element and returns at once, so the module would race the
+stylesheet and `document.fonts.load()` would resolve against a face the parser
+had not yet registered.
+
+`playwright.config.ts` also carries `retries: 1` **everywhere, not only in CI**.
+It is a NET for the seventh run, not the fix — the fix is above, and went in
+first. It is deliberately 1 and not 3: a test that needs three goes is telling
+you something, and this must not become the place that muffles it.
+
+Related: `T-fa-pro-icons-fail-silently` is why the harness needs the REAL font
+rather than a stub — a Pro glyph is absent from the free webfont and renders as
+nothing, with no warning anywhere.
+
+- Site: `test/reforged/harness.html`
+- Site: `playwright.config.ts`
+
 ### T-icon-value-takes-two-forms
 
 An icon attribute's value has always been allowed to be EITHER a Font Awesome
