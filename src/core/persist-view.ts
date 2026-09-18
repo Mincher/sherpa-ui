@@ -8,7 +8,6 @@
 import type { DataSource, ViewState } from './data-source.js';
 import { applyState } from './render-element.js';
 import { parseViewMarkup } from './view-markup.js';
-import { renderView, type ViewDefinition, type RenderedView } from './render-view.js';
 
 export interface PersistOptions {
   /**
@@ -236,11 +235,12 @@ export interface SavedView {
    * USER made instead of an author. Parsed through an allow-list on the way
    * in: TRAP T-saved-markup-is-untrusted-input.
    *
-   * A `ViewDefinition` object is still accepted, for a view that needs the
-   * `$state` and `writes` wiring markup cannot express —
-   * TRAP T-view-content-is-a-view-definition.
+   * ONE FORM, not two. This took a `ViewDefinition` object as well until the
+   * object's reason for existing turned out to be `$state` and `writes` — a
+   * second wiring mechanism beside `DataSource.bind()`, with zero users.
+   * TRAP T-attributes-are-the-state-channel.
    */
-  content?: string | ViewDefinition;
+  content?: string;
 }
 
 /** A page's saved views, keyed by the id its chip option carries. */
@@ -277,12 +277,6 @@ export interface ViewPick {
   view: SavedView;
   /** What could not be applied. Empty when everything landed. */
   report: ApplyReport;
-  /**
-   * The content this view built, when it declared its own — its root element
-   * and its live state store. Undefined for a view that shares the screen,
-   * which is most of them. See TRAP T-content-first-original-once.
-   */
-  rendered?: RenderedView;
 }
 
 /**
@@ -308,9 +302,9 @@ export function onViewPicked(
     /**
      * Where a view's own `content` is placed — the content region.
      *
-     * Only consulted by a view that declares content. Omit it and such a view
-     * is built and handed back in `pick.rendered` unplaced, for a host that
-     * wants to route or animate the swap itself.
+     * Only consulted by a view that declares content. Omit it and the markup is
+     * parsed and discarded — a host that wants to route or animate the swap
+     * itself calls `parseViewMarkup` and places the fragment where it likes.
      */
     into?: HTMLElement | null;
     /**
@@ -343,7 +337,6 @@ export function onViewPicked(
     if (!view) return;
 
     /* TRAP T-content-first-original-once — content before snapshot. */
-    let rendered: RenderedView | undefined;
     const host = options.into;
 
     if (typeof view.content === 'string') {
@@ -370,17 +363,6 @@ export function onViewPicked(
         for (const el of host.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
         targets = { ...targets, elements: { ...targets.elements, ...byId } };
       }
-    } else if (view.content) {
-      /* AN OBJECT — for a view that needs the `$state` and `writes` wiring
-         markup cannot express. TRAP T-view-content-is-a-view-definition. */
-      rendered = renderView(view.content);
-      if (host) {
-        if (!original) original = [...host.childNodes];
-        host.replaceChildren(rendered.el);
-      }
-      // Addressable by the ids this view used, so the snapshot can configure
-      // elements that did not exist when the listener was wired.
-      targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
     } else if (host && original) {
       /* NO CONTENT of its own, so it wants the page's — RE-ATTACHED, not
          rebuilt, so every existing bind still points at them. */
@@ -388,7 +370,7 @@ export function onViewPicked(
     }
 
     const report = applyViewSnapshot(view.snapshot, targets);
-    const pick: ViewPick = { id, view, report, ...(rendered ? { rendered } : {}) };
+    const pick: ViewPick = { id, view, report };
 
     options.after?.(pick);
 
@@ -452,7 +434,7 @@ export function saveViewAs(
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
-  options: PersistOptions & { content?: string | ViewDefinition } = {},
+  options: PersistOptions & { content?: string } = {},
 ): SavedViewStore {
   const trimmed = label.trim();
   if (!trimmed) return loadSavedViews(page, options);

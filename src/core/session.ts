@@ -3,8 +3,6 @@
  *
  * TRAP T-session-store-is-the-third-tier — records, then one query over them,
  * then everything else an app knows about itself, addressed by JSON pointer.
- * TRAP T-state-store-is-the-session-store — `render-view.ts` re-exports this
- * class as `StateStore`; it is not a second one.
  */
 import { getPointer, setPointer, pointersOverlap } from './pointer.js';
 

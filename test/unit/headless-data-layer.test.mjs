@@ -592,64 +592,45 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
   assert.equal(typeof data.syncViews, 'function');
 });
 
-test('a VIEW DEFINITION is data: a server can build and check one with no DOM', async () => {
-  /* TRAP T-a-view-definition-is-data-the-render-is-not.
+test('the data layer exports NO view renderer and no second wiring mechanism', async () => {
+  /* TRAP T-attributes-are-the-state-channel.
 
-     The hole this closed: `SavedView.content` IS a ViewDefinition, and
-     `SavedView` already shipped from `sherpa-ui/data` — but ViewDefinition
-     itself lived in `render-view.ts`, which calls document.createElement. So a
-     server could hold one and had no name for its own field, and no way to
-     check it before storing it. */
+     `renderView`, `$state` and `writes` were deleted 2026-09-18. `$state`
+     compiled to `el.setAttribute(name, value)` — an attribute, which is what
+     state already travels as — and added two things on top: re-set on change,
+     and write-on-event. That is `DataSource.bind()`, which app code used seven
+     times while `$state` was used zero.
+
+     This asserts the layer did not quietly grow the second mechanism back. */
   const data = await import('../../dist/data.js');
 
-  const view = {
-    root: 'shell',
-    state: { rows: [], filter: null },
-    elements: {
-      shell: {
-        type: 'sherpa-app-shell',
-        slots: { nav: 'nav', header: 'hdr' },
-        children: ['grid'],
-      },
-      nav: { type: 'sherpa-nav' },
-      hdr: { type: 'sherpa-app-header', slots: { filters: 'qf' } },
-      qf: { type: 'sherpa-quick-filter', writes: [{ on: 'change', to: '/filter' }] },
-      grid: { type: 'sherpa-data-grid', data: { $state: '/rows' } },
-    },
+  for (const gone of ['renderView', 'checkView', 'viewPointers', 'isStateRef', 'readDetail']) {
+    assert.equal(typeof data[gone], 'undefined', `${gone} should be gone`);
+  }
+
+  // What REPLACED them, and is load-bearing: one wiring mechanism.
+  assert.equal(typeof data.DataSource, 'function');
+  const store = new data.ArrayStore([{ id: 1, n: 'a' }, { id: 2, n: 'b' }], { key: 'id' });
+  const source = new data.DataSource({ store });
+
+  // A plain object stands in for a component — bind() writes ATTRIBUTES onto it
+  // and calls populate(), which is the whole state channel in two lines.
+  const attrs = {};
+  const el = {
+    rows: null,
+    populate(rows) { this.rows = rows; },
+    setAttribute(k, v) { attrs[k] = v; },
+    removeAttribute(k) { delete attrs[k]; },
+    addEventListener() {},
+    removeEventListener() {},
   };
+  source.bind(el);
+  source.setSort('n', 'desc');
+  await source.load();
 
-  // SOUND — every reference resolves, no cycle.
-  assert.deepEqual(data.checkView(view), { ok: true, problems: [] });
-
-  // …and the pointers it touches, which is what a host needs to know which
-  // state blob a saved view expects.
-  assert.deepEqual(data.viewPointers(view), ['/filter', '/rows']);
-
-  // A DANGLING ID is the one error certain to be a mistake: the registry is
-  // flat, so there is nowhere else the id could come from.
-  const broken = structuredClone(view);
-  broken.elements.shell.children = ['missing'];
-  const bad = data.checkView(broken);
-  assert.equal(bad.ok, false);
-  assert.match(bad.problems.join(' '), /missing/);
-
-  // A CYCLE would make renderView recurse until the stack blew. Caught here,
-  // where it can still be reported.
-  const cyclic = structuredClone(view);
-  cyclic.elements.grid.children = ['shell'];
-  assert.match(data.checkView(cyclic).problems.join(' '), /cycle/);
-
-  // The two READERS are data too — a `$state` ref, and a detail accessor.
-  assert.equal(data.isStateRef({ $state: '/rows' }), true);
-  assert.equal(data.isStateRef({ rows: [] }), false);
-  assert.equal(data.readDetail('$detail.value', { value: 7 }), 7);
-  assert.equal(data.readDetail(undefined, { value: 7 }).value, 7);
-  // A path an event stopped carrying reads as undefined, never a throw.
-  assert.equal(data.readDetail('$detail.a.b', { a: null }), undefined);
-
-  // AND NO COMPONENT CAME WITH IT. A single element export here would drag in
-  // customElements and undo the whole entry point.
-  assert.equal(typeof data.renderView, 'undefined', 'renderView needs a DOM and stays out');
+  assert.deepEqual(el.rows.map((r) => r.n), ['b', 'a'], 'rows arrived through populate()');
+  assert.equal(attrs['data-sort-field'], 'n', 'state arrived as an ATTRIBUTE');
+  assert.equal(attrs['data-sort-direction'], 'desc');
 });
 
 test('IdbStore is importable headless and REPORTS its absence rather than pretending', async () => {

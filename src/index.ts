@@ -60,13 +60,9 @@ export {
 } from './core/view-markup.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
-export {
-  renderView,
-  StateStore,
-} from './core/render-view.js';
 // The app-level state store: what an app knows about ITSELF — theme, selected
 // customer, open panel — addressed by JSON pointer so one value can have many
-// readers. `StateStore` above is the same class under its original name.
+// readers.
 export {
   SessionStore,
   type PersistOptions as SessionPersistOptions,
@@ -74,11 +70,6 @@ export {
 export {
   getPointer, setPointer, pointersOverlap,
 } from './core/pointer.js';
-export {
-  type ViewDefinition,
-  type ViewElement,
-  type RenderedView,
-} from './core/render-view.js';
 /* ── Data layer ──────────────────────────────────────────────────────── */
 /* ── Data layer ────────────────────────────────────────────────────────
    Re-exported WHOLESALE from the headless entry point rather than listed

@@ -487,36 +487,38 @@ test('a preset builds its OWN components and layout, then configures them', asyn
     const VIEWS = {
       tiles: {
         label: 'Fleet overview',
-        content: {
-          root: 'layout',
-          elements: {
-            layout: { type: 'sherpa-container', children: ['a', 'b'] },
-            a: { type: 'sherpa-metric', props: { id: 'a', 'data-span': '3' } },
-            b: { type: 'sherpa-metric', props: { id: 'b', 'data-span': '3' } },
-          },
-        },
+        content: `
+          <sherpa-container>
+            <sherpa-metric id="a" data-span="3"></sherpa-metric>
+            <sherpa-metric id="b" data-span="3"></sherpa-metric>
+          </sherpa-container>`,
         snapshot: { v: 1, source: { filter: undefined } },
       },
       table: {
         label: 'Capacity planning',
         // DIFFERENT components, DIFFERENT arrangement — not the same screen.
-        content: {
-          root: 'layout',
+        content: `
+          <sherpa-container>
+            <sherpa-data-grid id="grid" data-span="12"></sherpa-data-grid>
+          </sherpa-container>`,
+        /* The SHAPE is markup; the DATA and the configuration come through the
+           snapshot, addressed by the id in that markup and applied through the
+           grid's OWN API. That is the split — T-attributes-are-the-state-channel
+           — and it is why markup losing `data:` and `state:` cost nothing: the
+           snapshot always carried them better. */
+        snapshot: {
+          v: 1,
+          source: { filter: ['gb', 'gt', 70] },
           elements: {
-            layout: { type: 'sherpa-container', children: ['grid'] },
             grid: {
-              type: 'sherpa-data-grid',
-              props: { id: 'grid', 'data-span': '12' },
-              data: {
+              populate: [{
                 columns: [{ field: 'name', label: 'Name' }, { field: 'gb', label: 'GB' }],
                 rows: [{ name: 'alpha', gb: 90 }, { name: 'beta', gb: 40 }],
-              },
-              // …and it arrives CONFIGURED, through the grid's own API.
-              state: { setColumnFilter: ['name', ['name', 'contains', 'al']] },
+              }],
+              setColumnFilter: ['name', ['name', 'contains', 'al']],
             },
           },
         },
-        snapshot: { v: 1, source: { filter: ['gb', 'gt', 70] } },
       },
     };
 
@@ -558,30 +560,6 @@ test('a preset builds its OWN components and layout, then configures them', asyn
   // AND the built grid arrived CONFIGURED — `state` reaches a method on an
   // element that did not exist when the listener was wired.
   expect(r.clause).toEqual(['name', 'contains', 'al']);
-});
-
-test('renderView hands back the elements it built, by id', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const { renderView } = await import('/dist/index.js');
-    const view = renderView({
-      root: 'layout',
-      elements: {
-        layout: { type: 'sherpa-container', children: ['tag'] },
-        tag: { type: 'sherpa-tag', props: { 'data-label': 'live' } },
-      },
-    });
-    return {
-      ids: Object.keys(view.elements).sort(),
-      // The registry is the view's OWN addressing scheme; without it the ids
-      // were write-only and a snapshot could not name what a view had built.
-      isSameNode: view.elements['layout'] === view.el,
-      tagLabel: (view.elements['tag'] as HTMLElement).dataset['label'],
-    };
-  });
-
-  expect(r.ids).toEqual(['layout', 'tag']);
-  expect(r.isSameNode).toBe(true);
-  expect(r.tagLabel).toBe('live');
 });
 
 /**
@@ -740,13 +718,9 @@ test('a view WITHOUT content gets the page its own content back, still live', as
       plain: { label: 'Plain', snapshot: { v: 1, source: { filter: undefined } } },
       own: {
         label: 'Brings its own',
-        content: {
-          root: 'wrap',
-          elements: {
-            wrap: { type: 'div', children: ['grid'] },
-            grid: { type: 'sherpa-data-grid', props: { id: 'built' } },
-          },
-        },
+        // MARKUP now — T-attributes-are-the-state-channel. The behaviour under
+        // test (content first, then the original restored) is unchanged.
+        content: '<div><sherpa-data-grid id="built"></sherpa-data-grid></div>',
         snapshot: { v: 1, source: { filter: ['a', 'eq', 1] } },
       },
       other: { label: 'Other', snapshot: { v: 1, source: { filter: ['b', 'eq', 2] } } },

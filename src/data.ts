@@ -9,8 +9,8 @@
  * it. The data layer was always headless; there was simply no door into it.
  *
  * Verified module by module: store, stores, validate, data-source, live-stores,
- * persist-view, pointer, session, idb-store, view-sync, view-definition,
- * chart-datum and format-tick all import cleanly in Node today. `npm run lint` keeps them that way — see the
+ * persist-view, pointer, session, idb-store, view-sync, chart-datum and
+ * format-tick all import cleanly in Node today. `npm run lint` keeps them that way — see the
  * no-restricted-globals override in .eslintrc.json.
  *
  * WHAT IS HERE: everything that answers "what are the records, and which of
@@ -18,12 +18,9 @@
  * saved views.
  *
  * WHAT IS NOT: every component, `SherpaElement`, `installIcons`,
- * `installTokens`, `renderElement` and `renderView`. Those need a DOM by
- * definition; `sherpa-ui` is their door.
- *
- * NOTE THE VIEW SPLIT: a view DEFINITION is data and lives here; RENDERING one
- * is DOM work and lives there. Same split `Store` and `DataSource` already have
- * from the components that consume them.
+ * `installTokens` and `renderElement`. Those need a DOM by definition;
+ * `sherpa-ui` is their door — and so is a view's CONTENT, which is markup
+ * (`parseViewMarkup`) and therefore needs a parser.
  *
  * FOUR THINGS HERE TOUCH STORAGE — `persistView`, `SessionStore`, `IdbStore`
  * and `syncViews` — and that is deliberate. Both wrap every access in `try/catch → null`, so in Node
@@ -140,25 +137,5 @@ export {
   type PersistOptions as SessionPersistOptions,
 } from './core/session.js';
 export { getPointer, setPointer, pointersOverlap } from './core/pointer.js';
-// WHAT A VIEW IS, with no DOM. A ViewDefinition is a plain object — a flat id
-// registry, a root, a state blob and the wiring between them — so a server can
-// build one, check it and store it, and only `renderView` (in `sherpa-ui`)
-// needs a browser to turn it into elements.
-//
-// This closed a real hole: `SavedView.content` IS a ViewDefinition and
-// `SavedView` already shipped here, so a consumer could hold one and had no
-// name for its own field.
-// TRAP T-a-view-definition-is-data-the-render-is-not.
-export {
-  checkView,
-  isStateRef,
-  readDetail,
-  viewPointers,
-  type StateRef,
-  type ViewCheck,
-  type ViewDefinition,
-  type ViewElement,
-  type WriteRule,
-} from './core/view-definition.js';
 // The one datum shape every chart and legend shares.
 export type { ChartDatum, LegendDatum } from './core/chart-datum.js';

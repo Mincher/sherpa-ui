@@ -3423,7 +3423,7 @@ at first — so a view definition could build a whole unique layout and then not
 a grid's column filter, which is the thing view definitions exist for.
 
 - Site: `src/core/render-element.ts`
-- Site: `src/core/view-definition.ts`
+- Site: `src/core/render-element.ts`
 
 ### T-populatable-declared-four-times
 
@@ -3471,6 +3471,61 @@ call whose single argument is an array. A single nested array stays one call, wh
 keeps the common case unambiguous.
 
 - Site: `src/core/render-element.ts`
+
+### T-attributes-are-the-state-channel
+
+**State travels as an ATTRIBUTE, and there is exactly one mechanism for it.**
+
+```
+DataSource  →  setAttr(el, 'data-sort-field', 'name')
+                          ↓
+grid        →  this.dataset.sortField
+```
+
+That is the contract for all 58 components: attributes carry state IN, events
+carry intent OUT. So a second mechanism for the same job is a second answer.
+
+`renderView` had one. Its `$state` binding compiled to exactly this:
+
+```js
+el.setAttribute(name, String(v));   // render-view.ts
+```
+
+An attribute. On top of it, `$state` added re-set-on-change and `writes` added
+write-on-event — set a value, listen for a change, set it again. **That is
+`DataSource.bind()`**, which also knows the query behind it and has
+`readonly`, `steerOnly` and `ignore`, none of which `$state` had.
+
+The audit settled which one was real:
+
+| | app code | tests |
+|---|---|---|
+| `$state` construction sites | **0** | 3 |
+| `writes:` arrays | **0** | 2 |
+| `renderView()` calls | **1**, unreachable | 4 |
+| `DataSource.bind()` | **7** | 25 |
+
+The one `renderView` call sat in `persist-view.ts`, reached only when
+`SavedView.content` was an OBJECT. Every `content:` in the repo is markup, so
+nothing reached it. `docs/DATA-LAYER-PLAN.md` had already said so out loud:
+*"`DataSource` is that idea applied to records rather than to a view blob, and
+the two should share the mechanism."*
+
+So `render-view.ts` and `view-definition.ts` are gone, and with them `$state`,
+`writes`, `RenderedView`, the `StateStore` alias and `ViewDefinition` itself.
+What is left is one of each:
+
+| | |
+|---|---|
+| a view's SHAPE | markup — `T-saved-markup-is-untrusted-input` |
+| a view's STATE | `DataSource.bind()` — attributes in, events out |
+| a view's own API state | `applyState` — `T-state-is-the-saved-view-half` |
+| what an app knows about itself | `SessionStore`, standalone. The real app uses it for theme mode and never needed a view around it |
+
+`renderElement` stays: one node, one element, no registry. It is what
+`applyState` and the examples use, and it never claimed to wire anything.
+
+- Site: `src/core/persist-view.ts`
 
 ### T-saved-markup-is-untrusted-input
 
@@ -3534,137 +3589,6 @@ from the host after the swap.
 
 - Site: `src/core/view-markup.ts`
 - Site: `src/core/persist-view.ts`
-
-### T-a-view-definition-is-data-the-render-is-not
-
-**A `ViewDefinition` is a plain object. `renderView` is DOM work.** They were in
-one file, so the data half could not reach the data layer.
-
-The hole that made it obvious: `SavedView.content` **is** a `ViewDefinition`,
-and `SavedView` already shipped from `sherpa-ui/data`. So a server could hold a
-saved view, and had **no name for the type of its own field** — `data.d.ts` did
-not mention `ViewDefinition` at all.
-
-| | what it is | where |
-|---|---|---|
-| `ViewDefinition`, `ViewElement`, `StateRef`, `WriteRule` | a description. Ids, types, props, `$state` refs, wiring | `view-definition.ts` &rarr; **`sherpa-ui/data`** |
-| `isStateRef`, `readDetail`, `checkView`, `viewPointers` | reading and checking that description | same file, same door |
-| `renderView()` | turning it into live elements | `render-view.ts` &rarr; **`sherpa-ui`** |
-
-Every line of `renderView`'s build loop is `appendChild`, `setAttribute`,
-`addEventListener`. That cannot leave the browser, and should not try.
-
-**`checkView` is the half a server can run.** `renderView` throws on a missing
-id at the moment it reaches it — right in a browser, useless to an endpoint
-deciding whether to ACCEPT a saved view at all. So the check is separate, and it
-checks SHAPE and REFERENCES only:
-
-- every `children` and `slots` id resolves. A dangling id is the one error
-  certain to be a mistake, because the registry is flat and there is nowhere
-  else the id could come from.
-- no **cycle**. `renderView` would recurse until the stack blew, and a blown
-  stack cannot report which id did it.
-- it does **not** check element TYPES. Whether `sherpa-data-grid` exists is a
-  question for the component registry, and the registry is precisely what a
-  headless caller does not have.
-
-This is the same split `Store` and `DataSource` already have from the components
-that consume them, and it is the same reason: the DATA half is what a server, a
-test, an MCP tool and a saved view all share.
-
-- Site: `src/core/view-definition.ts`
-- Site: `src/core/render-view.ts`
-
-### T-the-shell-is-a-component-not-a-region-map
-
-**`renderView` had a second implementation of `sherpa-app-shell` inside it**, and
-neither knew about the other.
-
-The option looked reasonable:
-
-```js
-renderView({ root: 'body', shell: { nav: 'mainNav', header: 'appHeader' }, … })
-```
-
-It built a `<div class="sherpa-view">`, tagged each child with a `data-region`,
-and let a global utility grid place them. Meanwhile `sherpa-app-shell` — a real
-component, with a `.component.yaml` contract, a `nav`/`header`/default slot
-trio, its own nav state machine and the CSS that insets content past the rail —
-did the same job properly.
-
-**The usage told the story.** Every screen in `examples/` used the component:
-`index.html`, `dashboard.js`, `records.js`, `settings.js`, `chat.js`. The
-`shell:` option had exactly one consumer, and it was the test for the `shell:`
-option.
-
-So the option is gone. A view names the shell like any other element:
-
-```js
-renderView({
-  root: 'shell',
-  elements: {
-    shell: { type: 'sherpa-app-shell',
-             slots: { nav: 'mainNav', header: 'appHeader' },
-             children: ['grid'] },
-    mainNav:   { type: 'sherpa-nav' },
-    appHeader: { type: 'sherpa-app-header', slots: { filters: 'qf' } },
-    grid: { type: 'sherpa-data-grid', data: { $state: '/rows' } },
-  },
-})
-```
-
-**Nothing had to be built to allow this.** The id registry already resolved
-slots and children by id; the shell path was a shortcut past machinery that
-already worked. Deleting it removed ~20 lines and a whole second vocabulary
-(`data-region`, `.sherpa-view`) from the layer's surface.
-
-**What `renderView` is FOR is the other three things**, and none of them is
-something a component could do:
-
-| | |
-|---|---|
-| the ID REGISTRY | elements reference each other by id, so two of them can share a value without being nested |
-| `$state` binding | a prop or a data payload reads a pointer and re-applies on every overlapping write |
-| `writes` wiring | an event writes into state; consumers react. No direct element references anywhere |
-
-`renderElement` takes an INLINE tree, which is why it cannot do any of that: in
-an inline tree, two siblings have no way to name each other.
-
-- Site: `src/core/render-view.ts`
-- Site: `src/core/view-definition.ts`
-
-### T-view-elements-registry-is-returned
-
-`RenderedView.elements` is every element the view built, by the id the definition
-gave it.
-
-The registry is the view's own addressing scheme, so handing it back is what lets
-a caller reach one element without knowing the layout: a saved view's snapshot
-configures `elements.grid`, and this is how "grid" becomes an element. The map was
-always built internally; not returning it made the ids write-only.
-
-A live map, not a copy of the tree — reading it never re-renders. It is also
-re-read after the shell regions are built, because those build elements the body
-did not reach.
-
-- Site: `src/core/render-view.ts`
-
-### T-state-store-is-the-session-store
-
-`StateStore` is THE SAME CLASS as `SessionStore`, and now literally so — a
-re-export, not a second class.
-
-It was written in `render-view.ts` because a view definition's `$state` pointers
-needed somewhere to read and write; an app needs exactly that for its own session
-state, and nobody looking for "where does an app keep what it knows about itself"
-would open a module named for view rendering. The right class in the wrong file.
-
-Kept as a NAME rather than a second class, because a view's state blob really is a
-session store scoped to one view — same pointers, same subscriptions, and
-`persist()` is as useful here as it is at app level.
-
-- Site: `src/core/render-view.ts`
-- Site: `src/core/session.ts`
 
 ### T-sse-over-websocket-for-a-feed
 
