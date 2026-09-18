@@ -3423,7 +3423,7 @@ at first — so a view definition could build a whole unique layout and then not
 a grid's column filter, which is the thing view definitions exist for.
 
 - Site: `src/core/render-element.ts`
-- Site: `src/core/render-view.ts`
+- Site: `src/core/view-definition.ts`
 
 ### T-populatable-declared-four-times
 
@@ -3471,6 +3471,46 @@ call whose single argument is an array. A single nested array stays one call, wh
 keeps the common case unambiguous.
 
 - Site: `src/core/render-element.ts`
+
+### T-a-view-definition-is-data-the-render-is-not
+
+**A `ViewDefinition` is a plain object. `renderView` is DOM work.** They were in
+one file, so the data half could not reach the data layer.
+
+The hole that made it obvious: `SavedView.content` **is** a `ViewDefinition`,
+and `SavedView` already shipped from `sherpa-ui/data`. So a server could hold a
+saved view, and had **no name for the type of its own field** — `data.d.ts` did
+not mention `ViewDefinition` at all.
+
+| | what it is | where |
+|---|---|---|
+| `ViewDefinition`, `ViewElement`, `StateRef`, `WriteRule` | a description. Ids, types, props, `$state` refs, wiring | `view-definition.ts` &rarr; **`sherpa-ui/data`** |
+| `isStateRef`, `readDetail`, `checkView`, `viewPointers` | reading and checking that description | same file, same door |
+| `renderView()` | turning it into live elements | `render-view.ts` &rarr; **`sherpa-ui`** |
+
+Every line of `renderView`'s build loop is `appendChild`, `setAttribute`,
+`addEventListener`. That cannot leave the browser, and should not try.
+
+**`checkView` is the half a server can run.** `renderView` throws on a missing
+id at the moment it reaches it — right in a browser, useless to an endpoint
+deciding whether to ACCEPT a saved view at all. So the check is separate, and it
+checks SHAPE and REFERENCES only:
+
+- every `children` and `slots` id resolves. A dangling id is the one error
+  certain to be a mistake, because the registry is flat and there is nowhere
+  else the id could come from.
+- no **cycle**. `renderView` would recurse until the stack blew, and a blown
+  stack cannot report which id did it.
+- it does **not** check element TYPES. Whether `sherpa-data-grid` exists is a
+  question for the component registry, and the registry is precisely what a
+  headless caller does not have.
+
+This is the same split `Store` and `DataSource` already have from the components
+that consume them, and it is the same reason: the DATA half is what a server, a
+test, an MCP tool and a saved view all share.
+
+- Site: `src/core/view-definition.ts`
+- Site: `src/core/render-view.ts`
 
 ### T-the-shell-is-a-component-not-a-region-map
 
@@ -3528,6 +3568,7 @@ something a component could do:
 an inline tree, two siblings have no way to name each other.
 
 - Site: `src/core/render-view.ts`
+- Site: `src/core/view-definition.ts`
 
 ### T-view-elements-registry-is-returned
 

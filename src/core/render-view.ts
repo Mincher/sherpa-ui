@@ -32,52 +32,16 @@
  */
 import { renderElement, type ElementNode, type Populatable } from './render-element.js';
 import { SessionStore } from './session.js';
+// THE DEFINITION IS DATA; ONLY THE RENDER NEEDS A DOM.
+// TRAP T-a-view-definition-is-data-the-render-is-not — the types and the two
+// readers live in a DOM-free module so `sherpa-ui/data` can name them, which
+// it could not while they sat in this file.
+import { isStateRef, readDetail, type ViewDefinition } from './view-definition.js';
 
-/** A `{ "$state": "/pointer" }` binding into the view state blob. */
-interface StateRef {
-  $state: string;
-}
-
-/** A state-mediated wiring rule: on `on`, write into state at pointer `to`. */
-interface WriteRule {
-  on: string;
-  to: string;
-  /** '$detail…' path read from the event detail; omit to write the whole detail. */
-  value?: string;
-}
-
-/** One element in a view — an id-addressed node with references, not inline nesting. */
-export interface ViewElement {
-  type: string;
-  props?: Record<string, string | number | boolean | null | undefined | StateRef>;
-  data?: unknown;
-  slots?: Record<string, string | string[]>;
-  children?: string[];
-  writes?: WriteRule[];
-  /**
-   * State applied through the element's OWN PUBLIC API, after it has its data.
-   *
-   * The same field `ElementNode.state` carries —
-   * TRAP T-state-is-the-saved-view-half.
-   *
-   *   grid: { type: 'sherpa-data-grid', data: {…},
-   *           state: { setColumnFilter: ['name', ['name', 'contains', 'ana']] } }
-   */
-  state?: Record<string, unknown>;
-}
-
-/** A whole view. */
-export interface ViewDefinition {
-  view?: string;
-  /**
-   * The id of the element this view builds. For a full screen that is normally
-   * a `sherpa-app-shell` with its nav and header in its named slots — see
-   * TRAP T-the-shell-is-a-component-not-a-region-map.
-   */
-  root: string;
-  state?: Record<string, unknown>;
-  elements: Record<string, ViewElement>;
-}
+// Re-exported so `import { ViewDefinition } from 'sherpa-ui'` keeps working —
+// a consumer of the component entry point should not have to know the types
+// moved, and the data entry point exports them directly.
+export type { StateRef, ViewDefinition, ViewElement, WriteRule } from './view-definition.js';
 
 /** Result of rendering a view: the top element plus the live state store. */
 export interface RenderedView {
@@ -90,22 +54,6 @@ export interface RenderedView {
    * this was handed back; a live map, not a copy of the tree.
    */
   elements: Record<string, HTMLElement>;
-}
-
-function isStateRef(v: unknown): v is StateRef {
-  return v != null && typeof v === 'object' && typeof (v as StateRef).$state === 'string';
-}
-
-function readDetail(accessor: string | undefined, detail: unknown): unknown {
-  if (!accessor || accessor === '$detail') return detail;
-  const path = accessor.replace(/^\$detail\.?/, '');
-  if (!path) return detail;
-  let cur: unknown = detail;
-  for (const k of path.split('.')) {
-    if (cur == null || typeof cur !== 'object') return undefined;
-    cur = (cur as Record<string, unknown>)[k];
-  }
-  return cur;
 }
 
 /**

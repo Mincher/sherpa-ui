@@ -592,6 +592,66 @@ test('the `sherpa-ui/data` entry point is importable and usable in Node', async 
   assert.equal(typeof data.syncViews, 'function');
 });
 
+test('a VIEW DEFINITION is data: a server can build and check one with no DOM', async () => {
+  /* TRAP T-a-view-definition-is-data-the-render-is-not.
+
+     The hole this closed: `SavedView.content` IS a ViewDefinition, and
+     `SavedView` already shipped from `sherpa-ui/data` — but ViewDefinition
+     itself lived in `render-view.ts`, which calls document.createElement. So a
+     server could hold one and had no name for its own field, and no way to
+     check it before storing it. */
+  const data = await import('../../dist/data.js');
+
+  const view = {
+    root: 'shell',
+    state: { rows: [], filter: null },
+    elements: {
+      shell: {
+        type: 'sherpa-app-shell',
+        slots: { nav: 'nav', header: 'hdr' },
+        children: ['grid'],
+      },
+      nav: { type: 'sherpa-nav' },
+      hdr: { type: 'sherpa-app-header', slots: { filters: 'qf' } },
+      qf: { type: 'sherpa-quick-filter', writes: [{ on: 'change', to: '/filter' }] },
+      grid: { type: 'sherpa-data-grid', data: { $state: '/rows' } },
+    },
+  };
+
+  // SOUND — every reference resolves, no cycle.
+  assert.deepEqual(data.checkView(view), { ok: true, problems: [] });
+
+  // …and the pointers it touches, which is what a host needs to know which
+  // state blob a saved view expects.
+  assert.deepEqual(data.viewPointers(view), ['/filter', '/rows']);
+
+  // A DANGLING ID is the one error certain to be a mistake: the registry is
+  // flat, so there is nowhere else the id could come from.
+  const broken = structuredClone(view);
+  broken.elements.shell.children = ['missing'];
+  const bad = data.checkView(broken);
+  assert.equal(bad.ok, false);
+  assert.match(bad.problems.join(' '), /missing/);
+
+  // A CYCLE would make renderView recurse until the stack blew. Caught here,
+  // where it can still be reported.
+  const cyclic = structuredClone(view);
+  cyclic.elements.grid.children = ['shell'];
+  assert.match(data.checkView(cyclic).problems.join(' '), /cycle/);
+
+  // The two READERS are data too — a `$state` ref, and a detail accessor.
+  assert.equal(data.isStateRef({ $state: '/rows' }), true);
+  assert.equal(data.isStateRef({ rows: [] }), false);
+  assert.equal(data.readDetail('$detail.value', { value: 7 }), 7);
+  assert.equal(data.readDetail(undefined, { value: 7 }).value, 7);
+  // A path an event stopped carrying reads as undefined, never a throw.
+  assert.equal(data.readDetail('$detail.a.b', { a: null }), undefined);
+
+  // AND NO COMPONENT CAME WITH IT. A single element export here would drag in
+  // customElements and undo the whole entry point.
+  assert.equal(typeof data.renderView, 'undefined', 'renderView needs a DOM and stays out');
+});
+
 test('IdbStore is importable headless and REPORTS its absence rather than pretending', async () => {
   /* TRAP T-idb-is-the-only-real-local-store. Node has no IndexedDB, so the
      honest answer here is "unavailable" — not an empty store.

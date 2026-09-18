@@ -124,7 +124,8 @@
         "src/core/chart-datum.ts",
         "src/core/format-tick.ts",
         "src/core/live-stores.ts",
-        "src/core/data-source.ts"
+        "src/core/data-source.ts",
+        "src/core/view-definition.ts"
       ],
       "rules": {
         "no-restricted-globals": [
