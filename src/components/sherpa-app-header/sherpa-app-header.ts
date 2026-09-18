@@ -16,7 +16,7 @@
  *
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import type { Populatable } from '../../core/render-element.js';
+import type { Populatable } from '../../core/apply-state.js';
 // Every action is a composed sherpa-button, so it must be defined here.
 // TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';

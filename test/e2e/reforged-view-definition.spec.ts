@@ -13,38 +13,43 @@ import { test, expect } from './harness';
  */
 
 
-test('renderElement applies `state` through the component OWN API, after its data', async ({ page }) => {
-  // `props` sets attributes and `data` sets the populate payload. Neither can
-  // express what a component exposes as a METHOD — which is most of what a
-  // saved view needs.
+test('applyState configures an element through its OWN API, not its attributes', async ({ page }) => {
+  /* THE PARITY DOOR. An attribute cannot express what a component exposes as a
+     METHOD — `setColumnFilter`, `select` — and that is most of what a saved
+     view needs. TRAP T-state-is-the-saved-view-half.
+
+     The element is built with createElement + dataset, the way real code does
+     (examples/views/chat.js). `renderElement` was deleted 2026-09-18: a JSON
+     tree dialect beside markup, with zero callers outside tests. */
   const r = await page.evaluate(async () => {
-    const { renderElement } = await import('/dist/index.js');
-    const el = renderElement({
-      type: 'sherpa-data-grid',
-      props: { 'data-column-filters': true, 'data-selectable': true },
-      data: {
-        key: 'email',
-        columns: [{ field: 'name', header: 'Name' }],
-        rows: [
-          { email: 'a@x', name: 'Marcus' },
-          { email: 'b@x', name: 'Omar' },
-          { email: 'c@x', name: 'Zoe' },
-        ],
-      },
-      state: {
-        setColumnFilter: ['name', ['name', 'contains', 'ar']],   // METHOD, 2 args
-        select: [['a@x']],                                        // METHOD, 1 array arg
-        notAMethod: 'ignored',                                    // unknown → skipped
-      },
-    }) as HTMLElement & {
+    const { applyState } = await import('/dist/index.js');
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
+      populate(d: unknown): Promise<void> | void;
       columnClause(f: string): unknown[] | null;
       selectedKeys: string[];
     };
+    el.dataset['columnFilters'] = '';
+    el.dataset['selectable'] = '';
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    // State is applied after `rendered`, because a grid cannot filter a column
-    // it does not have yet.
+
+    await el.populate({
+      key: 'email',
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [
+        { email: 'a@x', name: 'Marcus' },
+        { email: 'b@x', name: 'Omar' },
+        { email: 'c@x', name: 'Zoe' },
+      ],
+    });
+
+    // AFTER the data, because a grid cannot filter a column it does not have.
+    const skipped = applyState(el, {
+      setColumnFilter: ['name', ['name', 'contains', 'ar']],   // METHOD, 2 args
+      select: [['a@x']],                                        // METHOD, 1 array arg
+      notAMethod: 'ignored',                                    // unknown → skipped
+    });
     await new Promise((res) => setTimeout(res, 150));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -55,6 +60,7 @@ test('renderElement applies `state` through the component OWN API, after its dat
       typed: sr.querySelector<HTMLInputElement>('.head-filter-value')?.value,
       marks: sr.querySelectorAll('.cell mark.match').length,
       keys: el.selectedKeys,
+      skipped,
     };
   });
 
@@ -63,6 +69,9 @@ test('renderElement applies `state` through the component OWN API, after its dat
   expect(r.typed).toBe('ar');          // the CONTROL agrees, not just the rows
   expect(r.marks).toBe(2);             // "Marcus" and "Omar"
   expect(r.keys).toEqual(['a@x']);
+  // An unknown key is REPORTED, never thrown — a saved view made against an
+  // older component set degrades to "most of it came back".
+  expect(r.skipped).toEqual(['notAMethod']);
 });
 
 test('a whole view round-trips: capture it, restore it into a FRESH one', async ({ page }) => {
@@ -163,37 +172,43 @@ test('one method, MANY calls — a state block is a map, so calls nest', async (
   // a map — one method, one key. Inventing `setColumnFilter:name` would be a
   // second vocabulary nothing else understands, so the calls nest instead.
   const r = await page.evaluate(async () => {
-    const { renderElement } = await import('/dist/index.js');
-    const el = renderElement({
-      type: 'sherpa-data-grid',
-      props: { 'data-column-filters': true },
-      data: {
-        columns: [{ field: 'name', header: 'Name' }, { field: 'plan', header: 'Plan' }],
-        rows: [{ name: 'Marcus', plan: 'Pro' }, { name: 'Omar', plan: 'Free' }],
-      },
-      state: {
-        // TWO calls — every entry is itself an array, and there is more than one.
-        setColumnFilter: [
-          ['name', ['name', 'contains', 'ar']],
-          ['plan', ['plan', 'contains', 'Pro']],
-        ],
-      },
-    }) as HTMLElement & { rendered?: Promise<void>; columnClause(f: string): unknown[] | null };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const { applyState } = await import('/dist/index.js');
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const grid = async (attrs: Record<string, string>, data: unknown) => {
+      const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate(d: unknown): Promise<void> | void;
+        columnClause(f: string): unknown[] | null;
+        selectedKeys: string[];
+      };
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      document.body.appendChild(el);
+      await el.rendered;
+      await el.populate(data);
+      return el;
+    };
+
+    const el = await grid({ 'data-column-filters': '' }, {
+      columns: [{ field: 'name', header: 'Name' }, { field: 'plan', header: 'Plan' }],
+      rows: [{ name: 'Marcus', plan: 'Pro' }, { name: 'Omar', plan: 'Free' }],
+    });
+    applyState(el, {
+      // TWO calls — every entry is itself an array, and there is more than one.
+      setColumnFilter: [
+        ['name', ['name', 'contains', 'ar']],
+        ['plan', ['plan', 'contains', 'Pro']],
+      ],
+    });
     await new Promise((res) => setTimeout(res, 150));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
 
     // …and ONE call whose single argument is an array stays one call, which is
     // what keeps the common case unambiguous.
-    const single = renderElement({
-      type: 'sherpa-data-grid',
-      props: { 'data-selectable': true },
-      data: { key: 'id', columns: [{ field: 'n', header: 'N' }], rows: [{ id: 'a', n: 1 }, { id: 'b', n: 2 }] },
-      state: { select: [['a']] },
-    }) as HTMLElement & { rendered?: Promise<void>; selectedKeys: string[] };
-    document.body.appendChild(single);
-    await single.rendered;
+    const single = await grid({ 'data-selectable': '' }, {
+      key: 'id', columns: [{ field: 'n', header: 'N' }], rows: [{ id: 'a', n: 1 }, { id: 'b', n: 2 }],
+    });
+    applyState(single, { select: [['a']] });
     await new Promise((res) => setTimeout(res, 150));
 
     return {

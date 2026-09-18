@@ -6,7 +6,7 @@
  * TRAP T-persist-defaults-per-tab — a helper, and sessionStorage by default.
  */
 import type { DataSource, ViewState } from './data-source.js';
-import { applyState } from './render-element.js';
+import { applyState } from './apply-state.js';
 import { parseViewMarkup } from './view-markup.js';
 
 export interface PersistOptions {
@@ -127,7 +127,8 @@ export interface ViewSnapshot {
   source?: Partial<ViewState>;
   /**
    * Per-element state, keyed by an id the CALLER chooses — the same ids a
-   * `renderView` definition uses. Each value is an `ElementNode.state` block,
+   * a saved view addresses. Each value is a STATE BLOCK — a map of the
+   * component's own methods and accessors,
    * applied through the element's own public API.
    */
   elements?: Record<string, Record<string, unknown>>;

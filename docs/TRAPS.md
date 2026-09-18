@@ -3391,6 +3391,58 @@ gets a turn first via `queueMicrotask` — see `T-custom-element-upgrade`.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 
+### T-one-way-to-build-an-element
+
+**`document.createElement` plus `dataset`. That is the whole API.**
+
+`render-element.ts` held two things that looked related and were not:
+
+| | what it did | app callers |
+|---|---|---|
+| `applyState(el, state)` | configure a live element through its own methods and accessors | **1 — the live saved-view path** |
+| `renderElement(node)` | build an element from a JSON node: `{ type, props, data, slots, children, state }` | **0** |
+
+`applyState` is load-bearing: `records.js` builds state blocks for
+`persistView`, and `persist-view.ts` applies them — that is how a saved view
+restores a grid's column filters. It moved to `apply-state.ts` and stays.
+
+`renderElement` was a JSON dialect for describing a tree — a second way to say
+what markup already says, with `props` for attributes, `slots` for slots and
+`children` for children. Four tests called it. Nothing else ever did.
+
+**What real code does instead**, from `examples/views/chat.js`:
+
+```js
+const el = document.createElement('sherpa-chat-message');
+el.dataset.type = type;
+el.dataset.message = message;
+thread.insertBefore(el, typing);
+```
+
+Six lines, no dialect, and it was written by someone who had `renderElement`
+available and did not reach for it. That is the evidence, not the argument.
+
+**Three questions, three deletions, one rule.** The shell
+(`renderView` rebuilt `sherpa-app-shell`), the wiring (`$state` was an
+attribute write beside `DataSource.bind` —
+`T-attributes-are-the-state-channel`), and now the builder. Each was a second
+way to do something the platform or this system already did once.
+
+What is left, end to end:
+
+| | |
+|---|---|
+| a view's SHAPE | markup, in the app shell |
+| a component's ATTRIBUTES | `el.dataset.x = v`, or a bound `DataSource` |
+| a component's METHODS | `applyState` — the parity door a saved view goes through |
+| a component's DATA | `populate()` |
+
+`Populatable` moved to `apply-state.ts` with it: it is the one shape every
+bound component shares (`T-populatable-declared-four-times`), and
+`data-source.ts` imports it as a type.
+
+- Site: `src/core/apply-state.ts`
+
 ### T-state-is-the-saved-view-half
 
 `props` sets attributes and `data` sets the populate payload. Neither can express
@@ -3422,8 +3474,8 @@ is dropped and counted rather than thrown.
 at first — so a view definition could build a whole unique layout and then not set
 a grid's column filter, which is the thing view definitions exist for.
 
-- Site: `src/core/render-element.ts`
-- Site: `src/core/render-element.ts`
+- Site: `src/core/apply-state.ts`
+- Site: `src/core/apply-state.ts`
 
 ### T-populatable-declared-four-times
 
@@ -3439,19 +3491,7 @@ element to exist. `el.rendered` now reads straight off the interface; it used to
 need an inline `as { rendered?: … }` cast, because THIS file's copy was the one
 missing the member.
 
-- Site: `src/core/render-element.ts`
-
-### T-state-applies-after-rendered
-
-A `state` block is applied LAST and ASYNCHRONOUSLY, because it goes through the
-component's own API and that needs the component to be ready: `populate()` waits
-for the first render itself, so a grid has no columns to filter until after it
-resolves.
-
-Applying synchronously set a column filter on a grid with no columns, which
-silently did nothing.
-
-- Site: `src/core/render-element.ts`
+- Site: `src/core/apply-state.ts`
 
 ### T-state-value-may-be-a-call-list
 
@@ -3470,7 +3510,7 @@ than one: `[['name', clause], ['plan', clause]]` is two calls, `[['a@x']]` is on
 call whose single argument is an array. A single nested array stays one call, which
 keeps the common case unambiguous.
 
-- Site: `src/core/render-element.ts`
+- Site: `src/core/apply-state.ts`
 
 ### T-attributes-are-the-state-channel
 

@@ -49,7 +49,10 @@ export function installTokens(): void {
 }
 
 export { SherpaElement } from './core/sherpa-element.js';
-export { renderElement, applyState, type ElementNode } from './core/render-element.js';
+// CONFIGURE a live element through its own API — the parity door a saved view,
+// a preset and an agent's MCP call all go through.
+// TRAP T-state-is-the-saved-view-half.
+export { applyState, type Populatable } from './core/apply-state.js';
 // A saved view's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input.
 export {

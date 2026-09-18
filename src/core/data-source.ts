@@ -5,7 +5,7 @@
  * TRAP T-view-state-lives-in-one-object — the worked example.
  */
 import { filterFields } from './store.js';
-import type { Populatable } from './render-element.js';
+import type { Populatable } from './apply-state.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */

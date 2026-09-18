@@ -8,29 +8,6 @@ import { test, expect } from './harness';
  */
 
 
-test('renderElement builds an element with props, slots and children', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const { renderElement } = await import('/dist/index.js');
-    const el = renderElement({
-      type: 'sherpa-container',
-      props: { 'data-elevation': 'md' },
-      slots: { header: { type: 'sherpa-tag', props: {}, children: [] } },
-      children: [{ type: 'sherpa-button', props: { 'data-label': 'Go' } }],
-    }) as HTMLElement & { rendered?: Promise<void> };
-    document.getElementById('root')!.appendChild(el);
-    await (el as { rendered?: Promise<void> }).rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return {
-      elevation: el.getAttribute('data-elevation'),
-      headerTag: el.querySelector('[slot="header"]')?.tagName.toLowerCase() ?? null,
-      childButton: !!el.querySelector('sherpa-button'),
-    };
-  });
-  expect(r.elevation).toBe('md');
-  expect(r.headerTag).toBe('sherpa-tag');
-  expect(r.childButton).toBe(true);
-});
-
 test('persist restores on registration and writes through on every set', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { SessionStore } = await import('/dist/index.js');
