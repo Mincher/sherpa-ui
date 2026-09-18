@@ -4345,6 +4345,78 @@ filter inputs, and `filter-change`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-grid-collapsed-group-is-one-slot
+
+**A SHUT group is ONE line on screen, so it costs ONE slot of the page.**
+
+A page of 25 used to fill with 25 RECORDS. Group by tier, shut Gold, and the
+reader got a panel holding one heading and twenty-four hidden rows — a page that
+looks empty, with a pager insisting there are ten more like it. The rows were
+there; CSS was hiding them; the count had already been spent.
+
+So the grid cuts the page itself, in SCREEN LINES:
+
+| | costs |
+|---|---|
+| a shut group | 1 — the heading, and nothing for its rows |
+| an open group | 1 + one per row |
+
+`#pageStarts` walks the visible rows once and records the index each page opens
+at. A page is then a plain slice, and `data-index` stays an index into the FULL
+visible list (`#renderBody` adds the slice's `offset`) — so selection, row-click
+and `#syncFocused` keep resolving against the same list they always did. Change
+that and a click on page 2 returns a page-1 record.
+
+**A group split by a page boundary redraws its heading**, because a page that
+opened mid-group with no heading would not say which group it was showing. The
+`group-count` is the group's REAL size across every page, not the part this page
+drew — the heading answers "how many are in Gold", not "how many fit here".
+
+Only an OPEN group can be split. A shut one is a single line and cannot be.
+
+**Folding RE-CUTS the page**, so `#toggleGroup` calls `#renderBody()` and not
+just `#syncGroupVisibility()`. Shutting a group frees slots and the next rows
+move up onto this page; opening one pushes the tail off. A visibility sync alone
+leaves the hole this trap exists to remove — and because the body is replaced,
+the ticks, the select-all and the focus tint all have to be re-derived after it.
+
+None of this runs ungrouped (`#paginates`): there the store's window IS the page,
+and slicing it again would hide rows nobody folded.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-grouped-paging-belongs-to-the-view
+
+**STORE paging and VISUAL paging are not the same thing**, and a grouped view is
+where they come apart.
+
+`skip`/`take` counts RECORDS. A page of screen lines counts LINES, and which
+lines exist depends on which groups the reader has folded — a fact that lives in
+the grid's `#collapsed`, has never been sent to a store, and should not be.
+
+So while `group` is set, `DataSource`:
+
+| | |
+|---|---|
+| `#loadOptions` | sends NO `skip`/`take` — every matching row goes to the grid |
+| `totalPages` | returns what the grid REPORTED (`#viewPages`), not `total / size` |
+| post-load re-clamp | is skipped — re-loading would ask the identical question |
+
+The grid reports with `grid-pages-change` (`{ pages, page }`). It is a REPORT in
+the `T-grid-reports-never-combines` sense: the host still owns `data-page`, and
+the grid never writes it. The source clamps the current page against the new
+count and re-publishes; it does NOT load, because the rows in hand are already
+every matching row.
+
+`#viewPages` is cleared by `setGroup` and by `setState`'s group branch — a count
+measured against the old grouping describes groups that no longer exist.
+
+The cost is honest and bounded: a grouped view holds the whole result set in the
+browser. That is the price of letting the reader fold, and it is the same price
+the grid's own sort and column filters already pay.
+
+- Site: `src/core/data-source.ts`
+
 ### T-grid-untyped-column-gets-no-filter-button
 
 The filter CHIP is in the header template already; JS adds only the MENU, because

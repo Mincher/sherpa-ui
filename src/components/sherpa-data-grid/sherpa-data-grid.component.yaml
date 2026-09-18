@@ -127,13 +127,7 @@ props:
     description: >-
       space-separated fields an EXTERNAL filter is narrowing; those columns' headings take
       data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write
-      it too. JS API — what a person can do by clicking, a caller can do by calling. This is what
-      lets a SAVED VIEW, a preset or an agent configure a grid: setColumnFilter(field, clause)  set
-      one column's filter from a store FilterClause columnClause(field)            read it back —
-      the same clause, for saving suspendColumnFilter(field, on) keep the clause but stop applying
-      it clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that
-      column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY
-      (needs `key` in populate) selectedKeys / selectedRecords read it back
+      it too.
   - $type: prop
     name: data-filterable
     type: string
@@ -144,6 +138,22 @@ props:
     type: string
     kind: content
     description: group rows by this column
+  - $type: prop
+    name: data-page
+    type: string
+    kind: content
+    description: >-
+      the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
+      is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
+      never writes data-page itself.
+  - $type: prop
+    name: data-page-size
+    type: string
+    kind: content
+    description: >-
+      the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
+      is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
+      never writes data-page itself.
   - $type: prop
     name: data-select
     type: enum
@@ -169,6 +179,21 @@ props:
     type: string
     kind: content
     description: current sort (asc | desc)
+  - $type: prop
+    name: data-total-pages
+    type: string
+    kind: style
+    description: >-
+      how many pages the host believes there are. READ ONLY, and only to avoid re-reporting a count
+      that has not changed — the grid never writes it. Not observed: a change to it is the ECHO of
+      the grid's own report, and re-rendering on it would be a loop. JS API — what a person can do
+      by clicking, a caller can do by calling. This is what lets a SAVED VIEW, a preset or an agent
+      configure a grid: setColumnFilter(field, clause)  set one column's filter from a store
+      FilterClause columnClause(field)            read it back — the same clause, for saving
+      suspendColumnFilter(field, on) keep the clause but stop applying it
+      clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that
+      column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY
+      (needs `key` in populate) selectedKeys / selectedRecords read it back
 states:
   - $type: state
     name: empty
@@ -266,6 +291,13 @@ events:
       collapsed: unknown
       value: unknown
   - $type: event
+    name: grid-pages-change
+    bubbles: true
+    composed: true
+    detail:
+      page: unknown
+      pages: unknown
+  - $type: event
     name: menu-clear
     bubbles: true
     composed: true
@@ -286,10 +318,6 @@ tokens:
   filter-spacer.background: "{sherpa.style-surface-base-1}"
   filter-spacer.border-block-end: "{sherpa.border-bottom}"
   filter-field.padding: "{sherpa.display-mode-space-2xs}"
-  filter-field.border-block-start-width: "{sherpa.border-top}"
-  filter-field.border-block-end-width: "{sherpa.border-bottom}"
-  filter-field.border-inline-start-width: "{sherpa.border-left}"
-  filter-field.border-inline-end-width: "{sherpa.border-right}"
   filter-field.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   filter-field.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   filter-field.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"

@@ -97,6 +97,10 @@ export class SherpaDataGrid extends SherpaElement {
     // SINGLE vs multiple changes the CONTROL each row draws — a radio cannot be
     // turned into a checkbox by CSS — so a change here re-renders the body.
     'data-select',
+    // VISUAL paging, and only while grouped — see #pageSlots(). The source
+    // writes both on every push; the grid reads them rather than being told.
+    'data-page',
+    'data-page-size',
   ];
 
   /* ── Column widths ───────────────────────────────────────────────
@@ -868,7 +872,11 @@ export class SherpaDataGrid extends SherpaElement {
     // Rows are FILTERED then SORTED, and the index written on each <tr> is the
     // index into THAT visible list — so row-click and selection-change keep
     // pointing at the record the user actually sees.
-    const rows = this.#visibleRows();
+    const all = this.#visibleRows();
+    // …then cut to ONE SCREEN PAGE when the grid is grouped, counting a shut
+    // group as a single line. `offset` keeps data-index honest across the cut.
+    // TRAP T-grid-collapsed-group-is-one-slot.
+    const { rows, offset, pages } = this.#pageWindow(all);
     let lastGroup: string | null = null;
 
     rows.forEach((record, i) => {
@@ -879,12 +887,15 @@ export class SherpaDataGrid extends SherpaElement {
         const key = value == null ? '' : String(value);
         if (key !== lastGroup) {
           lastGroup = key;
-          body.appendChild(this.#groupRow(key, this.#groupSize(rows, group, key), columns.length));
+          // The COUNT is the group's real size across every page, not the part
+          // of it this page drew — a group split by a page boundary still says
+          // how many rows it holds.
+          body.appendChild(this.#groupRow(key, this.#groupSize(all, group, key), columns.length));
         }
       }
 
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      tr.dataset['index'] = String(i);
+      tr.dataset['index'] = String(offset + i);
       // Restore this record's own selection. The body is replaced wholesale on
       // every render, so the tick has to come from #selected rather than survive
       // in the DOM.
@@ -917,6 +928,9 @@ export class SherpaDataGrid extends SherpaElement {
     // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
     // groups the user had already folded shut.
     if (group) this.#syncGroupVisibility();
+    // Folding changes how many pages there ARE, so say so — after the draw, so
+    // a host that re-renders on the report finds the DOM already settled.
+    this.#reportPages(pages);
   }
 
   /**
@@ -956,6 +970,112 @@ export class SherpaDataGrid extends SherpaElement {
   /** How many visible rows share one group value. */
   #groupSize(rows: GridRow[], field: string, key: string): number {
     return rows.filter((r) => String(r[field] ?? '') === key).length;
+  }
+
+  /* ── Visual paging ──────────────────────────────────────────────────
+   * TRAP T-grid-collapsed-group-is-one-slot — a SHUT group occupies one line on
+   * screen, so it must cost one line of the page. The store's skip/take counts
+   * RECORDS and cannot know that; it hands over every matching row while a
+   * group field is set, and the grid decides where the page ends.
+   *
+   * These do nothing when the grid is not grouped: the store's window IS the
+   * page, and slicing it again would drop rows nobody asked to hide.
+   */
+
+  /** The page size the host asked for, or 0 when it wants no visual paging. */
+  get #pageSize(): number {
+    return coerceNum(this.dataset['pageSize'], 0, { min: 0, int: true });
+  }
+
+  /** The 1-based page the host asked for. */
+  get #page(): number {
+    return coerceNum(this.dataset['page'], 1, { min: 1, int: true });
+  }
+
+  /** Whether the grid — not the store — is deciding where a page ends. */
+  get #paginates(): boolean {
+    return Boolean(this.dataset['groupField']) && this.#pageSize > 0;
+  }
+
+  /**
+   * Walk the visible rows and cut them into pages of `size` SCREEN LINES.
+   *
+   * A group heading is one line. A shut group costs that line and nothing more.
+   * An open group costs its heading plus one line per row. A group is never
+   * split across a page boundary when it is shut — it cannot be, it is one line
+   * — but an OPEN group longer than a page IS split, because the alternative is
+   * a page that cannot be drawn.
+   *
+   * Returns the index into #visibleRows() at which each page starts, so a page
+   * is a plain slice and data-index keeps meaning what it always meant.
+   */
+  #pageStarts(rows: GridRow[], field: string, size: number): number[] {
+    const starts: number[] = [0];
+    let slots = 0;
+    let lastGroup: string | null = null;
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const key = String(rows[i]![field] ?? '');
+      const opensGroup = key !== lastGroup;
+      const collapsed = this.#collapsed.has(key);
+      // A shut group's ROWS are drawn but hidden, so they cost nothing. Only the
+      // heading is a line.
+      const cost = (opensGroup ? 1 : 0) + (collapsed ? 0 : 1);
+
+      // This row does not fit — start a page here. A heading that would land on
+      // the last slot of a page with none of its rows below it still starts the
+      // page, because the page after it opens with the same heading anyway.
+      if (cost > 0 && slots + cost > size && slots > 0) {
+        starts.push(i);
+        slots = 0;
+        lastGroup = null;
+        // Re-cost against the fresh page: this row now OPENS its group, because
+        // the page it begins has to redraw the heading.
+        slots += 1 + (collapsed ? 0 : 1);
+        lastGroup = key;
+        continue;
+      }
+
+      slots += cost;
+      lastGroup = key;
+    }
+
+    return starts;
+  }
+
+  /**
+   * The rows this page draws, and the index the first of them holds in the full
+   * visible list — so a sliced page still writes TRUE data-index values.
+   */
+  #pageWindow(rows: GridRow[]): { rows: GridRow[]; offset: number; pages: number } {
+    const field = this.dataset['groupField'];
+    const size = this.#pageSize;
+    if (!field || size <= 0) return { rows, offset: 0, pages: 1 };
+
+    const starts = this.#pageStarts(rows, field, size);
+    const pages = starts.length;
+    // CLAMP rather than return empty: a shut group can shrink the page count
+    // under the page the host is on, and an empty panel is not an answer.
+    const index = Math.min(Math.max(this.#page, 1), pages) - 1;
+    const from = starts[index]!;
+    const to = starts[index + 1] ?? rows.length;
+    return { rows: rows.slice(from, to), offset: from, pages };
+  }
+
+  /**
+   * Tell the host how many pages the CURRENT fold state makes.
+   *
+   * Opening a group can push the tail onto a new page and shutting one can take
+   * a page away, so this is re-derived on every render, never cached.
+   *
+   * TRAP T-grid-reports-never-combines — a REPORT, per the state-ownership
+   * rule: the grid never writes its own data-page.
+   */
+  #reportPages(pages: number): void {
+    if (!this.#paginates) return;
+    const page = Math.min(Math.max(this.#page, 1), pages);
+    if (String(pages) === this.dataset['totalPages'] && page === this.#page) return;
+    this.emit('grid-pages-change', { pages, page });
   }
 
   /** One group heading row, spanning every drawn column. */
@@ -1126,6 +1246,21 @@ export class SherpaDataGrid extends SherpaElement {
     // A sibling selector cannot reach from a group row to the rows after it, so
     // each row carries its own shut/open flag.
     this.#syncGroupVisibility();
+
+    // WHEN THE GRID PAGES, FOLDING CHANGES WHAT IS ON THE PAGE — not just what
+    // is visible on it. Shutting a group frees slots, so rows from the next page
+    // move up onto this one; opening one pushes the tail off. A visibility sync
+    // alone would leave a page of two headings and a hole.
+    // TRAP T-grid-collapsed-group-is-one-slot.
+    if (this.#paginates) {
+      this.#renderBody();
+      // The body was replaced, so the ticks and the select-all have to be
+      // re-derived from #selected rather than survive in the DOM.
+      this.#syncSelectAll();
+      this.#syncGroupSelects();
+      this.#syncFocused();
+    }
+
     this.emit('group-toggle', { value: key, collapsed });
   }
 

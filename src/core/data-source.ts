@@ -97,6 +97,10 @@ const STEERING_EVENTS = [
   'page-change',
   'page-size-change',
   'search-change',
+  // A grouped view counting its own pages — see TRAP
+  // T-grouped-paging-belongs-to-the-view. A REPORT, not a request: it changes
+  // what the pager draws, never what the store is asked for.
+  'grid-pages-change',
 ] as const;
 
 export class DataSource extends EventTarget {
@@ -117,6 +121,13 @@ export class DataSource extends EventTarget {
     }
   >();
   #result: LoadResult = { rows: [], total: 0 };
+  /**
+   * The page count a GROUPED view reported, because folding decides it and only
+   * the view can count screen lines — see `totalPages`. `null` means nothing has
+   * reported yet, so the record division stands in until the first draw.
+   * TRAP T-grouped-paging-belongs-to-the-view.
+   */
+  #viewPages: number | null = null;
   #autoLoad: boolean;
   // TRAP T-in-flight-ticket-discards-stale — three keys, and why not one.
   /** The load in flight, as a ticket the response is checked against. */
@@ -174,7 +185,11 @@ export class DataSource extends EventTarget {
       else delete this.#state.filter;
     }
     if (next.sort) this.#state.sort = next.sort;
-    if ('group' in next) this.#state.group = next.group ?? null;
+    // A new grouping invalidates the view's page count — see setGroup.
+    if ('group' in next) {
+      this.#state.group = next.group ?? null;
+      this.#viewPages = null;
+    }
     if (next.search != null) this.#state.search = next.search;
     if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
     // PAGE LAST, and not clamped here: the total it would be clamped against
@@ -203,10 +218,18 @@ export class DataSource extends EventTarget {
     return this.#result.total;
   }
 
-  /** Pages at the current size, at least 1. */
+  /**
+   * Pages at the current size, at least 1.
+   *
+   * While GROUPED this is what the grid reported, not a division: a shut group
+   * is one screen line, so the record count cannot produce the answer.
+   * TRAP T-grouped-paging-belongs-to-the-view.
+   */
   get totalPages(): number {
     const size = this.#state.pageSize;
-    return size ? Math.max(1, Math.ceil(this.#result.total / size)) : 1;
+    if (!size) return 1;
+    if (this.#state.group && this.#viewPages != null) return Math.max(1, this.#viewPages);
+    return Math.max(1, Math.ceil(this.#result.total / size));
   }
 
   /* ── Steering ──────────────────────────────────────────────────────── */
@@ -225,6 +248,10 @@ export class DataSource extends EventTarget {
 
   setGroup(field: string | null): void {
     this.#state.group = field;
+    // The old count was measured against the OLD grouping — a different field
+    // makes different groups, and none makes none. Drop it and wait for the
+    // next draw. TRAP T-grouped-paging-belongs-to-the-view.
+    this.#viewPages = null;
     this.#resetPage();
     this.#schedule();
   }
@@ -315,7 +342,12 @@ export class DataSource extends EventTarget {
       options.search = search;
       if (this.#searchFields) options.searchFields = this.#searchFields;
     }
-    if (pageSize) {
+    // TRAP T-grouped-paging-belongs-to-the-view — a GROUPED view is paged by
+    // SCREEN LINES, not by records: a shut group is one line however many rows
+    // it holds, and no store window can know which groups the reader has folded.
+    // So while grouped the source asks for EVERY matching row and the grid cuts
+    // the page. Ungrouped, the store's window IS the page, as before.
+    if (pageSize && !group) {
       options.skip = (page - 1) * pageSize;
       options.take = pageSize;
     }
@@ -354,8 +386,13 @@ export class DataSource extends EventTarget {
       this.#loaded = true;
 
       // TRAP T-error-is-a-state-not-a-throw — re-clamp and reload ONCE, FORCED.
+      // Not while GROUPED: the load fetched every matching row, so a re-load
+      // would ask the identical question, and the page count there is the
+      // GRID's to report — clamping against a count measured before this load's
+      // rows arrived would move the reader for no reason.
+      // TRAP T-grouped-paging-belongs-to-the-view.
       const pages = this.totalPages;
-      if (this.#state.pageSize && this.#state.page > pages) {
+      if (!this.#state.group && this.#state.pageSize && this.#state.page > pages) {
         this.#state.page = pages;
         return this.load({ force: true });
       }
@@ -489,6 +526,20 @@ export class DataSource extends EventTarget {
       case 'page-change': {
         const page = detail['page'];
         if (typeof page === 'number') this.setPage(page);
+        return;
+      }
+      case 'grid-pages-change': {
+        // The view counted its own screen lines. No load — the rows in hand are
+        // already every matching row (the grouped branch of #loadOptions) — so
+        // this only re-publishes the pager's numbers.
+        const pages = detail['pages'];
+        if (typeof pages !== 'number' || !Number.isFinite(pages)) return;
+        const next = Math.max(1, Math.trunc(pages));
+        const clamped = Math.min(this.#state.page, next);
+        if (next === this.#viewPages && clamped === this.#state.page) return;
+        this.#viewPages = next;
+        this.#state.page = clamped;
+        this.#publish();
         return;
       }
       case 'page-size-change': {

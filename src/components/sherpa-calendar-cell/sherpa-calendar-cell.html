@@ -25,6 +25,11 @@
     data-state     default (omitted) | today | selected | range-start |
                    range-end | range-mid
     data-label     the number to show (or use the default slot)
+    data-value     the ISO date this cell STANDS FOR (2026-09-18), which is what
+                   cell-click carries. The label is a number in the month's own
+                   terms and cannot say which month; this can. Falls back to
+                   data-label when absent, so a cell with no calendar around it
+                   still reports something.
     data-outside   this day belongs to the neighbouring month
     disabled       native — outside data-min / data-max
 

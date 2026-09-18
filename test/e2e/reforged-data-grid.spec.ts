@@ -2023,3 +2023,92 @@ test('selectedKeys is EMPTY without a key — honest, not approximate', async ({
   expect(r.keys).toEqual([]);
   expect(r.records).toBe(0);
 });
+
+test('a SHUT group costs one slot of the page, not one per row', async ({ page }) => {
+  // TRAP T-grid-collapsed-group-is-one-slot — a page is SCREEN LINES. Shutting
+  // Gold used to leave a page holding one heading and 24 rows CSS was hiding,
+  // and a pager insisting there were more pages like it.
+  const r = await page.evaluate(async () => {
+    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+
+    // Three groups of four, and a page of five LINES. Open, that is
+    // heading+4 = 5 for one group alone, so ONE group fills page 1 exactly.
+    // Groups sort A→Z (T-grid-group-drops-the-column), so the order on screen
+    // is Bronze, Gold, Silver whatever order they are populated in.
+    const rows = ['Gold', 'Silver', 'Bronze'].flatMap((tier) =>
+      [1, 2, 3, 4].map((n) => ({ name: `${tier}-${n}`, tier })),
+    );
+    el.populate({ columns: [{ field: 'name' }, { field: 'tier' }], rows });
+    el.dataset['groupField'] = 'tier';
+    el.dataset['pageSize'] = '5';
+    el.dataset['page'] = '1';
+
+    const reports: Array<{ pages: number; page: number }> = [];
+    el.addEventListener('grid-pages-change', (e) => {
+      reports.push((e as CustomEvent).detail);
+    });
+    await settled();
+
+    const sr = el.shadowRoot!;
+    const read = () => ({
+      groups: Array.from(sr.querySelectorAll('.group-row')).map((g) => ({
+        label: g.querySelector('.group-label')!.textContent,
+        count: g.querySelector('.group-count')!.textContent,
+      })),
+      // What is actually DRAWN, and what is drawn but folded away.
+      drawn: sr.querySelectorAll('.row').length,
+      shown: Array.from(sr.querySelectorAll<HTMLElement>('.row')).filter(
+        (row) => !row.hasAttribute('data-hidden'),
+      ).length,
+      // data-index must stay an index into the FULL visible list, or a click on
+      // page 2 resolves to a page-1 record.
+      indices: Array.from(sr.querySelectorAll<HTMLElement>('.row')).map((row) => row.dataset['index']),
+    });
+
+    const page1 = read();
+
+    // Shut the FIRST group (Bronze). One line now, so four slots come free and
+    // the next rows must move UP onto this page rather than leaving a hole.
+    const first = sr.querySelector<HTMLElement>('.group-row')!;
+    first.querySelector<HTMLElement>('.group-toggle')!.click();
+    await settled();
+    const folded = read();
+
+    // Page 2 of the folded view.
+    el.dataset['page'] = '2';
+    await settled();
+    const page2 = read();
+
+    return { page1, folded, page2, reports };
+  });
+
+  // PAGE 1, all open: Bronze's heading + its four rows is the whole page.
+  expect(r.page1.groups.map((g) => g.label)).toEqual(['Bronze']);
+  expect(r.page1.drawn).toBe(4);
+  expect(r.page1.indices).toEqual(['0', '1', '2', '3']);
+
+  // SHUT: Bronze is one line, so Gold's heading and its first three rows fill
+  // the remaining four slots. This is the whole point of the trap.
+  expect(r.folded.groups.map((g) => g.label)).toEqual(['Bronze', 'Gold']);
+  // The count is the group's REAL size, not the part this page drew.
+  expect(r.folded.groups.map((g) => g.count)).toEqual(['4', '4']);
+  expect(r.folded.shown).toBe(3);        // three Gold rows are visible…
+  expect(r.folded.drawn).toBe(7);        // …and Bronze's four are drawn but hidden
+  // Indices still point into the full list — Gold starts at 4.
+  expect(r.folded.indices).toEqual(['0', '1', '2', '3', '4', '5', '6']);
+
+  // PAGE 2 redraws Gold's heading: a page that opened mid-group with no
+  // heading would not say which group it was showing.
+  expect(r.page2.groups.map((g) => g.label)).toEqual(['Gold', 'Silver']);
+  expect(r.page2.indices![0]).toBe('7');
+
+  // The grid REPORTED its page count; it never wrote data-page itself.
+  expect(r.reports.length).toBeGreaterThan(0);
+  expect(r.reports.at(-1)!.pages).toBeGreaterThanOrEqual(2);
+});

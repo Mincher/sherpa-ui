@@ -27,6 +27,16 @@
   Type=group) carrying that value as its label. The grouped column itself drops out
   of the header and the rows — its value is the heading now.
 
+  A GROUPED grid pages itself, by SCREEN LINES. A shut group is one line however
+  many rows it holds, so it costs ONE slot of data-page-size; an open group costs
+  its heading plus a slot per row. A store cannot do this — its skip/take counts
+  RECORDS, and it cannot know which groups the reader has folded — so while
+  data-group-field is set the grid takes every matching row and cuts the page
+  itself, reporting the count it arrives at as grid-pages-change. Folding
+  re-cuts the page, so shutting a group pulls the next rows up onto it rather
+  than leaving a hole. UNGROUPED the grid draws whatever it is given, and paging
+  is the store's as before.
+
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
     data-group-field                         group rows by this column
@@ -40,6 +50,15 @@
                     is narrowing; those columns' headings take data-status="active".
                     Written by SherpaDataSource — a host driving the grid by hand
                     can write it too.
+    data-page / data-page-size               the visual page, WHILE GROUPED only —
+                    a page is data-page-size screen LINES, and a shut group is one.
+                    Written by SherpaDataSource; the grid reports back the page
+                    count it arrives at and never writes data-page itself.
+    data-total-pages                         how many pages the host believes there
+                    are. READ ONLY, and only to avoid re-reporting a count that has
+                    not changed — the grid never writes it. Not observed: a change
+                    to it is the ECHO of the grid's own report, and re-rendering on
+                    it would be a loop.
 
   JS API — what a person can do by clicking, a caller can do by calling. This is
   what lets a SAVED VIEW, a preset or an agent configure a grid:
@@ -66,6 +85,9 @@
     column-filter-change — detail: { field, header, op, value, from, to, clause, label }
     filter-change    — detail: { field, value, filters, visible }
     group-toggle     — detail: { value, collapsed }
+    grid-pages-change — detail: { pages, page }   how many pages the CURRENT fold
+                       state makes, while grouped. A REPORT, not a request: the
+                       host owns data-page, and folding changes the count under it
 -->
 <template id="default">
   <!--
