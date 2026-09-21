@@ -564,6 +564,30 @@ Two regions are exempt because a generator owns them: everything above
 
 Aim nearer 15% than 40%.
 
+### Template literals
+
+Measured 2026-09-21: 1,831 backtick strings across the repo, but only **29
+genuinely span lines**. The rest are one-line interpolation — `${name}.html`,
+a path, a regex — which is what backticks are for.
+
+Of the 29, every one is **generating text**, and the target's own comment syntax
+is why they look confusing:
+
+| where | generates | needs a literal? |
+|---|---|---|
+| `project-tokens.mjs` (9 blocks) | `tokens.css` | 6 interpolate; 3 are static CSS |
+| `mcp-server/prompts/index.js` | markdown prompts | yes — multi-paragraph |
+| `dashboard-views.js` | a saved view's markup | yes — content IS a string |
+
+**A `/* */` or `<!-- -->` inside one is OUTPUT, not a JS comment.** A regex
+comment-stripper eats it and reports a false code change — which is exactly what
+happened when three build scripts were checked that way. Run the script and
+diff its output instead: `project-tokens.mjs` regenerating `tokens.css`
+byte-identically is the real proof.
+
+Keep comments inside them to one line, because they ship: `tokens.css` carries
+50 comment lines of 2,211, which is the right order.
+
 ---
 
 ## Suppression budget

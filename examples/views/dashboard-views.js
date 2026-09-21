@@ -59,8 +59,7 @@ export const DASHBOARD_VIEWS = {
        in. Its ids are what `snapshot.elements` addresses. */
     content: `
       <div class="sherpa-grid">
-        <!-- A HISTOGRAM, not a donut: storage is a continuous quantity, and
-             slicing a continuum into wedges says the bands are categories. -->
+        <!-- A histogram, not a donut: storage is continuous. -->
         <sherpa-container data-span="12" data-rows="5">
           <sherpa-container-header slot="header"
             data-heading="Storage used, by band"></sherpa-container-header>
