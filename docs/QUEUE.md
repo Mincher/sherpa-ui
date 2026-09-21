@@ -20,6 +20,7 @@ down anywhere. They are in here now.
 | ~~**B1**~~ | ~~"X items selected" is in the wrong place~~ | — | **DONE** `b3db74ed` |
 | ~~**B2**~~ | ~~Last row has no bottom border~~ | — | **DONE** `b3db74ed` |
 | **B3** | Empty chip's body should open its menu | S | One rule, one component |
+| **B6** | Saturated button ignores a critical status | M | Measured; obvious fix fails |
 | ~~**D5**~~ | ~~Dialog footer horizontal padding~~ | — | **DONE** `97d7bb25` |
 | **D3** | Delete needs a confirm dialog + a real mutation | M | Data loss risk today |
 | **D4** | Error handling for failed mutations | M | Pairs with D3 |
@@ -109,6 +110,40 @@ TRAPS before moving text, or the gate will fight it.
 ---
 
 ## Raised 2026-09-21
+
+### B6. A saturated button ignores a critical status — MEASURED 2026-09-21
+
+Found while building the delete confirmation. In a `data-status="critical"`
+dialog the heading and the Cancel button go red, and the **Delete button stays
+accent blue**.
+
+It is not that the cascade misses the button — it reads it. It reads the WRONG
+STEP:
+
+| token | critical value | what it is |
+|---|---|---|
+| `--_status-surface` | `surface-default-base` — **white** | the CARD's surface |
+| `--_status-surface-strong` | `surface-critical-1` — red | the FILL step |
+
+`data-look="saturated"` takes `--_status-surface`, which is white, so its own
+`#3b4ccd` fallback wins. The gauge, progress bar and nav-item badge all use
+`--_status-surface-strong` for exactly this reason.
+
+**The obvious one-line fix does not work — I tried it and reverted.** Pointing
+saturated at `--_status-surface-strong` / `--_status-text-on-color` turned EVERY
+saturated button dark navy (#1e189c) with near-black ink, status or not. Those
+two tokens are defined ONLY inside a `[data-status]` block, so outside one they
+inherit whatever ancestor last set them rather than falling through to the
+fallback — `var()` only uses its fallback when the property is genuinely unset,
+and an inherited value is set. `sherpa-data-grid` already works around this by
+resetting both to `initial` (line 546).
+
+So this needs the fallback chain thought through, not a token swap. Either the
+strong tokens get a neutral default at `:root`, or the button reads them through
+something that can tell "no status" from "status, white surface".
+
+Not urgent: the confirm dialog reads as critical through its heading, its ink
+and its border. Only the primary button's fill is wrong.
 
 ### B5. Grid header chips don't light from the app header
 

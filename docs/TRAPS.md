@@ -6067,6 +6067,7 @@ A real user's click does retarget, so this is a synthetic-event problem only —
 Playwright's own `locator.click()` is fine.
 
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-radios-in-shadow-roots-are-not-one-group
 
@@ -6259,3 +6260,67 @@ every descendant that reads it.
 
 - Site: `src/components/sherpa-dialog/sherpa-dialog.css`
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
+
+### T-two-urls-are-two-modules
+
+The examples server serves `examples/views/records-data.js` at BOTH
+`/views/records-data.js` and `/examples/views/records-data.js`. A browser keys
+its module registry on the URL, so importing the two gives **two separate module
+instances** — two `customerStore`s, two sets of records, no connection between
+them.
+
+A test that patched `store.remove` on `/examples/views/…` made a store nothing
+held refuse a delete, while the view's own store deleted the rows for real. The
+assertion then reported the rows as missing, which looked like the error
+handling failing when it was the test reaching the wrong object.
+
+**Import the URL the VIEW imports.** `/views/records.js` does
+`import … from './records-data.js'`, which resolves to `/views/records-data.js`.
+
+This is not specific to the examples: any server that maps one file to two paths
+does it, and nothing warns. The symptom is a patched or seeded module having no
+effect at all.
+
+- Site: `test/e2e/reforged-view-chips.spec.ts`
+
+### T-the-records-store-persists-between-runs
+
+The Records example uses an `IdbStore`, so its records live in IndexedDB and
+**survive a page load, a test run, and the next test run**. A test that hardcodes
+"Aisha Cohen" passes once and fails forever afterwards, because an earlier run
+really deleted her.
+
+Read the names under test at the start of the test and compare against what was
+read, never against a literal. The same applies to counts: assert a delta, not a
+total.
+
+- Site: `test/e2e/reforged-view-chips.spec.ts`
+
+### T-a-failed-mutation-must-reach-the-reader
+
+`void deleteRecords(records)` — a rejected promise reaching nothing.
+
+The store's `remove()` is a real mutation and can refuse: a network that is
+down, a record another session already deleted, a rule the store enforces. The
+only caller discarded the promise, so a refusal produced no toast, no console
+warning and no change on screen. The row simply stayed, which reads as a
+rendering bug rather than a failure.
+
+Three things a mutation flow owes the reader, and all three were missing:
+
+1. **Per-item failure, not all-or-nothing.** A bulk delete of five where two
+   refuse must say "could not delete 2 of 5", not throw on the first and leave
+   the other three in an unknown state. Each `remove` is awaited in its own
+   `try`.
+2. **The REASON.** "Something went wrong" is not actionable; the store's own
+   message is. It goes in the toast's value line.
+3. **Leave the screen honest.** Never update it by hand. The store announces
+   its own change and every bound view reloads, so a record that did not delete
+   is still there — and it stays SELECTED, so the reader can retry without
+   re-picking it.
+
+`DataSource` already treats a failed LOAD as a state rather than a throw. A
+mutation deserves the same care, and had none.
+
+- Site: `examples/views/records.js`
+- Site: `test/e2e/reforged-view-chips.spec.ts`

@@ -135,6 +135,8 @@ export async function init(root) {
   const pager     = root.querySelector('#pager');
   const dialog    = root.querySelector('#dialog');
   const planGroup = root.querySelector('#f-plan');
+  const confirm     = root.querySelector('#confirm');
+  const confirmText = root.querySelector('#confirm-text');
 
   /* Shared nav + header (live in index.html). */
   const header = document.querySelector('sherpa-app-shell sherpa-app-header');
@@ -570,25 +572,104 @@ export async function init(root) {
     dialog.show();
   };
 
-  /** Delete records, then say what happened. */
+  /**
+   * Delete records — THE MUTATION, after the reader has confirmed.
+   *
+   * Each `remove` is awaited and its failure caught PER RECORD, so a bulk
+   * delete that fails halfway says what actually happened rather than throwing
+   * away the whole result. A rejected promise here used to reach nothing: the
+   * only caller was `void runAction(...)`, so a store that refused did so in
+   * complete silence and the row stayed on screen with no explanation.
+   *
+   * The screen is never updated by hand. The store announces its own change and
+   * every bound view reloads — so a record that did NOT delete simply stays,
+   * which is the honest outcome.
+   *
+   * TRAP T-a-failed-mutation-must-reach-the-reader.
+   */
   const deleteRecords = async (records) => {
-    for (const record of records) await store.remove(record.email);
-    grid.clearSelection();
-    SherpaToast.success(
-      records.length === 1 ? `${records[0].name} deleted` : `${records.length} customers deleted`,
-      { value: 'The store announced the change; every bound view reloaded.' },
-    );
+    const failed = [];
+    for (const record of records) {
+      try {
+        await store.remove(record.email);
+      } catch (err) {
+        failed.push({ record, err });
+      }
+    }
+
+    const gone = records.length - failed.length;
+    // KEEP what refused. The selection becomes exactly the records that are
+    // still there, so the reader can try those again — and a delete that fully
+    // succeeded clears it, because `select([])` is a clear.
+    grid.select(failed.map((f) => f.record.email));
+
+    if (gone) {
+      SherpaToast.success(
+        gone === 1 ? `${records[0].name} deleted` : `${gone} customers deleted`,
+        { value: 'The store announced the change; every bound view reloaded.' },
+      );
+    }
+    if (failed.length) {
+      // SAID OUT LOUD, and with the reason. A failure the reader cannot see is
+      // a record they think is gone.
+      const first = failed[0];
+      SherpaToast.critical(
+        failed.length === 1
+          ? `Could not delete ${first.record.name}`
+          : `Could not delete ${failed.length} of ${records.length} customers`,
+        { value: String(first.err?.message ?? first.err ?? 'The store refused the change.') },
+      );
+    }
   };
 
+  /**
+   * Ask first. The reader confirms, THEN the mutation runs.
+   *
+   * The pending records are held in a closure rather than on the dialog,
+   * because the dialog is a view of the question and not the answer to it.
+   */
+  let pendingDelete = [];
+
+  const askToDelete = (records) => {
+    if (!records.length) return;
+    pendingDelete = records;
+    confirm.dataset['heading'] =
+      records.length === 1 ? 'Delete customer?' : `Delete ${records.length} customers?`;
+    // NAMED, not counted, when there is one — "Delete Aisha Cohen?" is a
+    // question the reader can answer; "Delete 1 customer?" is not.
+    confirmText.textContent = records.length === 1
+      ? `${records[0].name} will be permanently deleted. This cannot be undone.`
+      : `${records.length} customers will be permanently deleted. This cannot be undone.`;
+    confirm.show();
+  };
+
+  root.querySelector('#confirm-cancel')?.addEventListener('click', () => {
+    pendingDelete = [];
+    confirm.close();
+  }, { signal });
+
+  root.querySelector('#confirm-delete')?.addEventListener('click', () => {
+    const records = pendingDelete;
+    pendingDelete = [];
+    // SHUT FIRST. The mutation reloads every bound view, and a modal still open
+    // over a grid that has just rebuilt beneath it reads as a stuck dialog.
+    confirm.close();
+    void deleteRecords(records);
+  }, { signal });
+
   /** One place both surfaces route through, so they cannot behave differently. */
-  const runAction = async (id, records) => {
+  const runAction = (id, records) => {
     if (!records.length) return;
     if (id === 'edit') openDialog(records[0]);
-    if (id === 'delete') await deleteRecords(records);
+    // ASK, never delete outright. Both surfaces route through here, so the row
+    // menu and the bulk bar cannot disagree about whether it confirms.
+    // NOT async any more: both branches now OPEN something and return. The
+    // awaiting happens after the reader answers.
+    if (id === 'delete') askToDelete(records);
   };
 
   grid.addEventListener('row-action', (e) => {
-    void runAction(e.detail.id, e.detail.records ?? []);
+    runAction(e.detail.id, e.detail.records ?? []);
   }, { signal });
 
   /* THE BULK BAR. `grid.actionsFor(count)` is the same list the row menu draws,
@@ -610,7 +691,7 @@ export async function init(root) {
       if (action.icon) button.dataset.iconStart = action.icon;
       button.textContent = action.label;
       button.addEventListener('button-click', () => {
-        void runAction(action.id, grid.selectedRecords);
+        runAction(action.id, grid.selectedRecords);
       });
       bulkActions.appendChild(button);
     }

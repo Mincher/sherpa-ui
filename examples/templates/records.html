@@ -45,18 +45,24 @@
            reader has ticked. Empty until a selection exists; records.js fills it
            from `grid.actionsFor(count)`, so the two lists cannot disagree.
 
-           TRAILING, not leading. These sat between the Add button and whatever
-           came after it, so a selection PUSHED the page's own action sideways —
-           the CTA moved every time the reader ticked a row. The trailing zone is
-           FILL with MAX alignment, so they sit hard right and the Add button
-           never moves.
+           SPLIT ACROSS THE TWO ZONES, and they do different jobs.
+
+           The ACTIONS are leading, straight after the CTA: they are things to
+           DO, and they belong with the page's own primary action rather than
+           adrift at the far end. They come after Add rather than before it, so
+           the primary action keeps the first position.
+
+           The COUNT is trailing — Figma describes that zone as holding "the
+           item count", and it is a READOUT, not a control. Putting it between
+           the CTA and the actions is what pushed the buttons sideways every
+           time the reader ticked a row.
 
            EMPTY IN THE MARKUP, not absent: every element a view will ever show
            is in the template from the start, and CSS hides an empty container.
            The SPAN carries the count, which is the one thing the buttons cannot
            say for themselves. -->
+      <span slot="leading" id="bulk-actions"></span>
       <span slot="trailing" id="bulk-count" class="bulk-count" hidden></span>
-      <span slot="trailing" id="bulk-actions"></span>
     </sherpa-toolbar>
 
     <!-- CONTENT — the filter toolbar and the grid it filters.
@@ -100,6 +106,29 @@
   <sherpa-container-footer slot="footer">
     <sherpa-button id="cancel-btn">Cancel</sherpa-button>
     <sherpa-button id="save-btn" data-look="saturated">Save</sherpa-button>
+  </sherpa-container-footer>
+</sherpa-dialog>
+
+<!-- CONFIRM DELETE. A SECOND dialog, not the add/edit one wearing a costume:
+     deleting is a different question with a different answer, and re-labelling
+     one dialog means every open has to undo whatever the last one set.
+
+     `data-status="critical"` rather than a red button: the status cascade
+     re-points the whole card's surface, border and ink from one attribute, and
+     the Delete button reads it too.
+
+     The message is EMPTY here and written by the view, because only the view
+     knows how many records are going and what they are called. -->
+<sherpa-dialog id="confirm" data-heading="Delete customer?" data-status="critical">
+  <!-- No class: there is no example stylesheet, and the dialog's body already
+       brings its 16px padding. The browser's own <p> margins would ADD to that,
+       so the margin is zeroed inline — the one thing this needs. -->
+  <p id="confirm-text" style="margin: 0"></p>
+
+  <sherpa-container-footer slot="footer">
+    <sherpa-button id="confirm-cancel">Cancel</sherpa-button>
+    <sherpa-button id="confirm-delete" data-look="saturated"
+                   data-icon-start="fa-solid fa-trash">Delete</sherpa-button>
   </sherpa-container-footer>
 </sherpa-dialog>
 

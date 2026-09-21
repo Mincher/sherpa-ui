@@ -199,7 +199,12 @@ test('the records store refuses a record its schema rejects', async ({ page }) =
   }, undefined, { timeout: 15000 });
 
   const r = await page.evaluate(async () => {
-    const { customerStore } = await import('/examples/views/records-data.js');
+    /* `/views/…`, the url the VIEW imports. The server serves this file at two
+       urls and a browser keys its module registry on the url, so
+       `/examples/views/…` is a SECOND instance with its own store — this test
+       passed against a store the app never held.
+       TRAP T-two-urls-are-two-modules. */
+    const { customerStore } = await import('/views/records-data.js');
     const before = (await customerStore.load()).total;
 
     // NO EMAIL — and email is the KEY, so a blank one would collide with the
@@ -222,4 +227,117 @@ test('the records store refuses a record its schema rejects', async ({ page }) =
   expect(r.afterBad, 'the bad row never landed').toBe(r.before);
   expect(r.refused, 'and it said which field and why').toContain('email');
   expect(r.afterGood).toBe(r.before! + 1);
+});
+
+/**
+ * DELETE ASKS FIRST, AND SAYS WHEN IT FAILS.
+ *
+ * Two halves of one flow, and the second is the one that rots quietly: a
+ * mutation that throws into a `void` call removes nothing, says nothing, and
+ * leaves the row on screen looking like a rendering bug.
+ *
+ * TRAP T-a-failed-mutation-must-reach-the-reader.
+ */
+test('delete asks before it deletes, and reports a refusal', async ({ page }) => {
+  await page.goto('http://localhost:4200/?view=records');
+  await page.waitForFunction(() => {
+    const g = document.querySelector('sherpa-data-grid');
+    return (g?.shadowRoot?.querySelectorAll('.row').length ?? 0) > 0;
+  }, undefined, { timeout: 15000 });
+
+  const settle = () => page.waitForTimeout(600);
+
+  const tickTwo = () => page.evaluate(() => {
+    const g = document.querySelector('sherpa-data-grid')!;
+    // The CONTROL inside each box — TRAP T-a-test-must-click-what-the-listener-is-on.
+    [0, 1].forEach((i) => (g.shadowRoot!.querySelectorAll('.row')[i]!
+      .querySelector('.row-multi') as HTMLElement & { shadowRoot: ShadowRoot })
+      .shadowRoot.querySelector<HTMLElement>('.control')!.click());
+  });
+
+  const clickBulkDelete = () => page.evaluate(() => {
+    const btn = [...document.querySelectorAll('#bulk-actions sherpa-button')]
+      .find((x) => /delete/i.test(x.textContent ?? '')) as HTMLElement & { shadowRoot: ShadowRoot };
+    (btn.shadowRoot.querySelector<HTMLElement>('.trigger') ?? btn).click();
+  });
+
+  const clickConfirm = (id: string) => page.evaluate((sel) => {
+    const btn = document.querySelector(sel) as HTMLElement & { shadowRoot: ShadowRoot };
+    (btn.shadowRoot.querySelector<HTMLElement>('.trigger') ?? btn).click();
+  }, id);
+
+  const firstNames = () => page.evaluate(() =>
+    [...document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.row')]
+      .slice(0, 2).map((r) => r.querySelector('.cell')!.textContent!.trim()));
+
+  /* ── 1. It ASKS, and CANCEL deletes nothing ─────────────────────────── */
+  /* READ the names, never assume them. This store is an `IdbStore`, so it
+     PERSISTS across page loads and across test runs — a test that hardcoded
+     "Aisha Cohen" passed once and then failed forever, because an earlier run
+     had really deleted her. TRAP T-the-records-store-persists-between-runs. */
+  const before = await firstNames();
+  await tickTwo();
+  await settle();
+  await clickBulkDelete();
+  await settle();
+
+  const asked = await page.evaluate(() => {
+    const c = document.querySelector('#confirm') as HTMLElement;
+    return {
+      open: c.hasAttribute('open'),
+      status: c.dataset['status'],
+      heading: c.dataset['heading'],
+      text: document.querySelector('#confirm-text')!.textContent ?? '',
+    };
+  });
+  expect(asked.open, 'the confirm dialog opened').toBe(true);
+  // CRITICAL, because this destroys data — the status cascade paints the card.
+  expect(asked.status).toBe('critical');
+  // COUNTED when there are several, so the reader knows the scale of it.
+  expect(asked.heading).toBe('Delete 2 customers?');
+  expect(asked.text).toContain('cannot be undone');
+
+  await clickConfirm('#confirm-cancel');
+  await settle();
+  expect(await firstNames(), 'Cancel deleted nothing').toEqual(before);
+
+  /* ── 2. A REFUSED delete says so, and keeps the rows ────────────────── */
+  await page.evaluate(async () => {
+    /* `/views/…`, NOT `/examples/views/…`. The server maps the same file to
+       BOTH urls, and a browser keys its module registry on the url — so the
+       two are two separate module instances with two separate stores. The view
+       imports `./records-data.js` from `/views/records.js`, so this is the copy
+       it actually holds; patching the other one refused a delete nothing ever
+       called. TRAP T-two-urls-are-two-modules. */
+    const mod = await import('/views/records-data.js');
+    const store = mod.customerStore as { remove: (k: unknown) => Promise<void> };
+    store.remove = async () => { throw new Error('Network unreachable'); };
+  });
+
+  await clickBulkDelete();
+  await settle();
+  await clickConfirm('#confirm-delete');
+  await page.waitForTimeout(1200);
+
+  const failed = await page.evaluate(() => {
+    const toast = [...document.querySelectorAll('sherpa-toast')].pop() as
+      (HTMLElement & { shadowRoot: ShadowRoot }) | undefined;
+    return {
+      names: [...document.querySelector('sherpa-data-grid')!.shadowRoot!.querySelectorAll('.row')]
+        .slice(0, 2).map((r) => r.querySelector('.cell')!.textContent!.trim()),
+      toastStatus: toast?.dataset['status'] ?? null,
+      toastText: (toast?.shadowRoot.textContent ?? '').replace(/\s+/g, ' ').trim(),
+      stillSelected: (document.querySelector('sherpa-data-grid') as
+        HTMLElement & { selectedKeys: string[] }).selectedKeys.length,
+    };
+  });
+
+  // NOTHING VANISHED. A row that did not delete stays, which is the honest
+  // outcome — the screen is never updated by hand.
+  expect(failed.names, 'a refused delete removes nothing').toEqual(before);
+  expect(failed.toastStatus, 'and says so, critically').toBe('critical');
+  // THE REASON, not just "something went wrong".
+  expect(failed.toastText).toContain('Network unreachable');
+  // STILL TICKED, so the reader can try again without re-picking.
+  expect(failed.stillSelected).toBe(2);
 });
