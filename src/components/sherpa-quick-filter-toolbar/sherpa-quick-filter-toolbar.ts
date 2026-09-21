@@ -1101,6 +1101,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
+    /* THE GROUP CHIP'S BODY IS A TWO-STATE TOGGLE, and it needs its own branch
+       for the same reason Sort does: the loop below looks for `.chip`, and an
+       organise chip is a `.organise-chip`. Without this the Group chip flipped
+       its own `data-current` off, looked ungrouped, and told nobody — the grid
+       stayed grouped while the chip said it was not.
+
+       Unlike Sort there is no third state: grouping is on or off, and turning
+       it off CLEARS the pick, because a chip remembering a column it is not
+       grouping by would report a grouping that is not running.
+       TRAP T-group-chip-body-toggles-grouping. */
+    const groupChip = path.find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.dataset['id'] === 'group',
+    );
+    if (groupChip?.classList.contains('organise-chip')) {
+      event.stopImmediatePropagation();
+      this.#toggleGroup(groupChip);
+      return;
+    }
+
     const chip = path.find(
       (n): n is ChipEl => n instanceof HTMLElement && n.classList.contains('chip'),
     );
@@ -1234,6 +1253,34 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-sort-is-tri-state — undo the chip's own flip, rewind the direction,
    * and give OFF its own glyph.
    */
+  /**
+   * Flip grouping on or off from the chip's body.
+   *
+   * The chip has ALREADY flipped its own `data-current`, so this reads the new
+   * state rather than setting it — and clears the menu's pick when it goes off,
+   * because `groupField` reads the radio and a stale one would report a
+   * grouping that is not running.
+   *
+   * TRAP T-group-chip-body-toggles-grouping.
+   */
+  #toggleGroup(chip: HTMLElement): void {
+    if (chip.hasAttribute('data-current')) {
+      /* Turning it ON with nothing picked would light a chip that groups
+         nothing — the host writes `data-group-field=""` straight back and the
+         chip corrects itself a tick later, which reads as a flicker. It stays
+         off instead, and the menu is where a column is chosen. */
+      if (!this.#menuValue('group')) chip.removeAttribute('data-current');
+    } else {
+      for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+        radio.checked = false;
+      }
+    }
+    this.#syncGroupLabel(chip);
+    // REPORTS, as every chip does — the host owns the grouping and writes
+    // `data-group-field` back, which `#syncGroupFromAttrs` then reflects.
+    this.emit('group-change', { field: this.groupField });
+  }
+
   #cycleSort(chip: HTMLElement): void {
     // The chip has ALREADY flipped its own data-current, so undo that first.
     const live = !chip.hasAttribute('data-current');

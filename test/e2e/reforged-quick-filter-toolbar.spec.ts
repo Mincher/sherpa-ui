@@ -2212,3 +2212,76 @@ test('the bar comes to rest fitting, not overflowing', async ({ page }) => {
   // nothing about the measuring.
   expect(Number(r.folded)).toBeGreaterThan(0);
 });
+
+test('the Group chip BODY toggles grouping, and reports it', async ({ page }) => {
+  /* TRAP T-group-chip-body-toggles-grouping.
+
+     `#onChipClick` has a branch for Sort and had none for Group, and everything
+     after it looks for `.chip` — which an `.organise-chip` is not. So a click
+     on the body flipped the chip's own data-current off, made it LOOK
+     ungrouped, and told nobody. */
+  const r = await page.evaluate(async () => {
+    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      organise(d: unknown): void;
+      groupField: string | null;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.organise({
+      group: [{ field: 'team', label: 'Team' }, { field: 'plan', label: 'Plan' }],
+      sort: [{ field: 'name', label: 'Name' }],
+    });
+    await settled();
+
+    const sr = el.shadowRoot!;
+    const chip = sr.querySelector<HTMLElement>('.organise-chip[data-id="group"]')!;
+    const fired: Array<string | null> = [];
+    el.addEventListener('group-change', (e) => {
+      fired.push(((e as CustomEvent).detail as { field: string | null }).field);
+    });
+
+    // Pick a column from the menu — the only place a column is chosen.
+    const radio = chip.querySelector<HTMLInputElement>('input[value="team"]')!;
+    radio.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 150));
+    const picked = { field: el.groupField, lit: chip.hasAttribute('data-current') };
+
+    /* CLICK THE BODY — the element the chip actually listens on, inside its
+       own shadow root. A click on the HOST reaches no listener. */
+    const body = () => chip.shadowRoot!.querySelector<HTMLElement>('.body')!;
+    body().click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 150));
+    const off = {
+      field: el.groupField,
+      lit: chip.hasAttribute('data-current'),
+      anyRadio: [...chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')]
+        .some((x) => x.checked),
+    };
+
+    // Click again: nothing is picked, so it must NOT light.
+    body().click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 150));
+    const back = { field: el.groupField, lit: chip.hasAttribute('data-current') };
+
+    return { picked, off, back, fired };
+  });
+
+  // Picking a column groups, and lights the chip.
+  expect(r.picked).toEqual({ field: 'team', lit: true });
+
+  // The BODY turns it off — and clears the pick, because a chip remembering a
+  // column it is not grouping by would report a grouping that is not running.
+  expect(r.off).toEqual({ field: null, lit: false, anyRadio: false });
+
+  // With nothing picked it stays off rather than flickering on and correcting.
+  expect(r.back).toEqual({ field: null, lit: false });
+
+  // …and every change was REPORTED. The host owns the grouping.
+  expect(r.fired).toContain('team');
+  expect(r.fired).toContain(null);
+});

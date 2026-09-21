@@ -512,6 +512,36 @@ template.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-group-chip-body-toggles-grouping
+
+**An organise chip needs its own branch in `#onChipClick`, and Group did not
+have one.**
+
+The handler finds the Sort chip by `data-id`, cycles it, and returns. Everything
+after that looks for `.chip` — and an organise chip is a `.organise-chip`. So a
+click on the Group chip's body flipped its own `data-current` off, made it look
+ungrouped, and **told nobody**. The grid stayed grouped while the chip said it
+was not.
+
+Reported as "the Group chip doesn't toggle grouping", and it was exactly that:
+the chip toggled, and nothing downstream heard.
+
+It is a TWO-state toggle, not the tri-state Sort is (`T-sort-is-tri-state`).
+Grouping is running or it is not, so turning it off **clears the pick** — a chip
+remembering a column it is not grouping by would report a grouping that is not
+running, and `groupField` reads that radio.
+
+**Turning it ON with nothing picked keeps it OFF.** The host writes
+`data-group-field=""` straight back and `#syncGroupFromAttrs` corrects the chip
+a tick later, which reads as a flicker. A column is chosen in the menu; the body
+only switches an existing pick on and off.
+
+The chip REPORTS `group-change` as every chip reports. The host owns the
+grouping and writes the attribute back — `T-grid-reports-never-combines`, the
+same rule the grid's own actions follow.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
 ### T-sort-is-tri-state
 
 The Sort chip's BODY cycles ascending → descending → suspended → ascending.
