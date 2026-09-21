@@ -23,7 +23,10 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   --_size: var(--sherpa-display-mode-size-sm, 16px);
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  /* Figma binds the ring to `style-border/base`, which lands on Theme
+     `border/default/+1` — #e8e8f6, not the grey #b3b3c3. The grey is HOVER.
+     TRAP T-style-border-base-is-default-1. */
+  --_border: var(--_status-border, var(--sherpa-theme-border-default-1, #e8e8f6));
   /* The radio keeps a white face even under a status; only the ring/dot re-tint. */
   --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
   /* Inner dot: the Saturated accent (style-indicator/accent) via the look-tier
@@ -75,8 +78,9 @@
   }
 
   /* ── Hover / active ───────────────────────────────────────────────── */
+  /* DARKER on hover. This matched the new resting colour, so hover did nothing. */
   &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
+    border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   }
   &:active:not(:disabled) {
     transform: scale(0.92);

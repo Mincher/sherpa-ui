@@ -48,6 +48,11 @@ const SOURCES = [
   'src/components/*/*.css',
   'test/reforged/harness.html',
   'playwright.config.ts',
+  // The SPEC files too, for the same reason the harness is here: a rule about
+  // how a test must be written (what a synthetic click can reach, what a
+  // selector now matches twice) is as easy to undo as a rule about rendering,
+  // and an undone one turns a working component into a red test.
+  'test/e2e/*.ts',
 ];
 
 /** `### T-some-id` opens a trap; `Site:` lines list the files that cite it. */

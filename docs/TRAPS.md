@@ -541,6 +541,7 @@ grouping and writes the attribute back — `T-grid-reports-never-combines`, the
 same rule the grid's own actions follow.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-sort-is-tri-state
 
@@ -1329,6 +1330,7 @@ This is the only path by which a schema's refusals are readable, which is why
 
 - Site: `src/core/store.ts`
 - Site: `src/core/stores.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-one-collator-for-the-library
 
@@ -3562,6 +3564,7 @@ a grid's column filter, which is the thing view definitions exist for.
 
 - Site: `src/core/apply-state.ts`
 - Site: `src/core/apply-state.ts`
+- Site: `test/e2e/reforged-view-definition.spec.ts`
 
 ### T-populatable-declared-four-times
 
@@ -3715,6 +3718,7 @@ from the host after the swap.
 
 - Site: `src/core/view-markup.ts`
 - Site: `src/core/persist-view.ts`
+- Site: `test/e2e/reforged-view-markup.spec.ts`
 
 ### T-sse-over-websocket-for-a-feed
 
@@ -4254,6 +4258,8 @@ A failed open is **not cached** — one rejection in a private window must not
 poison a session that is later granted storage.
 
 - Site: `src/core/idb-store.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+- Site: `test/e2e/reforged-records-persist.spec.ts`
 
 ### T-idb-open-is-a-handshake-not-a-call
 
@@ -4307,6 +4313,7 @@ case-insensitive comparison, and it does not. A "Gold" row would be missed by a
 search for "gold".
 
 - Site: `src/core/idb-store.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-idb-clear-is-not-a-reset
 
@@ -4336,6 +4343,8 @@ store on first run. `replace: true` clears first, for a full refresh where a row
 the server deleted must not survive locally.
 
 - Site: `src/core/idb-store.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+- Site: `test/e2e/reforged-records-persist.spec.ts`
 
 ### T-local-first-then-onward
 
@@ -4376,6 +4385,7 @@ An absent tier is not an error. With no IndexedDB, no storage and no remote —
 which is Node — every method still answers, with `{}`.
 
 - Site: `src/core/view-sync.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-sync-pushes-a-snapshot-not-a-diff
 
@@ -4828,6 +4838,7 @@ A plain checkbox is untouched: `.box` is `display: contents` until
 `data-advanced` is set, so the wrapper generates no box at all.
 
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-advanced-checkbox-widens-the-select-column
 
@@ -4852,6 +4863,7 @@ The variant itself only appears when there ARE rows: "Select all" against an
 empty grid is a control that does nothing.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-select-all-is-the-visible-rows
 
@@ -4878,6 +4890,7 @@ component knows about one checkbox, and "all rows" means nothing to it. The
 grid owns the rows, so the grid decides.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-grid-actions-are-declared-once-used-twice
 
@@ -4921,6 +4934,7 @@ The column is revealed by the DATA, not by an attribute a host must remember:
 it. A grid that declares no action looks exactly as it did before the feature.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-grid-actions-pin-to-the-trailing-edge
 
@@ -4972,6 +4986,7 @@ would be too late, and `row-click` would already have gone out. The
 such guard.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-grid-collapsed-group-is-one-slot
 
@@ -5012,6 +5027,7 @@ None of this runs ungrouped (`#paginates`): there the store's window IS the page
 and slicing it again would hide rows nobody folded.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-grouped-page-change-publishes-without-loading
 
@@ -5041,6 +5057,7 @@ If a future value changes what is DRAWN without changing what is FETCHED, it
 needs this branch too — `#stateKey` will not see it.
 
 - Site: `src/core/data-source.ts`
+- Site: `test/e2e/reforged-data-source.spec.ts`
 
 ### T-grouped-paging-belongs-to-the-view
 
@@ -5865,3 +5882,200 @@ The auto-dismiss delay goes through `num()`, not `Number()`: an EMPTY
 auto-dismiss" — a toast that never left. The default is 5000.
 
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
+
+### T-style-border-base-is-default-1
+
+**The checkbox and the radio do not share a border colour or a border width.**
+They look like the same control at a glance, so the natural move is to give
+them one rule. Figma binds them differently:
+
+| | stroke colour | resolves to | stroke width | resolves to |
+|---|---|---|---|---|
+| `Checkbox (Atom)` | `style-border/base +1` | `border/default/+2` · `#b3b3c3` | `border/width/sm` | **0.5px** |
+| `Radio (Atom)` | `style-border/base` | `border/default/+1` · `#e8e8f6` | `border/width/base` | 1px |
+
+So `style-border/base` is the **pale** one and `style-border/base +1` is the
+grey — one ramp step apart, on a sub-pixel stroke. Nothing about the names says
+which control takes which, and nothing in a screenshot shows the difference.
+
+Two further things make this easy to get wrong:
+
+1. `tokens.css` maps the generated `--sherpa-style-border-base` to
+   `--sherpa-theme-border-default-2`, which disagrees with the live Figma
+   chain. That file is generated, so it is not hand-edited — but it also cannot
+   be used to settle which Theme token a component should consume. **Resolve
+   the alias chain in Figma and bind the Theme token it actually lands on.**
+2. The stroke width changes the geometry of what is inside it. The checked
+   indicator is inset 2px and must land at 14 on a 20 box; `inset` measures
+   from the PADDING box, so it is immune — but any arithmetic that starts from
+   the content box is not, and would draw 15 at a 0.5px border.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.css`
+
+### T-checkbox-stroke-is-sm
+
+The checkbox border is `border/width/sm` — **0.5px**, via Primitives
+`border/stroke/200`. Not the 1px `border/width/base` that most bordered
+components take, and that this drew.
+
+It is a sub-pixel stroke on a 20px box. On a 1x display it renders as a lighter
+1px line rather than a thinner one, so the change shows up as a subtly paler
+box and reads as a colour bug, not a width one.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+
+### T-compose-never-reimplement
+
+The data grid drew its row selection with a bare `<input type="checkbox">` and
+an `accent-color`, so every tick in the grid was the **browser's own** checkbox
+wearing one custom colour — round on some platforms, square on others, and
+matching the Figma checkbox on none of them. A whole component re-implemented by
+omission: `sherpa-select-checkbox` already existed, and the header's select-all
+was already using it.
+
+The swap is drop-in because the component exposes `checked` and `indeterminate`
+as properties and re-emits `change` from the HOST, which is the shape the grid's
+handlers already read. What is NOT drop-in: SINGLE select mode used to write
+`box.type = 'radio'` on the input. A custom element has no such property, and
+mutating a control's type is a structural change either way. Both controls now
+sit in the row template and CSS reveals one —
+`T-every-element-in-the-template`.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+### T-a-property-set-before-upgrade-shadows-its-accessor
+
+`box.checked = true` did nothing, silently, forever.
+
+A custom element is upgraded when the browser reaches it — not when it is
+created. `document.importNode` on a `<template>` gives back elements that are
+NOT yet upgraded, and a grid that stamps rows sets their state in the same tick.
+That assignment lands as a plain **own data property** on the instance. When the
+upgrade happens moments later, the prototype's accessor is installed behind a
+property that now shadows it: the setter never runs again, the getter is never
+asked, and reading the property back returns the stale value that was written —
+so the bug looks like it worked.
+
+This is why the grid's ticks came back on a re-render but not on a programmatic
+select, and why `host.checked` returned `true` while the inner `<input>` was
+`false` and the box was drawn empty.
+
+The fix is the standard **property upgrade**: on connect, for every own key that
+some prototype defines as an accessor, capture the value, `delete` the own
+property so the accessor is reachable again, and re-assign — which now runs the
+setter. `SherpaElement.connectedCallback` does this for every component before
+anything else reads state, because any component with a JS property has the same
+hole.
+
+Note it is not enough to only fix the component that was caught: the grid is one
+caller, and the next one will stamp a different element.
+
+- Site: `src/core/sherpa-element.ts`
+
+### T-checkbox-rounding-is-flat-sm
+
+The checkbox corners are **one flat token**, `border/rounding/sm` (2px) — not
+the per-corner `rounding/top-left` … `rounding/bottom-right` chain that the
+Grouping collection drives.
+
+That difference is load-bearing. `.sherpa-snap-group` squares a child's inner
+corners by writing those four custom properties, and custom properties inherit
+straight through a shadow boundary. While the control read them, the advanced
+checkbox's snap group reached past the wrapper and squared two corners of the
+checkbox's own drawn box — which needed a reset rule on `.field` / `.control`
+to undo. A flat value reads none of them, so the reset went away with the
+cause.
+
+Read this as the general rule: **a control that is snapped inside a wrapper
+should not itself consume the per-corner rounding variables.** The wrapper
+snaps; the thing inside it keeps its own shape.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+
+### T-selection-lives-in-the-keys-not-the-objects
+
+Ticking rows and turning the page lost the ticks.
+
+The grid holds its selection two ways, and only one of them survives:
+
+| | what it holds | survives a sort / group | survives a PAGE change |
+|---|---|---|---|
+| `#selected` | record OBJECTS | yes — same objects, reordered | **no** — the store hands back new ones |
+| `#wantedKeys` | key STRINGS | yes | yes |
+
+`#resolveSelection()` already rebuilt `#selected` from `#wantedKeys` on every
+populate. The hole was that **nothing wrote `#wantedKeys` except the `select()`
+API** — a user's own tick only ever touched `#selected`, so the next populate
+cleared it and refilled from keys that had never heard of it.
+
+`#rememberSelection()` closes it at the one choke point every interactive path
+already ran through, `#emitSelection()`. Two things about it are easy to get
+wrong:
+
+1. **It MERGES.** The grid holds one page, so a record chosen on page 1 is
+   simply absent from `#rows` while page 2 is up. Replacing the keys with
+   "what is selected now" would discard it. Keys for rows the grid can see come
+   from `#selected`; keys for rows it cannot are carried over untouched.
+2. **A CLEAR therefore has to say so explicitly.** "Clear selection", and
+   unticking the header box, both mean *everything* — but they only empty
+   `#selected`, and the merge would hand every off-page key straight back. Both
+   null `#wantedKeys` as well. `select()` replaces outright for the same
+   reason, and that is the difference between it and a user's tick.
+
+**Without a `key` in `populate()` none of this can work** — there is no durable
+name for a record — so `#rememberSelection()` returns early and selection stays
+page-local. That is a data contract, not a bug, and
+`T-grid-key-or-position-lies` is the other half of it.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-a-test-must-click-what-the-listener-is-on
+
+`element.click()` on a custom element HOST usually does nothing.
+
+A Sherpa component listens on a node inside its own shadow root, not on itself:
+`sherpa-button` on `.trigger`, `sherpa-select-checkbox` and
+`sherpa-select-radio` on `.control`, `sherpa-quick-filter` on `.body`. A
+synthetic `click()` on the host dispatches at the host and does not retarget
+INTO the shadow tree, so it reaches no listener — and it fails quietly, because
+`click()` returns nothing and the assertion that follows simply reads the
+unchanged state.
+
+This turns a working component into a "broken" one in a test, and it has cost
+several tests on this branch. It bites hardest right after a bare `<input>` is
+replaced by a component: the same selector still matches, the same `.click()`
+still runs, and only the behaviour disappears.
+
+```ts
+box.click();                                              // reaches nothing
+box.shadowRoot!.querySelector('.control')!.click();       // reaches the listener
+```
+
+A real user's click does retarget, so this is a synthetic-event problem only —
+Playwright's own `locator.click()` is fine.
+
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-radios-in-shadow-roots-are-not-one-group
+
+A radio group needs its members in ONE tree. Wrap each radio in its own
+component and the browser no longer sees a group at all.
+
+`<input type="radio" name="x">` unticks its siblings because they share a name
+*and* a root. `sherpa-select-radio` puts each input inside its own shadow root,
+so the browser sees one group of one, per row — every radio stays ticked, and
+nothing warns. Setting the same `name` on all of them does not help; the name
+is only half the rule.
+
+So the HOST has to enforce single selection. The data grid's `data-select
+="single"` mode unticks the other rows itself, in the same place it clears
+`#selected`.
+
+This was free before, which is what makes it easy to miss: the grid's rows were
+bare `<input>`s in one shadow tree, the browser did the unticking, and a comment
+in the code said so. Replacing the input with a component silently removed the
+behaviour that comment described.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

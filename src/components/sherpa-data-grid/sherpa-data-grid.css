@@ -200,21 +200,39 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   vertical-align: middle;
+  /* The row rule every other body cell draws — the same restatement the pinned
+     actions cell needs, and for the same reason: this cell is pinned and paints
+     its own background, so the row's own rule cannot reach it and the column
+     reads as floating with no bottom edge. */
+  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+/* The FILTER row has no rule of its own. (The header does — `.select-head`
+   restates it just below, and being later it wins.) */
+.filter-row > .select-cell {
+  border-block-end: none;
 }
 .select-head {
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
 }
+/* TRAP T-compose-never-reimplement.
+   All three selection boxes are components now. `accent-color` used
+   to paint the browser's OWN checkbox here, which is why the grid's ticks never
+   matched the design — the component draws its own box and needs none of it.
+   Focus is the component's job too; it already draws the inset ring. */
 .select-all,
+.group-select,
 .row-select {
   cursor: pointer;
-  accent-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  vertical-align: middle;
 }
-.select-all:focus-visible,
-.row-select:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
-}
+
+/* MULTI shows the checkbox, SINGLE shows the radio. Both are in the template;
+   CSS picks, so JS never mutates a control's type. */
+.row-one { display: none; }
+:host([data-select="single"]) .row-multi { display: none; }
+:host([data-select="single"]) .row-one { display: inline-flex; }
 
 /* ── Filter row (opt-in) ───────────────────────────────────────────── */
 /* The secondary header row exists always; CSS reveals it when filterable. */
@@ -1186,7 +1204,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 /* The group's own selection box follows data-selectable, exactly as a row's does —
    a grid without a selection column must not sprout one on its group rows. */
 .group-select { display: none; }
-:host([data-selectable]) .group-select { display: inline-block; }
+:host([data-selectable]) .group-select { display: inline-flex; }
 
 /* The chevron. A real <button>, so it is focusable and Enter/Space-activatable on
    its own; CSS owns the rotation. Figma's toggle is a 16px icon button. */

@@ -401,7 +401,19 @@
   <template class="row-tpl">
     <tr class="row">
       <td class="select-cell">
-        <input class="row-select" type="checkbox" aria-label="Select row" />
+        <!-- REAL controls, not bare <input>s. The raw input drew the browser's
+             OWN box with an `accent-color` on it, so the grid's ticks never
+             matched the checkbox Figma specifies — a whole control
+             re-implemented by omission. TRAP T-compose-never-reimplement.
+             Both exist here always and CSS reveals one, because SINGLE mode
+             wants a radio and a checkbox cannot become one. JS used to write
+             `box.type = 'radio'`, which a custom element has no such property
+             for — and would have been a structural mutation anyway.
+             TRAP T-every-element-in-the-template. -->
+        <sherpa-select-checkbox class="row-select row-multi"
+                                aria-label="Select row"></sherpa-select-checkbox>
+        <sherpa-select-radio class="row-select row-one"
+                             aria-label="Select this row"></sherpa-select-radio>
       </td>
       <!-- Data cells are appended BETWEEN these two by #renderBody, so the
            actions cell has to be moved to the end after they land. -->
@@ -463,7 +475,7 @@
       -->
       <td class="group-cell">
         <span class="group-inner">
-          <input class="group-select" type="checkbox" aria-label="Select group" />
+          <sherpa-select-checkbox class="group-select" aria-label="Select group"></sherpa-select-checkbox>
           <button class="group-toggle" type="button">
             <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
           </button>

@@ -295,6 +295,9 @@ export abstract class SherpaElement extends HTMLElement {
   /* ── Native lifecycle ─────────────────────────────────────────────── */
 
   connectedCallback(): void {
+    // BEFORE anything reads state — a shadowed property is state that never
+    // arrived. TRAP T-a-property-set-before-upgrade-shadows-its-accessor.
+    this.#upgradeProperties();
     // A RE-CONNECT needs a live signal: the last one was aborted on the way
     // out, and anything wired to it would be wired to nothing.
     if (this.#ac.signal.aborted) this.#ac = new AbortController();
@@ -304,6 +307,45 @@ export abstract class SherpaElement extends HTMLElement {
       this.#connected = true;
       this.onConnect();
     }
+  }
+
+  /**
+   * Hand back any property a caller set BEFORE the element was upgraded.
+   *
+   * A value assigned to a not-yet-upgraded element lands as a plain own
+   * property, and an own property beats the prototype accessor for the rest of
+   * that element's life — so the setter never runs again, and the getter is
+   * never asked. Deleting it and re-assigning routes the same value through
+   * the accessor, which is where the real work is.
+   *
+   * TRAP T-a-property-set-before-upgrade-shadows-its-accessor.
+   */
+  #upgradeProperties(): void {
+    const self = this as unknown as Record<string, unknown>;
+    // The element's OWN keys only — the prototype's accessors are what we are
+    // restoring access to, so walking further would find them and do nothing.
+    for (const key of Object.keys(self)) {
+      // `root` and `rendered` are this class's own fields, assigned in the
+      // constructor. They are not accessors and must not be touched.
+      if (!this.#isAccessor(key)) continue;
+      const value = self[key];
+      // `Reflect.deleteProperty`, not `delete` — deleting a computed key is
+      // exactly what this pattern is, and the lint rule that forbids it is
+      // right about every other case.
+      Reflect.deleteProperty(self, key);
+      self[key] = value;
+    }
+  }
+
+  /** Does some prototype in the chain define `key` as an accessor? */
+  #isAccessor(key: string): boolean {
+    let proto: object | null = Object.getPrototypeOf(this) as object | null;
+    while (proto && proto !== HTMLElement.prototype) {
+      const d = Object.getOwnPropertyDescriptor(proto, key);
+      if (d) return typeof d.get === 'function' || typeof d.set === 'function';
+      proto = Object.getPrototypeOf(proto) as object | null;
+    }
+    return false;
   }
 
   disconnectedCallback(): void {

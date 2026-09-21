@@ -25,6 +25,7 @@ import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
+import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
@@ -43,6 +44,18 @@ export interface GridColumn {
 }
 
 type GridRow = Record<string, unknown>;
+
+/**
+ * A selection box in this grid — the header's, a group's, or a row's.
+ *
+ * All three are `sherpa-select-checkbox`, which exposes `checked` and
+ * `indeterminate` as properties and re-emits `change` from the HOST. The
+ * header box was already the component while the rows were bare `<input>`s,
+ * and every query here was typed `HTMLInputElement` regardless — a type that
+ * was wrong for the header from the day it changed. This is the shape all
+ * three actually share.
+ */
+type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
 
 /**
  * One action a row offers.
@@ -978,16 +991,12 @@ export class SherpaDataGrid extends SherpaElement {
       // Restore this record's own selection. The body is replaced wholesale on
       // every render, so the tick has to come from #selected rather than survive
       // in the DOM.
-      const box = tr.querySelector<HTMLInputElement>('.row-select');
-      if (box) {
-        // RADIOS in single mode — CSS cannot make one from a checkbox, and the
-        // native type buys the unticking and the arrow keys. The shared NAME is
-        // per grid.
-        if (this.#single) {
-          box.type = 'radio';
-          box.name = this.#selectName;
-          box.setAttribute('aria-label', 'Select this row');
-        }
+      // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement. The radio needs the shared NAME
+      // that makes the browser unpick the previous row for us, and that name is
+      // per grid. Setting `checked` on both keeps whichever is visible correct.
+      const radio = tr.querySelector<SelectBox>('.row-one');
+      if (radio) radio.setAttribute('name', this.#selectName);
+      for (const box of tr.querySelectorAll<SelectBox>('.row-select')) {
         box.checked = this.#selected.has(record);
       }
       // Which group this row belongs to, so CSS can hide it when that group's
@@ -1523,14 +1532,17 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Header select-all: set every row checkbox to match, then broadcast. */
   #onSelectAll = (event: Event): void => {
-    const checked = (event.target as HTMLInputElement).checked;
+    const checked = (event.target as SelectBox).checked;
     // Only the VISIBLE rows: a select-all cannot reach records a filter is hiding,
     // and it must not silently deselect them either.
     for (const record of this.#visibleRows()) {
       if (checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
-    this.$$<HTMLInputElement>('.row-select').forEach((box) => (box.checked = checked));
+    // Unticking the header box is a CLEAR, so the off-page keys go with it —
+    // the same reason the "none" scenario drops them.
+    if (!checked) this.#wantedKeys = null;
+    this.$$<SelectBox>('.row-select').forEach((box) => (box.checked = checked));
     // Every group is now wholly in or wholly out, so its own box must say so.
     this.#syncGroupSelects();
     this.#emitSelection();
@@ -1543,7 +1555,7 @@ export class SherpaDataGrid extends SherpaElement {
     // A GROUP checkbox selects (or clears) every row in that group — the group row
     // is a heading for those rows, so its box is their select-all.
     if (target.classList.contains('group-select')) {
-      this.#selectGroup(target as HTMLInputElement);
+      this.#selectGroup(target as SelectBox);
       return;
     }
 
@@ -1551,10 +1563,19 @@ export class SherpaDataGrid extends SherpaElement {
     // Record the choice against the RECORD, so it survives the next re-render.
     const record = this.#recordFor(target);
     if (record) {
-      // SINGLE mode holds one. The browser already unticked the previous radio,
-      // so the set must follow or `selected` names rows with no visible tick.
-      if (this.#single) this.#selected.clear();
-      if ((target as HTMLInputElement).checked) this.#selected.add(record);
+      // SINGLE mode holds one — and the GRID has to enforce it now. The radios
+      // share a `name`, but each sits in its own shadow root, so the browser
+      // sees one group per row and never unticks the previous pick. That was
+      // free while these were bare `<input>`s in one tree.
+      // TRAP T-radios-in-shadow-roots-are-not-one-group.
+      if (this.#single) {
+        this.#selected.clear();
+        this.#wantedKeys = null;
+        for (const other of this.$$<SelectBox>('.row-one')) {
+          if (other !== target) other.checked = false;
+        }
+      }
+      if ((target as SelectBox).checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
     this.#syncSelectAll();
@@ -1571,12 +1592,12 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /** Set every row in one group to match its group checkbox, then broadcast. */
-  #selectGroup(box: HTMLInputElement): void {
+  #selectGroup(box: SelectBox): void {
     const key = box.closest<HTMLElement>('.group-row')?.dataset['group'];
     if (key == null) return;
     for (const row of this.$$<HTMLElement>('.row')) {
       if (row.dataset['group'] !== key) continue;
-      const rowBox = row.querySelector<HTMLInputElement>('.row-select');
+      const rowBox = row.querySelector<SelectBox>('.row-select');
       if (rowBox) rowBox.checked = box.checked;
       const record = this.#recordFor(row);
       if (!record) continue;
@@ -1594,11 +1615,11 @@ export class SherpaDataGrid extends SherpaElement {
   #syncGroupSelects(): void {
     for (const groupRow of this.$$<HTMLElement>('.group-row')) {
       const key = groupRow.dataset['group'];
-      const box = groupRow.querySelector<HTMLInputElement>('.group-select');
+      const box = groupRow.querySelector<SelectBox>('.group-select');
       if (!box || key == null) continue;
       const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['group'] === key);
       const checked = rows.filter(
-        (r) => r.querySelector<HTMLInputElement>('.row-select')?.checked,
+        (r) => r.querySelector<SelectBox>('.row-select')?.checked,
       ).length;
       box.checked = checked > 0 && checked === rows.length;
       box.indeterminate = checked > 0 && checked < rows.length;
@@ -1623,6 +1644,11 @@ export class SherpaDataGrid extends SherpaElement {
 
     if (value === 'none') {
       this.#selected.clear();
+      // "Clear selection" means EVERYTHING, including records on other pages.
+      // Without this the merge in `#rememberSelection` would hand every
+      // off-page key straight back — a Clear that cleared only what was drawn.
+      // TRAP T-selection-lives-in-the-keys-not-the-objects.
+      this.#wantedKeys = null;
     } else {
       // `page` is what the body drew; `all` is every row the filters kept.
       const rows = value === 'page' ? this.#pageRecords() : this.#visibleRows();
@@ -1644,17 +1670,52 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Reflect all/none/indeterminate on the header select-all box. */
   #syncSelectAll(): void {
-    const all = this.$$<HTMLInputElement>('.row-select');
-    const selectAll = this.$<HTMLInputElement>('.select-all');
+    const all = this.$$<SelectBox>('.row-select');
+    const selectAll = this.$<SelectBox>('.select-all');
     if (!selectAll) return;
     const checked = all.filter((b) => b.checked).length;
     selectAll.checked = checked > 0 && checked === all.length;
     selectAll.indeterminate = checked > 0 && checked < all.length;
   }
 
+  /**
+   * Write the current selection back to `#wantedKeys` — the half that SURVIVES.
+   *
+   * `#selected` holds record OBJECTS, so it is only as durable as those
+   * objects. A sort or a group reorders the same objects and it holds; a PAGE
+   * change fetches new ones from the store and every identity breaks. The keys
+   * are what outlive that, and `#resolveSelection()` already rebuilds
+   * `#selected` from them on every populate — but nothing was ever WRITING
+   * them except the `select()` API, so a user's own ticks were dropped on the
+   * next page.
+   *
+   * MERGED, not replaced: the grid holds one page, so a record selected on
+   * page 1 is simply absent from `#rows` while page 2 is up. Overwriting would
+   * silently discard it. Keys for rows the grid CAN see are taken from
+   * `#selected`; keys for rows it cannot are carried over untouched.
+   *
+   * TRAP T-selection-lives-in-the-keys-not-the-objects.
+   */
+  #rememberSelection(): void {
+    if (!this.#key) return; // No key means no durable answer — say nothing.
+    const key = this.#key;
+    const onPage = new Set(
+      this.#rows.map((r) => r[key]).filter((v) => v != null).map(String),
+    );
+    const chosen = new Set(
+      this.selectedRecords.map((r) => r[key]).filter((v) => v != null).map(String),
+    );
+    // Anything the grid cannot currently see keeps whatever it had.
+    for (const k of this.#wantedKeys ?? []) if (!onPage.has(k)) chosen.add(k);
+    this.#wantedKeys = chosen.size ? [...chosen] : null;
+  }
+
   /** Emit the current selection as row indices (strings) in sorted-view order. */
   #emitSelection(): void {
-    const selected = this.$$<HTMLInputElement>('.row-select')
+    // BEFORE the event: a listener that reads `selectedKeys` must see the
+    // choice that was just made, not the one before it.
+    this.#rememberSelection();
+    const selected = this.$$<SelectBox>('.row-select')
       .filter((box) => box.checked)
       .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
       .filter((id) => id !== '');
@@ -1685,11 +1746,12 @@ export class SherpaDataGrid extends SherpaElement {
    */
   get selectedKeys(): string[] {
     if (!this.#key) return [];
-    const key = this.#key;
-    return this.selectedRecords
-      .map((row) => row[key])
-      .filter((v) => v != null)
-      .map((v) => String(v));
+    // `#wantedKeys` IS the answer, not `selectedRecords`. The records are the
+    // rows this grid currently holds, so deriving from them reported an EMPTY
+    // selection the moment the reader turned to a page none of them are on —
+    // while the selection itself was perfectly intact.
+    // TRAP T-selection-lives-in-the-keys-not-the-objects.
+    return [...(this.#wantedKeys ?? [])];
   }
 
   /**
@@ -1699,8 +1761,33 @@ export class SherpaDataGrid extends SherpaElement {
    * keys, and is SILENT. `select([])` clears.
    */
   select(keys: readonly string[]): void {
+    // REPLACES outright — the difference between an explicit `select()` and a
+    // user's tick, which merges. T-selection-lives-in-the-keys-not-the-objects.
     this.#wantedKeys = keys.length ? keys.map(String) : null;
     this.#resolveSelection();
+    // UNMATCHED keys are dropped, and ONLY here: keep just the keys that
+    // resolved to a real row. The caller named these against the rows the grid
+    // holds, so a key that matched nothing names a record that is gone, and
+    // keeping it would have `selectedKeys` report a selection that can never
+    // be shown.
+    //
+    // NOT `#rememberSelection()`, which MERGES — it would hand the unmatched
+    // key straight back. A user's tick needs that merge, because the grid may
+    // hold one page and "matched nothing" there means "is on another page".
+    //
+    // ONLY WHEN THERE WERE ROWS TO CHECK AGAINST. A saved view is restored by
+    // calling `select()` on a grid that has not been populated yet, and the
+    // data lands afterwards — the whole reason keys exist. Dropping them
+    // against an empty grid throws away the selection at exactly the moment it
+    // is being restored. TRAP T-selection-lives-in-the-keys-not-the-objects.
+    const key = this.#key;
+    if (key && this.#rows.length) {
+      const resolved = [...this.#selected]
+        .map((r) => r[key])
+        .filter((v) => v != null)
+        .map(String);
+      this.#wantedKeys = resolved.length ? resolved : null;
+    }
     // The boxes are stamped from #selected on every render, so a rebuild is how
     // the ticks are written — there is one path that sets them, not two.
     this.#renderBody();

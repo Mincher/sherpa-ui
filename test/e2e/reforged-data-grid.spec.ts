@@ -780,11 +780,18 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     const rowsIn = (key: string) =>
       Array.from(sr.querySelectorAll<HTMLElement>('.row')).filter((r) => r.dataset['group'] === key);
     const checkedIn = (key: string) =>
-      rowsIn(key).filter((r) => r.querySelector<HTMLInputElement>('.row-select')!.checked).length;
+      rowsIn(key).filter(
+        (r) => r.querySelector<HTMLElement & { checked: boolean }>('.row-multi')!.checked,
+      ).length;
 
-    // Tick the Blue group's box.
-    const blueBox = sr.querySelector<HTMLInputElement>('.group-row[data-group="Blue"] .group-select')!;
-    blueBox.click();
+    // Tick the Blue group's box. The CONTROL inside it, not the host — a click
+    // on a custom element reaches no listener, because the listener lives on
+    // the inner input inside its own shadow root.
+    // TRAP T-a-test-must-click-what-the-listener-is-on.
+    const blueBox = sr.querySelector<HTMLElement & { checked: boolean; indeterminate: boolean }>(
+      '.group-row[data-group="Blue"] .group-select',
+    )!;
+    blueBox.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const selected = {
       blue: checkedIn('Blue'),
@@ -795,17 +802,22 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     };
 
     // Untick one Blue row: the group box must go INDETERMINATE, not stay checked.
-    rowsIn('Blue')[0]!.querySelector<HTMLInputElement>('.row-select')!.click();
+    rowsIn('Blue')[0]!
+      .querySelector('.row-multi')!
+      .shadowRoot!.querySelector<HTMLInputElement>('.control')!
+      .click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const partial = { checked: blueBox.checked, indeterminate: blueBox.indeterminate };
 
     // Click the INDETERMINATE box: the browser resolves it to CHECKED (that is
     // native checkbox behaviour, not something to fight), so the group fills back
     // up. A second click then clears it.
-    blueBox.click();
+    const clickBlue = (): void =>
+      blueBox.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
+    clickBlue();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const refilled = { blue: checkedIn('Blue'), emitted: emitted.length };
-    blueBox.click();
+    clickBlue();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const cleared = { blue: checkedIn('Blue'), emitted: emitted.length };
 
@@ -817,7 +829,9 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
       .querySelector<HTMLInputElement>('.control')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const all = {
-      groups: Array.from(sr.querySelectorAll<HTMLInputElement>('.group-select')).map((b) => b.checked),
+      groups: Array.from(
+        sr.querySelectorAll<HTMLElement & { checked: boolean }>('.group-select'),
+      ).map((b) => b.checked),
     };
 
     return { selected, partial, refilled, cleared, all };
@@ -1067,17 +1081,23 @@ test('data-select="single" draws radios, holds one row, and drops the select-all
       await settle();
 
       const sr = el.shadowRoot!;
-      const boxes = (): HTMLInputElement[] => [...sr.querySelectorAll('.row-select')];
+      // The VISIBLE box only. Both a checkbox and a radio are stamped in every
+      // row and CSS reveals one, so `.row-select` alone matches two elements
+      // per row — T-compose-never-reimplement.
+      const boxes = (): (HTMLElement & { checked: boolean })[] =>
+        [...sr.querySelectorAll<HTMLElement & { checked: boolean }>(
+          single ? '.row-one' : '.row-multi',
+        )];
       const shown = (sel: string): boolean => {
         const n = sr.querySelector(sel);
         return !!n && getComputedStyle(n).display !== 'none';
       };
 
       const before = {
-        type: boxes()[0]?.type,
+        type: boxes()[0]?.tagName.toLowerCase(),
         // One NAME per grid, so two grids on a page cannot share a group and
         // steal each other's selection.
-        names: [...new Set(boxes().map((b) => b.name))].length,
+        names: [...new Set(boxes().map((b) => b.getAttribute('name')))].length,
         selectAll: shown('.select-all'),
         // The CELL stays — it holds the column open so the radios line up.
         headCell: shown('.select-head'),
@@ -1088,9 +1108,13 @@ test('data-select="single" draws radios, holds one row, and drops the select-all
         detail = (e as CustomEvent).detail;
       });
 
-      boxes()[0]!.click();
+      // The CONTROL inside, not the host — TRAP
+      // T-a-test-must-click-what-the-listener-is-on.
+      const click = (i: number): void =>
+        boxes()[i]!.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
+      click(0);
       await settle();
-      boxes()[2]!.click();
+      click(2);
       await settle();
 
       return {
@@ -1104,13 +1128,15 @@ test('data-select="single" draws radios, holds one row, and drops the select-all
   });
 
   // MULTIPLE is unchanged: checkboxes, a select-all, and both picks held.
-  expect(r.multi.type).toBe('checkbox');
+  // A REAL component now, not a bare <input> wearing an accent-color.
+  expect(r.multi.type).toBe('sherpa-select-checkbox');
   expect(r.multi.selectAll).toBe(true);
   expect(r.multi.ticked).toBe(2);
   expect(r.multi.reported).toBe(2);
 
-  // SINGLE: radios in one group, no select-all, one row held.
-  expect(r.single.type).toBe('radio');
+  // SINGLE: radios in one group, no select-all, one row held. A DIFFERENT
+  // element, chosen by CSS — JS no longer rewrites a control's type.
+  expect(r.single.type).toBe('sherpa-select-radio');
   expect(r.single.names).toBe(1);
   expect(r.single.selectAll).toBe(false);
   // …and the column is still open, so the radios line up under the header.
@@ -1960,9 +1986,13 @@ test('selection has a programmatic door, and it is by KEY not position', async (
 
     const events: unknown[] = [];
     el.addEventListener('selection-change', (e) => events.push((e as CustomEvent).detail));
+    // `.row-multi`, not `.row-select`: a checkbox AND a radio are stamped in
+    // every row and CSS reveals one, so the broader selector counts each row
+    // twice — T-compose-never-reimplement.
     const ticked = () =>
-      Array.from(el.shadowRoot!.querySelectorAll<HTMLInputElement>('.row-select'))
-        .filter((b) => b.checked).length;
+      Array.from(
+        el.shadowRoot!.querySelectorAll<HTMLElement & { checked: boolean }>('.row-multi'),
+      ).filter((b) => b.checked).length;
 
     el.select(['a@x', 'c@x']);
     await settle();
@@ -2358,9 +2388,11 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
   // 24 SQUARE each, as Figma draws them.
   expect(r.snap.boxSize).toBe('24x24');
   expect(r.snap.caretSize).toBe('24x24');
-  // The checkbox INSIDE keeps all four of its own corners: the group's variables
-  // inherit, and without a reset they squared two of them.
-  expect(r.snap.control).toBe('4px 4px 4px 4px');
+  // The checkbox INSIDE keeps all four of its own corners. It takes a FLAT
+  // `border/rounding/sm` (2), so it reads none of the group's inherited corner
+  // variables and there is nothing left to square it —
+  // T-checkbox-rounding-is-flat-sm.
+  expect(r.snap.control).toBe('2px 2px 2px 2px');
 
   // The column widened for the caret, or it draws behind the next column.
   expect(r.hostFlag).toBe(true);

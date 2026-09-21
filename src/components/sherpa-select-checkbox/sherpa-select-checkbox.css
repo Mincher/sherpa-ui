@@ -27,6 +27,10 @@
      size smaller than every control beside it. `size-md` is the 20 — the same
      token the atom's own rounding and padding bind through. */
   --_size: var(--sherpa-display-mode-size-md, 20px);
+  /* Figma binds the box stroke to `style-border/base +1`, which lands on Theme
+     `border/default/+2` — the grey #b3b3c3. The RADIO binds one step in, to
+     `style-border/base` / `border/default/+1` (#e8e8f6), so the two controls
+     do NOT share a border colour. TRAP T-style-border-base-is-default-1. */
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
   /* Checked indicator fill: the Saturated accent (style-indicator/accent) via the
@@ -103,19 +107,12 @@
   --sherpa-border-left: 0.25px;
 }
 
-/* THE BOX INSIDE THE WRAPPER KEEPS ITS OWN SHAPE.
- * `.sherpa-snap-group` writes the four corner variables on its CHILDREN, and
- * custom properties inherit — so they reached the checkbox's own drawn box and
- * squared two of its corners. The wrapper is what snaps; the control inside it
- * is still a checkbox. Reset them here, where they stop inheriting further.
+/* The box inside the wrapper used to need its four corner variables RESET
+ * here: `.sherpa-snap-group` writes them on its children, custom properties
+ * inherit, and they reached the checkbox's own drawn box and squared two of
+ * its corners. The control now takes a flat `border/rounding/sm`, which reads
+ * no inherited variable — so there is nothing left to reset.
  * TRAP T-advanced-checkbox-is-a-snapped-pair. */
-:host([data-advanced]) .field,
-:host([data-advanced]) .control {
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
 
 
 
@@ -155,11 +152,15 @@ slot[name="menu"] { display: contents; }
   margin: 0;
   padding: 0;
   position: relative;
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+  /* 0.5, not 1: Figma binds all four edges to `border/width/sm`
+     (Primitives border/stroke/200 = 0.5). TRAP T-checkbox-stroke-is-sm. */
+  border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--_border);
+  /* ONE flat token on all four corners. Figma binds `border/rounding/sm` (2),
+     not the per-corner `rounding/*` Grouping chain this used to read — and
+     that chain is what let the snap group's rounding inherit into the box.
+     A flat value removes the cause, so the reset rule below is gone with it.
+     TRAP T-checkbox-rounding-is-flat-sm. */
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
@@ -170,8 +171,10 @@ slot[name="menu"] { display: contents; }
   &:indeterminate::before {
     content: "";
     position: absolute;
-    /* 2 from the CONTENT box (18 after the 1px borders) leaves the 14 mark
-       Figma draws. It was correct arithmetic against the wrong box. */
+    /* Figma's mark is 14 inside a 20 box: 2px padding either side, measured
+       from the PADDING box. `inset` is measured from the padding box too, so
+       the border width never enters it — which matters, because that border is
+       0.5 and a 2px inset from the content box would draw 15. */
     inset: var(--sherpa-display-mode-space-3xs, 2px);
     border-radius: 1px; /* off-grid-ok: Figma's checkmark instance corner */
     background: var(--_fill);
@@ -182,8 +185,11 @@ slot[name="menu"] { display: contents; }
     content: "";
     display: block;
     position: relative;
-    width: 8px;
-    height: 8px;
+    /* Figma's tick vector is 11x10 on the 14 indicator — it FILLS the mark.
+       8x8 left a small tick adrift in a blue square. Held as a ratio of the
+       box so the 16 and 24 sizes stay in proportion. */
+    width: calc(var(--_size) * 0.55);
+    height: calc(var(--_size) * 0.5);
     background-color: var(--sherpa-theme-content-body-4, #ffffff);
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
     mask-size: contain;
@@ -249,6 +255,10 @@ slot[name="menu"] { display: contents; }
 }
 .label:empty,
 .description:empty { display: none; }
+/* An EMPTY text column still claimed the field's 8px gap, so an unlabelled
+   checkbox measured 28 wide for a 20 box — 8px of nothing, in every grid cell.
+   `:has()` is safe HERE because the subject is a plain class, not `:host`. */
+.text:not(:has(*:not(:empty))) { display: none; }
 
 /* ── Disabled — inactive tokens, never opacity ────────────────────── */
 :host([disabled]) .field {
