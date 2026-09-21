@@ -221,7 +221,78 @@ state, not a delete), and a chip with no menu at all is untouched.
 a presentation decision made in the wrong place. The value label and the tooltip
 must read the same formatter, not two that agree by luck.
 
-### E. Assess `src/core/` — duplication, and work the platform already does
+### E — ASSESSMENT DONE 2026-09-21. One fix landed; findings below.
+
+**Answering "how many of core's scripts need to be unique": 17 of 18, and the
+18th has already been merged.** The file count is not the problem; it was one
+missing export.
+
+#### What was actually wrong — FIXED (`7261cae9`)
+
+`IdbStore` could not reach `BaseStore`, because `BaseStore` lived inside
+`stores.ts` and was not exported. So it re-implemented the shared half —
+`totalCount` character for character, `check`, `checkRows`, `announce`, four
+constructor fields `StoreOptions` already declared, and **its own error class**.
+
+That last one was a live bug, not just duplication. `IdbValidationError` had the
+same fields, the same message, and `this.name` set to the very same string
+`'ValidationError'` — but was a different class, so the documented
+`catch (e) { if (e instanceof ValidationError) }` was **false for every
+IndexedDB refusal** while the log said otherwise. Measured before the fix.
+
+`BaseStore` + `StoreOptions` now live in `base-store.ts`; all five stores extend
+it. `ValidationError` moved to `validate.ts`. See
+`T-one-class-to-catch`.
+
+#### The five questions, answered by measurement
+
+1. **Slot-presence → `data-has-*`: KEEP.** Tested in Chromium:
+   `:host(:has(> [slot="foot"]))` is **dropped by the parser** — it is not in
+   `styleSheets[0].cssRules` at all. `slot[name=x]:has(*)` parses but can only
+   style the slot itself, not the rest of the shadow tree. The platform has no
+   replacement; the attribute is the mechanism.
+2. **Attribute coercion + declared-prop sync: KEEP.** `attributeChangedCallback`
+   only *tells* you an attribute changed. `kind: content` WRITES text into the
+   shadow DOM, which no platform API does. No overlap.
+3. **Bootstrap: KEEP.** Fetching CSS/HTML for an unbundled library has no
+   declarative equivalent. All three caches (`htmlCache`, `templateCache`,
+   `sheetCache`) are module-level, so it is one fetch per URL for the whole app
+   — already correct.
+4. **Shadow queries: KEEP.** `$()`/`$$()` are two lines each and nothing has
+   accreted around them.
+5. **The five stores: ONE REAL FINDING, now fixed.** See above.
+
+#### Why the other 17 modules stay separate
+
+The DOM-free lint boundary is the real constraint, and it cuts through the
+middle of this directory:
+
+| DOM-free (9) | needs a DOM (9) |
+|---|---|
+| store, base-store, validate, pointer, chart-datum, format-tick, live-stores, data-source, aggregate | sherpa-element, stores, idb-store, persist-view, session, view-sync, view-markup, apply-state, icons |
+
+Merging across that line costs the property the whole data layer exists for — a
+server, a test and an MCP tool import the left column. Two that look mergeable
+and are not:
+
+- **`pointer.ts` → `session.ts`** (one internal consumer). But `pointer` is
+  publicly exported from BOTH entry points and is DOM-free; `session` uses
+  `localStorage`. The merge drags pointer arithmetic across the boundary.
+- **`view-markup.ts` → `persist-view.ts`** (one internal consumer). Will's
+  ruling 2026-09-21: the allow-lists STAY. They guard saved-view markup
+  arriving from IndexedDB or a server, which is a different thing from
+  authored content, so this is a security boundary and deserves its own file.
+
+#### Still worth doing, not yet done
+
+- **`sherpa-element.ts` is 808 lines in 8 sections.** Nothing in it is
+  redundant, but the file is the largest in the repo. If it is split, split by
+  SECTION (bootstrap / props / slots / events), not by guesswork.
+- **`data-source.ts` at 683 lines** was not examined in depth. Item A
+  (generalising grouping/sorting/filtering) will touch it anyway — assess it
+  there rather than twice.
+
+### E (original ask, for reference)
 
 **The ask, verbatim:** "I'd like to assess all of the scripts in 'core' folder
 to refactor them to reduce duplication and complexity. I feel like there's a lot
