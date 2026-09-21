@@ -2117,18 +2117,18 @@ test('data-group-field sets the Group chip, and an off chip reports nothing', as
       face: face(),
     };
 
-    // Empty means UNGROUPED. Unlike a suspended sort the pick is cleared: a grid
+    // Empty means UNGROUPED. Unlike a suspended sort the pick is suspended: a grid
     // is grouped or flat, so a remembered column would report a grouping that is
     // not running.
     el.setAttribute('data-group-field', '');
     await settled();
-    const cleared = {
+    const suspended = {
       on: chip().hasAttribute('data-current'),
       field: el.groupField,
       ticked: ticked(),
     };
 
-    return { before, set, cleared, changes };
+    return { before, set, suspended, changes };
   });
 
   expect(r.before).toEqual({ on: false, field: null });
@@ -2141,8 +2141,11 @@ test('data-group-field sets the Group chip, and an off chip reports nothing', as
   // exists without saying what it is.
   expect(r.set.face).toContain('Region');
 
-  // Off means off, in the menu AND in the read-back.
-  expect(r.cleared).toEqual({ on: false, field: null, ticked: [] });
+  /* Off means SUSPENDED, not deleted. The chip stops reading active and
+     `groupField` reports nothing — but the menu keeps its pick, so one click
+     brings the same grouping back. A chip body cycles its states, and off is a
+     state. T-a-chip-body-cycles-its-states. */
+  expect(r.suspended).toEqual({ on: false, field: null, ticked: ['region'] });
 
   // No echo. The write came from outside; telling the outside what it just did
   // would bounce the value between a host wired both ways.
@@ -2258,11 +2261,11 @@ test('the Group chip BODY toggles grouping, and reports it', async ({ page }) =>
     const off = {
       field: el.groupField,
       lit: chip.hasAttribute('data-current'),
-      anyRadio: [...chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')]
-        .some((x) => x.checked),
+      // SUSPENDED, not cleared: the radio keeps the column.
+      keptRadio: chip.querySelector<HTMLInputElement>('input[value="team"]')!.checked,
     };
 
-    // Click again: nothing is picked, so it must NOT light.
+    // Click again: the SAME grouping comes back, with no trip to the menu.
     body().click();
     await settled();
     await new Promise((res) => setTimeout(res, 150));
@@ -2274,12 +2277,12 @@ test('the Group chip BODY toggles grouping, and reports it', async ({ page }) =>
   // Picking a column groups, and lights the chip.
   expect(r.picked).toEqual({ field: 'team', lit: true });
 
-  // The BODY turns it off — and clears the pick, because a chip remembering a
-  // column it is not grouping by would report a grouping that is not running.
-  expect(r.off).toEqual({ field: null, lit: false, anyRadio: false });
+  /* The BODY cycles the chip's states, and OFF IS A STATE — not a delete. The
+     grouping stops; the column is kept. T-a-chip-body-cycles-its-states. */
+  expect(r.off).toEqual({ field: null, lit: false, keptRadio: true });
 
-  // With nothing picked it stays off rather than flickering on and correcting.
-  expect(r.back).toEqual({ field: null, lit: false });
+  // …so one more click restores it, without re-picking from the menu.
+  expect(r.back).toEqual({ field: 'team', lit: true });
 
   // …and every change was REPORTED. The host owns the grouping.
   expect(r.fired).toContain('team');

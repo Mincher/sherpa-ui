@@ -1142,7 +1142,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Point the Sort chip at whatever `data-sort-field` says.
    *
-   * TRAP T-group-clears-where-sort-suspends — no event, and empty SUSPENDS here.
+   * TRAP T-a-chip-body-cycles-its-states — no event, and empty SUSPENDS.
    */
   #syncSortFromAttrs(): void {
     const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
@@ -1170,8 +1170,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Point the Group chip at whatever `data-group-field` says.
    *
-   * The twin of `#syncSortFromAttrs` — both organise chips are single-select.
-   * TRAP T-group-clears-where-sort-suspends — why this door exists, and why it
+   * The twin of `#syncSortFromAttrs` — both organise chips are single-select,
+   * and both SUSPEND on empty rather than clearing.
+   * TRAP T-a-chip-body-cycles-its-states — why this door exists, and why it
    * emits no event.
    */
   #syncGroupFromAttrs(): void {
@@ -1180,14 +1181,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const field = this.dataset['groupField'] ?? '';
 
-    // NO FIELD means ungrouped. Unlike a suspended sort the pick is CLEARED,
-    // because grouping has no third state: a grid is grouped by a column or it
-    // is flat, and a chip remembering a column it is not grouping by would
-    // report a grouping that is not running.
+    /* NO FIELD means ungrouped — SUSPENDED, exactly as a sort is, and the pick
+       is KEPT. A chip's body cycles its states; off is one of those states,
+       not a delete. Group has two and Sort has three, and neither throws the
+       column away: one more click brings the same grouping back without
+       re-picking it. T-grid-suspend-is-not-clear. */
     if (!field) {
-      for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
-        radio.checked = false;
-      }
       chip.removeAttribute('data-current');
       this.#syncGroupLabel(chip);
       return;
@@ -1256,24 +1255,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Flip grouping on or off from the chip's body.
    *
+   * SUSPEND, NEVER CLEAR — the rule every other chip follows
+   * (`T-grid-suspend-is-not-clear`). Off means "stop applying this", not
+   * "delete it": the radio keeps its column, so one more click brings the same
+   * grouping back without re-picking it from the menu.
+   *
    * The chip has ALREADY flipped its own `data-current`, so this reads the new
-   * state rather than setting it — and clears the menu's pick when it goes off,
-   * because `groupField` reads the radio and a stale one would report a
-   * grouping that is not running.
+   * state rather than setting it.
    *
    * TRAP T-group-chip-body-toggles-grouping.
    */
   #toggleGroup(chip: HTMLElement): void {
-    if (chip.hasAttribute('data-current')) {
-      /* Turning it ON with nothing picked would light a chip that groups
-         nothing — the host writes `data-group-field=""` straight back and the
-         chip corrects itself a tick later, which reads as a flicker. It stays
-         off instead, and the menu is where a column is chosen. */
-      if (!this.#menuValue('group')) chip.removeAttribute('data-current');
-    } else {
-      for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
-        radio.checked = false;
-      }
+    /* Turning it ON with nothing ever picked would light a chip that groups
+       nothing — the host writes `data-group-field=""` straight back and the
+       chip corrects itself a tick later, which reads as a flicker. That is a
+       chip with NO pick, not a suspended one, and it stays off. */
+    if (chip.hasAttribute('data-current') && !this.#menuValue('group')) {
+      chip.removeAttribute('data-current');
     }
     this.#syncGroupLabel(chip);
     // REPORTS, as every chip does — the host owns the grouping and writes
@@ -1593,7 +1591,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * The column the grid is grouped by, or null.
    *
-   * TRAP T-group-clears-where-sort-suspends — null when the chip is OFF, even if
+   * TRAP T-a-chip-body-cycles-its-states — null when the chip is OFF, even if
    * its menu still holds a radio.
    */
   get groupField(): string | null {

@@ -578,15 +578,33 @@ bar on every pick.
 
 (none — `T-tokens-css-never-reaches-shadow` already exists and already lists this file as a Site. This extraction only compresses the surrounding prose; the citation already present is kept verbatim.)
 
-### T-group-clears-where-sort-suspends
+### T-a-chip-body-cycles-its-states
 
-`data-sort-field` / `data-sort-direction` / `data-group-field` are observed
-because the bar's Sort chip and a grid's column headers are two views of ONE
-value, and only one column can be sorted at a time. Without observing them the
-link ran one way: the chip steered the grid, and sorting from a column header
-left the chip saying nothing. `groupField` was likewise readable and completely
-UNWRITABLE, so a saved view could restore a sort and not a grouping — the parity
-sweep found it.
+**A chip's body cycles that chip's states. Off is a STATE, not a delete.**
+
+Ratified 2026-09-21, reversing an earlier ruling that had Group clear its pick
+on empty while Sort suspended. That made Group the only chip in the bar with its
+own behaviour, on the reasoning that "grouping has no third state" — true, and
+irrelevant: how MANY states a chip has and whether the last one throws the pick
+away are different questions.
+
+| chip | states its body cycles |
+|---|---|
+| a filter chip | active &rarr; inactive |
+| Group | active &rarr; inactive |
+| Sort | active-ascending &rarr; active-descending &rarr; inactive |
+
+**None of them clears.** One more click brings the same thing back without
+re-picking it from the menu — the rule `T-grid-suspend-is-not-clear` already
+stated for column filters, and the one that cost a user their typed filter when
+it was got wrong there.
+
+`data-sort-field`, `data-sort-direction` and `data-group-field` are observed
+because the bar's chips and a grid's column headers are two views of ONE value.
+Without observing them the link ran one way: the chip steered the grid, and
+sorting from a column header left the chip saying nothing. `groupField` was
+likewise readable and completely UNWRITABLE, so a saved view could restore a
+sort and not a grouping — the parity sweep found it.
 
 Both chips derive their column from their menu's ticked radio, so syncing means
 ticking that radio. A label write would be overwritten by `#syncSortLabel`
@@ -595,21 +613,16 @@ anyway.
 **NEITHER emits an event.** The write came from outside, and echoing it back
 would bounce the value between a host wired both ways.
 
-**They differ on empty, and deliberately:**
+**`groupField` still returns null when the chip is OFF**, whatever its menu
+holds — that half of the old ruling stands, and is what makes suspending safe.
+It used to read the menu alone, so a Group chip switched off still reported the
+column it used to group by, and a host wiring it into a query kept grouping by
+a chip the reader had just turned off. `sortField` already guarded this way.
 
-| attribute empty | sort | group |
-|---|---|---|
-| the pick | KEPT — suspended, its own third state | CLEARED |
-
-Grouping has no third state: a grid is grouped by a column or it is flat, and a
-chip remembering a column it is not grouping by would report a grouping that is
-not running.
-
-`groupField` returns null when the chip is OFF even if its menu still holds a
-radio. It used to read the menu alone, so a Group chip switched off still
-reported the column it used to group by, and a host wiring it straight into a
-query kept grouping by a chip the reader had just turned off. `sortField`
-already guarded this way; the two now answer the same question the same way.
+The one case that is NOT a suspend: a chip that has never had a pick. Turning
+it on would light a chip that groups nothing, the host would write the empty
+attribute straight back, and the chip would correct itself a tick later — a
+flicker. It stays off, and the menu is where a column is chosen.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
@@ -1475,7 +1488,7 @@ ones that would have matched claims something untrue.
 
 Deleting is `clearColumnFilter`, which is what the menu's Remove button does.
 This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` and
-`T-group-clears-where-sort-suspends` are the same rule for the toolbar's chips.
+`T-a-chip-body-cycles-its-states` are the same rule for the toolbar's chips.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -1682,7 +1695,7 @@ way.
 and not write is half an API.** Reload a filtered column without it and you find
 it lit with an EMPTY menu — the rows are right while the control lies. The parity
 sweep is what found this shape, as it found `groupField` in
-`T-group-clears-where-sort-suspends`.
+`T-a-chip-body-cycles-its-states`.
 
 ```
 grid.setColumnFilter('name', ['name', 'contains', 'ana']);
