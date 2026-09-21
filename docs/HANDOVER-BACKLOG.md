@@ -55,6 +55,61 @@ markers on a ring fan out by construction. Verified zero overlaps on 8 markers.
 
 ## Queued
 
+### C. Data viz must be built FROM the data layer — asked 2026-09-21
+
+**The ask, verbatim:** "Data viz should be built from data in the data layer and
+not bespoke."
+
+Today every chart's aggregation is hand-written in the example, not in
+`sherpa-ui/data`. `examples/views/dashboard-data.js` owns four shaping functions
+and two ordering constants:
+
+| helper | what it produces | who reads it |
+|---|---|---|
+| `countBy(rows, field, order)` | `ChartDatum[]` — one bar/slice per value | bar chart, donut |
+| `seriesByDay(rows, name, colorIndex)` | one named line series | line chart |
+| `meanOf(rows, field)` | one 0–100 number | gauge |
+| `byBand` (inline in `dashboard.js:285`) | five storage bands | histogram |
+| `CATEGORY_ORDER`, `OS_ORDER` | a FIXED category order | both of the above |
+
+The data layer defines the SHAPE these produce — `ChartDatum` and `LegendDatum`
+live in `src/core/chart-datum.ts` and are exported from `src/data.ts` — but
+nothing that PRODUCES one. So the contract is shared and the arithmetic is not.
+
+What that costs, concretely:
+
+1. **Every new view re-implements it.** The Records page's four data-viz
+   containers (queued separately) need exactly these four shapes, and as things
+   stand would get a second copy of each.
+2. **A server cannot pre-aggregate.** `sherpa-ui/data` is the DOM-free half a
+   server, a test or an MCP tool imports — that is its whole reason for
+   existing. A grouped count that only exists in a browser example cannot be
+   computed server-side and sent down.
+3. **`run_query` cannot answer a chart's question.** The MCP data tools wrap
+   `sherpa-ui/data` so their answers are the app's answers. They can filter and
+   sort; they cannot say "count by category".
+4. **The rounding bug.** `meanOf` does `Math.round`, which is a presentation
+   decision made inside an aggregation — and is why the gauge's tooltip loses
+   its decimals (backlog item B4). An aggregator should return the number; a
+   formatter should decide how it reads.
+
+Worth deciding before building:
+
+- **Aggregation is a QUERY, not a transform.** `Store.load()` already takes
+  `filter`, `sort`, `group`, `skip`/`take`. A `groupBy` + aggregate that goes
+  through the same door lets a `RestStore` push the work to the server, while
+  `ArrayStore` computes it locally — the same split that already makes the
+  Store interface worth having. A free function over `rows` cannot do that.
+- **The fixed-order rule is real and must survive.** `countBy`'s comment earns
+  its place: sorting by count makes a category change colour when only its rank
+  moved. Whatever replaces it keeps a declared order.
+- **`DataSource.contribute` is the composition model** — a chart reading a
+  shared source must not need its own query.
+
+Not started. Read `docs/DATA-SOURCE-RULES.md` (the Store contract and the
+`[field, op, value]` grammar) and `src/core/chart-datum.ts` first. Closely
+related to item A: both are "one value, many components" problems.
+
 ### B. Small fixes asked for 2026-09-21
 
 Five, in the order they were raised. All verbatim.
