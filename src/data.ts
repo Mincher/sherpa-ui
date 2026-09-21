@@ -139,3 +139,17 @@ export {
 export { getPointer, setPointer, pointersOverlap } from './core/pointer.js';
 // The one datum shape every chart and legend shares.
 export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
+
+/* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
+   so a server can pre-compute it, an MCP tool can answer "count by category",
+   and two views cannot disagree about what a mean is. */
+export {
+  aggregateBy,
+  countBy,
+  bandBy,
+  seriesBy,
+  reduceRows,
+  type Aggregate,
+  type AggregateOptions,
+  type Series,
+} from './core/aggregate.js';

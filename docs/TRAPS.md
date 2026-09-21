@@ -6476,3 +6476,144 @@ host doing its job, not the chip deriving something it does not own.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-aggregation-is-data
+
+Turning rows into the shape a chart draws is a DATA-LAYER job, not a view's.
+
+Every chart's aggregation used to be hand-written in the example — `countBy`,
+`seriesByDay`, `meanOf` and an inline `byBand` in `dashboard-data.js`. So the
+SHAPE was shared (`ChartDatum` lives in `src/core/`) and the arithmetic was not.
+Four things it cost:
+
+1. **Every new view re-implements it.** The Records page's charts needed the
+   same four functions and would have got a second copy.
+2. **A server cannot pre-aggregate.** `sherpa-ui/data` is the DOM-free half a
+   server, a test or an MCP tool imports — that is its whole reason for
+   existing. Arithmetic that only runs in a browser example cannot be pushed to
+   a backend.
+3. **`run_query` could not answer "count by category".** The MCP data tools
+   wrap the data layer so their answers are the app's answers; they could
+   filter and sort and nothing else.
+4. **Presentation leaked into the arithmetic.** `meanOf` did `Math.round`, so
+   the gauge's real value (49.977…) was destroyed before anything could format
+   it — and the tooltip could never disagree with the label because neither had
+   the number.
+
+`src/core/aggregate.ts` holds it now: `aggregateBy`, `countBy`, `bandBy`,
+`seriesBy`, `reduceRows`. Pure, DOM-free (on the lint boundary), and tested in
+plain Node.
+
+**It is NOT a new pipeline.** These run on rows a store has already filtered,
+sorted and searched. Aggregation is what happens to the answer, not another way
+of asking the question — `applyOptions` still owns the query, and `LoadResult`
+still returns rows.
+
+- Site: `src/core/aggregate.ts`
+- Site: `examples/views/dashboard.js`
+
+### T-an-aggregate-returns-the-number
+
+Nothing in `aggregate.ts` rounds or formats. A mean of 49.977… is returned as
+49.977…, not 50.
+
+`meanOf` used to round, which looked harmless: a gauge shows a whole percentage
+anyway. But the rounding happened in the ARITHMETIC, so the real number was gone
+before anything could choose how to show it — the value label and the tooltip
+were formatting the same already-destroyed figure, and neither could show the
+decimal nuance a reader was looking for.
+
+**Round where you print, never where you measure.** An aggregate's job is to be
+right; a formatter's job is to be readable.
+
+Two related choices in the same module:
+
+- An **empty set reduces to 0**, not null or NaN. A chart with no data draws
+  nothing, which is what 0 means here.
+- A **missing value is skipped**, not counted as zero — see
+  `T-number-of-null-is-zero`.
+
+- Site: `src/core/aggregate.ts`
+- Site: `examples/views/dashboard.js`
+
+### T-number-of-null-is-zero
+
+`Number(null)` is `0`, and `0` is finite. So the obvious guard —
+
+```ts
+const n = Number(readField(row, field));
+if (Number.isFinite(n)) out.push(n);   // WRONG
+```
+
+— quietly counts every missing value as a real nought.
+
+It passes a SUM, because adding nought changes nothing, and fails a MEAN, by
+dividing by a bigger set than it actually measured. Caught by a test written
+before any chart saw it: `[{n:10},{n:null},{},{n:'x'},{n:20}]` gave a mean of 10
+instead of 15, because `null` was collected and `undefined` was not.
+
+`null` and `''` are rejected explicitly before the coercion. `undefined` falls
+out anyway (`Number(undefined)` is NaN), which is exactly why this is easy to
+miss: the shape that looks like it proves the guard works does prove it, for the
+wrong value.
+
+A missing health score is not a health score of nought, and averaging it in
+drags the mean toward zero in proportion to how much data is absent.
+
+- Site: `src/core/aggregate.ts`
+
+### T-a-category-keeps-its-colour
+
+Without a declared order, categories come out of an aggregation in first-seen
+order — which is count order once anything sorts them. A filter that drops two
+rows then makes a category change position AND colour, so the chart appears to
+recolour itself when only its ranking moved. Two charts of the same field
+disagree about which colour a category is.
+
+`AggregateOptions.order` pins both: a category keeps its slot and its
+`colorIndex` whatever the data does, because the index comes from the declared
+order and not from the output position.
+
+```ts
+countBy(rows, 'sev', { order: ['critical', 'warning', 'info'] })
+// every critical row filtered away → warning is FIRST, and still colour 2
+```
+
+`includeEmpty` is the other half, and is off by default: an empty bar for a
+category nothing matched is noise, unless the categories are a fixed scale
+(severity levels, storage bands) where a missing one is itself the finding.
+
+- Site: `src/core/aggregate.ts`
+- Site: `examples/views/dashboard-data.js`
+
+### T-the-last-band-includes-its-top
+
+A histogram's bands are half-open — `[0, 20)` — except the last, which includes
+its top edge, so a value at exactly the maximum lands in the final band by RULE
+rather than by accident.
+
+The hand-rolled version got there by accident:
+
+```js
+counts[Math.min(4, Math.floor(r.storage / 20))]++   // 100 / 20 = 5, clamped to 4
+```
+
+The clamp is doing the work, and it also silently swallows anything ABOVE the
+scale — a storage reading of 150 would be counted as a full disk. `bandBy`
+drops values outside the declared edges instead, because folding them into the
+end bands misreports both the count and the scale.
+
+- Site: `src/core/aggregate.ts`
+- Site: `examples/views/dashboard.js`
+
+### T-a-series-has-a-value-at-every-point
+
+`seriesBy` returns a number for every point on the x-axis, including points no
+row matched. A quiet Tuesday is `0`, not absent.
+
+A line chart with a hole in it lies about its shape: the remaining points join
+up across the gap, so a day with no activity reads as a straight line between
+its neighbours rather than a drop to zero. The x-axis is the caller's — the
+days, the buckets, the steps — and the series has to fill it.
+
+- Site: `src/core/aggregate.ts`

@@ -295,6 +295,20 @@ export function register(server) {
         pageSize: z.number().optional().describe("Rows per page (default 25)."),
         page: z.number().optional().describe("1-based page number (default 1)."),
         key: z.string().optional().describe('The identity field (default "id").'),
+        aggregateBy: z
+          .string()
+          .optional()
+          .describe(
+            'Also show what a CHART would draw: group the matching rows by this field and reduce each group to a number. Returns the `ChartDatum[]` a bar chart, a donut or a legend takes — `{label, value, colorIndex}`. Runs over every matching row, NOT just the current page, because a chart summarises the whole result.',
+          ),
+        aggregate: z
+          .enum(["count", "sum", "mean", "min", "max"])
+          .optional()
+          .describe('How each group becomes a number (default "count"). Anything but `count` needs `aggregateField`.'),
+        aggregateField: z
+          .string()
+          .optional()
+          .describe('The numeric field to sum/average/etc. Required unless the aggregate is `count`.'),
       },
     },
     async (args) => {
@@ -411,6 +425,43 @@ export function register(server) {
         lines.push(JSON.stringify(rows.slice(0, 10), null, 2));
         lines.push("```");
         if (rows.length > 10) lines.push(`_…${rows.length - 10} more on this page_`);
+        lines.push("");
+      }
+
+      /* WHAT A CHART WOULD DRAW.
+         Over every MATCHING row rather than the current page: a chart
+         summarises the whole result, and aggregating one page of 25 would
+         quietly answer a different question. `source.rows` is the page, so this
+         re-runs the query with no paging. */
+      if (args.aggregateBy) {
+        const kind = args.aggregate ?? "count";
+        if (kind !== "count" && !args.aggregateField) {
+          return err(`aggregate "${kind}" needs \`aggregateField\` — the numeric field to ${kind}. Only \`count\` works without one.`);
+        }
+        let data;
+        try {
+          const all = await new dl.ArrayStore(rowList, { key: keyField }).load({
+            ...(parsed.filter ? { filter: parsed.filter } : {}),
+            ...(args.search ? { search: args.search } : {}),
+            ...(parsed.searchFields ? { searchFields: parsed.searchFields } : {}),
+          });
+          data = dl.aggregateBy(all.rows ?? [], args.aggregateBy, kind, args.aggregateField);
+        } catch (e) {
+          return err(`the aggregation failed: ${e.message}`);
+        }
+
+        lines.push(`### What a chart would draw — \`${kind}\` by \`${args.aggregateBy}\`\n`);
+        lines.push("```json");
+        lines.push(JSON.stringify(data, null, 2));
+        lines.push("```");
+        lines.push("");
+        lines.push(`This is \`ChartDatum[]\` — the one shape a bar, a donut slice and a legend row all take. Hand it straight to \`populate()\`.`);
+        lines.push("");
+        lines.push(`\`colorIndex\` is 1-based and follows the order above. Pass an \`order\` to \`aggregateBy\` in code to pin it, or a category changes colour when only its RANK moves.`);
+        if (kind === "mean") {
+          lines.push("");
+          lines.push(`The mean is NOT rounded. Rounding is a presentation decision — doing it in the aggregation is what made a gauge's tooltip disagree with its own label.`);
+        }
         lines.push("");
       }
 

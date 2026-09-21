@@ -57,32 +57,26 @@ export function alerts(count = 1284) {
 }
 
 /** Count rows per value of `field`, biggest first — a bar chart or a donut. */
-export function countBy(rows, field, order) {
-  const counts = new Map();
-  for (const row of rows) counts.set(row[field], (counts.get(row[field]) ?? 0) + 1);
-
-  // A FIXED order when one is given, so a category keeps its colour as the
-  // filter changes. Sorting by count would make "Disk" blue one moment and
-  // green the next, which reads as the data changing when only its rank did.
-  const keys = order ?? [...counts.keys()].sort((a, b) => counts.get(b) - counts.get(a));
-  return keys
-    .filter((k) => counts.has(k))
-    .map((label, i) => ({ label, value: counts.get(label), colorIndex: (order ? order.indexOf(label) : i) + 1 }));
-}
-
-/** Rows per day, as a line series. */
-export function seriesByDay(rows, name, colorIndex = 1) {
-  const days = [1, 2, 3, 4, 5, 6, 7, 8];
-  const counts = new Map(days.map((d) => [d, 0]));
-  for (const row of rows) counts.set(row.day, (counts.get(row.day) ?? 0) + 1);
-  return { name, colorIndex, values: days.map((d) => counts.get(d)) };
-}
-
-/** The mean of `field`, 0–100 — what the gauge reads. */
-export function meanOf(rows, field) {
-  if (!rows.length) return 0;
-  return Math.round(rows.reduce((sum, r) => sum + (Number(r[field]) || 0), 0) / rows.length);
-}
-
+/* ── The ORDERS the charts share ────────────────────────────────────────
+ *
+ * Not decoration. A category that has no declared order falls out in count
+ * order, so it changes colour and position when only its RANKING moved — and
+ * two charts of the same field disagree about which colour a category is.
+ * Declared here, beside the data, because the order is a fact about the
+ * records rather than about any one chart.
+ * TRAP T-a-category-keeps-its-colour.
+ */
 export const CATEGORY_ORDER = CATEGORIES;
 export const OS_ORDER = OSES;
+
+/** The x-axis of the line chart — every day gets a point, quiet or not. */
+export const DAY_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
+
+/**
+ * The storage histogram's band edges: five bands, 0..100.
+ *
+ * `bandBy` reads these as boundaries, and the LAST band owns its top edge — so
+ * a disk at exactly 100% lands in `81-100` by rule. The hand-rolled version
+ * got there by accident, via a `Math.min(4, …)` clamp.
+ */
+export const STORAGE_EDGES = [0, 20, 40, 60, 80, 100];

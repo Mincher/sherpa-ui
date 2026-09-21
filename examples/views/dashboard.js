@@ -10,12 +10,15 @@
 import {
   ArrayStore, DataSource, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
+  // ROWS → the shape a chart draws. In the DATA LAYER, not here: the same
+  // functions a server or an MCP tool would call. TRAP T-aggregation-is-data.
+  countBy, bandBy, seriesBy, reduceRows,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
 import {
-  alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER, customerOrgs,
+  alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, STORAGE_EDGES, customerOrgs,
 } from './dashboard-data.js';
 
 export async function init(root) {
@@ -169,17 +172,20 @@ export async function init(root) {
      (see core/chart-datum.ts), so there is nothing to reshape between them.
      Sharing it also lets the source's skip-if-unchanged guard hold, since it
      compares by identity and a rebuilt array never matches. */
-  const byCategory = (rows) => countBy(rows, 'category', CATEGORY_ORDER);
-  const byOs = (rows) => countBy(rows, 'os', OS_ORDER);
+  const byCategory = (rows) => countBy(rows, 'category', { order: CATEGORY_ORDER });
+  const byOs = (rows) => countBy(rows, 'os', { order: OS_ORDER });
 
   show('#bar', byCategory);
   show('#bar-legend', byCategory);
   show('#donut', byOs);
   show('#donut-legend', byOs);
 
-  // The gauge reads one NUMBER — the mean storage across whatever survived the
-  // filter. An aggregate is still just an adapter.
-  show('#gauge', (rows) => meanOf(rows, 'storage'));
+  /* The gauge reads one NUMBER — the mean storage across whatever survived the
+     filter. `reduceRows` returns it WHOLE: the rounding that used to happen
+     inside the aggregation is a presentation decision, and doing it there is
+     what made the gauge's tooltip disagree with its own label.
+     TRAP T-an-aggregate-returns-the-number. */
+  show('#gauge', (rows) => reduceRows(rows, 'mean', 'storage'));
   // …and the gauge's names its THRESHOLD ZONES, which are what its bands mean.
   // The colour indices are deliberately absent: a zone's colour is a STATUS
   // (success / warning / critical), not a categorical series hue.
@@ -194,8 +200,10 @@ export async function init(root) {
   show('#line', (rows) => ({
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'],
     series: [
-      seriesByDay(rows.filter((r) => r.severity !== 'critical'), 'Sessions', 1),
-      seriesByDay(rows.filter((r) => r.severity === 'critical'), 'Incidents', 2),
+      seriesBy(rows.filter((r) => r.severity !== 'critical'), 'day', DAY_ORDER,
+        'Sessions', { colorIndex: 1 }),
+      seriesBy(rows.filter((r) => r.severity === 'critical'), 'day', DAY_ORDER,
+        'Incidents', { colorIndex: 2 }),
     ],
   }));
   show('#line-legend', () => [
@@ -281,13 +289,13 @@ export async function init(root) {
   const contentRegion = root.querySelector('.sherpa-grid');
 
   /* STORAGE BANDS. A histogram, not a donut: storage is continuous, and cutting
-     a continuum into wedges claims the bands are categories. */
-  const byBand = (rows) => {
-    const bands = ['0-20', '21-40', '41-60', '61-80', '81-100'];
-    const counts = bands.map(() => 0);
-    for (const r of rows) counts[Math.min(4, Math.floor(r.storage / 20))]++;
-    return bands.map((label, i) => ({ label, value: counts[i] }));
-  };
+     a continuum into wedges claims the bands are categories.
+
+     `bandBy` also fixes an off-by-one this had: `Math.floor(100 / 20)` is 5,
+     clamped to 4 — so a full disk landed in the last band by accident rather
+     than by rule. The last band OWNS its top edge.
+     TRAP T-the-last-band-includes-its-top. */
+  const byBand = (rows) => bandBy(rows, 'storage', STORAGE_EDGES);
 
   onViewPicked(header, () => views, { source, elements: { header } }, {
     into: contentRegion,

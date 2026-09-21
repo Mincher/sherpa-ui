@@ -63,6 +63,20 @@ export {
 } from './core/view-markup.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
+
+/* …and the functions that PRODUCE one. Re-exported here so a browser app that
+   already imports components does not need the second entry point as well;
+   `sherpa-ui/data` is the same code without the DOM. */
+export {
+  aggregateBy,
+  countBy,
+  bandBy,
+  seriesBy,
+  reduceRows,
+  type Aggregate,
+  type AggregateOptions,
+  type Series,
+} from './core/aggregate.js';
 // The app-level state store: what an app knows about ITSELF — theme, selected
 // customer, open panel — addressed by JSON pointer so one value can have many
 // readers.
