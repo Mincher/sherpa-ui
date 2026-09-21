@@ -19,10 +19,21 @@ export class SherpaGridCell extends SherpaElement {
     this.$('.toggle')?.addEventListener('click', this.#onToggle);
   }
 
+  /**
+   * The sort control: ascending ⇄ descending.
+   *
+   * TWO states, not three — this cell has no column of its own to suspend, so
+   * there is nothing for a third state to keep. The data grid's header is the
+   * tri-state control (`T-one-cycle-for-one-value`).
+   *
+   * Reports, then writes only if nothing else will — a bound cell is
+   * `data-locked` and its host owns the direction.
+   * TRAP T-bind-locks-what-it-owns.
+   */
   #onSort = (event: Event): void => {
     event.stopPropagation();
     const next = this.dataset['sortDirection'] === 'asc' ? 'desc' : 'asc';
-    this.dataset['sortDirection'] = next;
+    if (!this.hasAttribute('data-locked')) this.dataset['sortDirection'] = next;
     this.emit('sort-change', { direction: next });
   };
 

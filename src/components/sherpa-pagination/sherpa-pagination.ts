@@ -69,14 +69,28 @@ export class SherpaPagination extends SherpaElement {
     this.setAttribute('data-page-size', String(Math.max(1, Math.trunc(value) || 1)));
   }
 
-  /** Navigate to a page (clamped) and emit page-change if it changed. */
+  /**
+   * Navigate to a page (clamped) and emit page-change if it changed.
+   *
+   * REPORTS, then writes only if nothing else will. A BOUND pager is
+   * `data-locked`: the DataSource owns the page and broadcasts it back after
+   * clamping against the real total, so writing here as well would make this
+   * both reporter and owner of one value — and briefly show a page the query
+   * has not reached.
+   *
+   * UNBOUND there is no other owner, and the pager must still work on its own.
+   * TRAP T-bind-locks-what-it-owns.
+   *
+   * The SETTERS above are a different thing: `pager.page = 2` is a host
+   * writing the value it owns, which is the state channel working as intended.
+   */
   goToPage(n: number): void {
     const next = this.#clamp(n);
     if (next === this.page) {
       this.#render(); // snap the input back if the user typed an out-of-range value
       return;
     }
-    this.setAttribute('data-page', String(next));
+    if (!this.hasAttribute('data-locked')) this.setAttribute('data-page', String(next));
     this.emit('page-change', { page: next });
   }
 

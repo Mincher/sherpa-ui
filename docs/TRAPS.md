@@ -6745,8 +6745,17 @@ this.emit('sort-change', { … });   // the INTENT, always
 `readonly` binds are not locked — such an element receives rows and steers
 nothing, so it owns whatever it had.
 
+A LIVE AUDIT found three components writing an attribute the source owns, not
+one: the data grid's header, `sherpa-pagination.goToPage` (the interactive
+path — its `page`/`pageSize` SETTERS are a different thing, a host writing the
+value it owns), and `sherpa-grid-cell`'s two-state sort toggle. Grouping and
+filtering were already clean: every component use of `data-group-field` and
+`data-filter-fields` is a READ.
+
 - Site: `src/core/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
+- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 
 ### T-one-cycle-for-one-value
 
