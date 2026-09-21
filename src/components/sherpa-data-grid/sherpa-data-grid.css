@@ -200,10 +200,16 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   vertical-align: middle;
-  /* The row rule every other body cell draws — the same restatement the pinned
-     actions cell needs, and for the same reason: this cell is pinned and paints
-     its own background, so the row's own rule cannot reach it and the column
-     reads as floating with no bottom edge. */
+  /* NO rule here — see `.row:not(:last-child) > .select-cell` below. A pinned
+     cell paints its own background, so the row's own rule cannot reach it and
+     the column read as floating with no bottom edge. But restating it
+     unconditionally drew one on the LAST row, where the ordinary cells
+     correctly draw none: the grid's host draws the table's own bottom frame,
+     so a last-row rule doubles it. The result was a border stub that stopped
+     dead where the data cells began.
+     TRAP T-the-last-row-draws-no-rule. */
+}
+.row:not(:last-child) > .select-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
@@ -831,9 +837,11 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   position: sticky;
   inset-inline-end: 0;
   z-index: 2;
-  /* The row rule every other body cell draws. A pinned cell paints its own
-     background, so it has to restate this or the row's rule cannot reach it —
-     which is why the column read as floating with no bottom edge. */
+  /* NO rule here, for the same reason as `.select-cell` — restated below so it
+     follows the LAST-ROW exception every other body cell follows.
+     TRAP T-the-last-row-draws-no-rule. */
+}
+:host([data-actions]) .row:not(:last-child) > .actions-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }

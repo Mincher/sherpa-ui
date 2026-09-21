@@ -45,12 +45,18 @@
            reader has ticked. Empty until a selection exists; records.js fills it
            from `grid.actionsFor(count)`, so the two lists cannot disagree.
 
+           TRAILING, not leading. These sat between the Add button and whatever
+           came after it, so a selection PUSHED the page's own action sideways —
+           the CTA moved every time the reader ticked a row. The trailing zone is
+           FILL with MAX alignment, so they sit hard right and the Add button
+           never moves.
+
            EMPTY IN THE MARKUP, not absent: every element a view will ever show
            is in the template from the start, and CSS hides an empty container.
            The SPAN carries the count, which is the one thing the buttons cannot
            say for themselves. -->
-      <span slot="leading" id="bulk-count" class="bulk-count" hidden></span>
-      <span slot="leading" id="bulk-actions"></span>
+      <span slot="trailing" id="bulk-count" class="bulk-count" hidden></span>
+      <span slot="trailing" id="bulk-actions"></span>
     </sherpa-toolbar>
 
     <!-- CONTENT — the filter toolbar and the grid it filters.

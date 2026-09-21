@@ -6198,3 +6198,21 @@ the member of staff looking after the account. A chip the page does not map
 narrows nothing, rather than building a clause against a field no record has.
 
 - Site: `examples/views/records.js`
+
+### T-the-last-row-draws-no-rule
+
+The last body row draws NO bottom rule, on purpose: the grid's host draws the
+table's own bottom frame, and a last-row rule sits directly on it as a doubled
+line. `.row:not(:last-child) .cell` is where that exception lives.
+
+A PINNED cell paints its own background, so the row's rule cannot reach it and
+it has to restate the border itself. Both pinned cells did — unconditionally.
+So on the last row they drew a rule where every ordinary cell correctly drew
+none, and the bottom edge became a short stub under the selection column that
+stopped dead where the data cells began. It read as a missing border on the data
+cells; it was an extra one on the pinned cells.
+
+**Any cell that restates the row rule must restate the exception with it.**
+`.row:not(:last-child) > .select-cell`, not `.select-cell`.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
