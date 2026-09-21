@@ -17,10 +17,10 @@ down anywhere. They are in here now.
 | # | Item | Size | Why now |
 |---|---|---|---|
 | **B5** | Grid header chips don't light from the app header | S | Finishes a bug you reported |
-| **B1** | "X items selected" is in the wrong place | XS | Visual, isolated |
-| **B2** | Last row has no bottom border | XS | Visual, isolated |
+| ~~**B1**~~ | ~~"X items selected" is in the wrong place~~ | — | **DONE** `b3db74ed` |
+| ~~**B2**~~ | ~~Last row has no bottom border~~ | — | **DONE** `b3db74ed` |
 | **B3** | Empty chip's body should open its menu | S | One rule, one component |
-| **D5** | Dialog footer horizontal padding | XS | Visual, isolated |
+| ~~**D5**~~ | ~~Dialog footer horizontal padding~~ | — | **DONE** `97d7bb25` |
 | **D3** | Delete needs a confirm dialog + a real mutation | M | Data loss risk today |
 | **D4** | Error handling for failed mutations | M | Pairs with D3 |
 | **D1** | Checkbox styling in grid selection cells | S | May already be done — verify first |
@@ -85,11 +85,15 @@ general shape once: what a failed `insert`/`update`/`remove` does to the screen,
 and what the reader is told. `DataSource` already treats a failed LOAD as a
 state rather than a throw; mutations should match.
 
-### D5. Dialog footer horizontal padding
+### ~~D5. Dialog footer horizontal padding~~ — DONE `97d7bb25`
 
-> "Fix dialog footer horizontal padding."
+The footer's zero inline padding is deliberate (a menu card has its own 8px).
+Figma's Dialog pins `padding/sm` on its footer INSTANCE — a pin belongs to
+whoever places the instance, so it went in the dialog.
 
-Small and isolated.
+**Also found and fixed:** the footer's top divider was drawn near-black
+(#35353d) against the pale one the header draws. Figma binds #b3b3c3. Third
+member of the `style-border` drift family.
 
 ### D6. Trim the data-grid comments into per-component docs
 
@@ -117,23 +121,20 @@ as item A.
 
 This is the remaining half of your "binding only seems to be 1 way" report.
 
-### B1. "X items selected" is in the wrong place
+### ~~B1. "X items selected" is in the wrong place~~ — DONE `b3db74ed`
 
-> "The number of rows selected ('X items selected') should be on the right hand
-> side of the toolbar. It shouldn't be between the CTA button and other buttons."
+Moved to the toolbar's TRAILING zone, which Figma describes as holding "the item
+count". The Add button no longer moves when a row is ticked.
 
-`examples/templates/records.html` puts `#bulk-count` and `#bulk-actions`
-straight after the Add button.
+### ~~B2. Last row cells have no bottom border~~ — DONE `b3db74ed`
 
-### B2. Last row cells have no bottom border
+It was the reverse of how it read: the last row draws no rule ON PURPOSE (the
+grid's host draws the table's own bottom frame), and the pinned cells were
+drawing an extra one. They now follow the same `:not(:last-child)` exception.
 
-> "Last row cells in the data grid don't have a bottom border. Creates a visual
-> mismatch against pinned columns."
-
-The pinned cells (`.select-cell`, `.actions-cell`) now restate the row rule
-themselves, so on the LAST row they draw one where the ordinary cells do not.
-That asymmetry is the bug as reported. **Decide which way the last row should
-read** before changing either.
+**Follow-up you spotted and I fixed** (`03bd4f1d`): that scoping also removed
+the Actions HEADER's border, which had been arriving by accident from the same
+blanket rule. It states its own now, as `.select-head` already did.
 
 ### B3. An empty chip's body should open its menu
 
