@@ -55,6 +55,47 @@ markers on a ring fan out by construction. Verified zero overlaps on 8 markers.
 
 ## Queued
 
+### A. Generalise grouping / sorting / filtering — asked 2026-09-21
+
+**The ask, verbatim:** "There are now a lot of components that can affect
+grouping, sorting, and filtering that could affect other components in a view.
+So we should look at genericising this functionality as much as possible into
+the sherpa-element (or wherever makes sense) and data layer components. This
+will allow us to add this functionality to any other component further down the
+line without worrying about bespoke implementations and conflicts."
+
+Today each participant implements its own half:
+
+| component | grouping | sorting | filtering |
+|---|---|---|---|
+| `sherpa-data-grid` | `#pageStarts`, group rows, group select | header chips + `data-sort-*` | column filters, `#columnFilters` |
+| `sherpa-quick-filter-toolbar` | the Group chip + its radios | the Sort chip's 3 states | the filter chips |
+| `sherpa-quick-filter` | — | — | its own menu + `data-current` |
+| `DataSource` | `#viewPages`, no skip/take while grouped | `setSort` | `setFilter` |
+
+Every bug in this area for the last week has been the SAME bug wearing a
+different hat: two of these deriving a value neither owns, or one of them
+suspending where the other clears. `T-a-chip-body-cycles-its-states` and
+`T-group-clears-where-sort-suspends` are both scars from it.
+
+What to look for, in rough order:
+
+1. **A shared vocabulary for "an enumerated state"** — the chip rule Will
+   ratified (a body click cycles the states; off IS a state, not a delete)
+   is currently re-implemented per chip type. It belongs in one place.
+2. **One owner per value, declared** — `data-locked` already exists and is
+   implemented by exactly one component. Whatever comes out of this should make
+   the ownership legible rather than remembered.
+3. **The data-layer half is already generic.** `DataSource` takes one query
+   with `group`/`sort`/`filter` and publishes; the mess is on the DOM side, in
+   how components ASK for a change and how they hear about one.
+4. **`applyState` is the parity door** and already reaches any method. A
+   generic path must not become a second one beside it —
+   `T-attributes-are-the-state-channel`.
+
+Not started. Read `docs/DATA-LAYER-PLAN.md` and the state-ownership section of
+`CLAUDE.md` before designing anything.
+
 ### 0. No chart is keyboard-reachable — MEASURED 2026-09-17
 
 **All five charts have ZERO tabbable elements.** Measured in Chromium, per
