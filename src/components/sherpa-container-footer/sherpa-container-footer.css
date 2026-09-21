@@ -31,16 +31,25 @@
      menu card already has its own 8px padding), rather than being indented
      inside it by a second gutter. */
   padding-block: var(--sherpa-theme-padding-md, 8px);
-  padding-inline: var(--sherpa-theme-padding-none, 0px);
+  /* The DEFAULT is 0. A host that places this instance somewhere with no gutter
+     of its own pins `--_pad-inline` instead of reaching into the shadow root —
+     `sherpa-dialog` does, because Figma's Dialog pins `padding/sm` on both
+     sides of its Container Footer instance.
+     TRAP T-an-instance-pin-is-the-hosts-to-apply. */
+  padding-inline: var(--_pad-inline, var(--sherpa-theme-padding-none, 0px));
   /* Top divider — read from the Container Footer node (51:66438): strokeTop is
-     style-border/width with the colour style-border/base +1, which is a lighter
-     neutral than the container's own outer border.
+     `border/width/sm` (0.5) with the colour `style-border/base +1`, which
+     resolves through Theme `border/default/+2` to #b3b3c3.
 
-     Reached through the STYLE layer, not through Theme. Both resolve to the
-     same #e8e8f6 today, but the Style layer is the one Figma binds, so a status
-     re-point there follows automatically instead of silently missing this row. */
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid
-    var(--sherpa-style-border-base-1, #35353d);
+     It reached for `--sherpa-style-border-base-1`, whose GENERATED chain in
+     tokens.css goes to `border/default/+3` — one step darker — and painted a
+     near-black rule under every dialog and menu, against the pale one the
+     header draws. The comment above it claimed both resolved to #e8e8f6, and
+     its own fallback said #35353d; neither was the colour Figma binds.
+     Resolve the chain in Figma and bind the Theme token it lands on.
+     TRAP T-style-border-base-is-default-1. */
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 /* A slotted control keeps its OWN width. A flex item shrinks below its content

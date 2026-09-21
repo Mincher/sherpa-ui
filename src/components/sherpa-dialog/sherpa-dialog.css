@@ -106,6 +106,26 @@
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
+/* A COMPOSED <sherpa-container-footer> brings its own chrome, so the rule above
+   skips it — but its own inline padding is ZERO, which is right for a menu card
+   (that card has its own 8px) and wrong here. The buttons sat flush against the
+   dialog's edge while the body was inset 16.
+
+   Figma's Dialog (1003:33675) pins `padding/sm` on both sides of its Container
+   Footer INSTANCE, against the component's own `padding/none`. A pin belongs to
+   whoever places the instance, so it lands here.
+
+   Passed as the footer's OWN custom property, not a selector:
+   `::slotted(x)::part(y)` does not work — `::part` cannot follow `::slotted`,
+   and the rule is dropped in silence. A custom property inherits straight
+   through both shadow boundaries, which is the one thing that does cross them.
+   `--_pad-inline` and not `--sherpa-theme-padding-none`: that token means zero
+   everywhere, and redefining it here would be a lie told to every descendant.
+   TRAP T-an-instance-pin-is-the-hosts-to-apply. */
+.footer ::slotted(sherpa-container-footer) {
+  --_pad-inline: var(--sherpa-theme-padding-sm, 4px);
+}
+
 /* Figma header title: content/body/base 14/20 medium. */
 .heading-text {
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));

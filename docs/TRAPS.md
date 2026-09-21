@@ -5910,8 +5910,18 @@ Two further things make this easy to get wrong:
    from the PADDING box, so it is immune — but any arithmetic that starts from
    the content box is not, and would draw 15 at a 0.5px border.
 
+A THIRD member of the same family: `style-border/base +1` also resolves to
+Theme `border/default/+2` (#b3b3c3) in Figma, while the generated
+`--sherpa-style-border-base-1` in `tokens.css` points at `border/default/+3` —
+one step darker again. `sherpa-container-footer` consumed it and drew a
+near-black rule under every dialog and menu footer, against the pale one the
+header draws. Its comment claimed both resolved to #e8e8f6 and its fallback
+said #35353d; neither was the bound colour. A comment about a token is not a
+reading of it.
+
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.css`
+- Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
 
 ### T-checkbox-stroke-is-sm
 
@@ -6216,3 +6226,36 @@ cells; it was an extra one on the pinned cells.
 `.row:not(:last-child) > .select-cell`, not `.select-cell`.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+### T-an-instance-pin-is-the-hosts-to-apply
+
+`sherpa-container-footer` has ZERO inline padding, on purpose: it sits inside a
+menu card that already has its own 8px, and a second gutter would indent the
+buttons inside it. Will tightened it 16 → 8 → 0 to get that.
+
+A DIALOG has no such gutter, so the same footer put its buttons flush against
+the dialog's edge while the body sat inset 16. Figma says the same thing in its
+own vocabulary: the Dialog (1003:33675) pins `padding/sm` on both sides of its
+Container Footer INSTANCE, against the component's own `padding/none`.
+
+**A pin belongs to whoever places the instance** — so it lands in the dialog,
+not in the footer, whose default is right everywhere else.
+
+Two ways to pass it, and only one works:
+
+```css
+.footer ::slotted(sherpa-container-footer)::part(row) { … }  /* DROPPED, silently */
+.footer ::slotted(sherpa-container-footer) { --_pad-inline: 4px; }  /* works */
+```
+
+`::part` cannot follow `::slotted`, and the rule is discarded with no warning —
+the measured padding simply does not change. A custom property inherits straight
+through both shadow boundaries, which is the one thing that does cross them. The
+component reads `var(--_pad-inline, <its own default>)`.
+
+And it is the component's OWN private knob, not `--sherpa-theme-padding-none`.
+Redefining a shared token to mean something other than zero is a lie told to
+every descendant that reads it.
+
+- Site: `src/components/sherpa-dialog/sherpa-dialog.css`
+- Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
