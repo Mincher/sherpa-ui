@@ -190,7 +190,13 @@ slot[name="menu"] { display: contents; }
        box so the 16 and 24 sizes stay in proportion. */
     width: calc(var(--_size) * 0.55);
     height: calc(var(--_size) * 0.5);
-    background-color: var(--sherpa-theme-content-body-4, #ffffff);
+    /* The FIXED ramp. `content-body-4` is `neutral-color-1`, which is #FFFFFF
+       in light and #0C0B11 in dark — so the tick went BLACK on the blue
+       indicator in dark mode. Figma's `style-content/inverse` now aliases
+       Theme `content/body/inverse-fixed`, which lands on the fixed ramp; nine
+       components already spell that as `content-body-base-fixed`, for exactly
+       this job. TRAP T-the-tick-needs-the-fixed-ramp. */
+    background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
     mask-size: contain;
     mask-repeat: no-repeat;
@@ -209,7 +215,13 @@ slot[name="menu"] { display: contents; }
     width: 6px; /* off-grid-ok */
     height: 2px; /* off-grid-ok */
     border-radius: 1px; /* off-grid-ok */
-    background-color: var(--sherpa-theme-content-body-4, #ffffff);
+    /* The FIXED ramp. `content-body-4` is `neutral-color-1`, which is #FFFFFF
+       in light and #0C0B11 in dark — so the tick went BLACK on the blue
+       indicator in dark mode. Figma's `style-content/inverse` now aliases
+       Theme `content/body/inverse-fixed`, which lands on the fixed ramp; nine
+       components already spell that as `content-body-base-fixed`, for exactly
+       this job. TRAP T-the-tick-needs-the-fixed-ramp. */
+    background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
     mask-image: none;
     -webkit-mask-image: none;
   }

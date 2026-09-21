@@ -6079,3 +6079,26 @@ in the code said so. Replacing the input with a component silently removed the
 behaviour that comment described.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-the-tick-needs-the-fixed-ramp
+
+The checkmark went BLACK in dark mode.
+
+It was painted with `--sherpa-theme-content-body-4`, which resolves to
+`neutral-color-1` — `#FFFFFF` in light and `#0C0B11` in dark. That is correct
+for text on the page, which SHOULD flip. It is wrong for ink sitting on a
+coloured fill, which must not: the checkbox indicator stays accent blue in both
+modes, so its tick has to stay white in both.
+
+The `fixed` ramp exists for exactly this. `neutral-fixed-color-*` does not
+re-point under `[data-mode]`, and nine components already spell it as
+`--sherpa-theme-content-body-base-fixed` — a badge on a status pill, the nav's
+selected row, the switch's knob label. Figma says the same thing a different
+way: `style-content/inverse` now aliases Theme `content/body/inverse-fixed`,
+which composes `Display Mode/color/neutral/fixed/color 1`.
+
+**Ask which half is fixed.** Ink on a surface that flips should flip with it.
+Ink on a surface that does NOT flip must not. Getting this wrong is invisible in
+light mode, which is where it gets reviewed.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
