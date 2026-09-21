@@ -365,6 +365,12 @@ export class SherpaDataGrid extends SherpaElement {
       },
       { clear: 'own-children', ownSel: '.cols > .col' },
     );
+    /* The ACTIONS <col> is static and sits BEFORE the stamped ones, so it has
+       to be moved to the end — a <col> list out of step with the columns hands
+       every width to the wrong column, which is exactly what `.select-col`'s
+       own comment warns about. */
+    const actionsCol = this.$('.cols > .actions-col');
+    if (actionsCol) this.$('.cols')?.appendChild(actionsCol);
   }
 
   #renderHead(): void {
@@ -424,6 +430,11 @@ export class SherpaDataGrid extends SherpaElement {
       }
       headRow.appendChild(th);
     });
+    /* The ACTIONS head is static and sits in the template BEFORE these are
+       appended, so it has to be moved to the end — the same re-parenting the
+       body cell gets. T-grid-actions-pin-to-the-trailing-edge. */
+    const actionsHead = headRow.querySelector('.actions-head');
+    if (actionsHead) headRow.appendChild(actionsHead);
 
     this.#renderFilterRow();
   }
@@ -878,6 +889,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Keep the fixed leading spacer <th>; rebuild only the dynamic filter cells.
     filterRow.querySelectorAll('.filter-cell').forEach((el) => el.remove());
+    // …and the trailing spacer goes back to the end after the new cells land.
+    const actionsSpacer = filterRow.querySelector('.actions-cell');
     this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       th.dataset['field'] = col.field;
@@ -897,6 +910,7 @@ export class SherpaDataGrid extends SherpaElement {
       }
       filterRow.appendChild(th);
     });
+    if (actionsSpacer) filterRow.appendChild(actionsSpacer);
   }
 
   /**

@@ -772,9 +772,11 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
  */
 .actions-col {
   display: none;
-  /* `width`, not `inline-size` — see `.select-col`: a fixed table reads the
-     <col>'s used WIDTH and Chromium ignores the logical property here. */
-  width: var(--sherpa-display-mode-size-3xl, 40px);
+  /* Sized to the HEADER WORD, which is the widest thing in the column — the
+     trigger beneath it is a 32px square. `width`, not `inline-size`: see
+     `.select-col`, a fixed table reads the <col>'s used WIDTH and Chromium
+     ignores the logical property here. */
+  width: 76px;   /* off-grid-ok: the measured width of "Actions" + its padding */
 }
 :host([data-actions]) .actions-col { display: table-column; }
 
@@ -782,25 +784,64 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 :host([data-actions]) .actions-cell { display: table-cell; }
 
 :host([data-actions]) .actions-cell {
-  inline-size: var(--sherpa-display-mode-size-3xl, 40px);
+  inline-size: 76px;   /* off-grid-ok: matches .actions-col above */
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   vertical-align: middle;
   position: sticky;
   inset-inline-end: 0;
   z-index: 2;
+  /* The row rule every other body cell draws. A pinned cell paints its own
+     background, so it has to restate this or the row's rule cannot reach it —
+     which is why the column read as floating with no bottom edge. */
+  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* The head cell's label is for a screen reader only: the column is 40px of icon
-   buttons, and the word would be clipped to "Act…". Not `display: none`, which
-   takes it out of the accessibility tree too. */
+/* THE HEAD CELLS STACK ABOVE THE BODY. The head row is itself sticky, so a
+   pinned head cell has to clear both its own row's scrolling siblings AND the
+   pinned body cells beneath it — the same `z-index: 4` the leading pinned
+   headers take on line 941 above, and for the same reason. Without it the
+   "Actions" label scrolled away under the data columns. */
+:host([data-actions]) :is(.actions-head, .filter-row > .actions-cell) {
+  z-index: 4;
+}
+
+/* The header keeps the head row's own surface, not the body's. */
+:host([data-actions]) .actions-head {
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+}
+:host([data-actions]) .filter-row > .actions-cell {
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+}
+
+/* The head label, matching `.head-label` on every other column — the column is
+   sized to fit this word, not the other way round. */
+.actions-head {
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  text-align: start;
+}
 .actions-label {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
+  min-inline-size: 0;
   overflow: hidden;
-  clip-path: inset(50%);
   white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* THE SCROLL EDGE, mirrored. The leading pin draws its border on
+   `scrollable: inline-start`; this one is its opposite twin, so the rule
+   appears when there is content still to the RIGHT and vanishes at the end of
+   the scroll — the column stops looking detached the moment nothing is under
+   it. Transparent at rest, for the same reason it is there.
+   TRAP T-grid-actions-pin-to-the-trailing-edge. */
+.actions-cell {
+  border-inline-start: var(--sherpa-border-left, 0.5px) solid transparent;
+  transition: border-inline-start-color 120ms ease;
+}
+@container grid-scroll scroll-state(scrollable: inline-end) {
+  .actions-cell {
+    border-inline-start-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  }
 }
 
 /* An opaque base, then the row's own state tint on top — the same two-layer
