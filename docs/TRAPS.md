@@ -626,6 +626,8 @@ attribute straight back, and the chip would correct itself a tick later — a
 flicker. It stays off, and the menu is where a column is chosen.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/cycle.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-add-menu-batches
 
@@ -6710,4 +6712,65 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/core/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/cycle.ts`
 - Site: `test/unit/suspended-sort.test.mjs`
+- Site: `test/unit/cycle.test.mjs`
+
+### T-bind-locks-what-it-owns
+
+`DataSource.bind()` sets `data-locked` on the element, and `unbind()` removes it.
+
+`data-locked` is this system's own answer to "a host owns this value": a locked
+component **reports its interaction and stops writing its own state**. It
+existed, it was documented as one third of the state-ownership convention
+(`data-<thing>` in, `<thing>-change` out, `data-locked` when the host owns it),
+and it was honoured by exactly **one component of 58** — while nothing set it
+automatically.
+
+So every bound component was both reporter and owner of the same value. Traced
+live before the fix: one click on a grid column header wrote
+`data-sort-field` itself, emitted `sort-change`, and then the source wrote the
+same two attributes again a microtask later. Two writers, one value — the shape
+`T-state-ownership` exists to prevent.
+
+**The self-write is not simply deleted.** A component with no source has no
+other owner, and must still work: every data-grid test drives an UNBOUND grid.
+So a steering component writes its own state only when nothing else will:
+
+```ts
+if (!this.hasAttribute('data-locked')) { …write it… }
+this.emit('sort-change', { … });   // the INTENT, always
+```
+
+`readonly` binds are not locked — such an element receives rows and steers
+nothing, so it owns whatever it had.
+
+- Site: `src/core/data-source.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-one-cycle-for-one-value
+
+The sort cycle — `asc → desc → suspended → asc` — was written TWICE: once in
+the data grid's column header, once in the toolbar's Sort chip. The two
+drifted, and the drift was invisible until someone clicked three times: the
+grid DELETED the column on its third click while the chip SUSPENDED it.
+
+That is two controls of one value disagreeing about what their shared third
+state keeps, which is precisely what
+`T-a-chip-body-cycles-its-states` ratified an answer to. A rule each component
+re-reads from a document is a rule that drifts; a function is not.
+
+`src/core/cycle.ts` holds it: `nextSort`, `sortDirectionAttr`,
+`sortDirectionFrom`, `nextToggle`. Pure, DOM-free, on the lint boundary —
+they take the current state and return the next one. **Reading it off an
+attribute and writing the result back is not their job**, because for a bound
+component that belongs to the source (`T-bind-locks-what-it-owns`).
+
+`nextToggle` is one line and is there on purpose: the two-state and three-state
+cases then read the same way at every call site, and "off is a state, not a
+delete" is stated once for both.
+
+- Site: `src/core/cycle.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/cycle.test.mjs`

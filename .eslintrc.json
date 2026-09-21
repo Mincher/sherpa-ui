@@ -120,6 +120,7 @@
       "files": [
         "src/core/store.ts",
         "src/core/base-store.ts",
+        "src/core/cycle.ts",
         "src/core/validate.ts",
         "src/core/pointer.ts",
         "src/core/chart-datum.ts",

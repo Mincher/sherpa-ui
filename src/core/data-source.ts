@@ -528,8 +528,30 @@ export class DataSource extends EventTarget {
       }
     }
 
+    /* LOCKED, because the source now owns this element's view state.
+     *
+     * `data-locked` is the system's own answer to "a host owns this value": a
+     * locked component reports its interaction and stops writing its own state.
+     * It existed and was honoured by exactly ONE component of 58, and nothing
+     * set it automatically — so every bound component was both reporter and
+     * owner of the same value, which is the shape `T-state-ownership` warns
+     * about.
+     *
+     * NOT for a readonly bind: that element receives rows and steers nothing,
+     * so it owns whatever it had. And removed again on unbind, or a component
+     * that outlives its source is left mute.
+     *
+     * A component with no source is UNLOCKED and writes its own state, which
+     * is what makes a standalone grid work — every grid test runs one.
+     * TRAP T-bind-locks-what-it-owns.
+     */
+    if (!readonlyBind) el.setAttribute('data-locked', '');
+
     const off = (): void => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
+      // UNLOCKED on the way out: the source no longer owns this element, so it
+      // must go back to writing its own state.
+      el.removeAttribute('data-locked');
     };
     this.#bound.set(el, {
       readonly: readonlyBind,

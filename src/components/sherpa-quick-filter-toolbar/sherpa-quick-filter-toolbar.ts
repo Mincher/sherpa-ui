@@ -11,6 +11,9 @@
 import { SherpaElement } from '../../core/sherpa-element.js';
 // The sort/group glyphs are SHARED with sherpa-data-grid — see core/icons.
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
+// The enumerated states a sort control steps through — stated once, because
+// this chip and the data grid's column header are two views of ONE value.
+import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 // Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
@@ -1303,21 +1306,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   #cycleSort(chip: HTMLElement): void {
-    // The chip has ALREADY flipped its own data-current, so undo that first.
-    const live = !chip.hasAttribute('data-current');
-    const direction = chip.dataset['direction'] === 'desc' ? 'desc' : 'asc';
+    /* ONE CYCLE, stated in `core/cycle.ts` — the same function the data grid's
+       column header runs. The two were written separately and DRIFTED: this
+       suspended the column on its third click while the grid deleted it, so
+       two controls of one value disagreed about what their shared third state
+       keeps. TRAP T-a-chip-body-cycles-its-states, TRAP T-one-cycle-for-one-value.
 
-    if (!live) {
-      // Suspended → back on, in the direction it was left in.
-      chip.toggleAttribute('data-current', true);
-    } else if (direction === 'asc') {
-      chip.dataset['direction'] = 'desc';
-      chip.toggleAttribute('data-current', true);
-    } else {
-      // Descending → SUSPENDED. The column survives; only the direction rewinds.
-      chip.removeAttribute('data-current');
-      chip.dataset['direction'] = 'asc';
-    }
+       The chip has ALREADY flipped its own `data-current` by the time this
+       runs, so the live state is the INVERSE of what it now says. */
+    const wasLive = !chip.hasAttribute('data-current');
+    const column = this.#menuValue('sort') ?? '';
+    /* SUSPENDED is a NULL direction, whatever `data-direction` says — that
+       attribute is where the direction is REMEMBERED, not whether it runs. */
+    const held = wasLive ? (sortDirectionFrom(chip.dataset['direction']) ?? 'asc') : null;
+    const next = nextSort(column, column, held);
+
+    chip.toggleAttribute('data-current', next.direction !== null);
+    // A suspended chip rewinds to `asc`, because that is where a resume starts.
+    chip.dataset['direction'] = next.direction ?? 'asc';
 
     this.#syncSortLabel(chip);
     this.emit('sort-change', { field: this.sortField, direction: this.sortDirection });

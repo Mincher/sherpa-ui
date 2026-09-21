@@ -16,6 +16,9 @@ import { SherpaElement, coerceNum, clampNum, markMatch } from '../../core/sherpa
 // Glyphs, sort and the operator vocabulary are all SHARED, so a bound grid, an
 // unbound one and the toolbar cannot disagree.
 import { ORGANISE_ICONS } from '../../core/icons.js';
+// The enumerated states a sort control steps through — stated once, because
+// this and the toolbar's Sort chip are two views of ONE value and had drifted.
+import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle.js';
 import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/store.js';
@@ -1407,38 +1410,37 @@ export class SherpaDataGrid extends SherpaElement {
     const field = th?.dataset['field'];
     if (!field || th!.dataset['sortable'] === 'false') return;
 
-    /* TRAP T-grid-sort-is-tri-state — asc → desc → SUSPENDED, one column at a
-       time. The third step keeps the column: `sort-change` carries `field:
-       null` because the QUERY loses its sort, and the source remembers what was
-       sorting and pushes it back with an EMPTY direction. One more click
-       resumes it ascending, with no trip to a menu — the ratified rule that a
-       control's states cycle and none of them clears
-       (`T-a-chip-body-cycles-its-states`).
-       TRAP T-a-suspended-sort-is-one-owners-job. */
-    const active = this.dataset['sortField'] === field;
-    const dir = this.dataset['sortDirection'];
-    if (active && dir === 'desc') {
-      // NOT deleted here: the source owns these attributes and writes the
-      // remembered column straight back. Setting it empty first keeps the
-      // header honest for the frame before that lands.
-      this.dataset['sortDirection'] = '';
-      this.emit('sort-change', { field: null, direction: null });
+    /* ONE CYCLE, stated in `core/cycle.ts` — asc → desc → suspended → asc.
+       The third step KEEPS the column: `sort-change` carries `field: null`
+       because the QUERY loses its sort, while the field survives so a control
+       can still show what it would resume on. That is the ratified rule that a
+       control's states cycle and none of them clears.
+       TRAP T-grid-sort-is-tri-state, TRAP T-a-chip-body-cycles-its-states.
+       TRAP T-one-cycle-for-one-value — why the cycle is a shared function. */
+    const next = nextSort(field, this.dataset['sortField'], sortDirectionFrom(this.dataset['sortDirection']));
+
+    /* REPORT, then let the owner write it back.
+     *
+     * A BOUND grid is `data-locked`: the DataSource owns its view state and
+     * broadcasts the result to every bound component, so writing here as well
+     * would make this both reporter and owner of one value.
+     *
+     * UNBOUND there is no owner but this, and the grid must still work — every
+     * grid test drives one with no source at all. So the write happens only
+     * when nothing else will do it.
+     * TRAP T-bind-locks-what-it-owns. */
+    if (!this.hasAttribute('data-locked')) {
+      this.set('data-sort-field', next.field ?? null);
+      this.set('data-sort-direction', sortDirectionAttr(next) ?? null);
       this.#render();
-      return;
     }
-    // RESUMING a suspended column: an empty direction means the reader turned
-    // it off, so the next click starts it ascending again rather than reading
-    // the stale `desc` it was left at.
-    if (active && dir === '') {
-      this.dataset['sortDirection'] = 'asc';
-      this.emit('sort-change', { field, direction: 'asc' });
-      return;
-    }
-    const next = active && dir === 'asc' ? 'desc' : 'asc';
-    this.dataset['sortField'] = field;
-    this.dataset['sortDirection'] = next;
-    this.emit('sort-change', { field, direction: next });
-    // onChange re-renders.
+
+    // The INTENT, always. `field: null` on a suspend is what the query needs to
+    // hear; the source remembers the column itself.
+    this.emit('sort-change', {
+      field: next.direction === null ? null : next.field,
+      direction: next.direction,
+    });
   };
 
   #onRowClick = (event: Event): void => {

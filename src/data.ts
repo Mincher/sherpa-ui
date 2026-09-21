@@ -143,6 +143,16 @@ export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
 /* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
    so a server can pre-compute it, an MCP tool can answer "count by category",
    and two views cannot disagree about what a mean is. */
+/* The enumerated states a control steps through — stated once, so two views of
+   one value cannot disagree about what their shared third state keeps. */
+export {
+  nextSort,
+  nextToggle,
+  sortDirectionAttr,
+  sortDirectionFrom,
+  type SortState,
+} from './core/cycle.js';
+
 export {
   aggregateBy,
   countBy,
