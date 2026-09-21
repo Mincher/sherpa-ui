@@ -617,7 +617,11 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
         // wide as the rows below it.
         colspan: g.querySelector<HTMLTableCellElement>('.group-cell')!.colSpan,
       })),
-      // The grouped column's cells are gone too — one column, not two.
+      /* The grouped column's cells are gone too — one column, not two. Counts
+         the DOM children, so the two always-present pinned cells are in it:
+         the leading select cell and the trailing actions cell both live in the
+         template whether or not their attribute reveals them (CSS owns the
+         reveal; JS never creates them). */
       cellsPerRow: sr.querySelector('.row')!.children.length,
       // Rows sharing a group value must be ADJACENT: that is what lets the render
       // find each group in one pass over the sorted rows.
@@ -654,7 +658,7 @@ test('data-group-field bunches the rows, hides that column, and folds', async ({
 
   // The grouped column is gone from the header.
   expect(r.grouped.headers).toEqual(['Name']);
-  expect(r.grouped.cellsPerRow).toBe(2); // select cell + the one remaining column
+  expect(r.grouped.cellsPerRow).toBe(3); // select + the one remaining column + actions
   expect(r.grouped.groups).toEqual([
     { label: 'Blue', count: '2', colspan: 2 },
     { label: 'Red', count: '1', colspan: 2 },
@@ -2111,4 +2115,136 @@ test('a SHUT group costs one slot of the page, not one per row', async ({ page }
   // The grid REPORTED its page count; it never wrote data-page itself.
   expect(r.reports.length).toBeGreaterThan(0);
   expect(r.reports.at(-1)!.pages).toBeGreaterThanOrEqual(2);
+});
+
+test('row actions: a pinned trailing column, one shared menu, and a report', async ({ page }) => {
+  /* TRAP T-one-actions-menu-for-every-row — one popover serves every row.
+     TRAP T-grid-actions-are-declared-once-used-twice — the same list feeds the
+     row menu and a host's bulk bar, so they cannot disagree. */
+  const r = await page.evaluate(async () => {
+    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): Promise<void> | void;
+      actionsFor(n: number): Array<{ id: string }>;
+      select(keys: string[]): void;
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+
+    const fired: unknown[] = [];
+    el.addEventListener('row-action', (e) => fired.push((e as CustomEvent).detail));
+
+    await el.populate({
+      key: 'email',
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [
+        { email: 'a@x', name: 'Ada' },
+        { email: 'b@x', name: 'Bo' },
+      ],
+      actions: [
+        { id: 'edit', label: 'Edit', icon: 'fa-regular fa-pen' },
+        { id: 'delete', label: 'Delete', icon: 'fa-regular fa-trash', multi: true, danger: true },
+      ],
+    });
+    await settled();
+
+    const sr = el.shadowRoot!;
+    const firstRow = sr.querySelector('.row')!;
+    const cells = [...firstRow.children].map((c) => c.className.split(' ')[0]);
+
+    // ONE menu in the whole grid, not one per row.
+    const menus = sr.querySelectorAll('sherpa-menu.actions-menu').length;
+
+    // Open the FIRST row's menu.
+    const trigger = firstRow.querySelector<HTMLElement>('.actions-trigger')!;
+    trigger.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 200));
+
+    const menu = sr.querySelector('sherpa-menu.actions-menu')!;
+    const items = [...menu.querySelectorAll('.action-item')].map((b) => ({
+      value: b.getAttribute('value'),
+      label: b.querySelector('.action-label')?.textContent,
+      danger: b.hasAttribute('data-danger'),
+    }));
+
+    // Choose Delete. The grid REPORTS; it does not remove the row.
+    menu.querySelector<HTMLElement>('[value="delete"]')!.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 200));
+
+    return {
+      // The actions cell is LAST, after the data cells.
+      cells,
+      revealed: el.hasAttribute('data-actions'),
+      pinned: getComputedStyle(firstRow.querySelector('.actions-cell')!).position,
+      menus,
+      items,
+      fired,
+      // The row is still there — reporting is not acting.
+      rowsAfter: sr.querySelectorAll('.row').length,
+      // …and the bulk list narrows on a multi-row selection.
+      forOne: el.actionsFor(1).map((a) => a.id),
+      forMany: el.actionsFor(3).map((a) => a.id),
+      forNone: el.actionsFor(0).map((a) => a.id),
+    };
+  });
+
+  // The column is revealed by the DATA, not by an attribute the host must set.
+  expect(r.revealed).toBe(true);
+  expect(r.cells).toEqual(['select-cell', 'cell', 'actions-cell']);
+  expect(r.pinned).toBe('sticky');
+
+  // ONE menu, however many rows.
+  expect(r.menus).toBe(1);
+  expect(r.items).toEqual([
+    { value: 'edit', label: 'Edit', danger: false },
+    { value: 'delete', label: 'Delete', danger: true },
+  ]);
+
+  // It REPORTED, with the row it belongs to.
+  expect(r.fired).toHaveLength(1);
+  expect((r.fired[0] as { id: string }).id).toBe('delete');
+  expect((r.fired[0] as { records: Array<{ email: string }> }).records[0]!.email).toBe('a@x');
+  // …and did not act on it.
+  expect(r.rowsAfter).toBe(2);
+
+  // ONE declaration, TWO surfaces: `multi` is what survives a bulk selection.
+  expect(r.forOne).toEqual(['edit', 'delete']);
+  expect(r.forMany).toEqual(['delete']);
+  expect(r.forNone).toEqual([]);
+});
+
+test('no actions declared: no column, no menu, no attribute', async ({ page }) => {
+  // The column is opt-in through the DATA. A grid that never declares an action
+  // must look exactly as it did before the feature existed.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): Promise<void> | void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await el.populate({
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [{ name: 'Ada' }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    return {
+      attr: el.hasAttribute('data-actions'),
+      // Present in the DOM — the template always holds it — but not drawn.
+      display: getComputedStyle(sr.querySelector('.actions-cell')!).display,
+      colDisplay: getComputedStyle(sr.querySelector('.actions-col')!).display,
+    };
+  });
+
+  expect(r.attr).toBe(false);
+  expect(r.display).toBe('none');
+  // The <col> hides WITH its cells, or the browser matches the wrong <col> to
+  // the first drawn column — see the note on `.select-col` in the CSS.
+  expect(r.colDisplay).toBe('none');
 });

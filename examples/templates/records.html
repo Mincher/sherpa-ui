@@ -40,6 +40,17 @@
                      data-look="saturated" data-icon-start="fa-solid fa-plus">
         Add customer
       </sherpa-button>
+
+      <!-- BULK ACTIONS — the same actions the row menu offers, for the rows the
+           reader has ticked. Empty until a selection exists; records.js fills it
+           from `grid.actionsFor(count)`, so the two lists cannot disagree.
+
+           EMPTY IN THE MARKUP, not absent: every element a view will ever show
+           is in the template from the start, and CSS hides an empty container.
+           The SPAN carries the count, which is the one thing the buttons cannot
+           say for themselves. -->
+      <span slot="leading" id="bulk-count" class="bulk-count" hidden></span>
+      <span slot="leading" id="bulk-actions"></span>
     </sherpa-toolbar>
 
     <!-- CONTENT — the filter toolbar and the grid it filters.

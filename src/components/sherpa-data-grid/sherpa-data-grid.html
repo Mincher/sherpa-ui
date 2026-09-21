@@ -22,6 +22,13 @@
   A populated filter shows a trailing clear button. CSS reveals it off the cell's
   data-has-value flag, so JS only writes state.
 
+  ROW ACTIONS. `populate({ actions: [...] })` reveals a pinned trailing column of
+  icon-only buttons, each opening the grid's one shared menu. An action is
+  `{ id, label, icon?, multi?, danger? }`; choosing one emits `row-action` and the
+  grid does nothing else — acting on the record is the host's decision.
+  `actionsFor(count)` is the same list, narrowed to what survives a multi-row
+  selection, for a bulk toolbar.
+
   data-group-field names a column to GROUP by. Its rows are bunched by their value
   in that column and each bunch gets a collapsible group row on top (Figma Grid Cell
   Type=group) carrying that value as its label. The grouped column itself drops out
@@ -54,6 +61,9 @@
                     a page is data-page-size screen LINES, and a shut group is one.
                     Written by SherpaDataSource; the grid reports back the page
                     count it arrives at and never writes data-page itself.
+    data-actions                             set BY populate() when `actions` is
+                    non-empty; reveals the pinned trailing column. A host does not
+                    write it.
     data-total-pages                         how many pages the host believes there
                     are. READ ONLY, and only to avoid re-reporting a count that has
                     not changed — the grid never writes it. Not observed: a change
@@ -68,6 +78,9 @@
     clearColumnFilter(field?)      delete one, or all
     openColumnFilter(field, anchor) open that column's menu, anchored anywhere
     select(keys) / clearSelection() set the selection BY KEY (needs `key` in populate)
+    actionsFor(count)              the actions that apply to a selection of that size —
+                    all of them for 1, only the `multi` ones for 2+, none for 0. A bulk
+                    toolbar reads this so it cannot disagree with the row menu
     selectedKeys / selectedRecords read it back
 
   Column widths: each column is drawn at a fixed width so long labels TRUNCATE
@@ -85,6 +98,9 @@
     column-filter-change — detail: { field, header, op, value, from, to, clause, label }
     filter-change    — detail: { field, value, filters, visible }
     group-toggle     — detail: { value, collapsed }
+    row-action       — detail: { id, records }   an action was chosen, from the row
+                       menu or a host's bulk bar. A REPORT: the grid never acts on
+                       the record itself
     grid-pages-change — detail: { pages, page }   how many pages the CURRENT fold
                        state makes, while grouped. A REPORT, not a request: the
                        host owns data-page, and folding changes the count under it
@@ -110,15 +126,26 @@
     -->
     <colgroup class="cols">
       <col class="select-col" />
+      <!-- The ACTIONS column is the trailing twin of the select column: fixed
+           width, pinned, and present in the template whether or not
+           `data-actions` reveals it. CSS hides it; JS never creates it. -->
+      <col class="actions-col" />
     </colgroup>
     <thead class="head" part="head">
       <tr class="head-row">
         <th class="select-cell select-head" scope="col">
           <input class="select-all" type="checkbox" aria-label="Select all rows" />
         </th>
+        <!-- LAST in the row, so it needs no re-ordering when columns change.
+             `Actions` is a real heading for a screen reader; CSS hides the text
+             because the column is 44px of icon buttons. -->
+        <th class="actions-cell actions-head" scope="col">
+          <span class="actions-label">Actions</span>
+        </th>
       </tr>
       <tr class="filter-row">
         <th class="select-cell filter-spacer" scope="col" aria-hidden="true"></th>
+        <th class="actions-cell filter-spacer" scope="col" aria-hidden="true"></th>
       </tr>
     </thead>
     <tbody class="body" part="body"></tbody>
@@ -366,7 +393,42 @@
       <td class="select-cell">
         <input class="row-select" type="checkbox" aria-label="Select row" />
       </td>
+      <!-- Data cells are appended BETWEEN these two by #renderBody, so the
+           actions cell has to be moved to the end after they land. -->
+      <td class="actions-cell">
+        <button class="actions-trigger" type="button" aria-haspopup="menu"
+                aria-expanded="false" aria-label="Row actions">
+          <!-- fa-SOLID: the free set carries this glyph at weight 900 only, and a
+               missing one is a tofu box with no warning — T-fa-pro-icons-fail-silently. -->
+          <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+        </button>
+      </td>
     </tr>
+  </template>
+
+  <!--
+    ONE MENU FOR THE WHOLE GRID, not one per row.
+
+    A hundred rows would otherwise stamp a hundred popovers into the top layer,
+    each with its own listeners, for a menu only one of which can ever be open.
+    The trigger that opened it is remembered, so `menu-select` knows the row.
+
+    TRAP T-one-actions-menu-for-every-row.
+  -->
+  <sherpa-menu class="actions-menu" data-align="end"></sherpa-menu>
+
+  <!-- One action row, cloned per action. A real <button value="…">, which is
+       what sherpa-menu slots and what gives Enter and Space for free.
+
+       NO `slot` ATTRIBUTE. The menu's rows go in its DEFAULT slot — there is no
+       named `actions` slot, and a row carrying one is never projected: the card
+       opened, placed correctly, and measured 14px tall with the buttons sitting
+       unrendered in the light DOM. -->
+  <template class="action-item-tpl">
+    <button class="action-item" type="button">
+      <i class="action-icon" aria-hidden="true"></i>
+      <span class="action-label"></span>
+    </button>
   </template>
 
   <!--

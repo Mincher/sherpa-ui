@@ -43,6 +43,33 @@ export interface GridColumn {
 
 type GridRow = Record<string, unknown>;
 
+/**
+ * One action a row offers.
+ *
+ * DECLARED ONCE and used twice: the per-row menu, and a host's bulk toolbar.
+ * That is the point — a toolbar that kept its own list would disagree with the
+ * menu the first time one of them changed.
+ *
+ * TRAP T-grid-actions-are-declared-once-used-twice.
+ */
+export interface GridAction {
+  /** What `row-action` carries back. The host switches on this. */
+  id: string;
+  label: string;
+  /** A Font Awesome class list, e.g. `'fa-regular fa-pen'`. */
+  icon?: string;
+  /**
+   * Whether this action can apply to MANY rows at once.
+   *
+   * The grid reports it in `actions-change` so a bulk toolbar can offer only
+   * what survives a multi-row selection — deleting five users is one action,
+   * editing five is not.
+   */
+  multi?: boolean;
+  /** Draws in the critical colour. A destructive action should read as one. */
+  danger?: boolean;
+}
+
 interface GridConfig {
   columns: GridColumn[];
   rows: GridRow[];
@@ -52,6 +79,12 @@ interface GridConfig {
    * TRAP T-grid-key-or-position-lies — no key means selection by POSITION.
    */
   key?: string;
+  /**
+   * Per-row actions. Reveals the pinned trailing column.
+   *
+   * TRAP T-grid-actions-are-declared-once-used-twice.
+   */
+  actions?: GridAction[];
 }
 
 /**
@@ -112,6 +145,16 @@ export class SherpaDataGrid extends SherpaElement {
 
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
+  /** The declared row actions — see GridAction. Empty hides the column. */
+  #actions: GridAction[] = [];
+  /**
+   * The row whose menu is open.
+   *
+   * A RECORD, not an index: one menu serves every row
+   * (`T-one-actions-menu-for-every-row`), so it has to remember which row
+   * opened it, and an index stops meaning the same thing after a sort.
+   */
+  #actionRow: GridRow | null = null;
   /** Widths the USER has dragged, keyed by field. Survive a re-populate. */
   #widths = new Map<string, number>();
   /** Active per-column filter text, keyed by field. Empty entries are removed. */
@@ -188,6 +231,12 @@ export class SherpaDataGrid extends SherpaElement {
     // REMOVE FILTER — the footer's third button. It arrives as menu-select
     // rather than a footer event of its own.
     this.$('.head-row')?.addEventListener('menu-select', this.#onColumnFilterRemove);
+    /* ROW ACTIONS. The trigger click is delegated from the body, because the
+       body is replaced on every render and a per-trigger listener would be
+       re-bound a hundred times. The menu is a single element outside it, so it
+       gets a direct listener. */
+    this.$('.body')?.addEventListener('click', this.#onActionsClick);
+    this.$('.actions-menu')?.addEventListener('menu-select', this.#onActionSelect);
     if (this.#columns.length) this.#render();
   }
 
@@ -201,6 +250,9 @@ export class SherpaDataGrid extends SherpaElement {
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
+    this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
+    // CSS owns the column's reveal; this is the attribute it selects on.
+    this.toggleAttribute('data-actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — header-row filters clear;
     // column filters drop only where the COLUMN went; selection re-resolves
     // by KEY.
@@ -922,6 +974,12 @@ export class SherpaDataGrid extends SherpaElement {
         this.#fillCell(td, value == null ? '' : String(value), col);
         tr.appendChild(td);
       });
+      /* THE ACTIONS CELL GOES LAST, and it is in the template already — so it
+         is MOVED rather than created. `appendChild` on a node that is already a
+         child re-parents it to the end, which is exactly what is wanted and why
+         there is no createElement here. */
+      const actionsCell = tr.querySelector('.actions-cell');
+      if (actionsCell) tr.appendChild(actionsCell);
       body.appendChild(tr);
     });
 
@@ -1088,10 +1146,11 @@ export class SherpaDataGrid extends SherpaElement {
     tr.toggleAttribute('data-collapsed', collapsed);
 
     const cell = tr.querySelector<HTMLTableCellElement>('.group-cell')!;
-    // +1 for the leading selection column, which exists in the template whether
-    // or not data-selectable reveals it — a colspan that ignored it would leave
-    // the group row one column short of the rows below.
-    cell.colSpan = columnCount + 1;
+    /* +1 for the leading selection column, which exists in the template whether
+       or not data-selectable reveals it; +1 again for the trailing actions
+       column when it is shown. A colspan that ignored either would leave the
+       group row short, and the pinned cell floating over a gap. */
+    cell.colSpan = columnCount + 1 + (this.#actions.length ? 1 : 0);
     tr.querySelector('.group-label')!.textContent = key === '' ? '(none)' : key;
     tr.querySelector('.group-count')!.textContent = String(size);
 
@@ -1099,6 +1158,95 @@ export class SherpaDataGrid extends SherpaElement {
     toggle.setAttribute('aria-expanded', String(!collapsed));
     toggle.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
     return tr;
+  }
+
+  /* ── Row actions ─────────────────────────────────────────────────── */
+
+  /**
+   * A click inside the body: was it an actions trigger?
+   *
+   * DELEGATED, and it stops the event — a click on the trigger is not a click
+   * on the row, and letting it bubble would fire `row-click` as well.
+   */
+  #onActionsClick = (event: Event): void => {
+    const trigger = (event.target as HTMLElement).closest<HTMLElement>('.actions-trigger');
+    if (!trigger) return;
+    // `#onRowClick` already ignores this cell — see its own guard, which is the
+    // one that matters, because it is registered first. This stops the click
+    // reaching a HOST listener on the grid, which has no such guard.
+    event.stopPropagation();
+    this.#openActions(trigger);
+  };
+
+  /**
+   * Open the shared actions menu for one row.
+   *
+   * TRAP T-one-actions-menu-for-every-row — one popover, not one per row, and
+   * why the trigger click is delegated. The menu is re-stamped on each open:
+   * the list is the same today, but a per-row filter would live here.
+   */
+  #openActions(trigger: HTMLElement): void {
+    const record = this.#recordFor(trigger);
+    if (!record || !this.#actions.length) return;
+    const menu = this.$<HTMLElement & { show?: (t?: HTMLElement) => void }>('.actions-menu');
+    const tpl = this.$<HTMLTemplateElement>('template.action-item-tpl');
+    if (!menu || !tpl) return;
+
+    this.#actionRow = record;
+    // The menu's rows are SLOTTED light-DOM buttons, which is what gives them
+    // Enter, Space and focus for nothing — see T-menu-rows-stay-native-controls.
+    menu.replaceChildren();
+    for (const action of this.#actions) {
+      const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      item.setAttribute('value', action.id);
+      item.toggleAttribute('data-danger', !!action.danger);
+      const icon = item.querySelector('.action-icon');
+      if (icon) {
+        if (action.icon) icon.className = `action-icon ${action.icon}`;
+        else icon.remove();
+      }
+      item.querySelector('.action-label')!.textContent = action.label;
+      menu.appendChild(item);
+    }
+
+    trigger.setAttribute('aria-expanded', 'true');
+    menu.show?.(trigger);
+  }
+
+  /**
+   * A menu row was chosen. Report the action and the row it belongs to.
+   *
+   * REPORTS, never acts: deleting a record is the host's decision, and a grid
+   * that removed the row itself would be deriving state it does not own.
+   * TRAP T-grid-reports-never-combines.
+   */
+  #onActionSelect = (event: Event): void => {
+    const id = (event as CustomEvent).detail?.['value'] as string | undefined;
+    const record = this.#actionRow;
+    this.#closeActions();
+    if (!id || !record) return;
+    this.emit('row-action', { id, records: [record] });
+  };
+
+  /** Shut the menu and put the trigger's aria-expanded back. */
+  #closeActions(): void {
+    this.#actionRow = null;
+    for (const t of this.$$('.actions-trigger')) t.setAttribute('aria-expanded', 'false');
+    this.$<HTMLElement & { hide?: () => void }>('.actions-menu')?.hide?.();
+  }
+
+  /**
+   * The actions that apply to the CURRENT selection.
+   *
+   * One row: all of them. Two or more: only those declared `multi`, because
+   * "edit" on five users is not one action and a toolbar that offered it would
+   * be lying. A host reads this to build its bulk bar.
+   *
+   * TRAP T-grid-actions-are-declared-once-used-twice.
+   */
+  actionsFor(count: number): GridAction[] {
+    if (count <= 0) return [];
+    return count === 1 ? [...this.#actions] : this.#actions.filter((a) => a.multi);
   }
 
   /**
@@ -1192,6 +1340,12 @@ export class SherpaDataGrid extends SherpaElement {
   #onRowClick = (event: Event): void => {
     // A click on a selection checkbox is selection, not row activation.
     if ((event.target as HTMLElement).closest('.select-cell')) return;
+    /* …and a click in the ACTIONS cell is the menu, for the same reason. It is
+       guarded HERE rather than by stopPropagation in the actions handler:
+       both listeners sit on `.body`, so they fire in REGISTRATION order, and
+       this one is registered first. Stopping the event later would be too late
+       — `row-click` would already have gone out. */
+    if ((event.target as HTMLElement).closest('.actions-cell')) return;
 
     // A group row is a heading, not a record: clicking it (anywhere, not just the
     // chevron) folds its rows away. It has no data-index, so it could never have

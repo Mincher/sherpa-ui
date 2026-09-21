@@ -36,6 +36,8 @@ anatomy:
               children:
                 - el: col
                   class: select-col
+                - el: col
+                  class: actions-col
             - el: thead
               class: head
               part: head
@@ -53,11 +55,23 @@ anatomy:
                           attrs:
                             type: checkbox
                             aria-label: Select all rows
+                    - el: th
+                      class: actions-cell actions-head
+                      attrs:
+                        scope: col
+                      children:
+                        - el: span
+                          class: actions-label
                 - el: tr
                   class: filter-row
                   children:
                     - el: th
                       class: select-cell filter-spacer
+                      attrs:
+                        scope: col
+                        aria-hidden: "true"
+                    - el: th
+                      class: actions-cell filter-spacer
                       attrs:
                         scope: col
                         aria-hidden: "true"
@@ -115,6 +129,13 @@ anatomy:
               attrs:
                 aria-hidden: "true"
 props:
+  - $type: prop
+    name: data-actions
+    type: string
+    kind: style
+    description: >-
+      set BY populate() when `actions` is non-empty; reveals the pinned trailing column. A host does
+      not write it.
   - $type: prop
     name: data-column-filters
     type: string
@@ -193,7 +214,9 @@ props:
       suspendColumnFilter(field, on) keep the clause but stop applying it
       clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that
       column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY
-      (needs `key` in populate) selectedKeys / selectedRecords read it back
+      (needs `key` in populate) actionsFor(count)              the actions that apply to a selection
+      of that size — all of them for 1, only the `multi` ones for 2+, none for 0. A bulk toolbar
+      reads this so it cannot disagree with the row menu selectedKeys / selectedRecords read it back
 states:
   - $type: state
     name: empty
@@ -214,6 +237,9 @@ states:
     name: resizing
     selector: ":host([data-resizing])"
   - $type: state
+    name: actions
+    selector: ":host([data-actions])"
+  - $type: state
     name: single
     selector: ":host([data-select=\"single\"])"
   - $type: state
@@ -227,8 +253,8 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setColumnFilter, columnClause,
-      suspendColumnFilter, openColumnFilter, clearColumnFilter, select, clearSelection). See
-      $extensions.sherpa.methods.
+      suspendColumnFilter, openColumnFilter, clearColumnFilter, actionsFor, select, clearSelection).
+      See $extensions.sherpa.methods.
 events:
   - $type: event
     name: column-resize
@@ -290,6 +316,13 @@ events:
     detail:
       collapsed: unknown
       value: unknown
+  - $type: event
+    name: row-action
+    bubbles: true
+    composed: true
+    detail:
+      id: unknown
+      records: unknown
   - $type: event
     name: grid-pages-change
     bubbles: true
@@ -374,6 +407,16 @@ tokens:
   head-btn.font-weight: "{sherpa.font-weight-regular}"
   head-btn.line-height: "{sherpa.theme-content-line-height-base}"
   head-btn.color: "{sherpa.theme-content-body-1}"
+  actions-col.width: "{sherpa.display-mode-size-3xl}"
+  actions-trigger.inline-size: "{sherpa.display-mode-size-2xl}"
+  actions-trigger.block-size: "{sherpa.display-mode-size-2xl}"
+  actions-trigger.border-radius: "{sherpa.border-rounding-sm}"
+  actions-trigger.color: "{sherpa.theme-content-body-1}"
+  actions-trigger.font-size: "{sherpa.theme-content-size-md}"
+  action-item.gap: "{sherpa.display-mode-space-sm}"
+  action-item.padding: "{sherpa.display-mode-space-xs}"
+  action-item.color: "{sherpa.theme-content-body-1}"
+  action-icon.inline-size: "{sherpa.theme-content-size-md}"
   group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
   row.background: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
@@ -421,6 +464,10 @@ $extensions:
         name: clearColumnFilter
         args: "field?: string"
         description: Drop one column's heading filter, from OUTSIDE the grid.
+      - $type: method
+        name: actionsFor
+        args: "count: number"
+        description: The actions that apply to the CURRENT selection.
       - $type: method
         name: select
         args: "keys: readonly string[]"

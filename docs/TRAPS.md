@@ -4746,6 +4746,100 @@ filter inputs, and `filter-change`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-grid-actions-are-declared-once-used-twice
+
+**One list of actions, two surfaces that draw it.**
+
+A grid's row menu and a host's bulk toolbar offer the same things, so they are
+declared once — in `populate()`, beside the rows they act on:
+
+```js
+populate({
+  columns, rows, key: 'email',
+  actions: [
+    { id: 'edit',   label: 'Edit',   icon: 'fa-regular fa-pen' },
+    { id: 'delete', label: 'Delete', icon: 'fa-regular fa-trash',
+      multi: true, danger: true },
+  ],
+})
+```
+
+A toolbar that kept its own copy would disagree with the menu the first time
+either changed, and nothing would catch it. So the toolbar asks:
+
+```js
+grid.actionsFor(count)   //  1 row  → every action
+                         //  2+     → only the `multi` ones
+                         //  0      → none
+```
+
+**`multi` is the field that earns its place.** Deleting five customers is one
+action; editing five is not. Without it a bulk bar either offers an edit that
+cannot work, or the host re-derives which actions are safe — which is exactly
+the deriving-what-you-do-not-own bug in `T-grid-reports-never-combines`.
+
+**The grid REPORTS and does not act.** `row-action` carries
+`{ id, records }`; removing the record is the store's job and the host's
+decision. A grid that deleted the row itself would be the same mistake wearing
+a different hat.
+
+The column is revealed by the DATA, not by an attribute a host must remember:
+`populate()` sets `data-actions` when the list is non-empty, and CSS selects on
+it. A grid that declares no action looks exactly as it did before the feature.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-grid-actions-pin-to-the-trailing-edge
+
+The actions column is the **trailing twin of the selection column**: same fixed
+width, same come-and-go `<col>`, opposite edge.
+
+Two things differ, and both are simpler than the leading side:
+
+**It needs no measured offset.** The leading block can be two columns deep — a
+selection cell, then the first data column — so the second must clear the
+first's MEASURED width (`T-grid-pin-offset-is-measured`). Only one column ever
+pins to the trailing edge, so `inset-inline-end: 0` is the whole answer.
+
+**Its cell is MOVED, not created.** The template already holds it; `#renderBody`
+appends the data cells between the two pinned ones, then re-appends the actions
+cell to put it last. `appendChild` on a node that is already a child re-parents
+it — which is why there is no `createElement` here, and why the rule about every
+element existing in the template from the start still holds.
+
+A group row's `colSpan` counts it: `columns + 1 + (actions ? 1 : 0)`. One that
+stopped short would leave the pinned cell floating over a gap.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+### T-one-actions-menu-for-every-row
+
+**One `<sherpa-menu>` serves every row.** A hundred rows would otherwise stamp a
+hundred popovers into the top layer, each with its own listeners, for a menu
+only one of which can ever be open.
+
+So the menu is a single element in the template, outside the body, and the row
+it belongs to is remembered as a RECORD — not an index, because one menu is
+shared and an index stops meaning the same thing after a sort.
+
+Two consequences worth knowing:
+
+- the menu is **re-stamped on each open**. The list is the same today, but a
+  per-row filter would live here, and re-stamping costs one clone of a handful
+  of rows.
+- the trigger click is **delegated from the body**, because the body is replaced
+  on every render and a per-trigger listener would be re-bound a hundred times.
+  The menu itself is outside the body, so it gets a direct listener.
+
+**`#onRowClick` guards the actions cell itself**, rather than relying on
+`stopPropagation` in the actions handler. Both listeners sit on `.body`, so they
+fire in REGISTRATION order and `#onRowClick` is first — stopping the event later
+would be too late, and `row-click` would already have gone out. The
+`stopPropagation` stays anyway, for a HOST listener on the grid, which has no
+such guard.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
 ### T-grid-collapsed-group-is-one-slot
 
 **A SHUT group is ONE line on screen, so it costs ONE slot of the page.**

@@ -292,8 +292,23 @@ export async function init(root) {
   const page = new AbortController();
   const signal = page.signal;
 
+  /* THE ROW ACTIONS, declared ONCE.
+
+     The grid draws them in its pinned trailing column, and the toolbar below
+     reads the same list back through `grid.actionsFor(count)` — so the two
+     cannot disagree, which is the whole reason the grid owns the declaration
+     rather than each surface keeping its own copy.
+
+     `multi` is the interesting field. Deleting five customers is one action;
+     editing five is not, so Edit is absent from the bulk bar the moment a
+     second row is ticked. */
+  const ROW_ACTIONS = [
+    { id: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
+    { id: 'delete', label: 'Delete', icon: 'fa-solid fa-trash', multi: true, danger: true },
+  ];
+
   source.bind(grid, {
-    as: (rows) => ({ columns, rows }),
+    as: (rows) => ({ columns, rows, key: 'email', actions: ROW_ACTIONS }),
     ignore: ['filter-change'],
     signal,
   });
@@ -484,14 +499,73 @@ export async function init(root) {
 
   await source.load();
 
-  // Dialog open/close + save → toast.
-  root.querySelector('#add-btn').addEventListener('button-click', () => {
-    dialog.dataset.heading = 'Add customer';
+  /* ── ROW ACTIONS ──────────────────────────────────────────────────
+     The grid REPORTS an action; this view decides what it means. Deleting a
+     record is the app's call, not the grid's — a grid that removed the row
+     itself would own state the store owns. */
+
+  /** The record being edited, or null for a new one. The key, so it survives a reload. */
+  let editing = null;
+
+  /** Open the dialog for one record, or for a new one when given nothing. */
+  const openDialog = (record) => {
+    editing = record ? record.email : null;
+    dialog.dataset.heading = record ? 'Edit customer' : 'Add customer';
+    root.querySelector('#f-name').value = record?.name ?? '';
+    root.querySelector('#f-email').value = record?.email ?? '';
     // sherpa-dialog's method is show(), not the native showModal() — the
-    // component owns the modality and the `open` attribute. Calling showModal()
-    // threw "dialog.showModal is not a function" and the dialog never opened.
+    // component owns the modality and the `open` attribute.
     dialog.show();
-  });
+  };
+
+  /** Delete records, then say what happened. */
+  const deleteRecords = async (records) => {
+    for (const record of records) await store.remove(record.email);
+    grid.clearSelection();
+    SherpaToast.success(
+      records.length === 1 ? `${records[0].name} deleted` : `${records.length} customers deleted`,
+      { value: 'The store announced the change; every bound view reloaded.' },
+    );
+  };
+
+  /** One place both surfaces route through, so they cannot behave differently. */
+  const runAction = async (id, records) => {
+    if (!records.length) return;
+    if (id === 'edit') openDialog(records[0]);
+    if (id === 'delete') await deleteRecords(records);
+  };
+
+  grid.addEventListener('row-action', (e) => {
+    void runAction(e.detail.id, e.detail.records ?? []);
+  }, { signal });
+
+  /* THE BULK BAR. `grid.actionsFor(count)` is the same list the row menu draws,
+     narrowed to what survives a multi-row selection — so Edit disappears the
+     moment a second row is ticked, without this view knowing why. */
+  const bulkCount = root.querySelector('#bulk-count');
+  const bulkActions = root.querySelector('#bulk-actions');
+
+  grid.addEventListener('selection-change', () => {
+    const records = grid.selectedRecords;
+    bulkCount.hidden = records.length === 0;
+    bulkCount.textContent = `${records.length} selected`;
+
+    bulkActions.replaceChildren();
+    for (const action of grid.actionsFor(records.length)) {
+      const button = document.createElement('sherpa-button');
+      button.dataset.look = action.danger ? 'ghost' : 'ghost';
+      if (action.danger) button.dataset.status = 'critical';
+      if (action.icon) button.dataset.iconStart = action.icon;
+      button.textContent = action.label;
+      button.addEventListener('button-click', () => {
+        void runAction(action.id, grid.selectedRecords);
+      });
+      bulkActions.appendChild(button);
+    }
+  }, { signal });
+
+  // Dialog open/close + save → toast.
+  root.querySelector('#add-btn').addEventListener('button-click', () => openDialog(null));
   root.querySelector('#cancel-btn').addEventListener('button-click', () => dialog.close());
 
   root.querySelector('#save-btn').addEventListener('button-click', async () => {
@@ -506,6 +580,17 @@ export async function init(root) {
        re-populates. Where the new row lands against the active sort, whether an
        active filter hides it, and what the page totals become are all the
        source's existing work, not five separate things to remember here. */
+    /* EDIT or ADD, through the same button. `editing` holds the key when the
+       dialog was opened from a row's Edit action; update MERGES, so only the
+       fields this form owns are touched and the rest of the record survives. */
+    if (editing) {
+      const saved = await store.update(editing, { name, email: email || editing });
+      editing = null;
+      dialog.close();
+      SherpaToast.success(`${saved.name} updated`, { value: 'The record was saved.' });
+      return;
+    }
+
     const created = new Date().toISOString().slice(0, 10);
     await store.insert({
       name,

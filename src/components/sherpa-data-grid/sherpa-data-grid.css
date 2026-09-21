@@ -755,6 +755,131 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   inset-inline-start: 0;
   z-index: 2;
 }
+
+/* ── The ACTIONS column — the trailing twin of the selection column ──────────
+ *
+ * Same shape, opposite edge: a fixed-width <col> that comes and goes with its
+ * cells (for the reason spelled out on `.select-col` above: hiding only the
+ * cells leaves the <col>s and the columns out of step), and a sticky pin at
+ * `inset-inline-end` rather than `-start`.
+ *
+ * It needs NO measured offset. The leading block can be two columns deep — a
+ * selection cell then the first data column — so the second must clear the
+ * first's MEASURED width. Only one column ever pins to the trailing edge, so
+ * `0` is the whole answer.
+ *
+ * TRAP T-grid-actions-pin-to-the-trailing-edge.
+ */
+.actions-col {
+  display: none;
+  /* `width`, not `inline-size` — see `.select-col`: a fixed table reads the
+     <col>'s used WIDTH and Chromium ignores the logical property here. */
+  width: var(--sherpa-display-mode-size-3xl, 40px);
+}
+:host([data-actions]) .actions-col { display: table-column; }
+
+.actions-cell { display: none; }
+:host([data-actions]) .actions-cell { display: table-cell; }
+
+:host([data-actions]) .actions-cell {
+  inline-size: var(--sherpa-display-mode-size-3xl, 40px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px);
+  text-align: center;
+  vertical-align: middle;
+  position: sticky;
+  inset-inline-end: 0;
+  z-index: 2;
+}
+
+/* The head cell's label is for a screen reader only: the column is 40px of icon
+   buttons, and the word would be clipped to "Act…". Not `display: none`, which
+   takes it out of the accessibility tree too. */
+.actions-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* An opaque base, then the row's own state tint on top — the same two-layer
+   treatment the leading pinned cells get, and for the same reason: a sticky
+   cell paints its own background, so the row's cannot reach it. */
+.row > .actions-cell {
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+.row:hover > .actions-cell {
+  background:
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+.row[data-focused] > .actions-cell {
+  background:
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+.row:has(.row-select:checked) > .actions-cell {
+  background:
+    linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent) 0 100%),
+    var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* The trigger. An icon-only button, so it is square and the glyph is the whole
+   content — sized from the same token the grid's other icons use. */
+.actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--sherpa-display-mode-size-2xl, 32px);
+  block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--sherpa-border-rounding-sm, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  cursor: pointer;
+  font-size: var(--sherpa-theme-content-size-md, 14px);
+}
+.actions-trigger:hover {
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 60%, transparent);
+}
+.actions-trigger:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+
+/* One menu row. A real <button>, so it keeps Enter, Space and focus for free. */
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-sm, 8px);
+  inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.action-item:hover {
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 60%, transparent);
+}
+.action-item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+}
+/* A DESTRUCTIVE action reads as one before it is clicked. Status colour, not a
+   component token — the same critical the rest of the system uses. */
+.action-item[data-danger] {
+  color: var(--sherpa-style-content-critical-base, #b3261e);
+}
+.action-icon {
+  inline-size: var(--sherpa-theme-content-size-md, 14px);
+  text-align: center;
+  flex: none;
+}
 /* The SECOND pinned cell clears the first. `--_pin-offset` is the measured width
    of everything pinned before it; 0 when the selection column is hidden, so the
    same rule is correct either way. */
