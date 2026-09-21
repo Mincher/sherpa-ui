@@ -29,7 +29,8 @@ down anywhere. They are in here now.
 | ~~**D4**~~ | ~~Error handling for failed mutations~~ | — | **DONE** `3b3d6242` |
 | ~~**D1**~~ | ~~Checkbox styling in grid selection cells~~ | — | **DONE** — verified, already correct |
 | **B4** | Data-viz tooltips lose decimals | S | Same cause as C |
-| **C** | Data viz built from the data layer | L | Blocks D2 |
+| ~~**C**~~ | ~~Data viz built from the data layer~~ | — | **DONE** `eb8d15a1` |
+| **E** | Assess `src/core/` for duplication and platform-native work | XL | Asked 2026-09-21 |
 | **D2** | 4 data-viz containers on Records | L | Needs C first |
 | **A** | Generalise grouping / sorting / filtering | XL | Architectural; B5 feeds it |
 | **D6** | Trim data-grid comments into per-component docs | M | Housekeeping |
@@ -220,9 +221,84 @@ state, not a delete), and a chip with no menu at all is untouched.
 a presentation decision made in the wrong place. The value label and the tooltip
 must read the same formatter, not two that agree by luck.
 
-### C. Data viz must be built FROM the data layer
+### E. Assess `src/core/` — duplication, and work the platform already does
+
+**The ask, verbatim:** "I'd like to assess all of the scripts in 'core' folder
+to refactor them to reduce duplication and complexity. I feel like there's a lot
+of code that is doing the work of native web component lifecycle or
+functionality as well as other platform native functionality."
+
+17 modules, 5,348 lines. The two biggest are where the suspicion points:
+
+| module | lines | what it does |
+|---|---|---|
+| `sherpa-element.ts` | 808 | the base class — 8 named sections |
+| `data-source.ts` | 683 | query state + binding |
+| `stores.ts` | 603 | Array/Json/Rest/Local stores |
+| `persist-view.ts` | 518 | saved views |
+| `idb-store.ts` | 505 | IndexedDB |
+| `live-stores.ts` | 360 | Event/Socket stores |
+| `store.ts` | 349 | the query engine |
+| (10 more) | 1,522 | |
+
+`sherpa-element.ts`'s own sections: native lifecycle, bootstrap, slot presence,
+the data path, attribute coercion, declared-prop sync, shadow queries + events,
+lifecycle hooks.
+
+**Where to look first, in the spirit of the ask** — each of these is a QUESTION,
+not a finding:
+
+1. **Slot-presence → `data-has-{slot}`.** The platform has `::slotted()` and
+   `slotchange`; CSS can often select on a filled slot directly. Does the
+   attribute earn its keep, or is it a JS mirror of something CSS can already
+   see? (Note `T-a-data-has-attribute-must-not-share-a-slot-name` exists, which
+   suggests it has at least one sharp edge.)
+2. **Attribute coercion + declared-prop sync** (≈100 lines). This is the
+   `static props` machinery. Some of it is genuinely ours — `kind: content`
+   writing text into the shadow DOM has no platform equivalent. But the
+   coercion half may overlap `attributeChangedCallback` more than it adds.
+3. **Bootstrap.** Template fetch + `adoptedStyleSheets` + first render. How much
+   is orchestration the platform would do given declarative shadow DOM or a
+   plain `<template>` clone?
+4. **Shadow queries.** `this.$()` / `this.$$()` are thin and earn their keep by
+   making `shadowRoot.querySelector` unwritable — but check nothing heavier has
+   accreted around them.
+5. **Across modules, not just within one.** `stores.ts` + `idb-store.ts` +
+   `live-stores.ts` are 1,468 lines implementing one interface five ways; the
+   shared half (validation, the change event, `applyOptions` delegation) may be
+   statable once.
+
+**Two cautions, from this session's evidence:**
+
+- **Measure before cutting.** `sherpa-audit-2026-09-17` records three findings
+  in a previous audit that turned out to be wrong, and the rule that came out of
+  it: a second implementation of a check is a second answer.
+- **Some of the "duplication" is load-bearing.** `CLAUDE.md` says the per-edge
+  border chain looks like duplication in 21 components and is not, because the
+  edges genuinely differ. Expect the same shape here: ask what breaks before
+  concluding something is redundant.
+
+The gates are the safety net — 568 browser tests, 46 node tests, round-trip
+specs, the DOM-free lint boundary and `check-traps`. A refactor that keeps all
+of those green has not changed behaviour.
+
+### ~~C. Data viz must be built FROM the data layer~~ — DONE `eb8d15a1`
 
 > "Data viz should be built from data in the data layer and not bespoke."
+
+`src/core/aggregate.ts` — `aggregateBy`, `countBy`, `bandBy`, `seriesBy`,
+`reduceRows`. All four costs closed, including `run_query` now answering "count
+by category".
+
+**Two real bugs surfaced on the way**, both caught by tests before any chart saw
+them: `Number(null)` is 0 and finite, so the obvious guard counted every missing
+value as a nought (passes a sum, fails a mean); and the histogram's
+`Math.min(4, …)` clamp put a full disk in the last band by accident while
+silently counting an out-of-range 150 as a full disk too.
+
+**Still owed from B4:** the aggregation no longer rounds, so the real number
+reaches the charts. Whether each chart's tooltip and value label then FORMAT it
+the same way is a separate pass.
 
 Every chart's aggregation is hand-written in the example. The data layer defines
 the SHAPE (`ChartDatum`) but nothing that PRODUCES one.
