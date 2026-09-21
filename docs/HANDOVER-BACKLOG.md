@@ -55,6 +55,42 @@ markers on a ring fan out by construction. Verified zero overlaps on 8 markers.
 
 ## Queued
 
+### B. Small fixes asked for 2026-09-21
+
+Five, in the order they were raised. All verbatim.
+
+1. **"The number of rows selected ('X items selected') should be on the right
+   hand side of the toolbar. It shouldn't be between the CTA button and other
+   buttons."** — `examples/templates/records.html` puts `#bulk-count` and
+   `#bulk-actions` straight after the Add button.
+
+2. **"Last row cells in the data grid don't have a bottom border. Creates a
+   visual mismatch against pinned columns."** Note the pinned cells now restate
+   the row rule themselves (`.select-cell`, `.actions-cell`), so on the LAST row
+   they draw one where the ordinary cells do not — that asymmetry is the bug as
+   reported. Decide which way the last row should read before changing either.
+
+3. **"When a filter chip has no value selected then clicking on the left side
+   (with the field name) should open the chip's menu. This doesn't apply to an
+   inactive chip with a value already set."** — the body currently cycles the
+   chip's states (`T-a-chip-body-cycles-its-states`). This is the empty case
+   only: with nothing to toggle, toggling is a no-op, so the body should open the
+   menu instead. A chip that HOLDS a value keeps cycling.
+
+4. **"Tooltips on data viz should use the same unit magnitudes as the main value
+   label (e.g metric value label, donut total value label etc.) to accurately
+   portray value changes. Right now they seem to be truncated to whole numbers
+   so decimal nuance is lost."** — `.chart-tip` is shared by all five charts
+   (`sherpa-base.css`), so the formatter probably is too. The value label and the
+   tip must read the SAME formatter, not two that agree by luck.
+
+5. **Grid header chips still do not light from the app header.** Measured
+   2026-09-21 after the header filters were wired: filtering by Region in the
+   app header narrows the grid correctly, and the Region COLUMN's own chip stays
+   unlit. The grid lights a column heading from `#columnFilters`, which only the
+   grid's own menu writes — a filter arriving through the query is invisible to
+   it. Related to item A: this is the same "two components, one value" shape.
+
 ### A. Generalise grouping / sorting / filtering — asked 2026-09-21
 
 **The ask, verbatim:** "There are now a lot of components that can affect
