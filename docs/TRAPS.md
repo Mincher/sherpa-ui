@@ -6324,3 +6324,73 @@ mutation deserves the same care, and had none.
 
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
+
+### T-a-row-holds-two-selection-boxes
+
+Every body row stamps BOTH a `sherpa-select-checkbox` and a
+`sherpa-select-radio`, and CSS reveals one — so `.row-select` matches **two
+elements per row**, not one.
+
+Anything that COUNTS or READS must ask for the visible box (`.row-multi` or
+`.row-one`, via `#rowBox()` / `#rowBoxes()`). Only a write that genuinely means
+"set them both" uses the broad selector.
+
+Four callers had it wrong, and each failed differently — which is what made it
+hard to see as one bug:
+
+| caller | what went wrong |
+|---|---|
+| `#syncGroupSelects` | counted 44 ticks against 22 rows, so a group box never read as full |
+| `#syncSelectAll` | saw 50 boxes for 25 rows, so the header box was never "all" |
+| `#emitSelection` | reported every selected row **twice** |
+| `#selectGroup` | wrote to the hidden control in single mode |
+
+The tests had the same fault: `.row-select` in a spec counts double too.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
+### T-a-click-does-not-clear-indeterminate
+
+`indeterminate` is a **JS-only property**. A user's click flips `checked` and
+leaves `indeterminate` exactly as it was — the browser does not clear it.
+
+So a mixed checkbox the reader clicked became `checked: true, indeterminate:
+true`, and CSS draws the dash over the tick: the box still said "some" the
+moment after the reader said "all". Measured on the live inner input, before and
+after.
+
+`sherpa-select-checkbox` carried a comment saying "native toggling clears
+indeterminate", which is the opposite of what happens. It removed only the host
+ATTRIBUTE, and CSS selects `:indeterminate` on the PROPERTY — so the attribute
+went and the dash stayed.
+
+The component now clears both in its own change handler, because a user's click
+is exactly the gesture that ends the mixed state.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+
+### T-a-default-is-not-an-override
+
+A NUMBER filter opens as a RANGE — "between 10 and 240 seats" is almost always
+the ask, and the slider is already sized to the column's real min and max, so
+the range excludes nothing until it is dragged. A DATE opens as a single day.
+
+The subtlety is how that default is written:
+
+```ts
+def.range ?? def.kind === 'number'      // a DEFAULT — an explicit false wins
+def.range || def.kind === 'number'      // an OVERRIDE — false is overruled
+held ? !!held.range : kind === 'number' // a HELD clause always wins
+```
+
+`||` would force every number chip to a range even where a view declared
+`range: false`, and would drag a SAVED single-value filter back to a range every
+time the reader reopened it. A default applies when nothing was said; it never
+overrules something that was.
+
+Two places apply it and must agree: the switch's own state, and the `picksOne`
+flag that decides whether the menu defers to an Apply button. They read the same
+expression rather than repeating the condition.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`

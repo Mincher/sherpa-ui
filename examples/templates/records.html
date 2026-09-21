@@ -61,7 +61,15 @@
            is in the template from the start, and CSS hides an empty container.
            The SPAN carries the count, which is the one thing the buttons cannot
            say for themselves. -->
-      <span slot="leading" id="bulk-actions"></span>
+      <!-- A FLEX ROW with the toolbar's own gap. The span was a plain block, so
+           two actions (Edit and Delete, on a single selection) sat flush
+           against each other — the zone's 8px separates the span from the CTA
+           but says nothing about what is inside it.
+           `space-xs` is the 8, the same token `sherpa-toolbar` uses for its
+           own zone gap, so the two rows read as one. -->
+      <span slot="leading" id="bulk-actions"
+            style="display: flex; align-items: center;
+                   gap: var(--sherpa-display-mode-space-xs, 8px)"></span>
       <span slot="trailing" id="bulk-count" class="bulk-count" hidden></span>
     </sherpa-toolbar>
 

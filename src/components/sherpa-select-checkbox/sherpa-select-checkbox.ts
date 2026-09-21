@@ -140,12 +140,27 @@ export class SherpaSelectCheckbox extends SherpaElement {
     const c = this.#control;
     if (!c) return;
     this.toggleAttribute('checked', c.checked);
-    // Native toggling clears indeterminate — keep the host attribute in step.
-    if (c.indeterminate === false) this.removeAttribute('indeterminate');
+    /* A USER'S CLICK ENDS THE MIXED STATE.
+     *
+     * `indeterminate` is a JS-only property: the browser does NOT clear it on
+     * click, it only flips `checked`. So a mixed box that the reader clicked
+     * became checked AND stayed indeterminate, and CSS draws the dash over the
+     * tick — the box still read as "some" after the reader had just said "all".
+     *
+     * The comment here said "native toggling clears indeterminate", and it
+     * does not. Measured: after a click the inner input reports
+     * `checked: true, indeterminate: true`.
+     *
+     * Cleared on the PROPERTY as well as the attribute, because CSS selects
+     * `:indeterminate` on the property.
+     * TRAP T-a-click-does-not-clear-indeterminate.
+     */
+    c.indeterminate = false;
+    this.removeAttribute('indeterminate');
     this.emit('change', {
       checked: c.checked,
       value: this.value,
-      indeterminate: c.indeterminate,
+      indeterminate: false,
     });
   };
 }

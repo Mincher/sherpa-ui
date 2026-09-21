@@ -548,17 +548,29 @@ export class SherpaDataGrid extends SherpaElement {
     // NUMBER and DATE lead with the Range switch, above the body it re-points.
     // Reading "between these two" after the two boxes would be backwards.
     if (kind === 'number' || kind === 'date') {
+      /* A NUMBER column opens as a RANGE; a DATE opens as a single day.
+       *
+       * "Between 10 and 240 seats" is what a reader almost always wants from a
+       * number, and the slider is already sized to the column's real min and
+       * max — so the range costs nothing and the switch turns it off. A date is
+       * the other way round: "on this day" is the common ask.
+       *
+       * A HELD clause always wins, in both directions: re-opening a filter
+       * shows what it is set to, not what it defaults to. That is why this
+       * reads `held ? held.range : …` rather than `held?.range || …`, which
+       * would force a saved SINGLE number filter back to a range every time the
+       * reader looked at it. TRAP T-a-default-is-not-an-override. */
+      const asRange = held ? !!held.range : kind === 'number';
+
       const range = this.clone('template.head-range-tpl');
       if (range) {
         const sw = range.querySelector('sherpa-switch');
-        // The switch starts where the held clause left it, so re-opening a
-        // range filter shows a range rather than resetting to single.
-        if (held?.range) sw?.setAttribute('checked', '');
+        if (asRange) sw?.setAttribute('checked', '');
         menu.appendChild(range);
       }
       // The MENU carries the mode, because CSS selects the visible shape off it
       // — the same door the toolbar's number chip uses.
-      if (held?.range) menu.setAttribute('data-range', '');
+      if (asRange) menu.setAttribute('data-range', '');
     }
 
     // Restore what this column is already filtered by, so re-opening the menu
@@ -1542,6 +1554,7 @@ export class SherpaDataGrid extends SherpaElement {
     // Unticking the header box is a CLEAR, so the off-page keys go with it —
     // the same reason the "none" scenario drops them.
     if (!checked) this.#wantedKeys = null;
+    // BOTH boxes on purpose — a write, not a count. CSS decides which shows.
     this.$$<SelectBox>('.row-select').forEach((box) => (box.checked = checked));
     // Every group is now wholly in or wholly out, so its own box must say so.
     this.#syncGroupSelects();
@@ -1584,6 +1597,31 @@ export class SherpaDataGrid extends SherpaElement {
     this.#emitSelection();
   };
 
+  /**
+   * The SHOWN selection box in a row — the checkbox, or the radio in single mode.
+   *
+   * Every row stamps BOTH and CSS reveals one, so `.row-select` matches two
+   * elements per row. Anything that COUNTS or READS must ask for the visible
+   * one; only a write that means "set them both" uses the broad selector.
+   *
+   * Four callers had it wrong and each failed differently: a group's box
+   * counted 44 ticks against 22 rows so it never read as full (the reported
+   * bug — clicking an indeterminate group box left the dash on), the header's
+   * select-all saw 50 boxes for 25 rows so it was never "all", `#emitSelection`
+   * reported every row twice, and `#selectGroup` wrote to the hidden control in
+   * single mode.
+   *
+   * TRAP T-a-row-holds-two-selection-boxes.
+   */
+  #rowBox(row: Element): SelectBox | null {
+    return row.querySelector<SelectBox>(this.#single ? '.row-one' : '.row-multi');
+  }
+
+  /** Every SHOWN row box, in row order. */
+  #rowBoxes(): SelectBox[] {
+    return this.$$<SelectBox>(this.#single ? '.row-one' : '.row-multi');
+  }
+
   /** The record a row control belongs to, resolved through the VISIBLE list. */
   #recordFor(el: HTMLElement): GridRow | undefined {
     const raw = el.closest<HTMLElement>('.row')?.dataset['index'];
@@ -1597,7 +1635,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (key == null) return;
     for (const row of this.$$<HTMLElement>('.row')) {
       if (row.dataset['group'] !== key) continue;
-      const rowBox = row.querySelector<SelectBox>('.row-select');
+      const rowBox = this.#rowBox(row);
       if (rowBox) rowBox.checked = box.checked;
       const record = this.#recordFor(row);
       if (!record) continue;
@@ -1618,9 +1656,7 @@ export class SherpaDataGrid extends SherpaElement {
       const box = groupRow.querySelector<SelectBox>('.group-select');
       if (!box || key == null) continue;
       const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['group'] === key);
-      const checked = rows.filter(
-        (r) => r.querySelector<SelectBox>('.row-select')?.checked,
-      ).length;
+      const checked = rows.filter((r) => this.#rowBox(r)?.checked).length;
       box.checked = checked > 0 && checked === rows.length;
       box.indeterminate = checked > 0 && checked < rows.length;
     }
@@ -1670,7 +1706,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Reflect all/none/indeterminate on the header select-all box. */
   #syncSelectAll(): void {
-    const all = this.$$<SelectBox>('.row-select');
+    const all = this.#rowBoxes();
     const selectAll = this.$<SelectBox>('.select-all');
     if (!selectAll) return;
     const checked = all.filter((b) => b.checked).length;
@@ -1715,7 +1751,7 @@ export class SherpaDataGrid extends SherpaElement {
     // BEFORE the event: a listener that reads `selectedKeys` must see the
     // choice that was just made, not the one before it.
     this.#rememberSelection();
-    const selected = this.$$<SelectBox>('.row-select')
+    const selected = this.#rowBoxes()
       .filter((box) => box.checked)
       .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
       .filter((id) => id !== '');

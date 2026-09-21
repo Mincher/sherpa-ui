@@ -1465,6 +1465,15 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
     // question, and offering it invites a comparison with no meaning.
     const conditions = Array.from(chip().querySelectorAll('option')).map((o) => o.value);
 
+    /* SINGLE first — and a number column now OPENS as a range, so the switch
+       has to be turned OFF to get there. That default is the point of
+       T-a-default-is-not-an-override; this test is about the two SHAPES, and
+       it still walks both, starting from the other end. */
+    const off = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    off.checked = false;
+    off.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await settle();
+
     // SINGLE: a condition and one value.
     chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'gte';
     chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = '100';

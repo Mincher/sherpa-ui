@@ -1187,8 +1187,13 @@ test('a NUMBER chip flips between a single field and a two-ended slider', async 
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
+    /* `range: false` EXPLICITLY. A number chip now opens as a range by default
+       (T-a-default-is-not-an-override), and this test is about the FLIP between
+       the two shapes — so it declares the side it wants to start on. That the
+       declaration wins over the default is half the trap, and this asserts it. */
     el.populate([
-      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, step: 10, active: true },
+      { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 1000, step: 10,
+        range: false, active: true },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -1245,8 +1250,8 @@ test('a NUMBER chip flips between a single field and a two-ended slider', async 
     return { opened, bounds, typed, ranged, dragged, back };
   });
 
-  // Opens SINGLE: the simpler question, and the one a reader can answer without
-  // deciding on two numbers first.
+  // Opens SINGLE, because the definition said so — the DEFAULT for a number is
+  // now a range, and an explicit `range: false` overrules it.
   expect(r.opened).toEqual({ ranged: false, field: true, slider: false, picks: null });
   expect(r.bounds.slider).toEqual(['0', '1000', '10']);
   expect(r.bounds.field).toEqual(['0', '1000']);
@@ -1382,12 +1387,19 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
     };
 
     return {
-      number: await read({ id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 100, active: true }, 'spend'),
+      /* `range: false` so both kinds start on the SINGLE side and the sequence
+         below (single → ranged → back) reads the same for each. A number now
+         defaults to a range — T-a-default-is-not-an-override. */
+      number: await read(
+        { id: 'spend', label: 'Spend', kind: 'number', min: 0, max: 100, range: false, active: true },
+        'spend',
+      ),
       date: await read({ id: 'created', label: 'Created', kind: 'date', active: true }, 'created'),
       // A chip whose DEFINITION named `commit` keeps what it asked for — the
       // switch supplies the default a host left out, it does not overrule one.
       pinned: await read(
-        { id: 'pinned', label: 'Pinned', kind: 'number', min: 0, max: 100, commit: false, active: true },
+        { id: 'pinned', label: 'Pinned', kind: 'number', min: 0, max: 100,
+          commit: false, range: false, active: true },
         'pinned',
       ),
     };

@@ -846,7 +846,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
     // TRAP T-commit-follows-select-mode — including why a DATE or NUMBER chip
     // counts as single, and why RANGE mode defers (see #onRangeToggle).
-    const picksOne = (def.kind === 'date' || def.kind === 'number') && !def.range;
+    // A NUMBER defaults to a range, so it does NOT pick one — the same default
+    // `#addRangeSwitch` applies, said once here and read the same way.
+    const asRange = def.range ?? def.kind === 'number';
+    const picksOne = (def.kind === 'date' || def.kind === 'number') && !asRange;
     const defers = def.commit ?? (!single && !picksOne);
     if (defers) menu.setAttribute('data-commit', '');
     // TRAP T-every-chip-menu-gets-clear-and-search — Clear is a HEADER button,
@@ -1003,7 +1006,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const row = this.clone('template.qf-range-tpl');
     if (!row) return;
     const sw = row.querySelector('sherpa-switch');
-    if (def.range) {
+    /* A NUMBER chip opens as a RANGE unless its definition says otherwise.
+     *
+     * "Between 10 and 240" is what a reader almost always wants from a number,
+     * and the slider is already sized to the chip's own min/max, so the range
+     * excludes nothing until they drag it. A DATE keeps whatever it declared —
+     * "on this day" is the common ask there.
+     *
+     * `def.range ?? kind === 'number'`, so an explicit `range: false` still
+     * wins: this is a DEFAULT, not an override.
+     * TRAP T-a-default-is-not-an-override. */
+    if (def.range ?? def.kind === 'number') {
       sw?.setAttribute('checked', '');
       menu.setAttribute('data-range', '');
     }
