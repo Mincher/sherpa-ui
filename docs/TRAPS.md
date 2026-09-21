@@ -6394,3 +6394,24 @@ expression rather than repeating the condition.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+### T-a-sub-pixel-border-reads-back-as-1px
+
+`getComputedStyle().borderTopWidth` returns the USED value, and Chromium rounds
+every sub-pixel border up to one device pixel. So `0.5px` and `0.25px` both read
+back as `"1px"`, and a probe cannot tell them apart — or tell either from a real
+1px border.
+
+This matters here because the design uses sub-pixel strokes deliberately: a
+hairline is `border/width/sm` (0.5), and a snapped PAIR splits one hairline into
+two 0.25 halves so the seam between two touching controls is not drawn twice.
+Measuring the advanced checkbox reported `1px | 1px | 1px | 1px` on a wrapper
+whose declared edges are `0.5 0.25 0.5 0.5` — which looks like the seam is
+broken when it is exactly right.
+
+**Read the custom property, not the border.** `getPropertyValue
+('--sherpa-border-right')` returns the declared `0.25px`. Verify with a
+throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
+`1px 1px 1px 2px`.
+
+- Site: `src/core/sherpa-base.css`

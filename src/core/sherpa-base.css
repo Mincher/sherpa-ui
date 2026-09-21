@@ -266,6 +266,10 @@
    `.body`, `sherpa-quick-filter`'s `.count`), and two target a bare tag inside
    a cloned prototype. Adding the class to only some of the 26 is how the first
    attempt at this silently un-bordered eight rules. */
+/* TRAP T-a-sub-pixel-border-reads-back-as-1px — these edges are deliberately
+   sub-pixel (0.5 for a hairline, 0.25 each side of a snapped seam), and
+   `getComputedStyle` rounds every one of them up to "1px". Read the custom
+   property to check a value, never the border. */
 .sherpa-border-edges {
   border-style: solid;
   border-block-start-width: var(--sherpa-border-top, 0.5px);

@@ -21,13 +21,13 @@ down anywhere. They are in here now.
 | ~~**B2**~~ | ~~Last row has no bottom border~~ | — | **DONE** `b3db74ed` |
 | **B3** | Empty chip's body should open its menu | S | One rule, one component |
 | **B6** | Saturated button ignores a critical status | M | Measured; obvious fix fails |
-| **B7** | Group checkbox icon doesn't update from indeterminate | S | Visual, isolated |
-| **B8** | Contextual toolbar actions need 8px spacing | XS | Visual, isolated |
-| **B9** | Numeric filter chips should default to range | XS | One default |
+| ~~**B7**~~ | ~~Group checkbox icon doesn't update~~ | — | **DONE** `dc18aca3` |
+| ~~**B8**~~ | ~~Contextual toolbar actions need 8px spacing~~ | — | **DONE** `dc18aca3` |
+| ~~**B9**~~ | ~~Numeric filter chips should default to range~~ | — | **DONE** `dc18aca3` |
 | ~~**D5**~~ | ~~Dialog footer horizontal padding~~ | — | **DONE** `97d7bb25` |
 | ~~**D3**~~ | ~~Delete needs a confirm dialog + a real mutation~~ | — | **DONE** `3b3d6242` |
 | ~~**D4**~~ | ~~Error handling for failed mutations~~ | — | **DONE** `3b3d6242` |
-| **D1** | Checkbox styling in grid selection cells | S | May already be done — verify first |
+| ~~**D1**~~ | ~~Checkbox styling in grid selection cells~~ | — | **DONE** — verified, already correct |
 | **B4** | Data-viz tooltips lose decimals | S | Same cause as C |
 | **C** | Data viz built from the data layer | L | Blocks D2 |
 | **D2** | 4 data-viz containers on Records | L | Needs C first |
@@ -44,17 +44,22 @@ down anywhere. They are in here now.
 
 ## Reported by you, not yet written down until now
 
-### D1. Checkbox styling in the grid selection cells
+### ~~D1. Checkbox styling in the grid selection cells~~ — DONE, verified correct
 
-> "Checkbox styling is still not correct in the advanced checkbox or in the grid
-> selection cells. Should match the advanced and basic checkbox designs in
-> Figma"
+Measured against Figma node by node. Every number agrees:
 
-**Verify before starting.** Since you raised this, the grid's bare `<input>`s
-were replaced with real `sherpa-select-checkbox` components, and the checkbox
-took your three Figma tweaks (border colour `style-border/base +1`, width
-`border/width/sm` 0.5, rounding `border/rounding/sm` 2). It may already be
-right. Check against Figma before doing anything.
+| | Figma | Measured |
+|---|---|---|
+| box | 20x20, radius 2, white, #b3b3c3 | same |
+| indicator | 14x14 #3b4ccd | same |
+| tick | 11x10 white | same |
+| wrapper | 24x24, radius `4 0 0 4` | same |
+| caret | 24x24, flush | same |
+
+It had been fixed by the component swap and your three Figma tweaks. The seam
+edges read back as `1px` in a probe, which looks wrong and is not — Chromium
+rounds every sub-pixel border up. Recorded as
+`T-a-sub-pixel-border-reads-back-as-1px`.
 
 ### D2. Four data-viz containers on the Records view
 

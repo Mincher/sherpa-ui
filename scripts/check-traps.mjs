@@ -46,6 +46,10 @@ const SOURCES = [
   'src/components/*/*.ts',
   'src/core/*.ts',
   'src/components/*/*.css',
+  // SHARED CSS too. `sherpa-base.css` is adopted into all 58 shadow roots, so a
+  // rule recorded there reaches further than any component's own — and it was
+  // the one source directory whose .css nothing checked.
+  'src/core/*.css',
   'test/reforged/harness.html',
   'playwright.config.ts',
   // The SPEC files too, for the same reason the harness is here: a rule about
