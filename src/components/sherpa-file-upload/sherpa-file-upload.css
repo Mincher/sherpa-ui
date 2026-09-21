@@ -39,13 +39,15 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
+
+  &:empty { display: none; }
 }
-.label:empty,
-.helper:empty { display: none; }
 
 .helper {
   font-size: var(--sherpa-font-size-body-small, 12px);
   color: var(--sherpa-theme-content-body-1, #35353d);
+
+  &:empty { display: none; }
 }
 
 /* ── Drop zone ───────────────────────────────────────────────────────── */
@@ -149,13 +151,10 @@
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 .file-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sherpa-display-mode-space-xs, 8px); }
+/* Truncation via .sherpa-truncate in the template. */
 .file-name {
   flex: 1 1 auto;
-  min-inline-size: 0;
   color: var(--_file-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .file-size {
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -178,7 +177,7 @@
   justify-content: center;
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
-  border-style: solid;
+  /* border-style + per-edge widths: .sherpa-border-edges in the template. */
   border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
@@ -200,14 +199,15 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ───────────────────────── */
+:host([disabled]) :is(.drop-zone, .label) {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
 :host([disabled]) .drop-zone {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Details (max size + allowed types) ──────────────────────────────── */
 .details {
@@ -222,9 +222,9 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
+
+  &:empty { display: none; }
 }
-.max-size:empty,
-.allowed-types:empty { display: none; }
 
 /* ── Actions row ─────────────────────────────────────────────────────── */
 .actions {
@@ -248,10 +248,15 @@
   font-weight: var(--sherpa-font-weight-medium, 500);
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--sherpa-focus-ring);
+  }
 }
 /* Clear all — secondary */
 .clear-all {
-  border-style: solid;
+  /* border-style + per-edge widths: .sherpa-border-edges in the template. */
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -266,14 +271,8 @@
 
   &:hover { background: var(--sherpa-theme-surface-accent-hover, #2f4bc4); }
 }
-.clear-all:focus-visible,
-.upload:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
-}
 :host([data-loading]) .upload,
-:host([disabled]) .clear-all,
-:host([disabled]) .upload {
+:host([disabled]) :is(.clear-all, .upload) {
   pointer-events: none;
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);

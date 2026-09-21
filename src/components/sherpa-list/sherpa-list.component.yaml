@@ -36,6 +36,11 @@ anatomy:
           class: row-item
           children:
             - el: sherpa-list-item
+              attrs:
+                data-attr-data-label: title
+                data-attr-data-description: description
+                data-when-current: active
+                data-when-interactive: interactive
 props:
   - $type: prop
     name: data-empty
@@ -51,9 +56,6 @@ props:
     default: — dividers between rows
     description: "| bordered | plain (no dividers)"
 states:
-  - $type: state
-    name: plain
-    selector: ":host([data-type=\"plain\"])"
   - $type: state
     name: empty-visible
     selector: ":host([data-empty-visible])"

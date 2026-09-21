@@ -37,13 +37,6 @@
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-/* 1×16 divider rectangle. */
-:host([data-has-view]) .view-zone::after {
-  content: "";
-  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  background: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
 
 /* Hidden until JS writes the flag — an empty zone leaves a stray divider. */
 .organise-zone { display: none; }
@@ -54,13 +47,21 @@
   /* Never squashed by a long filter run. */
   flex: 0 0 auto;
 }
-/* 1x16 divider rectangle. */
+
+/* The 1×16 divider rectangle, in all three places it appears. `::after` on a
+   zone, a real element in the action cluster. */
+.act-divider,
+:host([data-has-view]) .view-zone::after,
 :host([data-has-organise]) .organise-zone::after {
-  content: "";
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
+:host([data-has-view]) .view-zone::after,
+:host([data-has-organise]) .organise-zone::after {
+  content: "";
+}
+.act-divider { flex: 0 0 auto; }
 
 .chips {
   display: flex;
@@ -114,10 +115,9 @@
 /* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
-  .act:not([data-act="add"]):not([data-act="overflow"]) { display: none; }
+  .act:not([data-act="add"], [data-act="overflow"]) { display: none; }
 }
-:host([data-collapse="3"]) .act-divider,
-:host([data-collapse="3"]) .act:not([data-act="add"]):not([data-act="overflow"]) {
+:host([data-collapse="3"]) :is(.act-divider, .act:not([data-act="add"], [data-act="overflow"])) {
   display: none;
 }
 
@@ -128,14 +128,6 @@
 }
 :host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
 :host([data-no-actions]) .actions-zone { display: none; }
-
-/* 1x16 divider before the refresh/overflow tail. */
-.act-divider {
-  flex: 0 0 auto;
-  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
-  block-size: var(--sherpa-display-mode-size-sm, 16px);
-  background: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
 
 /* ── The view-scope group ────────────────────────────────────────────
  * ★ · Save · ▾ sit flush as one control. A margin, not `gap`, because the

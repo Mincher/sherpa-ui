@@ -25,10 +25,6 @@
 }
 :host([open]) .scrim { display: block; }
 
-.root[open] {
-  display: flex;
-}
-
 .root {
   /* A closed <dialog> is hidden by the UA with `display: none`; setting `display`
      unconditionally clobbers that and the panel renders permanently. Keep the
@@ -72,6 +68,8 @@
     -8px
     var(--sherpa-style-surface-shadow, #35353d4c);
 }
+
+.root[open] { display: flex; }
 
 /* No backdrop — a non-modal panel leaves the page behind interactive. */
 .root::backdrop { background: transparent; }

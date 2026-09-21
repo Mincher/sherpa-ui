@@ -30,7 +30,8 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-.rows-label {
+/* Both captions read the same; only their margins differ. */
+:is(.rows-label, .total) {
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -43,15 +44,8 @@
   align-items: center;
   gap: 0;
 }
-.page-input { margin-inline: var(--sherpa-display-mode-space-xs, 8px); }
 
-.total {
-  margin-inline-end: var(--sherpa-display-mode-space-xs, 8px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  white-space: nowrap;
-}
+.total { margin-inline-end: var(--sherpa-display-mode-space-xs, 8px); }
 
 /* THE ROW. Rows-per-page hard left, page controls hard right. */
 .pagination {
@@ -61,7 +55,6 @@
   gap: var(--sherpa-display-mode-space-base, 16px);
   inline-size: 100%;
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
-  box-sizing: border-box;
 }
 
 /* ── Native field look (select + number input) ───────────────────────── */
@@ -82,26 +75,25 @@
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-/* A <select> draws its caret INSIDE its own padding, so the shared 8px leaves the
-   label running into the glyph. Trailing side only, so .page-input keeps symmetry. */
+/* Fixed widths (not ch or auto) stop the row reflowing as the page number gains
+   a digit. A <select> draws its caret INSIDE its own padding, so the shared 8px
+   leaves the label running into the glyph — trailing side only, so .page-input
+   keeps symmetry. */
 .rows {
+  inline-size: var(--_field-rows);
   padding-inline-end: calc(var(--sherpa-structure-space-padding, 8px) * 3);
 }
 
-.rows:focus-visible,
-.page-input:focus-visible {
+.page-input {
+  inline-size: var(--_field-page);
+  margin-inline: var(--sherpa-display-mode-space-xs, 8px);
+  text-align: center;
+}
+
+:is(.rows, .page-input):focus-visible {
   outline: none;
   border-color: var(--_border-focus);
   box-shadow: inset 0 0 0 2px var(--_border-focus);
-}
-
-/* Fixed widths (not ch or auto) stop the row reflowing as the page number gains a digit. */
-.page-input {
-  inline-size: var(--_field-page);
-  text-align: center;
-}
-.rows {
-  inline-size: var(--_field-rows);
 }
 
 /* ── Nav buttons — composed <sherpa-button>s; they own their own size, states
@@ -119,9 +111,10 @@
 /* Corners come from `.sherpa-snap-group` in core/sherpa-base.css, by POSITION.
    `[data-snap]` in tokens.css is document-scoped and never reaches this shadow root. */
 
-/* ── Disabled fields ──────────────────────────────────────────────────── */
-:host([disabled]) .rows,
-:host([disabled]) .page-input {
+/* ── Disabled fields ──────────────────────────────────────────────────────
+   NOT `.sherpa-inert`: that class is static markup, so it cannot follow
+   [disabled], and it also kills pointer-events, which these fields keep. */
+:host([disabled]) :is(.rows, .page-input) {
   cursor: not-allowed;
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);

@@ -74,11 +74,7 @@
  * A grid, not a flex column, so the heading and the icon pair share row 1
  * with no extra wrapper element. */
 .header { display: none; }
-:host([data-heading]) .header,
-:host([data-has-header]) .header,
-:host([data-search]) .header,
-:host([data-clearable]) .header,
-:host([data-removable]) .header {
+:host(:is([data-heading], [data-has-header], [data-search], [data-clearable], [data-removable])) .header {
   display: grid;
   grid-template-columns: 1fr auto;
   grid-template-areas:
@@ -96,8 +92,12 @@
 .header .search { grid-area: control; }
 .header ::slotted(*) { grid-area: control; }
 
-/* ── Drill ── back arrow + breadcrumbs, data-drill only. */
-.drill-trail { display: none; }
+/* ── Drill ── back arrow + breadcrumbs, data-drill only.
+   Shares row 1 with the heading it replaces. */
+.drill-trail {
+  grid-area: heading;
+  display: none;
+}
 :host([data-drill]) .drill-trail {
   display: flex;
   align-items: center;
@@ -108,9 +108,6 @@
 
 /* The trail REPLACES the heading — the last crumb IS the heading. */
 :host([data-drill]) .heading { display: none; }
-
-.drill-trail { grid-area: heading; }
-
 
 /* ── A slotted stepper is a SNAPPED group, and only this file can say so ──
  * The buttons are slotted, so they sit in the MENU's light DOM — outside
@@ -163,15 +160,14 @@
 .rows ::slotted([data-filtered-out]) { display: none; }
 
 /* Clear, Remove, Today — each opt-in, so a plain menu is unchanged. */
-.clear { display: none; }
-.today { display: none; }
-.remove { display: none; }
+.clear,
+.today,
+.remove,
 .footer-spacer { display: none; }
 
 /* ── Header actions ── Clear and Remove, icon-only, at the trailing edge. */
 .header-actions { display: none; }
-:host([data-clearable]) .header-actions,
-:host([data-removable]) .header-actions {
+:host(:is([data-clearable], [data-removable])) .header-actions {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
@@ -278,8 +274,7 @@
  * (Cancel·Apply), data-removable, data-clearable, Type=calendar (Today). Each
  * control hides itself on its own flag, below. */
 .footer { display: none; }
-:host([data-commit]) .footer,
-:host([data-type="calendar"]) .footer { display: block; }
+:host(:is([data-commit], [data-type="calendar"])) .footer { display: block; }
 
 /* Cancel and Apply are the COMMIT pair, gated separately now that Today and
    Remove can raise the row on their own. */

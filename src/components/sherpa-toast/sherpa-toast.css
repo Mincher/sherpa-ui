@@ -83,12 +83,11 @@
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
-:host([data-status="info"])     .icon::after { content: "\f05a"; } /* circle-info */
-:host([data-status="success"])  .icon::after { content: "\f058"; } /* circle-check */
-:host([data-status="warning"])  .icon::after { content: "\f06a"; } /* circle-exclamation */
-:host([data-status="critical"]) .icon::after { content: "\f06a"; }
-:host([data-status="urgent"])   .icon::after { content: "\f071"; } /* triangle-exclamation */
-:host(:not([data-status]))      .icon::after { content: "\f05a"; }
+/* info is also the no-status default. warning and critical share a glyph. */
+:host(:is([data-status="info"], :not([data-status]))) .icon::after { content: "\f05a"; } /* circle-info */
+:host([data-status="success"]) .icon::after { content: "\f058"; } /* circle-check */
+:host(:is([data-status="warning"], [data-status="critical"])) .icon::after { content: "\f06a"; } /* circle-exclamation */
+:host([data-status="urgent"]) .icon::after { content: "\f071"; } /* triangle-exclamation */
 
 /* ── Content column ────────────────────────────────────────────────── */
 .content {
@@ -126,10 +125,6 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   cursor: pointer;
 }
-.action:focus-visible {
-  outline: none;
-  box-shadow: var(--sherpa-focus-ring);
-}
 
 /* ── Close button ──────────────────────────────────────────────────── */
 .close {
@@ -153,9 +148,10 @@
   @supports (color: color-mix(in oklab, red, blue)) {
     &:hover { background: color-mix(in oklab, currentColor 18%, transparent); }
   }
+}
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
+/* One ring for both buttons. */
+:is(.action, .close):focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
 }

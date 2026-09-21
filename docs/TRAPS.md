@@ -6819,3 +6819,61 @@ stay per-component, because each picks a different inactive token — and never
 `opacity`, which compounds in dark mode.
 
 - Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+### T-motion-is-owned-here
+
+**`CLAUDE.md` told components not to write a `prefers-reduced-motion` block
+because "motion gating is owned globally". Nothing owned it.** Searched
+`src/`, `src/styles/` and `examples/`: zero matches. Every animation in the
+library ignored the setting, and the rule that forbade a local fix was the
+reason nobody added one.
+
+The gate is in `sherpa-base.css`, which every shadow root adopts. It sets
+`animation-duration` rather than `animation: none`, so a paused animation lands
+on its END state instead of snapping back to its start — and `!important`,
+because a component's own rule outranks a shared sheet's and this has to win
+everywhere. Verified in Chromium with `reducedMotion: 'reduce'`: the loader's
+spin and the data grid's row transition both drop to `1e-05s`, including on
+`::after`.
+
+Two other things live there for the same reason:
+
+- **`@keyframes sherpa-spin`.** `sherpa-container` and `sherpa-loader` each
+  defined one rotation, byte-identical. A keyframe in an adopted sheet is
+  reachable from a component's own rules — verified: the loader animates
+  `sherpa-spin` at `0.8s` with no local definition.
+- **A duration scale** — `--sherpa-motion-fast|base|slow`. 84 timing values
+  across the components, 72 of them 100ms or 120ms. The outliers are real (80ms
+  for a row hover, 300ms for a bar growing), which is why it is a named scale
+  and not one value.
+
+A toast's slide and a progress bar's sweep stay local: both are specific to
+their component's geometry.
+
+- Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-loader/sherpa-loader.css`
+- Site: `src/components/sherpa-container/sherpa-container.css`
+
+### T-anchoring-is-generic
+
+The anchor-positioning machinery in `sherpa-base.css` was named `.chart-tip`,
+`.chart-mark`, `.chart-anchor-point`. None of it is chart-specific: it is
+`position-anchor` plus `position-try-fallbacks` plus a zero-size anchor point,
+which any component could use to place a tip beside any trigger.
+
+It now answers to `.sherpa-tip`, `.sherpa-anchor`, `.sherpa-anchor-point` and
+`.sherpa-anchor-el`, **with the `chart-*` names kept as aliases**. Not renamed
+outright: five chart components name them across ~38 sites, and one is in a
+`.component.yaml` that the spec round-trip gate reads — so a rename is a
+migration, and the alias is what makes it a safe one.
+
+Two constraints the machinery carries, worth knowing before reusing it:
+
+- **An anchor cannot cross a shadow boundary.** Trigger and tip must share one
+  root. That is why `--_anchor` is supplied by JS: an anchor name cannot be
+  derived in CSS.
+- **An SVG element cannot be a CSS anchor in Chromium**, which is what the
+  zero-size anchor point exists for.
+
+- Site: `src/core/sherpa-base.css`

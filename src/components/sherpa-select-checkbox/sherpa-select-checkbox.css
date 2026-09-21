@@ -95,8 +95,8 @@ slot[name="menu"] { display: contents; }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: var(--_size);
-  height: var(--_size);
+  inline-size: var(--_size);
+  block-size: var(--_size);
   margin: 0;
   padding: 0;
   position: relative;
@@ -110,8 +110,7 @@ slot[name="menu"] { display: contents; }
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 
   /* ── Checked / indeterminate — inset accent indicator ──────────────── */
-  &:checked::before,
-  &:indeterminate::before {
+  &:is(:checked, :indeterminate)::before {
     content: "";
     position: absolute;
     /* `inset` measures from the padding box, so the 0.5 border never enters it. */
@@ -120,17 +119,20 @@ slot[name="menu"] { display: contents; }
     background: var(--_fill);
   }
 
-  /* Checkmark — SVG mask, painted above ::before. */
-  &:checked::after {
+  /* The mark, painted above ::before. The FIXED ramp, or it goes black on the
+     indicator in dark mode. TRAP T-the-tick-needs-the-fixed-ramp. */
+  &:is(:checked, :indeterminate)::after {
     content: "";
     display: block;
     position: relative;
-    /* A ratio of the box, so every size stays in proportion. */
-    width: calc(var(--_size) * 0.55);
-    height: calc(var(--_size) * 0.5);
-    /* The FIXED ramp, or the mark goes black on the indicator in dark mode.
-       TRAP T-the-tick-needs-the-fixed-ramp. */
     background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  }
+
+  /* Checkmark — SVG mask. Sized as a ratio of the box, so every size stays in
+     proportion. */
+  &:checked::after {
+    inline-size: calc(var(--_size) * 0.55);
+    block-size: calc(var(--_size) * 0.5);
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
     mask-size: contain;
     mask-repeat: no-repeat;
@@ -143,15 +145,9 @@ slot[name="menu"] { display: contents; }
 
   /* Indeterminate dash — beats the checkmark. */
   &:indeterminate::after {
-    content: "";
-    display: block;
-    position: relative;
-    width: 6px; /* off-grid-ok */
-    height: 2px; /* off-grid-ok */
+    inline-size: 6px; /* off-grid-ok */
+    block-size: 2px; /* off-grid-ok */
     border-radius: 1px; /* off-grid-ok */
-    /* The FIXED ramp, or the mark goes black on the indicator in dark mode.
-       TRAP T-the-tick-needs-the-fixed-ramp. */
-    background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
     mask-image: none;
     -webkit-mask-image: none;
   }
@@ -161,8 +157,7 @@ slot[name="menu"] { display: contents; }
     border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
   }
   @supports (color: color-mix(in oklab, red, blue)) {
-    &:checked:hover:not(:disabled)::before,
-    &:indeterminate:hover:not(:disabled)::before {
+    &:is(:checked, :indeterminate):hover:not(:disabled)::before {
       background: color-mix(in oklab, var(--_fill) 88%, #000);
     }
   }
@@ -182,7 +177,7 @@ slot[name="menu"] { display: contents; }
   display: inline-flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
-  min-width: 0;
+  min-inline-size: 0;
 }
 .label {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
@@ -212,12 +207,10 @@ slot[name="menu"] { display: contents; }
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 /* Box and indicator both go grey; the tick takes dark ink so the state still reads. */
-:host([disabled]) .control:checked::before,
-:host([disabled]) .control:indeterminate::before {
+:host([disabled]) .control:is(:checked, :indeterminate)::before {
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
-:host([disabled]) .control:checked::after,
-:host([disabled]) .control:indeterminate::after {
+:host([disabled]) .control:is(:checked, :indeterminate)::after {
   background-color: var(--sherpa-theme-content-body-1, #35353d);
 }
 /* Text binds Theme content, so inactive keeps the dark ink. */

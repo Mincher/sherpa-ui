@@ -90,8 +90,12 @@
 
 /* Centre value + sub are both MONOSPACED, matching the legend and axes beside
    them. Figma 465:61966 re-pointed to match. */
-.value {
+:is(.value, .sub) {
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+
+  &:empty { display: none; }
+}
+.value {
   font-size: var(--sherpa-theme-content-size-h1, 24px);
   /* Regular, not semibold — mono's even stems read heavier. Will's call. */
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -100,16 +104,11 @@
   /* body/BASE, the darkest ink, so the total leads the sublabel. */
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-variant-numeric: tabular-nums;
-
-  &:empty { display: none; }
 }
 .sub {
-  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-
-  &:empty { display: none; }
 }
 
 /* ── Tooltip anchors ────────────────────────────────────────────────────────
@@ -146,5 +145,3 @@
   display: flex;
   opacity: 1;
 }
-
-.slice { cursor: pointer; }

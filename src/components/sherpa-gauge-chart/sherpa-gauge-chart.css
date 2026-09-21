@@ -134,17 +134,6 @@
    the origin against the fill box, not the viewBox centre, so rotation swings the
    whole ring. Each band is a path drawn where it belongs. */
 
-/* NO FULL-LENGTH TRACK — #renderArcs appends the grey remainder as a band through
-   the same code path, so it cannot drift from the coloured ones' geometry. */
-.zone[data-rest] {
-  fill: var(--sherpa-theme-border-default-2, #b3b3c3);
-  fill-opacity: 1;
-  stroke: none;
-  /* The remainder is not data — nothing to hover. */
-  pointer-events: none;
-  cursor: default;
-}
-
 /* One band — a CLOSED PATH from ringSegmentPath(), and the hover target. SVG has
    no inside stroke, so the TS insets the path and sets stroke-width there: the
    attribute cannot read a custom property. */
@@ -161,6 +150,17 @@
 
 .zone:hover {
   fill-opacity: 1;
+}
+
+/* NO FULL-LENGTH TRACK — #renderArcs appends the grey remainder as a band through
+   the same code path, so it cannot drift from the coloured ones' geometry. */
+.zone[data-rest] {
+  fill: var(--sherpa-theme-border-default-2, #b3b3c3);
+  fill-opacity: 1;
+  stroke: none;
+  /* The remainder is not data — nothing to hover. */
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ── Needle ──────────────────────────────────────────────────────────

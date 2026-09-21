@@ -11,6 +11,8 @@
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
   /* Divider is a lighter neutral than the outer border (Figma: +1 vs +2). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+  /* The whole rule: three regions draw the same line, on different edges. */
+  --_rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
@@ -69,23 +71,22 @@
 }
 
 /* Header shows when the slot has content OR a data-heading is set. */
-:host([data-has-header]) .header,
-:host([data-heading]) .header { display: block; }
+:host(:is([data-has-header], [data-heading])) .header { display: block; }
 :host([data-has-footer]) .footer { display: block; }
 
 :host([data-heading]:not([data-has-header])) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+  border-block-end: var(--_rule);
 }
 .header ::slotted(:not(sherpa-container-header)) {
   display: block;
   padding: var(--sherpa-theme-padding-md, 8px);
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+  border-block-end: var(--_rule);
 }
 .footer ::slotted(:not(sherpa-container-footer)) {
   display: block;
   padding: var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-lg, 16px);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
+  border-block-start: var(--_rule);
 }
 
 /* Figma pins padding/sm on this footer INSTANCE, so the pin lands here.

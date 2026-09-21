@@ -32,11 +32,9 @@
   --_shadow: none;
   box-shadow: var(--_shadow);
   --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
-}
 
-/* ── Sizing: fills its parent. No attribute — the host is in the light DOM, so
-   a consumer writes `align-self: flex-start; height: auto` to get "fit". ── */
-:host {
+  /* Fills its parent. No attribute — the host is in the light DOM, so a
+     consumer writes `align-self: flex-start; height: auto` to get "fit". */
   align-self: stretch;
   height: 100%;
 }
@@ -89,12 +87,10 @@
   min-block-size: 0;
   overflow: hidden;
 }
-:host([data-rows]) .body ::slotted(*) {
-  min-block-size: 0;
-}
 /* Everything in the body grows by default. Not `:only-child`: it counts every
    light-DOM sibling, blind to slots, so a header sibling defeats it. */
 :host([data-rows]) .body ::slotted(*) {
+  min-block-size: 0;
   flex: 1 1 auto;
 }
 /* With `data-fill`, only the `data-grow` child grows. No `:has()`: `:host(:has())`
@@ -115,7 +111,7 @@
   padding-block: var(--_pad);
   padding-inline: var(--_pad-inline, var(--_pad));
   flex: 1 1 auto;
-  min-height: 0;
+  min-block-size: 0;
 }
 
 /* header/footer appear only when their slot has content. */
@@ -165,4 +161,4 @@
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }
-@keyframes sherpa-spin { to { transform: rotate(360deg); } }
+/* `sherpa-spin` is in sherpa-base.css — TRAP T-motion-is-owned-here. */

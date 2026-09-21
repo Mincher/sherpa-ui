@@ -34,12 +34,16 @@
   overflow: hidden;
 }
 
-/* ── Drag handle ──────────────────────────────────────────────────────── */
-.drag {
+/* ── Drag handle + icon — same square, hidden until flagged ───────────── */
+.drag,
+.icon {
   display: none;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
+}
+
+.drag {
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
@@ -52,12 +56,7 @@
 }
 :host([data-draggable]) .drag { display: inline-flex; }
 
-/* ── Icon ─────────────────────────────────────────────────────────────── */
 .icon {
-  display: none;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
   inline-size: var(--sherpa-theme-content-size-base, 14px);
   block-size: var(--sherpa-theme-content-size-base, 14px);
   color: var(--_status-icon, var(--sherpa-theme-content-body-1, #35353d));
@@ -73,9 +72,7 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  /* Truncation via `.sherpa-truncate` in the template. */
 }
 slot[name="heading"] { display: contents; }
 :host([data-has-heading]) .title { display: none; }
@@ -87,9 +84,7 @@ slot[name="heading"] { display: contents; }
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  /* Truncation via `.sherpa-truncate` in the template. */
 }
 :host([data-description]) .description { display: block; }
 
@@ -108,12 +103,12 @@ slot[name="heading"] { display: contents; }
   display: none;
   flex-shrink: 0;
 }
-:host([data-collapsible]) .toggle { display: inline-flex; }
-:host([data-dismissible]) .close { display: inline-flex; }
-
 /* The chevron glyph lives in the button's own shadow root, so ::part cannot
    reach it — rotate the host instead. */
-.toggle { transition: transform 120ms ease; }
+.toggle { transition: transform var(--sherpa-motion-base, 120ms) var(--sherpa-motion-ease, ease); }
+
+:host([data-collapsible]) .toggle { display: inline-flex; }
+:host([data-dismissible]) .close { display: inline-flex; }
 :host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
 :host(:not([data-has-actions]):not([data-dismissible]):not([data-collapsible])) .actions { display: none; }

@@ -8,15 +8,19 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
+/* Per-corner rounding — the row, the expand toggle and the checkbox share it. */
+:is(.row, .expand, .checkbox) {
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}
+
 .row {
   display: flex;
   align-items: flex-start;
   gap: var(--sherpa-structure-space-gap, 8px);
   padding: var(--sherpa-structure-space-padding, 8px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--_status-surface, transparent);
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   transition: background-color 100ms ease, color 100ms ease;
@@ -49,10 +53,6 @@
 .expand {
   inline-size: var(--sherpa-structure-height, 32px);
   block-size: var(--sherpa-structure-height, 32px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 }
 :host([data-draggable]) .drag { display: inline-flex; cursor: grab; }
 .drag:active { cursor: grabbing; }
@@ -70,12 +70,7 @@
   block-size: var(--sherpa-display-mode-size-md, 20px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  box-sizing: border-box;
   cursor: pointer;
 }
 /* Both selectors: the host attribute and the native :checked are kept in sync. */
@@ -88,10 +83,10 @@
   background: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
+/* Colour inherits from `.row`. */
 .leading {
   display: none;
   align-items: center;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-theme-size-icon-2xs, 10px);
 }
 :host([data-icon]) .leading,
@@ -121,8 +116,8 @@
 :host([data-interactive]) .content-button { display: flex; cursor: pointer; }
 :host([data-interactive]) .content-static { display: none; }
 
+/* Colour inherits from `.row`. */
 .title {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

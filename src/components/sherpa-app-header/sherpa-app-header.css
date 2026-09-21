@@ -28,8 +28,9 @@
    the view block can bottom-align inside it. */
 .bar {
   position: relative;
+  display: flex;
+  flex-direction: column;
   block-size: 100%;
-  box-sizing: border-box;
 }
 
 /* `scroll-state(stuck: top)` is true exactly when the sticky host has left its
@@ -45,11 +46,6 @@
   }
 }
 
-.bar {
-  display: flex;
-  flex-direction: column;
-}
-
 .content {
   display: flex;
   flex-direction: column;
@@ -58,7 +54,6 @@
   /* Fills the host's fixed height, so the view block below bottom-aligns rather
      than the header shrinking to fit. */
   block-size: 100%;
-  box-sizing: border-box;
 }
 
 /* ── Row 1: history + actions ───────────────────────────────────────── */
@@ -84,8 +79,10 @@
   flex: 0 0 auto;
 }
 
-/* Figma draws a 1×16 rectangle in border/default/+2, sitting in the gap. */
+/* Figma draws a 1×16 rectangle in border/default/+2, sitting in the gap.
+   Hidden by default; the show-rules are with the other gating below. */
 .divider {
+  display: none;
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
@@ -114,7 +111,6 @@
 
 /* Dividers show only between two groups that are BOTH present. Figma's grouping:
    Ask N-zo · beaker │ moon │ bell · account · support │ app-switcher */
-.divider { display: none; }
 :host(:is([data-ai], [data-labs])[data-theme-toggle]) .divider-labs { display: block; }
 :host(:is([data-ai], [data-labs], [data-theme-toggle]):is([data-notifications], [data-account], [data-help])) .divider-tools { display: block; }
 :host([data-menu]:is([data-notifications], [data-account], [data-help], [data-theme-toggle], [data-labs], [data-ai])) .divider-menu { display: block; }

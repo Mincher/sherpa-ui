@@ -197,26 +197,26 @@
 
 /* ── Disabled — inactive tokens per property, never opacity ──────────────── */
 
+:host([disabled]) :is(.trigger, .icon) {
+  /* Dark ink on the grey inactive surface — never the same grey as the surface. */
+  color: var(--sherpa-theme-content-body-1, #35353d);
+}
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  /* Dark ink on the grey inactive surface — never the same grey as the surface. */
-  color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
 /* …except a TRANSPARENT button: filling it on disable grows a grey box where
    there was nothing. It says "off" by dimming its ink, which is all it has. */
+:host([data-look="transparent"][disabled]) :is(.trigger, .icon) {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
 :host([data-look="transparent"][disabled]) .trigger {
   background: transparent;
   border-width: var(--sherpa-display-mode-border-width-none, 0px);
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
-:host([data-look="transparent"][disabled]) .icon {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-}
-:host([disabled]) .icon { color: var(--sherpa-theme-content-body-1, #35353d); }
 
 
 /* The menu popover paints in the top layer; `display: contents` keeps this span

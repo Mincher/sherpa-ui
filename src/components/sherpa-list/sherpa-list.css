@@ -9,7 +9,10 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
+  /* Plain spaces its rows; the bordered default overrides to 0 below. */
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
+  /* One rule for the surround, one for the dividers — same colour. */
+  --_rule: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 /* Native <ul> — reset the default list chrome. */
@@ -33,10 +36,11 @@
 :host(:not([data-type="plain"])) {
   --_row-gap: 0;
 }
+
 :host(:not([data-type="plain"])) .body {
   background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   border-style: solid;
-  border-color: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  border-color: var(--_rule);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
@@ -51,14 +55,10 @@
 /* Dividers between adjacent rows. */
 :host(:not([data-type="plain"])) .body > .row-item:not(:last-child),
 :host(:not([data-type="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_rule);
 }
 
-/* Plain — no dividers, spaced rows. */
-:host([data-type="plain"]) {
-  --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
-}
+/* Plain needs no rule: no dividers, and it keeps the :host row gap. */
 
 /* ── Empty state ───────────────────────────────────────────────────── */
 .empty {

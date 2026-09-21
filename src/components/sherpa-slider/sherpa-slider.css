@@ -61,7 +61,7 @@
   inline-size: var(--sherpa-display-mode-size-6xl, 64px);
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  border-style: solid;
+  /* Widths + border-style come from .sherpa-border-edges in the template. */
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
@@ -69,7 +69,6 @@
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
-  box-sizing: border-box;
   /* Hide the native spinners — the slider is the primary control. */
   appearance: textfield;
   -moz-appearance: textfield;
@@ -132,6 +131,9 @@
 
   &:focus { outline: none; }
 
+  /* The -webkit-/-moz- pairs below CANNOT merge into one selector list: an
+     unknown vendor pseudo-element invalidates the whole rule, in both engines. */
+
   /* The native rail is invisible — the styled .track shows instead. */
   &::-webkit-slider-runnable-track { background: transparent; block-size: var(--_thumb); }
   &::-moz-range-track { background: transparent; block-size: var(--_thumb); }
@@ -177,8 +179,9 @@
  */
 .range-end { display: none; }
 
-:host([data-type="range"]) .range,
-:host([data-type="range"]) .range-end {
+/* `.range-end` also carries `.range` (see the template), so one class covers
+   both stacked inputs. */
+:host([data-type="range"]) .range {
   pointer-events: none;
 }
 :host([data-type="range"]) .range-end {
@@ -187,7 +190,8 @@
   inset-inline: 0;
 }
 
-:host([data-type="range"]) .range::-webkit-slider-thumb,
-:host([data-type="range"]) .range-end::-webkit-slider-thumb { pointer-events: auto; }
-:host([data-type="range"]) .range::-moz-range-thumb,
-:host([data-type="range"]) .range-end::-moz-range-thumb { pointer-events: auto; }
+/* Plain selectors, NOT `:is(...)::-vendor-pseudo`: nothing else in the codebase
+   wraps a vendor pseudo-element that way and the suite runs chromium only, so a
+   Gecko parse failure here would never be caught. */
+:host([data-type="range"]) .range::-webkit-slider-thumb { pointer-events: auto; }
+:host([data-type="range"]) .range::-moz-range-thumb { pointer-events: auto; }

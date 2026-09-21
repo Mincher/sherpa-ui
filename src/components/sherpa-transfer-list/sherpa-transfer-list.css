@@ -8,6 +8,7 @@
   gap: var(--sherpa-display-mode-space-sm, 12px);
   align-items: stretch;
   min-block-size: 240px;
+  container: sherpa-transfer / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
@@ -61,8 +62,10 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
   text-align: center;
 }
-.pane[data-empty] .pane-list { display: none; }
-.pane[data-empty] .pane-empty { display: block; }
+.pane[data-empty] {
+  & .pane-list { display: none; }
+  & .pane-empty { display: block; }
+}
 
 /* ── A row ────────────────────────────────────────────────────────── */
 .row {
@@ -93,10 +96,7 @@
 }
 
 /* ── Narrow: stack ────────────────────────────────────────────────── */
-:host { container: sherpa-transfer / inline-size; }
 @container sherpa-transfer (max-width: 420px) {
-  :host {
-    grid-template-columns: 1fr;
-  }
-  .moves { flex-direction: row; justify-content: center; }
+  :host { grid-template-columns: 1fr; }
+  .moves { flex-direction: row; }
 }

@@ -79,6 +79,8 @@
   /* MUST match .x-axis-row's gap — the two rows mirror each other. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   block-size: 100%;
+  /* The baseline under the bars. */
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .bar-col {
@@ -116,16 +118,11 @@
      --_hue here inherits the fill's 50% and the outline vanishes. */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+  /* NO extra tint: the series token already arrives at 50% (COMPOSE_COLOR in
+     Figma), so a component-side 60% multiplies down to 30%. */
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
   transition: filter 100ms ease, block-size 300ms ease;
-}
-@supports (color: color-mix(in srgb, red, transparent)) {
-  .bar {
-    /* NO extra tint: the series token already arrives at 50% (COMPOSE_COLOR in
-       Figma), so a component-side 60% multiplies down to 30%. */
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-  }
 }
 
 .bar-col:hover .bar { filter: brightness(1.08); }
@@ -135,14 +132,8 @@
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
-/* Baseline under the bars. */
-.bars {
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
-}
-
 .bar-label {
   flex: 1 1 0;
-  min-inline-size: 0;
   text-align: center;
   /* MONOSPACED — tabular figures stop digits jittering as values change. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
@@ -152,9 +143,7 @@
      JetBrains Mono resolves taller than Inter, dropping descenders off the edge. */
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Truncation via .sherpa-truncate in the template. */
   max-inline-size: 100%;
 }
 
@@ -251,11 +240,8 @@
   inset-block-end: var(--_at, 0%);
   translate: 0 50%;
   text-align: end;
-  /* Truncate rather than widen — the axis width is fixed so the plot cannot
-     move as values change. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Truncates rather than widens (.sherpa-truncate in the template): a fixed
+     axis width keeps the plot still. */
 }
 
 .y-value {

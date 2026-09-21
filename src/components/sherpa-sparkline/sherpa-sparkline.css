@@ -133,84 +133,38 @@
   &[data-role="end"]   { inset-block-start: calc(100% - var(--_n-end) * 1%);   inset-inline-start: 100%; }
 }
 
-:host([data-type="bar"]) .point { display: none; }
-
 /* ── Data-presence collapse ────────────────────────────────────────────────
  * Hidden until the host's data-len says otherwise, so an unfed sparkline draws
  * nothing. */
 .shape,
 .point { display: none; }
 
+/* Show index N while N < len. `:is()` collapses the repeated host prefix; every
+   argument is one attribute selector, so the specificity is unchanged. */
 :host([data-len="2"]) .shape[data-index="0"],
-:host([data-len="3"]) .shape[data-index="0"],
-:host([data-len="3"]) .shape[data-index="1"],
-:host([data-len="4"]) .shape[data-index="0"],
-:host([data-len="4"]) .shape[data-index="1"],
-:host([data-len="4"]) .shape[data-index="2"],
-:host([data-len="5"]) .shape[data-index="0"],
-:host([data-len="5"]) .shape[data-index="1"],
-:host([data-len="5"]) .shape[data-index="2"],
-:host([data-len="5"]) .shape[data-index="3"],
-:host([data-len="6"]) .shape[data-index="0"],
-:host([data-len="6"]) .shape[data-index="1"],
-:host([data-len="6"]) .shape[data-index="2"],
-:host([data-len="6"]) .shape[data-index="3"],
-:host([data-len="6"]) .shape[data-index="4"],
-:host([data-len="7"]) .shape[data-index="0"],
-:host([data-len="7"]) .shape[data-index="1"],
-:host([data-len="7"]) .shape[data-index="2"],
-:host([data-len="7"]) .shape[data-index="3"],
-:host([data-len="7"]) .shape[data-index="4"],
-:host([data-len="7"]) .shape[data-index="5"],
-:host([data-len="8"]) .shape[data-index="0"],
-:host([data-len="8"]) .shape[data-index="1"],
-:host([data-len="8"]) .shape[data-index="2"],
-:host([data-len="8"]) .shape[data-index="3"],
-:host([data-len="8"]) .shape[data-index="4"],
-:host([data-len="8"]) .shape[data-index="5"],
-:host([data-len="8"]) .shape[data-index="6"] {
+:host([data-len="3"]) .shape:is([data-index="0"], [data-index="1"]),
+:host([data-len="4"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"]),
+:host([data-len="5"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
+:host([data-len="6"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
+:host([data-len="7"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
+:host([data-len="8"]) .shape:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]) {
   display: block;
 }
 
 :host([data-len="1"]) .point[data-index="0"],
-:host([data-len="2"]) .point[data-index="0"],
-:host([data-len="2"]) .point[data-index="1"],
-:host([data-len="3"]) .point[data-index="0"],
-:host([data-len="3"]) .point[data-index="1"],
-:host([data-len="3"]) .point[data-index="2"],
-:host([data-len="4"]) .point[data-index="0"],
-:host([data-len="4"]) .point[data-index="1"],
-:host([data-len="4"]) .point[data-index="2"],
-:host([data-len="4"]) .point[data-index="3"],
-:host([data-len="5"]) .point[data-index="0"],
-:host([data-len="5"]) .point[data-index="1"],
-:host([data-len="5"]) .point[data-index="2"],
-:host([data-len="5"]) .point[data-index="3"],
-:host([data-len="5"]) .point[data-index="4"],
-:host([data-len="6"]) .point[data-index="0"],
-:host([data-len="6"]) .point[data-index="1"],
-:host([data-len="6"]) .point[data-index="2"],
-:host([data-len="6"]) .point[data-index="3"],
-:host([data-len="6"]) .point[data-index="4"],
-:host([data-len="6"]) .point[data-index="5"],
-:host([data-len="7"]) .point[data-index="0"],
-:host([data-len="7"]) .point[data-index="1"],
-:host([data-len="7"]) .point[data-index="2"],
-:host([data-len="7"]) .point[data-index="3"],
-:host([data-len="7"]) .point[data-index="4"],
-:host([data-len="7"]) .point[data-index="5"],
-:host([data-len="7"]) .point[data-index="6"],
-:host([data-len="8"]) .point[data-index="0"],
-:host([data-len="8"]) .point[data-index="1"],
-:host([data-len="8"]) .point[data-index="2"],
-:host([data-len="8"]) .point[data-index="3"],
-:host([data-len="8"]) .point[data-index="4"],
-:host([data-len="8"]) .point[data-index="5"],
-:host([data-len="8"]) .point[data-index="6"],
-:host([data-len="8"]) .point[data-index="7"] {
+:host([data-len="2"]) .point:is([data-index="0"], [data-index="1"]),
+:host([data-len="3"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"]),
+:host([data-len="4"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
+:host([data-len="5"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
+:host([data-len="6"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
+:host([data-len="7"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]),
+:host([data-len="8"]) .point:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"], [data-index="7"]) {
   display: block;
 }
 
+/* BUG, left as found: this loses to the data-len rule above on specificity
+   (0,2,1 vs 0,3,1), so bar dots still render. They only look hidden because of
+   `opacity: 0`. Fixing it changes rendering, so it is not a refactor. */
 :host([data-type="bar"]) .point { display: none; }
 
 :host(:hover) .point { opacity: 1; }
@@ -296,41 +250,13 @@
    so `:nth-child(-n + 2)` would match dot 0 and TIP 0, not dots 0 and 1. */
 .hotspot { display: none; }
 
-:host([data-len="2"]) .hotspot[data-index="0"],
-:host([data-len="2"]) .hotspot[data-index="1"],
-:host([data-len="3"]) .hotspot[data-index="0"],
-:host([data-len="3"]) .hotspot[data-index="1"],
-:host([data-len="3"]) .hotspot[data-index="2"],
-:host([data-len="4"]) .hotspot[data-index="0"],
-:host([data-len="4"]) .hotspot[data-index="1"],
-:host([data-len="4"]) .hotspot[data-index="2"],
-:host([data-len="4"]) .hotspot[data-index="3"],
-:host([data-len="5"]) .hotspot[data-index="0"],
-:host([data-len="5"]) .hotspot[data-index="1"],
-:host([data-len="5"]) .hotspot[data-index="2"],
-:host([data-len="5"]) .hotspot[data-index="3"],
-:host([data-len="5"]) .hotspot[data-index="4"],
-:host([data-len="6"]) .hotspot[data-index="0"],
-:host([data-len="6"]) .hotspot[data-index="1"],
-:host([data-len="6"]) .hotspot[data-index="2"],
-:host([data-len="6"]) .hotspot[data-index="3"],
-:host([data-len="6"]) .hotspot[data-index="4"],
-:host([data-len="6"]) .hotspot[data-index="5"],
-:host([data-len="7"]) .hotspot[data-index="0"],
-:host([data-len="7"]) .hotspot[data-index="1"],
-:host([data-len="7"]) .hotspot[data-index="2"],
-:host([data-len="7"]) .hotspot[data-index="3"],
-:host([data-len="7"]) .hotspot[data-index="4"],
-:host([data-len="7"]) .hotspot[data-index="5"],
-:host([data-len="7"]) .hotspot[data-index="6"],
-:host([data-len="8"]) .hotspot[data-index="0"],
-:host([data-len="8"]) .hotspot[data-index="1"],
-:host([data-len="8"]) .hotspot[data-index="2"],
-:host([data-len="8"]) .hotspot[data-index="3"],
-:host([data-len="8"]) .hotspot[data-index="4"],
-:host([data-len="8"]) .hotspot[data-index="5"],
-:host([data-len="8"]) .hotspot[data-index="6"],
-:host([data-len="8"]) .hotspot[data-index="7"] {
+:host([data-len="2"]) .hotspot:is([data-index="0"], [data-index="1"]),
+:host([data-len="3"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"]),
+:host([data-len="4"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"]),
+:host([data-len="5"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"]),
+:host([data-len="6"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"]),
+:host([data-len="7"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"]),
+:host([data-len="8"]) .hotspot:is([data-index="0"], [data-index="1"], [data-index="2"], [data-index="3"], [data-index="4"], [data-index="5"], [data-index="6"], [data-index="7"]) {
   display: block;
 }
 

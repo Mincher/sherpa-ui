@@ -61,9 +61,9 @@
   }
 }
 
+/* The current page: same weight as a link, but not a link. */
 .link[aria-current="page"] {
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-weight: var(--sherpa-font-weight-regular, 400);
   cursor: default;
   text-decoration: none;
 }

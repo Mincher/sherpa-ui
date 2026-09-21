@@ -61,12 +61,15 @@
   padding-inline: var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
   border-color: var(--_border);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+/* Both boxes round identically — the row (default) and the bare minimal control. */
+:is(.control-row, .field-minimal .control) {
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 /* Snapped 32x32 action buttons sit flush against the box edge. */
 :host([data-has-actions]) .control-row { padding-inline-end: 0; }
@@ -160,20 +163,15 @@ textarea.control {
 }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
+:host([disabled]) :is(.control-row, .control) { cursor: not-allowed; }
 :host([disabled]) .control-row {
-  cursor: not-allowed;
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .control {
-  cursor: not-allowed;
-  /* content-body-2 is the same grey as the disabled row — the text would
-     vanish. Use the darker inactive ink. */
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
-:host([disabled]) .control::placeholder {
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+/* content-body-2 is the same grey as the disabled row — the text would
+   vanish. Use the darker inactive ink. */
+:host([disabled]) .control { color: var(--sherpa-theme-content-body-1, #35353d); }
+:host([disabled]) .control::placeholder { color: var(--sherpa-theme-content-body-1, #35353d); }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Minimal style — label beside the control ─────────────────────────
@@ -191,16 +189,14 @@ textarea.control {
   min-inline-size: 0;
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
+  /* Written inline, not via .sherpa-border-edges: `.control` above resets
+     `border: none`, and the shared sheet is adopted FIRST, so the class loses. */
   border-style: solid;
   border-color: var(--_border);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
 }
 .field-minimal .control:focus-visible {

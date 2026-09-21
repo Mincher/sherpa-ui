@@ -89,27 +89,31 @@
 }
 
 /* ── done ────────────────────────────────────────────────────────────── */
-.step[data-state='done'] .marker {
-  background: var(--_accent);
-  border-color: var(--_accent);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+.step[data-state='done'] {
+  & .marker {
+    background: var(--_accent);
+    border-color: var(--_accent);
+    color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  }
+  & .number { display: none; }
+  & .check { display: block; }
 }
-.step[data-state='done'] .number { display: none; }
-.step[data-state='done'] .check { display: block; }
 
 /* ── active ──────────────────────────────────────────────────────────── */
-.step[data-state='active'] .marker {
-  border-color: var(--_accent);
-  color: var(--_accent);
-  box-shadow: 0 0 0 2px var(--_accent);
-}
-@supports (color: color-mix(in oklab, red, blue)) {
-  .step[data-state='active'] .marker {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
+.step[data-state='active'] {
+  & .marker {
+    border-color: var(--_accent);
+    color: var(--_accent);
+    /* Solid ring first; the blended one wins where color-mix is supported. */
+    box-shadow: 0 0 0 2px var(--_accent);
+
+    @supports (color: color-mix(in oklab, red, blue)) {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
+    }
   }
-}
-.step[data-state='active'] .label {
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
+  & .label {
+    color: var(--sherpa-theme-content-body-base, #0c0b11);
+    font-weight: var(--sherpa-font-weight-semibold, 600);
+  }
 }
 

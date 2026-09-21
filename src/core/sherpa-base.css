@@ -52,10 +52,16 @@
   }
 }
 
-/* ── Chart mark tooltips ─────────────────────────────────────────────────────
- * Shared by all five charts. No JS positioning: anchor positioning + popover.
- * Anchors cannot cross a shadow boundary, but mark and tip share one root.
- * JS supplies only `--_anchor` (an anchor name cannot be derived in CSS). */
+/* ── Anchored tips ───────────────────────────────────────────────────────────
+ * Generic anchor positioning — ANY component can use it, not just a chart.
+ * No JS placement: CSS anchor positioning plus the popover layer. Anchors
+ * cannot cross a shadow boundary, so trigger and tip must share one root.
+ * JS supplies only `--_anchor`; an anchor name cannot be derived in CSS.
+ *
+ * `.chart-*` are kept as ALIASES — five chart components, a spec and the tests
+ * name them, and the spec round-trip gate reads the templates.
+ * TRAP T-anchoring-is-generic. */
+.sherpa-tip,
 .chart-tip {
   position: fixed;
   position-anchor: var(--_anchor);
@@ -100,13 +106,14 @@
   transition: opacity 120ms ease;
 }
 
-.chart-mark:is(:hover, :focus-visible) + .chart-tip,
-.chart-mark:is(:hover, :focus-visible) .chart-tip {
+:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) + :is(.sherpa-tip, .chart-tip),
+:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) :is(.sherpa-tip, .chart-tip) {
   display: flex;
   opacity: 1;
 }
 
 /* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
+.sherpa-anchor-point,
 .chart-anchor-point {
   position: absolute;
   inline-size: 0;
@@ -116,9 +123,11 @@
 }
 
 @supports (position-visibility: anchors-visible) {
+  .sherpa-tip,
   .chart-tip { position-visibility: anchors-visible; }
 }
 
+.sherpa-tip-value,
 .chart-tip-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-variant-numeric: tabular-nums;
@@ -138,9 +147,9 @@
 
 /* A chart may name a CHILD (`.chart-anchor`) when the hover target is bigger
    than the thing described — a bar column is the full plot height. */
-.chart-mark { anchor-name: var(--_anchor); }
-.chart-mark:has(> .chart-anchor) { anchor-name: none; }
-.chart-anchor { anchor-name: var(--_anchor); }
+:is(.sherpa-anchor, .chart-mark) { anchor-name: var(--_anchor); }
+:is(.sherpa-anchor, .chart-mark):has(> :is(.sherpa-anchor-el, .chart-anchor)) { anchor-name: none; }
+:is(.sherpa-anchor-el, .chart-anchor) { anchor-name: var(--_anchor); }
 
 /* ══ A SNAPPED control group ════════════════════════════════════════════════
  * `.sherpa-snap-group` on the WRAPPER squares inner corners; children need
@@ -193,4 +202,43 @@
 .sherpa-inert {
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────
+   A named duration scale, the keyframes more than one component needs, and
+   the reduced-motion gate. CLAUDE.md tells components not to write their own
+   `prefers-reduced-motion` block because "motion gating is owned globally" —
+   until now nothing owned it, so every animation ignored the setting.
+   TRAP T-motion-is-owned-here. */
+:host {
+  --sherpa-motion-fast: 100ms;    /* a state flip: hover, press, tint */
+  --sherpa-motion-base: 120ms;    /* the default — most transitions */
+  --sherpa-motion-slow: 300ms;    /* something that TRAVELS: a bar growing */
+  --sherpa-motion-ease: ease;
+}
+
+/* One rotation. `sherpa-container` and `sherpa-loader` each defined this. */
+@keyframes sherpa-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sherpa-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* THE GATE. `animation-duration` and not `animation: none`, so a paused
+   animation still lands on its end state rather than snapping back to its
+   start. `!important` because a component's own rule is more specific than a
+   shared sheet's, and this must win everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

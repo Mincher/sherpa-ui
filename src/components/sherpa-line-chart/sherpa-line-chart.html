@@ -44,13 +44,13 @@
   </figure>
 
   <template class="ytick-tpl">
-    <span class="y-tick"><span class="y-value"></span></span>
+    <span class="y-tick sherpa-truncate"><span class="y-value"></span></span>
   </template>
 
   <!-- Series <g>/<path>/<polyline> are built in the TS via createElementNS — SVG
        cloned from an HTML template lands in the wrong namespace and paints nothing. -->
   <template class="xlabel-tpl">
-    <span class="x-label"></span>
+    <span class="x-label sherpa-truncate"></span>
   </template>
 
   <!-- Two siblings, cloned together. The tip must stay OUT of the dot and any

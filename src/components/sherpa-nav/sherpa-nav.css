@@ -163,17 +163,14 @@
   line-height: 1;
 }
 
+/* Truncation comes from `.sherpa-truncate` on the element. */
 .product {
   display: var(--_is-visible, block);
   flex: 1 1 auto;
-  min-inline-size: 0;
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-large, 24px);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Pin + settings. Which one is active comes from the projected
@@ -358,7 +355,6 @@
   margin: 0;
   /* FIXED 24 in every state, or everything below jumps as the rail opens. */
   block-size: var(--sherpa-display-mode-size-lg, 24px);
-  box-sizing: border-box;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);

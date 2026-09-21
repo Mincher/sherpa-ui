@@ -58,14 +58,13 @@
  * to their widest label. All three views share this one box. */
 .cal-grid,
 .cal-weekdays {
-  /* FILLS its container, flooring at seven 32px tracks. `border-box` with the
-     side padding ADDED to the floor — under content-box the box overflowed, and
-     under a plain border-box floor the padding ate into the tracks. */
+  /* FILLS its container, flooring at seven 32px tracks. The floor ADDS the side
+     padding because the box is border-box (from sherpa-base.css) — under a plain
+     border-box floor the padding ate into the tracks. */
   inline-size: 100%;
   min-inline-size: calc(
     7 * var(--sherpa-display-mode-size-2xl, 32px) + 2 * var(--sherpa-theme-padding-md, 8px)
   );
-  box-sizing: border-box;
   column-gap: 0;
   row-gap: var(--sherpa-display-mode-space-3xs, 2px);
   padding-inline: var(--sherpa-theme-padding-md, 8px);
@@ -103,10 +102,8 @@
 }
 
 /* The second month's captions, and the spacer holding the divider track open. */
-.cal-weekdays .wd-2 { display: none; }
-.cal-weekdays[data-two-up] .wd-2 { display: block; }
-.cal-weekdays .wd-gap { display: none; }
-.cal-weekdays[data-two-up] .wd-gap { display: block; }
+.cal-weekdays :is(.wd-2, .wd-gap) { display: none; }
+.cal-weekdays[data-two-up] :is(.wd-2, .wd-gap) { display: block; }
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
@@ -199,10 +196,8 @@
 }
 :host([data-embedded]) { display: block; }
 
-:host([data-embedded]) .cal-header { display: none; }
-
-/* Without this a date filter chip showed two Apply/Cancel pairs stacked. */
-:host([data-embedded]) .cal-footer { display: none; }
+/* Without the footer, a date filter chip showed two Apply/Cancel pairs stacked. */
+:host([data-embedded]) :is(.cal-header, .cal-footer) { display: none; }
 
 /* ── Footer action row — Today link | Cancel / Apply ────────────────────── */
 .cal-footer {

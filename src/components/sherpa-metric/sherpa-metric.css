@@ -26,9 +26,7 @@
   letter-spacing: var(--sherpa-theme-content-letter-spacing-small, 0px);
   text-transform: uppercase;
   color: var(--sherpa-theme-content-body-1, #35353d);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Truncation via `.sherpa-truncate` in the template. */
 
   &:empty { display: none; }
 }
@@ -83,10 +81,14 @@
 
 .arrow { display: none; font-size: var(--sherpa-font-size-body-small, 12px); line-height: 1; }
 /* CONTENT tokens — ink, not surface. */
-:host([data-trend="up"])   { --_delta: var(--sherpa-theme-content-success-1, #00ad62); }
-:host([data-trend="down"]) { --_delta: var(--sherpa-theme-content-critical-1, #b72200); }
-:host([data-trend="up"])   .arrow-up   { display: inline-flex; }
-:host([data-trend="down"]) .arrow-down { display: inline-flex; }
+:host([data-trend="up"]) {
+  --_delta: var(--sherpa-theme-content-success-1, #00ad62);
+  .arrow-up { display: inline-flex; }
+}
+:host([data-trend="down"]) {
+  --_delta: var(--sherpa-theme-content-critical-1, #b72200);
+  .arrow-down { display: inline-flex; }
+}
 
 /* ── Sparkline (only once values have been supplied) ───────────────── */
 .spark {
@@ -115,7 +117,6 @@
 :host([disabled]) {
   --_delta: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
-:host([disabled]) .value,
-:host([disabled]) .label {
+:host([disabled]) :is(.value, .label) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }

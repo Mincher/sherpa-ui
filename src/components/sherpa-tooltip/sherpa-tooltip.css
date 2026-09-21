@@ -51,7 +51,9 @@
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease, visibility 120ms ease;
+  transition:
+    opacity var(--sherpa-motion-base, 120ms) var(--sherpa-motion-ease, ease),
+    visibility var(--sherpa-motion-base, 120ms) var(--sherpa-motion-ease, ease);
 }
 
 /* ── The pointer arrow — a 12×6 CSS border-triangle in the bubble fill ───
@@ -76,8 +78,7 @@ slot[name="tip"] { display: none; }
 :host([data-has-tip]) .tip-text { display: none; }
 
 /* ── Reveal on hover / focus-within — the entire show/hide logic ──────── */
-:host(:hover) .bubble,
-:host(:focus-within) .bubble {
+:host(:is(:hover, :focus-within)) .bubble {
   visibility: visible;
   opacity: 1;
 }
@@ -87,19 +88,20 @@ slot[name="tip"] { display: none; }
   inset-block-end: auto;
   inset-block-start: calc(100% + var(--_gap));
 }
-:host([data-placement="left"]) .bubble {
-  inset-inline-start: auto;
-  inset-inline-end: calc(100% + var(--_gap));
+/* Side placements share their block axis; only the inline edge differs. */
+:host([data-placement="left"]) .bubble,
+:host([data-placement="right"]) .bubble {
   inset-block-end: 50%;
   inset-block-start: auto;
   transform: translateY(50%);
 }
+:host([data-placement="left"]) .bubble {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--_gap));
+}
 :host([data-placement="right"]) .bubble {
   inset-inline-start: calc(100% + var(--_gap));
   inset-inline-end: auto;
-  inset-block-end: 50%;
-  inset-block-start: auto;
-  transform: translateY(50%);
 }
 
 /* ── Arrow follows the placement — always points back at the trigger ────── */
@@ -111,20 +113,21 @@ slot[name="tip"] { display: none; }
   border-width: 0 6px 6px 6px;
   border-color: transparent transparent var(--_bg) transparent;
 }
-:host([data-placement="left"]) .arrow {
+/* Side arrows share their vertical centring; the edge that paints differs. */
+:host([data-placement="left"]) .arrow,
+:host([data-placement="right"]) .arrow {
   top: 50%;
   bottom: auto;
-  left: 100%;
   transform: translateY(-50%);
+}
+:host([data-placement="left"]) .arrow {
+  left: 100%;
   border-width: 6px 0 6px 6px;
   border-color: transparent transparent transparent var(--_bg);
 }
 :host([data-placement="right"]) .arrow {
-  top: 50%;
-  bottom: auto;
   left: auto;
   right: 100%;
-  transform: translateY(-50%);
   border-width: 6px 6px 6px 0;
   border-color: transparent var(--_bg) transparent transparent;
 }

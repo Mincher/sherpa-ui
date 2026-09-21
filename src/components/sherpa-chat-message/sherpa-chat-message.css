@@ -70,12 +70,9 @@
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
 }
 
-:host([data-name]) .meta,
-:host([data-author]) .meta,
-:host([data-timestamp]) .meta,
-:host([data-time]) .meta { display: flex; }
-:host(:not([data-name]):not([data-author])) .author { display: none; }
-:host(:not([data-timestamp]):not([data-time])) .time { display: none; }
+:host(:is([data-name], [data-author], [data-timestamp], [data-time])) .meta { display: flex; }
+:host(:not([data-name], [data-author])) .author { display: none; }
+:host(:not([data-timestamp], [data-time])) .time { display: none; }
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
 .bubble {
@@ -103,18 +100,21 @@
 .bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 
 /* ── Assistant (default) ─────────────────────────────────────────────── */
-:host,
+/* The bare `:host` above already carries these values; this restates them for
+   an explicit data-type="assistant". */
 :host([data-type="assistant"]) {
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* ── User ────────────────────────────────────────────────────────────── */
+/* Only assistant keeps the avatar column. */
+:host(:is([data-type="user"], [data-type="system"])) .avatar { display: none; }
+
 :host([data-type="user"]) .message {
   grid-template-columns: minmax(0, 1fr);
   justify-items: end;
 }
-:host([data-type="user"]) .avatar { display: none; }
 :host([data-type="user"]) .stack { align-items: flex-end; max-inline-size: 85%; }
 :host([data-type="user"]) {
   /* Fixed Saturated accent + fixed white ink, NOT the status cascade — that
@@ -129,7 +129,6 @@
   grid-template-columns: minmax(0, 1fr);
   justify-items: center;
 }
-:host([data-type="system"]) .avatar { display: none; }
 :host([data-type="system"]) .stack { align-items: center; }
 :host([data-type="system"]) .bubble {
   text-align: center;

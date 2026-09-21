@@ -64,35 +64,41 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   flex: 0 0 auto;
 }
-.leading {
+:is(.leading, .extras) {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-.extras {
-  display: none;
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
-}
+/* `.extras` is hidden until the slot is filled. */
+.extras { display: none; }
 :host([data-has-extras]) .extras { display: flex; }
 
-/* Leading buttons — Figma Button/Type=icon, Structure sm, Transparent look. */
-.lead-btn {
+/* Both buttons are the same 24px icon box — only the paint differs. */
+:is(.lead-btn, .send) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: var(--sherpa-display-mode-size-lg, 24px);
-  padding: 0;
   border: none;
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
   cursor: pointer;
   flex-shrink: 0;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--sherpa-focus-ring);
+  }
+}
+
+/* Leading buttons — Figma Button/Type=icon, Structure sm, Transparent look. */
+.lead-btn {
+  padding: 0;
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
   transition: background-color 120ms ease, color 120ms ease;
 
   &:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
@@ -100,10 +106,6 @@
   &:active {
     background: var(--sherpa-theme-surface-default-3, #35353d);
     color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
   }
 }
 .lead-btn .glyph {
@@ -116,39 +118,25 @@
 
 /* ── Send — accent primary action ──────────────────────────────────── */
 .send {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  block-size: var(--sherpa-display-mode-size-lg, 24px);
-  border: none;
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   /* The strong step, not -base: -base is the pale #8aa3ff, too light under a
      white glyph. */
   background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  cursor: pointer;
-  flex-shrink: 0;
   transition: background-color 120ms ease;
 
   &:hover { background: var(--sherpa-theme-surface-accent-3, #2b34b4); }
   &:active { background: var(--sherpa-theme-surface-accent-4, #1e189c); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
 }
 .send-glyph { font-size: var(--sherpa-theme-content-size-base, 14px); line-height: 1; }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
+/* NOT `.sherpa-inert`: that class is static markup, so it cannot follow
+   [disabled], and it also kills pointer-events, which these keep. */
 :host([disabled]) .form {
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-:host([disabled]) .input {
+:host([disabled]) :is(.input, .send, .lead-btn) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
   cursor: not-allowed;
 }
@@ -156,11 +144,7 @@
   /* One step darker than the other disabled surfaces: content-body-2 on
      surface-default-2 is the same colour, so the glyph would vanish. */
   background: var(--sherpa-theme-surface-default-3, #35353d);
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  cursor: not-allowed;
 }
 :host([disabled]) .lead-btn {
   background: transparent;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  cursor: not-allowed;
 }

@@ -107,13 +107,8 @@
   min-inline-size: 0;
 }
 
-.label {
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* Truncation comes from `.sherpa-truncate` in sherpa-base.css. */
+.label { flex: 1 1 auto; }
 
 /* Search match — the visible fallback for the CSS Custom Highlight API, which
    Chromium does not paint inside a shadow root (see highlight() in the TS). */
@@ -237,10 +232,6 @@
   border-radius: 0;
   background: none;
 }
-@supports (color: color-mix(in oklab, red, blue)) {
-  :host([data-type="promo"]:hover) { background: none; }
-}
-
 .promo {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -266,7 +257,9 @@
 :host([data-type="promo"]:hover) .promo {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
+/* The card takes the hover tint; the row behind it stays flat. */
 @supports (color: color-mix(in oklab, red, blue)) {
+  :host([data-type="promo"]:hover) { background: none; }
   :host([data-type="promo"]:hover) .promo {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }

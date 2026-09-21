@@ -42,19 +42,30 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* ── Entry ─────────────────────────────────────────────────────────────── */
-.item {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  border: none;
+/* The per-corner rounding, shared by the entry and its swatch. */
+.item,
+.swatch {
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}
+
+/* The three rows that adopt the parent legend's tracks. */
+.item,
+.rollup,
+.rollup-toggle {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+/* ── Entry ─────────────────────────────────────────────────────────────── */
+.item {
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: none;
   background: transparent;
   /* The row carries the CATEGORY's ink; .value overrides it below. */
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -89,12 +100,9 @@
 }
 
 /* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
-   wash out the swatch's translucency and compound in dark mode). */
-.item[aria-pressed="false"] {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-}
-/* The value's own darker ink beats the row's dimmed one, so it needs dimming
-   explicitly or a switched-off entry keeps a fully dark number. */
+   wash out the swatch's translucency and compound in dark mode). .value is named
+   too: its own darker ink would otherwise keep a switched-off number fully dark. */
+.item[aria-pressed="false"],
 .item[aria-pressed="false"] .value {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
@@ -107,10 +115,6 @@
 .swatch {
   inline-size: var(--sherpa-display-mode-size-xs, 12px);
   block-size: var(--sherpa-display-mode-size-xs, 12px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   /* Solid hue where color-mix is unavailable — the swatch must never vanish. */
@@ -123,19 +127,7 @@
    shadow boundary but a SELECTOR does not, so the rules that once lived here
    never matched and every swatch fell back to grey. */
 
-@supports (color: color-mix(in srgb, red 60%, transparent)) {
-  .swatch {
-    /* NO extra tint — the series token already carries its 50%. */
-    background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-  }
-}
-
-.label {
-  min-inline-size: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* .label truncates via `.sherpa-truncate` in the template. */
 
 /* Darker than its label by design: the number is the fact, the name its
    caption. An entry with no value leaves the track empty rather than
@@ -154,18 +146,11 @@
  * It takes the parent's three tracks and adds a FOURTH implicit column for the
  * button, so swatch / label / value still line up with the rows above. */
 .rollup {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
   align-items: center;
 }
 /* The toggle spans the three real tracks; the button lands in the implicit one
-   after them, rather than fighting the value for its cell. */
-.rollup-toggle {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: subgrid;
-}
+   after them, rather than fighting the value for its cell. Its tracks come from
+   the shared subgrid rule above. */
 
 /* No parent tracks to adopt in a flex row — same reason as .item above. */
 :host([data-orientation="horizontal"]) .rollup {
