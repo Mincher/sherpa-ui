@@ -159,22 +159,52 @@ export class SherpaQuickFilter extends SherpaElement {
     for (const icon of this.$$('.icon, .caret-icon')) this.writeIcon(icon, glyph ?? '');
   }
 
-  #onClick = (): void => {
+  #onClick = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
+
+    /* AN EMPTY CHIP'S BODY OPENS ITS MENU.
+     *
+     * The body cycles a chip's states (`T-a-chip-body-cycles-its-states`), and
+     * with nothing picked there is nothing to cycle: toggling an empty chip
+     * on and off again changes no filter, so the click did nothing at all. The
+     * reader's next move is always the menu, so the body goes there directly.
+     *
+     * A chip that HOLDS a value keeps cycling, on or off — that is the whole
+     * point of "off is a state, not a delete", and turning a value chip off is
+     * a real and useful thing to do.
+     *
+     * Only when there IS a menu to open: a toggle-only chip (a status segment)
+     * has no values and no menu, and must keep toggling.
+     * TRAP T-an-empty-chip-opens-its-menu.
+     */
+    const menu = this.menu;
+    if (menu && this.values.length === 0) {
+      // Same guard as the caret: opening a menu is not a toggle, and a host
+      // listening on the bar has no reason to see this as one.
+      event.stopPropagation();
+      this.#openMenu();
+      return;
+    }
+
     // TRAP T-locked-chip-relays-and-nothing-else — a locked chip reports the
     // click and does not flip itself.
     if (!this.hasAttribute('data-locked')) this.current = !this.current;
     this.emit('quick-filter-click', { active: this.current });
   };
 
-  #onCaret = (event: Event): void => {
-    if (this.hasAttribute('disabled')) return;
-    event.stopPropagation(); // opening the menu must not toggle the chip
+  /** Open (or shut) the menu, anchored to the CHIP — shared by the body and the caret. */
+  #openMenu(): void {
     // TRAP T-menu-anchors-to-the-chip — the card lines up with the CHIP's
     // leading edge, not the caret's.
     //
     // Placement is measured, not declared: TRAP T-anchor-cross-root.
     this.menu?.toggle?.(this);
+  }
+
+  #onCaret = (event: Event): void => {
+    if (this.hasAttribute('disabled')) return;
+    event.stopPropagation(); // opening the menu must not toggle the chip
+    this.#openMenu();
   };
 
   /** Mirror the menu's open state onto the caret for assistive tech. */

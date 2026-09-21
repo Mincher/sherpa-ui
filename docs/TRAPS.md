@@ -6415,3 +6415,30 @@ throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
 `1px 1px 1px 2px`.
 
 - Site: `src/core/sherpa-base.css`
+
+### T-an-empty-chip-opens-its-menu
+
+A chip's body cycles its states (`T-a-chip-body-cycles-its-states`). With
+nothing picked there is nothing to cycle: toggling an empty chip on and then off
+changes no filter, so clicking its body did nothing at all — and the reader's
+next move was always the caret anyway.
+
+So an EMPTY chip's body opens its menu instead. Two boundaries make this a
+narrow rule rather than a new behaviour:
+
+| chip | body click |
+|---|---|
+| has a menu, no values picked | OPENS the menu |
+| has a menu, holds a value | cycles — off is a state, not a delete |
+| has NO menu (a status segment) | cycles, as before |
+
+The second line is the one to protect. Turning a value chip off is real and
+useful, and it keeps its pick so one more click brings it back without a trip to
+the menu. "Empty" is read from `this.values`, which covers all three menu kinds
+— ticked rows, a number, a date range — so a typed chip counts as filled too.
+
+The click is also `stopPropagation`'d, exactly as the caret's is: opening a menu
+is not a toggle, and a host listening on the bar has no reason to see it as one.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`

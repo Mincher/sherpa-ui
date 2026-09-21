@@ -477,3 +477,95 @@ test('the caret label sits on the SAME text line as the chip label', async ({ pa
   // Exact, not approximate — both labels are 14 on 20 in Figma (150:3408).
   expect(got.delta).toBeLessThan(0.5);
 });
+
+/**
+ * AN EMPTY CHIP'S BODY OPENS ITS MENU.
+ *
+ * With nothing picked there is nothing to cycle, so toggling did nothing at
+ * all. TRAP T-an-empty-chip-opens-its-menu — and the boundary that matters is
+ * the second case: a chip HOLDING a value keeps cycling, because "off" is a
+ * state and not a delete.
+ */
+test('an EMPTY chip opens its menu; one holding a value still toggles', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const host = document.getElementById('root')!;
+    host.replaceChildren();
+
+    // A VALUE chip: a body, a caret, and a menu of rows.
+    const chip = document.createElement('sherpa-quick-filter') as HTMLElement & {
+      rendered?: Promise<void>;
+      values: string[];
+      menu: (HTMLElement & { open?: boolean }) | null;
+    };
+    chip.dataset['label'] = 'Plan';
+    chip.setAttribute('data-menu', '');
+    chip.innerHTML = `
+      <sherpa-menu slot="menu" data-select="multiple">
+        <label><input type="checkbox" value="free" /> Free</label>
+        <label><input type="checkbox" value="pro" /> Pro</label>
+      </sherpa-menu>`;
+    host.appendChild(chip);
+    await chip.rendered;
+    await settle();
+
+    const body = (): HTMLElement => chip.shadowRoot!.querySelector<HTMLElement>('.body')!;
+    const snap = (): Record<string, unknown> => ({
+      values: [...chip.values],
+      current: chip.hasAttribute('data-current'),
+      menuOpen: chip.menu?.open ?? false,
+    });
+
+    // EMPTY → the body opens the menu and does not toggle.
+    body().click();
+    await settle();
+    const empty = snap();
+
+    // Pick one, so the chip now HOLDS a value.
+    chip.values = ['pro'];
+    await settle();
+    chip.menu?.hide?.();
+    await settle();
+    const picked = snap();
+
+    // HOLDING a value → the body cycles. Off keeps the pick.
+    body().click();
+    await settle();
+    const off = snap();
+    body().click();
+    await settle();
+    const backOn = snap();
+
+    /* A TOGGLE-ONLY chip — no menu at all — must be untouched by this rule. */
+    const toggle = document.createElement('sherpa-quick-filter') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    toggle.dataset['label'] = 'Active';
+    host.appendChild(toggle);
+    await toggle.rendered;
+    await settle();
+    toggle.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await settle();
+    const toggled = toggle.hasAttribute('data-current');
+
+    return { empty, picked, off, backOn, toggled };
+  });
+
+  // EMPTY: the menu opened, and the chip did NOT turn itself on.
+  expect(r.empty.menuOpen, 'an empty body opens the menu').toBe(true);
+  expect(r.empty.current, 'and does not toggle').toBe(false);
+
+  expect(r.picked.values).toEqual(['pro']);
+
+  // HOLDING a value: the body cycles, and OFF KEEPS THE PICK.
+  expect(r.off.current, 'a value chip turns off').toBe(false);
+  expect(r.off.values, 'and keeps what it holds').toEqual(['pro']);
+  expect(r.off.menuOpen, 'without reopening the menu').toBe(false);
+  expect(r.backOn.current, 'one more click brings it back').toBe(true);
+  expect(r.backOn.values).toEqual(['pro']);
+
+  // A chip with no menu is unaffected.
+  expect(r.toggled, 'a toggle-only chip still toggles').toBe(true);
+});
