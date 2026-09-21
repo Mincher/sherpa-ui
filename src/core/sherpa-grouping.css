@@ -2,13 +2,12 @@
  * sherpa-grouping.css — controls that read as ONE object.
  * `.sherpa-group` on the WRAPPER; `.sherpa-border-edges` draws the per-edge
  * widths. Adopted into every shadow root.
- * TRAP T-a-grid-group-is-per-cell.
  */
 
 /* ══ A GROUP of controls ════════════════════════════════════════════════════
  * Mirrors the Figma Grouping collections: horizontal (the default) and
- * vertical. BY POSITION, not by an attribute on each child, so a re-order
- * survives. Grid is per-cell — see below. */
+ * vertical and grid. BY POSITION, not by an attribute on each child, so a
+ * re-order survives. */
 
 /* Every child loses every inner edge; the ends put theirs back below. */
 .sherpa-group > * {
@@ -49,13 +48,72 @@
 }
 
 /* ── Grid ───────────────────────────────────────────────────────────────────
-   There is no class. A cell's position needs the COLUMN COUNT, which CSS
-   cannot count and `:nth-child()` will not take as a `var()` — the selector is
-   dropped, silently. The component sets `data-group="grid-top-start"` and the
-   other 11 values on each cell instead; tokens.css defines them all and they
-   reach a shadow root, because the rule sets custom PROPERTIES and those
-   inherit across the boundary.
-   TRAP T-a-grid-group-is-per-cell. */
+   Both axes at once. Set `--cols` on the wrapper; each cell works out its own
+   column and row and picks its edges. No per-cell attribute, so a re-order,
+   an insert or a delete needs nothing from JS.
+
+   `:nth-child()` cannot do this — it will not take a `var()`, and the selector
+   is dropped silently. The position is computed in a VALUE instead, where
+   `sibling-index()` is allowed.
+
+   `round(down, …)` stands in for `mod()`, which Chromium does not have yet.
+   The `@supports` gate is for `if()`; without it every cell keeps the outer
+   box below, which is correct, just not joined.
+
+   The five `--sherpa-group-*` are registered in tokens.css, NOT here: an
+   `@property` in an adopted sheet does nothing at all.
+   TRAP T-at-property-needs-the-document.
+   TRAP T-a-grid-group-computes-its-own-position. */
+
+.sherpa-group-grid > * {
+  /* Every cell an outer box. The gate below joins them. */
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+
+  --sherpa-group-index: calc(sibling-index() - 1);
+  --sherpa-group-col: calc(
+    var(--sherpa-group-index) - var(--cols) * round(down, calc(var(--sherpa-group-index) / var(--cols)), 1)
+  );
+  --sherpa-group-row: round(down, calc(var(--sherpa-group-index) / var(--cols)), 1);
+  --sherpa-group-last-col: calc(var(--cols) - 1);
+  --sherpa-group-last-row: calc(round(up, calc(sibling-count() / var(--cols)), 1) - 1);
+}
+
+@supports (width: if(style(--x: 1): 1px; else: 2px)) {
+  .sherpa-group-grid > * {
+    /* A shared edge is drawn ONCE, by the cell on its start side. */
+    --sherpa-border-left: if(
+      style(--sherpa-group-col: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    --sherpa-border-top: if(
+      style(--sherpa-group-row: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+
+    /* Only the four outer corners round. */
+    --sherpa-border-rounding-top-left: if(
+      style(--sherpa-group-col: 0) and style(--sherpa-group-row: 0):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-top-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col)) and style(--sherpa-group-row: 0):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-bottom-left: if(
+      style(--sherpa-group-col: 0) and style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-bottom-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col)) and style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+  }
+}
 
 /* ── Per-edge border widths ──────────────────────────────────────────────
    Widths only: all 26 call sites set a different `border-color`, so folding

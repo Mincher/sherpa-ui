@@ -368,7 +368,19 @@ function scopeCheck(leaf) {
 // @property registrations — nothing to register. An @property for a variable nothing
 // sets is worse than nothing: it gives the name a valid initial value, so a typo
 // resolves silently rather than failing loudly.
-const propertyRegistrations = '';
+/* `@property` MUST be registered from a DOCUMENT sheet. In an adopted sheet it
+   parses, lists in cssRules and even reports true from CSS.supports() — and
+   does nothing: the value stays an untyped string, so arithmetic and
+   `if(style(...))` comparisons silently fail.
+   `.sherpa-group-grid` in core/sherpa-grouping.css is the consumer.
+   TRAP T-at-property-needs-the-document. */
+const propertyRegistrations = `/* Registered HERE because a shadow root cannot.
+   TRAP T-at-property-needs-the-document. */
+@property --sherpa-group-index { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --sherpa-group-col { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --sherpa-group-row { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --sherpa-group-last-col { syntax: "<number>"; inherits: false; initial-value: 0; }
+@property --sherpa-group-last-row { syntax: "<number>"; inherits: false; initial-value: 0; }`;
 
 // ════════════════════════════════════════════════════════════════════════════
 // Collect leaves per collection and route them. Each layer bucket holds `root`

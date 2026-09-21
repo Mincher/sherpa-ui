@@ -6476,6 +6476,7 @@ throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
 `1px 1px 1px 2px`.
 
 - Site: `src/core/sherpa-grouping.css`
+- Site: `test/e2e/reforged-grouping.spec.ts`
 
 ### T-an-empty-chip-opens-its-menu
 
@@ -6979,33 +6980,79 @@ that array or nothing adopts it.
 - Site: `src/index.ts`
 - Site: `src/core/sherpa-base.css`
 
-### T-a-grid-group-is-per-cell
+### T-a-grid-group-computes-its-own-position
 
-Grouping has three axes in Figma, and `tokens.css` projects all 21 positions:
-horizontal (`solo`/`start`/`mid`/`end`), `vertical-*`, and
-`grid-{top,mid,bottom}-{solo,start,mid,end}`.
+Grouping has three axes in Figma, and `tokens.css` projects all 21 positions.
+`sherpa-grouping.css` gives horizontal and vertical a wrapper class that works
+by position (`:first-child`, `:last-child`). Grid needs the COLUMN COUNT, and
+the obvious route fails:
 
-`sherpa-grouping.css` gives the first two a wrapper class — `.sherpa-group` and
-`.sherpa-group-vertical` — which work by position (`:first-child`,
-`:last-child`) so a re-order survives. **Grid gets no class.** A grid cell's
-position needs the COLUMN COUNT, and:
+**`:nth-child()` will not take a `var()`.** Measured: of seven
+`.sherpa-group-grid` rules written as `:nth-child(var(--cols) n + 1)`, the
+browser kept **three** — every `var()` selector was dropped from `cssRules`
+with no error. The surviving `:first-child` rule made one cell look correct by
+luck, which is how it nearly shipped.
 
-- CSS cannot count a grid's tracks.
-- `:nth-child()` will not take a `var()`. Measured: of seven
-  `.sherpa-group-grid` rules written with `:nth-child(var(--_cols) n + 1)`,
-  the browser kept **three** — every `var()` selector was dropped from
-  `cssRules` with no error. The surviving `:first-child` rule made one cell
-  look correct by luck, which is how it nearly shipped.
+The position is computed in a VALUE instead, where `sibling-index()` IS
+allowed. Set `--cols` on the wrapper; each cell derives the rest:
 
-So a grid component sets `data-group` on each CELL. That vocabulary already
-exists, matches Figma, and — measured — reaches inside a shadow root, because
-the `[data-group]` rule sets custom PROPERTIES and those inherit across the
-boundary. (A `[data-group]` rule cannot MATCH a shadow-root element from
-`tokens.css`; it does not have to. The host carries the attribute and the
-values inherit down.)
+```css
+--sherpa-group-index: calc(sibling-index() - 1);
+--sherpa-group-col: calc(var(--sherpa-group-index)
+  - var(--cols) * round(down, calc(var(--sherpa-group-index) / var(--cols)), 1));
+--sherpa-group-row: round(down, calc(var(--sherpa-group-index) / var(--cols)), 1);
+--sherpa-group-last-row: calc(round(up, calc(sibling-count() / var(--cols)), 1) - 1);
+```
+
+`round(down, …)` stands in for `mod()`, which Chromium does not have.
+`if(style(--sherpa-group-col: 0): …; else: …)` then picks each edge. Verified
+in Chromium 153 and WebKit 26 on a 3x2 grid and on 7 cells in 3 columns — the
+partial last row lands correctly, because `--sherpa-group-last-row` comes from
+`sibling-count()`.
+
+So a re-order, an insert or a delete needs nothing from JS. Behind the
+`@supports (width: if(...))` gate every cell keeps a full outer box, which is
+correct, just not joined.
 
 The class was also doing half a job before this: it squared corners but never
 set the border WIDTHS, so two neighbours each drew a full hairline and doubled
 it. `.sherpa-group` now sets both.
 
 - Site: `src/core/sherpa-grouping.css`
+- Site: `test/e2e/reforged-grouping.spec.ts`
+
+### T-at-property-needs-the-document
+
+**`@property` in an adopted stylesheet does not register.** It parses, it lists
+in `cssRules` as a `CSSPropertyRule`, and `CSS.supports('--x', '1')` returns
+**true**. None of that is registration: the value stays an untyped string, so
+arithmetic never computes and `if(style(--x: 0))` never matches.
+
+Measured. The same cells, same sheet, same shadow root:
+
+```
+adopted sheet only:           "calc(sibling-index() - 1)"   ← raw text
+then registered in document:  "0", "1", "2"                 ← same cells
+```
+
+So the five `--sherpa-group-*` used by `.sherpa-group-grid` are registered in
+`tokens.css` (a document `<link>`), while the RULES that use them stay in the
+adopted sheet. `scripts/project-tokens.mjs` emits the block.
+
+This is the third member of a family worth naming together, because they fail
+the same silent way and were each found by measuring rather than reading:
+`@import` is dropped from an adopted sheet
+(T-import-dies-in-an-adopted-sheet), a document class rule cannot reach a
+shadow root (T-a-document-class-cannot-reach-a-shadow-root), and `@property`
+cannot register from one.
+
+`src/` holds 16 other `@property` rules in component sheets — sparkline (10),
+slider (3), gauge (2), barchart (1). Checked in the browser: all four
+components work anyway, because JS writes a literal (`50%`, `1`) and the CSS
+only reads it back. They gain nothing from the declaration and lose nothing
+without it. Leave them; they are not evidence the trap is survivable, only that
+those four never needed a typed value.
+
+- Site: `src/core/sherpa-grouping.css`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-grouping.spec.ts`
