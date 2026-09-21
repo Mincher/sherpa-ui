@@ -855,9 +855,16 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   z-index: 4;
 }
 
-/* The header keeps the head row's own surface, not the body's. */
+/* The header keeps the head row's own surface, not the body's — and the head
+   row's own rule with it. A pinned cell paints its own background, so it has to
+   restate that border; `.select-head` does the same thing a few rules up.
+   It used to arrive by accident, from a blanket `.actions-cell` rule that also
+   drew one on the last BODY row — scoping that to `:not(:last-child)` fixed the
+   body and took the header's with it. TRAP T-the-last-row-draws-no-rule. */
 :host([data-actions]) .actions-head {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  border-block-end: var(--sherpa-border-bottom, 0.5px) solid
+    var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 :host([data-actions]) .filter-row > .actions-cell {
   background: var(--sherpa-theme-surface-default-base, #ffffff);
