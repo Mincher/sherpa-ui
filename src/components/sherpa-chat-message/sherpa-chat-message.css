@@ -33,15 +33,13 @@
 
 /* ── Avatar ──────────────────────────────────────────────────────────── */
 .avatar {
-  inline-size: var(--sherpa-theme-content-size-base, 14px);
-  block-size: var(--sherpa-theme-content-size-base, 14px);
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-block-start: var(--sherpa-display-mode-space-xs, 8px); /* sits on the meta line */
   color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   overflow: hidden;
 }

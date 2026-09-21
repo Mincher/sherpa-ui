@@ -244,7 +244,7 @@
 :is(.hotspot, .chart-tip)[data-index="6"] { --_anchor: --spark-6; }
 :is(.hotspot, .chart-tip)[data-index="7"] { --_anchor: --spark-7; }
 
-/* Hover reveal lives in core/sherpa-base.css — dot + tip are adjacent siblings. */
+/* Hover reveal lives in core/sherpa-anchor.css — dot + tip are adjacent siblings. */
 
 /* Selected by data-INDEX, not :nth-child: dots and tips alternate as siblings,
    so `:nth-child(-n + 2)` would match dot 0 and TIP 0, not dots 0 and 1. */

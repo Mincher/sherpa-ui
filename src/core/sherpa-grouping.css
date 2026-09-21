@@ -1,27 +1,61 @@
 /**
  * sherpa-grouping.css — controls that read as ONE object.
- * `.sherpa-snap-group` squares the inner corners; `.sherpa-border-edges` draws
- * the per-edge widths so neighbours share a hairline instead of doubling it.
- * Adopted into every shadow root.
+ * `.sherpa-group` on the WRAPPER; `.sherpa-border-edges` draws the per-edge
+ * widths. Adopted into every shadow root.
+ * TRAP T-a-grid-group-is-per-cell.
  */
 
-/* ══ A SNAPPED control group ════════════════════════════════════════════════
- * `.sherpa-snap-group` on the WRAPPER squares inner corners; children need
- * nothing. BY POSITION, not `[data-snap]`, so a re-order survives. */
-.sherpa-snap-group > * {
+/* ══ A GROUP of controls ════════════════════════════════════════════════════
+ * Mirrors the Figma Grouping collections: horizontal (the default) and
+ * vertical. BY POSITION, not by an attribute on each child, so a re-order
+ * survives. Grid is per-cell — see below. */
+
+/* Every child loses every inner edge; the ends put theirs back below. */
+.sherpa-group > * {
   --sherpa-border-rounding-top-left: 0px;
   --sherpa-border-rounding-top-right: 0px;
   --sherpa-border-rounding-bottom-left: 0px;
   --sherpa-border-rounding-bottom-right: 0px;
 }
-.sherpa-snap-group > :first-child {
+
+/* ── Horizontal (the default) ───────────────────────────────────────────── */
+.sherpa-group > * {
+  /* A shared edge is drawn ONCE, by the child on its start side. */
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
+}
+.sherpa-group > :first-child {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-.sherpa-snap-group > :last-child {
+.sherpa-group > :last-child {
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
+
+/* ── Vertical ───────────────────────────────────────────────────────────── */
+.sherpa-group-vertical > * {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-xs, 0.25px);
+}
+.sherpa-group-vertical > :first-child {
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.sherpa-group-vertical > :last-child {
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* ── Grid ───────────────────────────────────────────────────────────────────
+   There is no class. A cell's position needs the COLUMN COUNT, which CSS
+   cannot count and `:nth-child()` will not take as a `var()` — the selector is
+   dropped, silently. The component sets `data-group="grid-top-start"` and the
+   other 11 values on each cell instead; tokens.css defines them all and they
+   reach a shadow root, because the rule sets custom PROPERTIES and those
+   inherit across the boundary.
+   TRAP T-a-grid-group-is-per-cell. */
 
 /* ── Per-edge border widths ──────────────────────────────────────────────
    Widths only: all 26 call sites set a different `border-color`, so folding

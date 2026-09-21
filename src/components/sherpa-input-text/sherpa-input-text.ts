@@ -189,7 +189,10 @@ export class SherpaInputText extends SherpaElement {
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
     if (!el) return;
-    const base = sel === '.icon-start' ? 'icon icon-start' : 'icon icon-end';
+    // TRAP T-icon-box-is-not-the-glyph — rewriting className erases the
+    // shared box class, so it must be restated here, not just in the template.
+    const side = sel === '.icon-start' ? 'icon-start' : 'icon-end';
+    const base = `icon sherpa-icon-box ${side}`;
     if (value && /\bfa-/.test(value)) {
       el.className = `${base} ${value}`;
       el.removeAttribute('data-glyph');

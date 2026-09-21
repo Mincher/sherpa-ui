@@ -161,4 +161,4 @@
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;
 }
-/* `sherpa-spin` is in sherpa-base.css — TRAP T-motion-is-owned-here. */
+/* `sherpa-spin` is in sherpa-motion.css — TRAP T-motion-is-owned-here. */

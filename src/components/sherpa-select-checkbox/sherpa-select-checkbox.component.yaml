@@ -20,7 +20,7 @@ templates:
 anatomy:
   roots:
     - el: div
-      class: group sherpa-snap-group
+      class: group sherpa-group
       part: group
       children:
         - el: span
@@ -146,7 +146,7 @@ events:
     composed: true
     detail:
       checked: unknown
-      indeterminate: unknown
+      indeterminate: boolean
       value: unknown
   - $type: event
     name: selection-scenario
@@ -157,11 +157,8 @@ events:
 tokens:
   field.gap: "{sherpa.display-mode-space-xs}"
   field.color: "{sherpa.theme-content-body-base}"
-  control.border-width: "{sherpa.display-mode-border-width-base}"
-  control.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  control.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  control.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  control.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
+  control.border-width: "{sherpa.display-mode-border-width-sm}"
+  control.border-radius: "{sherpa.display-mode-border-rounding-sm}"
   text.gap: "{sherpa.display-mode-space-2xs}"
   label.color: "{sherpa.theme-content-body-1}"
   label.font-size: "{sherpa.font-size-body-base}"

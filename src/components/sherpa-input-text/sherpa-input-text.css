@@ -107,12 +107,9 @@ textarea.control {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  /* The glyph is a font character, so font-size scales it; the size properties
-     only size its box. Without it the glyph inherits the field's text size and
-     overhangs its square. One variable drives all three. */
-  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
-  block-size: var(--sherpa-theme-size-icon-xs, 14px);
-  font-size: var(--sherpa-theme-size-icon-xs, 14px);
+  /* Box only. Without a declared glyph size it inherits the field's text size
+     and overhangs its square; .sherpa-icon-box scales the glyph inside. */
+  --_icon-size: var(--sherpa-theme-size-icon-xs, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 /* Raw glyph only. A Font Awesome class draws via the webfont's own ::before;

@@ -142,7 +142,7 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* Corner squaring is `.sherpa-snap-group` (core/sherpa-base.css), which
+/* Corner squaring is `.sherpa-group` (core/sherpa-grouping.css), which
    `.view-group` carries: a bare `[data-snap]` rule in tokens.css is a document
    rule and never reaches inside this shadow root. */
 

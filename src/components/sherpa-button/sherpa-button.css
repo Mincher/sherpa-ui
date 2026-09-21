@@ -167,12 +167,10 @@
 .icon {
   display: none;
   place-content: center;
-  inline-size: var(--sherpa-button-size-icon, 14px);
-  block-size: var(--sherpa-button-size-icon, 14px);
+  --_icon-size: var(--sherpa-button-size-icon, 14px);
   /* The glyph is a font character: the sizes above only size its BOX, so
      `font-size` must repeat the same var or the glyph inherits the LABEL's size
      and only agrees with its box at the middle of the scale. */
-  font-size: var(--sherpa-button-size-icon, 14px);
   font-style: normal;
   line-height: 1;
   text-align: center;

@@ -166,15 +166,10 @@
 
 /* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
 .icon { display: none; }
+/* Box + glyph come from .sherpa-icon-box; Figma "Icon" is content/size/base. */
 :host([data-icon-start]) .icon {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  /* Figma "Icon": width/height content/size/base → 14. */
-  inline-size: var(--sherpa-theme-content-size-base, 14px);
-  block-size: var(--sherpa-theme-content-size-base, 14px);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  line-height: 1;
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
 /* ── Menu caret — Figma "Button/Type=icon" snapped to the chip's right ────────
@@ -192,8 +187,9 @@
   border-end-start-radius: 0;
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  /* Structure `icon-size` in the SM mode → content/size/base 14. */
-  font-size: var(--sherpa-theme-content-size-base, 14px);
+  /* Structure `icon-size` in the SM mode → content/size/base 14. Sizes the
+     glyph BOXES inside; each scales its own glyph via .sherpa-icon-box. */
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
 

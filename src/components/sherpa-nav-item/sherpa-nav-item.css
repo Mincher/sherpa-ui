@@ -90,9 +90,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
-  block-size: var(--sherpa-theme-size-icon-xs, 14px);
-  font-size: var(--sherpa-theme-size-icon-xs, 14px);
+  --_icon-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
   flex-shrink: 0;
 }

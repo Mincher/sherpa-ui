@@ -56,13 +56,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: var(--sherpa-theme-content-size-base, 14px);
-  block-size: var(--sherpa-theme-content-size-base, 14px);
+  --_icon-size: var(--sherpa-theme-content-size-base, 14px);
   margin-block-start: var(--sherpa-display-mode-space-3xs, 2px); /* centre on the 20px heading line */
   color: var(--_badge);
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
-  font-size: var(--sherpa-theme-content-size-base, 14px);
   font-style: normal;
   line-height: 1;
 }

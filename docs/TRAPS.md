@@ -6978,3 +6978,34 @@ that array or nothing adopts it.
 
 - Site: `src/index.ts`
 - Site: `src/core/sherpa-base.css`
+
+### T-a-grid-group-is-per-cell
+
+Grouping has three axes in Figma, and `tokens.css` projects all 21 positions:
+horizontal (`solo`/`start`/`mid`/`end`), `vertical-*`, and
+`grid-{top,mid,bottom}-{solo,start,mid,end}`.
+
+`sherpa-grouping.css` gives the first two a wrapper class — `.sherpa-group` and
+`.sherpa-group-vertical` — which work by position (`:first-child`,
+`:last-child`) so a re-order survives. **Grid gets no class.** A grid cell's
+position needs the COLUMN COUNT, and:
+
+- CSS cannot count a grid's tracks.
+- `:nth-child()` will not take a `var()`. Measured: of seven
+  `.sherpa-group-grid` rules written with `:nth-child(var(--_cols) n + 1)`,
+  the browser kept **three** — every `var()` selector was dropped from
+  `cssRules` with no error. The surviving `:first-child` rule made one cell
+  look correct by luck, which is how it nearly shipped.
+
+So a grid component sets `data-group` on each CELL. That vocabulary already
+exists, matches Figma, and — measured — reaches inside a shadow root, because
+the `[data-group]` rule sets custom PROPERTIES and those inherit across the
+boundary. (A `[data-group]` rule cannot MATCH a shadow-root element from
+`tokens.css`; it does not have to. The host carries the attribute and the
+values inherit down.)
+
+The class was also doing half a job before this: it squared corners but never
+set the border WIDTHS, so two neighbours each drew a full hairline and doubled
+it. `.sherpa-group` now sets both.
+
+- Site: `src/core/sherpa-grouping.css`

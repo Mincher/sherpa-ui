@@ -35,7 +35,7 @@
 
 /* ── The WRAPPER (Figma `Wrapper - Checkbox`) ────────────────────────────
  * Rounded outer edge, square against the button, so the pair reads as one
- * object. `.sherpa-snap-group` does the joining because `[data-snap]` in
+ * object. `.sherpa-group` does the joining because `[data-snap]` in
  * tokens.css never reaches a shadow root.
  * TRAP T-advanced-checkbox-is-a-snapped-pair.
  */

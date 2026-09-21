@@ -21,9 +21,9 @@
 -->
 <template id="default">
   <button class="trigger" part="trigger" type="button">
-    <i class="icon icon-start" aria-hidden="true"></i>
+    <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <span class="label"><slot></slot></span>
-    <i class="icon icon-end" aria-hidden="true"></i>
+    <i class="icon sherpa-icon-box icon-end" aria-hidden="true"></i>
     <span class="badge"><slot name="badge" data-accepts="badge"></slot></span>
     <!-- Named, not default: a popover in the default slot joins the label's textContent and widens the button. -->
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
@@ -32,6 +32,6 @@
 
 <template id="icon">
   <button class="trigger" part="trigger" type="button">
-    <i class="icon icon-start" aria-hidden="true"></i>
+    <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
   </button>
 </template>
