@@ -391,7 +391,69 @@ it goes through `Store.load()`, a `RestStore` can push it to the server while
 `countBy`'s fixed-order rule must survive: sorting by count makes a category
 change colour when only its rank moved.
 
-### A. Generalise grouping / sorting / filtering
+### A — MEASURED 2026-09-21. The data layer is already generic; the COMPONENTS are not.
+
+**Will's statement of the target, verbatim:** "UI components should fire change
+events to the data layer, which then collates or transforms the data as needed,
+then broadcasts the change/availability for all listening UI components to adapt
+to."
+
+**That is already what happens.** Traced live: one click on a grid column header
+produced `sort-change` → the source collated it → it broadcast to all three
+bound components (grid, toolbar, pager), each getting five `data-*` attributes.
+No component talked to another. The data layer has ONE event list
+(`STEERING_EVENTS`, 8 entries), ONE `#steer` and ONE `#push`.
+
+So the work is not in `data-source.ts`. It is that components do not yet hold up
+their end.
+
+#### What was wrong, and is now fixed (`4455f6e1`)
+
+The grid's third sort click DELETED the column; the Sort chip SUSPENDED it. Both
+cycled three ways and disagreed about what the third state keeps — the "known
+issue" below, and a breach of `T-a-chip-body-cycles-its-states`.
+
+The grid could not simply keep the column, because **the source owns every bound
+element's `data-*`** and wiped it on the next push, one microtask later. So
+suspension moved to the one owner: `ViewState.sortSuspended`. See
+`T-a-suspended-sort-is-one-owners-job`.
+
+#### The remaining gap, measured
+
+**`data-locked` is implemented by 1 component out of 58.**
+
+It is the system's own answer to "a host owns this value": a locked component
+reports its interaction and stops writing its own state.
+`sherpa-quick-filter` honours it. Nothing else does — and **`DataSource.bind()`
+never sets it**, so binding a component does not lock it.
+
+The consequence is visible in the trace: the grid writes `data-sort-field`
+itself AND emits the intent, so the source writes the same value again. The grid
+is both reporter and owner of one value, which is the exact shape
+`T-state-ownership` warns about.
+
+**It is not a simple bug, and must not be "fixed" by deleting the self-write.**
+Every grid test runs the grid UNBOUND, with no `DataSource` — so the self-write
+is what makes a standalone grid work at all. A component has to behave in both
+worlds.
+
+#### The shape of the work
+
+1. **`bind()` sets `data-locked`, `unbind()` removes it.** One line in the data
+   layer; the mechanism already exists.
+2. **Components honour it**: bound → report the intent and let the broadcast
+   come back; unbound → write their own state, exactly as now. The grid, the
+   toolbar and the pager are the three that steer.
+3. **A shared state-cycling helper.** `asc → desc → suspended → asc` is written
+   twice (grid `#onSortClick`, toolbar `#cycleSort`) and the two drifted. The
+   ratified rule — a body cycles its states, none of them clears — is one
+   function, not a convention each component re-reads.
+4. **Then filtering and grouping**, which have the same two-writer shape.
+
+Not started. `T-a-suspended-sort-is-one-owners-job` is the worked example of the
+answer for one value.
+
+### A (original ask, for reference)
 
 > "There are now a lot of components that can affect grouping, sorting, and
 > filtering that could affect other components in a view. So we should look at
