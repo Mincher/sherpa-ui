@@ -89,11 +89,15 @@ test.describe('view definitions set the filter bar', () => {
     const got = await page.evaluate(() => {
       const header = document.querySelector('sherpa-app-shell sherpa-app-header') as
         HTMLElement & { values: Record<string, readonly string[]> };
-      header.values = { region: ['apac'], customer: ['contoso', 'fabrikam'] };
+      /* The values the DATA carries — a chip's options are a fact about the
+         records, so a value naming no row never lands. These were lowercase
+         here while both datasets held uppercase names, which is exactly the
+         drift T-a-chip-filters-the-values-the-data-has is about. */
+      header.values = { region: ['APAC'], customer: ['Contoso', 'Fabrikam'] };
       return header.values;
     });
-    expect(got['region']).toEqual(['apac']);
-    expect(got['customer']).toEqual(['contoso', 'fabrikam']);
+    expect(got['region']).toEqual(['APAC']);
+    expect(got['customer']).toEqual(['Contoso', 'Fabrikam']);
 
     const chips = await readChips(page);
     expect(chips.find((c) => c.id === 'region')?.text).toContain('APAC');

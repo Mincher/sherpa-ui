@@ -6102,3 +6102,99 @@ Ink on a surface that does NOT flip must not. Getting this wrong is invisible in
 light mode, which is where it gets reviewed.
 
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+
+### T-a-chip-filters-the-values-the-data-has
+
+The app header's Region chip offered `emea` / `amer` / `apac`. Both demo
+datasets hold `EMEA` / `AMER` / `APAC` / `LATAM`.
+
+So picking EMEA built `['region', 'eq', 'emea']`, which matched no record. The
+chip lit up, the toolbar reported the pick, the source ran the query — and
+nothing moved. Every part worked; the two lists simply were not the same list.
+LATAM had no chip at all, so a quarter of the data was unreachable.
+
+`records-data.js` already states the rule, for plans: *"the list of plans that
+EXIST is a fact about the records, not about the form, and a form with its own
+copy would offer a plan no record could have."* The Region chip was that second
+copy. It now takes the values as an argument, from the module that owns them.
+
+**A chip's `value` is what the record holds; its `label` is only what a reader
+sees.** Those are allowed to differ — `AMER` shows as "Americas" — which is
+exactly why this hid: the labels looked right on screen the whole time.
+
+The `emea` saved view had the same split INSIDE one object, under a comment
+saying the chip and the filter were "ONE FACT said twice… so they cannot
+drift": its filter said `'EMEA'` and its chip said `'emea'`. A comment is not a
+mechanism.
+
+- Site: `examples/views/global-filters.js`
+- Site: `examples/views/records.js`
+- Site: `examples/views/records-data.js`
+- Site: `examples/views/dashboard.js`
+- Site: `examples/views/dashboard-data.js`
+- Site: `examples/views/dashboard-views.js`
+
+### T-a-persistent-chip-reports-on-every-change
+
+Picking a Region re-applied the whole current view, a microtask later.
+
+`sherpa-quick-filter-toolbar` reports the bar's WHOLE state on every change:
+one `quick-filter-change` carrying `values` for every chip that has a value.
+The View chip is `persistent` — a reader is always in some view — so
+`values.view` is present on every one of those events, whatever the reader
+actually touched.
+
+`onViewPicked` read `values.view` and applied that view. Every time. So
+choosing a Region made it re-apply the view already on screen, and
+`applyViewSnapshot` restores a snapshot's filter as the WHOLE query — which
+cleared the named `contribute` parts and threw away the region the reader had
+just set. Three symptoms, one cause:
+
+| what was seen | why |
+|---|---|
+| the header's filters did nothing | the filter was set, then wiped |
+| the grid's own column chips never lit | the grid was re-populated from a snapshot that had no column filters |
+| the selection column came unpinned | a full re-render, and the pin is re-applied per render |
+
+It now remembers which view is applied and returns early when the id has not
+changed. That needs a starting value, because the FIRST header change of a
+session would otherwise re-apply the view the page is already showing — so
+`onViewPicked` takes `applied`, the same id the caller passes to `viewOptions`
+to mark the selected chip.
+
+**The general shape:** a bar reports its whole state, so a handler reading one
+chip out of it cannot tell whether that chip is what moved. Either compare
+against what you last acted on, or read `picked` — which names only what
+changed — rather than `values`.
+
+- Site: `src/core/persist-view.ts`
+- Site: `examples/views/records.js`
+- Site: `examples/views/dashboard.js`
+
+### T-the-header-chips-must-reach-the-query
+
+The app header's Customer, Region and Date-range chips were wired to nothing.
+
+`global-filters.js` opens with a clear account of what they do — they "trickle
+DOWN: whatever they narrow to is the population each view's own charts, grids
+and metrics then work within". Both example views found the header, populated
+it, and handed it to `onViewPicked` for its View chip. Neither listened for the
+other three. So a reader picked a region, the chip lit, the toolbar emitted its
+event, and no data moved.
+
+It had never worked, which is what made it hard to see: there was no regression,
+no error, and the chips looked exactly as they should.
+
+The fix is the `contribute` split the page already used for its other three
+writers — the header gets its own key and ANDs with the view bar's chips, the
+grid's column filters and a saved view's clause, without any of them knowing
+about the others.
+
+**A view must also say WHICH FIELD each header chip narrows.** A header chip is
+named for a business question, and the field answering it differs per page:
+"Customer" is this product's word for an ORGANISATION, so on the records page it
+is the `customer` field — not the record's own `name`, and not `owner`, which is
+the member of staff looking after the account. A chip the page does not map
+narrows nothing, rather than building a clause against a field no record has.
+
+- Site: `examples/views/records.js`

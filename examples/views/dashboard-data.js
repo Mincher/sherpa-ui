@@ -16,6 +16,19 @@
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];
 const OSES = ['Windows 11', 'Windows 10', 'macOS', 'Linux', 'Other'];
 const REGIONS = ['EMEA', 'AMER', 'APAC', 'LATAM'];
+
+/**
+ * The CUSTOMERS — organisations, not people. Each alert is about a device, and
+ * a device belongs to one.
+ *
+ * Exported because the app header's Customer chip narrows by this field, and a
+ * chip's options are a fact about the records rather than about the chip —
+ * TRAP T-a-chip-filters-the-values-the-data-has.
+ */
+export const customerOrgs = [
+  'Northwind', 'Contoso', 'Fabrikam', 'Tailspin', 'Adventure Works',
+  'Litware', 'Proseware', 'Wingtip Toys',
+];
 const SEVERITIES = ['critical', 'warning', 'info'];
 
 /**
@@ -33,6 +46,9 @@ export function alerts(count = 1284) {
     category: CATEGORIES[Math.floor(((i * i) % 64) / 8)],
     os: OSES[i % 5 === 0 ? 4 : Math.floor((i % 17) / 4)],
     region: REGIONS[i % 4],
+    // 8 organisations against 4 regions — coprime strides, so the two columns
+    // do not march in lockstep.
+    customer: customerOrgs[i % 8],
     severity: SEVERITIES[i % 3],
     // 0–100, for the gauge's "storage used".
     storage: (i * 37) % 101,

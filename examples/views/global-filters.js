@@ -16,6 +16,27 @@
  * saved view re-applies a whole arrangement.
  */
 
+/**
+ * The regions both demo datasets carry. The DEFAULT only — a caller passes its
+ * own list, and both currently hold exactly these four.
+ */
+const REGIONS = ['EMEA', 'AMER', 'APAC', 'LATAM'];
+
+/**
+ * The DEFAULT customer options: NONE, so the chip is left off entirely.
+ *
+ * A caller passes the values its own records carry. What answers "which
+ * customers" differs per page — on the records page it is who owns the
+ * account; the dashboard's rows are alerts about devices and carry nothing of
+ * the kind, so that page simply has no Customer chip rather than an empty one.
+ * A chip with no options is a control that cannot do anything, and the amber
+ * "on but filtering nothing" state exists to flag exactly that.
+ */
+const CUSTOMERS = [];
+
+/** Reader-facing names for the region codes. A code with no entry shows as-is. */
+const REGION_LABELS = { AMER: 'Americas', LATAM: 'Latin America' };
+
 /** The days the demo data covers, for the date chip's calendar. */
 function demoDays(back = 90) {
   const out = [];
@@ -34,8 +55,15 @@ function demoDays(back = 90) {
  *
  * `views` is this page's own saved-view options — the one chip that differs per
  * page, because a dashboard's saved views are not a records page's.
+ *
+ * `regions` are the values the DATA actually carries. This chip used to own its
+ * own list — three lowercase names (`emea`, `amer`, `apac`) against four
+ * uppercase ones in both datasets — so picking EMEA filtered to nothing and no
+ * grid or chart moved. A chip's options have to BE the values it filters, the
+ * same rule `records-data.js` already states for `plans`.
+ * TRAP T-a-chip-filters-the-values-the-data-has.
  */
-export function globalFilters(views) {
+export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS) {
   return [
     {
       id: 'view',
@@ -61,13 +89,11 @@ export function globalFilters(views) {
       // header as a problem before the reader had touched anything.
       removable: true,
       select: 'multiple',
-      options: [
-        { value: 'northwind', label: 'Northwind' },
-        { value: 'contoso', label: 'Contoso' },
-        { value: 'fabrikam', label: 'Fabrikam' },
-        { value: 'tailspin', label: 'Tailspin' },
-        { value: 'adventure', label: 'Adventure Works' },
-      ],
+      // FROM THE DATA, like the regions below. "Customer" is this product's
+      // word for an ORGANISATION, and these were five invented names against
+      // records that carried no such field at all, so the chip could never
+      // narrow anything. TRAP T-a-chip-filters-the-values-the-data-has.
+      options: customers.map((value) => ({ value, label: value })),
     },
     {
       id: 'region',
@@ -75,11 +101,9 @@ export function globalFilters(views) {
       icon: 'fa-solid fa-globe',
       removable: true,
       select: 'multiple',
-      options: [
-        { value: 'emea', label: 'EMEA' },
-        { value: 'amer', label: 'Americas' },
-        { value: 'apac', label: 'APAC' },
-      ],
+      // The VALUE is what the record holds; the label is only what a reader
+      // sees. They were different words here, which is the whole bug.
+      options: regions.map((value) => ({ value, label: REGION_LABELS[value] ?? value })),
     },
     {
       id: 'dateRange',
@@ -95,5 +119,6 @@ export function globalFilters(views) {
       // choose a date no record carries and get an empty app back.
       availableDates: demoDays(),
     },
-  ];
+    // A chip with NO options is dropped, not shown empty — see CUSTOMERS above.
+  ].filter((chip) => chip.id !== 'customer' || customers.length > 0);
 }

@@ -814,7 +814,14 @@ test('onViewPicked ignores a chip-scoped event, by shape not by luck', async ({ 
 
     const states: unknown[] = [];
     const source = { setState: (s: unknown) => states.push(s) };
-    const VIEWS = { risk: { label: 'At risk', snapshot: { v: 1, source: { filter: ['h', 'lt', 60] } } } };
+    /* TWO views, because the same id twice is now a no-op: a persistent View
+       chip reports on EVERY bar change, so `onViewPicked` re-applies only when
+       the id MOVES — T-a-persistent-chip-reports-on-every-change. This test is
+       about the scope marker, and two ids prove that just as well as one. */
+    const VIEWS = {
+      risk: { label: 'At risk', snapshot: { v: 1, source: { filter: ['h', 'lt', 60] } } },
+      calm: { label: 'Calm', snapshot: { v: 1, source: { filter: ['h', 'gt', 60] } } },
+    };
     onViewPicked(host, VIEWS, { source });
 
     const fire = (detail: unknown) => host.dispatchEvent(
@@ -838,8 +845,8 @@ test('onViewPicked ignores a chip-scoped event, by shape not by luck', async ({ 
     fire({ values: { view: ['risk'] } });
     const afterUnmarked = states.length;
 
-    // And the bar's own event.
-    fire({ scope: 'bar', values: { view: ['risk'] } });
+    // And the bar's own event, naming a DIFFERENT view so the id moves.
+    fire({ scope: 'bar', values: { view: ['calm'] } });
     return { afterChip, afterUnmarked, total: states.length };
   });
 

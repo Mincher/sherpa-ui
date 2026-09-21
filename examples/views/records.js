@@ -19,7 +19,8 @@
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
 } from '../../dist/index.js';
-import { customerStore, customersReady, customers, columns, plans } from './records-data.js';
+import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs }
+  from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
@@ -168,7 +169,11 @@ export async function init(root) {
     // inside that. See global-filters.js.
     // DERIVED from the view definitions, so a label cannot drift from the view
     // it names. Each option's value is a key into RECORDS_VIEWS.
-    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all')),
+    /* OPTIONS FROM THE DATA. Both lists used to be invented — lowercase
+       regions the records never held, and five company names against no field
+       at all — so picking either filtered to nothing.
+       TRAP T-a-chip-filters-the-values-the-data-has. */
+    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs),
   });
 
   /* Quick-filter chips — status segments with counts, plus two value pickers.
@@ -449,6 +454,49 @@ export async function init(root) {
     },
   });
 
+  /* THE APP HEADER'S GLOBAL FILTERS — Customer, Region, Date range.
+
+     These trickle DOWN: whatever they narrow to is the population this grid
+     then works within, and the bar below narrows further inside that. That is
+     the whole reason there are two toolbars (see global-filters.js).
+
+     They reached NOTHING. The header was found, populated and handed to
+     `onViewPicked` for its View chip, and its other three chips were never
+     listened to — so picking a region lit the chip, emitted the event and
+     changed no data. The story was written; the wire was not.
+     TRAP T-the-header-chips-must-reach-the-query.
+
+     Its OWN key, so it ANDs with the view bar's chips, the column filters and
+     a saved view's clause without any of them knowing about the others — the
+     same `contribute` split those three already use.
+
+     `view` is skipped: that chip is the saved-view SELECTOR, handled by
+     `onViewPicked` below, and folding it in here would filter by a view id. */
+  /* WHICH FIELD each header chip narrows, for THESE records.
+
+     A header chip is named for the business question, and the field that
+     answers it differs per page. "Customer" is this product's word for an
+     ORGANISATION — each record here is a person who belongs to one, so it is
+     the `customer` field and not the record's own name, nor `owner`, which is
+     the member of STAFF who looks after the account. "Date range" has to pick
+     one of the two date columns, because a record carries both.
+
+     A chip whose id is not here narrows nothing, rather than building a clause
+     against a field no record has — which is how `['region','eq','emea']` got
+     through before. */
+  const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: 'created' };
+
+  header?.addEventListener('quick-filter-change', (e) => {
+    const picked = {};
+    for (const [id, values] of Object.entries(e.detail.values ?? {})) {
+      // `view` is the saved-view SELECTOR, handled by `onViewPicked` below.
+      // Folding it in here would filter by a view id.
+      const field = HEADER_FIELDS[id];
+      if (field && values?.length) picked[field] = values;
+    }
+    source.contribute('global', filterFromChips(picked, []));
+  }, { signal });
+
   /* SAVED VIEWS — the header's View chip.
 
      Each option is a real definition, not a label: a ViewSnapshot holding the
@@ -467,6 +515,10 @@ export async function init(root) {
      grid's column clauses read back. */
   onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
     signal,
+    /* 'all' is on screen already — the same id `viewOptions` was given above.
+       Without this the first Region or Customer pick of a session re-applies
+       it and wipes the pick. TRAP T-a-persistent-chip-reports-on-every-change. */
+    applied: 'all',
     after: ({ view }) => {
       /* AFTER the snapshot, not before. `setState` treats a restored filter as
          the WHOLE query and clears the named parts with it — right for a host

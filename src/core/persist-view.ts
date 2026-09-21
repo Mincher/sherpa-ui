@@ -309,6 +309,16 @@ export function onViewPicked(
      */
     into?: HTMLElement | null;
     /**
+     * The view the page is ALREADY showing, so it is not re-applied.
+     *
+     * The same id a caller passes to `viewOptions` to mark the selected chip.
+     * Without it the FIRST header change of a session re-applies the current
+     * view — which wipes whatever the reader just picked, because
+     * `applyViewSnapshot` restores the snapshot's filter as the whole query.
+     * TRAP T-a-persistent-chip-reports-on-every-change.
+     */
+    applied?: string | null;
+    /**
      * Stop listening when this aborts — the same platform token `bind()` takes.
      *
      * `addEventListener` honours it natively, so one controller can tear down
@@ -323,6 +333,18 @@ export function onViewPicked(
      Null until a view first replaces them. */
   let original: ChildNode[] | null = null;
 
+  /* The view this bar is ALREADY showing.
+   *
+   * The View chip is `persistent`, so `values.view` is present on EVERY bar
+   * event — including one fired because a reader picked a Region. Without this
+   * the whole current view was re-applied on every such pick, and
+   * `applyViewSnapshot` treats a restored filter as the entire query: the
+   * reader's brand-new region filter was wiped a microtask after they set it,
+   * the grid re-rendered from scratch, and its pinned columns came unpinned.
+   * TRAP T-a-persistent-chip-reports-on-every-change.
+   */
+  let applied: string | null = options.applied ?? null;
+
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent).detail as
       { scope?: string; values?: Record<string, readonly string[]> } | undefined;
@@ -332,10 +354,18 @@ export function onViewPicked(
 
     const id = detail?.values?.['view']?.[0];
     if (!id) return;
+    // SAME VIEW, different chip — nothing to re-apply.
+    // TRAP T-a-persistent-chip-reports-on-every-change.
+    if (id === applied) return;
     // TRAP T-library-re-read-on-every-pick — a captured object never grows.
     const library = typeof views === 'function' ? views() : views;
     const view = library[id];
     if (!view) return;
+    // AFTER the library check, never before: a view the library does not hold
+    // yet has not been applied, and recording it would make the pick that
+    // follows its save a no-op. The reader saves a view, picks it, and nothing
+    // happens.
+    applied = id;
 
     /* TRAP T-content-first-original-once — content before snapshot. */
     const host = options.into;

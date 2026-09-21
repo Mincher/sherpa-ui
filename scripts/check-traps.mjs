@@ -53,6 +53,11 @@ const SOURCES = [
   // selector now matches twice) is as easy to undo as a rule about rendering,
   // and an undone one turns a working component into a red test.
   'test/e2e/*.ts',
+  // The EXAMPLES too. They are the working reference for wiring a view —
+  // CLAUDE.md says so — and a rule about how a view must be wired rots exactly
+  // like a rule about a component. The region chip offering values the data
+  // never held survived because nothing checked.
+  'examples/views/*.js',
 ];
 
 /** `### T-some-id` opens a trap; `Site:` lines list the files that cite it. */

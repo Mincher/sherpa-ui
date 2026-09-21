@@ -47,8 +47,34 @@ const last  = ['Okafor','Reyes','Khan','Moreau','Berg','Haddad','Nair','Walsh','
  */
 export const plans = ['Free','Starter','Pro','Enterprise'];
 const states  = ['active','trial','suspended','churned'];
-const regions = ['EMEA','AMER','APAC','LATAM'];
+/**
+ * The regions a customer can be in.
+ *
+ * Exported for the SAME reason `plans` is: the app header's Region chip filters
+ * these records, so its options have to BE these values. It kept its own copy —
+ * three lowercase names against four uppercase ones — so picking EMEA in the
+ * header filtered to nothing and the grid did not move.
+ */
+export const regions = ['EMEA','AMER','APAC','LATAM'];
+/** Who owns each account, internally — a member of staff, not the customer. */
 const owners  = ['Unassigned','Ravi Menon','Dana Whitlock','Pierre Sadler'];
+
+/**
+ * The CUSTOMERS — organisations, not people.
+ *
+ * "Customer" is this product's word for an organisation. Each record is a
+ * PERSON (a name and an email) who belongs to one, so the organisation is its
+ * own field rather than the record's name. The app header's Customer chip
+ * narrows by it.
+ *
+ * Exported for the same reason `plans` and `regions` are: a chip's options are
+ * a fact about the records, not about the chip. The header used to carry its
+ * own five names against records that had no such field at all.
+ */
+export const customerOrgs = [
+  'Northwind', 'Contoso', 'Fabrikam', 'Tailspin', 'Adventure Works',
+  'Litware', 'Proseware', 'Wingtip Toys',
+];
 const tiers   = ['Bronze','Silver','Gold','Platinum'];
 
 /* A tiny deterministic PRNG. The demo data has to look unpatterned — with
@@ -85,6 +111,9 @@ export const customers = Array.from({ length: 100 }, (_, i) => {
   const seen = new Date(created.getTime() + (Math.floor(rnd() * 300) + 1) * 86400000);
   return {
     name: `${f} ${l}`,
+    // The ORGANISATION this person belongs to — "Customer" in this product's
+    // vocabulary. TRAP T-a-chip-filters-the-values-the-data-has.
+    customer: pick(customerOrgs),
     // The index keeps the address unique even when the same name is drawn twice.
     email: `${f.toLowerCase()}.${l.toLowerCase()}${i}@example.com`,
     status,
@@ -115,6 +144,7 @@ export const customers = Array.from({ length: 100 }, (_, i) => {
 export const columns = [
   { field: 'name',        header: 'Name',      sortable: true },
   { field: 'email',       header: 'Email',     sortable: true },
+  { field: 'customer',    header: 'Customer',  sortable: true },
   { field: 'status',      header: 'Status',    sortable: true },
   { field: 'plan',        header: 'Plan',      sortable: true },
   { field: 'tier',        header: 'Tier',      sortable: true },

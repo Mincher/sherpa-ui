@@ -55,8 +55,12 @@ export const DASHBOARD_VIEWS = {
         sort: [], group: null, search: '', page: 1,
       },
       // The chip and the filter are ONE FACT said twice — once to the data,
-      // once to the reader. Held together here so they cannot drift.
-      elements: { header: { values: { view: ['emea'], region: ['emea'] } } },
+      // once to the reader. Held together here so they cannot drift. They HAD
+      // drifted: the filter said 'EMEA' and the chip said 'emea', so the saved
+      // view narrowed the data while its own chip claimed nothing was picked.
+      // `view` stays lowercase — that is a key into this object, not a record
+      // value. TRAP T-a-chip-filters-the-values-the-data-has.
+      elements: { header: { values: { view: ['emea'], region: ['EMEA'] } } },
     },
   },
 

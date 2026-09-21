@@ -15,7 +15,7 @@ import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
 import {
-  alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER,
+  alerts, countBy, seriesByDay, meanOf, CATEGORY_ORDER, OS_ORDER, customerOrgs,
 } from './dashboard-data.js';
 
 export async function init(root) {
@@ -47,7 +47,10 @@ export async function init(root) {
     // population this dashboard's charts then work within. See global-filters.js.
     // The options come FROM the views, so a label cannot drift from the view
     // it names — the list and the definitions are one source.
-    filters: globalFilters(viewOptions(views)),
+    /* OPTIONS FROM THE DATA — both lists. They were invented before, so
+       picking either narrowed nothing.
+       TRAP T-a-chip-filters-the-values-the-data-has. */
+    filters: globalFilters(viewOptions(views), undefined, customerOrgs),
   };
 
   // ── Metric tiles (with sparkline series). ───────────────────────────
@@ -289,6 +292,11 @@ export async function init(root) {
   onViewPicked(header, () => views, { source, elements: { header } }, {
     into: contentRegion,
     signal: page.signal,
+    /* The one on screen — `viewOptions(views)` above selects the FIRST view,
+       so that is what the page is showing. Without this the first header
+       change of a session re-applies it and wipes the reader's pick.
+       TRAP T-a-persistent-chip-reports-on-every-change. */
+    applied: Object.keys(views)[0],
     after: ({ rendered }) => {
       /* A view that brings NO content leaves the page's own charts in place —
          and their binds with them. Only tear down when something replaced them. */
@@ -354,7 +362,7 @@ export async function init(root) {
        once the data is in the DOM, which is what a caller reading back its own
        write has to wait for. The base class says so; I used the wrong one. */
     void Promise.resolve(
-      header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id)) }),
+      header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id), undefined, customerOrgs) }),
     ).then(() => { header.values = picked; });
   });
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
