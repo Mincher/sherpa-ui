@@ -1,10 +1,7 @@
 <!--
   sherpa-sparkline — a compact inline trend chart (line area or bars).
 
-  A fixed set of 8 point slots (7 segments). JS supplies the raw values as
-  --_v0..--_v7 plus --_min / --_range on the host; CSS normalises each value to
-  0–100 with calc() and positions the shapes. Unused segments/points collapse
-  from the host's data-len (CSS owns the visibility, not JS).
+  JS sets --_v0..--_v7, --_min and --_range on the host; CSS does the rest.
 
   Public API:
     data-values   — comma-separated or JSON array (e.g. "10,25,15,30")
@@ -45,19 +42,10 @@
     </div>
 
     <!--
-      HOVER DOTS — one per data point, and the tooltip ANCHORS.
-
-      They are real HTML divs, not SVG: an SVG element cannot be a CSS anchor in
-      Chromium (anchor-name is accepted and then never resolves — the tip drops to
-      the viewport corner). As HTML they position themselves from the SAME
-      --_vN / --_min / --_range bridge the shapes use, in percentages of the
-      chart's own box, so calc() keeps them correct at any size with no JS
-      measuring and no re-layout on resize.
-
-      Each dot's tooltip is its SIBLING, never its child: an
-      absolutely-positioned mark BREAKS anchor positioning for a `position: fixed`
-      descendant, so a nested tip drops to the dot's own corner instead of sitting
-      above it. The .chart-tip rules in core/sherpa-base.css do the placement.
+      Hover dots + tooltip anchors. HTML, not SVG: an SVG element accepts
+      anchor-name and never resolves it in Chromium, so the tip lands in the
+      viewport corner. Each tip is its dot's SIBLING — an absolutely-positioned
+      mark breaks anchor positioning for a `position: fixed` descendant.
     -->
     <div class="hotspots" part="hotspots" aria-hidden="true">
       <button class="hotspot chart-mark" type="button" data-index="0" tabindex="-1"></button>

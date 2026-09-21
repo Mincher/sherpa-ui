@@ -1,9 +1,8 @@
 /**
  * sherpa-toast — a pop-up message that removes itself after a delay.
  *
- * The static helpers drop toasts into one shared `.sherpa-toast-stack` column,
- * so a new toast pushes the older ones down. CSS owns colour, corner and both
- * animations.
+ * The static helpers share one `.sherpa-toast-stack` column. CSS owns colour,
+ * corner and both animations.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -15,16 +14,12 @@ export interface ToastOptions {
   container?: HTMLElement;
   /** The second line, under the heading (data-value). */
   value?: string;
-  /** An action link in the toast (data-action). Fires toast-action when clicked. */
+  /** An action link (data-action). Fires toast-action when clicked. */
   action?: string;
 }
 
-/**
- * A safety net for the leave animation, not its duration — it must never beat a
- * real animation to the finish. TRAP T-css-owns-the-leave-duration
- */
+/** A safety net, never the duration — it must not beat a real animation. TRAP T-css-owns-the-leave-duration */
 const LEAVE_FALLBACK_MS = 1000;
-/** The default auto-dismiss delay. */
 const DEFAULT_DURATION = 5000;
 
 type ToastStatus = 'info' | 'success' | 'warning' | 'critical';
@@ -33,7 +28,7 @@ export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
   static override props = {
-    // The heading span contains a <slot>, so a slotted heading must survive —
+    // The heading span holds a <slot>, so a slotted heading must survive —
     // TRAP T-slot-guards-only-when-filled. data-message is the legacy alias.
     'data-heading': {
       type: 'string', kind: 'content', to: '.heading',
@@ -68,11 +63,11 @@ export class SherpaToast extends SherpaElement {
       clearTimeout(this.#timer);
       this.#timer = null;
     }
-    if (this.hasAttribute('data-leaving')) return; // already on its way out
+    if (this.hasAttribute('data-leaving')) return;
     this.emit('toast-dismiss');
     this.toggleAttribute('data-leaving', true);
 
-    // The fallback covers the case where the animation never runs at all.
+    // The fallback covers an animation that never runs at all.
     let done = false;
     const finish = (): void => {
       if (done) return;
@@ -100,14 +95,13 @@ export class SherpaToast extends SherpaElement {
     if (options.value !== undefined) toast.dataset['value'] = options.value;
     if (options.action !== undefined) toast.dataset['action'] = options.action;
     const host = options.container ?? SherpaToast.#stack();
-    // In the shared stack the CONTAINER owns the corner, so the toast returns to
-    // normal flow and the column spaces them.
+    // In the shared stack the CONTAINER owns the corner: the toast stays in flow.
     if (host.classList.contains('sherpa-toast-stack')) toast.dataset['stacked'] = '';
     host.appendChild(toast);
     return toast;
   }
 
-  /** The shared top-right stack, created on first use. Light DOM, so the app can target it. */
+  /** The shared top-right stack, made on first use. Light DOM, so the app can target it. */
   static #stack(): HTMLElement {
     const existing = document.querySelector<HTMLElement>('.sherpa-toast-stack');
     if (existing) return existing;
@@ -121,7 +115,7 @@ export class SherpaToast extends SherpaElement {
       'display:flex',
       'flex-direction:column',
       'gap:var(--sherpa-display-mode-space-xs, 8px)',
-      'pointer-events:none', // the stack never blocks the page …
+      'pointer-events:none', // the stack never blocks the page
     ].join(';');
     document.body.appendChild(stack);
     return stack;

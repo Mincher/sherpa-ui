@@ -1,9 +1,6 @@
 <!--
   sherpa-line-chart — a line/area chart over a numeric series.
 
-  populate({ labels, series }) writes polyline points + area path into the inline
-  <svg> (viewBox 0 0 100 100, preserveAspectRatio none, so it stretches).
-
   Public API:
     data-label       chart title
     data-type     line (default) | area
@@ -33,11 +30,8 @@
           <g class="grid"></g>
           <g class="series-layer"></g>
         </svg>
-        <!--
-          Hover dots are real HTML buttons, NOT the polyline's vertices: an SVG
-          element cannot be a CSS anchor in Chromium — anchor-name is accepted and
-          silently never resolves, so the tip lands in the viewport corner.
-        -->
+        <!-- Hover dots are HTML buttons, not polyline vertices: an SVG element
+             silently never resolves as a CSS anchor in Chromium. -->
         <div class="hotspots" part="hotspots"></div>
 
         <div class="x-axis" part="x-axis"></div>
@@ -49,28 +43,19 @@
     <slot name="legend"></slot>
   </figure>
 
-  <!-- One y value + its tick rule. -->
   <template class="ytick-tpl">
     <span class="y-tick"><span class="y-value"></span></span>
   </template>
 
-  <!--
-    Series <g>/<path>/<polyline> are built in the TS via createElementNS — SVG
-    cloned from an HTML template lands in the wrong namespace and paints nothing.
-  -->
+  <!-- Series <g>/<path>/<polyline> are built in the TS via createElementNS — SVG
+       cloned from an HTML template lands in the wrong namespace and paints nothing. -->
   <template class="xlabel-tpl">
     <span class="x-label"></span>
   </template>
 
-  <!--
-    TWO SIBLINGS, cloned together — a dot and its tip.
-
-    The tip must NOT be inside the dot or any positioned wrapper: an
-    `position: absolute` ancestor breaks anchor positioning for a `position: fixed`
-    tip, dropping it to that box's corner. The dot must be absolute to sit on its
-    data point, so the tip stays in the static .hotspots layer and finds it by
-    anchor name. `.chart-mark:hover + .chart-tip` pairs them.
-  -->
+  <!-- Two siblings, cloned together. The tip must stay OUT of the dot and any
+       positioned wrapper: an absolute ancestor breaks anchor positioning for the
+       fixed tip. `.chart-mark:hover + .chart-tip` pairs them. -->
   <template class="hotspot-tpl">
     <button class="hotspot chart-mark" type="button" tabindex="-1"></button>
     <span class="chart-tip" role="tooltip">

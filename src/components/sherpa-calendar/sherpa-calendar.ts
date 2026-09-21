@@ -5,7 +5,6 @@
  * data-view is the code's own zoom.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-// Composed: cells and the stepper's buttons must be defined.
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
 
@@ -44,10 +43,7 @@ export class SherpaCalendar extends SherpaElement {
   /** Currently viewed year / 0-indexed month. */
   #viewYear = new Date().getFullYear();
   #viewMonth = new Date().getMonth();
-  /**
-   * True while the USER's own click is writing a value.
-   * TRAP T-picking-stops-the-grid-following — the grid follows a HOST's value only.
-   */
+  /** True while the USER's own click is writing a value. */
   #picking = false;
 
   override onRender(): void {
@@ -106,7 +102,7 @@ export class SherpaCalendar extends SherpaElement {
   /**
    * One header control, wherever it lives — own shadow DOM or projected.
    * TRAP T-slot-assigns-direct-children-only — an embedded header is a sibling
-   * in the PARENT, so both sides of the boundary come back on one path.
+   * in the PARENT.
    */
   #headerEls(sel: string): HTMLElement[] {
     const own = this.$<HTMLElement>(sel);
@@ -174,8 +170,8 @@ export class SherpaCalendar extends SherpaElement {
 
   /**
    * The month to open on when nothing is picked yet — the latest available day.
-   * TRAP T-calendar-anchors-where-the-data-is — anywhere else is a grid of
-   * disabled cells.
+   * TRAP T-calendar-anchors-where-the-data-is — anywhere else opens on a grid
+   * of disabled cells.
    */
   #availableAnchor(): [number, number, number] | null {
     const days = this.#availableDays();
@@ -197,8 +193,8 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   /**
-   * Stamp one month's cells into the grid, starting at `column` (1 or 9 in the
-   * shared 15-track grid), so every cell must state its own column and row.
+   * Stamp one month's cells, starting at `column` (1 or 9 in the shared
+   * 15-track grid) — so every cell must state its own column and row.
    */
   #stampMonth(grid: HTMLElement, y: number, m: number, column: number): void {
     // Mon=0…Sun=6, so column 1 is Monday as in the Figma weekday header.
@@ -238,8 +234,8 @@ export class SherpaCalendar extends SherpaElement {
       cell.setAttribute('data-label', String(d));
       cell.dataset['value'] = iso;
       cell.dataset['iso'] = iso;
-      // TRAP T-cell-state-is-the-only-paint — the cell paints from data-state;
-      // the older flags stay for the month and year grids' own CSS.
+      // TRAP T-cell-state-is-the-only-paint — the older flags stay for the
+      // month and year grids' own CSS.
       if (iso === todayIso) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -288,7 +284,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
-      // Today first, selected second — selected wins.
+      // Selected is written second, so it wins.
       if (now.getFullYear() === this.#viewYear && now.getMonth() === i) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -315,7 +311,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
-      // Today first, selected second — selected wins.
+      // Selected is written second, so it wins.
       if (year === nowY) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -335,7 +331,6 @@ export class SherpaCalendar extends SherpaElement {
     return this.#viewYear - ((this.#viewYear % 12));
   }
 
-  /** Keep the time input in step with data-value's time tail. */
   #syncTimeInput(): void {
     const input = this.$<HTMLInputElement>('.cal-time');
     if (!input) return;
@@ -396,7 +391,7 @@ export class SherpaCalendar extends SherpaElement {
     else this.#pickSingle(iso);
   };
 
-  /** Single mode — set data-value, with the time tail if hasTime. */
+  /** Sets data-value, with the time tail when hasTime. */
   #pickSingle(iso: string): void {
     const time = this.#hasTime ? this.#currentTime() : '';
     const value = time ? `${iso}T${time}` : iso;
@@ -425,18 +420,16 @@ export class SherpaCalendar extends SherpaElement {
       this.#render();
       this.emit('range-select', { start: s, end: e });
     } finally {
-      // `finally`: a stuck flag would ignore the host for good.
+      // A stuck flag would ignore the host for good.
       this.#picking = false;
     }
   }
 
-  /** hh:mm currently held in the time input; empty if unset. */
   #currentTime(): string {
     const input = this.$<HTMLInputElement>('.cal-time');
     return input && TIME_RE.test(input.value) ? input.value : '';
   }
 
-  /** Time input changed — fold it into data-value. */
   #onTimeInput = (): void => {
     const date = datePart(this.dataset['value']);
     if (!date) return;
@@ -471,12 +464,11 @@ export class SherpaCalendar extends SherpaElement {
     else this.#pickSingle(iso);
   };
 
-  /** Cancel — carries no value; the host tears down or reverts. */
+  /** Carries no value; the host tears down or reverts. */
   #onCancel = (): void => {
     this.emit('calendar-cancel', {});
   };
 
-  /** Apply — confirm the current value. */
   #onApply = (): void => {
     this.emit('calendar-apply', { value: this.dataset['value'] ?? '' });
   };

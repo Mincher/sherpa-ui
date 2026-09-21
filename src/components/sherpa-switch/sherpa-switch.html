@@ -1,10 +1,8 @@
 <!--
   sherpa-switch — an immediate binary toggle.
 
-  A real <input type="checkbox" role="switch"> owns value, keyboard, focus and
-  form participation; the <label> makes a click anywhere toggle it natively.
-  An <input> can hold no children, so the knob and ON/OFF label are SIBLING
-  spans keyed off :checked / :disabled via the sibling combinator.
+  An <input> can hold no children, so the knob and label are SIBLING spans
+  keyed off :checked / :disabled via the sibling combinator.
 
   Public API:
     checked    — native boolean       (current value; drives :checked visuals)

@@ -1,11 +1,7 @@
 <!--
   sherpa-breadcrumbs — a navigation trail.
 
-  Renders a flat crumb list from populate([{ label, href? }]) by cloning the
-  <template class="crumb-tpl"> prototype (no id → the base parser ignores it).
-  The last crumb is the current page: no href, aria-current="page". Separators
-  are drawn purely in CSS: a Font Awesome chevron-right ::before on every crumb
-  after the first (Figma uses a 12px chevron-right icon instance).
+  Separators are CSS only: a chevron ::before on every crumb after the first.
 
   Public API: (content-driven — no host data-* required)
 
@@ -16,6 +12,7 @@
     <ol class="crumbs" part="crumbs" role="list"></ol>
   </nav>
 
+  <!-- no id: the base parser must not treat this prototype as a template -->
   <template class="crumb-tpl">
     <li class="crumb" role="listitem" data-index="data-index">
       <a class="link" part="link" data-text="label"></a>

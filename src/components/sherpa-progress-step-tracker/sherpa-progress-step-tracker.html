@@ -1,13 +1,6 @@
 <!--
   sherpa-progress-step-tracker — a horizontal stepper.
 
-  Renders step nodes from populate([{ label, description? }]) (or the `steps`
-  property). Each step's state (done | active | todo) is a data-state attribute
-  the CSS keys off — derived by comparing the step index to data-current-step.
-  Connector lines sit between adjacent steps.
-
-  Data-driven rows use cloning prototypes (no id — the base parser ignores them).
-
   Public API:
     data-current-step — 0-based index of the active step
 

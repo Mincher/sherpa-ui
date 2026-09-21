@@ -1,21 +1,9 @@
 <!--
   sherpa-nav — the primary application navigation rail.
 
-  Matches the Figma "Primary Navigation" (32:43161) and its "Navigation Header"
-  sub-component (1051:7815). The rail is a FIVE-MODE state machine, exactly the
-  modes of the Figma Navigation collection:
-
-    collapsed  40px  icon-only rail (the resting state)
-    hover      320px open + an elevation lift, while the pointer is over it
-    default    320px open, no lift
-    pinned     320px open and latched (the pin button reads active)
-    settings   320px open on the tinted surface, header label "Settings"
-
-  JS only writes data-nav-state; every visual difference lives in CSS off that
-  attribute + the projected Navigation token region.
-
-  Structure mirrors Figma: a header (Navigation Header row → search → quick items)
-  over a scrolling content area of grouped sections, then a footer.
+  A five-mode state machine: collapsed (40px, resting) | hover | default | pinned |
+  settings (all 320px). JS only writes data-nav-state; every visual difference lives
+  in CSS off that attribute + the projected Navigation token region.
 
   populate(config):
     {
@@ -28,8 +16,7 @@
   A plain array is still accepted and treated as one unlabelled section.
 
   The settings button swaps the rail to settingsSections — settings pages live behind
-  that button, not as a nav item in the product tree. `tier: 2 | 3` indents a row to
-  the Figma indent tiers (8 / 32 / 48) so child items nest under their parent.
+  that button, not as a nav item in the product tree. `tier: 2 | 3` indents a row.
 
   Public API:
     data-nav-state  collapsed (default) | hover | default | pinned | settings
@@ -48,7 +35,6 @@
 <template id="default">
   <nav class="rail" part="rail" aria-label="Main">
     <div class="header" part="header">
-      <!-- Navigation Header: 40×40 branding tile · product name · pin · settings -->
       <div class="brand" part="brand">
         <span class="brand-icon" part="brand-icon" aria-hidden="true">
           <slot name="brand-icon"><i class="fa-solid fa-cubes"></i></slot>
@@ -67,7 +53,7 @@
           <i class="search-icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <input class="search-input" part="search-input" type="search"
                  placeholder="Search" aria-label="Search navigation" />
-          <!-- Shown only once the field has text (CSS-gated on data-has-query). -->
+          <!-- Shown only when the field has text (CSS, data-has-query). -->
           <button class="search-clear" part="search-clear" type="button" aria-label="Clear search">
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
@@ -86,7 +72,7 @@
     </div>
   </nav>
 
-  <!-- Cloning prototypes (data-driven, no id so the parser ignores them) -->
+  <!-- Cloning prototypes — no id, so the template parser ignores them. -->
   <template class="section-tpl">
     <section class="section">
       <h2 class="section-label" part="section-label"></h2>

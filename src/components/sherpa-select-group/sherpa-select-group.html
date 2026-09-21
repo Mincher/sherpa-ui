@@ -1,8 +1,7 @@
 <!--
   sherpa-select-group — a labelled group of checkbox or radio options.
 
-  populate() stamps sherpa-select-checkbox/radio children into LIGHT DOM so they
-  project through the `options` slot — the same place an author writes them.
+  populate() stamps option children into LIGHT DOM, not the shadow root.
 
   Public API:
     data-label        group heading (hidden when empty)

@@ -23,10 +23,9 @@
     <slot></slot>
   </span>
   <!--
-    `popover=manual` lifts the bubble into the TOP LAYER, past any clipping
-    ancestor. `manual`, not `auto`: visibility stays CSS's, and `auto` would
-    dismiss on any outside click. A popover is `position: fixed`, so
-    `data-floating` places it from measured viewport coords (--_x / --_y).
+    `popover=manual` lifts the bubble past any clipping ancestor; `auto` would
+    dismiss it on an outside click. A popover is position: fixed, so
+    data-floating places it from measured viewport coords (--_x / --_y).
   -->
   <span class="bubble" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>

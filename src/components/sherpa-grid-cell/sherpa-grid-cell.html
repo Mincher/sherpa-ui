@@ -1,17 +1,6 @@
 <!--
-  sherpa-grid-cell — the single atomic cell of the Data Grid (Figma Grid Cell 926:34253).
-
-  data-type sets the role:
-    cell    — a body cell (default)
-    header  — a column header (bold; the common home for sort + select-all)
-    filter  — a secondary-header cell holding a column filter control
-    group   — a row-spanning group header with an expand/collapse toggle (accordion)
-
-  All roles share one anatomy; CSS shows the parts each role uses. A leading
-  checkbox (data-has-checkbox) and trailing actions (data-has-actions: a sort
-  button + a menu button) are opt-in. The group toggle shows only for data-type="group".
-  Content is a slot the consumer fills — alignment / emphasis / numeric format are
-  content choices, not variants.
+  sherpa-grid-cell — the single atomic cell of the Data Grid (Figma 926:34253).
+  One anatomy for all roles; CSS shows the parts each role uses.
 
   Public API:
     data-type          cell | header | filter | group   (default cell)

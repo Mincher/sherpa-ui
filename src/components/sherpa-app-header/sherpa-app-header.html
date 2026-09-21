@@ -1,6 +1,5 @@
 <!--
   sherpa-app-header — the top application header bar.
-  Row 1: back + breadcrumbs, then the action cluster. Row 2: view title + filters.
 
   Public API:
     data-heading        the view title (row 2)
@@ -44,8 +43,8 @@
         <div class="actions" part="actions">
           <slot name="actions"></slot>
 
-          <!-- The one action here that is not transparent — the default border
-               is what sets it apart from the icon run beside it. -->
+          <!-- The one action that is not transparent — the default border sets
+               it apart from the icon run beside it. -->
           <sherpa-button class="ai" part="ai" data-size="sm"
                          data-icon-start="fa-solid fa-wand-magic-sparkles">
             <span class="ai-label">Ask N-zo</span>
@@ -65,27 +64,22 @@
           <span class="divider divider-tools" aria-hidden="true"></span>
 
           <span class="notifications" part="notifications">
-            <!-- `fa-bell`, not `fa-bell-on`: the ringing glyph is PRO, and a Pro
-                 class in the free webfont renders nothing at all — no glyph, no
-                 fallback box, zero width, no warning. -->
+            <!-- `fa-bell`, not `fa-bell-on`: the Pro glyph renders nothing at
+                 all in the free webfont — zero width, no warning. -->
             <sherpa-button class="notif-btn" part="notif-btn" data-type="icon" data-size="sm"
                            data-look="transparent" data-icon-start="fa-solid fa-bell"
                            aria-label="Notifications"></sherpa-button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
-          <!-- A cog, because this opens account SETTINGS. -->
           <sherpa-button class="account" part="account" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-user-gear"
                          aria-label="Account"></sherpa-button>
-          <!-- A headset, because this is "talk to support", not "read the docs". -->
           <sherpa-button class="help" part="help" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-headset"
                          aria-label="Support"></sherpa-button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
-          <!-- A grid, because it switches APPS; a hamburger reads as this page's
-               own menu. -->
           <sherpa-button class="menu" part="menu" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-grip"
                          aria-label="Switch app"></sherpa-button>
@@ -98,8 +92,8 @@
           <span class="view-icon" part="view-icon" aria-hidden="true"></span>
           <h1 class="title" part="title"></h1>
           <slot name="title"></slot>
-          <!-- No favourite star here on purpose: the filter toolbar below
-               already fires view-favorite. -->
+          <!-- No favourite star: the filter toolbar below already fires
+               view-favorite. -->
         </div>
 
         <div class="filters" part="filters">

@@ -1,25 +1,9 @@
 <!--
   sherpa-container-header — the header bar for a container's `header` slot.
 
-  Matches the Figma "Container Header": an optional drag handle + icon on the
-  lead, a title + optional description, then a trailing actions region with an
-  optional collapse toggle and a dismiss (close) button. A `metadata` slot sits
-  below the heading row — a bottom metadata strip in Panel, secondary content in
-  Default.
-
-  Two presets share ONE skeleton (heading row + metadata row), switched by
-  data-type:
-    default  single row — title + optional description + actions (today's header)
-    panel    link-style title + right-side actions group + bottom metadata row
-
-  Figma has a third variant, `accordion`. It is NOT a data-type value here:
-  it is the default skeleton whose trailing affordance is a disclosure chevron
-  instead of a close X — i.e. exactly `data-collapsible` (shows .toggle, fires
-  header-collapse, rotates on data-collapsed). Set data-collapsible (and omit
-  data-dismissible) to reproduce Figma's accordion header. A fully standalone
-  disclosure CARD (native <details>/<summary>, its own chevron) is the separate
-  `sherpa-accordion` component — this header only supplies the collapse toggle
-  for a container it heads, so no `accordion` variant value is needed.
+  Figma's third variant `accordion` is NOT a data-type value: it is the default
+  skeleton with data-collapsible set (chevron instead of close X). A standalone
+  disclosure card is the separate `sherpa-accordion` component.
 
   Public API:
     data-type     default | panel   (default default)
@@ -45,12 +29,8 @@
 <template id="default">
   <header class="header" part="header">
     <div class="row" part="row">
-      <!-- Composed sherpa-buttons, not raw <button>s with unicode glyphs. A
-           literal &#x2715; inks at whatever weight the body font gives it, which
-           is why the close read wrong beside every other control in the library;
-           a Font Awesome glyph fills the box Figma sizes with `icon-size`, and
-           the component brings the hover, focus ring and disabled inking with
-           it. -->
+      <!-- Composed sherpa-buttons, not raw <button>s: a unicode glyph inks at
+           the body font's weight and reads wrong beside every other control. -->
       <sherpa-button class="drag" part="drag" data-type="icon" data-size="xs"
                      data-look="transparent" data-icon-start="fa-solid fa-grip-vertical"
                      aria-label="Drag to reorder"></sherpa-button>

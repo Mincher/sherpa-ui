@@ -1,13 +1,12 @@
 /**
- * sherpa-app-header — the bar across the top of the app (Figma 150:3690).
+ * sherpa-app-header — the bar across the top of the app.
  *
- * CSS owns the layout, the badge and the loading animation. This file keeps the
- * title / icon / count in sync and fires one event per action.
+ * CSS owns layout, badge and animation. This keeps title / icon / count in
+ * sync and fires one event per action.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import type { Populatable } from '../../core/apply-state.js';
-// Every action is a composed sherpa-button, so it must be defined here.
-// TRAP T-header-actions-are-composed-buttons
+// Every action is a composed sherpa-button. TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
 
 interface Crumb { label: string; href?: string }
@@ -19,7 +18,7 @@ interface AppHeaderConfig {
 }
 
 
-/** Each plain action button: its class → the event it fires, in Figma's order. */
+/** Each plain action button: its class → the event it fires. */
 const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
@@ -35,7 +34,6 @@ export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);
   static override html = new URL('./sherpa-app-header.html', import.meta.url);
   static override props = {
-    // data-title is the legacy alias for data-heading.
     'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
     'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
   } as const;
@@ -68,21 +66,20 @@ export class SherpaAppHeader extends SherpaElement {
     if (Array.isArray(cfg.filters)) {
       waits.push(this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters));
     }
-    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist.
+    // RETURNED, so `await populate(…)` settles once the chips exist.
     // TRAP T-populate-settles-after-render-data
     return waits.length ? Promise.all(waits).then(() => undefined) : undefined;
   }
 
-  /* ── The filter bar, reachable ─────────────────────────────────────
-     TRAP T-header-owns-the-filter-bar-surface — the header re-exposes the
-     toolbar's surface so a saved view is not coupled to its tag name. */
+  /* The header re-exposes the toolbar's surface so a saved view is not coupled
+     to its tag name. TRAP T-header-owns-the-filter-bar-surface */
 
   /** The toolbar's picks, or `{}` when no toolbar is slotted. */
   get values(): Record<string, readonly string[]> {
     return this.#toolbar()?.values ?? {};
   }
 
-  /** Set every filter chip — `{ region: ['emea'] }`. REPLACES the set, silently. */
+  /** Set every filter chip. REPLACES the set, silently. */
   set values(next: Record<string, readonly string[]>) {
     const bar = this.#toolbar();
     if (bar) bar.values = next;
@@ -92,17 +89,15 @@ export class SherpaAppHeader extends SherpaElement {
     return this.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
   }
 
-  /** Populate a consumer-slotted composed child (no structural createElement). */
+  /** Populate a consumer-slotted composed child. */
   async #stamp(slot: string, tag: string, data: unknown): Promise<void> {
     const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
-    if (!el) return; // consumer must slot the empty host; we never create one
+    if (!el) return; // the consumer slots the empty host; we never create one
     // A child that has not upgraded yet has no `rendered` to wait on.
     if (!el.rendered) await new Promise<void>((res) => queueMicrotask(res));
     await Promise.resolve(el.rendered);
     await Promise.resolve(el.populate?.(data));
   }
-
-  /* ── Sync data-* → DOM ──────────────────────────────────────────── */
 
   #sync(): void {
     const icon = this.$('.view-icon');
@@ -115,8 +110,6 @@ export class SherpaAppHeader extends SherpaElement {
     if (count === '0') this.removeAttribute('data-notifications');
 
   }
-
-  /* ── Events ─────────────────────────────────────────────────────── */
 
   #onBreadcrumb = (event: Event): void => {
     const { index, label, href } = (event as CustomEvent).detail ?? {};

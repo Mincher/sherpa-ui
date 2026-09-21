@@ -1,11 +1,6 @@
 <!--
   sherpa-donut-chart — a donut / pie for part-to-whole data.
 
-  The ring is SVG, one CLOSED <path> per slice (not a stroked circle): a stroke has
-  caps, not corners, so it can carry neither a border round the slice nor rounded
-  corners. Geometry comes from ringSegmentPath() in src/core/format-tick.ts.
-  Slices TOUCH — the rounding alone separates them, as in Figma.
-
   Public API:
     data-type   donut (default) | pie   (pie fills to the centre, no hole)
     data-label     centre big text
@@ -22,9 +17,9 @@
            aria-label="Donut chart" preserveAspectRatio="xMidYMid meet">
         <g class="slices"></g>
       </svg>
-      <!-- Tooltip anchors. An SVG element cannot be a CSS anchor in Chromium —
-           anchor-name is accepted, silently never resolves, and the tip lands in
-           the viewport corner. -->
+      <!-- An SVG element cannot be a CSS anchor in Chromium: anchor-name is
+           accepted, silently never resolves, and the tip lands in the viewport
+           corner. Hence these HTML anchor points. -->
       <div class="hotspots" part="hotspots"></div>
 
       <div class="centre">
@@ -36,20 +31,19 @@
   </figure>
 
   <!--
-    JS sets the `d` and the hue. The prototype is WRAPPED IN AN <svg>: without it
-    the parser builds an HTMLUnknownElement that clones, appends and reports its
-    attributes without error, and paints nothing.
+    WRAPPED IN AN <svg> on purpose: without it the parser builds an
+    HTMLUnknownElement that clones, appends and reports its attributes without
+    error, and paints nothing.
   -->
   <template class="slice-tpl">
     <svg><path class="slice" /></svg>
   </template>
 
   <!--
-    A zero-size anchor point plus its tooltip, per slice. JS sets --_angle (the
-    slice's mid-angle) and the text; CSS trig places the point on the ring.
-
-    The tip is a SIBLING, never a descendant of a positioned box: an
-    absolutely-placed ancestor breaks anchor positioning for a fixed tip.
+    Per slice: a zero-size anchor point plus its tooltip. JS sets --_angle; CSS
+    trig places the point on the ring. The tip is a SIBLING, never a descendant
+    of a positioned box — an absolutely-placed ancestor breaks anchor
+    positioning for a fixed tip.
   -->
   <template class="hotspot-tpl">
     <span class="hotspot chart-anchor-point"></span>

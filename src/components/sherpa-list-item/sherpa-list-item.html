@@ -1,11 +1,6 @@
 <!--
   sherpa-list-item — a single list row.
 
-  Matches the Figma "Menu List Item": a leading region (drag handle, expand
-  toggle, a selection control, and an icon), a content column (title +
-  description), and a trailing slot. Each leading affordance is CSS-toggled off a
-  data-* flag; the leading slot still accepts a custom icon/avatar.
-
   Public API:
     data-label        primary text (data-heading is a back-compat alias)
     data-description  secondary text
@@ -24,9 +19,8 @@
     control   — a custom selection control (else the built-in native checkbox)
     trailing  — actions / badges
 
-  Activation: interactive rows expose a native <button> as the click target
-  (keyboard-reachable, Enter/Space activatable); static rows render a plain span.
-  CSS shows exactly one off :host([data-interactive]).
+  Both content nodes are always in the DOM; CSS shows exactly one off
+  :host([data-interactive]) — the <button> for interactive rows, the span otherwise.
 
   Fires:
     item-click   — detail: { label }

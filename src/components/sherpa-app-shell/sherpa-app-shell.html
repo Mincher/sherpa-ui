@@ -1,9 +1,6 @@
 <!--
-  sherpa-app-shell — the boilerplate frame for an app or a view. The nav and
-  header are PRE-COMPOSED; slotting your own replaces the default.
-
-  The content inset stays at the COLLAPSED rail width while the rail is hovered,
-  so hovering reveals the rail OVER the content instead of reflowing the page.
+  sherpa-app-shell — the frame for an app or a view. Nav and header are
+  PRE-COMPOSED; slotting your own replaces the default.
 
   Public API:
     data-nav-state   collapsed (default) | hover | default | pinned | settings —
@@ -20,12 +17,9 @@
     <div class="region nav" part="nav">
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
-    <!--
-      The header must be INSIDE the scroller as its sticky first child — as a grid
-      row above it, it never moves, so `position: sticky` and `scroll-state(stuck:
-      top)` both silently do nothing. The view padding lives on .view so the header
-      can bleed full width.
-    -->
+    <!-- The header must be the scroller's sticky first child — as a grid row
+         above it, `position: sticky` and `scroll-state(stuck: top)` silently
+         do nothing. -->
     <div class="frame" part="frame">
       <main class="region content" part="content">
         <header class="header" part="header">

@@ -8,7 +8,7 @@ import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
-/** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
+/** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
 
 /** One bar. TRAP T-chart-datum-aliases-are-not-copies — an alias, not a copy. */
@@ -56,12 +56,7 @@ export class SherpaBarchart extends SherpaElement {
     return [...this.#hidden].sort((a, b) => a - b);
   }
 
-  /**
-   * Hide exactly these bars, by index.
-   *
-   * TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES, and an
-   * out-of-range index is kept.
-   */
+  /** Hide exactly these bars. TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES. */
   set hiddenBars(indices: readonly number[]) {
     this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
     this.#render();
@@ -98,14 +93,13 @@ export class SherpaBarchart extends SherpaElement {
       bar.style.setProperty('--_hue', hue);
       bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
 
-      // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS supplies the anchor NAME
-      // only; CSS owns the placement.
+      // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS names the anchor; CSS places it.
       col.style.setProperty('--_anchor', `--bar-mark-${i}`);
       col.querySelector('.chart-tip-label')!.textContent = d.label;
       col.querySelector('.chart-tip-value')!.textContent = formatTick(d.value);
       bars.appendChild(col);
 
-      // A SIBLING of the plot, in the x-axis row, so it lands below the baseline.
+      // A SIBLING of the plot, so it lands below the baseline.
       if (xAxis && xTpl) {
         const label = xTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         label.textContent = d.label;
@@ -121,8 +115,7 @@ export class SherpaBarchart extends SherpaElement {
     if (!axis || !tpl) return;
 
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
-    // TRAP T-y-axis-width-is-fixed-not-measured — clear BEFORE the early return,
-    // and `--_bands` is the one value the gradient and the labels share.
+    // TRAP T-y-axis-width-is-fixed-not-measured — clear BEFORE the early return.
     axis.replaceChildren();
     this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
     this.style.setProperty('--_bands', String(steps));

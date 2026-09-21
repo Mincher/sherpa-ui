@@ -1,15 +1,13 @@
 /**
  * sherpa-chart-legend — the colour key beside a chart.
  *
- * The legend does not know what it labels: the PAGE listens for
- * legend-item-click and calls the chart's setSeriesHidden / setSliceHidden /
- * setBarHidden. Prefer `detail.indices` over `detail.index` — an "Other" row
- * stands for several.
+ * It hides nothing itself: the PAGE listens for legend-item-click and calls the
+ * chart. Read `detail.indices`, not `detail.index` — "Other" stands for several.
  *
- * TRAP T-readonly-legend-is-a-key-not-a-filter — `data-readonly` is a pure KEY.
- * TRAP T-legend-status-swatch-shares-the-band-tokens — `status` beats colorIndex.
- * TRAP T-legend-caps-at-six-and-rolls-up — the tail folds into one "Other" total.
- * TRAP T-rollup-row-has-its-own-prototype — with an itemised breakdown menu.
+ * TRAP T-readonly-legend-is-a-key-not-a-filter
+ * TRAP T-legend-status-swatch-shares-the-band-tokens
+ * TRAP T-legend-caps-at-six-and-rolls-up
+ * TRAP T-rollup-row-has-its-own-prototype
  */
 import type { LegendDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
@@ -18,7 +16,6 @@ import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 
-/** The most rows a legend will ever draw — TRAP T-legend-caps-at-six-and-rolls-up. */
 const MAX_ITEMS = 6;
 
 /** One legend row — TRAP T-chart-datum-aliases-are-not-copies. */
@@ -32,9 +29,8 @@ export class SherpaChartLegend extends SherpaElement {
 
   #items: LegendItem[] = [];
   #rolledUp = false;
-  /** The folded categories, with their ORIGINAL indices. */
+  /** Folded categories and the on-set, both keyed by SOURCE index. */
   #rolled: Array<{ index: number; item: LegendItem }> = [];
-  /** Which rolled-up categories are ON. Indices into the SOURCE list. */
   #rolledActive = new Set<number>();
 
   override onRender(): void {
@@ -42,7 +38,7 @@ export class SherpaChartLegend extends SherpaElement {
     if (this.#items.length) this.#render();
   }
 
-  /** populate([{ label, value?, colorIndex }]) — the legend entries. */
+  /** populate([{ label, value?, colorIndex }]). */
   protected override renderData(data: unknown): void {
     this.#items = this.#cap(Array.isArray(data) ? (data as LegendItem[]) : []);
     this.#render();
@@ -72,7 +68,6 @@ export class SherpaChartLegend extends SherpaElement {
       ...kept,
       {
         label: 'Other',
-        // The next hue after the named ones, so it reuses no meaning.
         colorIndex: MAX_ITEMS,
         ...(total != null ? { value: total } : {}),
       },
@@ -87,8 +82,7 @@ export class SherpaChartLegend extends SherpaElement {
     const readonly = this.hasAttribute('data-readonly');
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      // TRAP T-rollup-row-has-its-own-prototype — the "Other" row is a different
-      // template, so this clones per row rather than via renderList.
+      // "Other" is a different template, so clone per row, not via renderList.
       const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
       const wrapper = isRollup ? this.clone('template.rollup-tpl') : this.clone('template.item-tpl');
       if (!wrapper) return;
@@ -99,8 +93,7 @@ export class SherpaChartLegend extends SherpaElement {
       entry.dataset['index'] = String(i);
       const swatch = entry.querySelector<HTMLElement>('.swatch')!;
       if (item.status) {
-        // TRAP T-legend-status-swatch-shares-the-band-tokens — the pair the band
-        // paints from, never the `--_status-*` cascade.
+        // The band's own pair, never the `--_status-*` cascade.
         entry.dataset['status'] = item.status;
         swatch.style.setProperty('--_hue', `var(--sherpa-status-${item.status}-fill)`);
         swatch.style.setProperty('--_border', `var(--sherpa-status-${item.status})`);
@@ -110,8 +103,7 @@ export class SherpaChartLegend extends SherpaElement {
       }
       entry.querySelector('.label')!.textContent = item.label;
       entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
-      // TRAP T-readonly-legend-is-a-key-not-a-filter — strip the button
-      // semantics; `disabled` would be the wrong statement.
+      // Strip the button semantics; `disabled` would say the wrong thing.
       if (readonly) {
         entry.setAttribute('role', 'presentation');
         entry.setAttribute('tabindex', '-1');
@@ -142,7 +134,7 @@ export class SherpaChartLegend extends SherpaElement {
     }
 
     button.addEventListener('click', (event) => {
-      // The button is a SIBLING of the toggle, so its click must not reach it.
+      // A SIBLING of the toggle, so its click must not reach it.
       event.stopPropagation();
       menu.toggle?.(button);
     });
@@ -152,10 +144,9 @@ export class SherpaChartLegend extends SherpaElement {
       const values = (event.detail?.values ?? []) as string[];
       const on = new Set(values.map(Number));
       this.#rolledActive = on;
-      // Applying a SUSPENDED group's breakdown turns the row back on.
+      // Applying a suspended group's breakdown turns the row back on.
       const row = wrapper.querySelector('.rollup-toggle');
       row?.setAttribute('aria-pressed', String(on.size > 0));
-      // The whole set, so a chart applies it in one pass rather than diffing.
       this.emit('legend-breakdown-change', {
         active: [...on].sort((a, b) => a - b),
         hidden: this.#rolled.map((r) => r.index).filter((i) => !on.has(i)),
@@ -169,21 +160,20 @@ export class SherpaChartLegend extends SherpaElement {
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
     if (raw == null || !item) return;
-    // aria-pressed is BOTH the accessible state and the CSS hook for the dimmed look.
+    // aria-pressed is both the accessible state and the CSS hook for dimming.
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
-    // The "Other" toggle SUSPENDS its whole group, and suspend ≠ clear —
-    // TRAP T-legend-suspend-remembers-the-set.
+    // "Other" SUSPENDS its whole group — TRAP T-legend-suspend-remembers-the-set.
     if (isRollup) this.#syncBreakdownBoxes(active);
 
     this.emit('legend-item-click', {
       index,
       label: this.#items[index]?.label ?? '',
       active,
-      // The indices this row stands for in the CALLER's data. Normally just [index].
+      // What this row stands for in the CALLER's data; normally just [index].
       indices: isRollup
         ? (active
             ? [...this.#rolledActive].sort((a, b) => a - b)
@@ -193,9 +183,9 @@ export class SherpaChartLegend extends SherpaElement {
   };
 
   /**
-   * Match the breakdown's checkboxes to the "Other" row's state.
+   * Match the breakdown's boxes to the "Other" row's state.
    *
-   * #rolledActive is never touched here — that is what makes the round trip lossless.
+   * #rolledActive is untouched here — that is what keeps the round trip lossless.
    */
   #syncBreakdownBoxes(active: boolean): void {
     for (const box of this.$$<HTMLInputElement>('.rollup-menu input')) {

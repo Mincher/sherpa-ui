@@ -1,9 +1,6 @@
 /**
  * sherpa-gauge-chart — a half-circle gauge for one value on a 0–100 scale.
  *
- * With data-zones, one band per threshold; without, one band as long as the
- * value. A grey remainder band covers the rest.
- *
  * TRAP T-gauge-band-is-a-closed-path — the constants below are path geometry,
  * not style.
  */
@@ -25,11 +22,7 @@ interface Zone {
   name: string;
 }
 
-/**
- * The status names a zone may be declared with.
- *
- * TRAP T-gauge-status-is-named — resolved BY NAME, never by position.
- */
+/** TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
 const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
 /** Centre of the 100-unit circle. Only its TOP half is inside the viewBox. */
@@ -38,24 +31,21 @@ const CENTRE = 50;
 /* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
    none of these can move to CSS. */
 
-/** Ring thickness: innerRadius 0.7 of a 100-unit circle. */
 const RING_WIDTH = 15;
 
-/** Corner rounding — 2px on a 200px chart. */
 const CORNER = 1;
 
-/** Outline thickness — 1px on a 200px chart, aligned INSIDE as in Figma. */
+/** Outline thickness, aligned INSIDE as in Figma. */
 const OUTLINE = 0.5;
 
-/** The gauge's zero and span, clockwise from 12 o'clock: 9 o'clock to 3. */
+/** Zero and span, clockwise from 12 o'clock: 9 o'clock to 3. */
 const START_DEG = 270;
 const SPAN_DEG = 180;
 
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  // ONE LINE, deliberately: the spec generator reads only the first line, so a
-  // split declaration makes the round-trip check report phantom props.
+  // ONE LINE, deliberately: the spec generator reads only the first line.
   static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit'];
 
   override onRender(): void {
@@ -85,11 +75,9 @@ export class SherpaGaugeChart extends SherpaElement {
     const raw = this.num('data-value', 0);
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 
-    // Needle: -90deg (left) → +90deg (right) across the half.
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
 
     const zones = this.#parseZones(min, max);
-    // Hotspots follow what was DRAWN — TRAP T-hotspots-follow-what-was-drawn.
     this.#renderHotspots(this.#renderArcs(zones, frac));
 
     // Three SCALE ticks: min, midpoint, max. The middle one is a tick, not the
@@ -226,13 +214,9 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 
   /**
-   * Draw the ring: one closed ring-segment path per band (or one for the value).
+   * Draw the ring — one closed path per band — and return the zones it DREW.
+   *
    * The last band is the grey filler, so there is no separate track element.
-   *
-   * Returns the zones it actually DREW, in order.
-   *
-   * TRAP T-gauge-band-is-a-closed-path
-   * TRAP T-hotspots-follow-what-was-drawn
    */
   #renderArcs(zones: Zone[], frac: number): Zone[] {
     const host = this.$('.zones');
@@ -243,7 +227,7 @@ export class SherpaGaugeChart extends SherpaElement {
     const outer = CENTRE - OUTLINE / 2;
     const inner = CENTRE - RING_WIDTH + OUTLINE / 2;
 
-    // ZONES PAINT IN FULL; a bare value does not — TRAP T-zones-paint-in-full.
+    // Zones paint in full; a bare value paints only up to itself.
     const bands: Array<{
       from: number;
       to: number;

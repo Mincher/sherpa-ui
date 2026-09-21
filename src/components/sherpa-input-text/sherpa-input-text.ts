@@ -6,7 +6,7 @@
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { validateField, type FieldRules } from '../../core/validate.js';
 
-/** Native attributes mirrored verbatim from the host onto the inner control. */
+/** Mirrored verbatim from the host onto the inner control. */
 const MIRRORED = [
   'placeholder',
   'name',
@@ -27,10 +27,7 @@ export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
 
-  /**
-   * A form cannot see an <input> through a shadow root — without this the field
-   * is invisible to it. TRAP T-shadow-input-needs-element-internals
-   */
+  /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
   static readonly formAssociated = true;
 
   static override observed = [
@@ -51,7 +48,7 @@ export class SherpaInputText extends SherpaElement {
     this.#internals = this.attachInternals();
   }
 
-  /** Both attributes pick the tree, so a change to either has to re-stamp. */
+  /** Both pick the tree, so a change to either must re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];
 
   /** `minimal` wins: it has no message rows, so multiline is moot there. */
@@ -67,7 +64,7 @@ export class SherpaInputText extends SherpaElement {
     this.#syncAttrs();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
-    // Validate on blur, not per keystroke — TRAP T-validate-on-blur-then-every-keystroke.
+    // Blur, not per keystroke — TRAP T-validate-on-blur-then-every-keystroke.
     this.#control?.addEventListener('blur', this.#onBlur);
     this.#syncValue();
   }
@@ -77,13 +74,10 @@ export class SherpaInputText extends SherpaElement {
     else this.#syncAttrs();
   }
 
-  /* ── Form participation ──────────────────────────────────────────── */
-
   /**
-   * Link the control to its label, description and error for a screen reader.
+   * Link the control to its description and error for a screen reader.
    *
-   * No `role="alert"` / `aria-live` on the message this points at —
-   * TRAP T-describedby-must-not-be-a-live-region.
+   * No `role="alert"` / `aria-live` on the message — TRAP T-describedby-must-not-be-a-live-region.
    */
   #syncIds(): void {
     const control = this.#control;
@@ -93,7 +87,7 @@ export class SherpaInputText extends SherpaElement {
     const message = this.$('.message');
     if (desc) desc.id = `${uid}-description`;
     if (message) message.id = `${uid}-message`;
-    // Both, in reading order.
+    // Both ids, in reading order.
     control.setAttribute('aria-describedby', `${uid}-description ${uid}-message`);
   }
 
@@ -110,7 +104,7 @@ export class SherpaInputText extends SherpaElement {
       this.#internals.setValidity({ customError: true }, message, control);
       return;
     }
-    // No message of ours — defer to the control's OWN native validity.
+    // No message of ours — defer to the control's own native validity.
     if (!control.validity.valid) {
       this.#internals.setValidity(control.validity, control.validationMessage, control);
       return;
@@ -118,12 +112,7 @@ export class SherpaInputText extends SherpaElement {
     this.#internals.setValidity({});
   }
 
-  /* ── Validation ──────────────────────────────────────────────────── */
-
-  /**
-   * Check this field and show the result. Native constraints first, then
-   * `data-rules`. True means acceptable, so a caller can gate a submit on it.
-   */
+  /** Check this field and show the result. True means acceptable. */
   async validate(): Promise<boolean> {
     const control = this.#control;
     if (!control) return true;
@@ -144,7 +133,6 @@ export class SherpaInputText extends SherpaElement {
     return true;
   }
 
-  /** The rule sets a host has registered by name. */
   static #ruleSets = new Map<string, FieldRules>();
 
   static defineRules(name: string, ruleSet: FieldRules): void {
@@ -158,11 +146,10 @@ export class SherpaInputText extends SherpaElement {
     return validateField(ruleSet, value);
   }
 
-  /** Write the message and let CSS paint the state. */
+  /** Write the message; CSS paints the state. */
   #setError(message: string): void {
     if (message) this.dataset['error'] = message;
     else delete this.dataset['error'];
-    // The other half of the announcement.
     this.#control?.setAttribute('aria-invalid', message ? 'true' : 'false');
     this.#syncValue();
   }
@@ -171,21 +158,20 @@ export class SherpaInputText extends SherpaElement {
     void this.validate();
   };
 
-  /* ── Form lifecycle (called by the browser) ──────────────────────── */
+  /* Form lifecycle — called by the browser. */
 
-  /** `form.reset()` — put the value back and clear any message. */
   formResetCallback(): void {
     if (this.#control) this.#control.value = this.getAttribute('value') ?? '';
     this.#setError('');
   }
 
-  /** A back-button or session restore — exactly what setFormValue stored. */
+  /** Back-button or session restore — what setFormValue stored. */
   formStateRestoreCallback(state: string): void {
     if (this.#control) this.#control.value = state;
     this.#syncValue();
   }
 
-  /** Label / description / error text into the shadow (CSS collapses empties). */
+  /** Text into the shadow; CSS collapses the empties. */
   #syncText(): void {
     const set = (sel: string, value: string | undefined): void => {
       const el = this.$(sel);
@@ -198,10 +184,8 @@ export class SherpaInputText extends SherpaElement {
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
 
-  /**
-   * Put one icon on the field: a Font Awesome class list or a raw character.
-   * NOT `SherpaElement.writeIcon` — TRAP T-input-icon-sink-is-data-glyph.
-   */
+  /** One icon: a Font Awesome class list, or a raw character via `data-glyph`.
+   *  NOT `SherpaElement.writeIcon` — TRAP T-input-icon-sink-is-data-glyph. */
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
     if (!el) return;
@@ -215,7 +199,7 @@ export class SherpaInputText extends SherpaElement {
     }
   }
 
-  /** Mirror native attributes host → inner control. */
+  /** Mirror the native attributes onto the inner control. */
   #syncAttrs(): void {
     const c = this.#control;
     if (!c) return;
@@ -227,8 +211,6 @@ export class SherpaInputText extends SherpaElement {
     if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
   }
 
-  /* ── Value property — the form-control surface ─────────────────────── */
-
   get value(): string {
     return this.#control?.value ?? this.getAttribute('value') ?? '';
   }
@@ -237,7 +219,6 @@ export class SherpaInputText extends SherpaElement {
     else this.setAttribute('value', v);
   }
 
-  /** Native validity, surfaced for form logic. */
   checkValidity(): boolean {
     return this.#control?.checkValidity() ?? true;
   }
@@ -247,7 +228,7 @@ export class SherpaInputText extends SherpaElement {
   }
 
   #onInput = (): void => {
-    // The form's copy follows every keystroke; the CHECK only once it has erred.
+    // The form's copy follows every keystroke; the check only once it has erred.
     this.#syncValue();
     if (this.dataset['error']) void this.validate();
     this.emit('input', { value: this.value });

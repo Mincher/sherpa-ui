@@ -1,13 +1,8 @@
 <!--
   sherpa-select-card — a selectable card with header / content / footer regions.
 
-  A bordered card the user can pick. The whole card is the click target; the
-  selected look is drawn in CSS off [data-selected]. Three regions slot in
-  content; each collapses when empty (driven by data-has-{slot}). The FOOTER
-  carries two pre-placed select controls — a sherpa-select-radio and a
-  sherpa-select-checkbox — and CSS shows exactly one based on data-select-mode.
-  Both are kept in sync with the host's selected state. Provide footer content
-  to replace them entirely, or set data-footer="none" to hide the footer.
+  The footer holds both select controls; CSS shows one per data-select-mode.
+  Filling the footer slot replaces them.
 
   Public API:
     data-label        header title (used when no header slot is given)

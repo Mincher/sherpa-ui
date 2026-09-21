@@ -1,8 +1,6 @@
 <!--
   sherpa-calendar — a date picker with day / month / year views.
-
-  The header label zooms OUT (day → month → year); picking a month/year zooms
-  back IN. Prev/next step whatever the current view shows.
+  The header label zooms OUT (day → month → year); picking one zooms back IN.
 
   Public API:
     data-type       single | range (default single) — one day, or a two-click start→end range
@@ -33,7 +31,7 @@
 -->
 <template id="default">
   <div class="cal" part="cal">
-    <!-- Header — three composed buttons, snapped into one stepper (Menu set 1156:29240 > Type=Calendar). -->
+    <!-- Three composed buttons, snapped into one stepper (Menu set 1156:29240 > Type=Calendar). -->
     <div class="cal-header sherpa-snap-group" part="header">
       <sherpa-button class="cal-nav cal-prev" part="prev" data-type="icon" data-snap="right"
                      data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
@@ -42,7 +40,7 @@
                      data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>
 
-    <!-- The SECOND weekday set and the gap exist from the start; CSS reveals them for a range calendar's two-month grid. -->
+    <!-- The second weekday set and the gap exist from the start; CSS reveals them for a range calendar's two-month grid. -->
     <div class="cal-weekdays" part="weekdays" aria-hidden="true">
       <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
       <span>Fri</span><span>Sat</span><span>Sun</span>
@@ -73,15 +71,14 @@
   </div>
 
   <!--
-    The stepper as a LIGHT-DOM clone for data-embedded, carrying slot="header".
-    Same three classes as the shadow header, so one set of listeners and one label
-    sync serve both — see #headerEls() in the TS.
+    The stepper as a LIGHT-DOM clone for data-embedded. Same three classes as the
+    shadow header, so one set of listeners and one label sync serve both.
   -->
   <template class="cal-header-tpl">
     <!--
-      Outer corners are written INLINE because this clone lands in the MENU's light
-      DOM: no rule here can reach it, and ::slotted() cannot reach a slotted
-      element's children. An inline custom property inherits across both boundaries.
+      Outer corners are INLINE because this clone lands in the MENU's light DOM:
+      no rule here can reach it, and ::slotted() cannot reach a slotted element's
+      children. An inline custom property inherits across both boundaries.
     -->
     <div class="cal-header cal-header-projected" slot="header">
       <sherpa-button class="cal-nav cal-prev" data-type="icon" data-snap="right"

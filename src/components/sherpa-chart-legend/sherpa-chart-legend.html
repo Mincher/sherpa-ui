@@ -1,13 +1,6 @@
 <!--
   sherpa-chart-legend — a legend for charts. Figma "Chart Legend" (1098:37846).
 
-  A GRID of three tracks (swatch · category · value), not one flex row per entry,
-  so values line up down the column. Each entry is still ONE button spanning all
-  three tracks — one click target, one tab stop.
-
-  A VERTICAL legend goes in the chart's [slot=legend]; a HORIZONTAL one goes BELOW
-  the chart as a sibling after it. Orientation is pure CSS, so nothing re-renders.
-
   Public API:
     data-orientation  vertical (default) | horizontal
 
@@ -25,10 +18,8 @@
   </template>
 
   <!--
-    The "OTHER" roll-up entry. It cannot reuse .item-tpl: that prototype IS a
-    <button>, and a nested button is un-nested by the browser, which silently
-    kills the inner control. Hence a wrapper holding two sibling controls.
-
+    The "OTHER" roll-up. It cannot reuse .item-tpl: that prototype IS a <button>,
+    and the browser un-nests a nested button, silently killing the inner control.
     data-commit keeps the menu open while several rows are ticked.
   -->
   <template class="rollup-tpl">
@@ -38,7 +29,6 @@
         <span class="label" part="label"></span>
         <span class="value" part="value"></span>
       </button>
-      <!-- caret-down, as every other menu control in the system wears. -->
       <sherpa-button
         class="rollup-menu-btn"
         data-size="xs"
@@ -50,7 +40,7 @@
     </span>
   </template>
 
-  <!-- One rolled-up category, as a real checkbox row in the breakdown menu. -->
+  <!-- One rolled-up category, as a checkbox row in the breakdown menu. -->
   <template class="rollup-row-tpl">
     <label><input type="checkbox" /><span class="rollup-row-label"></span></label>
   </template>

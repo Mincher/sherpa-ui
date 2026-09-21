@@ -1,7 +1,6 @@
 <!--
   sherpa-overlay-panel — a NON-modal floating panel on native <dialog>.
-  Opened with show(), not showModal(): top layer, no backdrop, no focus trap,
-  no ESC-to-close, so the page behind stays interactive.
+  show(), not showModal(): no backdrop, no focus trap, no ESC — the page behind stays interactive.
 
   Public API:
     data-icon         a glyph before the title (shows the icon slot area)
@@ -33,10 +32,8 @@
        Pointer-transparent by design: the page behind stays clickable. -->
   <div class="scrim" part="scrim" aria-hidden="true"></div>
   <dialog class="root sherpa-border-edges" part="root">
-    <!-- Container Header owns the heading, icon, description, collapse and close.
-         DEFAULT variant, not data-type="panel" — that inks the title link-blue.
-         Its header-collapse / header-dismiss are re-emitted as the panel's own
-         events, so the public API does not follow its internals. -->
+    <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
+         The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header" part="header">
       <slot name="icon" slot="icon"></slot>
       <slot name="description" slot="metadata" data-accepts="content,control"></slot>
@@ -56,8 +53,7 @@
       <slot></slot>
     </div>
 
-    <!-- data-align="stretch": a panel footer usually holds ONE full-width
-         control — a composer, a search field, a primary action. -->
+    <!-- stretch: a panel footer usually holds ONE full-width control. -->
     <sherpa-container-footer class="footer" part="footer" data-align="stretch">
       <slot name="footer" data-accepts="control,input"></slot>
     </sherpa-container-footer>

@@ -35,7 +35,7 @@ export class SherpaDonutChart extends SherpaElement {
 
   override onChange(): void {
     this.#syncCentre();
-    // data-type changes ring thickness, so the arcs must be re-measured.
+    // data-type changes ring thickness, so re-measure the arcs.
     if (this.#slices.length) this.#renderRing();
   }
 
@@ -92,7 +92,7 @@ export class SherpaDonutChart extends SherpaElement {
       const value = Math.max(0, slice.value);
       const share = Math.max(value / total, MIN_SHARE);
 
-      // Clone the <path> INSIDE the <svg>, and add no -90deg transform:
+      // Clone from inside the <svg> (namespace), and add no -90deg transform:
       // ringSegmentPath already measures from 12 o'clock.
       const arc = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGPathElement;
       arc.dataset['index'] = String(i);

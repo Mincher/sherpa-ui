@@ -1,9 +1,10 @@
 /**
  * sherpa-menu — a floating list of choices or actions, on the native popover API.
  *
- * The browser owns the top layer, Escape, outside-click and focus. Placement it
- * cannot do — TRAP T-anchor-cross-root; `#place()` measures the trigger.
- * TRAP T-menu-rows-stay-native-controls — rows are slotted native controls.
+ * The browser owns the top layer, Escape, outside-click and focus; `#place()`
+ * measures the trigger because CSS anchoring cannot cross a shadow root.
+ * TRAP T-anchor-cross-root
+ * TRAP T-menu-rows-stay-native-controls
  *
  * @prop {string[]} values — the checked row values (read/write)
  *
@@ -11,7 +12,7 @@
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
-// TRAP T-menu-composes-real-components — imported here because the page may not have.
+// TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-button/sherpa-button.js';
@@ -36,12 +37,12 @@ export class SherpaMenu extends SherpaElement {
     'open',
   ];
 
-  /** The gap between the trigger and the card (Figma space/2xs). */
+  /** Gap between trigger and card. */
   static readonly OFFSET = 4;
 
-  /** The trigger of the currently-open menu — re-measured on scroll / resize. */
+  /** The open menu's trigger — re-measured on scroll / resize. */
   #trigger: HTMLElement | null = null;
-  /** TRAP T-cancel-baseline-captured-on-open — snapshotted on OPEN, for Cancel. */
+  /** What Cancel restores. TRAP T-cancel-baseline-captured-on-open */
   #baseline: string[] = [];
 
   #card(): HTMLElement | null {
@@ -53,16 +54,14 @@ export class SherpaMenu extends SherpaElement {
     const card = this.#card();
     if (!card) return;
     card.addEventListener('toggle', this.#onToggle as EventListener);
-    // Rows are LIGHT DOM — listen on the host. TRAP T-menu-rows-stay-native-controls.
+    // Rows are LIGHT DOM, so the host is the listener.
     this.addEventListener('change', this.#onChange);
     this.$('.drill-back')?.addEventListener('click', this.#onBack);
-    // The PARENT crumb is the same way out as the back arrow.
     this.$('.drill-crumbs')?.addEventListener('breadcrumb-select', this.#onBack);
-    // TRAP T-rows-changed-re-places-next-frame — slotchange is the only hook a
-    // drill has; show() happens before it.
+    // slotchange is the only hook a drill has; show() happens before it.
+    // TRAP T-rows-changed-re-places-next-frame
     this.$('.rows slot')?.addEventListener('slotchange', this.#onRowsChanged);
     this.addEventListener('click', this.#onClick);
-    // The footer and header actions are in the SHADOW root.
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     this.$('.clear')?.addEventListener('click', this.#onClear);
@@ -71,10 +70,9 @@ export class SherpaMenu extends SherpaElement {
     this.$('.search')?.addEventListener('input', this.#onSearch);
   }
 
-  /** Narrow rows to a typed substring. TRAP T-menu-search-is-a-substring-find —
-   * a hidden row keeps its tick. */
+  /** Narrow rows to a typed substring; a hidden row keeps its tick.
+   * TRAP T-menu-search-is-a-substring-find */
   #onSearch = (): void => {
-    // `value` is a property on sherpa-input-text, mirrored from its control.
     const field = this.$<HTMLElement & { value?: string }>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
     let shown = 0;
@@ -87,7 +85,7 @@ export class SherpaMenu extends SherpaElement {
     this.toggleAttribute('data-no-matches', !!q && shown === 0);
   };
 
-  /** Every slotted row, whatever kind it is (label rows and action buttons). */
+  /** Every slotted row — label rows and action buttons alike. */
   #rows(): HTMLElement[] {
     return [...this.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
   }
@@ -101,18 +99,16 @@ export class SherpaMenu extends SherpaElement {
   /** Open the menu under `trigger`, which is also what it measures against. */
   show(trigger?: HTMLElement): void {
     if (trigger) this.#trigger = trigger;
-    // TRAP T-show-then-measure — a closed popover measures 0, so show first.
+    // A closed popover measures 0, so show first. TRAP T-show-then-measure
     this.#syncSelectAll();
     this.#card()?.showPopover();
     this.#place();
   }
 
-  /** Close the menu. */
   hide(): void {
     this.#card()?.hidePopover();
   }
 
-  /** Flip the menu open or shut. */
   toggle(trigger?: HTMLElement): void {
     if (this.open) this.hide();
     else this.show(trigger);
@@ -127,8 +123,8 @@ export class SherpaMenu extends SherpaElement {
     else this.hide();
   }
 
-  /** What the menu holds. TRAP T-menu-value-is-not-always-rows — a NUMBER or
-   * CALENDAR menu has no rows. */
+  /** What the menu holds. A NUMBER or CALENDAR menu has no rows.
+   * TRAP T-menu-value-is-not-always-rows */
   get values(): string[] {
     const numeric = this.#numericValues();
     if (numeric) return numeric;
@@ -139,7 +135,7 @@ export class SherpaMenu extends SherpaElement {
       .map((i) => i.value);
   }
 
-  /** A NUMBER menu's value, or null. A range at its full bounds excludes nothing. */
+  /** A NUMBER menu's value, or null. A range at full bounds excludes nothing. */
   #numericValues(): string[] | null {
     const field = this.querySelector<HTMLInputElement>('input[type="number"]');
     const slider = this.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider');
@@ -173,16 +169,16 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────── */
 
-  /** Every value row's control. TRAP T-select-all-is-not-a-value — the
-   * select-all row is excluded. */
+  /** Every value row's control; the select-all row is excluded.
+   * TRAP T-select-all-is-not-a-value */
   #inputs(): HTMLInputElement[] {
     return Array.from(
       this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
     ).filter((i) => !i.closest(NON_VALUE_ROWS));
   }
 
-  /** The drill trail. TRAP T-drill-crumbs-carry-no-href — an `href` would
-   * dismiss the popover. */
+  /** The drill trail. An `href` would dismiss the popover.
+   * TRAP T-drill-crumbs-carry-no-href */
   #syncCrumb(): void {
     const crumbs = this.$<HTMLElement & { populate(d: unknown): void }>('.drill-crumbs');
     if (!crumbs) return;
@@ -196,15 +192,14 @@ export class SherpaMenu extends SherpaElement {
 
   #sync(): void {
     this.#syncCrumb();
-    // TRAP T-calendar-header-has-no-heading — the name must reach a screen
-    // reader even when no heading is drawn.
+    // The name must reach a screen reader even when no heading is drawn.
+    // TRAP T-calendar-header-has-no-heading
     const card = this.#card();
     const name = this.dataset['heading'] ?? '';
     if (card && name) card.setAttribute('aria-label', name);
     else card?.removeAttribute('aria-label');
 
-    // Single-select menus are radio rows; a shared name makes the browser
-    // enforce "one at a time" for us.
+    // A shared name makes the browser enforce "one at a time".
     if (this.dataset['select'] === 'single') {
       const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
       for (const input of this.#inputs()) {
@@ -216,8 +211,8 @@ export class SherpaMenu extends SherpaElement {
 
   /**
    * The box the card must stay inside — the viewport, or a host's `data-bounds`.
-   * TRAP T-bounds-clamp-to-the-viewport — a missing or zero-sized box falls
-   * back to the viewport.
+   * A missing or zero-sized box falls back to the viewport.
+   * TRAP T-bounds-clamp-to-the-viewport
    */
   #bounds(): { left: number; top: number; right: number; bottom: number } {
     const viewport = {
@@ -247,8 +242,8 @@ export class SherpaMenu extends SherpaElement {
     const t = trigger.getBoundingClientRect();
     const c = card.getBoundingClientRect();
     const gap = SherpaMenu.OFFSET;
-    // TRAP T-card-max-height-follows-the-side — `--_max-h` is the room on the
-    // side the card landed on.
+    // `--_max-h` is the room on the side the card landed on.
+    // TRAP T-card-max-height-follows-the-side
     const bounds = this.#bounds();
     const vw = bounds.right;
     const vh = bounds.bottom;
@@ -263,8 +258,7 @@ export class SherpaMenu extends SherpaElement {
     if (c.height > below && above > below) y = Math.max(gap, t.top - gap - Math.min(c.height, above));
     card.style.setProperty('--_max-h', `${Math.max(120, Math.round(room))}px`);
 
-    // The trigger's start edge (its end edge on data-align="end"), pulled back
-    // inside the viewport.
+    // The trigger's start edge (end edge on data-align="end"), clamped inside.
     let x = this.dataset['align'] === 'end' ? t.right - c.width : t.left;
     if (x + c.width > vw) x = vw - c.width - gap;
     if (x < bounds.left + gap) x = bounds.left + gap;
@@ -279,8 +273,7 @@ export class SherpaMenu extends SherpaElement {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
     if (open) {
-      // TRAP T-open-menu-resize-closes — scroll re-places (capture: ancestor
-      // scrolls do not bubble), resize closes.
+      // capture: ancestor scrolls do not bubble. TRAP T-open-menu-resize-closes
       this.#baseline = this.values;
       window.addEventListener('scroll', this.#reposition, { capture: true, passive: true });
       window.addEventListener('resize', this.#onViewportResize, { passive: true });
@@ -296,7 +289,7 @@ export class SherpaMenu extends SherpaElement {
     this.emit(open ? 'menu-open' : 'menu-close', {});
   };
 
-  /** Watches the card's own box, so a body that grows re-places. */
+  /** Watches the card's box, so a body that grows re-places. */
   #cardResize: ResizeObserver | null = null;
 
   #reposition = (): void => {
@@ -313,20 +306,19 @@ export class SherpaMenu extends SherpaElement {
     this.#cardResize?.disconnect();
   }
 
-  /** The label a select-all row wears — ONE label, always. */
   static readonly ALL_LABEL = 'Select all';
 
-  /** A slotted row marked as the select-all control (class `qf-all`). */
+  /** The select-all control (class `qf-all`). */
   #allRow(): HTMLInputElement | null {
     return this.querySelector<HTMLInputElement>('.qf-all input');
   }
 
   /**
-   * Tick or clear every value row. TRAP T-select-all-ticks-boxes-not-values —
-   * writes the BOXES, so a committing menu's draft still works.
+   * Tick or clear every value row — writes the BOXES, so a committing menu's
+   * draft still works. TRAP T-select-all-ticks-boxes-not-values
    */
   #onSelectAll(input: HTMLInputElement): void {
-    // TRAP T-indeterminate-reports-false — read the SET, not the box.
+    // Read the SET, not the box. TRAP T-indeterminate-reports-false
     const boxes = this.#inputs();
     const on = boxes.some((b) => !b.checked);
     for (const box of boxes) box.checked = on;
@@ -337,7 +329,7 @@ export class SherpaMenu extends SherpaElement {
 
   /**
    * Point the select-all row at the set: all, some (indeterminate) or none.
-   * TRAP T-indeterminate-is-a-property — rewritten every time the set moves.
+   * Rewritten every time the set moves. TRAP T-indeterminate-is-a-property
    */
   #syncSelectAll(): void {
     const all = this.#allRow();
@@ -350,14 +342,14 @@ export class SherpaMenu extends SherpaElement {
     if (label) label.textContent = SherpaMenu.ALL_LABEL;
   }
 
-  /** The slotted rows changed — re-read the select-all row, re-place next frame. */
+  /** Rows changed — re-read select-all, re-place next frame. */
   #onRowsChanged = (): void => {
     this.#syncSelectAll();
     if (this.open) requestAnimationFrame(() => this.#place());
   };
 
-  /** Report the back arrow. TRAP T-menu-back-is-a-report — the menu cannot
-   * know what it drilled into. */
+  /** Report the back arrow; the menu cannot know what it drilled into.
+   * TRAP T-menu-back-is-a-report */
   #onBack = (event: Event): void => {
     event.stopPropagation();
     this.emit('menu-back', {});
@@ -366,23 +358,22 @@ export class SherpaMenu extends SherpaElement {
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input) return;
-    // TRAP T-native-change-stops-at-the-host — a NUMBER menu's field and
-    // slider are value shapes too.
+    // A NUMBER menu's field and slider are value shapes too.
+    // TRAP T-native-change-stops-at-the-host
     const numeric = input.type === 'number' || input.tagName === 'SHERPA-SLIDER';
     if (!numeric && input.type !== 'checkbox' && input.type !== 'radio') return;
-    // The SELECT-ALL row drives every other row, so it reports for itself.
+    // The SELECT-ALL row drives the others, so it reports for itself.
     if (input.closest('.qf-all')) {
       this.#onSelectAll(input);
       return;
     }
-    // Ticking the last unticked box makes the select-all row "all", not "some".
     this.#syncSelectAll();
     // A COMMITTING menu holds the change as a DRAFT until Apply.
     if (this.#commits) return;
     this.emit('menu-change', { values: this.values });
   };
 
-  /** Whether this menu defers its changes to an Apply button. */
+  /** Whether changes wait for Apply. */
   get #commits(): boolean {
     return this.hasAttribute('data-commit');
   }
@@ -403,8 +394,8 @@ export class SherpaMenu extends SherpaElement {
   };
 
   /**
-   * Empty the selection and report it. TRAP T-clear-empties-both-body-shapes —
-   * the checkboxes AND a slotted calendar's date attributes.
+   * Empty the selection and report it — the checkboxes AND a slotted calendar's
+   * date attributes. TRAP T-clear-empties-both-body-shapes
    */
   #onClear = (): void => {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
@@ -423,7 +414,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  /** Remove — the header-button form of a `<button value="remove">` action row. */
+  /** Remove — the header-button form of a `<button value="remove">` row. */
   #onRemove = (): void => {
     this.emit('menu-select', { value: 'remove', label: 'Remove' });
     this.hide();

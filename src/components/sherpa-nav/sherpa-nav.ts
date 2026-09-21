@@ -1,15 +1,12 @@
 /**
- * sherpa-nav — the side navigation rail.
- *
- * A five-mode machine from the Figma Navigation collection (32:937). Fill it with
- * populate(config) — a NavConfig, or a plain NavEntry[] treated as one section.
+ * sherpa-nav — the side navigation rail: a five-mode machine (Figma Navigation 32:937).
+ * Fill it with populate(config) — a NavConfig, or a NavEntry[] treated as one section.
  *
  * TRAP T-nav-state-writes-only-the-attribute
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
-/** What a stamped row shows. `icon` is undefined on a child row —
- *  TRAP T-nav-child-rows-carry-no-icon. */
+/** What a stamped row shows. `icon` is undefined on a child row. */
 export interface NavRowInfo {
   id: string;
   label: string | undefined;
@@ -23,13 +20,12 @@ export interface NavEntry {
   icon?: string;
   href?: string;
   badge?: string;
-  /** Show the trailing indicator dot. */
   indicator?: boolean;
   /** Nested items. Prefer this over a hand-set `tier`. */
   children?: NavEntry[];
   /** Indent tier 1–3. Derived from `children`; set it only for a flat list. */
   tier?: 1 | 2 | 3;
-  /** Start a parent expanded. Parents are collapsed by default. */
+  /** Parents are collapsed by default. */
   expanded?: boolean;
 }
 
@@ -116,7 +112,6 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Public API ──────────────────────────────────────────────────── */
 
-  /** The current rail mode (one of the five Figma Navigation modes). */
   get state(): NavState {
     return (this.dataset['navState'] as NavState) ?? 'collapsed';
   }
@@ -124,7 +119,6 @@ export class SherpaNav extends SherpaElement {
     this.#setState(value);
   }
 
-  /** True while the rail is latched open by the pin. */
   get pinned(): boolean {
     return this.state === 'pinned';
   }
@@ -172,7 +166,6 @@ export class SherpaNav extends SherpaElement {
     if (!LATCHED.has(this.state)) this.#setState('collapsed');
   };
 
-  /** Focus leaving the rail entirely behaves like a pointer leave. */
   #onFocusOut = (event: FocusEvent): void => {
     const next = event.relatedTarget as Node | null;
     if (next && this.contains(next)) return;
@@ -194,7 +187,6 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Content ────────────────────────────────────────────────────── */
 
-  /** Coerce a legacy array or a partial object into a full NavConfig. */
   #normalise(data: unknown): NavConfig {
     if (Array.isArray(data)) return { sections: [{ items: data as NavEntry[] }] };
     if (data && typeof data === 'object') return data as NavConfig;
@@ -227,7 +219,6 @@ export class SherpaNav extends SherpaElement {
     const list = this.$('.quick');
     if (!list) return;
     list.replaceChildren();
-    // Settings mode has no quick items.
     if (this.state === 'settings') return;
     const quick = this.#config.quickItems ?? DEFAULT_QUICK;
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
@@ -261,7 +252,6 @@ export class SherpaNav extends SherpaElement {
 
   /**
    * Stamp an entry and its descendants into a FLAT list of rows.
-   *
    * `data-parent` / `data-depth` are what make depth recoverable afterwards.
    */
   #buildRows(entry: NavEntry, depth: 1 | 2 | 3, parentId?: string): HTMLElement[] {
@@ -278,7 +268,6 @@ export class SherpaNav extends SherpaElement {
     if (entry.href) item.dataset['href'] = entry.href;
     if (entry.badge) item.dataset['badge'] = entry.badge;
     if (entry.indicator) item.dataset['statusDot'] = '';
-    // Tier 1 needs no attribute.
     const tier = entry.tier ?? depth;
     if (tier > 1) item.dataset['tier'] = String(tier);
 
@@ -286,7 +275,6 @@ export class SherpaNav extends SherpaElement {
     const rows = [row];
     if (!kids.length) return rows;
 
-    // A parent gets the chevron, and starts closed unless asked.
     item.dataset['expandable'] = '';
     if (entry.expanded) item.dataset['expanded'] = '';
     row.dataset['expanded'] = entry.expanded ? 'true' : 'false';
@@ -299,8 +287,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Set an icon as FA classes when it looks like one, else as a text glyph.
    *
-   * NOT `writeIcon` — the host holds a `<slot>` with a fallback `<i>`, so it has
-   * to be emptied first. TRAP T-brand-icon-must-empty-its-host.
+   * NOT `writeIcon` — the host's `<slot>` fallback must be emptied first.
+   * TRAP T-brand-icon-must-empty-its-host.
    */
   #applyIcon(host: Element, value: string): void {
     if (/\bfa-/.test(value)) {
@@ -314,7 +302,6 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
-  /** Reflect data-active-id onto the matching row's item. */
   #applyActive(): void {
     const active = this.dataset['activeId'];
     for (const row of this.$$('.nav-row')) {
@@ -325,10 +312,7 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Interaction ────────────────────────────────────────────────── */
 
-  /**
-   * What a row shows. Read off the stamped ROW, not the config, so it is also
-   * true for hand-authored rows in the light DOM.
-   */
+  /** What a row shows. Read off the stamped ROW, so hand-authored rows work too. */
   entry(id: string): NavRowInfo | null {
     const row = this.$$<HTMLElement>('.nav-row').find((r) => r.dataset['id'] === id);
     const item = row?.querySelector<HTMLElement>('sherpa-nav-item');
@@ -336,7 +320,6 @@ export class SherpaNav extends SherpaElement {
     return { id, label: item.dataset['label'], icon: item.dataset['icon'] };
   }
 
-  /** The row that is current, per data-active-id. */
   get activeEntry(): NavRowInfo | null {
     const id = this.dataset['activeId'];
     return id ? this.entry(id) : null;
@@ -347,11 +330,9 @@ export class SherpaNav extends SherpaElement {
     const id = row?.dataset['id'];
     if (!id) return;
     this.setAttribute('data-active-id', id);
-    // The label and the icon ride along.
     this.emit('nav-select', { id, ...this.entry(id) });
   };
 
-  /** A chevron was toggled — record it, then re-derive visibility. */
   #onItemExpand = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     if (!row?.dataset['id']) return;
@@ -362,8 +343,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Write `data-hidden` on rows under a closed parent, for CSS to act on.
    *
-   * A walk up `data-parent`, because `:has()` on flat siblings would hide
-   * unrelated branches. TRAP T-parent-chain-walk-not-a-selector.
+   * Walks up `data-parent`; `:has()` on flat siblings would hide unrelated
+   * branches. TRAP T-parent-chain-walk-not-a-selector.
    */
   #syncRowVisibility(): void {
     const rows = this.$$<HTMLElement>('.nav-row');
@@ -392,13 +373,11 @@ export class SherpaNav extends SherpaElement {
 
   #onSearch = (event: Event): void => {
     const query = (event.target as HTMLInputElement).value;
-    // CSS shows the clear button off this flag.
     this.toggleAttribute('data-has-query', query.length > 0);
     this.#filter(query);
     this.emit('nav-search', { query });
   };
 
-  /** Clear the box, restore every row, hand focus back to the field. */
   #onSearchClear = (): void => {
     const input = this.$<HTMLInputElement>('.search-input');
     if (input) input.value = '';
@@ -419,10 +398,8 @@ export class SherpaNav extends SherpaElement {
       }) | null;
       const label = item?.dataset['label'] ?? '';
       const match = !query || label.toLowerCase().includes(query);
-      // CSS owns the hiding; JS only marks the row. Each row highlights its OWN
-      // label: a custom highlight is not painted for shadow text unless it is
-      // registered and styled inside that same tree.
-      // TRAP T-nav-search-uses-a-real-highlight.
+      // Each row highlights its OWN label — a custom highlight only paints inside
+      // the tree it is registered in. TRAP T-nav-search-uses-a-real-highlight.
       row.toggleAttribute('data-filtered-out', !match);
       item?.highlight?.(match ? query : null);
     }

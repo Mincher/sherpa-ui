@@ -1,16 +1,12 @@
 /**
  * sherpa-pagination — rows-per-page <select> plus first/prev/input/next/last.
  *
- * The native select and number input work without JS; JS stamps options,
- * clamps, reflects state and emits.
- *
  * @prop {number} page        — current page (read/write)
  * @prop {number} totalPages  — total page count (read/write)
  * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
 import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
-// The four page controls are composed sherpa-buttons, as Figma instances them.
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaPagination extends SherpaElement {
@@ -57,7 +53,7 @@ export class SherpaPagination extends SherpaElement {
     // reads back as 0 and divides by zero.
     const raw = this.num('data-page-size', NaN, { min: 1, int: true });
     if (Number.isFinite(raw)) return raw;
-    // TRAP T-pages-are-one-based-and-default-to-25 — 25, not the first option.
+    // 25, not the first option.
     const preferred = SherpaPagination.DEFAULT_PAGE_SIZE;
     return opts.includes(preferred) ? preferred : (opts[0] ?? preferred);
   }
@@ -68,9 +64,7 @@ export class SherpaPagination extends SherpaElement {
   /**
    * Navigate to a page (clamped) and emit page-change if it changed.
    *
-   * Reports, and writes only when nothing else will: a bound pager is
-   * `data-locked` and the DataSource broadcasts the page back after clamping
-   * against the real total. TRAP T-bind-locks-what-it-owns.
+   * Writes only when unlocked — TRAP T-bind-locks-what-it-owns.
    */
   goToPage(n: number): void {
     const next = this.#clamp(n);
@@ -84,13 +78,13 @@ export class SherpaPagination extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  /** A page number: whole, within 1..totalPages, NaN stated rather than `|| 1`. */
+  /** A page number: whole, within 1..totalPages; NaN means page 1. */
   #clamp(n: number): number {
     if (!Number.isFinite(n)) return 1;
     return clampNum(Math.trunc(n), { min: 1, max: this.totalPages });
   }
 
-  /** Parse data-rows-options into a numeric list; default to a sensible set. */
+  /** Parse data-rows-options into a numeric list. */
   #rowsOptions(): number[] {
     const raw = this.dataset['rowsOptions'] ?? '';
     const parsed = raw
@@ -125,8 +119,8 @@ export class SherpaPagination extends SherpaElement {
     const select = this.$<HTMLSelectElement>('.rows');
     if (select) select.value = String(this.pageSize);
 
-    // A composed <sherpa-button> takes `disabled` as an ATTRIBUTE; a `.disabled`
-    // property on the host is an expando nothing reads.
+    // A composed <sherpa-button> takes `disabled` as an ATTRIBUTE; the property
+    // is an expando nothing reads.
     for (const [sel, off] of [
       ['.first', page <= 1],
       ['.prev', page <= 1],
@@ -138,7 +132,7 @@ export class SherpaPagination extends SherpaElement {
   }
 
   #onClick = (event: Event): void => {
-    // TRAP T-composed-path-not-target — the click starts inside the button's own
+    // TRAP T-composed-path-not-target — the click starts in the button's own
     // shadow root, so `closest` never reaches our `.btn` host.
     const btn = this.pathFind(event, '.btn');
     if (!btn || btn.hasAttribute('disabled')) return;
@@ -164,7 +158,7 @@ export class SherpaPagination extends SherpaElement {
     this.goToPage(parseInt(input.value, 10));
   };
 
-  /** The rows-per-page picker — reports, and writes only when unlocked. */
+  /** The rows-per-page picker — writes only when unlocked. */
   #onRowsChange = (event: Event): void => {
     const select = event.target as HTMLSelectElement;
     const size = parseInt(select.value, 10);

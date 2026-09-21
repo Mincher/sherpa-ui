@@ -1,7 +1,6 @@
 /**
- * sherpa-nav-item — one row in a navigation menu.
- *
- * For navs built by hand; sherpa-nav makes its own rows.
+ * sherpa-nav-item — one row in a navigation menu. For navs built by hand;
+ * sherpa-nav makes its own rows.
  *
  * Public API:
  *   data-icon        leading icon glyph
@@ -20,7 +19,6 @@
  */
 import { SherpaElement, markMatch } from '../../core/sherpa-element.js';
 
-/** Counter for the per-row custom-highlight names. */
 let uid = 0;
 
 export class SherpaNavItem extends SherpaElement {
@@ -38,7 +36,7 @@ export class SherpaNavItem extends SherpaElement {
     'data-expanded',
   ];
 
-  /** `data-type` picks the tree, so a change to it has to re-stamp. */
+  /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];
 
   #highlightName: string | null = null;
@@ -50,16 +48,13 @@ export class SherpaNavItem extends SherpaElement {
 
   override onRender(): void {
     this.#sync();
-    // The activation target is a native <button>/<a href>, so keyboard activation
-    // is free — JS only listens for the resulting click.
+    // The target is a native <button>/<a href>, so keyboard activation is free.
     this.addEventListener('click', this.#onClick);
   }
 
   override onChange(): void {
     this.#sync();
   }
-
-  /* ── Public API ───────────────────────────────────────────────── */
 
   get current(): boolean {
     return this.hasAttribute('data-current');
@@ -75,12 +70,11 @@ export class SherpaNavItem extends SherpaElement {
     this.toggleAttribute('data-expanded', v);
   }
 
-  /* ── Sync attribute state into the template ───────────────────── */
-
+  /** Write attribute state into the template. */
   #sync(): void {
     const promo = this.dataset['type'] === 'promo';
 
-    // TRAP T-nav-item-writes-to-both-rows — $$ everywhere; the icon stays out of
+    // TRAP T-nav-item-writes-to-both-rows — $$ everywhere. The icon is out of
     // setAll because an FA class list is not text.
     const setAll = (sel: string, text: string): void => {
       for (const el of this.$$(sel)) el.textContent = text;
@@ -88,8 +82,8 @@ export class SherpaNavItem extends SherpaElement {
     for (const el of this.$$(promo ? '.promo-icon' : '.icon')) {
       this.writeIcon(el, this.dataset['icon'] ?? '');
     }
-    // Skip a marked label: a textContent write would wipe highlight()'s <mark>,
-    // and highlight() re-reads data-label itself so the two never disagree.
+    // A textContent write would wipe highlight()'s <mark>; highlight() re-reads
+    // data-label itself, so skipping never leaves the two disagreeing.
     for (const el of this.$$(promo ? '.promo-heading' : '.label')) {
       if (el.querySelector('mark.match')) continue;
       el.textContent = this.dataset['label'] ?? '';
@@ -127,14 +121,15 @@ export class SherpaNavItem extends SherpaElement {
    * Mark a substring of this row's label as a search match. Null/empty clears it.
    *
    * TRAP T-custom-highlight-not-painted-in-shadow — the <mark> AND the Custom
-   * Highlight are both required; neither is redundant.
+   * Highlight are both needed; neither is redundant.
    */
   highlight(query: string | null): void {
     const full = this.dataset['label'] ?? '';
     const needle = query?.trim() ?? '';
     const at = needle ? full.toLowerCase().indexOf(needle.toLowerCase()) : -1;
 
-    // TRAP T-nav-item-writes-to-both-rows — marking only the first marks the hidden one.
+    // TRAP T-nav-item-writes-to-both-rows — mark the first only and you may mark
+    // the hidden row.
     const labels = this.$$(this.dataset['type'] === 'promo' ? '.promo-heading' : '.label');
     if (!labels.length) return;
 
@@ -166,7 +161,6 @@ export class SherpaNavItem extends SherpaElement {
     this.#ensureHighlightStyle(name);
   }
 
-  /** Drop this row's entry from the document-level highlight registry. */
   #clearHighlight(): void {
     if (!this.#highlightName) return;
     (CSS as unknown as { highlights?: Map<string, Highlight> }).highlights?.delete(this.#highlightName);
@@ -177,7 +171,7 @@ export class SherpaNavItem extends SherpaElement {
     if (this.#highlightStyled || !this.shadowRoot) return;
     this.#highlightStyled = true;
     const sheet = new CSSStyleSheet();
-    // The same tint as the <mark>.
+    // Same tint as the <mark>.
     sheet.replaceSync(
       `::highlight(${name}){background-color:var(--sherpa-theme-surface-active-transparent,#c046ff4d);` +
         `color:var(--sherpa-theme-content-body-base,#0c0b11)}`,
@@ -186,11 +180,9 @@ export class SherpaNavItem extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    // Leave no orphan entry in the document-level registry.
+    // The registry is document-level — leave no orphan entry.
     this.#clearHighlight();
   }
-
-  /* ── Interaction ──────────────────────────────────────────────── */
 
   #activate(): void {
     if (this.hasAttribute('disabled')) return;
@@ -209,8 +201,7 @@ export class SherpaNavItem extends SherpaElement {
 
   #onClick = (event: MouseEvent): void => {
     // TRAP T-composed-path-not-target — a host listener sees a RETARGETED target,
-    // so the chevron must be found in the composed path or every chevron click
-    // falls through to navigation.
+    // so the chevron must be found in the composed path.
     const path = event.composedPath();
     const onChevron = path.some(
       (n) => n instanceof Element && n.classList.contains('expand'),

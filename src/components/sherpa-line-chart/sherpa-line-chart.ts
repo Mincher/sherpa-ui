@@ -1,14 +1,12 @@
 /**
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
- *
- * populate({ labels, series }) draws each set as an SVG polyline + area; CSS
- * owns colour, fill and width.
+ * CSS owns colour, fill and width.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-/** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
+/** Gridlines when data-ticks is absent. */
 const DEFAULT_TICKS = 4;
 
 interface Series {
@@ -46,8 +44,8 @@ export class SherpaLineChart extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────── */
 
   /**
-   * Show or hide one series — the hook a legend toggles. Hiding RE-RENDERS:
-   * the axis rescales to what is left. TRAP T-hiding-a-series-rescales-the-axis
+   * Show or hide one series. Hiding re-renders — the axis rescales to what is
+   * left. TRAP T-hiding-a-series-rescales-the-axis
    */
   setSeriesHidden(index: number, hidden = true): void {
     if (hidden) this.#hidden.add(index);
@@ -61,7 +59,7 @@ export class SherpaLineChart extends SherpaElement {
   }
 
   /**
-   * Hide exactly these series — it REPLACES, and an out-of-range index is kept.
+   * Hide exactly these series — REPLACES, and keeps an out-of-range index.
    * TRAP T-hidden-set-is-view-state-and-replaces
    */
   set hiddenSeries(indices: readonly number[]) {
@@ -94,8 +92,8 @@ export class SherpaLineChart extends SherpaElement {
     const all = this.#series
       .filter((_, i) => !this.#hidden.has(i))
       .flatMap((s) => s.values);
-    // NaN is the not-given sentinel — num() reads an empty attribute as absent
-    // where Number('') is 0. TRAP T-nan-is-the-not-given-sentinel
+    // NaN is the not-given sentinel; Number('') would be 0.
+    // TRAP T-nan-is-the-not-given-sentinel
     const explicitMin = this.num('data-min', NaN);
     const explicitMax = this.num('data-max', NaN);
     const min = Number.isFinite(explicitMin) ? explicitMin : Math.min(0, ...all);
@@ -104,7 +102,7 @@ export class SherpaLineChart extends SherpaElement {
 
     this.#renderYAxis(min, max);
 
-    // From i=1, INCLUSIVE of `bands`, so a line meets the top label.
+    // From i=1, inclusive of `bands`, so a line meets the top label.
     // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
     const bands = this.#tickSteps();
@@ -121,8 +119,8 @@ export class SherpaLineChart extends SherpaElement {
     layer.replaceChildren();
     hotspots?.replaceChildren();
     this.#series.forEach((s, si) => {
-      // No empty <g>. The hue stays keyed to `si`, so a visible series keeps
-      // its colour when a neighbour is hidden.
+      // Hue stays keyed to `si`, so a visible series keeps its colour when a
+      // neighbour is hidden.
       if (this.#hidden.has(si)) return;
       const hue = seriesVar(si, s.colorIndex);
       const pts = s.values.map((v, i) => {
@@ -152,7 +150,6 @@ export class SherpaLineChart extends SherpaElement {
       g.append(area, line);
       layer.appendChild(g);
 
-      // Hover dots sit on the SAME x/y percentages as the polyline.
       if (hotspots && dotTpl) {
         pts.forEach(([x, y], i) => {
           const frag = dotTpl.content.cloneNode(true) as DocumentFragment;
@@ -163,8 +160,8 @@ export class SherpaLineChart extends SherpaElement {
           dot.style.setProperty('--_x', `${x}%`);
           dot.style.setProperty('--_y', `${y}%`);
           dot.style.setProperty('--_hue', hue);
-          // A dot inherits nothing from the <g>, so the anchor name goes on
-          // BOTH. TRAP T-chart-tip-is-a-sibling-of-its-dot
+          // A dot inherits nothing from the <g>; the anchor name goes on both.
+          // TRAP T-chart-tip-is-a-sibling-of-its-dot
           dot.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
           dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
           tip.style.setProperty('--_anchor', `--line-${si}-${i}`);
@@ -187,10 +184,7 @@ export class SherpaLineChart extends SherpaElement {
 
   }
 
-  /**
-   * Value divisions, shared by the axis and the gridlines. min: 0, so a
-   * negative count clamps to "no ticks" rather than to the default.
-   */
+  /** Value divisions, shared by the axis and the gridlines. */
   #tickSteps(): number {
     return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
   }
@@ -202,7 +196,7 @@ export class SherpaLineChart extends SherpaElement {
 
     const steps = this.#tickSteps();
     axis.replaceChildren();
-    // The flag is WRITTEN, never inferred by measuring.
+    // Written, never inferred by measuring.
     // TRAP T-y-axis-width-is-fixed-not-measured
     this.toggleAttribute('data-has-y-axis', steps > 0 && this.#series.length > 0);
     if (steps <= 0 || !this.#series.length) return;

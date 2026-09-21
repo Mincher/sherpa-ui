@@ -1,16 +1,15 @@
 /**
- * sherpa-sparkline — a tiny inline trend chart.
- *
- * JS hands CSS the numbers and the range; CSS draws the line, fill, bars and dots.
+ * sherpa-sparkline — a tiny inline trend chart. JS hands CSS the numbers and the
+ * range; CSS draws the line, fill, bars and dots.
  *
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick } from '../../core/format-tick.js';
 
-/** Fixed point slots (0..SLOTS-1); SLOTS-1 segments between them. */
+/** Fixed point slots; SLOTS-1 segments between them. */
 const SLOTS = 8;
-/** Share of the BOX the line may fill — TRAP T-sparkline-headroom-is-a-share-of-the-box. */
+/** TRAP T-sparkline-headroom-is-a-share-of-the-box — share of the BOX, not of the data. */
 const LINE_SHARE = 0.62;
 
 export class SherpaSparkline extends SherpaElement {
@@ -26,7 +25,7 @@ export class SherpaSparkline extends SherpaElement {
     this.#apply();
   }
 
-  /** populate([10, 25, 15, 30]) — serialises to data-values (the source of truth). */
+  /** Serialises to data-values, which is the source of truth. */
   protected override renderData(source: unknown): void {
     if (!Array.isArray(source)) return;
     this.dataset['values'] = JSON.stringify(source);
@@ -34,7 +33,7 @@ export class SherpaSparkline extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
-  /** Parse data-values (JSON or CSV) into a finite-number list. */
+  /** data-values is JSON or CSV; non-finite entries are dropped. */
   #parse(): number[] {
     const raw = this.dataset['values'];
     if (!raw) return [];
@@ -48,12 +47,12 @@ export class SherpaSparkline extends SherpaElement {
     return parsed.map(Number).filter((n) => Number.isFinite(n));
   }
 
-  /** Bridge the values into the --_v0..7 / --_min / --_range properties CSS reads. */
+  /** Bridge the values into the --_* custom properties CSS reads. */
   #apply(): void {
     const values = this.#parse().slice(-SLOTS);
     const count = values.length;
 
-    // CSS owns which shapes/points show, via :host([data-len="…"]).
+    // CSS owns which shapes show, via :host([data-len="…"]).
     this.dataset['len'] = String(count);
 
     if (count === 0) return;
@@ -69,7 +68,6 @@ export class SherpaSparkline extends SherpaElement {
 
     this.style.setProperty('--_min', String(paddedMin));
     this.style.setProperty('--_range', String(range));
-    // The COUNT is all the hover dots need; no per-dot x position from JS.
     this.style.setProperty('--_len', String(count));
     for (let i = 0; i < SLOTS; i++) {
       if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));
@@ -80,10 +78,9 @@ export class SherpaSparkline extends SherpaElement {
   }
 
   /**
-   * Fill each hover dot's tooltip with its own value — the TEXT only.
+   * Fill each hover dot's tooltip — the TEXT only.
    *
-   * TRAP T-chart-tip-is-a-sibling-of-its-dot — dots and tips are siblings paired
-   * by index, and place themselves in CSS.
+   * TRAP T-chart-tip-is-a-sibling-of-its-dot — paired by index, placed by CSS.
    */
   #applyTips(values: number[]): void {
     const tips = this.$$<HTMLElement>('.chart-tip .chart-tip-value');

@@ -1,13 +1,6 @@
 <!--
-  sherpa-list — a vertical row container.
-
-  It is a native <ul>. Fill it either by slotting sherpa-list-item children
-  (default slot) or via populate([{ title, description?, active?, interactive? }]),
-  which stamps <li> rows into the <ul> from the cloning prototype
-  (<template class="row-tpl">, no id — so the base template parser ignores it).
-
-  The empty-state message (data-empty) shows when there are no rows; CSS owns
-  its visibility.
+  sherpa-list — a vertical row container. Slot sherpa-list-item children, or
+  call populate() to stamp rows from the .row-tpl prototype.
 
   Public API:
     data-type  (default — dividers between rows) | bordered | plain (no dividers)

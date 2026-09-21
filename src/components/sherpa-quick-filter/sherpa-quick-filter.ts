@@ -1,11 +1,8 @@
 /**
  * sherpa-quick-filter — a filter chip you can toggle, with an optional value menu.
  *
- * CSS owns the look; JS relays the picks.
- *
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
- * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css,
- * TRAP T-locked-chip-relays-and-nothing-else
+ * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
@@ -39,9 +36,8 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
-   * TRAP T-chip-empty-check-waits-for-onconnect — the slotted menu is a
-   * light-DOM child, so an `onRender` read can precede it, and pre-ticked values
-   * fire no menu event. Replay them here.
+   * TRAP T-chip-empty-check-waits-for-onconnect — the slotted menu may not exist
+   * yet at `onRender`, and pre-ticked values fire no event. Replay them here.
    */
   override onConnect(): void {
     this.#syncEmpty();
@@ -90,11 +86,7 @@ export class SherpaQuickFilter extends SherpaElement {
     return (this.menu?.values ?? []) as string[];
   }
 
-  /**
-   * Set the picks, and bring the chip's whole face with them.
-   *
-   * TRAP T-chip-values-round-trip-silently — parity with the getter, and silent.
-   */
+  /** Set the picks. TRAP T-chip-values-round-trip-silently — silent, unlike a pick. */
   set values(next: readonly string[]) {
     const menu = this.menu;
     if (!menu) return;
@@ -107,7 +99,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#applySelection((menu.values ?? []) as string[]);
   }
 
-  /** Everything the chip derives from its picks, in one place. */
+  /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
     if (values.length > 1) this.dataset['count'] = String(values.length);
     else delete this.dataset['count'];
@@ -135,9 +127,8 @@ export class SherpaQuickFilter extends SherpaElement {
     if (this.hasAttribute('disabled')) return;
 
     /* TRAP T-an-empty-chip-opens-its-menu — the body cycles a chip's states
-     * (TRAP T-a-chip-body-cycles-its-states), and with nothing picked there is
-     * nothing to cycle, so an empty chip's body opens the menu instead. Only
-     * when there IS a menu: a toggle-only chip must keep toggling.
+     * (TRAP T-a-chip-body-cycles-its-states), and an empty chip has none to cycle.
+     * Only when there IS a menu: a toggle-only chip keeps toggling.
      */
     const menu = this.menu;
     if (menu && this.values.length === 0) {
@@ -152,10 +143,11 @@ export class SherpaQuickFilter extends SherpaElement {
     this.emit('quick-filter-click', { active: this.current });
   };
 
-  /** Open (or shut) the menu, anchored to the CHIP — shared by the body and the caret. */
+  /**
+   * TRAP T-menu-anchors-to-the-chip — anchored to the CHIP's leading edge, not
+   * the caret's. Placement is measured: TRAP T-anchor-cross-root.
+   */
   #openMenu(): void {
-    // TRAP T-menu-anchors-to-the-chip — the card lines up with the CHIP's
-    // leading edge, not the caret's. Placement is measured: TRAP T-anchor-cross-root.
     this.menu?.toggle?.(this);
   }
 
@@ -169,12 +161,10 @@ export class SherpaQuickFilter extends SherpaElement {
   #onMenuToggle = (event: Event): void => {
     const open = event.type === 'menu-open';
     this.$('.caret')?.setAttribute('aria-expanded', String(open));
-    // With the menu open, real focus is inside it, so `:focus-visible` on the
-    // chip is false — this flag is how CSS still draws the ring.
+    // Focus is inside the menu, so `:focus-visible` is false — CSS rings on this.
     this.toggleAttribute('data-open', open);
   };
 
-  /** A menu selection sets the label, the count chip and the on-state, then relays outward. */
   #onMenuChange = (event: Event): void => {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
     // A locked chip's menu rows are not its values: relay, change nothing.
@@ -187,10 +177,8 @@ export class SherpaQuickFilter extends SherpaElement {
   };
 
   /**
-   * Flag "on, but filtering by nothing" so CSS can paint it as a warning.
-   *
-   * TRAP T-empty-flag-needs-rows-to-count — a PERSISTENT or LOCKED chip is
-   * exempt: judging either painted a working filter amber.
+   * Flag "on, but filtering by nothing" so CSS can warn.
+   * TRAP T-empty-flag-needs-rows-to-count — a PERSISTENT or LOCKED chip is exempt.
    */
   #syncEmpty(): void {
     if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')) {
@@ -202,7 +190,6 @@ export class SherpaQuickFilter extends SherpaElement {
     this.toggleAttribute('data-empty', empty);
   }
 
-  /** The badge's hover bubble and aria-label list the chosen values. */
   #syncCountTip(values: string[]): void {
     const labels = values.map((v) => this.#valueLabel(v));
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.

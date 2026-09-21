@@ -1,8 +1,7 @@
 /**
- * sherpa-button — the thing you click.
+ * sherpa-button — CSS owns the look; this sets label, icons and badge.
  *
- * CSS owns the look. This file sets the label, icons and badge, and emits
- * button-click.
+ * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -17,17 +16,15 @@ export class SherpaButton extends SherpaElement {
     'disabled',
   ];
 
-  /** `data-type` picks the tree, so a change to it has to re-stamp. */
+  /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];
 
-  /** Icon-only buttons stamp the `icon` template; everything else the default. */
   protected override get templateId(): string | null {
     return this.dataset['type'] === 'icon' ? 'icon' : 'default';
   }
 
   override onRender(): void {
     // No look or size default: a bare button is the secondary look at base size.
-    // Emphasis is opt-in via data-look; sizes come from the Structure collection.
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
@@ -43,14 +40,14 @@ export class SherpaButton extends SherpaElement {
     else if (name === 'disabled') this.#syncDisabled();
   }
 
-  /** A data-label value overrides slotted content; otherwise the slot shows. */
+  /** A data-label value overrides slotted content. */
   #syncLabel(): void {
     const label = this.$('.label');
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
   }
 
-  /** Mirror a data-badge value into the badge slot's fallback; CSS shows it. */
+  /** Mirrors data-badge into the badge slot fallback; CSS shows it. */
   #syncBadge(): void {
     const slot = this.$('.badge slot');
     const value = this.dataset['badge'];
@@ -58,9 +55,10 @@ export class SherpaButton extends SherpaElement {
   }
 
   /**
-   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk"). `writeIcon`
-   * strips only the `fa-*` classes, so the structural `icon icon-start|end`
-   * survive — rebuilding className from a base string silently drops them.
+   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk").
+   *
+   * `writeIcon` strips only the `fa-*` classes — rebuilding className from a
+   * base string silently drops the structural `icon icon-start|end`.
    */
   #syncIcons(): void {
     const start = this.$('.icon-start');
