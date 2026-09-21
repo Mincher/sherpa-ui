@@ -416,11 +416,17 @@ export class SherpaDataGrid extends SherpaElement {
       // align with the digits under it. A right-aligned column of numbers under a
       // left-aligned heading reads as two different columns.
       if (col.type) th.dataset['type'] = col.type;
+      // The head row is REBUILT here, so the filter chip is brand new and has
+      // to be lit again — `#renderHead` never ran `#syncColumnFilterStatus`,
+      // which is why an external filter's flag survived on the <th> and the
+      // chip beside it came back blank. Called after `#addColumnFilter` below,
+      // which is what stamps the chip.
       // The FIRST drawn column is frozen. Marked here rather than selected in CSS
       // with nth-child, because the position shifts by one when data-selectable
       // is absent and #shownColumns() can drop the grouped column.
       if (i === 0) this.#markPinned(th, true);
       this.#addColumnFilter(th, col);
+      this.#lightFilterChip(th, col.field);
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
@@ -908,6 +914,30 @@ export class SherpaDataGrid extends SherpaElement {
    * #renderHead does the same on a rebuild; this is the no-rebuild path, for a
    * menu commit that changed nothing else about the header row.
    */
+  /**
+   * Turn one column's FILTER CHIP on or off, from the one computed answer.
+   *
+   * THE CHIP IS THE SIGNAL. The heading itself is deliberately not tinted (see
+   * the long note in the CSS — "the column says so through its CHIPS"), so a
+   * filter the chip does not show is a filter nobody can see.
+   *
+   * Only the chip's OWN menu ever lit it, so a filter arriving through the
+   * QUERY left the column looking untouched: the app header narrowed the grid
+   * to one region and the Region column said nothing at all.
+   *
+   * `#isFiltered` already knew the whole answer — this column's own clause, the
+   * header-row filters, and `data-filter-fields`, which `DataSource` writes on
+   * every bound element from the composed filter. It was computed and then
+   * spent on the `<th>` alone.
+   *
+   * The chip is `data-locked`, so the GRID owns its on-state: writing it here
+   * is the host doing its job, not the chip deriving something it does not own.
+   * TRAP T-the-column-chip-is-the-only-signal.
+   */
+  #lightFilterChip(th: HTMLElement, field: string): void {
+    th.querySelector('.head-filter')?.toggleAttribute('data-current', this.#isFiltered(field));
+  }
+
   #syncColumnFilterStatus(): void {
     for (const cell of this.$$('.head-cell')) {
       const th = cell as HTMLElement;
@@ -916,6 +946,7 @@ export class SherpaDataGrid extends SherpaElement {
       const lit = th.hasAttribute('data-sort') || this.#isFiltered(field);
       if (lit) th.dataset['status'] = 'active';
       else delete th.dataset['status'];
+      this.#lightFilterChip(th, field);
     }
   }
 

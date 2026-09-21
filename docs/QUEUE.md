@@ -16,10 +16,10 @@ down anywhere. They are in here now.
 
 | # | Item | Size | Why now |
 |---|---|---|---|
-| **B5** | Grid header chips don't light from the app header | S | Finishes a bug you reported |
+| ~~**B5**~~ | ~~Grid header chips don't light from the app header~~ | — | **DONE** `pending` |
 | ~~**B1**~~ | ~~"X items selected" is in the wrong place~~ | — | **DONE** `b3db74ed` |
 | ~~**B2**~~ | ~~Last row has no bottom border~~ | — | **DONE** `b3db74ed` |
-| **B3** | Empty chip's body should open its menu | S | One rule, one component |
+| ~~**B3**~~ | ~~Empty chip's body should open its menu~~ | — | **DONE** `f35df4b4` |
 | **B6** | Saturated button ignores a critical status | M | Measured; obvious fix fails |
 | ~~**B7**~~ | ~~Group checkbox icon doesn't update~~ | — | **DONE** `dc18aca3` |
 | ~~**B8**~~ | ~~Contextual toolbar actions need 8px spacing~~ | — | **DONE** `dc18aca3` |
@@ -177,16 +177,17 @@ The grid's number column filter already has a range switch
 (`.head-filter-range-switch`); this is about which way it starts. Check the
 toolbar's numeric chips take the same default.
 
-### B5. Grid header chips don't light from the app header
+### ~~B5. Grid header chips don't light from the app header~~ — DONE
 
-**Measured after the header filters were wired.** Filtering by Region in the app
-header narrows the grid correctly, and the Region column's own chip stays unlit.
+Half of it had already closed when the app-header filters were wired: the
+`<th>` took `data-status="active"` correctly. But the heading is deliberately
+NOT tinted (the CSS says so at length — "the column says so through its CHIPS"),
+so the chip is the only visible signal and it stayed blank.
 
-The grid lights a column heading from `#columnFilters`, which only the grid's own
-menu writes — a filter arriving through the query is invisible to it. Same shape
-as item A.
-
-This is the remaining half of your "binding only seems to be 1 way" report.
+`#isFiltered` already knew the answer and it was being spent on the `<th>`
+alone. The half that hid it: `#renderHead` never called
+`#syncColumnFilterStatus`, so on any re-render the flag survived and the
+rebuilt chip came back empty.
 
 ### ~~B1. "X items selected" is in the wrong place~~ — DONE `b3db74ed`
 
@@ -203,15 +204,10 @@ drawing an extra one. They now follow the same `:not(:last-child)` exception.
 the Actions HEADER's border, which had been arriving by accident from the same
 blanket rule. It states its own now, as `.select-head` already did.
 
-### B3. An empty chip's body should open its menu
+### ~~B3. An empty chip's body should open its menu~~ — DONE `f35df4b4`
 
-> "When a filter chip has no value selected then clicking on the left side (with
-> the field name) should open the chip's menu. This doesn't apply to an inactive
-> chip with a value already set."
-
-The body currently cycles the chip's states. This is the empty case only: with
-nothing to toggle, toggling is a no-op, so the body opens the menu instead. A
-chip that HOLDS a value keeps cycling.
+Two boundaries kept it narrow: a chip HOLDING a value still cycles (off is a
+state, not a delete), and a chip with no menu at all is untouched.
 
 ### B4. Data-viz tooltips lose their decimals
 

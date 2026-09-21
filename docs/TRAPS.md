@@ -6442,3 +6442,37 @@ is not a toggle, and a host listening on the bar has no reason to see it as one.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
+
+### T-the-column-chip-is-the-only-signal
+
+The grid's heading is deliberately NOT tinted when a column is acting — the CSS
+carries a long note explaining why ("the column says so through its CHIPS", and
+two highlights competing down a header row read as noise). The `<th>` still
+takes `data-status="active"` as the system-wide door, but nothing paints it.
+
+So the filter chip is the only thing a reader can see, and only the chip's OWN
+menu ever lit it. A filter arriving through the QUERY — the app header
+narrowing every view to one region — left the column looking completely
+untouched.
+
+`#isFiltered` already knew the whole answer: this column's own clause, the
+header-row filters, and `data-filter-fields`, which `DataSource` writes on every
+bound element from the composed filter. It was computed and then spent on the
+`<th>` alone.
+
+Two places light it now, both from that one answer:
+
+| where | why |
+|---|---|
+| `#syncColumnFilterStatus` | a clause changed without a re-render |
+| `#renderHead` | the head row is REBUILT, so the chip is brand new and blank |
+
+The second is the one that hid the bug. `#renderHead` never called
+`#syncColumnFilterStatus` — it set the `<th>` flag inline — so on any re-render
+the flag survived on the heading and the chip beside it came back empty.
+
+The chip is `data-locked`: the GRID owns its on-state. Writing it here is the
+host doing its job, not the chip deriving something it does not own.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`

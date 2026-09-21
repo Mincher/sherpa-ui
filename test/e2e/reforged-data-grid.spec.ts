@@ -2445,3 +2445,78 @@ test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page
   // …and the column goes back to the plain box's width.
   expect(r.colW).toBe('32px');
 });
+
+/**
+ * AN EXTERNAL FILTER LIGHTS THE COLUMN'S CHIP.
+ *
+ * The heading is deliberately not tinted, so the chip is the ONLY thing a
+ * reader can see — TRAP T-the-column-chip-is-the-only-signal.
+ */
+test('data-filter-fields lights the column CHIP, and survives a re-render', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    const config = {
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'region', header: 'Region' },
+      ],
+      rows: [{ name: 'Marcus', region: 'EMEA' }, { name: 'Omar', region: 'APAC' }],
+    };
+    el.populate(config);
+    await settle();
+
+    const read = (): Record<string, unknown> => {
+      const cell = (f: string): HTMLElement =>
+        [...el.shadowRoot!.querySelectorAll<HTMLElement>('.head-cell')]
+          .find((t) => t.dataset['field'] === f)!;
+      const lit = (f: string): boolean =>
+        !!cell(f).querySelector('.head-filter')?.hasAttribute('data-current');
+      return {
+        regionChip: lit('region'), nameChip: lit('name'),
+        // The <th> flag is the system-wide door and stays either way.
+        regionTh: cell('region').dataset['status'] ?? null,
+      };
+    };
+
+    const before = read();
+
+    // The SOURCE writes this, from the composed filter.
+    el.dataset['filterFields'] = 'region';
+    await settle();
+    const filtered = read();
+
+    /* A RE-POPULATE rebuilds the head row, so the chip is brand new. This is
+       the half that hid the bug: the <th> flag survived and the chip came back
+       blank, because #renderHead never ran the sync. */
+    el.populate(config);
+    await settle();
+    const reRendered = read();
+
+    el.removeAttribute('data-filter-fields');
+    await settle();
+    const cleared = read();
+
+    return { before, filtered, reRendered, cleared };
+  });
+
+  expect(r.before).toEqual({ regionChip: false, nameChip: false, regionTh: null });
+
+  // LIT: the chip, which is the only visible signal — and the flag with it.
+  expect(r.filtered).toEqual({ regionChip: true, nameChip: false, regionTh: 'active' });
+
+  // AND IT SURVIVES A REBUILD.
+  expect(r.reRendered, 'a re-populate keeps the chip lit')
+    .toEqual({ regionChip: true, nameChip: false, regionTh: 'active' });
+
+  // Gone when the filter is.
+  expect(r.cleared).toEqual({ regionChip: false, nameChip: false, regionTh: null });
+});
