@@ -21,9 +21,12 @@ down anywhere. They are in here now.
 | ~~**B2**~~ | ~~Last row has no bottom border~~ | — | **DONE** `b3db74ed` |
 | **B3** | Empty chip's body should open its menu | S | One rule, one component |
 | **B6** | Saturated button ignores a critical status | M | Measured; obvious fix fails |
+| **B7** | Group checkbox icon doesn't update from indeterminate | S | Visual, isolated |
+| **B8** | Contextual toolbar actions need 8px spacing | XS | Visual, isolated |
+| **B9** | Numeric filter chips should default to range | XS | One default |
 | ~~**D5**~~ | ~~Dialog footer horizontal padding~~ | — | **DONE** `97d7bb25` |
-| **D3** | Delete needs a confirm dialog + a real mutation | M | Data loss risk today |
-| **D4** | Error handling for failed mutations | M | Pairs with D3 |
+| ~~**D3**~~ | ~~Delete needs a confirm dialog + a real mutation~~ | — | **DONE** `3b3d6242` |
+| ~~**D4**~~ | ~~Error handling for failed mutations~~ | — | **DONE** `3b3d6242` |
 | **D1** | Checkbox styling in grid selection cells | S | May already be done — verify first |
 | **B4** | Data-viz tooltips lose decimals | S | Same cause as C |
 | **C** | Data viz built from the data layer | L | Blocks D2 |
@@ -66,25 +69,22 @@ right. Check against Figma before doing anything.
 helpers. Note the app-header filters now reach the query, which is the half this
 needs to demonstrate.
 
-### D3. Delete needs a confirmation dialog and a real mutation
+### ~~D3. Delete needs a confirmation dialog and a real mutation~~ — DONE `3b3d6242`
 
-> "The 'Delete' action on the Toolbar should show a dialog, critical status,
-> asking for confirmation of deletion. Also, deletion should be a data layer
-> mutation before updating the client."
+The mutation half was already right — `store.remove()` was a real data-layer
+call. Added the confirm dialog, and the bulk actions moved back beside the CTA.
 
-Two halves. The dialog is `sherpa-dialog` with `data-status="critical"`, opened
-with `.show()` — not the native `showModal()`. The mutation half matters more:
-delete must go through the Store and only update the screen once it succeeds.
+**Left open as B6:** the Delete button in that critical dialog still paints
+accent blue.
 
-### D4. Error handling for failed data-layer mutations
+### ~~D4. Error handling for failed data-layer mutations~~ — DONE `3b3d6242` (for delete)
 
-> "look at error handling when making changes on the data layer. If we try
-> something and it fails then we need to handle it."
+The shape, now settled and tested: fail PER ITEM, carry the store's own reason
+into the toast, never update the screen by hand, and keep the failed records
+selected so the reader can retry.
 
-Pairs with D3 — a delete that fails is the first case. Worth deciding the
-general shape once: what a failed `insert`/`update`/`remove` does to the screen,
-and what the reader is told. `DataSource` already treats a failed LOAD as a
-state rather than a throw; mutations should match.
+**Still owed:** the same treatment for `insert` and `update`. The add/edit save
+path has no `try` around it.
 
 ### ~~D5. Dialog footer horizontal padding~~ — DONE `97d7bb25`
 
@@ -144,6 +144,33 @@ something that can tell "no status" from "status, white surface".
 
 Not urgent: the confirm dialog reads as critical through its heading, its ink
 and its border. Only the primary button's fill is wrong.
+
+### B7. A group checkbox stays indeterminate-looking after being clicked
+
+> "If a group row checkbox is indeterminate then clicking it (which selects all)
+> doesn't change the icon to checked."
+
+The selection is probably right and only the icon is stale. Note the group boxes
+are now `sherpa-select-checkbox` components, and the native rule is that clicking
+an indeterminate checkbox resolves it to CHECKED — so this may be the host
+writing `indeterminate` back after the click, not the component.
+
+### B8. Contextual toolbar actions need 8px spacing
+
+> "Contextual toolbar actions, in the Toolbar, should have 8px of spacing (use
+> spacing token)."
+
+The bulk actions the view stamps into `#bulk-actions`. Use the token, not a
+literal — `--sherpa-display-mode-space-xs` is the 8.
+
+### B9. Numeric filter chips should default to range
+
+> "Numerical filter chips should default to having range set to true in their
+> menu."
+
+The grid's number column filter already has a range switch
+(`.head-filter-range-switch`); this is about which way it starts. Check the
+toolbar's numeric chips take the same default.
 
 ### B5. Grid header chips don't light from the app header
 
