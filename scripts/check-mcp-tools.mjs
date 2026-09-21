@@ -1,17 +1,15 @@
 #!/usr/bin/env node
 /**
- * check-mcp-tools.mjs — run: node scripts/check-mcp-tools.mjs
+ * run: node scripts/check-mcp-tools.mjs
  *
- * Each mcp-server/tools/*.js header lists the tools it provides; the code calls
- * server.registerTool(). The two sets must match exactly, or a header promises a
- * deleted tool and nothing notices. Exit 1 on any difference.
+ * Each mcp-server/tools/*.js header must list exactly the tools it registers.
+ * Exit 1 on any difference, so a header cannot promise a deleted tool.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIR = 'mcp-server/tools';
 
-/** A header entry: an indented ` *   name — …` line. */
 const HEADER_LINE = /^\s*\*\s{2,}([a-z][a-z0-9_]*)\s+[—-]/;
 const REGISTERED = /server\.registerTool\(\s*["']([a-z][a-z0-9_]*)["']/g;
 
@@ -21,7 +19,7 @@ for (const file of readdirSync(DIR).filter((f) => f.endsWith('.js')).sort()) {
   const path = join(DIR, file);
   const src = readFileSync(path, 'utf8');
 
-  // The FIRST block comment only — a later one listing names is prose, not a promise.
+  // The FIRST block comment only — a later list of names is prose, not a promise.
   const header = src.slice(0, src.indexOf('*/') + 2);
   const claimed = new Set(
     header.split('\n').map((l) => HEADER_LINE.exec(l)?.[1]).filter(Boolean),

@@ -4975,6 +4975,7 @@ A group row's `colSpan` counts it: `columns + 1 + (actions ? 1 : 0)`. One that
 stopped short would leave the pinned cell floating over a gap.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-one-actions-menu-for-every-row
 

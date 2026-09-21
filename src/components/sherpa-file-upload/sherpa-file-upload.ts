@@ -39,7 +39,7 @@ export class SherpaFileUpload extends SherpaElement {
     if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
   }
 
-  /** Label / helper / details text into the shadow (CSS collapses empties). */
+  /** CSS collapses the empty nodes, so an absent attribute needs no branch. */
   #syncText(): void {
     const label = this.$('.label');
     if (label) label.textContent = this.dataset['label'] ?? '';
@@ -51,7 +51,6 @@ export class SherpaFileUpload extends SherpaElement {
     if (allowed) allowed.textContent = this.dataset['accept'] ? `Allowed file types: ${this.dataset['accept']}` : '';
   }
 
-  /** Mirror accept / multiple host → native input. */
   #syncInput(): void {
     const input = this.#input;
     if (!input) return;
@@ -162,7 +161,6 @@ export class SherpaFileUpload extends SherpaElement {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  /** Current list of selected files. */
   get files(): File[] {
     return [...this.#files];
   }

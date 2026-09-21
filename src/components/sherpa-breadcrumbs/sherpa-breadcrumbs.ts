@@ -1,10 +1,7 @@
 /**
  * sherpa-breadcrumbs — the "you are here" trail of links.
  *
- * Give it a list with populate([{ label, href? }]) and it draws one crumb per
- * item. The separators between crumbs are drawn by CSS. The last crumb is the
- * current page, so it has no link. Clicking any crumb fires breadcrumb-select.
- *
+ * Separators are drawn by CSS. The last crumb is the current page, so no link.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -38,9 +35,8 @@ export class SherpaBreadcrumbs extends SherpaElement {
     this.#render();
   }
 
-  // The label and the index are declared on the prototype. Only the last-crumb
-  // rule is left here, because it depends on the LIST's length rather than on
-  // the crumb — the trail's own end is not a field any row carries.
+  // Label and index come from the prototype; only "is last" is left in JS,
+  // because it depends on the list's length, not on any field a crumb carries.
   #render(): void {
     this.renderItems('.crumbs', 'template.crumb-tpl', this.#crumbs, {
       after: (row, crumb, i) => {

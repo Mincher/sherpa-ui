@@ -1,12 +1,9 @@
 /**
  * sherpa-chat-message — one chat bubble in a thread.
  *
- * data-type (assistant, user, or system) sets the layout and colour, all in CSS.
- * JS only writes the text — name, timestamp, and message. If you slot in your own
- * body content, it replaces the data-message text.
- *
- * Primary attrs mirror the Figma props (data-name / data-timestamp / data-message);
- * the older data-author / data-time / data-content are kept as back-compat aliases.
+ * data-type (assistant/user/system) is CSS-only. JS writes the three texts.
+ * data-author / data-time / data-content are back-compat aliases for
+ * data-name / data-timestamp / data-message.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

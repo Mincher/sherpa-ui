@@ -7,19 +7,19 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {
-  /** The metric's name. TRAP T-populate-label-not-name */
+  /** TRAP T-populate-label-not-name */
   label?: string;
-  /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
+  /** @deprecated The old spelling of `label`. Still read. */
   name?: string;
-  /** Formatted value (already display-ready). */
+  /** Already display-ready. */
   value?: string | number;
   /** Change text, e.g. "+12.5%". */
   delta?: string;
-  /** Optional percent — sets a "+n%"/"-n%" delta and the trend direction. */
+  /** Sets a "+n%"/"-n%" delta and the trend direction. */
   deltaPercent?: number;
-  /** Optional trend direction; derived from deltaPercent when omitted. */
+  /** Derived from deltaPercent when omitted. */
   trend?: 'up' | 'down' | 'flat';
-  /** Optional series — when present, the embedded sparkline is shown and fed. */
+  /** When present, the embedded sparkline is shown and fed. */
   values?: number[];
 }
 
@@ -31,14 +31,14 @@ export class SherpaMetric extends SherpaElement {
   static override observed = ['data-label', 'data-value', 'data-delta'];
 
   override onRender(): void {
-    this.#sync(); // reflect attributes set before the shadow DOM was ready
+    this.#sync(); // attributes may have been set before the shadow DOM existed
   }
 
   override onChange(): void {
     this.#sync();
   }
 
-  /** populate({ name, value, delta, deltaPercent, trend, values }) — the data path. */
+  /** The data path. */
   protected override renderData(source: unknown): void {
     const data = (source ?? {}) as MetricData;
 
@@ -77,11 +77,7 @@ export class SherpaMetric extends SherpaElement {
     set('.delta', this.dataset['delta'] ?? '');
   }
 
-  /**
-   * Set data-status from the trend, or remove it.
-   *
-   * TRAP T-metric-status-follows-the-trend — "default" means NO attribute.
-   */
+  /** TRAP T-metric-status-follows-the-trend — "default" means NO attribute. */
   #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
     const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;
     if (status) this.dataset['status'] = status;

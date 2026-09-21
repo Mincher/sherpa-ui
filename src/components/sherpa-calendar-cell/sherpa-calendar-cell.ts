@@ -1,18 +1,9 @@
 /**
- * sherpa-calendar-cell — one day, month or year in a calendar's grid.
+ * sherpa-calendar-cell — one day, month or year in a calendar's grid. A real
+ * <button>, so keyboard, focus and screen-reader behaviour come free.
  *
- * Composes the Figma "Calendar Cell" (276:16589), which Will split onto the
- * Calendar page as one of the visual parts a calendar is built FROM. The
- * component owns the cell's box, its three states and its text; the calendar
- * owns which day each one is and what happens when it is pressed.
- *
- * A real <button>, so keyboard, focus and screen-reader behaviour come free.
- *
- * The node's `State` axis is default | today | selected-range. The code widens
- * the range half into three — start, mid, end — because a run of days has to
- * square only the corners that MEET, which one Figma variant cannot express on
- * its own (it is drawn as the middle of a run).
- *
+ * Figma's `State` axis has one selected-range variant; the code widens it into
+ * start | mid | end, because only the corners that MEET a neighbour are squared.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -37,14 +28,12 @@ export class SherpaCalendarCell extends SherpaElement {
 
   #sync(): void {
     const label = this.dataset['label'];
-    // Only write the label when one was GIVEN — a cell using the default slot
-    // would otherwise have its slotted content replaced by an empty string.
+    // Only when GIVEN — otherwise an empty string wipes the slotted content.
     if (label != null) {
       const el = this.$('.label');
       if (el) el.textContent = label;
     }
-    // `disabled` is mirrored onto the real control, so the browser owns the
-    // behaviour rather than CSS pretending.
+    // Mirror onto the real control so the browser owns the behaviour.
     this.$<HTMLButtonElement>('.cell')?.toggleAttribute('disabled', this.hasAttribute('disabled'));
   }
 

@@ -4,11 +4,8 @@
  *   audit_component — bindings + ontology accuracy for a built component
  *   check_bindings  — the "every property binds a variable" audit (Rule 9)
  *
- * There is NO ontology, and there is no longer a plan to rebuild one: the
- * token ROLE layer was deleted 2026-09-16 for having rotted, and the scripts
- * that produced it went 2026-09-17 (Will: "ditch all the ontology stuff").
- * These tools check what the generated `tokens.css` can answer — does this
- * token NAME exist — plus every rule that never needed a role.
+ * There is no ontology and no plan to rebuild one, so token ROLE and SCOPE are
+ * never checked — only that a bound token NAME exists in tokens.css.
  */
 import { z } from "zod/v3";
 import {
@@ -20,28 +17,15 @@ function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
 
 
-/** Normalise an ontology id / a def token alias to a comparable short key. */
+/** Normalise a token alias to a comparable short key. */
 const norm = (s) => s.toLowerCase().replace(/^.*::/, "").replace(/[/-]/g, "");
 
 
-/**
- * Def-side binding report: every element.property in the def's `tokens` block,
- * with the token it binds, the ontology role, and whether that role fits the
- * property (Rule 9 — every geometry/colour property binds a resolving token).
- */
+/** Def-side binding report: every element.property in `tokens`, and whether the
+ *  token it binds is declared in tokens.css. `role` is always null — see header. */
 function bindingReport(def, cssTokens) {
-  /* Does every token a def binds actually EXIST?
-
-     That is the whole question now. This used to also check each binding's
-     ROLE against the ontology (does a `background` bind a `surface` token?) and
-     its Figma SCOPE — but the ontology was deleted 2026-09-16 for having rotted
-     and the scripts that built it went 2026-09-17, so both branches keyed off a
-     lookup that could only miss. While they were still here, an empty ontology
-     made this report mark ALL 1173 bindings across all 58 components
-     `unknown-token`: a report that condemns everything says nothing.
-
-     `tokens.css` is re-projected from Figma, so it cannot go stale by hand, and
-     it carries exactly one fact — the name. */
+  /* Name existence is the only question. Do not re-add a role/scope check
+     against a missing lookup: an empty one marked all 1173 bindings bad. */
   const cssNorm = [...(cssTokens ?? [])].map((t) => norm(t.replace("--sherpa-", "")));
   const declaredInCss = (alias) => {
     const t = norm(alias);
@@ -64,7 +48,6 @@ function bindingReport(def, cssTokens) {
 }
 
 export function register(server) {
-  // ── audit_component — bindings + ontology accuracy for a built comp ──
   server.registerTool(
     "audit_component",
     {
@@ -111,7 +94,6 @@ export function register(server) {
     }
   );
 
-  // ── check_bindings — "every property binds a variable" (Rule 9) ─────
   server.registerTool(
     "check_bindings",
     {

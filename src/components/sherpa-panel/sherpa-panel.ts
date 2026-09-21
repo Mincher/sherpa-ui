@@ -1,12 +1,8 @@
 /**
- * sherpa-panel — a persistent inline panel (a semantic <section> card).
+ * sherpa-panel — a persistent inline panel; a semantic <section> card.
  *
- * Native-first (naming standard D2/D12): a panel is a persistent, in-flow region
- * — not floating (that's overlay-panel) and not a disclosure (that's accordion)
- * — so the correct native home is a plain semantic <section>. There is no native
- * behaviour to adopt, so this file is minimal: it just renders the optional
- * data-heading. Everything else — surface, regions, collapsed state — is CSS.
- *
+ * Not floating (that is overlay-panel) and not a disclosure (that is accordion).
+ * No native behaviour to adopt — surface, regions and collapsed state are CSS.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

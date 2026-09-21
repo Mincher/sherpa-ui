@@ -1,17 +1,13 @@
 /**
  * sherpa-progress-bar — a bar that fills up as a task runs.
  *
- * Native-first: a real <progress> owns the value, role=progressbar and
- * aria-valuenow. JS only sets the inner progress's value/max (or clears value for
- * the indeterminate sweep) and mirrors the label; CSS styles the vendor
- * pseudo-elements. No manual role/aria, no JS-driven width.
+ * A real <progress> owns the value, role and aria-valuenow. No JS-driven width.
  *
  * @prop {number} value — the current percentage (read/write, clamped 0–100)
  */
 import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
 
 interface ProgressData {
-  /** 0–100 completion percentage. */
   value?: number;
 }
 
@@ -37,8 +33,7 @@ export class SherpaProgressBar extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────────── */
 
   get value(): number {
-    // The documented public API is the native `value` attribute; keep data-value
-    // as a fallback for callers that used the data-* form.
+    // `value` is the public API; data-value is the legacy fallback.
     return this.#clamp(
       this.getAttribute('value') ?? this.#bar()?.value ?? this.dataset['value'],
     );
@@ -54,26 +49,24 @@ export class SherpaProgressBar extends SherpaElement {
     return this.$<HTMLProgressElement>('.bar');
   }
 
-  /** Mirror data-value / data-indeterminate onto the native <progress>, + label. */
+  /** Push value / indeterminate / label onto the native <progress>. */
   #sync(): void {
     const bar = this.#bar();
     if (!bar) return;
 
     if (this.hasAttribute('data-indeterminate')) {
-      bar.removeAttribute('value'); // native indeterminate progress
+      bar.removeAttribute('value'); // absent value IS native indeterminate
     } else {
-      // Prefer the native `value` attribute (public API), fall back to data-value.
-      bar.value = this.#clamp(this.getAttribute('value') ?? this.dataset['value']); // native determinate + aria-valuenow
+      bar.value = this.#clamp(this.getAttribute('value') ?? this.dataset['value']);
     }
 
-    // Mirror the text into the label span (CSS shows/hides it off data-label).
     const label = this.dataset['label'];
     const el = this.$('.label');
     if (el) el.textContent = label ?? '';
     if (label != null) this.setAttribute('aria-label', label);
   }
 
-  /** A percentage: parse whatever arrived, then hold it to 0..100. */
+  /** Parse whatever arrived, then hold it to 0..100. */
   #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : parseFloat(raw ?? '');
     if (!Number.isFinite(n)) return 0;

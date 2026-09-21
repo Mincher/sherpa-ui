@@ -1,8 +1,8 @@
 /**
  * sherpa-menu — a floating list of choices or actions, on the native popover API.
  *
- * The browser owns the top layer, Escape, outside-click and focus; `#place()`
- * measures the trigger because CSS anchoring cannot cross a shadow root.
+ * The browser owns the top layer, Escape, outside-click and focus. `#place()`
+ * measures the trigger: CSS anchoring cannot cross a shadow root.
  * TRAP T-anchor-cross-root
  * TRAP T-menu-rows-stay-native-controls
  *
@@ -209,11 +209,9 @@ export class SherpaMenu extends SherpaElement {
 
   }
 
-  /**
-   * The box the card must stay inside — the viewport, or a host's `data-bounds`.
+  /** The box the card stays inside — viewport, or a host's `data-bounds`.
    * A missing or zero-sized box falls back to the viewport.
-   * TRAP T-bounds-clamp-to-the-viewport
-   */
+   * TRAP T-bounds-clamp-to-the-viewport */
   #bounds(): { left: number; top: number; right: number; bottom: number } {
     const viewport = {
       left: 0,
@@ -313,10 +311,8 @@ export class SherpaMenu extends SherpaElement {
     return this.querySelector<HTMLInputElement>('.qf-all input');
   }
 
-  /**
-   * Tick or clear every value row — writes the BOXES, so a committing menu's
-   * draft still works. TRAP T-select-all-ticks-boxes-not-values
-   */
+  /** Tick or clear every value row — writes the BOXES, so a committing menu's
+   * draft still works. TRAP T-select-all-ticks-boxes-not-values */
   #onSelectAll(input: HTMLInputElement): void {
     // Read the SET, not the box. TRAP T-indeterminate-reports-false
     const boxes = this.#inputs();
@@ -327,10 +323,8 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#commits) this.emit('menu-change', { values: this.values });
   }
 
-  /**
-   * Point the select-all row at the set: all, some (indeterminate) or none.
-   * Rewritten every time the set moves. TRAP T-indeterminate-is-a-property
-   */
+  /** Point select-all at the set: all, some (indeterminate) or none. Rewritten
+   * every time the set moves. TRAP T-indeterminate-is-a-property */
   #syncSelectAll(): void {
     const all = this.#allRow();
     if (!all) return;
@@ -393,10 +387,8 @@ export class SherpaMenu extends SherpaElement {
     this.hide();
   };
 
-  /**
-   * Empty the selection and report it — the checkboxes AND a slotted calendar's
-   * date attributes. TRAP T-clear-empties-both-body-shapes
-   */
+  /** Empty the selection and report it — the checkboxes AND a slotted
+   * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
     for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {

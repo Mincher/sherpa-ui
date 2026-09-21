@@ -1,12 +1,11 @@
 /**
- * sherpa-slider — a slider for picking one value in a range.
+ * sherpa-slider — pick one value, or a range, on a rail.
  *
- * A native range input does the dragging, keyboard and accessibility; this class
- * mirrors min/max/step/value onto it and hands CSS the fill percentage.
+ * A native range input does the dragging, keys and a11y; this mirrors
+ * min/max/step/value onto it and hands CSS the fill percentage.
  *
  * @prop {number} value — the current value (read/write, clamped to min/max)
  * @prop {[number, number]} range — the two ends (read/write); low end first
- *
  */
 import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
 
@@ -35,12 +34,12 @@ export class SherpaSlider extends SherpaElement {
     'data-value-readonly',
   ];
 
-  /** TRAP T-slider-second-thumb-is-revealed-not-built — `#input` is the whole control in single mode, the LOW end in range. */
+  /** TRAP T-slider-second-thumb-is-revealed-not-built — the whole control in single mode, the LOW end in range. */
   #input: HTMLInputElement | null = null;
   #endInput: HTMLInputElement | null = null;
-  /** The editable number field beside the track — the HIGH end in range mode. */
+  /** Editable number field — the HIGH end in range mode. */
   #valueField: HTMLInputElement | null = null;
-  /** The second field, before the track. Range mode only. */
+  /** Editable number field for the low end. Range mode only. */
   #startField: HTMLInputElement | null = null;
 
   override onRender(): void {
@@ -54,7 +53,6 @@ export class SherpaSlider extends SherpaElement {
     this.#input?.addEventListener('change', this.#onChange, { signal });
     this.#endInput?.addEventListener('input', this.#onEndInput, { signal });
     this.#endInput?.addEventListener('change', this.#onEndChange, { signal });
-    // The editable value fields are the second way to set the value.
     this.#valueField?.addEventListener('input', this.#onFieldInput, { signal });
     this.#valueField?.addEventListener('change', this.#onFieldChange, { signal });
     this.#startField?.addEventListener('input', this.#onStartFieldInput, { signal });
@@ -77,7 +75,7 @@ export class SherpaSlider extends SherpaElement {
     this.#sync();
   }
 
-  /** populate({ value }) or populate({ start, end }) — the one data path. */
+  /** populate({ value }) or populate({ start, end }). */
   protected override renderData(data: unknown): void {
     const { value, start, end } = (data ?? {}) as SliderData;
     if (start != null || end != null) {
@@ -115,7 +113,7 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Bounds ──────────────────────────────────────────────────────────── */
 
-  // TRAP T-num-is-stricter-than-parsefloat — a non-numeric bound is rejected, not half-read; a non-positive step falls back.
+  // TRAP T-num-is-stricter-than-parsefloat — a non-numeric bound is rejected, not half-read.
   get #min(): number {
     return this.num('min', 0);
   }
@@ -140,7 +138,6 @@ export class SherpaSlider extends SherpaElement {
     const min = String(this.#min), max = String(this.#max), step = String(this.#step);
     const disabled = this.hasAttribute('disabled');
     const readOnly = this.hasAttribute('data-value-readonly');
-    // TRAP T-slider-second-thumb-is-revealed-not-built — the SAME bounds on every input.
     for (const el of [this.#input, this.#endInput]) {
       if (!el) continue;
       el.min = min; el.max = max; el.step = step;
@@ -171,7 +168,7 @@ export class SherpaSlider extends SherpaElement {
   #sync(): void {
     if (this.#isRange) {
       const [start, end] = this.range;
-      // BOTH are written even mid-drag — that is what stops a thumb passing its partner.
+      // BOTH written even mid-drag — that is what stops a thumb passing its partner.
       this.#put(this.#input, start);
       this.#put(this.#endInput, end);
       this.#put(this.#startField, start);
@@ -184,7 +181,6 @@ export class SherpaSlider extends SherpaElement {
     const value = this.#clamp(this.getAttribute('value'));
     this.#put(this.#input, value);
     this.#put(this.#valueField, value);
-    // 0 in single mode: the fill runs from the rail's head.
     this.style.setProperty('--_pct-start', '0%');
     this.style.setProperty('--_pct', `${this.#pctOf(value)}%`);
   }
@@ -233,7 +229,7 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Editable value field → the value ────────────────────────────────── */
 
-  /** A part-typed value. TRAP T-never-fight-a-focused-field. */
+  /** A half-typed value — leave it alone. */
   #partial(raw: string): boolean {
     return raw === '' || raw === '-' || raw.endsWith('.');
   }
@@ -250,7 +246,6 @@ export class SherpaSlider extends SherpaElement {
   #onFieldChange = (): void => {
     if (this.#isRange) {
       this.#setEnd('end', this.#clamp(this.#valueField?.value ?? ''), 'change');
-      // Snap to what the clamp settled on.
       if (this.#valueField) this.#valueField.value = String(this.range[1]);
       return;
     }

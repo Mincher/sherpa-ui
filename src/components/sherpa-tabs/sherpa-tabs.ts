@@ -1,8 +1,7 @@
 /**
  * sherpa-tabs — tabs that switch between slotted panels.
  *
- * Tabs come from populate([{ id, label }]); data-current-id says which is open
- * and CSS does the rest. Arrow keys / Home / End move between tabs.
+ * Tabs come from populate([{ id, label }]); data-current-id says which is open.
  *
  * @prop {string} currentId — currently active tab id (read/write)
  * @method select(id) — activate a tab by id
@@ -61,7 +60,7 @@ export class SherpaTabs extends SherpaElement {
     this.#render();
   }
 
-  /** The prototype declares id and label; only the derived a11y wiring is left. */
+  /** The prototype declares id and label; only the a11y wiring is derived. */
   #render(): void {
     this.renderItems('.tabs', 'template.tab-tpl', this.#tabs, {
       after: (btn, tab, i) => {

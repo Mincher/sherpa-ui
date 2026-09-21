@@ -1,9 +1,8 @@
 /**
  * sherpa-accordion — a disclosure card over native <details> / <summary>.
  *
- * The open state IS `<details open>`; <summary> gives the button role, keyboard
- * and focus for free. The native `toggle` is not composed, so app code cannot
- * see it — this re-dispatches it as a composed component event.
+ * The native `toggle` is not composed, so app code cannot see it — this
+ * re-dispatches it as a composed component event.
  *
  * @prop {boolean} open — whether the disclosure is expanded (delegates to <details>)
  */

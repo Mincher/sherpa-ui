@@ -1,62 +1,19 @@
 #!/usr/bin/env node
 /**
- * generate-component-spec.mjs — DERIVE a DTCG-dialect `*.component.yaml` spec for a
- * component from its CODE sources (HTML + CSS + TS + element-map).
+ * Derive a DTCG-dialect `*.component.yaml` spec for a component from its own
+ * HTML + CSS + TS + element-map. Emits the mechanical surface only (props,
+ * anatomy, events, token bindings, element, best-effort states/capabilities);
+ * richer prose is hand-finished.
  *
  *   node scripts/generate-component-spec.mjs sherpa-switch      # write next to component
  *   node scripts/generate-component-spec.mjs --all              # write every component
- *   node scripts/generate-component-spec.mjs --check sherpa-switch   # gen→validate→round-trip, no write
+ *   node scripts/generate-component-spec.mjs --check sherpa-switch   # gen+validate+round-trip, no write
  *   node scripts/generate-component-spec.mjs --all --check      # coverage table, no write
  *
- * This SCALES the hand-authored switch pilot to all ~47 components without writing
- * each spec by hand. It emits the MECHANICAL ~70% of the spec (props with enum
- * values, anatomy, events, token bindings, element, best-effort states/caps). The
- * hand spec's richer prose (state descriptions, capability narratives) is NOT
- * reproduced — that's the residue a human finishes.
- *
- * `*.component.yaml` is now THE single authored+regenerable component contract;
- * `*.thin.yaml` has been RETIRED. Everything the generator emits derives from the
- * component's own HTML/CSS/TS — EXCEPT the Figma binding (figmaName, category,
- * variantAxes, booleanProps, divergence), which cannot be read from code. That
- * block lived in thin.yaml's `figmaVerbatim`; it now lives in each spec's
- * `$extensions.sherpa` and is PRESERVED verbatim from the existing spec on regen.
- *
- * PURE-ish: reads the component sources + shared data files, emits YAML. NEVER
- * modifies any component source (.ts/.html/.css).
- *
- * ── Derivation strategy, per spec block ───────────────────────────────────────
- *   $name
- *       ← the component directory name.
- *   $description
- *       ← the HTML comment's `sherpa-x — …` first line, then a stub.
- *   $extensions.sherpa (figmaName, category, variantAxes, booleanProps, divergence)
- *       ← PRESERVED from the EXISTING <name>.component.yaml's `$extensions.sherpa`
- *         (these came from thin.yaml's figmaVerbatim and cannot be re-derived from
- *         code). resync-figma.mjs keeps them aligned with live Figma. jsProps are
- *         re-derived fresh from the TS below and merged in.
- *   props
- *       ← the HTML `Public API:` comment block — the AUTHORITATIVE source of enum
- *         `values` + `default` + `(boolean)`. Native attrs (disabled/name/value/…)
- *         → native:true. Enum props get `values:[…]`. The TS `observed` list is the
- *         ground truth for which data-* props are reactive (kind).
- *   anatomy + templates
- *       ← parse the HTML `<template id="default">` node tree (el/class/part/attrs/
- *         slot/children). templates = every `<template id>` present.
- *   events
- *       ← the HTML `Fires:` list.
- *   tokens
- *       ← parse the AUTHORED CSS region (below `/* == end sherpa:tokens == *␣/`)
- *         for `.el { prop: var(--sherpa-X) }` bindings and emit `el.prop:{ref}`.
- *         This is what round-trips, because roundtrip-component.mjs re-extracts the
- *         same authored bindings.
- *   element
- *       ← the anatomy root's tag + provides/stateCss from element-map.yaml
- *         (best-effort; unknown root → tag + empty provides).
- *   states (best-effort)
- *       ← authored-CSS `:host([data-*])` / `:host([disabled])` / `:focus-visible`
- *         selectors, name + selector (token refs left to the human).
- *   capabilities / jsProps (best-effort)
- *       ← TS getters/setters + JSDoc `@prop`. Emitted only when found.
+ * Never modifies a component source. The Figma binding in `$extensions.sherpa`
+ * (figmaName, figmaNodeId, category, variantAxes, booleanProps, divergence)
+ * cannot be read from code and is preserved verbatim from the existing spec on
+ * regen; resync-figma.mjs owns keeping it aligned with Figma.
  */
 import { readFileSync, existsSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -79,9 +36,8 @@ const NATIVE_ATTRS = new Set([
   'disabled', 'name', 'value', 'required', 'readonly', 'placeholder',
   'checked', 'min', 'max', 'step', 'minlength', 'maxlength', 'pattern',
   'multiple', 'href', 'target', 'type', 'rows', 'cols', 'autocomplete',
-  // `indeterminate` is an IDL property with no content attribute, but the select
-  // controls observe it as one — and a name missing here never gets a reactive
-  // kind, so it lands as kind:style and drops out of the generated observed list.
+  // `indeterminate` has no content attribute but the select controls observe it
+  // as one; a name missing here drops out of the generated observed list.
   'indeterminate', 'open', 'hidden', 'selected', 'inputmode',
 ]);
 
@@ -93,15 +49,9 @@ function loadElementMap() {
   catch { return {}; }
 }
 
-/** Build a bare <slot> child node { slot, attrs?, children? } — dropping the `name`
- *  attr (it becomes `slot`) and keeping every other attr (notably data-accepts) so
- *  name + attr-set + position round-trip.
- *
- *  FALLBACK CONTENT is kept as `children`, which is what it is: the nodes the slot
- *  shows when nothing is projected into it. Dropping it was the single largest
- *  round-trip gap — 42 diffs across 12 components, every one of them a `<slot>`
- *  wrapping a default `<i class="glyph">` or similar. A slot node has no other use
- *  for `children`, so no new field is needed. */
+/** Build a bare <slot> child node { slot, attrs?, children? }. `name` becomes
+ *  `slot`; other attrs (data-accepts) and fallback content are kept, so name,
+ *  attrs and position all round-trip. */
 function slotChildNode(n) {
   const a = { ...n.attrs };
   const out = { slot: a.name ?? '' };
@@ -111,9 +61,8 @@ function slotChildNode(n) {
   if (kids.length) out.children = kids;
   return out;
 }
-/** True when a <slot> can collapse onto its parent as `parent.slot` — the legacy
- *  inline form (byte-stable for e.g. sherpa-tag): it must be the parent's SOLE
- *  child, carry no attrs beyond `name`, and hold no fallback content. */
+/** True when a <slot> can collapse onto its parent as `parent.slot` (the legacy
+ *  inline form): sole child, no attrs beyond `name`, no fallback content. */
 function isCollapsibleSoleSlot(parent) {
   const kids = parent.children ?? [];
   if (kids.length !== 1) return false;
@@ -124,19 +73,16 @@ function isCollapsibleSoleSlot(parent) {
   if ((c.children ?? []).length) return false;  // has fallback content → first-class
   return true;
 }
-/** Convert one parsed HTML node → the anatomy `node` shape (el/class/part/attrs/slot/children). */
+/** One parsed HTML node → the anatomy node shape. */
 function htmlNodeToAnatomy(n) {
   const a = { ...n.attrs };
   const out = {};
-  // A bare <slot> becomes a first-class slot child node (name + attrs, no fallback).
   if (n.tag === 'slot') return slotChildNode(n);
   out.el = n.tag;
   if (a.class) out.class = a.class;
   if (a.part) out.part = a.part;
   delete a.class; delete a.part;
-  // Collapse a lone, attr-free, fallback-free <slot> onto the parent (byte-stable
-  // inline form). Otherwise slots are emitted as first-class children IN POSITION,
-  // preserving sibling order, multiple slots per parent, and slot attrs.
+  // Otherwise slots stay first-class children in position, preserving order.
   if (isCollapsibleSoleSlot(n)) {
     out.slot = n.children[0].attrs?.name ?? '';
     if (Object.keys(a).length) out.attrs = a;
@@ -155,16 +101,11 @@ function nodeKey(n) {
   if (n.slot !== undefined && n.el === undefined) return `slot:${n.slot}`;
   return `${n.el || ''}.${n.class || ''}.${n.slot ?? ''}`;
 }
-/**
- * Merge an additional template's tree (`other`) onto the default tree (`base`),
- * marking `other`-only trailing children with `showWhen: tid`. Returns
- * { additive:true, node } when `other` is base + extra trailing children (possibly
- * recursively); { additive:false } otherwise.
- */
+/** Merge template `other` onto the default tree `base`, marking other-only
+ *  trailing children `showWhen: tid`. additive:false when it is not a superset. */
 function mergeShowWhen(base, other, tid) {
   if (nodeKey(base) !== nodeKey(other)) return { additive: false };
   const bc = base.children ?? [], oc = other.children ?? [];
-  // other must start with base's children (aligned by key), then add extras.
   if (oc.length < bc.length) return { additive: false };
   const outChildren = [];
   for (let i = 0; i < bc.length; i++) {
@@ -201,22 +142,11 @@ function commentDescription(comment, name) {
   return '';
 }
 
-/**
- * Parse the `Public API:` block. Returns a map: attrName → { type, values?, default?, native? }.
- * Handles:
- *   data-variant   primary | secondary | tertiary          → enum, values
- *   data-size      2xs | xs | sm   (default md)             → enum, values, default
- *   data-active    pressed state (boolean)                  → boolean
- *   data-type      icon            (default omitted)        → enum single value
- *   data-icon-start / data-icon-end   icon glyph value      → two names, string
- *   placeholder    native placeholder                       → native string
- *   name / required / disabled / readonly   native attrs    → several native names
- */
+/** Parse the `Public API:` block → attrName → { type, values?, default?, native? }. */
 function parsePublicApi(comment) {
   const props = {};
   const lines = comment.split('\n');
-  // locate the "Public API" line, capture the indented block until a blank line
-  // followed by a non-indented label (Slots:/Fires:) or end.
+  // the indented block after the label, until a blank line + a new label, or end
   let start = -1, indent = 0;
   for (let i = 0; i < lines.length; i++) {
     const m = /^(\s*)Public API[^:]*:/i.exec(lines[i]);
@@ -224,8 +154,7 @@ function parsePublicApi(comment) {
   }
   if (start === -1) return props;
 
-  // Collect entry lines (more-indented than the label). A wrapped continuation
-  // line (very deep indent, no attr token) is folded into the previous entry.
+  // Wrapped continuation lines fold into the previous entry.
   const entries = [];
   for (let i = start; i < lines.length; i++) {
     const raw = lines[i];
@@ -239,15 +168,9 @@ function parsePublicApi(comment) {
     if (lead <= indent) { // a sibling label like Slots:/Fires: — stop
       if (/^\s*[A-Z][\w ]*:/.test(raw) && !/^\s*(data-|[a-z][\w-]*\s)/.test(raw)) break;
     }
-    // A new entry starts with an attr name (data-* or a bare native attr) followed
-    // by 2+ spaces OR an em-dash/hyphen separator OR end-of-line. Anything else
-    // (a `| value` wrap, a prose continuation) folds into the previous entry.
-    //
-    // A `data-*` name gets ONE space too. The 2-space rule assumes the author is
-    // padding a description column, but a name long enough to fill that column
-    // leaves only a single space — `data-icon-start` did, so it folded into the
-    // `data-label` line above it and vanished from the props list entirely.
-    // A `data-` prefix is unambiguous enough to start an entry on its own.
+    // An entry starts with an attr name then 2+ spaces, a dash, or end-of-line.
+    // A `data-*` name needs only ONE space: a long name fills the description
+    // column, and requiring two folded `data-icon-start` into the line above it.
     const trimmed = raw.trim();
     const nameHead = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)(\s{2,}|\s*[—-]\s|\s*$)/;
     const dataHead = /^(data-[\w-]+(?:\s*\/\s*data-[\w-]+)*)\s+\S/;
@@ -257,24 +180,14 @@ function parsePublicApi(comment) {
   }
 
   for (const entry of entries) {
-    // split name(s) column from the description column: 2+ spaces, an em-dash, or
-    // a single-space before "native"/"—".
+    // split the name column from the description column
     let mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s{2,}(.*)$/.exec(entry);
-    // A long `data-*` name leaves only ONE space before its description — split on
-    // that too, matching the single-space entry rule above.
-    //
-    // This MUST come before the dash rule below. `[\w-]*` is greedy but the regex
-    // engine backtracks to let `[—-]` match, so `data-icon-start leading icon`
-    // split at the hyphen and yielded the name `data-icon`. Consuming the whole
-    // hyphenated name first removes the chance to backtrack into it.
+    // MUST precede the dash rule: the engine backtracks into a hyphenated name,
+    // so `data-icon-start leading icon` otherwise splits as `data-icon`.
     if (!mm) mm = /^(data-[\w-]+(?:\s*\/\s*data-[\w-]+)*)\s+(.*)$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)*)\s*[—-]\s*(.*)$/.exec(entry);
-    // A names-only entry, single or slashed, whose description wrapped onto the
-    // next line and folded in behind a single space. `name / disabled / required`
-    // matched none of the rules above — no 2-space column, no `data-` prefix, no
-    // dash — so three real native attributes were dropped from both select
-    // controls without a word. Take the leading slash list, keep the rest as the
-    // description.
+    // A slash list whose description wrapped onto the next line — `name /
+    // disabled / required` matches none of the rules above.
     if (!mm) mm = /^([a-z][\w-]*(?:\s*\/\s*[a-z][\w-]*)+)(?:\s+(.*))?$/.exec(entry);
     if (!mm) mm = /^([a-z][\w-]*)\s*$/.exec(entry) ? [entry, entry.trim(), ''] : null;
     if (!mm) continue;
@@ -286,26 +199,20 @@ function parsePublicApi(comment) {
       const isNative = !nm.startsWith('data-') && NATIVE_ATTRS.has(nm);
       if (isNative) p.native = true;
 
-      // native boolean-ish attrs default to boolean; `(boolean)` or a bare
-      // "boolean" word confirms it.
+      // native boolean-ish attrs default to boolean; the word confirms it
       const NATIVE_BOOL = new Set(['disabled', 'readonly', 'required', 'checked', 'multiple']);
       if (/\(boolean\)/i.test(rest) || (isNative && NATIVE_BOOL.has(nm)) || (isNative && /\bboolean\b/i.test(rest))) {
         p.type = 'boolean';
       } else {
-        // enum values: `A | B | C` at the head, TOLERATING inline `(…)` value
-        // descriptions between options (e.g. `default (rect…) | simple (pill…)`).
         const values = parseEnumValues(rest);
         if (values && values.length > 1) { p.type = 'enum'; p.values = values; }
       }
-      // default: `(default X)` / `(default omitted)`
       const defM = /\(default\s+([^)]+)\)/i.exec(rest);
       if (defM) {
         const d = defM[1].trim();
         if (d !== 'omitted' && d !== 'none' && d !== 'unset') p.default = d;
       }
-      // boolean default
       if (p.type === 'boolean' && p.default === undefined) p.default = false;
-      // fallback type
       if (!p.type) p.type = 'string';
 
       const desc = rest.replace(/\((?:boolean|default[^)]*)\)/gi, '').trim();
@@ -316,21 +223,11 @@ function parsePublicApi(comment) {
   return props;
 }
 
-/**
- * Extract enum values from a Public-API description that begins with a pipe list,
- * tolerating inline `(…)` value descriptions between options:
- *   "primary | secondary | tertiary"                       → [primary,secondary,tertiary]
- *   "default (rect, label) | simple (pill, no label)"      → [default, simple]
- *   "2xs | xs | sm   (default md)"                          → [2xs, xs, sm]
- * Returns null when there's no `|` (not an enum by this heuristic).
- */
+/** Enum values from a leading pipe list, tolerating inline `(…)` descriptions
+ *  between options. null when there is no `|`. */
 function parseEnumValues(rest) {
   if (!rest.includes('|')) return null;
-  // cut at the first sentence-ending marker that's clearly prose, not a value list:
-  // stop at " — " or " (via " etc. Keep it simple: remove parentheticals, then
-  // take the leading run of `token ( | token )+`.
   const noParens = rest.replace(/\([^)]*\)/g, ' ');
-  // leading segment up to the first char that isn't part of a pipe list
   const m = /^([\w-]+(?:\s*\|\s*[\w-]+)+)/.exec(noParens.trim());
   if (!m) return null;
   return m[1].split('|').map((s) => s.trim()).filter(Boolean);
@@ -339,12 +236,9 @@ function parseEnumValues(rest) {
 /**
  * A value expression → a type name, or `unknown`.
  *
- * DELIBERATELY TIMID. Only the shapes that cannot be anything else are named:
- * a literal, a `??` fallback whose right side is a literal, a `!` / comparison,
- * an array literal. Everything else — a bare identifier, a call, a property
- * read — is `unknown`, because inferring it properly needs the type checker,
- * and a WRONG type in a contract is worse than an honest gap. A caller who
- * reads `unknown` looks; a caller who reads `string` and gets a number does not.
+ * Deliberately timid: only shapes that cannot be anything else are named.
+ * Anything needing the type checker stays `unknown` — a wrong type in a
+ * contract is worse than an honest gap.
  */
 function typeOfExpr(raw) {
   const e = (raw ?? '').trim().replace(/\/\/.*$/gm, '').trim();
@@ -353,8 +247,7 @@ function typeOfExpr(raw) {
   if (/^-?\d+(\.\d+)?$/.test(e)) return 'number';
   if (/^['"`]/.test(e)) return 'string';
   if (/^\[/.test(e)) return 'array';
-  // `x ?? ''` and `x ?? 0` state their own fallback type, which is the only
-  // type the field can take when the left side is absent.
+  // a `??` fallback states the only type the field can take
   const fallback = /\?\?\s*(.+)$/.exec(e);
   if (fallback) {
     const t = typeOfExpr(fallback[1]);
@@ -364,24 +257,11 @@ function typeOfExpr(raw) {
 }
 
 /**
- * What each event actually CARRIES — read from the `emit()` call sites.
+ * What each event carries, read from its `emit()` call sites.
  *
- * A spec used to declare that an event exists and nothing about its payload,
- * even though `schemas/component.v1.json` has had a `detail` field all along.
- * That is how three different `values` shapes hid behind one
- * `quick-filter-change`: a bare `string[]` from a chip, a
- * `Record<id, string[]>` from the bar, and `[]` beside an `id` from an overflow
- * toggle. A host read one as another and emptied the grid on every sort.
- *
- * The detail is the half of an event contract a caller actually codes against.
- *
- * TOP-LEVEL KEYS ONLY, and the brace walk is why: `{ index, detail: { a, b } }`
- * declares `index` and `detail`, not `a` and `b`. A regex over the whole body
- * would have flattened nested shapes into a lie.
- *
- * An event emitted MORE THAN ONCE with different keys reports the UNION, which
- * is honest — the payload really does vary — and the variance is visible rather
- * than hidden behind whichever call site was read last.
+ * TOP-LEVEL KEYS ONLY — hence the brace walk: `{ index, detail: { a, b } }`
+ * declares `index` and `detail`, not `a` and `b`. An event emitted more than
+ * once with different keys reports the union; the payload really does vary.
  */
 function emitDetails(ts) {
   const out = new Map();
@@ -402,9 +282,8 @@ function emitDetails(ts) {
     const flush = () => {
       if (pendingKey) keys.set(pendingKey, typeOfExpr(token));
       else {
-        // No colon was seen for this entry, so the whole token is the key —
-        // `{ values }`. Anything with an operator in it is an expression that
-        // happened to sit between two commas, not a shorthand property.
+        // No colon, so the whole token is the key — `{ values }`. Anything
+        // with an operator is an expression between two commas, not shorthand.
         const t = token.replace(/\/\/.*$/gm, '').trim();
         if (/^[A-Za-z_$][\w$]*$/.test(t)) shorthand.set(t, 'unknown');
       }
@@ -417,8 +296,7 @@ function emitDetails(ts) {
       if (d === 0 && ch === ',') { flush(); continue; }
       if (d === 0) token += ch;
       if (d === 0 && ch === ':' && !pendingKey) {
-        // The key is whatever sits on the last line before the colon, so a
-        // comment on the lines above cannot be mistaken for one.
+        // last line before the colon, so a comment above is not read as a key
         const k = token.slice(0, -1).split('\n').pop().trim();
         if (/^[A-Za-z_$][\w$]*$/.test(k)) pendingKey = k;
         token = '';
@@ -426,20 +304,13 @@ function emitDetails(ts) {
       }
     }
     flush();
-    /* Shorthand — `{ values }` carries no colon for the walk above to find, and
-       gives no expression to read a type from.
-
-       THE WALK HANDLES IT, not a comma split over the raw body. A split found
-       `held` inside `clause: held ? … : null` — the fragment between two commas
-       there IS a bare identifier — and wrote a payload field that does not
-       exist. The walk already knows the difference between a key and the middle
-       of an expression, so shorthand is collected the same way. */
+    /* Shorthand is collected by the WALK, never a comma split over the raw
+       body: a split reads `held` in `clause: held ? … : null` as a field. */
     for (const [k, t] of shorthand) if (!keys.has(k)) keys.set(k, t);
 
     const prev = out.get(m[1]) ?? new Map();
     for (const [k, t] of keys) {
-      // A field emitted twice with different inferences is `unknown`: the
-      // payload really does vary, and claiming one of the two would be a guess.
+      // two different inferences for one field → `unknown`, not a guess
       prev.set(k, prev.has(k) && prev.get(k) !== t ? 'unknown' : t);
     }
     out.set(m[1], prev);
@@ -447,7 +318,7 @@ function emitDetails(ts) {
   return out;
 }
 
-/** Parse the `Fires:` line(s) → [name, …]. Handles `Fires: a, b` and multi-line lists. */
+/** Parse the `Fires:` line(s) → [name, …]; single-line or multi-line lists. */
 function parseFires(comment) {
   const out = new Set();
   const lines = comment.split('\n');
@@ -456,7 +327,6 @@ function parseFires(comment) {
     const m = /^(\s*)Fires\s*:(.*)$/i.exec(lines[i]);
     if (m) {
       inFires = true; indent = m[1].length;
-      // names on the same line (before any `(detail…)`)
       collectEventNames(m[2], out);
       continue;
     }
@@ -470,16 +340,9 @@ function parseFires(comment) {
   return [...out];
 }
 /**
- * Every event the TypeScript actually dispatches.
- *
- * THE GROUND TRUTH, and the reason this exists: the `Fires:` comment is PROSE,
- * and prose was being scraped for identifiers. `@fires nothing — it is a layout
- * surface` produced an event called `nothing` in 14 specs; a sentence about a
- * column filter produced `since`, `means`, `from` and `to` in the data grid's.
- * 31 of 58 specs claimed at least one event their component never emits.
- *
- * Reads the three ways a Sherpa component can dispatch: the base class's
- * `emit()`, a hand-built `CustomEvent`, and a re-dispatched native `Event`.
+ * Every event the TypeScript actually dispatches — the ground truth, because
+ * the `Fires:` comment is prose and scraping it invented events. Reads the
+ * three ways a component dispatches: `emit()`, `CustomEvent`, `Event`.
  */
 function emittedEvents(ts) {
   const out = new Set();
@@ -496,7 +359,6 @@ function emittedEvents(ts) {
 }
 
 function collectEventNames(text, set) {
-  // strip `(detail: …)` tails, then take the leading identifier of each fragment
   const cleaned = text.replace(/\(detail[^)]*\)/gi, '').replace(/\(re-dispatched[^)]*\)/gi, '');
   for (const frag of cleaned.split(/[,\n]/)) {
     const mm = /^\s*([a-z][\w-]*)/.exec(frag.replace(/^[—-]\s*/, '').trim());
@@ -504,27 +366,22 @@ function collectEventNames(text, set) {
   }
 }
 
-// authored-CSS reading (authoredCss / extractBindings / parseStates) now lives in
-// ./lib/css-reader.mjs — a shared PostCSS reader used by roundtrip-component.mjs too.
+// authoredCss / extractBindings / parseStates live in ./lib/css-reader.mjs —
+// the same reader roundtrip-component.mjs uses.
 
-/**
- * A `--sherpa-X` var name → a `{ref}` string. Scoped component vars
- * (--sherpa-<comp>-…) become `{comp.<path>}` resolving in the token file when
- * possible; everything else is a `{sherpa.X}` alias. `refToToken` (the adapter)
- * inverts BOTH back to the same var name, so the round-trip is exact regardless.
- */
+/** A `--sherpa-X` var name → a `{ref}` string. Scoped component vars become
+ *  `{comp.<path>}`, everything else `{sherpa.X}`; refToToken inverts both back
+ *  to the same var name, so the round-trip is exact either way. */
 function varToRef(sherpaVar, compName, tokens) {
   const short = compName.replace(/^sherpa-/, '');
   if (sherpaVar.startsWith(short + '-') && tokens && tokens[short]) {
-    // find the token-file path under tokens[short] whose flattened form == sherpaVar
     const path = findTokenPath(tokens[short], short, sherpaVar);
     if (path) return `{${short}.${path.join('.')}}`;
-    // fallback: flat scoped ref that still round-trips (refToToken drops namespace)
     return `{${short}.${sherpaVar}}`;
   }
   return `{sherpa.${sherpaVar}}`;
 }
-/** DFS tokens[short] for a leaf whose `${short}-${dotpath→hyphen}` equals sherpaVar. */
+/** DFS tokens[short] for the leaf whose flattened path equals sherpaVar. */
 function findTokenPath(group, short, sherpaVar) {
   const results = [];
   (function walk(node, trail) {
@@ -538,11 +395,9 @@ function findTokenPath(group, short, sherpaVar) {
     }
   })(group, []);
   for (const trail of results) {
-    const flat = short + '-' + trail.join('-'); // {short.a.b} → refToToken → a-b → --sherpa-short?? no
-    // refToToken({short.trail}) = trail.join('-'); compile emits var(--sherpa-<that>).
-    // So we need trail.join('-') === sherpaVar.
+    const flat = short + '-' + trail.join('-');
     if (trail.join('-') === sherpaVar) return trail;
-    if (flat === sherpaVar) return trail; // when leaf already carries the short prefix
+    if (flat === sherpaVar) return trail; // leaf already carries the short prefix
   }
   return null;
 }
@@ -550,12 +405,11 @@ function findTokenPath(group, short, sherpaVar) {
 // ══ TS: getters/setters + JSDoc @prop → jsProps + capabilities ══════════════════
 function parseTsJsProps(ts) {
   const props = new Map();
-  // JSDoc: @prop {type} name — desc
   for (const m of ts.matchAll(/@prop\s*(?:\{([^}]*)\})?\s*([\w$]+)\s*[—-]?\s*([^\n*]*)/g)) {
     const [, type, name, desc] = m;
     props.set(name, { name, type: (type || '').trim() || 'string', description: desc.trim() });
   }
-  // getters/setters confirm read/write access + reflected attr
+  // getters/setters give the access level
   const getters = new Set([...ts.matchAll(/\bget\s+([\w$]+)\s*\(/g)].map((m) => m[1]));
   const setters = new Set([...ts.matchAll(/\bset\s+([\w$]+)\s*\(/g)].map((m) => m[1]));
   for (const name of new Set([...getters, ...setters])) {
@@ -568,28 +422,9 @@ function parseTsJsProps(ts) {
 }
 
 /**
- * PUBLIC METHODS — what a caller can DO to a component.
- *
- * The specs recorded attributes, events, slots, tokens and accessors, and no
- * methods at all. That was tolerable while a component's whole surface was its
- * attributes; it is not any more.
- *
- * A VIEW DEFINITION can set exactly what a component exposes, so the set of
- * public methods IS the set of things a saved view, a preset or an agent can
- * configure. The MCP serves these specs — an agent asking "what can I set on a
- * data grid?" was getting an answer that left out setColumnFilter, select and
- * every other verb the parity work added.
- *
- * WHAT COUNTS as public, and why each exclusion:
- *   - `#name`        private by construction
- *   - lifecycle      onRender / onConnect / onChange / onDisconnect / renderData
- *                    are the base class's contract with the SUBCLASS, not with a
- *                    caller
- *   - `get` / `set`  already recorded as jsProps, with their access
- *   - `static`       not reachable from an element
- *
- * The leading JSDoc line becomes the description, so the spec says what a method
- * is FOR rather than only that it exists.
+ * Public methods — the vocabulary a saved view, a preset or an agent may use on
+ * this component. Excluded: `#private`, lifecycle (the base class's contract
+ * with the subclass), get/set (already jsProps), and static.
  */
 const LIFECYCLE = new Set([
   'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'constructor',
@@ -598,22 +433,16 @@ const LIFECYCLE = new Set([
 
 function parseTsMethods(ts) {
   const out = [];
-  // A method at CLASS BODY indentation (two spaces), optionally `override` or
-  // `async`, not preceded by get/set/static. The two-space anchor is what keeps
-  // nested functions and object literals out.
+  // Two-space class-body indentation is the anchor — it keeps nested functions
+  // and object literals out.
   const re = /\n {2}(?:override\s+)?(?:async\s+)?([a-z][\w$]*)\s*\(([^)]*)\)\s*:/g;
   for (const m of ts.matchAll(re)) {
     const [, name, args] = m;
     if (LIFECYCLE.has(name)) continue;
     if (out.some((x) => x.name === name)) continue;
 
-    // The JSDoc block immediately above, if there is one — its first prose line
-    // is the summary, which is what a reader (or an agent) actually needs.
-    //
-    // `m.index` points at the leading NEWLINE of the match, so the slice ends
-    // mid-line and a `$`-anchored search would never find the closing `*​/`.
-    // Take the LAST block and check it really is adjacent — otherwise every
-    // method inherited the file header, which is worse than no description.
+    // The JSDoc block immediately above — its first prose line is the summary.
+    // Check it really is ADJACENT, or every method inherits the file header.
     const before = ts.slice(0, m.index + 1);
     const lastClose = before.lastIndexOf('*/');
     const doc = lastClose >= 0 && before.slice(lastClose + 2).trim() === ''
@@ -631,8 +460,7 @@ function parseTsMethods(ts) {
     out.push({
       $type: 'method',
       name,
-      // The signature as written, so a caller knows the argument ORDER — which
-      // is what a view definition's `state` block encodes.
+      // as written, so a caller knows the argument ORDER
       args: args.replace(/\s+/g, ' ').trim(),
       ...(description ? { description } : {}),
     });
@@ -649,8 +477,6 @@ function generateSpec(name) {
   const html = readIf(join(dir, `${name}.html`));
   const css = readIf(join(dir, `${name}.css`));
   const ts = readIf(join(dir, `${name}.ts`));
-  // The Figma binding (figmaName/category/variantAxes/booleanProps/divergence)
-  // cannot be read from code — it is PRESERVED from the existing spec on regen.
   const existingRaw = readIf(join(dir, `${name}.component.yaml`));
   const existing = existingRaw ? (yaml.load(existingRaw) ?? {}) : {};
   const priorExt = (existing.$extensions && existing.$extensions.sherpa) || {};
@@ -659,10 +485,8 @@ function generateSpec(name) {
   if (!css) notes.push('no CSS (no token bindings)');
   if (!ts) notes.push('no TS (no jsProps)');
 
-  // TS `observed` list is the GROUND TRUTH for which data-* props are reactive.
-  // compileDef derives observed from props with kind !== 'style', so a prop the TS
-  // observes must NOT be kind:style in the spec (else the round-trip observed list
-  // mismatches). A prior spec's stale kind loses to the TS `observed` list.
+  // The TS `observed` list is the ground truth for which data-* props are
+  // reactive; a prior spec's stale kind loses to it.
   const tsObserved = parseObserved(ts);
 
   const comment = html ? htmlComment(html) : '';
@@ -675,41 +499,24 @@ function generateSpec(name) {
   const defaultTree = templatesObj['default'];
 
   // ── $description ──────────────────────────────────────────────────────────────
-  // Carry the existing spec's $description forward (it's the curated value, seeded
-  // from thin.yaml before retirement); fall back to the HTML comment header, then a
-  // stub. Preserving it keeps specs stable across regen.
+  // The existing spec's curated value wins; preserving it keeps specs stable.
   const description = existing.$description || commentDescription(comment, name) || `the ${name.replace('sherpa-', '')} component.`;
 
   // ── anatomy + templates ───────────────────────────────────────────────────────
   let anatomy = null;
   if (defaultTree && defaultTree.length) {
-    /* The root element(s). A top-level `<slot>` is kept — it is real markup, not
-       stray: `sherpa-loader`'s template is a spinner `<div>` beside a
-       `<slot name="label" class="label">`, and dropping the slot left ONE root,
-       so the second node disappeared from the spec and the round-trip reported a
-       node "present on one side only" for ever. Only genuinely empty nodes are
-       skipped. */
+    // A top-level `<slot>` is real markup and is KEPT; only empty nodes are skipped.
     const roots = defaultTree.filter((n) => n.tag);
     if (roots.length === 1) anatomy = { root: htmlNodeToAnatomy(roots[0]) };
     else if (roots.length > 1) {
-      // Multi-root <template>: emit the ordered list of sibling root node trees.
-      // compileDef renders each in order (byte-identical to the real markup).
+      // compileDef renders sibling roots in order, byte-identical to the markup
       anatomy = { roots: roots.map((r) => htmlNodeToAnatomy(r)) };
     }
 
-    /* Multi-template union. compileDef renders ONE anatomy per template, filtered
-       by `showWhen`, so an extra template can only ADD or REMOVE a node against
-       the default tree. Where that is enough — the template is an ADDITIVE
-       superset — fold the extras in with `showWhen` and keep the compact single
-       tree, which is byte-stable for every component that has always passed.
-
-       Where it is NOT enough, fall back to `byTemplate`: one entry per template,
-       each with its own roots. `showWhen` cannot express a changed TAG, CLASS or
-       PART, and three components need exactly that — input-text swaps `<input>`
-       for `<textarea>`, nav-item's `promo` renames every class, button's `icon`
-       drops four of five children. They were reported as permanent gaps and
-       failed the round-trip for ever; the honest answer is to record both trees
-       rather than to pretend one covers both. */
+    /* Multi-template union. `showWhen` can only ADD or REMOVE a node against the
+       default tree, so an additive superset folds into one compact tree. It
+       cannot express a changed TAG, CLASS or PART — those fall back to
+       `byTemplate`, one entry per template. */
     const extraIds = templateIds.filter((t) => t !== 'default');
     const needsByTemplate = [];
     if (anatomy && roots.length === 1) {
@@ -721,17 +528,14 @@ function generateSpec(name) {
         else needsByTemplate.push(tid);
       }
     } else if (anatomy && anatomy.roots) {
-      // A multi-root default cannot run the showWhen union at all (it aligns one
-      // tree against one tree), so every extra template needs its own entry.
+      // the showWhen union aligns one tree against one, so multi-root cannot use it
       needsByTemplate.push(...extraIds);
     }
     if (anatomy && needsByTemplate.length) {
-      /* Any template that needs its own tree forces the WHOLE anatomy into
-         `byTemplate` — the three forms are mutually exclusive, and a half-merged
-         anatomy (a `root` carrying showWhen for one template plus a map for
-         another) would have two sources of truth for the same template. Start
-         from the default's roots BEFORE any showWhen folding, so a template that
-         did merge is still emitted from its own markup. */
+      /* One divergent template forces the WHOLE anatomy into `byTemplate` — the
+         three forms are mutually exclusive. Start from the default's roots
+         BEFORE any showWhen folding, so a merged template is still emitted from
+         its own markup. */
       const byTemplate = {};
       for (const tid of templateIds) {
         const tRoots = (templatesObj[tid] || []).filter((n) => n.tag);
@@ -746,38 +550,19 @@ function generateSpec(name) {
   }
 
   // ── props: from the Public API comment ────────────────────────────────────────
-  // Carry the prior spec's props (keyed by name) so a hand-added `kind`/`description`
-  // survives regen when the code can't re-derive it. The comment + TS still win for
-  // type/values/default/observed-kind.
+  // Carry the prior spec's props so a hand-added kind/description survives regen;
+  // the comment + TS still win for type/values/default/observed-kind.
   const priorProps = {};
   for (const p of (existing.props ?? [])) if (p && p.name) priorProps[p.name] = p;
-  // Union the Public-API comment's props with any props the prior spec carried —
-  // some props (e.g. grid-cell data-type, nav-item data-description) live in the
-  // spec but not in the HTML comment; carrying them keeps the spec stable.
-  /* …but a carried prop must still EXIST somewhere in the source. The union
-     alone means a RENAMED attribute lingers for ever: `data-variant` became
-     `data-type` in three charts and the old name stayed in every spec, because
-     nothing ever drops a name the prior spec knew. Same shape as the phantom
-     events — a spec that can only grow.
-
-     "Mentioned anywhere" is deliberately loose: a prop can be read in the TS,
-     selected in the CSS, or written in the HTML, and any of those is proof it
-     is real. What it cannot be is present in NONE of them. */
+  /* Union the comment's props with the prior spec's — some props live only in
+     the spec. But a carried prop must still exist SOMEWHERE in the source, or a
+     renamed attribute lingers for ever in a spec that can only grow. */
   const sourceText = `${ts ?? ''}\n${css ?? ''}\n${html ?? ''}`;
-  /* USED, not merely MENTIONED. A bare substring search keeps a prop alive on
-     the strength of a COMMENT — removing `data-variant` from sherpa-container
-     and explaining why in a comment left the dead prop in its spec, because the
-     explanation contains the name. So look for the three ways an attribute is
-     really used: selected in CSS (`[data-x`), written in HTML (`data-x=`), or
-     read in TS (`dataset['x']` / `dataset.x`, its camelCase spelling).
-
-     A DOUBLE-quoted match is not proof. `"stretch"` is the VALUE in
-     `:host([data-align="stretch"])` and `"scale"` is the VALUE in
-     `class="scale"` — both read as "used" under a bare substring test, which is
-     how two prose fragments became props. Single quotes are kept because that is
-     how TypeScript spells an attribute NAME (`'value-start'` in an `observed`
-     list); CSS and HTML use double quotes for values, so the two spellings
-     separate name from value on their own. */
+  /* USED, not merely MENTIONED — a bare substring search keeps a prop alive on
+     the strength of a comment that explains its removal. Hence the three real
+     spellings of use. A DOUBLE-quoted match is deliberately not proof:
+     `"stretch"` is a VALUE in `[data-align="stretch"]`. Single quotes are, as
+     that is how TS spells an attribute NAME in an `observed` list. */
   const attrInUse = (nm) => {
     const camel = nm.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     return sourceText.includes(`[${nm}`)          // CSS selector
@@ -786,18 +571,12 @@ function generateSpec(name) {
       || sourceText.includes(`dataset['${camel}']`)
       || sourceText.includes(`dataset.${camel}`);
   };
-  /* The SAME check on props the COMMENT produced, and it has to run FIRST.
-     `Public API:` is prose, and a wrapped sentence whose first word is followed
-     by an em-dash reads exactly like an entry — `stretch — ONE wide control
-     fills the row` is the tail of `data-align`'s description, and `scale — it is
-     a TICK` is the tail of `data-label`'s. Both became props. A `data-*` name is
-     unambiguous enough to stand on its own; a bare lowercase word has to be
-     found in the code, which is the rule the events already follow: the comment
-     may describe what the source does, never invent it.
+  /* The same check on props the COMMENT produced — a wrapped prose sentence
+     reads exactly like an entry, so a bare lowercase name must be found in the
+     code. A `data-*` name stands on its own.
 
-     ORDER MATTERS. The carried-prop sweep below spares anything still present in
-     `apiProps`, so dropping a phantom afterwards leaves the prior spec's copy of
-     it alive and the phantom survives regeneration for ever. */
+     ORDER MATTERS: the carried-prop sweep below spares anything still in
+     `apiProps`, so a phantom dropped afterwards survives in the prior spec. */
   for (const nm of Object.keys(apiProps)) {
     if (nm.startsWith('data-') || attrInUse(nm)) continue;
     delete apiProps[nm];
@@ -816,31 +595,24 @@ function generateSpec(name) {
     const fromApi = apiProps[nm] || {};
     const fromPrior = priorProps[nm] || {};
     const p = { $type: 'prop', name: nm };
-    // type: comment wins (it carries enum/boolean signal), else prior spec, else string
+    // the comment carries the enum/boolean signal, so it wins
     p.type = fromApi.type || fromPrior.type || 'string';
-    // kind (variant mechanism): the prior spec supplies it, but the TS `observed`
-    // list OVERRIDES — a prop the component observes cannot be kind:style, and a
-    // data-* prop the component does NOT observe must be kind:style (unobserved).
-    // This keeps the round-trip observed list exact.
     let kind = fromPrior.kind;
     const native = fromApi.native === true || (!nm.startsWith('data-') && NATIVE_ATTRS.has(nm));
-    // The TS `observed` list is authoritative for round-trip: compileDef derives
-    // observed from props whose kind !== 'style'. So a data-* prop the component
-    // does NOT observe must be kind:style (even if the prior spec tags it
-    // visibility/template — many are handled via CSS/templateId, not observation).
-    // A prop it DOES observe keeps a reactive kind (default content). Only applied
-    // when a TS file exists (its observed list — even empty — is the ground truth).
+    // compileDef derives `observed` from props whose kind !== 'style', so an
+    // unobserved data-* prop MUST be kind:style or the round-trip mismatches.
+    // The prior spec's kind loses. Applied only when a TS file exists — its
+    // observed list, even empty, is the ground truth.
     if (nm.startsWith('data-') && ts) {
       if (tsObserved.includes(nm)) { if (!kind || kind === 'style') kind = 'content'; }
       else kind = 'style'; // not observed at runtime → contributes nothing to observed
     }
     if (native) {
       p.native = true;
-      // A native attr the component OBSERVES must survive into the observed list
-      // (specToDef drops native attrs that carry no kind). Give it a reactive kind.
+      // specToDef drops native attrs with no kind, so an observed one needs one
       if (ts && tsObserved.includes(nm)) p.kind = 'content';
     }
-    else if (kind && kind !== 'style') p.kind = kind; // style kind is default/implicit; keep others
+    else if (kind && kind !== 'style') p.kind = kind;
     else if (kind === 'style') p.kind = 'style';
     if (p.type === 'enum') {
       if (fromApi.values && fromApi.values.length) p.values = fromApi.values;
@@ -860,38 +632,24 @@ function generateSpec(name) {
     return an - bn || a.name.localeCompare(b.name);
   });
 
-  // ── events: driven by the code's `Fires:` list (ground truth) ────────────────
-  // The HTML `Fires:` comment (kept in sync with the TS @fires / emit() strings) is
-  // the AUTHORITATIVE set of event names. The prior spec only supplies the `trigger`
-  // block (on/node) that can't be read from the comment — it must NOT introduce or
-  // keep event names, or renamed/removed events would linger forever (stale-event bug).
+  // ── events ───────────────────────────────────────────────────────────────────
+  // The prior spec supplies only the `trigger` block, never a NAME — otherwise a
+  // renamed or removed event lingers for ever.
   const priorEvents = {};
   for (const e of (existing.events ?? [])) if (e && e.name) priorEvents[e.name] = e;
-  /* THE CODE DECIDES, the comment only describes.
-     `Fires:` is authored prose, so a word in it is not evidence of an event —
-     `@fires nothing`, and half a sentence about a column filter, put 60-odd
-     phantom events into these specs. Intersecting with what the TS actually
-     dispatches keeps the comment useful (it still chooses WHICH of the emitted
-     events are public) while making it unable to invent one.
-
-     A component that emits nothing gets no `events:` key at all, rather than a
-     key holding a sentinel — which is how `nothing` read as an event name. */
+  /* THE CODE DECIDES, the comment only describes. Intersecting with what the TS
+     dispatches lets the comment choose WHICH emitted events are public, and
+     never invent one. A component that emits nothing gets no `events:` key. */
   const emitted = emittedEvents(ts);
   const firesNames = comment ? parseFires(comment) : [];
   const eventNames = new Set(firesNames.filter((n) => emitted.has(n)));
-  /* An event the code emits but the comment forgot is still part of the
-     contract — a caller can listen for it. Silence in a comment is an
-     oversight, not a decision to make something private. */
+  // an emitted event the comment forgot is still part of the contract
   for (const n of emitted) eventNames.add(n);
   const details = emitDetails(ts);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: true };
-    /* WHAT IT CARRIES. `unknown` for every field rather than a guessed type:
-       the emit site gives a NAME reliably and a type only by inference, and a
-       wrong type in a contract is worse than an honest "there is a field here".
-       The schema takes `field -> type name`, so the names are the half that is
-       always true. */
+    // the emit site gives a NAME reliably and a type only by inference
     const keys = details.get(en);
     if (keys?.size) {
       ev.detail = Object.fromEntries([...keys].sort(([a], [b]) => a.localeCompare(b)));
@@ -915,12 +673,10 @@ function generateSpec(name) {
 
   // ── element ───────────────────────────────────────────────────────────────────
   let element = null;
-  // For a multi-root <template> the "element the component IS" is taken from the
-  // FIRST root node (best-effort — the component has no single interactive root).
-  // A `byTemplate` anatomy takes it from the DEFAULT template's first root: the
-  // element a component is does not change with which template is showing, and
-  // reading only `root`/`roots` dropped the whole `element:` block (with its
-  // native provides — keyboard, focus, click) from all three such components.
+  // Multi-root: the FIRST root, best-effort. byTemplate: the DEFAULT template's
+  // first root — what a component IS does not change with the template showing,
+  // and missing this dropped the whole `element:` block (with its native
+  // provides) from all three such components.
   const primaryRoot = anatomy?.root
     ?? anatomy?.roots?.[0]
     ?? anatomy?.byTemplate?.['default']?.[0];
@@ -949,9 +705,6 @@ function generateSpec(name) {
     });
   }
   if (methods.length) {
-    // A capability, not just a list, because this is what a VIEW DEFINITION can
-    // set: the methods are the vocabulary a saved view, a preset or an agent
-    // may use on this component.
     capabilities.push({
       $type: 'capability',
       api: 'js-methods',
@@ -960,32 +713,22 @@ function generateSpec(name) {
   }
 
   // ── $extensions.sherpa ────────────────────────────────────────────────────────
-  // The Figma binding cannot be read from code — carry it VERBATIM from the prior
-  // spec (figmaName/figmaNodeId/category/variantAxes/booleanProps/composes/
-  // _divergence). resync-figma.mjs
-  // owns keeping it aligned with live Figma. Only jsProps are re-derived (from TS).
+  // Carried verbatim from the prior spec; only methods and jsProps are re-derived.
   const sherpaExt = {};
   if (priorExt.figmaName) sherpaExt.figmaName = priorExt.figmaName;
-  // Re-derived from the TS, like jsProps — never carried from the prior spec, so
-  // a removed method disappears rather than lingering as a promise the code no
-  // longer keeps.
+  // never carried, so a removed method disappears rather than lingering
   if (methods.length) sherpaExt.methods = methods;
-  // The node ID is what makes a binding CHECKABLE — a name can be duplicated or
-  // renamed, an id addresses one node. It was silently dropped on every regen
-  // because it was not on this list, so all 54 specs name a Figma component
-  // that nothing can look up.
+  // The node ID is what makes a binding CHECKABLE; omitting it from this list
+  // silently dropped it on every regen.
   if (priorExt.figmaNodeId) sherpaExt.figmaNodeId = priorExt.figmaNodeId;
   if (priorExt.category) sherpaExt.category = priorExt.category;
   if (Array.isArray(priorExt.variantAxes) && priorExt.variantAxes.length) {
     sherpaExt.variantAxes = priorExt.variantAxes.map((a) => ({ name: a.name, ...(a.values ? { values: a.values } : {}) }));
   }
   if (Array.isArray(priorExt.booleanProps) && priorExt.booleanProps.length) sherpaExt.booleanProps = priorExt.booleanProps;
-  // Which OTHER components this one instances, mirroring the Figma node's own
-  // instance children — the record that a thing is composed rather than redrawn.
+  // which OTHER components this one instances — the record that it is composed
   if (Array.isArray(priorExt.composes) && priorExt.composes.length) sherpaExt.composes = priorExt.composes;
-  // BOTH spellings. The ratified key is `_divergence` (the leading underscore
-  // marks it as a note rather than a binding, and is what the components that
-  // carry one actually write); `divergence` is kept for the older specs.
+  // BOTH spellings: `_divergence` is ratified, `divergence` is the older specs'.
   if (priorExt.divergence) sherpaExt.divergence = priorExt.divergence;
   if (priorExt._divergence) sherpaExt._divergence = priorExt._divergence;
   if (jsProps.length) sherpaExt.jsProps = jsProps;
@@ -1107,9 +850,8 @@ function run() {
 
     if (!check) {
       const outPath = join(dir, `${name}.component.yaml`);
-      // Protect a hand-authored / hand-finished spec: only (over)write files this
-      // generator produced (they carry the GENERATED header). A hand spec (e.g. the
-      // switch pilot) is left untouched unless explicitly regenerated by name.
+      // Only overwrite specs this generator produced (they carry the GENERATED
+      // header). A hand-authored one survives --all; name it to regenerate it.
       const existing = existsSync(outPath) ? readFileSync(outPath, 'utf8') : '';
       const isHandAuthored = existing && !existing.includes('GENERATED by scripts/generate-component-spec.mjs');
       if (all && isHandAuthored) { rows[rows.length - 1].skippedWrite = 'hand-authored spec preserved'; continue; }
@@ -1117,7 +859,6 @@ function run() {
     }
   }
 
-  // report
   if (names.length === 1 && !all) {
     const r = rows[0];
     console.log(`\n${r.name}`);
@@ -1147,7 +888,6 @@ function run() {
     }
     console.log('-'.repeat(90));
     console.log(`validate: ${vPass}/${rows.length} PASS   round-trip: ${rPass}/${rows.length} PASS   need hand-finishing: ${needFix}`);
-    // detail on failures
     const fails = rows.filter((r) => !r.error && (!r.valid || !r.rtOk || r.enumIssues?.length));
     if (fails.length) {
       console.log(`\n── details for ${fails.length} component(s) needing attention ──`);
@@ -1160,11 +900,8 @@ function run() {
       }
     }
   }
-  /* The ROUND-TRIP counts as a failure, not just the schema check.
-     `r.rtOk` was printed in the table and in the detail block but never reached
-     this line, so `--check` exited 0 with 22 components failing and sat that way
-     for a whole branch. A report nobody can fail is a report nobody reads —
-     the same ruling that put `spec:validate` in the pre-commit hook. */
+  /* The ROUND-TRIP counts as a failure, not just the schema check — leaving
+     `r.rtOk` out of this line let `--check` exit 0 with 22 components failing. */
   const anyFail = rows.some((r) => r.error || !r.valid || !r.rtOk);
   process.exit(anyFail ? 1 : 0);
 }

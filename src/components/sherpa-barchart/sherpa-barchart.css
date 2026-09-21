@@ -182,8 +182,10 @@
   min-inline-size: 0;
 }
 /* …except the rotated caption, which needs clearing from the numbers. */
-.axis-label-y { margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); }
-.axis-label-y { grid-area: 1 / 1; }
+.axis-label-y {
+  grid-area: 1 / 1;
+  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
+}
 .y-axis { grid-area: 1 / 2; }
 .plot { grid-area: 1 / 3; }
 .x-axis-row { grid-area: 2 / 3; }

@@ -1,10 +1,6 @@
 /**
- * sherpa-loader — a spinning "please wait" indicator.
- *
- * CSS handles the whole look — the spinner, its size, its direction, and the
- * optional background panel. The only JS is for screen readers: it makes the
- * loader announce itself when it appears or its label changes.
- *
+ * sherpa-loader — a spinning "please wait" indicator. CSS owns the whole look;
+ * the only JS is the screen-reader role, so it announces itself when it appears.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

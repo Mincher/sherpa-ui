@@ -1,8 +1,6 @@
 /**
- * sherpa-data-grid — a sortable, filterable, groupable table.
- *
- * populate({ columns, rows }) draws it. The grid REPORTS sort, filter, paging
- * and selection; a host or a DataSource owns them.
+ * sherpa-data-grid — a sortable, filterable, groupable table. populate() draws
+ * it; the grid REPORTS sort, filter, paging and selection, a host owns them.
  *
  * TRAP T-grid-active-flag-is-not-a-tint
  * TRAP T-grid-group-drops-the-column
@@ -16,8 +14,8 @@ import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/store.js';
 import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
-// SIDE-EFFECT imports: the template stamps these, and an undefined custom
-// element renders inert.
+// SIDE-EFFECT imports: the template stamps these, and an undefined element
+// renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
@@ -38,17 +36,10 @@ export interface GridColumn {
 
 type GridRow = Record<string, unknown>;
 
-/**
- * A selection box — the header's, a group's, or a row's. All three are
- * `sherpa-select-checkbox`, NOT `HTMLInputElement`.
- */
+/** A selection box — all three are `sherpa-select-checkbox`, NOT `HTMLInputElement`. */
 type SelectBox = HTMLElement & { checked: boolean; indeterminate: boolean };
 
-/**
- * One action a row offers.
- *
- * TRAP T-grid-actions-are-declared-once-used-twice.
- */
+/** One action a row offers. TRAP T-grid-actions-are-declared-once-used-twice. */
 export interface GridAction {
   /** What `row-action` carries back. */
   id: string;
@@ -71,10 +62,8 @@ interface GridConfig {
 }
 
 /**
- * One column heading's filter.
- *
- * TRAP T-grid-range-keeps-both-shapes — deliberately not a tagged union, so a
- * Range flip and flip back finds the other side's typing still there.
+ * One column heading's filter. TRAP T-grid-range-keeps-both-shapes — not a
+ * tagged union, so a Range flip and back finds the other side's typing intact.
  */
 interface ColumnFilter {
   op: string;
@@ -97,15 +86,14 @@ const COLUMN_FILTER_BODIES: Record<string, string> = {
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
   static override html = new URL('./sherpa-data-grid.html', import.meta.url);
-  // data-selectable is observed even though CSS owns its reveal: the pin offset
-  // is the MEASURED width of the selection cell, so it must re-run #syncPinned().
+  // data-selectable is observed though CSS owns its reveal: the pin offset is a
+  // MEASURED width, so it must re-run #syncPinned().
   static override observed = [
     'data-sort-field',
     'data-sort-direction',
     'data-group-field',
-    // Which fields an EXTERNAL filter is narrowing, space-separated. populate()
-    // hands over only surviving rows, so this is the only way a column filtered
-    // from outside can light its own header.
+    // Fields an EXTERNAL filter narrows — the only way a column filtered from
+    // outside can light its own header.
     'data-filter-fields',
     'data-selectable',
     // Single vs multiple changes the CONTROL each row draws, so it re-renders.
@@ -122,13 +110,12 @@ export class SherpaDataGrid extends SherpaElement {
 
   #columns: GridColumn[] = [];
   #rows: GridRow[] = [];
-  /** The declared row actions. Empty hides the column. */
   #actions: GridAction[] = [];
   /** The row whose menu is open. A RECORD, because an index moves on a sort. */
   #actionRow: GridRow | null = null;
   /** Widths the USER has dragged, keyed by field. Survive a re-populate. */
   #widths = new Map<string, number>();
-  /** Active per-column filter text, keyed by field. Empty entries are removed. */
+  /** Filter-row text, keyed by field. Empty entries are removed. */
   #filters = new Map<string, string>();
 
   /** One clause per column, from the heading menus. Held, never applied. */
@@ -148,7 +135,6 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   #selected = new Set<GridRow>();
-  /** The field identifying a row, when the caller named one. */
   #key: string | null = null;
   /** Keys a caller asked to select. */
   #wantedKeys: string[] | null = null;
@@ -156,25 +142,22 @@ export class SherpaDataGrid extends SherpaElement {
   #focused: GridRow | null = null;
 
   override onRender(): void {
-    // TRAP T-grid-header-needs-capture — the chip's stopPropagation() would
-    // hide the click that IS the sort from a bubbling listener.
+    // TRAP T-grid-header-needs-capture — the chip's stopPropagation() hides the
+    // click that IS the sort from a bubbling listener.
     this.$('.head-row')?.addEventListener('click', this.#onHeaderClick, true);
     this.$('.body')?.addEventListener('click', this.#onRowClick);
     this.$('.select-all')?.addEventListener('change', this.#onSelectAll);
-    // The advanced checkbox REPORTS a scenario; the grid owns the rows.
     this.$('.select-all')?.addEventListener('selection-scenario', this.#onScenario as EventListener);
     this.$('.body')?.addEventListener('change', this.#onRowSelect);
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
     this.$('.filter-row')?.addEventListener('click', this.#onFilterClick);
-    // The move/up pair is captured on the POINTER in #onGripDown, so a fast
-    // drag that outruns the cursor does not drop out of the gesture.
     this.$('.head-row')?.addEventListener('pointerdown', this.#onGripDown);
-    // Both footer buttons end the interaction, so both commit. Delegated from
-    // the row, because the header is rebuilt on every sort.
+    // Both footer buttons commit. Delegated, because the header is rebuilt on
+    // every sort.
     this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
     this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
     // TRAP T-grid-chip-vocabulary-stops-here — a bound DataSource would read
-    // the chip's quick-filter-change as the WHOLE filter, so it stops here.
+    // the chip's quick-filter-change as the WHOLE filter.
     for (const type of ['quick-filter-change', 'quick-filter-click']) {
       this.$('.head-row')?.addEventListener(type, this.#stopChipEvent);
     }
@@ -182,8 +165,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.head-row')?.addEventListener('change', this.#onColumnRangeToggle);
     // Remove filter arrives as menu-select, not a footer event of its own.
     this.$('.head-row')?.addEventListener('menu-select', this.#onColumnFilterRemove);
-    // The trigger click is delegated because the body is replaced on every
-    // render; the menu is one element outside it, so it gets a direct listener.
+    // Delegated: the body is replaced on every render. The menu sits outside
+    // it, so it gets a direct listener.
     this.$('.body')?.addEventListener('click', this.#onActionsClick);
     this.$('.actions-menu')?.addEventListener('menu-select', this.#onActionSelect);
     if (this.#columns.length) this.#render();
@@ -201,9 +184,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.toggleAttribute('data-actions', this.#actions.length > 0);
-    // TRAP T-grid-populate-keeps-column-filters — header-row filters clear;
-    // column filters drop only where the COLUMN went; selection re-resolves
-    // by KEY.
+    // TRAP T-grid-populate-keeps-column-filters — header-row filters clear,
+    // column filters drop only where the COLUMN went, selection re-resolves by KEY.
     this.#filters.clear();
     const fields = new Set(this.#columns.map((c) => c.field));
     for (const field of this.#columnFilters.keys()) {
@@ -218,8 +200,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   #render(): void {
     this.toggleAttribute('data-empty', this.#rows.length === 0);
-    // The ADVANCED variant only when there are rows: "Select all" of nothing
-    // is a control that does nothing.
+    // "Select all" of nothing is a control that does nothing.
     const advanced = this.#rows.length > 0;
     this.$('.select-all')?.toggleAttribute('data-advanced', advanced);
     // …and on the HOST too, so the column widens for the caret.
@@ -227,28 +208,23 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleAttribute('data-advanced-select', advanced);
     this.#renderHead();
     this.#renderBody();
-    // TRAP T-grid-select-all-is-derived — resetting it here threw the user's
-    // selection away on every sort and keystroke.
+    // TRAP T-grid-select-all-is-derived — never reset here, or a sort throws
+    // the user's selection away.
     this.#syncSelectAll();
     this.#syncGroupSelects();
     this.#syncFocused();
     this.#syncPinned();
   }
 
-  /**
-   * Flag one cell as part of the frozen leading block. `data-pin-last` draws
-   * the scroll shadow.
-   */
+  /** Flag one cell as frozen. `data-pin-last` draws the scroll shadow. */
   #markPinned(cell: HTMLElement, last: boolean): void {
     cell.toggleAttribute('data-pinned', true);
     cell.toggleAttribute('data-pin-last', last);
   }
 
   /**
-   * Settle the frozen columns after a render.
-   *
-   * TRAP T-grid-pin-offset-is-measured — the pin offset is a measured width,
-   * so only a revealed selection cell may claim it.
+   * Settle the frozen columns after a render. TRAP T-grid-pin-offset-is-measured
+   * — only a revealed selection cell may claim the offset.
    */
   #syncPinned(): void {
     const selectable = this.hasAttribute('data-selectable');
@@ -268,10 +244,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Shared with the quick-filter toolbar, so a header and a chip cannot
-   * disagree about what "descending" looks like.
-   *
-   * TRAP T-fa-pro-renders-nothing — why `sort-none` is fa-sort, not fa-bars.
+   * Shared with the quick-filter toolbar, so a header and a chip cannot disagree
+   * about "descending". TRAP T-fa-pro-renders-nothing — `sort-none` is fa-sort.
    */
   static readonly icons = ORGANISE_ICONS;
 
@@ -288,10 +262,7 @@ export class SherpaDataGrid extends SherpaElement {
     return clampNum(Math.round(n), { min: MIN_COL_WIDTH, max: MAX_COL_WIDTH });
   }
 
-  /**
-   * Stamp one <col> per drawn column. `table-layout: fixed` reads this, so it
-   * must run BEFORE the header cells are rebuilt.
-   */
+  /** Stamp one <col> per column. Must run BEFORE the header cells are rebuilt. */
   #renderCols(): void {
     // `own-children`, not `replace`: the fixed `.select-col` must survive.
     this.renderList(
@@ -306,9 +277,8 @@ export class SherpaDataGrid extends SherpaElement {
       },
       { clear: 'own-children', ownSel: '.cols > .col' },
     );
-    // The ACTIONS <col> is static and sits BEFORE the stamped ones, so it is
-    // moved to the end — a <col> list out of step hands every width to the
-    // wrong column.
+    // The static ACTIONS <col> sits BEFORE the stamped ones, so it moves to the
+    // end — a <col> list out of step hands every width to the wrong column.
     const actionsCol = this.$('.cols > .actions-col');
     if (actionsCol) this.$('.cols')?.appendChild(actionsCol);
   }
@@ -328,23 +298,20 @@ export class SherpaDataGrid extends SherpaElement {
       th.dataset['field'] = col.field;
       // The heading carries the TYPE too, so its label aligns with the digits.
       if (col.type) th.dataset['type'] = col.type;
-      // The FIRST drawn column is frozen. Marked here rather than by nth-child,
-      // because the position shifts when data-selectable is absent and
-      // #shownColumns() can drop the grouped column.
+      // Not nth-child: the position shifts when data-selectable is absent and
+      // #shownColumns() can drop a column.
       if (i === 0) this.#markPinned(th, true);
       this.#addColumnFilter(th, col);
       this.#lightFilterChip(th, col.field);
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
-      // SORTED means APPLIED, not merely remembered: a suspended column keeps
-      // its field and carries an empty direction.
-      // TRAP T-a-suspended-sort-is-one-owners-job.
+      // SORTED means APPLIED, not remembered — a suspended column keeps its
+      // field and an empty direction. TRAP T-a-suspended-sort-is-one-owners-job.
       const sorted = sortable && col.field === sortField && sortDir !== '';
       if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
       else delete th.dataset['sort'];
-      // Ordering or narrowing both read as `active`. The grid's own CSS paints
-      // nothing from it — the chips carry the on-state — but a host may style it.
+      // The grid's CSS paints nothing from `active`; a host may style it.
       if (sorted || this.#isFiltered(col.field)) th.dataset['status'] = 'active';
 
       // TRAP T-grid-sort-glyph-needs-a-third-state.
@@ -367,19 +334,15 @@ export class SherpaDataGrid extends SherpaElement {
       }
       headRow.appendChild(th);
     });
-    // The ACTIONS head is static and sits in the template BEFORE these, so it
-    // is moved to the end — as the body cell is. T-grid-actions-pin-to-the-trailing-edge.
+    // The static ACTIONS head sits in the template BEFORE these, so it is moved
+    // to the end. TRAP T-grid-actions-pin-to-the-trailing-edge.
     const actionsHead = headRow.querySelector('.actions-head');
     if (actionsHead) headRow.appendChild(actionsHead);
 
     this.#renderFilterRow();
   }
 
-  /**
-   * Give one column heading its filter menu.
-   *
-   * TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only.
-   */
+  /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
   #addColumnFilter(th: HTMLElement, col: GridColumn): void {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
@@ -414,13 +377,13 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     // Clear empties the controls and leaves the menu open; Remove drops the
-    // clause outright. Two intentions, so two buttons.
+    // clause. Two intentions, two buttons.
     menu.setAttribute('data-removable', '');
 
     const label = col.header ?? col.field;
     menu.setAttribute('data-heading', `Filter ${label}`);
-    // The menu is a popover in the top layer, so it escapes the scroller — but
-    // only within the region the HOST names.
+    // A top-layer popover escapes the scroller, but only within the region the
+    // HOST names.
     const bounds = this.dataset['bounds'];
     if (bounds) menu.setAttribute('data-bounds', bounds);
 
@@ -438,8 +401,8 @@ export class SherpaDataGrid extends SherpaElement {
         const max = Math.ceil(Math.max(...nums));
         slider.setAttribute('min', String(min));
         slider.setAttribute('max', String(max));
-        // A fresh range spans the WHOLE column, so it starts by excluding
-        // nothing — 0..0 would empty the view before the reader asked anything.
+        // A fresh range spans the WHOLE column — 0..0 would empty the view
+        // before the reader asked anything.
         slider.setAttribute('value-start', String(held?.from ?? min));
         slider.setAttribute('value-end', String(held?.to ?? max));
       }
@@ -447,9 +410,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     // NUMBER and DATE lead with the Range switch, above the body it re-points.
     if (kind === 'number' || kind === 'date') {
-      // A NUMBER column opens as a range; a DATE as a single day. A HELD clause
-      // always wins — `held ? held.range : …`, never `held?.range || …`, which
-      // would force a saved single number filter back to a range.
+      // A HELD clause always wins — `held ? held.range : …`, never
+      // `held?.range || …`, which forces a saved single filter back to a range.
       // TRAP T-a-default-is-not-an-override.
       const asRange = held ? !!held.range : kind === 'number';
 
@@ -500,10 +462,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * The Range switch on a number or date column's menu.
-   *
-   * TRAP T-range-switch-swaps-not-rebuilds — an attribute write, never a
-   * rebuild, so the other side's typing survives a flip back.
+   * The Range switch. TRAP T-range-switch-swaps-not-rebuilds — an attribute
+   * write, never a rebuild, so the other side's typing survives a flip back.
    */
   #onColumnRangeToggle = (event: Event): void => {
     const sw = (event.target as HTMLElement | null)?.closest?.('.head-filter-range-switch');
@@ -521,24 +481,17 @@ export class SherpaDataGrid extends SherpaElement {
     }
   };
 
-  /**
-   * REMOVE FILTER — ends a column's filter outright. Reported as a clear, so a
-   * host has one path and not two.
-   */
+  /** REMOVE FILTER — ends a column's filter. Reported as a clear, so a host has one path. */
   #onColumnFilterRemove = (event: Event): void => {
     if ((event as CustomEvent).detail?.value !== 'remove') return;
     const chip = (event.target as HTMLElement).closest<HTMLElement>('.head-filter');
     if (!chip) return;
     event.stopPropagation();
     chip.querySelector<HTMLElement & { close?: () => void }>('sherpa-menu')?.close?.();
-    // Same handler as Clear, so "removed" and "cleared" are one outcome.
     this.#onColumnFilterCommit(new CustomEvent('menu-clear', { detail: {} , bubbles: false }) as Event, chip);
   };
 
-  /**
-   * Swallow a header chip's own events. The chip is reused for its menu, not
-   * for its vocabulary.
-   */
+  /** Swallow a header chip's own events — it is reused for its menu, not its vocabulary. */
   #stopChipEvent = (event: Event): void => {
     if (!(event.target as HTMLElement)?.closest?.('.head-filter, .head-sort')) return;
     event.stopPropagation();
@@ -546,9 +499,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /**
    * Apply or clear one column's filter, from its menu's footer.
-   *
-   * TRAP T-grid-reports-never-combines — it records and reports; it does not
-   * filter its own rows.
+   * TRAP T-grid-reports-never-combines — it records and reports, never filters.
    */
   #onColumnFilterCommit = (event: Event, explicit?: HTMLElement): void => {
     // `explicit` is for Remove, whose synthetic event has no target in the tree.
@@ -565,8 +516,8 @@ export class SherpaDataGrid extends SherpaElement {
     } else {
       this.#columnFilters.delete(field);
       chip.removeAttribute('data-current');
-      // Only an explicit CLEAR empties the controls. Apply lands here too on a
-      // half-built range, and "Between 5 and …" is unfinished, not a mistake.
+      // Only an explicit CLEAR empties the controls: Apply lands here on a
+      // half-built range, which is unfinished, not a mistake.
       if (cleared) {
         for (const box of chip.querySelectorAll<HTMLInputElement>('input[type="text"], input[type="number"]')) {
           box.value = '';
@@ -579,8 +530,7 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     this.#syncColumnFilterStatus();
-    // The cells carry the MATCH MARK, so they are redrawn here — a host that
-    // filters nothing would otherwise show a lit column with nothing marked.
+    // The cells carry the MATCH MARK, so they are redrawn here.
     this.#renderBody();
 
     const col = this.#columns.find((c) => c.field === field);
@@ -592,25 +542,17 @@ export class SherpaDataGrid extends SherpaElement {
       value: held?.range ? null : (held?.value ?? null),
       from: held?.from ?? null,
       to: held?.to ?? null,
-      // Ready to hand to a DataSource — the <option> values ARE store FilterOps,
-      // and a range is the store's own `between`, whose value is the two ends.
-      //
-      // A NUMBER column's value is COERCED. The store compares a number row
-      // TRAP T-grid-number-clause-must-coerce — the text collator sorts "100"
-      // below "9".
+      // Ready for a DataSource — the <option> values ARE store FilterOps.
+      // TRAP T-grid-number-clause-must-coerce.
       clause: held ? this.#columnClause(field, held, col?.type) : null,
-      // What a toolbar chip should read: "Contains: ana", "Between: 10 - 20".
-      // The FIELD half of "Field: Condition Value" is `header`, which the
-      // toolbar puts on the chip's own label.
+      // What a toolbar chip shows: "Contains: ana". The field half is `header`.
       label: held ? this.#columnFilterLabel(held) : null,
     });
   };
 
   /**
-   * Read one column's menu into a clause — or null when it says nothing.
-   *
-   * TRAP T-grid-empty-clause-is-null — an empty value says nothing, and a range
-   * needs both ends.
+   * Read one column's menu into a clause. TRAP T-grid-empty-clause-is-null — an
+   * empty value says nothing, and a range needs both ends.
    */
   #readColumnFilter(chip: HTMLElement): ColumnFilter | null {
     const menu = chip.querySelector('sherpa-menu');
@@ -619,10 +561,7 @@ export class SherpaDataGrid extends SherpaElement {
     const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
 
     if (range) {
-      // A calendar reports its span in its own attributes; a number pair in two
-      // boxes. Both are "the two ends", so both land in from/to.
-      // A calendar reports its span in data-*; a slider in its own value-start /
-      // value-end attributes, which it keeps in step with its thumbs.
+      // A calendar reports its span in data-*, a slider in value-start/-end.
       const slider = chip.querySelector<HTMLElement>('.head-filter-slider');
       const from = (cal
         ? cal.dataset['valueStart']
@@ -634,18 +573,15 @@ export class SherpaDataGrid extends SherpaElement {
       return { op: 'between', value: '', range: true, from: from.trim(), to: to.trim() };
     }
 
-    // A DATE column has no condition picker — a calendar answers "which day" by
-    // being clicked, so the operator is always equality.
+    // A DATE column has no condition picker, so the operator is equality.
     const value = (cal ? cal.dataset['value'] : chip.querySelector<HTMLInputElement>('.head-filter-value')?.value) ?? '';
     if (!value.trim()) return null;
     return { op: cal ? 'eq' : op, value: value.trim() };
   }
 
   /**
-   * One column filter as a store FilterClause.
-   *
-   * TRAP T-grid-number-clause-must-coerce — a NUMBER column's ends are coerced,
-   * and a blank one is left as typed.
+   * One column filter as a store FilterClause. TRAP
+   * T-grid-number-clause-must-coerce — a blank end is left as typed.
    */
   #columnClause(field: string, held: ColumnFilter, type?: string): unknown[] {
     const cast = (raw: string): string | number => {
@@ -666,9 +602,8 @@ export class SherpaDataGrid extends SherpaElement {
 
   /**
    * Set one column's filter from OUTSIDE — a saved view, a deep link, an agent.
-   *
-   * TRAP T-grid-read-without-write-is-half-an-api — takes the clause
-   * `column-filter-change` reports, and is SILENT.
+   * TRAP T-grid-read-without-write-is-half-an-api — SILENT, and takes the
+   * clause `column-filter-change` reports.
    */
   setColumnFilter(field: string, clause: unknown[] | null): void {
     if (!clause) {
@@ -677,15 +612,13 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     const [, op, value] = clause as [string, string, unknown];
-    // `between` is the RANGE shape — its value is the two ends. Everything else
-    // is a single condition with one value.
+    // `between` is the RANGE shape — its value is the two ends.
     const held: ColumnFilter =
       op === 'between' && Array.isArray(value)
         ? { op, value: '', range: true, from: String(value[0] ?? ''), to: String(value[1] ?? '') }
         : { op, value: String(value ?? '') };
 
-    // Nothing to filter by is not a filter — the same rule the menu's own
-    // commit applies, so a restored empty clause behaves like a cleared one.
+    // Nothing to filter by is not a filter — as the menu's own commit says.
     const empty = held.range ? !held.from || !held.to : !held.value;
     if (empty) {
       this.clearColumnFilter(field);
@@ -693,9 +626,7 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     this.#columnFilters.set(field, held);
-    // The HEADER is rebuilt rather than reached into: #addColumnFilter restores
-    // each menu from #columnFilters, so there is one path that writes a menu
-    // and it is the same one a re-render uses.
+    // The HEADER is rebuilt, not reached into: one path writes a menu.
     this.#renderHead();
     this.#syncColumnFilterStatus();
     // …and the cells, because a text filter MARKS its matches.
@@ -703,41 +634,30 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * One column's current filter, as a ready FilterClause — or null.
-   *
-   * TRAP T-grid-suspend-is-not-clear — a host puts the clause back when the
-   * chip comes on again; only Remove deletes, via `clearColumnFilter`.
+   * One column's filter as a ready FilterClause, or null. TRAP
+   * T-grid-suspend-is-not-clear — a SUSPENDED clause is returned too.
    */
   columnClause(field: string): unknown[] | null {
-    // A SUSPENDED clause is returned too: this is what the column is SET to,
-    // and the caller asking is the one putting it back into the query.
     const held = this.#columnFilters.get(field);
     if (!held) return null;
     const col = this.#columns.find((c) => c.field === field);
     return this.#columnClause(field, held, col?.type);
   }
 
-  /**
-   * Suspend or resume one column's filter without losing it.
-   *
-   * TRAP T-grid-suspend-is-not-clear — the whole ruling, including the marks and
-   * why the heading stops reading active. Deleting is `clearColumnFilter`.
-   */
+  /** Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear. */
   suspendColumnFilter(field: string, suspended = true): void {
     const held = this.#columnFilters.get(field);
     if (!held || !!held.suspended === suspended) return;
     this.#columnFilters.set(field, { ...held, suspended });
     this.#syncColumnFilterStatus();
-    // The MATCH MARKS go with it: a suspended filter is hiding no rows, so
-    // marking the ones that would have matched claims something untrue.
+    // The MATCH MARKS go with it: a suspended filter hides no rows, so marking
+    // what would have matched claims something untrue.
     this.#renderBody();
   }
 
   /**
-   * Open one column's filter menu, anchored wherever the caller says.
-   *
-   * TRAP T-grid-toolbar-chip-borrows-the-menu — why one menu serves both, and
-   * why the anchor is passed in.
+   * Open one column's filter menu, anchored where the caller says. TRAP
+   * T-grid-toolbar-chip-borrows-the-menu — one menu serves both.
    */
   openColumnFilter(field: string, anchor?: HTMLElement): void {
     const chip = this.$<HTMLElement>(
@@ -750,10 +670,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Drop one column's heading filter, from OUTSIDE the grid.
-   *
-   * TRAP T-grid-clear-from-outside-is-silent — why it reaches back, why it is
-   * silent, and what passing nothing means.
+   * Drop one column's heading filter from OUTSIDE; nothing drops them all.
+   * TRAP T-grid-clear-from-outside-is-silent.
    */
   clearColumnFilter(field?: string): void {
     if (field) {
@@ -762,46 +680,25 @@ export class SherpaDataGrid extends SherpaElement {
       if (!this.#columnFilters.size) return;
       this.#columnFilters.clear();
     }
-    // The chips hold the pair the menu shows, so they are rebuilt rather than
-    // reached into — #renderHead restores each menu from #columnFilters, which
-    // is now the truth.
+    // Rebuilt, not reached into — #renderHead restores each menu from
+    // #columnFilters, which is now the truth.
     this.#renderHead();
     this.#syncColumnFilterStatus();
-    // The cells' match marks go with the filter that put them there.
     this.#renderBody();
   }
 
   /**
-   * Light every column a filter is acting on — this grid's own column filters
-   * included.
-   *
-   * #renderHead does the same on a rebuild; this is the no-rebuild path, for a
-   * menu commit that changed nothing else about the header row.
-   */
-  /**
-   * Turn one column's FILTER CHIP on or off, from the one computed answer.
-   *
-   * THE CHIP IS THE SIGNAL. The heading itself is deliberately not tinted (see
-   * the long note in the CSS — "the column says so through its CHIPS"), so a
-   * filter the chip does not show is a filter nobody can see.
-   *
-   * Only the chip's OWN menu ever lit it, so a filter arriving through the
-   * QUERY left the column looking untouched: the app header narrowed the grid
-   * to one region and the Region column said nothing at all.
-   *
-   * `#isFiltered` already knew the whole answer — this column's own clause, the
-   * header-row filters, and `data-filter-fields`, which `DataSource` writes on
-   * every bound element from the composed filter. It was computed and then
-   * spent on the `<th>` alone.
-   *
-   * The chip is `data-locked`, so the GRID owns its on-state: writing it here
-   * is the host doing its job, not the chip deriving something it does not own.
+   * Turn one column's FILTER CHIP on or off. THE CHIP IS THE SIGNAL — the
+   * heading is deliberately not tinted, and `#isFiltered` knows the whole
+   * answer, a filter arriving through the QUERY included. The chip is
+   * `data-locked`, so the GRID owns its on-state.
    * TRAP T-the-column-chip-is-the-only-signal.
    */
   #lightFilterChip(th: HTMLElement, field: string): void {
     th.querySelector('.head-filter')?.toggleAttribute('data-current', this.#isFiltered(field));
   }
 
+  /** Re-light every heading without rebuilding the header row. */
   #syncColumnFilterStatus(): void {
     for (const cell of this.$$('.head-cell')) {
       const th = cell as HTMLElement;
@@ -832,11 +729,10 @@ export class SherpaDataGrid extends SherpaElement {
       const label = col.header ?? col.field;
       const input = th.querySelector<HTMLInputElement>('.filter-input')!;
       input.placeholder = `Filter ${label}`;
-      // The input has no visible <label>, and the placeholder disappears once the
-      // user types — so the accessible name has to be an attribute.
+      // No visible <label>, and the placeholder goes once the user types.
       input.setAttribute('aria-label', `Filter ${label}`);
       th.querySelector('.filter-clear')!.setAttribute('aria-label', `Clear ${label} filter`);
-      // A rebuilt row starts empty, so any previous filter for this column is gone.
+      // A rebuilt row starts empty, so restore any previous filter text.
       if (this.#filters.has(col.field)) {
         input.value = this.#filters.get(col.field) ?? '';
         th.toggleAttribute('data-has-value', true);
@@ -847,10 +743,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * The columns the table actually draws.
-   *
-   * The grouped column is dropped — its value IS the group row's heading. The
-   * `#columns` list is left intact so un-grouping needs no re-populate.
+   * The columns the table draws. The grouped one is dropped — its value IS the
+   * group heading — but `#columns` stays intact, so un-grouping needs no populate.
    */
   #shownColumns(): GridColumn[] {
     const group = this.dataset['groupField'];
@@ -868,46 +762,37 @@ export class SherpaDataGrid extends SherpaElement {
     const columns = this.#shownColumns();
     body.replaceChildren();
 
-    // Rows are FILTERED then SORTED, and the index written on each <tr> is the
-    // index into THAT visible list — so row-click and selection-change keep
-    // pointing at the record the user actually sees.
+    // Each <tr>'s index is its place in the FILTERED, SORTED list, so row-click
+    // and selection-change point at the row the user sees.
     const all = this.#visibleRows();
-    // …then cut to ONE SCREEN PAGE when the grid is grouped, counting a shut
-    // group as a single line. `offset` keeps data-index honest across the cut.
-    // TRAP T-grid-collapsed-group-is-one-slot.
+    // …then cut to ONE SCREEN PAGE when grouped. `offset` keeps data-index
+    // honest across the cut. TRAP T-grid-collapsed-group-is-one-slot.
     const { rows, offset, pages } = this.#pageWindow(all);
     let lastGroup: string | null = null;
 
     rows.forEach((record, i) => {
-      // A new value in the grouped column opens a new group row. The rows are
-      // already ordered by it, so one pass produces every group exactly once.
+      // Already ordered by the grouped column, so one pass makes each group once.
       if (group) {
         const value = record[group];
         const key = value == null ? '' : String(value);
         if (key !== lastGroup) {
           lastGroup = key;
-          // The COUNT is the group's real size across every page, not the part
-          // of it this page drew — a group split by a page boundary still says
-          // how many rows it holds.
+          // The COUNT is the group's size across every page, so one split by a
+          // page boundary still says how many rows it holds.
           body.appendChild(this.#groupRow(key, this.#groupSize(all, group, key), columns.length));
         }
       }
 
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tr.dataset['index'] = String(offset + i);
-      // Restore this record's own selection. The body is replaced wholesale on
-      // every render, so the tick has to come from #selected rather than survive
-      // in the DOM.
-      // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement. The radio needs the shared NAME
-      // that makes the browser unpick the previous row for us, and that name is
-      // per grid. Setting `checked` on both keeps whichever is visible correct.
+      // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement.
+      // The radio needs the shared per-grid NAME that unpicks the previous row.
       const radio = tr.querySelector<SelectBox>('.row-one');
       if (radio) radio.setAttribute('name', this.#selectName);
       for (const box of tr.querySelectorAll<SelectBox>('.row-select')) {
         box.checked = this.#selected.has(record);
       }
-      // Which group this row belongs to, so CSS can hide it when that group's
-      // row is collapsed — the row itself never needs a `display` write.
+      // Its group, so CSS hides it when that group is shut — no `display` write.
       if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
       columns.forEach((col, c) => {
         const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -917,35 +802,29 @@ export class SherpaDataGrid extends SherpaElement {
         this.#fillCell(td, value == null ? '' : String(value), col);
         tr.appendChild(td);
       });
-      /* THE ACTIONS CELL GOES LAST, and it is in the template already — so it
-         is MOVED rather than created. `appendChild` on a node that is already a
-         child re-parents it to the end, which is exactly what is wanted and why
-         there is no createElement here. */
+      /* The actions cell is in the template already, so it is MOVED, not
+         created — appendChild on an existing child re-parents it to the end. */
       const actionsCell = tr.querySelector('.actions-cell');
       if (actionsCell) tr.appendChild(actionsCell);
       body.appendChild(tr);
     });
 
-    // A re-render (sort, filter keystroke) stamps fresh rows, so re-apply the
-    // groups the user had already folded shut.
+    // Fresh rows, so re-apply the groups the user had already folded shut.
     if (group) this.#syncGroupVisibility();
-    // Folding changes how many pages there ARE, so say so — after the draw, so
-    // a host that re-renders on the report finds the DOM already settled.
+    // Folding changes how many pages there ARE. After the draw, so a host that
+    // re-renders on it finds the DOM settled.
     this.#reportPages(pages);
   }
 
   /**
-   * Write one cell's text, marking the part a TEXT filter matched.
-   *
-   * TRAP T-grid-mark-is-substring-only — text + substring ops only, and the
-   * CELL's casing wins.
+   * Write one cell's text, marking what a TEXT filter matched. TRAP
+   * T-grid-mark-is-substring-only — substring ops only, and the CELL's casing wins.
    */
   #fillCell(td: HTMLElement, text: string, col: GridColumn): void {
     const kind = col.type ?? 'text';
     const held = this.#columnFilters.get(col.field);
-    // Only the SUBSTRING conditions leave something to point at. `eq` matched
-    // the whole cell, so marking it would underline every character; `ne` and
-    // `notcontains` matched by NOT being there, and there is nothing to mark.
+    // Only SUBSTRING ops leave something to point at: `eq` matched the whole
+    // cell, `ne` and `notcontains` matched by NOT being there.
     const markable = held && !held.range && !held.suspended
       && (held.op === 'contains' || held.op === 'startswith' || held.op === 'endswith');
 
@@ -960,9 +839,7 @@ export class SherpaDataGrid extends SherpaElement {
       return;
     }
 
-    // The CELL's own casing, not the needle's — the reader typed "ana" and the
-    // row says "Ana", and the row is the truth. markMatch slices the haystack
-    // for exactly that reason.
+    // The CELL's casing, not the needle's — markMatch slices the haystack.
     markMatch(td, text, at, held.value.length);
   }
 
@@ -974,13 +851,9 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /* ── Visual paging ──────────────────────────────────────────────────
-   * TRAP T-grid-collapsed-group-is-one-slot — a SHUT group occupies one line on
-   * screen, so it must cost one line of the page. The store's skip/take counts
-   * RECORDS and cannot know that; it hands over every matching row while a
-   * group field is set, and the grid decides where the page ends.
-   *
-   * These do nothing when the grid is not grouped: the store's window IS the
-   * page, and slicing it again would drop rows nobody asked to hide.
+   * TRAP T-grid-collapsed-group-is-one-slot — a SHUT group is one line, so it
+   * costs one line of the page. The store counts RECORDS and cannot know that.
+   * Ungrouped these do nothing: the store's window IS the page.
    */
 
   /** The page size the host asked for, or 0 when it wants no visual paging. */
@@ -999,16 +872,9 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Walk the visible rows and cut them into pages of `size` SCREEN LINES.
-   *
-   * A group heading is one line. A shut group costs that line and nothing more.
-   * An open group costs its heading plus one line per row. A group is never
-   * split across a page boundary when it is shut — it cannot be, it is one line
-   * — but an OPEN group longer than a page IS split, because the alternative is
-   * a page that cannot be drawn.
-   *
-   * Returns the index into #visibleRows() at which each page starts, so a page
-   * is a plain slice and data-index keeps meaning what it always meant.
+   * Cut the visible rows into pages of `size` SCREEN LINES, returning each
+   * page's start index, so a page stays a plain slice. A heading is one line; a
+   * shut group costs only that. An OPEN group longer than a page IS split.
    */
   #pageStarts(rows: GridRow[], field: string, size: number): number[] {
     const starts: number[] = [0];
@@ -1019,19 +885,16 @@ export class SherpaDataGrid extends SherpaElement {
       const key = String(rows[i]![field] ?? '');
       const opensGroup = key !== lastGroup;
       const collapsed = this.#collapsed.has(key);
-      // A shut group's ROWS are drawn but hidden, so they cost nothing. Only the
-      // heading is a line.
+      // A shut group's ROWS are drawn but hidden, so they cost nothing.
       const cost = (opensGroup ? 1 : 0) + (collapsed ? 0 : 1);
 
-      // This row does not fit — start a page here. A heading that would land on
-      // the last slot of a page with none of its rows below it still starts the
-      // page, because the page after it opens with the same heading anyway.
+      // A heading on a page's last slot with no rows below still starts the
+      // page, because the next page redraws it.
       if (cost > 0 && slots + cost > size && slots > 0) {
         starts.push(i);
         slots = 0;
         lastGroup = null;
-        // Re-cost against the fresh page: this row now OPENS its group, because
-        // the page it begins has to redraw the heading.
+        // Re-cost against the fresh page: this row now OPENS its group.
         slots += 1 + (collapsed ? 0 : 1);
         lastGroup = key;
         continue;
@@ -1044,10 +907,7 @@ export class SherpaDataGrid extends SherpaElement {
     return starts;
   }
 
-  /**
-   * The rows this page draws, and the index the first of them holds in the full
-   * visible list — so a sliced page still writes TRUE data-index values.
-   */
+  /** The page's rows plus their offset, so data-index stays TRUE after a slice. */
   #pageWindow(rows: GridRow[]): { rows: GridRow[]; offset: number; pages: number } {
     const field = this.dataset['groupField'];
     const size = this.#pageSize;
@@ -1055,8 +915,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     const starts = this.#pageStarts(rows, field, size);
     const pages = starts.length;
-    // CLAMP rather than return empty: a shut group can shrink the page count
-    // under the page the host is on, and an empty panel is not an answer.
+    // CLAMP, never empty: a shut group can shrink the count under the host's page.
     const index = Math.min(Math.max(this.#page, 1), pages) - 1;
     const from = starts[index]!;
     const to = starts[index + 1] ?? rows.length;
@@ -1064,13 +923,11 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Tell the host how many pages the CURRENT fold state makes.
+   * Tell the host how many pages the CURRENT fold state makes. Re-derived on
+   * every render, never cached — folding adds and removes pages.
    *
-   * Opening a group can push the tail onto a new page and shutting one can take
-   * a page away, so this is re-derived on every render, never cached.
-   *
-   * TRAP T-grid-reports-never-combines — a REPORT, per the state-ownership
-   * rule: the grid never writes its own data-page.
+   * TRAP T-grid-reports-never-combines — a REPORT; the grid never writes its
+   * own data-page.
    */
   #reportPages(pages: number): void {
     if (!this.#paginates) return;
@@ -1089,10 +946,9 @@ export class SherpaDataGrid extends SherpaElement {
     tr.toggleAttribute('data-collapsed', collapsed);
 
     const cell = tr.querySelector<HTMLTableCellElement>('.group-cell')!;
-    /* +1 for the leading selection column, which exists in the template whether
-       or not data-selectable reveals it; +1 again for the trailing actions
-       column when it is shown. A colspan that ignored either would leave the
-       group row short, and the pinned cell floating over a gap. */
+    /* +1 for the leading selection column, which exists whether or not
+       data-selectable reveals it; +1 again for the trailing actions column when
+       shown. A short colspan leaves the pinned cell floating over a gap. */
     cell.colSpan = columnCount + 1 + (this.#actions.length ? 1 : 0);
     tr.querySelector('.group-label')!.textContent = key === '' ? '(none)' : key;
     tr.querySelector('.group-count')!.textContent = String(size);
@@ -1105,28 +961,19 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Row actions ─────────────────────────────────────────────────── */
 
-  /**
-   * A click inside the body: was it an actions trigger?
-   *
-   * DELEGATED, and it stops the event — a click on the trigger is not a click
-   * on the row, and letting it bubble would fire `row-click` as well.
-   */
+  /** A click inside the body: was it an actions trigger? */
   #onActionsClick = (event: Event): void => {
     const trigger = (event.target as HTMLElement).closest<HTMLElement>('.actions-trigger');
     if (!trigger) return;
-    // `#onRowClick` already ignores this cell — see its own guard, which is the
-    // one that matters, because it is registered first. This stops the click
-    // reaching a HOST listener on the grid, which has no such guard.
+    // `#onRowClick` ignores this cell already; this stops the click reaching a
+    // HOST listener, which has no such guard.
     event.stopPropagation();
     this.#openActions(trigger);
   };
 
   /**
-   * Open the shared actions menu for one row.
-   *
-   * TRAP T-one-actions-menu-for-every-row — one popover, not one per row, and
-   * why the trigger click is delegated. The menu is re-stamped on each open:
-   * the list is the same today, but a per-row filter would live here.
+   * Open the shared actions menu for one row. TRAP
+   * T-one-actions-menu-for-every-row — one popover, re-stamped on each open.
    */
   #openActions(trigger: HTMLElement): void {
     const record = this.#recordFor(trigger);
@@ -1136,8 +983,8 @@ export class SherpaDataGrid extends SherpaElement {
     if (!menu || !tpl) return;
 
     this.#actionRow = record;
-    // The menu's rows are SLOTTED light-DOM buttons, which is what gives them
-    // Enter, Space and focus for nothing — see T-menu-rows-stay-native-controls.
+    // SLOTTED light-DOM buttons, which is what gives them Enter, Space and
+    // focus for nothing — T-menu-rows-stay-native-controls.
     menu.replaceChildren();
     for (const action of this.#actions) {
       const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -1157,11 +1004,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * A menu row was chosen. Report the action and the row it belongs to.
-   *
-   * REPORTS, never acts: deleting a record is the host's decision, and a grid
-   * that removed the row itself would be deriving state it does not own.
-   * TRAP T-grid-reports-never-combines.
+   * A menu row was chosen. REPORTS, never acts — deleting a record is the
+   * host's decision. TRAP T-grid-reports-never-combines.
    */
   #onActionSelect = (event: Event): void => {
     const id = (event as CustomEvent).detail?.['value'] as string | undefined;
@@ -1179,13 +1023,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * The actions that apply to the CURRENT selection.
-   *
-   * One row: all of them. Two or more: only those declared `multi`, because
-   * "edit" on five users is not one action and a toolbar that offered it would
-   * be lying. A host reads this to build its bulk bar.
-   *
-   * TRAP T-grid-actions-are-declared-once-used-twice.
+   * The actions for the CURRENT selection — one row: all; two or more: only
+   * `multi`. TRAP T-grid-actions-are-declared-once-used-twice.
    */
   actionsFor(count: number): GridAction[] {
     if (count <= 0) return [];
@@ -1193,21 +1032,16 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * The rows actually on screen: filtered, then sorted.
-   *
-   * Every consumer that maps a row INDEX back to a record must use this — a
-   * `<tr>`'s data-index is its position in THIS list, so resolving against the
-   * unfiltered rows would return a different record once a filter is active.
+   * The rows on screen: filtered, then sorted. Anything mapping a row INDEX
+   * back to a record must use this — data-index is a position in THIS list.
    */
   #visibleRows(): GridRow[] {
     return this.#sortRows(this.#filteredRows());
   }
 
   /**
-   * Rows matching EVERY active column filter, case-insensitively, by substring.
-   *
-   * TRAP T-grid-filter-row-uses-store-filterrows — a real clause tree, never a
-   * hand-rolled substring match.
+   * Rows matching EVERY filter-row box. TRAP
+   * T-grid-filter-row-uses-store-filterrows — a real clause tree, never a hand-rolled match.
    */
   #filteredRows(): GridRow[] {
     if (!this.#filters.size) return this.#rows;
@@ -1220,11 +1054,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Order the rows — through the STORE's `sortRows`, not a compare of its own.
-   *
-   * TRAP T-one-collator-for-the-library — one comparator, nulls pinned last.
-   * GROUP goes first as a leading spec so groups are adjacent; sorting BY the
-   * grouped column is the one case where the reader's direction IS the groups'.
+   * Order the rows through the STORE's `sortRows`. TRAP
+   * T-one-collator-for-the-library. GROUP leads, so groups stay adjacent.
    */
   #sortRows(rows: GridRow[]): GridRow[] {
     // SUSPENDED: the column is remembered, the sort is not applied — an empty
@@ -1246,53 +1077,41 @@ export class SherpaDataGrid extends SherpaElement {
   #swallowClick = false;
 
   #onHeaderClick = (event: Event): void => {
-    // A RESIZE just ended, and the browser is synthesising the click for it.
-    // Sorting a column because the reader dragged its edge is the wrong answer
-    // to a gesture that was not a click.
+    // A RESIZE just ended and the browser is synthesising its click.
     if (this.#swallowClick) {
       this.#swallowClick = false;
       event.stopPropagation();
       event.preventDefault();
       return;
     }
-    // The FILTER button lives in the heading, so its click reaches here too —
-    // and sorting a column because the reader opened its filter menu is the
-    // wrong answer to the wrong gesture. The chip handles its own click.
+    // The FILTER button is in the heading, so its click reaches here. The chip
+    // handles its own.
     if ((event.target as HTMLElement).closest('.head-filter')) return;
-    // The SORT chip, on the other hand, IS the sort control — its click falls
-    // straight through to the cycle below. It carries no menu, so there is
-    // nothing of its own for it to do.
+    // The SORT chip carries no menu, so its click falls through to the cycle.
     const th = (event.target as HTMLElement).closest<HTMLElement>('.head-cell');
     const field = th?.dataset['field'];
     if (!field || th!.dataset['sortable'] === 'false') return;
 
-    /* ONE CYCLE, stated in `core/cycle.ts` — asc → desc → suspended → asc.
-       The third step KEEPS the column: `sort-change` carries `field: null`
-       because the QUERY loses its sort, while the field survives so a control
-       can still show what it would resume on. That is the ratified rule that a
-       control's states cycle and none of them clears.
+    /* ONE CYCLE, stated in `core/cycle.ts` — asc → desc → suspended → asc. The
+       third step KEEPS the column: `sort-change` carries `field: null` because
+       the QUERY loses its sort, while the field survives so a control can show
+       what it would resume on.
        TRAP T-grid-sort-is-tri-state, TRAP T-a-chip-body-cycles-its-states.
        TRAP T-one-cycle-for-one-value — why the cycle is a shared function. */
     const next = nextSort(field, this.dataset['sortField'], sortDirectionFrom(this.dataset['sortDirection']));
 
-    /* REPORT, then let the owner write it back.
-     *
-     * A BOUND grid is `data-locked`: the DataSource owns its view state and
-     * broadcasts the result to every bound component, so writing here as well
-     * would make this both reporter and owner of one value.
-     *
-     * UNBOUND there is no owner but this, and the grid must still work — every
-     * grid test drives one with no source at all. So the write happens only
-     * when nothing else will do it.
-     * TRAP T-bind-locks-what-it-owns. */
+    /* REPORT, then let the owner write it back. A BOUND grid is `data-locked`
+       and the DataSource owns the view state; UNBOUND there is no owner but
+       this, so the write happens only when nothing else will do it.
+       TRAP T-bind-locks-what-it-owns. */
     if (!this.hasAttribute('data-locked')) {
       this.set('data-sort-field', next.field ?? null);
       this.set('data-sort-direction', sortDirectionAttr(next) ?? null);
       this.#render();
     }
 
-    // The INTENT, always. `field: null` on a suspend is what the query needs to
-    // hear; the source remembers the column itself.
+    // The INTENT, always. `field: null` on a suspend is what the query hears;
+    // the source remembers the column.
     this.emit('sort-change', {
       field: next.direction === null ? null : next.field,
       direction: next.direction,
@@ -1302,16 +1121,12 @@ export class SherpaDataGrid extends SherpaElement {
   #onRowClick = (event: Event): void => {
     // A click on a selection checkbox is selection, not row activation.
     if ((event.target as HTMLElement).closest('.select-cell')) return;
-    /* …and a click in the ACTIONS cell is the menu, for the same reason. It is
-       guarded HERE rather than by stopPropagation in the actions handler:
-       both listeners sit on `.body`, so they fire in REGISTRATION order, and
-       this one is registered first. Stopping the event later would be too late
-       — `row-click` would already have gone out. */
+    /* …and a click in the ACTIONS cell is the menu. Guarded HERE rather than by
+       stopPropagation in the actions handler: both listeners sit on `.body` and
+       fire in REGISTRATION order, so stopping it there would be too late. */
     if ((event.target as HTMLElement).closest('.actions-cell')) return;
 
-    // A group row is a heading, not a record: clicking it (anywhere, not just the
-    // chevron) folds its rows away. It has no data-index, so it could never have
-    // resolved to a record anyway.
+    // A group row is a heading, not a record: clicking it anywhere folds it.
     const groupRow = (event.target as HTMLElement).closest<HTMLElement>('.group-row');
     if (groupRow) {
       if ((event.target as HTMLElement).closest('.group-select')) return;
@@ -1323,11 +1138,9 @@ export class SherpaDataGrid extends SherpaElement {
     const raw = tr?.dataset['index'];
     if (raw == null) return;
     const index = Number(raw);
-    // Resolve against the VISIBLE list — data-index is a position in that list,
-    // so using the unfiltered one would hand back a different record.
+    // Resolve against the VISIBLE list — data-index is a position in that list.
     const record = this.#visibleRows()[index];
-    // FOCUSED: the last row clicked. CSS paints the tint off the flag; the record
-    // is remembered so the next re-render can re-apply it.
+    // FOCUSED: the last row clicked, remembered so a re-render re-applies it.
     this.#focused = record ?? null;
     this.#syncFocused();
     this.emit('row-click', { index, row: record });
@@ -1344,10 +1157,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Grouping ───────────────────────────────────────────────────── */
 
-  /**
-   * Fold one group open or shut. The flag goes on the group ROW and CSS hides
-   * the rows; `#collapsed` remembers it across the next body rebuild.
-   */
+  /** Fold a group. `#collapsed` remembers it across the next body rebuild. */
   #toggleGroup(groupRow: HTMLElement): void {
     const key = groupRow.dataset['group'] ?? '';
     const collapsed = !groupRow.hasAttribute('data-collapsed');
@@ -1359,19 +1169,16 @@ export class SherpaDataGrid extends SherpaElement {
     toggle?.setAttribute('aria-expanded', String(!collapsed));
     toggle?.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${key || 'ungrouped'}`);
 
-    // A sibling selector cannot reach from a group row to the rows after it, so
-    // each row carries its own shut/open flag.
+    // A sibling selector cannot reach past a group row, so each row carries its
+    // own shut/open flag.
     this.#syncGroupVisibility();
 
-    // WHEN THE GRID PAGES, FOLDING CHANGES WHAT IS ON THE PAGE — not just what
-    // is visible on it. Shutting a group frees slots, so rows from the next page
-    // move up onto this one; opening one pushes the tail off. A visibility sync
-    // alone would leave a page of two headings and a hole.
+    // WHEN THE GRID PAGES, FOLDING CHANGES WHAT IS ON THE PAGE: shutting a
+    // group frees slots, so rows move up. A visibility sync leaves a hole.
     // TRAP T-grid-collapsed-group-is-one-slot.
     if (this.#paginates) {
       this.#renderBody();
-      // The body was replaced, so the ticks and the select-all have to be
-      // re-derived from #selected rather than survive in the DOM.
+      // The body was replaced, so re-derive from #selected.
       this.#syncSelectAll();
       this.#syncGroupSelects();
       this.#syncFocused();
@@ -1401,17 +1208,14 @@ export class SherpaDataGrid extends SherpaElement {
     if (!field) return;
 
     // TRAP T-grid-grip-captures-the-pointer — neither of these stops the
-    // synthetic click; #onGripUp swallows that.
+    // synthetic click (#onGripUp does); capture holds a fast drag.
     event.preventDefault();
     event.stopPropagation();
 
-    // The MEASURED width — see T-grid-grip-captures-the-pointer.
     const startWidth = th!.getBoundingClientRect().width;
     this.#drag = { field, startX: event.clientX, startWidth };
     this.toggleAttribute('data-resizing', true);
 
-    // TRAP T-grid-grip-captures-the-pointer — without capture a fast drag drops
-    // the column where the cursor escaped.
     (grip as HTMLElement).setPointerCapture(event.pointerId);
     grip.addEventListener('pointermove', this.#onGripMove as EventListener);
     grip.addEventListener('pointerup', this.#onGripUp as EventListener, { once: true });
@@ -1423,8 +1227,8 @@ export class SherpaDataGrid extends SherpaElement {
     const { field, startX, startWidth } = this.#drag;
     const next = this.#clampWidth(startWidth + (event.clientX - startX));
     this.#widths.set(field, next);
-    // Write the <col> DIRECTLY: a #render() per pointermove would rebuild the
-    // body 60x/s, and a width changes only the colgroup.
+    // Write the <col> DIRECTLY: a #render() per pointermove rebuilds the body
+    // 60x/s, and a width changes only the colgroup.
     const col = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(field)}"]`);
     if (col) col.style.width = `${next}px`;
   };
@@ -1435,7 +1239,6 @@ export class SherpaDataGrid extends SherpaElement {
     this.toggleAttribute('data-resizing', false);
 
     // Swallow the click the browser is about to synthesise on this pointerup.
-    //
     // TRAP T-swallow-flag-not-listener — a FLAG, never a rival listener.
     this.#swallowClick = true;
     this.$('.head-row')?.addEventListener(
@@ -1448,8 +1251,7 @@ export class SherpaDataGrid extends SherpaElement {
       this.#onGripMove as EventListener,
     );
     if (!drag) return;
-    // The frozen first column's offset is a MEASURED width, so a resize of it
-    // moves where every later pinned column starts.
+    // The frozen column's offset is MEASURED, so a resize moves the later pins.
     this.#syncPinned();
     this.emit('column-resize', { field: drag.field, width: this.#widths.get(drag.field) });
   };
@@ -1459,18 +1261,16 @@ export class SherpaDataGrid extends SherpaElement {
   /** Header select-all: set every row checkbox to match, then broadcast. */
   #onSelectAll = (event: Event): void => {
     const checked = (event.target as SelectBox).checked;
-    // Only the VISIBLE rows: a select-all cannot reach records a filter is hiding,
-    // and it must not silently deselect them either.
+    // Only the VISIBLE rows: a select-all neither reaches nor deselects records
+    // a filter is hiding.
     for (const record of this.#visibleRows()) {
       if (checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
-    // Unticking the header box is a CLEAR, so the off-page keys go with it —
-    // the same reason the "none" scenario drops them.
+    // Unticking the header box is a CLEAR, so the off-page keys go with it.
     if (!checked) this.#wantedKeys = null;
     // BOTH boxes on purpose — a write, not a count. CSS decides which shows.
     this.$$<SelectBox>('.row-select').forEach((box) => (box.checked = checked));
-    // Every group is now wholly in or wholly out, so its own box must say so.
     this.#syncGroupSelects();
     this.#emitSelection();
   };
@@ -1479,8 +1279,7 @@ export class SherpaDataGrid extends SherpaElement {
   #onRowSelect = (event: Event): void => {
     const target = event.target as HTMLElement;
 
-    // A GROUP checkbox selects (or clears) every row in that group — the group row
-    // is a heading for those rows, so its box is their select-all.
+    // A GROUP checkbox is the select-all for the rows it heads.
     if (target.classList.contains('group-select')) {
       this.#selectGroup(target as SelectBox);
       return;
@@ -1490,11 +1289,9 @@ export class SherpaDataGrid extends SherpaElement {
     // Record the choice against the RECORD, so it survives the next re-render.
     const record = this.#recordFor(target);
     if (record) {
-      // SINGLE mode holds one — and the GRID has to enforce it now. The radios
-      // share a `name`, but each sits in its own shadow root, so the browser
-      // sees one group per row and never unticks the previous pick. That was
-      // free while these were bare `<input>`s in one tree.
-      // TRAP T-radios-in-shadow-roots-are-not-one-group.
+      // SINGLE mode holds one, and the GRID enforces it: the radios share a
+      // `name` but each sits in its own shadow root, so the browser sees one
+      // group per row. TRAP T-radios-in-shadow-roots-are-not-one-group.
       if (this.#single) {
         this.#selected.clear();
         this.#wantedKeys = null;
@@ -1506,25 +1303,14 @@ export class SherpaDataGrid extends SherpaElement {
       else this.#selected.delete(record);
     }
     this.#syncSelectAll();
-    // A row's own box may have completed or broken its group's set.
     this.#syncGroupSelects();
     this.#emitSelection();
   };
 
   /**
-   * The SHOWN selection box in a row — the checkbox, or the radio in single mode.
-   *
-   * Every row stamps BOTH and CSS reveals one, so `.row-select` matches two
-   * elements per row. Anything that COUNTS or READS must ask for the visible
-   * one; only a write that means "set them both" uses the broad selector.
-   *
-   * Four callers had it wrong and each failed differently: a group's box
-   * counted 44 ticks against 22 rows so it never read as full (the reported
-   * bug — clicking an indeterminate group box left the dash on), the header's
-   * select-all saw 50 boxes for 25 rows so it was never "all", `#emitSelection`
-   * reported every row twice, and `#selectGroup` wrote to the hidden control in
-   * single mode.
-   *
+   * The SHOWN selection box — the checkbox, or the radio in single mode. Every
+   * row stamps BOTH, so `.row-select` matches two per row: anything that COUNTS
+   * or READS must ask for the visible one.
    * TRAP T-a-row-holds-two-selection-boxes.
    */
   #rowBox(row: Element): SelectBox | null {
@@ -1560,10 +1346,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#emitSelection();
   }
 
-  /**
-   * Reflect all/none/indeterminate on each group checkbox — a group's box has to
-   * answer for the rows it heads.
-   */
+  /** Reflect all/none/indeterminate on each group checkbox. */
   #syncGroupSelects(): void {
     for (const groupRow of this.$$<HTMLElement>('.group-row')) {
       const key = groupRow.dataset['group'];
@@ -1577,16 +1360,9 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * A selection scenario from the header's advanced checkbox.
-   *
-   * `page` and `all` differ ONLY when the grid is paging: `page` takes what is
-   * drawn, `all` takes every row that survives the current filters. On an
-   * unpaged grid they are the same set, and saying so is more honest than
-   * hiding one of them.
-   *
-   * TRAP T-select-all-is-the-visible-rows — neither reaches a record a filter
-   * is hiding, because a selection the reader cannot see is one they cannot
-   * undo.
+   * A selection scenario from the header's advanced checkbox. `page` and `all`
+   * differ only while paging. TRAP T-select-all-is-the-visible-rows — neither
+   * reaches a record a filter hides, which the reader could not undo.
    */
   #onScenario = (event: CustomEvent): void => {
     const value = event.detail?.['value'] as string | undefined;
@@ -1594,13 +1370,11 @@ export class SherpaDataGrid extends SherpaElement {
 
     if (value === 'none') {
       this.#selected.clear();
-      // "Clear selection" means EVERYTHING, including records on other pages.
-      // Without this the merge in `#rememberSelection` would hand every
-      // off-page key straight back — a Clear that cleared only what was drawn.
+      // "Clear" means EVERYTHING, other pages included — without this the merge
+      // in `#rememberSelection` hands every off-page key back.
       // TRAP T-selection-lives-in-the-keys-not-the-objects.
       this.#wantedKeys = null;
     } else {
-      // `page` is what the body drew; `all` is every row the filters kept.
       const rows = value === 'page' ? this.#pageRecords() : this.#visibleRows();
       for (const record of rows) this.#selected.add(record);
     }
@@ -1629,21 +1403,9 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Write the current selection back to `#wantedKeys` — the half that SURVIVES.
-   *
-   * `#selected` holds record OBJECTS, so it is only as durable as those
-   * objects. A sort or a group reorders the same objects and it holds; a PAGE
-   * change fetches new ones from the store and every identity breaks. The keys
-   * are what outlive that, and `#resolveSelection()` already rebuilds
-   * `#selected` from them on every populate — but nothing was ever WRITING
-   * them except the `select()` API, so a user's own ticks were dropped on the
-   * next page.
-   *
-   * MERGED, not replaced: the grid holds one page, so a record selected on
-   * page 1 is simply absent from `#rows` while page 2 is up. Overwriting would
-   * silently discard it. Keys for rows the grid CAN see are taken from
-   * `#selected`; keys for rows it cannot are carried over untouched.
-   *
+   * Write the selection back to `#wantedKeys` — the half that SURVIVES a page
+   * change, which replaces every record OBJECT. MERGED, not replaced: a record
+   * chosen on page 1 is absent from `#rows` while page 2 is up.
    * TRAP T-selection-lives-in-the-keys-not-the-objects.
    */
   #rememberSelection(): void {
@@ -1662,44 +1424,30 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Emit the current selection as row indices (strings) in sorted-view order. */
   #emitSelection(): void {
-    // BEFORE the event: a listener that reads `selectedKeys` must see the
-    // choice that was just made, not the one before it.
+    // BEFORE the event: a listener reading `selectedKeys` must see this choice.
     this.#rememberSelection();
     const selected = this.#rowBoxes()
       .filter((box) => box.checked)
       .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
       .filter((id) => id !== '');
-    // `records` is the durable answer: a row index is a position in the CURRENTLY
-    // VISIBLE list, so it changes meaning the moment a sort or filter does, and it
-    // cannot describe a selected record a filter is hiding.
+    // `records` is the durable answer: an index is a position in the VISIBLE
+    // list, and cannot name a record a filter hides.
     this.emit('selection-change', { selected, records: this.selectedRecords });
   }
 
-  /**
-   * The selected RECORDS, including any a filter is currently hiding.
-   *
-   * Selection is a choice about records, not about rows on screen — filtering
-   * changes what is visible, not what is chosen.
-   */
+  /** The selected RECORDS, filter-hidden ones included, in original row order. */
   get selectedRecords(): GridRow[] {
-    // Returned in the caller's original row order, so the list is stable rather
-    // than in whatever order the boxes happened to be ticked.
     return this.#rows.filter((r) => this.#selected.has(r));
   }
 
   /**
-   * The selected rows as KEYS — savable, unlike the indices `selection-change`
-   * reports.
-   *
-   * TRAP T-grid-key-or-position-lies — why indices cannot be saved, and why this
-   * is EMPTY without a `key` in `populate()`.
+   * The selected rows as KEYS — savable, unlike indices. TRAP
+   * T-grid-key-or-position-lies — EMPTY without a `key` in `populate()`.
    */
   get selectedKeys(): string[] {
     if (!this.#key) return [];
-    // `#wantedKeys` IS the answer, not `selectedRecords`. The records are the
-    // rows this grid currently holds, so deriving from them reported an EMPTY
-    // selection the moment the reader turned to a page none of them are on —
-    // while the selection itself was perfectly intact.
+    // `#wantedKeys` IS the answer: deriving from `selectedRecords` reports
+    // EMPTY on a page none of them are on, while the selection is intact.
     // TRAP T-selection-lives-in-the-keys-not-the-objects.
     return [...(this.#wantedKeys ?? [])];
   }
@@ -1711,25 +1459,16 @@ export class SherpaDataGrid extends SherpaElement {
    * keys, and is SILENT. `select([])` clears.
    */
   select(keys: readonly string[]): void {
-    // REPLACES outright — the difference between an explicit `select()` and a
-    // user's tick, which merges. T-selection-lives-in-the-keys-not-the-objects.
+    // REPLACES outright — unlike a user's tick, which merges.
     this.#wantedKeys = keys.length ? keys.map(String) : null;
     this.#resolveSelection();
-    // UNMATCHED keys are dropped, and ONLY here: keep just the keys that
-    // resolved to a real row. The caller named these against the rows the grid
-    // holds, so a key that matched nothing names a record that is gone, and
-    // keeping it would have `selectedKeys` report a selection that can never
-    // be shown.
+    // Drop UNMATCHED keys, and ONLY here — NOT via `#rememberSelection()`,
+    // which MERGES and would hand them straight back.
     //
-    // NOT `#rememberSelection()`, which MERGES — it would hand the unmatched
-    // key straight back. A user's tick needs that merge, because the grid may
-    // hold one page and "matched nothing" there means "is on another page".
-    //
-    // ONLY WHEN THERE WERE ROWS TO CHECK AGAINST. A saved view is restored by
-    // calling `select()` on a grid that has not been populated yet, and the
-    // data lands afterwards — the whole reason keys exist. Dropping them
-    // against an empty grid throws away the selection at exactly the moment it
-    // is being restored. TRAP T-selection-lives-in-the-keys-not-the-objects.
+    // ONLY WHEN THERE WERE ROWS TO CHECK AGAINST: a saved view calls `select()`
+    // before populate, and dropping keys against an empty grid throws away the
+    // selection at the moment it is being restored.
+    // TRAP T-selection-lives-in-the-keys-not-the-objects.
     const key = this.#key;
     if (key && this.#rows.length) {
       const resolved = [...this.#selected]
@@ -1739,7 +1478,7 @@ export class SherpaDataGrid extends SherpaElement {
       this.#wantedKeys = resolved.length ? resolved : null;
     }
     // The boxes are stamped from #selected on every render, so a rebuild is how
-    // the ticks are written — there is one path that sets them, not two.
+    // the ticks are written — one path, not two.
     this.#renderBody();
     this.#syncSelectAll();
     this.#syncGroupSelects();
@@ -1749,7 +1488,7 @@ export class SherpaDataGrid extends SherpaElement {
    * Turn the remembered keys into the rows they name, against whatever rows the
    * grid holds NOW — re-run on every populate.
    *
-   * TRAP T-grid-select-remembers-wanted-keys — why re-resolving is needed.
+   * TRAP T-grid-select-remembers-wanted-keys.
    */
   #resolveSelection(): void {
     this.#selected.clear();
@@ -1792,13 +1531,10 @@ export class SherpaDataGrid extends SherpaElement {
    * Is this column being narrowed by a filter — from EITHER direction?
    *
    * Three sources: `#filters` (its own box), `#columnFilters` (its heading's
-   * menu), and `data-filter-fields` (a toolbar it cannot see). Any of them and
-   * the column reads active.
+   * menu, unless SUSPENDED), and `data-filter-fields` (a toolbar it cannot see).
    */
   #isFiltered(field: string): boolean {
     if (this.#filters.has(field)) return true;
-    // A clause set in this column's own heading menu — unless it is SUSPENDED,
-    // in which case the column is narrowing nothing and must not read active.
     const held = this.#columnFilters.get(field);
     if (held && !held.suspended) return true;
     const external = this.dataset['filterFields'];
@@ -1810,15 +1546,14 @@ export class SherpaDataGrid extends SherpaElement {
   /**
    * Flag (or unflag) one column's HEADING as filtered.
    *
-   * TRAP T-grid-active-flag-is-not-a-tint — the heading only, and painted by
-   * nothing here. Called per keystroke, so it never rebuilds the header row.
+   * TRAP T-grid-active-flag-is-not-a-tint — the heading only. Called per
+   * keystroke, so it never rebuilds the header row.
    */
   #markFiltered(field: string, on: boolean): void {
     const head = this.$(`.head-cell[data-field="${CSS.escape(field)}"]`);
     if (!head) return;
-    // The heading may ALSO be lit because the column is sorted, which typing in
-    // a filter box does not change — so the flag comes off only when nothing
-    // is acting on that column any more.
+    // The heading may ALSO be lit because the column is sorted, so the flag
+    // comes off only when nothing is acting on that column any more.
     const sorted = head.hasAttribute('data-sort');
     if (on || sorted || this.#isFiltered(field)) {
       (head as HTMLElement).dataset['status'] = 'active';
@@ -1830,8 +1565,8 @@ export class SherpaDataGrid extends SherpaElement {
   /**
    * Record one column's filter text and redraw the body.
    *
-   * The needle is normalised to lower case for the `#filters` map key; the
-   * matching itself is the store's `filterRows`, which does its own casing.
+   * The needle is lower-cased for the `#filters` map key only; the matching is
+   * the store's `filterRows`, which does its own casing.
    */
   #applyFilter(input: HTMLInputElement): void {
     const cell = input.closest<HTMLElement>('.filter-cell');
@@ -1845,11 +1580,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     // CSS shows the clear button off this flag — JS never touches `display`.
     cell?.toggleAttribute('data-has-value', value.length > 0);
-    // The heading and the filter cell take the Style `active` mode while the
-    // column is narrowing the view. Set on BOTH: the header row is sticky and
-    // stays on screen once the filter row has scrolled away, which is exactly
-    // when the user needs telling. The whole-row rebuild in #renderHead does
-    // the same from #filters, so a sort or a re-render keeps the tint.
+    // Set on BOTH heading and filter cell: the header row is sticky and stays
+    // on screen once the filter row has scrolled away.
     this.#markFiltered(field, needle.length > 0);
 
     this.#renderBody();
@@ -1857,9 +1589,8 @@ export class SherpaDataGrid extends SherpaElement {
     // being typed in.
     const visible = this.#visibleRows().length;
     this.toggleAttribute('data-no-matches', visible === 0 && this.#rows.length > 0);
-    // DERIVE the select-all from what is still selected. It used to be reset here,
-    // which threw the user's selection away on every keystroke — a filter changes
-    // which records are VISIBLE, not which are chosen.
+    // DERIVE the select-all from what is still selected: a filter changes which
+    // records are VISIBLE, not which are chosen.
     this.#syncSelectAll();
     this.#syncGroupSelects();
 

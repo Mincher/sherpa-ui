@@ -29,7 +29,6 @@ export class SherpaList extends SherpaElement {
   #rows: ListRow[] = [];
 
   override onRender(): void {
-    // One delegated listener covers slotted and stamped rows alike.
     this.addEventListener('item-click', this.#onItemClick);
     this.$('slot')?.addEventListener('slotchange', this.#syncEmpty);
     if (this.#rows.length) this.#render();
@@ -57,8 +56,7 @@ export class SherpaList extends SherpaElement {
   }
 
   #render(): void {
-    // `own-children` clears only stamped rows — a blanket clear would take the
-    // <slot> beside them with it.
+    // `own-children` — a blanket clear would take the <slot> with it.
     this.renderItems('.body', 'template.row-tpl', this.#rows, {
       clear: 'own-children',
       ownSel: '.body > .row-item',
@@ -73,8 +71,7 @@ export class SherpaList extends SherpaElement {
     return slotted + stamped;
   }
 
-  // The text is a declared prop; only the visibility flag needs JS, because it
-  // depends on the row count.
+  // The text is a declared prop; only the flag needs JS — it counts rows.
   #syncEmpty = (): void => {
     const empty = this.#rowCount() === 0 && !!this.dataset['empty'];
     this.toggleAttribute('data-empty-visible', empty);

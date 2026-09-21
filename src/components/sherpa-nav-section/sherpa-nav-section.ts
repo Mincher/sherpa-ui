@@ -1,10 +1,5 @@
 /**
- * sherpa-nav-section — a section-label divider for a navigation rail.
- *
- * A short label followed by a horizontal rule. Groups items inside a nav. On a
- * collapsed rail (data-collapsed) CSS hides the label and leaves only the rule.
- * JS does nothing but mirror data-label into the label span — everything else
- * is HTML + CSS.
+ * sherpa-nav-section — a section label plus a rule, grouping items in a nav rail.
  *
  * Public API:
  *   data-label      the section label text (rendered verbatim)

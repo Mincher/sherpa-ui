@@ -92,10 +92,9 @@
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-.track-area { flex: 1 1 auto; }
-
 /* ── Track area: styled rail + fill + transparent native input ─────── */
 .track-area {
+  flex: 1 1 auto;
   position: relative;
   display: flex;
   align-items: center;

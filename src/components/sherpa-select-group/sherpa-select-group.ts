@@ -16,7 +16,7 @@ export interface SelectGroupOption {
   disabled?: boolean;
 }
 
-/** Structural surface of a stamped child (checkbox or radio). */
+/** The bit of a checkbox/radio child this component touches. */
 type SelectChild = HTMLElement & { checked: boolean; value: string };
 
 let gid = 0;
@@ -50,7 +50,7 @@ export class SherpaSelectGroup extends SherpaElement {
   }
 
   override onRender(): void {
-    // One delegated listener: `change` is composed, so it climbs through the slot.
+    // `change` is composed, so one delegated listener catches every slotted child.
     this.$('.options')?.addEventListener('change', this.#onChange);
     if (this.#options.length) this.#render();
   }
@@ -60,7 +60,7 @@ export class SherpaSelectGroup extends SherpaElement {
     else if (name === 'disabled') this.#syncDisabled();
   }
 
-  /** populate([{ value, label, description?, disabled? }]) — the option list. */
+  /** populate() takes SelectGroupOption[]. */
   protected override renderData(data: unknown): void {
     this.#options = Array.isArray(data) ? (data as SelectGroupOption[]) : [];
     this.#render();
@@ -85,15 +85,14 @@ export class SherpaSelectGroup extends SherpaElement {
 
   /* ── Rendering ─────────────────────────────────────────────────────── */
 
-  /** The option children — light DOM either way, so query the host. */
+  /** Light DOM either way, so query the host, not the shadow root. */
   #children(): SelectChild[] {
     return Array.from(
       this.querySelectorAll<SelectChild>(this.#childTag()),
     );
   }
 
-  /** Stamp the options into light DOM, slot="options". Created by TAG — they are
-   *  design-system components, not raw structural DOM. */
+  /** Created by TAG: these are design-system components, not structural DOM. */
   #render(): void {
     const tag = this.#childTag();
     const disabled = this.hasAttribute('disabled');
@@ -121,8 +120,7 @@ export class SherpaSelectGroup extends SherpaElement {
     for (const child of this.#children()) child.toggleAttribute('disabled', disabled);
   }
 
-  /** A child toggled. `target` is retargeted to the host at the shadow boundary,
-   *  so the originating child comes off composedPath(). */
+  /** `target` retargets to the host, so read the child off composedPath(). */
   #onChange = (event: Event): void => {
     const tag = this.#childTag();
     const child = event

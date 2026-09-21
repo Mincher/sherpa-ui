@@ -1,20 +1,19 @@
 #!/usr/bin/env node
 /**
- * check-traps.mjs — gate: every trap id cited in the code has a `### <id>`
- * section in docs/TRAPS.md, and that section's `Site:` lines name exactly the
- * files that cite it. Drift in either direction exits 1.
+ * Gate: every trap id cited in the code has a `### <id>` section in
+ * docs/TRAPS.md, and that section's `Site:` lines name exactly the files that
+ * cite it. Drift either way exits 1.
  *
  *   node scripts/check-traps.mjs
  */
 import { readFileSync, existsSync, globSync } from 'node:fs';
 
 const DOC = 'docs/TRAPS.md';
-/** Everywhere a citation may live. A file not scanned here is not gated. */
+/** A file not scanned here is not gated. */
 const SOURCES = [
   'src/components/*/*.ts',
   'src/core/*.ts',
   'src/components/*/*.css',
-  // sherpa-base.css — adopted into every shadow root.
   'src/core/*.css',
   'test/reforged/harness.html',
   'playwright.config.ts',
@@ -24,14 +23,9 @@ const SOURCES = [
   'examples/views/*.js',
 ];
 
-/** `### <the-id>` opens a trap; `Site:` lines list the files that cite it. */
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;
 const SITE = /^-\s*Site:\s*`([^`]+)`/;
-/**
- * A citation: the word TRAP, then the id. `\s` spans NEWLINES and an optional
- * `*` may sit between the two, because a JSDoc block wraps mid-citation —
- * anchoring both to one line hides real citations.
- */
+/** `\s` spans newlines and `*` is optional: a JSDoc block may wrap mid-citation. */
 const CITE = /\bTRAP\s*(?:\*\s*)?(T-[a-z0-9-]+)\b/g;
 
 if (!existsSync(DOC)) {
@@ -39,7 +33,7 @@ if (!existsSync(DOC)) {
   process.exit(0);
 }
 
-// ── Read the doc: id → the files it claims cite it ────────────────────────────
+// id → the files the doc claims cite it
 const defined = new Map();
 let current = null;
 for (const line of readFileSync(DOC, 'utf8').split('\n')) {
@@ -57,7 +51,7 @@ for (const line of readFileSync(DOC, 'utf8').split('\n')) {
   if (site && current) defined.get(current).add(site[1]);
 }
 
-// ── Read the sources: id → the files that actually cite it ────────────────────
+// id → the files that actually cite it
 const cited = new Map();
 for (const pattern of SOURCES) {
   for (const file of globSync(pattern)) {
@@ -69,7 +63,7 @@ for (const pattern of SOURCES) {
   }
 }
 
-// ── Compare — report every failure, not just the first ───────────────────────
+// Report every failure, not just the first.
 const problems = [];
 
 for (const [id, files] of cited) {

@@ -1,8 +1,7 @@
 /**
  * sherpa-grid-cell — the atomic Data Grid cell.
  *
- * CSS owns the look and all per-type visibility; JS only wires the three
- * buttons.
+ * CSS owns the look and all per-type visibility; JS only wires the buttons.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -17,10 +16,8 @@ export class SherpaGridCell extends SherpaElement {
   }
 
   /**
-   * Sort: asc ⇄ desc. TWO states — nothing here to suspend; the grid header is
-   * the tri-state control (`T-one-cycle-for-one-value`).
-   *
-   * Always reports; writes only when not `data-locked`.
+   * Sort: asc ⇄ desc only — the grid header owns the third, suspended state
+   * (`T-one-cycle-for-one-value`). Always reports; writes only when unlocked.
    * TRAP T-bind-locks-what-it-owns
    */
   #onSort = (event: Event): void => {

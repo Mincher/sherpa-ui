@@ -1,16 +1,11 @@
 #!/usr/bin/env node
 /**
- * lint-css.mjs — structural linter for component CSS. PostCSS-based, so it
- * understands native nesting and modern selectors.
+ * Structural linter for component CSS (PostCSS, so native nesting is understood).
+ * Only the AUTHORED region is linted — the projector owns everything above the
+ * `sherpa:tokens` end marker.
  *
  *   node scripts/lint-css.mjs            # lint every src/components/…/*.css
  *   node scripts/lint-css.mjs --strict   # elevate warnings to errors
- *
- * Errors: chained-host, host-nesting, light-dark, disabled-opacity, focus-ring.
- * Warnings: viewport-media, off-grid.
- *
- * Only the AUTHORED region is linted — the projector owns everything above the
- * `sherpa:tokens` end marker.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -79,8 +74,8 @@ function lintFile(file, cssRaw) {
 
   root.walkDecls((decl) => {
     const line = decl.source?.start?.line ?? 0;
-    /* A focus ring wired to the wrong token fails silently — it draws in the
-       fallback colour only, so nobody sees the drift. Hence a lint. */
+    // A focus ring on the wrong token fails silently — it draws in the fallback
+    // colour only.
     if (decl.prop === 'box-shadow' && /inset 0 0 0 2px/.test(decl.value)) {
       const inFocus = (() => {
         let p2 = decl.parent;
@@ -91,8 +86,7 @@ function lintFile(file, cssRaw) {
         return false;
       })();
       const ok = /--sherpa-theme-border-accent-2\s*,\s*#3b4ccd/.test(decl.value)
-        // A `--_*` private var passes: components with an error state route
-        // through one, and those resolve correctly.
+        // A `--_*` private var passes — error-state components route through one.
         || /var\(--_/.test(decl.value);
       if (inFocus && !ok) {
         report('error', file, line, 'focus-ring',
@@ -119,19 +113,18 @@ function lintFile(file, cssRaw) {
   });
 
   root.walkDecls((decl) => {
-    // Odd px literals in spacing/sizing/radius props. `border*` and font-size
-    // are exempt; sub-1px, 1px and 999px are allowed.
+    // Odd px in spacing/sizing/radius props; border* and font-size are exempt.
     const prop = decl.prop;
     if (/^border/.test(prop) || prop === 'font-size') return;
     if (!/(margin|padding|gap|inset|top|right|bottom|left|width|height|size|radius|rounding|translate)/i.test(prop)) return;
     const line = decl.source?.start?.line ?? 0;
-    // Opt-out for drawn glyphs: a trailing `/* off-grid-ok */` on the decl.
+    // Drawn glyphs opt out with a trailing `/* off-grid-ok */`.
     const trailing = (decl.raws?.value?.raw ?? '') + (decl.raws?.between ?? '');
     if (/off-grid-ok/.test(trailing) || /off-grid-ok/.test(nextComment(decl))) return;
     for (const m of decl.value.matchAll(/(?<![\w.])(\d+)px\b/g)) {
       const v = Number(m[1]);
-      if (v <= 1 || v === 999) continue;      // stroke edge case + pill idiom
-      if (v % 2 === 0) continue;               // on the 2px grid
+      if (v <= 1 || v === 999) continue;      // strokes + the pill idiom
+      if (v % 2 === 0) continue;
       report('warning', file, line, 'off-grid',
         `${prop}: ${v}px is off the 2px/8px grid — use a grid step (…, 2, 4, 8…), the token's real value, or add /* off-grid-ok */ if it's a drawn glyph.`);
     }

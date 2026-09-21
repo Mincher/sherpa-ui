@@ -1,10 +1,5 @@
 /**
- * sherpa-select-radio — a radio button with a label.
- *
- * A thin wrapper around a real radio button. JS copies the label, description,
- * and native attributes onto it, exposes its checked and value states, and
- * re-fires the change event. Radios sharing the same `name` group up on their
- * own. CSS handles the whole look — the circle, the dot, disabled, and focus.
+ * sherpa-select-radio — a labelled wrapper around a native radio input.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -14,7 +9,6 @@ const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
 export class SherpaSelectRadio extends SherpaElement {
   static override css = new URL('./sherpa-select-radio.css', import.meta.url);
   static override html = new URL('./sherpa-select-radio.html', import.meta.url);
-  /** Label + description text into the shadow (CSS collapses empties). */
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
@@ -34,7 +28,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.#syncState();
   }
 
-  /** Mirror native attributes + checked host → inner control. */
+  /** Mirror native attributes + checked from host onto the inner control. */
   #syncState(): void {
     const c = this.#control;
     if (!c) return;
@@ -73,13 +67,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.#control?.focus(options);
   }
 
-  /**
-   * On selection, re-dispatch change and coordinate the name-group. Native radio
-   * grouping does NOT cross shadow-DOM boundaries — each radio's inner <input>
-   * lives in its own shadow root, so the browser can't deselect siblings for us.
-   * The component does it: when this radio becomes checked, uncheck every other
-   * sherpa-select-radio in the document that shares this `name`.
-   */
+  /** Native radio grouping does NOT cross shadow roots — deselect siblings here. */
   #onChange = (): void => {
     const c = this.#control;
     if (!c) return;
@@ -88,7 +76,7 @@ export class SherpaSelectRadio extends SherpaElement {
     this.emit('change', { checked: c.checked, value: this.value });
   };
 
-  /** Uncheck sibling radios sharing this radio's name (document-wide). */
+  /** Uncheck sibling radios sharing this `name`, document-wide. */
   #deselectGroup(): void {
     const name = this.getAttribute('name');
     if (!name) return;

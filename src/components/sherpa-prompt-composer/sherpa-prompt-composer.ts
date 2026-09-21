@@ -1,11 +1,7 @@
 /**
- * sherpa-prompt-composer — the box you type an AI prompt into.
+ * sherpa-prompt-composer — a growing text box with a send button.
  *
- * A text box that grows as you type, with a send button. Pressing send (or Enter
- * without Shift) fires prompt-submit with the text, then clears the box — but
- * only if you actually typed something. Two default leading buttons (attach + lab)
- * each fire their own event; set data-no-leading-actions to hide them. An `extras`
- * slot holds extra consumer controls beside them. CSS handles the look.
+ * Enter submits, Shift+Enter newlines. Empty text is never submitted.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -35,8 +31,6 @@ export class SherpaPromptComposer extends SherpaElement {
     else if (name === 'disabled') this.#syncDisabled();
   }
 
-  /* ── Value API ─────────────────────────────────────────────────────── */
-
   get value(): string {
     return this.#input?.value ?? '';
   }
@@ -55,8 +49,6 @@ export class SherpaPromptComposer extends SherpaElement {
     this.value = '';
   }
 
-  /* ── Sync ──────────────────────────────────────────────────────────── */
-
   #syncPlaceholder(): void {
     if (this.#input) this.#input.placeholder = this.dataset['placeholder'] ?? '';
   }
@@ -67,8 +59,6 @@ export class SherpaPromptComposer extends SherpaElement {
     this.$<HTMLButtonElement>('.send')?.toggleAttribute('disabled', off);
     this.$$<HTMLButtonElement>('.lead-btn').forEach((b) => b.toggleAttribute('disabled', off));
   }
-
-  /* ── Behaviour ─────────────────────────────────────────────────────── */
 
   #onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === 'Enter' && !e.shiftKey) {

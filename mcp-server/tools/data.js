@@ -1,18 +1,13 @@
 /**
- * Data tools — the data layer's surface, for an agent pointing Sherpa at a backend.
+ * Data tools — "will my data work", answered by running `sherpa-ui/data` itself.
  *
  *   run_query       — drive a real headless DataSource and show what a component gets
  *   import_schema   — a backend's JSON Schema / OpenAPI → a Sherpa schema
  *   scaffold_schema — sample rows → a draft schema, every inference MARKED
  *   validate_schema — run a schema over sample rows: mapped / rejected / WHY
  *
- * The other tools in this server answer "what does this component look like".
- * These answer "will my data work", which nothing could answer before: an agent
- * wiring a backend had to guess at the row shape and find out at runtime.
- *
- * Thin wrappers over `sherpa-ui/data` — the same `validate()` a Store runs, so
- * the answer here is the answer the app will give. A second implementation
- * would be a second thing to keep in step, and would eventually disagree.
+ * Thin wrappers only — the same `validate()` a Store runs. Never re-implement a
+ * check here; a second implementation eventually disagrees.
  */
 import { z } from "zod/v3";
 import { loadDataLayer, dataLayerError } from "../lib/data-layer.js";
@@ -21,13 +16,9 @@ function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
 
 /**
- * The rule vocabulary an agent can name in JSON.
- *
- * A schema is FUNCTIONS, which cannot cross a tool boundary — so a rule is named
- * as a string (`"required"`) or as a one-key object carrying its argument
- * (`{ "min": 0 }`). That is the whole grammar; anything else is reported rather
- * than guessed at, because a silently-dropped rule would make the tool say a row
- * passed a check it never ran.
+ * `"required"` or `{ "min": 0 }` → rule functions. Rules cannot cross a tool
+ * boundary, so they arrive named. Anything unrecognised is REPORTED, never
+ * dropped — a dropped rule makes the tool claim a check it never ran.
  */
 function buildRuleList(dl, spec, field, problems) {
   const list = Array.isArray(spec) ? spec : [spec];
@@ -58,25 +49,11 @@ function ruleNames(dl) {
     .filter((n) => typeof dl[n] === "function");
 }
 
-/* ══ schema inference (M3) ═══════════════════════════════════════════════════
- * Read a column of sample values and propose rules for it.
- *
- * Every proposal is EVIDENCE-BASED and carries its evidence, because a draft
- * schema is going onto a Store where it will drop real rows. A guess presented
- * as a fact is worse than a gap: the gap gets filled, the guess gets shipped.
- * The same ruling the spec generator reached about event detail types — an
- * honest `unknown` beats a confident wrong answer.
- *
- * What is NEVER inferred, and why:
- *   - `email` / `url` from a FIELD NAME. A field called `email` holding
- *     `"n/a"` would start rejecting rows the backend considers fine. Only the
- *     VALUES may argue for a format rule, and only when every one agrees.
- *   - `min`/`max` from the observed range. Ten sample rows between 0 and 100
- *     say nothing about the eleventh; a bound invented from a sample is a
- *     rule the backend never agreed to.
- *   - `required` from a field being present. Present in five rows is not the
- *     same as never absent — unless it is the KEY, where blank is a defect by
- *     definition (see rule 1 of DATA-SOURCE-RULES).
+/* ══ schema inference ════════════════════════════════════════════════════════
+ * A draft schema goes onto a Store where it DROPS real rows, so every proposal
+ * carries its evidence and nothing is inferred without it. Never inferred:
+ * `email`/`url` from a field name, `min`/`max` from an observed range,
+ * `required` from mere presence (except the key).
  */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -92,8 +69,7 @@ function inferField(field, values, rowCount, keyField) {
     return { rules: [], notes: [`every sample value is empty — nothing to infer`], confident: false };
   }
 
-  // REQUIRED: only for the key, and only when the samples actually back it.
-  // Elsewhere "present in every sample row" is not evidence of "never absent".
+  // REQUIRED: key only. "Present in every sample row" is not "never absent".
   const alwaysPresent = present.length === rowCount;
   if (field === keyField) {
     rules.push('required');
@@ -104,8 +80,7 @@ function inferField(field, values, rowCount, keyField) {
     notes.push(`present in all ${rowCount} sample rows — add "required" only if the backend guarantees it`);
   }
 
-  // NUMBER: every present value is one. `"42"` counts — a JSON backend that
-  // sends numbers as strings is common, and `number()` accepts either.
+  // `"42"` counts — `number()` accepts a numeric string.
   const allNumeric = present.every((v) => typeof v === 'number'
     || (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))));
   const anyString = present.some((v) => typeof v === 'string');
@@ -118,7 +93,7 @@ function inferField(field, values, rowCount, keyField) {
     notes.push(`observed range ${Math.min(...nums)}..${Math.max(...nums)} — NOT proposed as min/max; a sample cannot bound a backend`);
   }
 
-  // EMAIL / URL: from the VALUES, never the field name, and only on unanimity.
+  // From the VALUES, never the field name, and only on unanimity.
   if (!allNumeric && present.every((v) => typeof v === 'string' && EMAIL_RE.test(v))) {
     rules.push('email');
     notes.push(`all ${present.length} values look like email addresses`);
@@ -127,7 +102,6 @@ function inferField(field, values, rowCount, keyField) {
     notes.push(`all ${present.length} values are http(s) URLs`);
   }
 
-  // ONE OF: a small, closed set repeated across the sample reads as an enum.
   // Needs repetition — N distinct values in N rows is just N values.
   const distinct = [...new Set(present.map((v) => String(v)))];
   if (!allNumeric && distinct.length > 1 && distinct.length <= 6 && present.length >= distinct.length * 2) {
@@ -144,16 +118,10 @@ function inferField(field, values, rowCount, keyField) {
   return { rules, notes, confident: rules.length > 0 };
 }
 
-/* ══ JSON Schema / OpenAPI import (M4) ═══════════════════════════════════════
- * Read a backend's OWN description of its rows instead of guessing from a
- * sample. Strictly better where it exists: a spec says what the backend
- * promises, a sample says only what it happened to send.
- *
- * Eight JSON Schema keywords map onto a Sherpa rule. TEN DO NOT, and those are
- * the whole risk: a converter that silently ignores `$ref` or `allOf` emits a
- * schema that LOOKS faithful, passes every row, and enforces half of what the
- * backend actually promises. So every unsupported keyword is reported by name
- * and by field — an honest gap over a confident wrong answer.
+/* ══ JSON Schema / OpenAPI import ════════════════════════════════════════════
+ * Eight keywords map onto a Sherpa rule; ten do not. Every unsupported keyword
+ * is reported by name and field — one quietly ignored (`$ref`, `allOf`) emits a
+ * schema that looks faithful, passes every row, and enforces half the spec.
  */
 const JSON_SCHEMA_MAPPED = {
   'type: number/integer': 'number',
@@ -179,13 +147,8 @@ function resolveRef(doc, ref) {
 }
 
 /**
- * Find the ROW schema in whatever was pasted.
- *
- * Three shapes arrive in practice: a bare object schema, an array schema whose
- * `items` is the row, and a whole OpenAPI document where the row is buried
- * under a path's 200 response. Returns `{ schema, via }` so the report can say
- * where it looked — a tool that silently picks the wrong node is worse than one
- * that says it could not find a row.
+ * Find the ROW schema: a bare object, an array's `items`, or an OpenAPI path's
+ * 200 response. `via` says where it looked, so a wrong pick is never silent.
  */
 function findRowSchema(doc, pathHint) {
   const unwrapArray = (s, via) =>
@@ -227,9 +190,7 @@ function rulesFromProperty(doc, name, node, isRequired, unsupported) {
   let s = node;
   if (s.$ref) {
     const target = resolveRef(doc, s.$ref);
-    // A $ref to another OBJECT is a nested record. Sherpa reads nested values
-    // with a dotted path, but `rules()` maps one field to rules — it cannot
-    // express "and validate this sub-object too". Say so; do not invent it.
+    // `rules()` maps one field to rules — it cannot validate a sub-object too.
     unsupported.push(`\`${name}\`: \`$ref\` → \`${s.$ref}\`${target?.type === 'object' ? ' (a nested object — reach its values with a dotted path, e.g. `' + name + '.city`)' : ''}`);
     return { rules, notes };
   }
@@ -320,11 +281,9 @@ export function register(server) {
       if (!Array.isArray(rowList)) return err("rows must be a JSON array of objects.");
       if (!rowList.length) return err("rows is empty — pass at least one record.");
 
-      /* CHECK THE OPERATORS FIRST. `matchesFilter`'s switch has no `default`
-         branch, so an unknown op falls through, returns undefined, and rejects
-         EVERY row — a silent empty grid that looks like missing data. The layer
-         should arguably throw; until it does, catch it here rather than hand
-         back "0 rows" and let someone hunt their backend. */
+      /* CHECK THE OPERATORS FIRST. `matchesFilter`'s switch has no `default`,
+         so an unknown op rejects EVERY row — a silent empty grid that reads as
+         missing data. Catch it here until the layer throws. */
       const OPS = new Set(['eq','ne','lt','lte','gt','gte','contains','notcontains',
         'startswith','endswith','in','notin','between']);
       const badOps = [];
@@ -363,11 +322,9 @@ export function register(server) {
       let source, result, totalPages;
       try {
         const store = new dl.ArrayStore(rowList, { key: keyField });
-        // `searchFields` is a CONSTRUCTOR option, not a setter — checked against
-        // data-source.ts rather than assumed by symmetry with setSearch.
+        // `searchFields` is a CONSTRUCTOR option, not a setter.
         source = new dl.DataSource({ store, pageSize, searchFields: parsed.searchFields });
-        // Set the query the way a host does, then load ONCE — this is the real
-        // path, so an invalid filter fails here exactly as it would in the app.
+        // Set the query the way a host does, then load ONCE — the real path.
         if (parsed.filter) source.setFilter(parsed.filter);
         if (parsed.sort) {
           // setSort takes (field, direction), NOT a SortSpec array.
@@ -381,19 +338,16 @@ export function register(server) {
         if (args.group) source.setGroup(args.group);
         await source.load();
         /* PAGE COMES AFTER THE LOAD. `setPage` before the first `load()` is
-           discarded — every other setter is part of building the query, but the
-           page is a position WITHIN a result that does not exist yet. Measured:
-           setPage(2) then load() lands on page 1; load() then setPage(2) lands
-           on page 2. `setPage` runs its own load, so await the settle. */
+           silently discarded — the page is a position in a result that does not
+           exist yet. `setPage` runs its own load, so await the settle. */
         if (page > 1) {
           source.setPage(page);
           await new Promise((r) => setTimeout(r, 0));
         }
         result = source.result;
         totalPages = source.totalPages;
-        // READ THE PAGE BACK. Asking for page 9 of 2 does not fail — the source
-        // resets to page 1 — so reporting the page that was REQUESTED would
-        // print "page 9 of 2" over the rows of page 1.
+        // READ THE PAGE BACK. Page 9 of 2 does not fail — the source resets to
+        // page 1, so the REQUESTED page would print over the wrong rows.
         actualPage = source.state?.page ?? page;
       } catch (e) {
         return err(`the query failed: ${e.message}\n\nThe grammar is \`[field, op, value]\` — a filter is DATA, not a predicate, so it can be sent to a backend. See \`sherpa://data-rules\`.`);
@@ -401,7 +355,7 @@ export function register(server) {
 
       const rows = result.rows ?? [];
       const total = result.total ?? 0;
-      const pages = totalPages ?? 1;   // the source's own count, not one recomputed here
+      const pages = totalPages ?? 1;   // the source's own count, never recomputed
 
       const lines = [];
       lines.push(`## run_query — ${rows.length} row(s) of ${total}\n`);
@@ -428,11 +382,8 @@ export function register(server) {
         lines.push("");
       }
 
-      /* WHAT A CHART WOULD DRAW.
-         Over every MATCHING row rather than the current page: a chart
-         summarises the whole result, and aggregating one page of 25 would
-         quietly answer a different question. `source.rows` is the page, so this
-         re-runs the query with no paging. */
+      /* Over every MATCHING row, not the page: a chart summarises the whole
+         result. `source.rows` is the page, so re-run the query unpaged. */
       if (args.aggregateBy) {
         const kind = args.aggregate ?? "count";
         if (kind !== "count" && !args.aggregateField) {
@@ -484,9 +435,7 @@ export function register(server) {
       lines.push(`const source = new DataSource({ store, pageSize: ${pageSize} });`);
       if (parsed.filter) lines.push(`source.setFilter(${JSON.stringify(parsed.filter)});`);
       if (parsed.sort) {
-        // Echo the call that ACTUALLY ran. Printing `setSort([{…}])` because
-        // that is how the argument arrived would hand back code that does not
-        // work — the echoed snippet is the tool's real output, not its input.
+        // Echo the call that ACTUALLY ran, not the argument as it arrived.
         const f = Array.isArray(parsed.sort) ? parsed.sort[0] : parsed.sort;
         lines.push(`source.setSort(${JSON.stringify(f?.field ?? null)}, ${JSON.stringify(f?.direction ?? 'asc')});`);
       }
@@ -733,10 +682,8 @@ export function register(server) {
         }
       }
 
-      // The KEY check is separate from the schema: a schema validates a field's
-      // VALUE, it cannot see the other rows. A duplicate or blank key is only
-      // visible across the set, and it is what breaks `byKey`, `update`, `remove`
-      // and a grid's selection across a re-query.
+      // Separate from the schema: a rule sees one VALUE, never the other rows.
+      // Duplicate and blank keys are only visible across the set.
       const seen = new Map();
       const blankKeys = [];
       const dupeKeys = [];
@@ -749,9 +696,8 @@ export function register(server) {
         else seen.set(v, i);
       }
 
-      // Fields present in the data but named by no rule — not an error (a row may
-      // carry more than a schema checks) but worth saying, because a field the
-      // schema forgot is the usual cause of "the grid shows blanks".
+      // Not an error — but a field the schema forgot is the usual cause of
+      // "the grid shows blanks".
       const schemaFields = new Set(Object.keys(map));
       const dataFields = new Set();
       for (const r of rowList) for (const f of Object.keys(r ?? {})) dataFields.add(f);

@@ -49,17 +49,12 @@ export class SherpaTransferList extends SherpaElement {
     this.#render();
   }
 
-  /* ── Public API ────────────────────────────────────────────────────── */
-
   /** Values currently in the selected (right) pane. */
   get selected(): string[] {
     return this.#items.filter((i) => i.selected).map((i) => i.value);
   }
 
-  /**
-   * REPLACES the selected pane — `selected = []` is the reset. Unknown values
-   * are ignored, so a saved view outlives an option being removed.
-   */
+  /** REPLACES the selected pane; unknown values are ignored. */
   set selected(values: readonly string[]) {
     const wanted = new Set(values);
     for (const item of this.#items) item.selected = wanted.has(item.value);
@@ -71,8 +66,6 @@ export class SherpaTransferList extends SherpaElement {
   getSelectedValues(): string[] {
     return this.selected;
   }
-
-  /* ── Rendering ─────────────────────────────────────────────────────── */
 
   #render(): void {
     const sourceList = this.$('.source .pane-list');
@@ -94,8 +87,6 @@ export class SherpaTransferList extends SherpaElement {
     this.$('.source')?.toggleAttribute('data-empty', !this.#items.some((i) => !i.selected));
     this.$('.target')?.toggleAttribute('data-empty', !this.#items.some((i) => i.selected));
   }
-
-  /* ── Interaction (one shadow tree, so event.target is reliable) ─────── */
 
   #onRowSelect = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.row');

@@ -1,19 +1,11 @@
 /**
- * Discover tools — understand the def-driven design system.
- *
- * Thin wrappers over scripts/lib/generation/*. One implementation, two surfaces
- * (the MCP + the generate-sherpa-component skill both call the shared lib).
+ * Discover tools — thin wrappers over scripts/lib/generation/*.
  *
  *   list_components   — every component + its def summary
  *   find_token        — token NAMES from the generated tokens.css, synonym-aware
  *   get_component     — the full def + code + Figma binding shape
  *
- * THIS LIST IS THE REGISTRATIONS BELOW, and it was wrong until 2026-09-18: it
- * promised `explain_token` and `browse_ontology`, two tools that went with the
- * ontology in 2026-09-16, and omitted `find_token`, which replaced them. A
- * header comment naming tools a caller cannot call is the same rot the specs
- * had — see the round-trip gate in the pre-commit hook, which exists because a
- * generated artefact drifted the same way.
+ * check-mcp-tools.mjs gates this list against the registrations below.
  */
 import { z } from "zod/v3";
 import {
@@ -24,16 +16,7 @@ import { compileDef } from "../../scripts/lib/generation/compile-def.mjs";
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
 
-/**
- * Token NAMES from the generated `tokens.css` that contain `query`.
- *
- * `tokens.css` is re-projected from Figma, so it always knows which names are
- * real — it simply knows nothing about what they are FOR. That is a smaller
- * answer than the deleted ontology gave, and an honest one; the ontology's
- * failure mode was a confident wrong answer.
- *
- * An empty query returns every name.
- */
+/** Token NAMES from `tokens.css` containing `query`. Empty query = every name. */
 function matchingCssTokens(query) {
   const q = String(query ?? "").toLowerCase().replace(/[\/-]/g, "");
   const all = [...loadCssTokenNames()].sort();
@@ -41,21 +24,7 @@ function matchingCssTokens(query) {
   return all.filter((t) => t.toLowerCase().replace(/[\/-]/g, "").includes(q));
 }
 
-/* ── The synonym bridge — the ONE piece of the old ontology that survived ──────
- *
- * `explain_token` and `browse_ontology` are gone: they carried purpose, role and
- * caveat per token, and that map rotted into confident wrong answers. What
- * remains is the translation half, which cannot rot — it maps a word a person
- * reaches for onto a token name that either exists in `tokens.css` or does not.
- *
- * `find_token`'s own output says so to the caller, in as many words.
- */
-
-/**
- * Synonyms — words people reach for that are NOT the token's actual name. This
- * is the translation bridge: `heading` is not a token, `content/title` is.
- * Expands a query term to the real vocabulary before matching.
- */
+/** Words people reach for that are not the token's name: `heading` → `title`. */
 const SYNONYMS = {
   heading: "title", header: "title", h1: "title", h2: "title",
   body: "primary", text: "content", ink: "content", copy: "primary",
@@ -69,9 +38,6 @@ const SYNONYMS = {
 function expand(term) {
   return SYNONYMS[term] ? [term, SYNONYMS[term]] : [term];
 }
-
-
-// ── component summary from a def ──────────────────────────────────────
 
 function defSummary(def) {
   if (!def) return null;
@@ -88,7 +54,6 @@ function defSummary(def) {
 }
 
 export function register(server) {
-  // ── list_components — every component + its def summary ─────────────
   server.registerTool(
     "list_components",
     {
@@ -110,7 +75,6 @@ export function register(server) {
           rows.push(s);
         }
         if (!rows.length) return ok(`No components${category ? ` in category "${category}"` : ""}.`);
-        // group by category for readability
         const byCat = {};
         for (const r of rows) (byCat[r.category ?? "uncategorised"] ??= []).push(r);
         let out = `${rows.length} component(s)${category ? ` · category=${category}` : ""}:\n\n`;
@@ -131,8 +95,6 @@ export function register(server) {
       }
     }
   );
-
-  // ── find_token — which tokens exist, by name ───────────────────────
   server.registerTool(
     "find_token",
     {
@@ -152,7 +114,6 @@ export function register(server) {
             + `\`src/styles/tokens/tokens.css\` declares ${matchingCssTokens("").length} tokens. `
             + `Try a shorter fragment — 'surface', 'border', 'content', 'space', 'size', 'rounding'.`);
         }
-        // Group by the family (the segment after --sherpa-) so a long list reads.
         const byFamily = {};
         for (const n of names) {
           const fam = n.replace("--sherpa-", "").split("-")[0];
@@ -175,8 +136,6 @@ export function register(server) {
       }
     }
   );
-
-  // ── get_component — full def + code + Figma binding shape ───────────
   server.registerTool(
     "get_component",
     {
@@ -206,11 +165,8 @@ export function register(server) {
         }
 
         if (include === "all" || include === "code") {
-          // An anatomy is present in any of its three forms — `root`, `roots`
-          // (a multi-root template), or `byTemplate` (a component whose
-          // templates are different trees). Checking only `root` skipped the
-          // compile step for sherpa-button, sherpa-input-text and
-          // sherpa-nav-item entirely.
+          // All three anatomy forms count: checking only `root` silently skips
+          // the compile for byTemplate components (button, input-text, nav-item).
           if (def.anatomy?.root || def.anatomy?.roots || def.anatomy?.byTemplate) {
             try {
               const { ts, html, css } = compileDef(def);

@@ -1,20 +1,13 @@
 /**
- * Drive tools — the INSTANCE tier (plan step P5).
+ * Drive tools — the instance tier.
  *
  *   component_api  — what a caller can DO to a component (no browser needed)
  *   call_component — call a method on a LIVE element, and read the state back
  *   read_component — read a live element's properties and attributes
  *   browser_close  — end the session
  *
- * The parity rule, made reachable: anything a person can do by clicking, a
- * caller can do by calling. The components already make that true — 45 methods
- * across 23 specs, guarded by `reforged-parity.spec.ts`. This is the wire that
- * lets an agent, which is a caller with no pointer, actually reach them.
- *
- * `component_api` needs no browser and answers the question that comes FIRST:
- * what is callable at all. The other two need a page, and are deliberately the
- * narrowest thing that works — a named element, a named method, JSON arguments.
- * No arbitrary script crosses the boundary.
+ * The two live tools are deliberately narrow: a named element, a named method,
+ * JSON arguments. No arbitrary script crosses the boundary.
  */
 import { z } from "zod/v3";
 import { loadDef, loadSpec, loadComponentNames } from "../../scripts/lib/generation/data.mjs";
@@ -27,9 +20,7 @@ const DEFAULT_URL = "http://localhost:4000/test/reforged/harness.html";
 
 /** A component's callable surface, from its spec. */
 function apiOf(name) {
-  // The SPEC, not the def: `specToDef` drops `$extensions`, and that is where
-  // the methods live. Reading the def here reported "0 methods" for a data grid
-  // that has seven.
+  // The SPEC, not the def: `specToDef` drops `$extensions`, where the methods live.
   const spec = loadSpec(name);
   if (!spec) return null;
   const ext = spec.$extensions?.sherpa ?? {};
@@ -43,7 +34,6 @@ function apiOf(name) {
 }
 
 export function register(server) {
-  // ── component_api — what can a caller DO to this component? ──
   server.registerTool(
     "component_api",
     {
@@ -116,7 +106,6 @@ export function register(server) {
     }
   );
 
-  // ── call_component — do it, on a LIVE element ──
   server.registerTool(
     "call_component",
     {
@@ -153,8 +142,7 @@ export function register(server) {
           async ({ selector, method, argList, reads }) => {
             const el = document.querySelector(selector);
             if (!el) return { found: false };
-            // A Sherpa element renders asynchronously; calling a method before
-            // its shadow DOM exists is the classic way to get a silent no-op.
+            // Renders async — calling before the shadow DOM exists is a silent no-op.
             if (el.rendered) { try { await el.rendered; } catch { /* not a promise */ } }
             if (typeof el[method] !== "function") {
               const callable = [];
@@ -169,7 +157,7 @@ export function register(server) {
             let returned, threw = null;
             try { returned = await el[method](...argList); }
             catch (e) { threw = String(e && e.message ? e.message : e); }
-            // Let the component settle — a method usually schedules a render.
+            // A method usually schedules a render; wait for it.
             if (el.__settled) { try { await el.__settled(); } catch { /* none */ } }
             else await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
@@ -226,7 +214,6 @@ export function register(server) {
     }
   );
 
-  // ── read_component — look, without touching ──
   server.registerTool(
     "read_component",
     {
@@ -302,7 +289,6 @@ export function register(server) {
     }
   );
 
-  // ── browser_close — end the session ──
   server.registerTool(
     "browser_close",
     {

@@ -1,7 +1,7 @@
 /**
- * Compile src/ and transform its CSS/HTML into dist/ (loaded at runtime via
- * import.meta.url). --watch also re-transforms assets: `tsc --watch` alone
- * emits nothing for a CSS-only edit, so the change never reaches dist/.
+ * Compile src/ and transform its CSS/HTML into dist/.
+ * --watch also re-transforms assets — `tsc --watch` alone emits nothing for a
+ * CSS-only edit, so the change never reaches dist/.
  *
  *   node scripts/build-reforged.mjs [--watch]
  */
@@ -17,15 +17,15 @@ const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
 const OUT = join(ROOT, 'dist');
 
-// Source is modern/Chromium-only; dist is lowered for browserslist. Each output
-// must stay ONE valid stylesheet — components adopt it into adoptedStyleSheets.
+// Each output must stay ONE valid stylesheet — components adopt it into
+// adoptedStyleSheets.
 const cssProcessor = postcss([
   postcssPresetEnv({
     stage: 2,
     features: {
       'nesting-rules': true,
       'custom-properties': false, // inlining would freeze the live token cascade
-      'cascade-layers': false, // we rely on real @layer ordering
+      'cascade-layers': false, // real @layer ordering is load-bearing
       'logical-properties-and-values': false, // lowering to left/right breaks RTL
     },
   }),
@@ -39,8 +39,8 @@ execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
 
 const WATCH = process.argv.includes('--watch');
 
-// Fatal one-shot (so CI and `npm test` catch it); in --watch it only reports,
-// because a mid-edit error would kill the watch and stop all updates silently.
+// Fatal one-shot; in --watch it only reports — an error there would kill the
+// watch and stop all updates silently.
 console.log('› lint:css');
 try {
   execSync('node scripts/lint-css.mjs', { stdio: 'inherit' });
@@ -54,7 +54,6 @@ if (!WATCH) {
   execSync('npx tsc -p tsconfig.reforged.json', { stdio: 'inherit' });
 }
 
-/** Transform every CSS file and copy every HTML file into the mirrored dist path. */
 async function copyAssets(dir) {
   let cssCount = 0;
   for (const entry of readdirSync(dir)) {

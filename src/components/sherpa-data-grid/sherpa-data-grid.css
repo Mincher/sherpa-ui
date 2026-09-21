@@ -550,9 +550,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 :host([data-actions]) .actions-col { display: table-column; }
 
 .actions-cell { display: none; }
-:host([data-actions]) .actions-cell { display: table-cell; }
-
 :host([data-actions]) .actions-cell {
+  display: table-cell;
   inline-size: 76px;   /* off-grid-ok: matches .actions-col above */
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;

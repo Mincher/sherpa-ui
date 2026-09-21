@@ -1,8 +1,7 @@
 /**
  * sherpa-tooltip — a hint bubble shown on hover or focus.
  *
- * Showing, hiding and placement are pure CSS. JS writes the tip text and links
- * the bubble to the trigger for screen readers.
+ * Ordinary mode is pure CSS; JS runs only for floating (top-layer) mode.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -24,8 +23,7 @@ export class SherpaTooltip extends SherpaElement {
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
 
-    // Listeners are for FLOATING MODE only; the ordinary mode stays pure CSS.
-    // They go on the ANCHOR so a tooltip can describe a box it does not wrap.
+    // On the ANCHOR, so a tooltip can describe a box it does not wrap.
     const anchor = this.#anchor();
     anchor.addEventListener('pointerenter', this.#onShow);
     anchor.addEventListener('pointerleave', this.#onHide);
@@ -33,12 +31,7 @@ export class SherpaTooltip extends SherpaElement {
     anchor.addEventListener('focusout', this.#onHide);
   }
 
-  /**
-   * What the bubble describes: this element, or the box `data-anchor` names.
-   *
-   * Resolved against the tooltip's own root, so a component can point it at one
-   * of its own parts without exposing an id to the document.
-   */
+  /** What the bubble describes: this element, or the box `data-anchor` names. */
   #anchor(): HTMLElement {
     const sel = this.dataset['anchor'];
     if (!sel) return this;
@@ -72,7 +65,6 @@ export class SherpaTooltip extends SherpaElement {
     // SHOW FIRST, then measure: a closed popover is `display: none` and reads 0.
     bubble.showPopover();
     this.#place();
-    // Scroll or resize moves the trigger while the bubble stays put, so close.
     // `capture`, because an ancestor's scroll does not bubble.
     window.addEventListener('scroll', this.#onHide, { capture: true, passive: true });
     window.addEventListener('resize', this.#onHide, { passive: true });
@@ -91,7 +83,7 @@ export class SherpaTooltip extends SherpaElement {
     window.removeEventListener('resize', this.#onHide);
   }
 
-  /** Gap between the trigger and the bubble — the tooltip's own space/2xs. */
+  /** Gap between the trigger and the bubble, in px. */
   static readonly OFFSET = 4;
 
   /**
@@ -108,12 +100,11 @@ export class SherpaTooltip extends SherpaElement {
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
 
-    // Above the trigger, flipping below when there is no room up there.
     let y = t.top - gap - b.height;
     if (y < gap) y = Math.min(vh - b.height - gap, t.bottom + gap);
 
-    // NOT clampNum: here `min` wins the conflict, so a bubble wider than the
-    // viewport pins LEFT and shows the start of its text. The order is deliberate.
+    // NOT clampNum: `min` must win, so a bubble wider than the viewport pins
+    // LEFT and shows the start of its text. The order is deliberate.
     let x = t.left + t.width / 2 - b.width / 2;
     if (x + b.width > vw - gap) x = vw - b.width - gap;
     if (x < gap) x = gap;

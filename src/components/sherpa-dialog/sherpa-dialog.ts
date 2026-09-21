@@ -1,8 +1,7 @@
 /**
  * sherpa-dialog — a modal surface backed by the native <dialog> element.
  *
- * The native `close` event does not cross the shadow boundary, so it is
- * re-dispatched composed.
+ * The native `close` event does not cross the shadow boundary; it is re-dispatched composed.
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */

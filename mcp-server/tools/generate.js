@@ -1,7 +1,5 @@
 /**
- * Generate tools — make a component from a def.
- *
- * Thin wrappers over scripts/lib/generation/*.
+ * Generate tools — thin wrappers over scripts/lib/generation/*.
  *
  *   scaffold_def  — a starter def with the right shape (schemas/component.v1.json)
  *   validate_def  — run every design-system rule; returns errors + warnings
@@ -18,24 +16,18 @@ function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }
 
 const CATEGORIES = ["control", "container", "content", "data", "nav", "chart"];
 
-/** Parse a def that may arrive as a JSON string or an object. */
 function parseDef(input) {
   if (input && typeof input === "object") return input;
   if (typeof input === "string") return JSON.parse(input);
   throw new Error("def must be a JSON object or a JSON string");
 }
 
-/** Class name (SherpaFoo) from a sherpa-foo element name. */
 function classFor(name) {
   return "Sherpa" + name.replace(/^sherpa-/, "").split("-")
     .map((s) => (s[0] ?? "").toUpperCase() + s.slice(1)).join("");
 }
 
-/**
- * A starter def matching schemas/component.v1.json. Shape varies by
- * category so the AI starts from the right skeleton (a control gets a
- * data-status prop + status token fallbacks; a container gets container-* etc).
- */
+/** A starter def matching schemas/component.v1.json; shape varies by category. */
 function scaffold(name, category) {
   const cat = CATEGORIES.includes(category) ? category : "content";
   const isControl = cat === "control";
@@ -44,7 +36,7 @@ function scaffold(name, category) {
   const rootEl = isControl ? "span" : "div";
   const rootClass = isControl ? "control" : isContainer ? "surface" : "root";
 
-  // token skeleton keyed by category (aliases written WITHOUT the --sherpa- prefix)
+  // Aliases are written WITHOUT the --sherpa- prefix.
   const tokens = isControl
     ? {
         [`${rootClass}.gap`]: "control-space-gap-sm",
@@ -177,7 +169,6 @@ function scaffold(name, category) {
 }
 
 export function register(server) {
-  // ── scaffold_def — a starter def with the right shape ──────────────
   server.registerTool(
     "scaffold_def",
     {
@@ -206,7 +197,6 @@ export function register(server) {
     }
   );
 
-  // ── validate_def — run every design-system rule ────────────────────
   server.registerTool(
     "validate_def",
     {
@@ -237,7 +227,6 @@ export function register(server) {
     }
   );
 
-  // ── compile_def — def → { ts, html, css } ──────────────────────────
   server.registerTool(
     "compile_def",
     {
@@ -252,7 +241,6 @@ export function register(server) {
       try {
         const def = parseDef(defInput);
         if (!def.name) return err("def has no `name`");
-        // Any of the three anatomy forms is enough — see compile-def's anatomyRoots().
         if (!def.anatomy?.root && !def.anatomy?.roots && !def.anatomy?.byTemplate) return err("def has no anatomy (`root`, `roots` or `byTemplate`) — compile_def needs one. Run scaffold_def for the shape.");
         const { ts, html, css } = compileDef(def);
         const name = def.name;
@@ -268,7 +256,6 @@ export function register(server) {
     }
   );
 
-  // ── token_for — which token to bind for a value (the meticulous rule) ──
   server.registerTool(
     "token_for",
     {

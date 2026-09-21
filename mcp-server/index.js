@@ -1,14 +1,8 @@
 #!/usr/bin/env node
 /**
- * Sherpa UI MCP Server — entry point
- *
- * Transport: stdio (launched by AI clients, not used directly in a browser).
- * All capabilities are registered in server.js. Tools are thin wrappers over
- * the shared generation lib (scripts/lib/generation/*).
- *
- * To add a tool: edit tools/{discover,generate,verify}.js.
- * To add a resource: edit resources/index.js.
- * To add a prompt: edit prompts/index.js.
+ * Sherpa UI MCP Server — stdio entry point. Run with `npm run mcp`.
+ * Capabilities are registered in server.js; tools live in tools/, resources in
+ * resources/, prompts in prompts/.
  */
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";

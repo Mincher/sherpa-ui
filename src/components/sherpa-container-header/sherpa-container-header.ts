@@ -1,12 +1,8 @@
 /**
  * sherpa-container-header — the header strip inside a container.
  *
- * Drag handle, icon, title/description, then actions, collapse toggle and close.
- * `data-type="panel"` selects a second look; the look itself is all CSS.
- *
- * Figma's `accordion` variant is deliberately NOT a data-type value — it is this
- * header with `data-collapsible` and no `data-dismissible`. A self-contained
- * disclosure card is the separate `sherpa-accordion`.
+ * Figma's `accordion` variant is NOT a data-type here: it is this header with
+ * `data-collapsible` and no `data-dismissible`.
  *
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  */
@@ -28,8 +24,7 @@ export class SherpaContainerHeader extends SherpaElement {
 
   override onRender(): void {
     this.#syncCollapsed();
-    // `button-click`, not `click` — a disabled sherpa-button suppresses its own
-    // event, where a raw click listener would still fire.
+    // `button-click`, not `click` — a disabled sherpa-button suppresses its own event.
     this.$('.close')?.addEventListener('button-click', this.#onDismiss);
     this.$('.toggle')?.addEventListener('button-click', this.#onToggle);
     this.$('.drag')?.addEventListener('pointerdown', this.#onDrag);

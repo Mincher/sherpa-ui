@@ -1,9 +1,8 @@
 /**
  * sherpa-app-shell — the boilerplate frame for an app or a view.
  *
- * The nav rail is a full-height OVERLAY; the header + content wrapper is inset
- * past it. Nav and header are pre-composed as named-slot defaults. CSS owns the
- * inset; this file only mirrors the rail's state onto the host.
+ * CSS owns the inset past the overlaying nav rail; this file only mirrors the
+ * rail's state onto the host.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

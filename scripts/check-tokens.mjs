@@ -1,20 +1,14 @@
 #!/usr/bin/env node
 /**
- * Diff a LIVE Figma variable read against figma.tokens.json. Figma wins.
+ * Diff a live Figma variable read against figma.tokens.json. Figma wins.
  * With --patch, rewrites the dump; otherwise exits non-zero on drift (CI gate).
  *
  *   node scripts/check-tokens.mjs <live-tokens.json> [--patch] [--collection=slug]
  *
- * The live snapshot is a figma_execute read of BASE collections only, resolved one
- * level: `{slug.dotted.path}` stays unresolved so a re-point shows as a changed
- * target. Extension overrides read back EMPTY from `valuesByMode` and are out of
- * scope — they need a bound-probe (figma.extensions.json).
- *
- * Three things that look like drift and are not: a hex where Figma holds
- * `{primitives.…}` (the projector inlines those), hex case, and a
- * `{MISSING:VariableID:…}` cross-library target.
- */
-import { readFileSync, writeFileSync } from 'node:fs';
+ * BASE collections only — extension overrides read back EMPTY from `valuesByMode`.
+ * Not drift: a hex where Figma holds `{primitives.…}`, hex case, a `{MISSING:…}`
+ * cross-library target.
+ */import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,7 +28,6 @@ const live = JSON.parse(readFileSync(livePath, 'utf8'));
 const dumpRaw = readFileSync(DUMP, 'utf8');
 const dump = JSON.parse(dumpRaw);
 
-/** Yield [slash/path, leafObject] for every leaf. */
 function* leaves(node, path = '') {
   if (!node || typeof node !== 'object') return;
   if ('$value' in node) {
@@ -47,13 +40,9 @@ function* leaves(node, path = '') {
   }
 }
 
-/** Case-fold a hex — case is not drift. */
 const fold = (v) => (typeof v === 'string' && v.startsWith('#') ? v.toLowerCase() : v);
 
-/**
- * `modes` carries only the NON-PRIMARY modes; the primary one is the leaf's
- * `$value`. Reading the primary out of `modes` silently finds `undefined`.
- */
+/** `modes` holds only NON-PRIMARY modes; the primary one is the leaf's `$value`. */
 function dumpValue(leaf, mode, primaryMode) {
   const ext = leaf.$extensions?.['figma-console-mcp'] ?? {};
   if (mode === (ext.primaryMode ?? primaryMode)) return leaf.$value;
@@ -87,7 +76,7 @@ for (const [slug, col] of Object.entries(live)) {
       const dumpVal = dumpValue(leaf, mode, col.primaryMode);
       if (dumpVal === undefined) continue; // the dump does not model this mode
 
-      // Primitives are inlined by the projector, so a literal here is not drift.
+      // Projector inlines primitives, so a literal here is not drift.
       if (
         typeof figmaVal === 'string' &&
         figmaVal.startsWith('{primitives.') &&
@@ -103,7 +92,6 @@ for (const [slug, col] of Object.entries(live)) {
   }
 }
 
-/* ── Report ──────────────────────────────────────────────────────────────── */
 const pad = (s, n) => String(s).padEnd(n);
 if (drift.length) {
   console.log(`\n${drift.length} drifted value(s) — Figma wins:\n`);
@@ -125,7 +113,6 @@ if (absent.length) {
   for (const a of absent) console.log(`  ${a}`);
 }
 
-/* ── Patch ───────────────────────────────────────────────────────────────── */
 if (PATCH && drift.length) {
   const stamp = new Date().toISOString();
   for (const d of drift) {
@@ -133,7 +120,6 @@ if (PATCH && drift.length) {
     const primary = ext.primaryMode ?? live[d.slug].primaryMode;
     if (d.mode === primary) d.leaf.$value = d.figma;
     else (ext.modes ??= {})[d.mode] = d.figma;
-    // lastSyncedValue mirrors every mode, primary included.
     const lsv = (ext.lastSyncedValue ??= {});
     lsv[d.mode] =
       typeof d.figma === 'string' && d.figma.startsWith('{')
@@ -141,7 +127,7 @@ if (PATCH && drift.length) {
         : d.figma;
     ext.lastSyncedAt = stamp;
   }
-  // The dump stores non-ASCII escaped; re-encoding raw would bloat the diff.
+  // The dump stores non-ASCII escaped.
   const json = JSON.stringify(dump, null, 2).replace(/[-￿]/g, (c) =>
     `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`,
   );

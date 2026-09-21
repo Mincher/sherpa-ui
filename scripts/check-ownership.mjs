@@ -1,17 +1,12 @@
 #!/usr/bin/env node
 /**
- * check-ownership.mjs — one owner per value, enforced.
+ * check-ownership.mjs — TRAP T-bind-locks-what-it-owns.
  *
- * `DataSource.#push` writes the OWNED attributes onto every bound component.
- * A component that writes one too is both reporter and owner of that value —
- * flagged unless a nearby `data-locked` check guards it, or it sits in a
- * `set <name>(…)` accessor (the host's own channel).
- *
- * Crude by design: lines, not an AST — it catches the accidental relapse.
+ * Flags a component that writes an attribute `DataSource.#push` owns, unless a
+ * `data-locked` guard sits nearby or the write is in a `set <name>(…)` accessor.
+ * Lines, not an AST.
  *
  *   node scripts/check-ownership.mjs
- *
- * TRAP T-bind-locks-what-it-owns.
  */
 import { readFileSync } from 'node:fs';
 import { globSync } from 'node:fs';
@@ -31,11 +26,9 @@ const OWNED = [
   'data-page-size',
 ];
 
-/** `data-sort-field` → `sortField`. */
 const camel = (attr) =>
   attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
-/** Lines either side of a write a `data-locked` guard may sit. */
 const GUARD_WINDOW = 3;
 
 const problems = [];
