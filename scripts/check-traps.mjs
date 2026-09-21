@@ -11,6 +11,7 @@ import { readFileSync, existsSync, globSync } from 'node:fs';
 const DOC = 'docs/TRAPS.md';
 /** A file not scanned here is not gated. */
 const SOURCES = [
+  'src/*.ts',
   'src/components/*/*.ts',
   'src/core/*.ts',
   'src/components/*/*.css',
@@ -19,7 +20,7 @@ const SOURCES = [
   'playwright.config.ts',
   'test/e2e/*.ts',
   'test/unit/*.mjs',
-  'scripts/check-*.mjs',
+  'scripts/*.mjs',
   'examples/views/*.js',
 ];
 

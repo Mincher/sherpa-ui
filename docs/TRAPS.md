@@ -2054,6 +2054,45 @@ nothing, with no warning anywhere.
 - Site: `test/reforged/harness.html`
 - Site: `playwright.config.ts`
 
+### T-icon-box-is-not-the-glyph
+
+**An icon's BOX and its GLYPH are two sizes, not one.** A Figma icon is a
+`content/size/*` frame with `clipsContent`, holding a vector that differs per
+icon: `filter` (17:4701) is 10.5 x 9.625 inside its 14 box, `triangle-down` is
+7 x 4.375, and only 20 of the 214 fill all 14. The frame is the layout contract
+and never moves; the art inside it varies.
+
+Driving both from one variable — `inline-size`, `block-size` and `font-size` all
+`var(--sherpa-theme-content-size-base)` — is the obvious approach and is wrong.
+Font Awesome at `font-size == box` paints about **101%** of that box, against a
+Figma median of 87.5%, so every glyph came out roughly 1.3x its vector and ate
+the air around it. Measured on the filter chip: a correct 24 chip and a correct
+14 box, with a funnel painting 14.1 x 12.4 where Figma draws 10.5 x 9.625.
+
+It is invisible in the numbers a reviewer checks. Chip height, icon width and
+icon height were all exactly right; only the ink inside was wrong.
+
+`.sherpa-icon-box` in `sherpa-base.css` owns both halves: the component sets
+`--_icon-size` for the bounds, and the glyph follows on
+`--sherpa-icon-glyph-scale`. The box also sets `flex-shrink: 0` and
+`overflow: clip`, which is what Figma's `clipsContent` does — bounds cannot be
+squeezed by a flex parent nor grown by an oversized glyph.
+
+**An earlier fix asserted the opposite** and shipped a test demanding
+`font-size == box height`. It was solving a real bug (a glyph left to inherit
+the neighbouring text size) but over-corrected into a rule Figma does not hold.
+The replacement asserts the box exactly and the glyph as a RATIO of it, which
+still catches an inherited glyph without freezing the art.
+
+**A component that rewrites `className` erases the class.** `sherpa-input-text`
+rebuilds its icon's whole class list in `#syncIcon`, so the shared class has to
+be restated in that string; the template alone is not enough. It failed as a
+16px glyph in a 14px box, with the CSS looking correct.
+
+- Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `test/e2e/reforged-icon-sizes.spec.ts`
+
 ### T-icon-value-takes-two-forms
 
 An icon attribute's value has always been allowed to be EITHER a Font Awesome
@@ -3575,6 +3614,7 @@ a grid's column filter, which is the thing view definitions exist for.
 - Site: `src/core/apply-state.ts`
 - Site: `src/core/apply-state.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
+- Site: `src/index.ts`
 
 ### T-populatable-declared-four-times
 
@@ -3730,6 +3770,7 @@ from the host after the swap.
 - Site: `src/core/view-markup.ts`
 - Site: `src/core/persist-view.ts`
 - Site: `test/e2e/reforged-view-markup.spec.ts`
+- Site: `src/index.ts`
 
 ### T-sse-over-websocket-for-a-feed
 
@@ -4276,6 +4317,7 @@ poison a session that is later granted storage.
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/data.ts`
 
 ### T-idb-open-is-a-handshake-not-a-call
 
@@ -4403,6 +4445,7 @@ which is Node — every method still answers, with `{}`.
 - Site: `src/core/view-sync.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/data.ts`
 
 ### T-sync-pushes-a-snapshot-not-a-diff
 
@@ -6432,7 +6475,7 @@ broken when it is exactly right.
 throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
 `1px 1px 1px 2px`.
 
-- Site: `src/core/sherpa-base.css`
+- Site: `src/core/sherpa-grouping.css`
 
 ### T-an-empty-chip-opens-its-menu
 
@@ -6851,7 +6894,7 @@ Two other things live there for the same reason:
 A toast's slide and a progress bar's sweep stay local: both are specific to
 their component's geometry.
 
-- Site: `src/core/sherpa-base.css`
+- Site: `src/core/sherpa-motion.css`
 - Site: `src/components/sherpa-loader/sherpa-loader.css`
 - Site: `src/components/sherpa-container/sherpa-container.css`
 
@@ -6876,4 +6919,62 @@ Two constraints the machinery carries, worth knowing before reusing it:
 - **An SVG element cannot be a CSS anchor in Chromium**, which is what the
   zero-size anchor point exists for.
 
+- Site: `src/core/sherpa-anchor.css`
+
+### T-a-document-class-cannot-reach-a-shadow-root
+
+`tokens.css` is `<link>`ed into the page. A **custom property** declared there
+inherits across a shadow boundary, so `var(--sherpa-theme-content-size-h1)`
+works inside a component. A **class rule** does not: a shadow root matches
+selectors against its own adopted sheets only.
+
+The generator had been emitting 27 `.sherpa-text-*` role classes into the theme
+layer of `tokens.css`. Measured in Chromium, the same class gave:
+
+```
+.sherpa-text-h1 in the document:  24px / 600
+.sherpa-text-h1 in a shadow root: 14px / 400   (the inherited default)
+.sherpa-text-mono-* in a shadow root: Inter, not ui-monospace
+```
+
+Zero of the 58 components used them — which is the tell. A class nobody can
+reach looks exactly like a class nobody wanted.
+
+They now generate into `src/core/sherpa-typography.css`, which
+`SherpaElement.sharedStyles` adopts into every shadow root beside
+`sherpa-base.css`. `tokens.css` emits none of them.
+
+The split between the two folders is the rule to keep: **`src/styles/` is what
+the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
+`core`; a token belongs in `styles`.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/core/sherpa-typography.css`
+- Site: `src/index.ts`
+
+### T-import-dies-in-an-adopted-sheet
+
+Shared CSS is split by subject — base, typography, anchoring, motion — and the
+obvious way to join them is one entry sheet that `@import`s the rest. It does
+not work, and it does not say so.
+
+Measured in Chromium against a constructable sheet whose text begins
+`@import url("/b.css");`:
+
+```
+sheet.replace(css)      → resolved. No throw, no warning.
+[...sheet.cssRules]     → 1 rule. The @import is not even listed.
+the imported .from-b    → rgb(0,0,0) / 16px — the defaults. Never applied.
+```
+
+`CSSStyleSheet.replace()` drops `@import` by specification; a constructable
+sheet has no base URL to resolve one against. The failure is silent, which
+makes it the same shape as the bug above it: styles that are simply absent.
+
+So `SherpaElement.sharedStyles` lists **one URL per file**, in cascade order.
+The base class already fetches a list and adopts them all — splitting a sheet
+costs one line there and nothing else. A new shared stylesheet must be added to
+that array or nothing adopts it.
+
+- Site: `src/index.ts`
 - Site: `src/core/sherpa-base.css`

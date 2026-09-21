@@ -1,0 +1,95 @@
+/**
+ * sherpa-anchor.css — anchored tips. Adopted into every shadow root.
+ * Any component can anchor a tip to any trigger; `.chart-*` are aliases.
+ * TRAP T-anchoring-is-generic.
+ */
+
+.sherpa-tip,
+.chart-tip {
+  position: fixed;
+  position-anchor: var(--_anchor);
+  /* Radial charts override --_area to push each tip outward — see radialArea()
+     in core/format-tick.ts. */
+  position-area: var(--_area, block-start);
+  /* NOT span areas (`block-start span-inline-end` etc.): the browser preferred
+     those over the centred area, so nothing ever rendered above. @position-try
+     with a margin shift is the nudge. */
+  position-try-fallbacks:
+    --tip-shift-end, --tip-shift-start,
+    inline-end, inline-start,
+    block-end;
+  margin: var(--sherpa-display-mode-space-2xs, 4px);
+
+  inline-size: max-content;
+  max-inline-size: 16rem;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  gap: var(--sherpa-theme-gap-md, 8px);
+  align-items: baseline;
+  border: 0;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-4, #ffffff);
+  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  font-weight: var(--sherpa-font-weight-regular, 400);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  /* Elevation=md spelled out from primitives: `[data-elevation="md"]` is a bare
+     attribute selector in tokens.css and never reaches inside a shadow root. */
+  box-shadow:
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-2xs, 8px)
+    var(--sherpa-display-mode-size-sm, 16px)
+    -4px
+    var(--sherpa-style-surface-shadow, #15151e80);
+  pointer-events: none;
+
+  /* display:none, not opacity — no layout, and hidden from assistive tech. */
+  display: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) + :is(.sherpa-tip, .chart-tip),
+:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) :is(.sherpa-tip, .chart-tip) {
+  display: flex;
+  opacity: 1;
+}
+
+/* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
+.sherpa-anchor-point,
+.chart-anchor-point {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  anchor-name: var(--_anchor);
+  pointer-events: none;
+}
+
+@supports (position-visibility: anchors-visible) {
+  .sherpa-tip,
+  .chart-tip { position-visibility: anchors-visible; }
+}
+
+.sherpa-tip-value,
+.chart-tip-value {
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stay ABOVE, slide sideways; `align-self: end` holds the block-start area. */
+@position-try --tip-shift-end {
+  position-area: block-start;
+  align-self: end;
+  justify-self: start;
+}
+@position-try --tip-shift-start {
+  position-area: block-start;
+  align-self: end;
+  justify-self: end;
+}
+
+/* A chart may name a CHILD (`.chart-anchor`) when the hover target is bigger
+   than the thing described — a bar column is the full plot height. */
+:is(.sherpa-anchor, .chart-mark) { anchor-name: var(--_anchor); }
+:is(.sherpa-anchor, .chart-mark):has(> :is(.sherpa-anchor-el, .chart-anchor)) { anchor-name: none; }
+:is(.sherpa-anchor-el, .chart-anchor) { anchor-name: var(--_anchor); }

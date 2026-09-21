@@ -17,9 +17,20 @@ import { SherpaElement } from './core/sherpa-element.js';
  */
 const FA_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
 
-/** The base reset + FA class rules each shadow root adopts. Tokens inherit from the light DOM. */
+/**
+ * What every shadow root adopts, in cascade order. Tokens themselves inherit
+ * from the light DOM.
+ *
+ * One entry per file, because `@import` is DROPPED from an adopted stylesheet
+ * without an error — TRAP T-import-dies-in-an-adopted-sheet.
+ * `sherpa-typography.css` is GENERATED — TRAP T-a-document-class-cannot-reach-a-shadow-root.
+ */
 SherpaElement.sharedStyles = [
   new URL('./core/sherpa-base.css', import.meta.url),
+  new URL('./core/sherpa-typography.css', import.meta.url),
+  new URL('./core/sherpa-grouping.css', import.meta.url),
+  new URL('./core/sherpa-anchor.css', import.meta.url),
+  new URL('./core/sherpa-motion.css', import.meta.url),
   new URL(FA_CDN),
 ];
 

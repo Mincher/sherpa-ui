@@ -1,0 +1,39 @@
+/**
+ * sherpa-motion.css — the duration scale, shared keyframes, and THE
+ * reduced-motion gate. Adopted into every shadow root.
+ * Components never write their own gate; this one owns it.
+ * TRAP T-motion-is-owned-here.
+ */
+
+:host {
+  --sherpa-motion-fast: 100ms;    /* a state flip: hover, press, tint */
+  --sherpa-motion-base: 120ms;    /* the default — most transitions */
+  --sherpa-motion-slow: 300ms;    /* something that TRAVELS: a bar growing */
+  --sherpa-motion-ease: ease;
+}
+
+/* One rotation. `sherpa-container` and `sherpa-loader` each defined this. */
+@keyframes sherpa-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sherpa-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* THE GATE. `animation-duration` and not `animation: none`, so a paused
+   animation still lands on its end state rather than snapping back to its
+   start. `!important` because a component's own rule is more specific than a
+   shared sheet's, and this must win everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

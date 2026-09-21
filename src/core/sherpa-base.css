@@ -1,6 +1,9 @@
 /**
  * sherpa-base.css — adopted into EVERY component's shadow root.
- * Reset + inheritable defaults only; design tokens inherit in from tokens.css.
+ * Reset, inheritable defaults and the opt-in classes. Design tokens inherit in
+ * from tokens.css; typography, anchoring and motion are their own sheets, each
+ * listed in SherpaElement.sharedStyles.
+ * TRAP T-import-dies-in-an-adopted-sheet.
  */
 
 *,
@@ -30,6 +33,14 @@
      component's own box rather than over its neighbours. 48 sites across 29
      files wrote this by hand. */
   --sherpa-focus-ring: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+
+  /* TRAP T-icon-box-is-not-the-glyph — a box and its glyph are two sizes.
+     Icon glyph scale — the glyph's size WITHIN its box, never the box itself.
+     A Figma icon is a content/size/* frame (clipsContent) holding a vector that
+     varies; the frame never moves. Font Awesome at font-size == box paints ~101%
+     of it, so setting both from one var drew every glyph ~1.3x over its Figma
+     vector and ate the surrounding air. Figma's median extent is 87.5%. */
+  --sherpa-icon-glyph-scale: 0.875;
 }
 
 :host([hidden]) {
@@ -52,140 +63,6 @@
   }
 }
 
-/* ── Anchored tips ───────────────────────────────────────────────────────────
- * Generic anchor positioning — ANY component can use it, not just a chart.
- * No JS placement: CSS anchor positioning plus the popover layer. Anchors
- * cannot cross a shadow boundary, so trigger and tip must share one root.
- * JS supplies only `--_anchor`; an anchor name cannot be derived in CSS.
- *
- * `.chart-*` are kept as ALIASES — five chart components, a spec and the tests
- * name them, and the spec round-trip gate reads the templates.
- * TRAP T-anchoring-is-generic. */
-.sherpa-tip,
-.chart-tip {
-  position: fixed;
-  position-anchor: var(--_anchor);
-  /* Radial charts override --_area to push each tip outward — see radialArea()
-     in core/format-tick.ts. */
-  position-area: var(--_area, block-start);
-  /* NOT span areas (`block-start span-inline-end` etc.): the browser preferred
-     those over the centred area, so nothing ever rendered above. @position-try
-     with a margin shift is the nudge. */
-  position-try-fallbacks:
-    --tip-shift-end, --tip-shift-start,
-    inline-end, inline-start,
-    block-end;
-  margin: var(--sherpa-display-mode-space-2xs, 4px);
-
-  inline-size: max-content;
-  max-inline-size: 16rem;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  gap: var(--sherpa-theme-gap-md, 8px);
-  align-items: baseline;
-  border: 0;
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-style-content-base, #0c0b11);
-  color: var(--sherpa-theme-content-body-4, #ffffff);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  /* Elevation=md spelled out from primitives: `[data-elevation="md"]` is a bare
-     attribute selector in tokens.css and never reaches inside a shadow root. */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--sherpa-style-surface-shadow, #15151e80);
-  pointer-events: none;
-
-  /* display:none, not opacity — no layout, and hidden from assistive tech. */
-  display: none;
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) + :is(.sherpa-tip, .chart-tip),
-:is(.sherpa-anchor, .chart-mark):is(:hover, :focus-visible) :is(.sherpa-tip, .chart-tip) {
-  display: flex;
-  opacity: 1;
-}
-
-/* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
-.sherpa-anchor-point,
-.chart-anchor-point {
-  position: absolute;
-  inline-size: 0;
-  block-size: 0;
-  anchor-name: var(--_anchor);
-  pointer-events: none;
-}
-
-@supports (position-visibility: anchors-visible) {
-  .sherpa-tip,
-  .chart-tip { position-visibility: anchors-visible; }
-}
-
-.sherpa-tip-value,
-.chart-tip-value {
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Stay ABOVE, slide sideways; `align-self: end` holds the block-start area. */
-@position-try --tip-shift-end {
-  position-area: block-start;
-  align-self: end;
-  justify-self: start;
-}
-@position-try --tip-shift-start {
-  position-area: block-start;
-  align-self: end;
-  justify-self: end;
-}
-
-/* A chart may name a CHILD (`.chart-anchor`) when the hover target is bigger
-   than the thing described — a bar column is the full plot height. */
-:is(.sherpa-anchor, .chart-mark) { anchor-name: var(--_anchor); }
-:is(.sherpa-anchor, .chart-mark):has(> :is(.sherpa-anchor-el, .chart-anchor)) { anchor-name: none; }
-:is(.sherpa-anchor-el, .chart-anchor) { anchor-name: var(--_anchor); }
-
-/* ══ A SNAPPED control group ════════════════════════════════════════════════
- * `.sherpa-snap-group` on the WRAPPER squares inner corners; children need
- * nothing. BY POSITION, not `[data-snap]`, so a re-order survives. */
-.sherpa-snap-group > * {
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
-.sherpa-snap-group > :first-child {
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-.sherpa-snap-group > :last-child {
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-
-/* ── Per-edge border widths ──────────────────────────────────────────────
-   Widths only: all 26 call sites set a different `border-color`, so folding
-   colour in would mean one wrong default plus 26 overrides. `border-style` is
-   here because a width with no style draws nothing. Seven sites still write
-   these inline and must (a bare `:host` cannot wear a class from its own
-   sheet); adding the class to only some of them silently un-borders the rest. */
-/* TRAP T-a-sub-pixel-border-reads-back-as-1px — these edges are deliberately
-   sub-pixel and `getComputedStyle` rounds every one up to "1px". Read the
-   custom property, never the border. */
-.sherpa-border-edges {
-  border-style: solid;
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
-}
-
 /* ── Truncate to one line ────────────────────────────────────────────────
    The four declarations always travel together; 13 files wrote all four. */
 .sherpa-truncate {
@@ -195,6 +72,28 @@
   white-space: nowrap;
 }
 
+/* ── Icon box ────────────────────────────────────────────────────────────
+   The Figma icon WRAPPER: a square of `--_icon-size` that clips, holding a
+   glyph sized independently. 12 components sized box and glyph from ONE var,
+   so the glyph could never vary without moving the bounds.
+   The component sets `--_icon-size`; the glyph follows on its own scale. */
+.sherpa-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size, var(--sherpa-theme-content-size-base, 14px));
+  block-size: var(--_icon-size, var(--sherpa-theme-content-size-base, 14px));
+  /* The bounds are the contract: never squeezed by a flex parent, never grown
+     by an oversized glyph. Figma's frames set clipsContent for the same reason. */
+  flex-shrink: 0;
+  overflow: clip;
+  font-size: calc(
+    var(--_icon-size, var(--sherpa-theme-content-size-base, 14px)) *
+      var(--sherpa-icon-glyph-scale, 0.875)
+  );
+  line-height: 1;
+}
+
 /* ── Disabled ────────────────────────────────────────────────────────────
    The two INTERACTION declarations only. Colour is per-component, because
    each picks a different inactive token — and never `opacity`, which
@@ -202,43 +101,4 @@
 .sherpa-inert {
   cursor: not-allowed;
   pointer-events: none;
-}
-
-/* ── Motion ──────────────────────────────────────────────────────────────
-   A named duration scale, the keyframes more than one component needs, and
-   the reduced-motion gate. CLAUDE.md tells components not to write their own
-   `prefers-reduced-motion` block because "motion gating is owned globally" —
-   until now nothing owned it, so every animation ignored the setting.
-   TRAP T-motion-is-owned-here. */
-:host {
-  --sherpa-motion-fast: 100ms;    /* a state flip: hover, press, tint */
-  --sherpa-motion-base: 120ms;    /* the default — most transitions */
-  --sherpa-motion-slow: 300ms;    /* something that TRAVELS: a bar growing */
-  --sherpa-motion-ease: ease;
-}
-
-/* One rotation. `sherpa-container` and `sherpa-loader` each defined this. */
-@keyframes sherpa-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes sherpa-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* THE GATE. `animation-duration` and not `animation: none`, so a paused
-   animation still lands on its end state rather than snapping back to its
-   start. `!important` because a component's own rule is more specific than a
-   shared sheet's, and this must win everywhere. */
-@media (prefers-reduced-motion: reduce) {
-  :host,
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }

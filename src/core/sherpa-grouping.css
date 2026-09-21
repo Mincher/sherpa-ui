@@ -1,0 +1,41 @@
+/**
+ * sherpa-grouping.css — controls that read as ONE object.
+ * `.sherpa-snap-group` squares the inner corners; `.sherpa-border-edges` draws
+ * the per-edge widths so neighbours share a hairline instead of doubling it.
+ * Adopted into every shadow root.
+ */
+
+/* ══ A SNAPPED control group ════════════════════════════════════════════════
+ * `.sherpa-snap-group` on the WRAPPER squares inner corners; children need
+ * nothing. BY POSITION, not `[data-snap]`, so a re-order survives. */
+.sherpa-snap-group > * {
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
+}
+.sherpa-snap-group > :first-child {
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.sherpa-snap-group > :last-child {
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* ── Per-edge border widths ──────────────────────────────────────────────
+   Widths only: all 26 call sites set a different `border-color`, so folding
+   colour in would mean one wrong default plus 26 overrides. `border-style` is
+   here because a width with no style draws nothing. Seven sites still write
+   these inline and must (a bare `:host` cannot wear a class from its own
+   sheet); adding the class to only some of them silently un-borders the rest. */
+/* TRAP T-a-sub-pixel-border-reads-back-as-1px — these edges are deliberately
+   sub-pixel and `getComputedStyle` rounds every one up to "1px". Read the
+   custom property, never the border. */
+.sherpa-border-edges {
+  border-style: solid;
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+}
