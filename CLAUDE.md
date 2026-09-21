@@ -533,6 +533,36 @@ Components use `@container` for responsive adaptation — **no viewport `@media`
 | `light-dark()` in component CSS | Theme files own mode; components are mode-agnostic |
 | `outline: --focus-ring()` for focus indicators | `outline: none; box-shadow: inset 0 0 0 2px var(…, #hex)` |
 | Odd px (`3px`, `11px`) for spacing/size/radius | On-grid step (8/4/2px) or the token's real value |
+| A paragraph of rationale beside the code | One line, or a `TRAP` citation into `docs/TRAPS.md` |
+
+---
+
+## Comments are simple and concise — if they are needed at all
+
+Ratified 2026-09-21. **HTML, CSS, JS and TS alike.**
+
+Measured when the rule was given: TS was 34% comments (5,925 of 17,222 lines),
+component CSS 36%, component **HTML 64%** — some templates 89%. A long comment
+is a second place the truth lives, and it rots; this repo has the receipts.
+
+| Cut | Keep |
+|---|---|
+| Multi-paragraph rationale | One-line summary on an export |
+| Markdown tables in comments | A file header of one or two lines |
+| "It used to be X, which was wrong because Y" | A warning NOT obvious from the code — a silent failure, a browser quirk, an ordering constraint |
+| Restating what the code plainly says | A line that looks like a mistake and is not |
+| Worked examples longer than one line | `/* off-grid-ok */` and other pragmas |
+
+**Depth belongs in `docs/TRAPS.md`**, which is gated both ways: a `TRAP
+T-some-id` citation must survive verbatim, and the explanation lives in the doc
+rather than beside the code. That is the trade — the citation stays, the essay
+moves.
+
+Two regions are exempt because a generator owns them: everything above
+`/* == end sherpa:tokens == */` in a component's CSS, and the `Public API:` /
+`Fires:` blocks in its HTML.
+
+Aim nearer 15% than 40%.
 
 ---
 
