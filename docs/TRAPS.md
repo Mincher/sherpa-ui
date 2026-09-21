@@ -1797,8 +1797,15 @@ A column header's sort is TRI-STATE:
 ```
 not this column  →  ascending
 ascending        →  descending
-descending       →  OFF (no column sorted)
+descending       →  SUSPENDED (column kept, nothing ordered)
+suspended        →  ascending again
 ```
+
+**SUSPENDED, not deleted** — corrected 2026-09-21. It used to delete the column,
+which broke `T-a-chip-body-cycles-its-states` ("off is a state, not a delete")
+and made this control and the toolbar's Sort chip disagree about what their
+shared third state keeps. See `T-a-suspended-sort-is-one-owners-job` for the
+wire format and why the memory lives on the source.
 
 The third step is what the toolbar had and this did not: it cycled asc → desc →
 asc, so **once a column was sorted there was no way back to unsorted** without
@@ -3655,6 +3662,7 @@ What is left is one of each:
 `applyState` and the examples use, and it never claimed to wire anything.
 
 - Site: `src/core/persist-view.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-saved-markup-is-untrusted-input
 
@@ -4263,6 +4271,7 @@ poison a session that is later granted storage.
 - Site: `src/core/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-idb-open-is-a-handshake-not-a-call
 
@@ -4389,6 +4398,7 @@ which is Node — every method still answers, with `{}`.
 
 - Site: `src/core/view-sync.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-sync-pushes-a-snapshot-not-a-diff
 
@@ -6657,3 +6667,47 @@ the module they both already import.
 - Site: `src/core/idb-store.ts`
 - Site: `src/core/validate.ts`
 - Site: `src/core/stores.ts`
+
+### T-a-suspended-sort-is-one-owners-job
+
+A sort has TWO halves, and they belong to different things:
+
+| | |
+|---|---|
+| `state.sort` | the QUERY — empty while suspended, because the store must not order anything |
+| `state.sortSuspended` | the UI half — the column a control still shows, so one more click resumes it |
+
+**Both live on the DataSource**, and that is the whole point. The source owns
+every bound element's `data-*` (`T-attributes-are-the-state-channel`), so a
+component that kept its own suspended column in `data-sort-field` had it wiped
+by the very next push, one microtask later. Measured: the grid set the
+attribute, `#push` ran, `setAttr(el, 'data-sort-field', undefined)` removed it,
+and the third click read as a clear.
+
+That is why the grid and the toolbar's Sort chip disagreed about their shared
+third state. Both cycled three ways — but the grid DELETED the column and the
+chip SUSPENDED it, which broke the ratified rule that a control's states cycle
+and none of them clears (`T-a-chip-body-cycles-its-states`).
+
+**The wire format is an EMPTY `data-sort-direction`.** The field says WHICH
+column; the direction says whether it is being applied:
+
+| pushed | means |
+|---|---|
+| `field="n" direction="asc"` | sorting, ascending |
+| `field="n" direction=""` | suspended — show the column, order nothing |
+| neither attribute | no sort at all |
+
+Three things read it and all three must agree: `#sortRows` (does not sort),
+`#renderHead` (glyph back to `sortNone`, `data-sort` removed), and the toolbar's
+`#syncSortFromAttrs` (chip off, direction rewound to `asc` so a resume starts
+ascending rather than at the stale `desc`).
+
+`setSort(null)` suspends; `clearSort()` forgets. A caller that means "throw it
+away" must say so — and a NEW sort drops the memory rather than shadowing it,
+or resuming would jump to a column the reader had moved on from.
+
+- Site: `src/core/data-source.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/suspended-sort.test.mjs`

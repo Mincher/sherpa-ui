@@ -16,6 +16,22 @@ export interface ViewState {
   search: string;
   page: number;
   pageSize: number | null;
+  /**
+   * A sort the reader turned OFF but did not throw away.
+   *
+   * `sort` is the QUERY — empty while suspended, because the store must not
+   * order anything. This is the UI half: the column a control still shows, so
+   * one more click brings it back without a trip to a menu.
+   *
+   * It lives HERE and not in a component because the source owns every bound
+   * element's `data-*` (`T-attributes-are-the-state-channel`). A grid that kept
+   * its suspended column in `data-sort-field` had it wiped a microtask later by
+   * the very next push, which is what made the grid and the toolbar's Sort chip
+   * disagree about their shared third state.
+   *
+   * TRAP T-a-suspended-sort-is-one-owners-job.
+   */
+  sortSuspended?: SortSpec;
 }
 
 export interface DataSourceOptions {
@@ -185,6 +201,12 @@ export class DataSource extends EventTarget {
       else delete this.#state.filter;
     }
     if (next.sort) this.#state.sort = next.sort;
+    // The remembered column travels with the query — a saved view that was
+    // captured mid-suspend restores as it was left.
+    if ('sortSuspended' in next) {
+      if (next.sortSuspended) this.#state.sortSuspended = next.sortSuspended;
+      else delete this.#state.sortSuspended;
+    }
     // A new grouping invalidates the view's page count — see setGroup.
     if ('group' in next) {
       this.#state.group = next.group ?? null;
@@ -240,8 +262,46 @@ export class DataSource extends EventTarget {
    * A page is a window onto an ORDER, so every narrowing or re-ordering change
    * returns to page 1 — page 7 of a freshly filtered list is an empty panel.
    */
+  /**
+   * Order by one field, or stop ordering.
+   *
+   * `field: null` SUSPENDS rather than forgets: the column that was sorting
+   * moves to `sortSuspended`, so a control can keep showing it and one more
+   * click resumes it. The QUERY loses its sort either way — that is what the
+   * store is asked. `clearSort()` is how a caller means "forget it".
+   * TRAP T-a-suspended-sort-is-one-owners-job.
+   */
   setSort(field: string | null, direction: SortDirection = 'asc'): void {
-    this.#state.sort = field ? [{ field, direction }] : [];
+    if (field) {
+      this.#state.sort = [{ field, direction }];
+      delete this.#state.sortSuspended;
+    } else {
+      // REMEMBER what was sorting, so a resume needs no menu. A second
+      // suspend in a row must not overwrite the memory with nothing.
+      const live = this.#state.sort[0];
+      if (live) this.#state.sortSuspended = live;
+      this.#state.sort = [];
+    }
+    this.#resetPage();
+    this.#schedule();
+  }
+
+  /**
+   * Resume the suspended sort, in the direction it was left in.
+   *
+   * Does nothing when there is none — a caller can offer "resume" without
+   * first asking whether there is anything to resume.
+   */
+  resumeSort(): void {
+    const held = this.#state.sortSuspended;
+    if (!held) return;
+    this.setSort(held.field, held.direction ?? 'asc');
+  }
+
+  /** Forget the sort entirely — the gesture that is NOT a suspend. */
+  clearSort(): void {
+    this.#state.sort = [];
+    delete this.#state.sortSuspended;
     this.#resetPage();
     this.#schedule();
   }
@@ -579,11 +639,22 @@ export class DataSource extends EventTarget {
    * TRAP T-push-writes-state-as-attributes — and `data-filter-fields`.
    */
   #push(el: Populatable): void {
-    const { sort, group, page, pageSize, filter } = this.#state;
+    const { sort, group, page, pageSize, filter, sortSuspended } = this.#state;
     const first = sort[0];
 
-    setAttr(el, 'data-sort-field', first?.field);
-    setAttr(el, 'data-sort-direction', first ? (first.direction ?? 'asc') : undefined);
+    /* THE FIELD SURVIVES A SUSPEND; the DIRECTION is what says whether it is
+       being applied. A live sort writes both; a suspended one writes the
+       remembered field with an EMPTY direction, so a control can still show
+       the column while nothing is ordered by it; nothing at all removes both.
+
+       This is why suspension belongs to the source: a component that kept its
+       own suspended column in `data-sort-field` had it wiped by the very next
+       push, one microtask later.
+       TRAP T-a-suspended-sort-is-one-owners-job. */
+    const shown = first ?? sortSuspended;
+    setAttr(el, 'data-sort-field', shown?.field);
+    setAttr(el, 'data-sort-direction',
+      first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined));
     setAttr(el, 'data-group-field', group ?? undefined);
     // WHICH fields the filter touches, not the filter itself — see
     // TRAP T-push-writes-state-as-attributes.

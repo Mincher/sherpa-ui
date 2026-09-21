@@ -430,8 +430,13 @@ export class SherpaDataGrid extends SherpaElement {
       const sortable = col.sortable !== false;
       th.dataset['sortable'] = String(sortable);
       th.querySelector('.head-label')!.textContent = col.header ?? col.field;
-      const sorted = sortable && col.field === sortField;
+      /* SORTED means being APPLIED, not merely remembered — a suspended column
+         keeps its field and carries an empty direction, so its glyph goes back
+         to `sortNone` and the heading stops claiming to order anything.
+         TRAP T-a-suspended-sort-is-one-owners-job. */
+      const sorted = sortable && col.field === sortField && sortDir !== '';
       if (sorted) th.dataset['sort'] = sortDir ?? 'asc';
+      else delete th.dataset['sort'];
       // A column that is ORDERING or NARROWING what the user can see is flagged
       // with the Style `active` mode. Both are the column acting on the view, so
       // both read the same. The grid's own CSS paints nothing from it — the
@@ -1363,7 +1368,9 @@ export class SherpaDataGrid extends SherpaElement {
    * grouped column is the one case where the reader's direction IS the groups'.
    */
   #sortRows(rows: GridRow[]): GridRow[] {
-    const field = this.dataset['sortField'];
+    // SUSPENDED: the column is remembered, the sort is not applied — an empty
+    // direction is what says so. TRAP T-a-suspended-sort-is-one-owners-job.
+    const field = this.dataset['sortDirection'] === '' ? undefined : this.dataset['sortField'];
     const group = this.dataset['groupField'];
     if (!field && !group) return rows;
     const direction: SortDirection = this.dataset['sortDirection'] === 'desc' ? 'desc' : 'asc';
@@ -1400,13 +1407,31 @@ export class SherpaDataGrid extends SherpaElement {
     const field = th?.dataset['field'];
     if (!field || th!.dataset['sortable'] === 'false') return;
 
-    // TRAP T-grid-sort-is-tri-state — asc → desc → OFF, one column at a time.
+    /* TRAP T-grid-sort-is-tri-state — asc → desc → SUSPENDED, one column at a
+       time. The third step keeps the column: `sort-change` carries `field:
+       null` because the QUERY loses its sort, and the source remembers what was
+       sorting and pushes it back with an EMPTY direction. One more click
+       resumes it ascending, with no trip to a menu — the ratified rule that a
+       control's states cycle and none of them clears
+       (`T-a-chip-body-cycles-its-states`).
+       TRAP T-a-suspended-sort-is-one-owners-job. */
     const active = this.dataset['sortField'] === field;
     const dir = this.dataset['sortDirection'];
     if (active && dir === 'desc') {
-      delete this.dataset['sortField'];
-      delete this.dataset['sortDirection'];
+      // NOT deleted here: the source owns these attributes and writes the
+      // remembered column straight back. Setting it empty first keeps the
+      // header honest for the frame before that lands.
+      this.dataset['sortDirection'] = '';
       this.emit('sort-change', { field: null, direction: null });
+      this.#render();
+      return;
+    }
+    // RESUMING a suspended column: an empty direction means the reader turned
+    // it off, so the next click starts it ascending again rather than reading
+    // the stale `desc` it was left at.
+    if (active && dir === '') {
+      this.dataset['sortDirection'] = 'asc';
+      this.emit('sort-change', { field, direction: 'asc' });
       return;
     }
     const next = active && dir === 'asc' ? 'desc' : 'asc';

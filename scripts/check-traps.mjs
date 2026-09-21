@@ -57,6 +57,10 @@ const SOURCES = [
   // selector now matches twice) is as easy to undo as a rule about rendering,
   // and an undone one turns a working component into a red test.
   'test/e2e/*.ts',
+  // The NODE tests too: they are the DOM-free contract, and a rule they encode
+  // (a suspended sort keeps its column, an aggregate does not round) rots the
+  // same way a component's does.
+  'test/unit/*.mjs',
   // The EXAMPLES too. They are the working reference for wiring a view —
   // CLAUDE.md says so — and a rule about how a view must be wired rots exactly
   // like a rule about a component. The region chip offering values the data

@@ -1162,21 +1162,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!chip) return;
 
     const field = this.dataset['sortField'] ?? '';
-    const direction = this.dataset['sortDirection'] === 'desc' ? 'desc' : 'asc';
+    const raw = this.dataset['sortDirection'];
+    const direction = raw === 'desc' ? 'desc' : 'asc';
+    /* AN EMPTY DIRECTION IS A SUSPENDED SORT. The source keeps pushing the
+       remembered column, so the field alone no longer says whether anything is
+       being ordered — the direction does.
+       TRAP T-a-suspended-sort-is-one-owners-job. */
+    const suspended = raw === '';
 
-    // NO FIELD means no sort — the chip goes off but keeps its pick, the same
-    // suspended state its own third click produces.
+    // NO FIELD means no sort at all — the chip goes off and keeps whatever pick
+    // it had, the same suspended state its own third click produces.
     if (!field) {
       chip.removeAttribute('data-current');
       this.#syncSortLabel(chip);
       return;
     }
 
+    // The RADIO follows the field either way: a suspended sort still shows
+    // which column it would resume on.
     for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
       radio.checked = radio.value === field;
     }
-    chip.dataset['direction'] = direction;
-    chip.toggleAttribute('data-current', true);
+    // A resume starts ASCENDING, so a suspended chip must not keep pointing at
+    // the `desc` it was left at — the same rewind its own cycle does.
+    chip.dataset['direction'] = suspended ? 'asc' : direction;
+    chip.toggleAttribute('data-current', !suspended);
     this.#syncSortLabel(chip);
   }
 
