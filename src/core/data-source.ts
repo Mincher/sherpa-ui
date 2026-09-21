@@ -302,6 +302,17 @@ export class DataSource extends EventTarget {
   setPage(page: number): void {
     // Clamped against the CURRENT total, so a pager cannot walk past the end.
     this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
+    /* GROUPED: the page is a VIEW concern, so no load is needed — and asking
+       for one is worse than useless. `#loadOptions` sends no skip/take while
+       grouped (T-grouped-paging-belongs-to-the-view), so page 1 and page 2
+       produce the IDENTICAL state key, the no-op guard skips the load, and the
+       publish that would have carried the new page never runs. The pager moved
+       and the grid never heard.
+       TRAP T-grouped-page-change-publishes-without-loading. */
+    if (this.#state.group) {
+      this.#publish();
+      return;
+    }
     this.#schedule();
   }
 

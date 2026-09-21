@@ -4970,6 +4970,35 @@ and slicing it again would hide rows nobody folded.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-grouped-page-change-publishes-without-loading
+
+**A page change while GROUPED needs no load — and asking for one loses it.**
+
+The chain, which took a live app to find:
+
+1. `#loadOptions` sends no `skip`/`take` while grouped, because the grid cuts
+   the page itself (`T-grouped-paging-belongs-to-the-view`)
+2. so `#stateKey()` — which is `JSON.stringify(#loadOptions())` — is IDENTICAL
+   for page 1 and page 2
+3. so the no-op load guard skips the load, correctly: the question really has
+   not changed
+4. and `#publish()` lives inside `load()`, so it never runs
+
+The pager moved, `data-page` on the grid stayed at 1, and the body kept
+drawing the same rows. No error, nothing in the console, and the ungrouped path
+worked perfectly — which is what made it look like "pagination is broken"
+rather than "grouped pagination is broken".
+
+`setPage` now publishes directly when a group is set, and schedules a load only
+when one is not. The guard is right; what was wrong is that a VIEW-level change
+was being routed through a DATA-level mechanism.
+
+**The same shape can bite any state that is the view's and not the store's.**
+If a future value changes what is DRAWN without changing what is FETCHED, it
+needs this branch too — `#stateKey` will not see it.
+
+- Site: `src/core/data-source.ts`
+
 ### T-grouped-paging-belongs-to-the-view
 
 **STORE paging and VISUAL paging are not the same thing**, and a grouped view is

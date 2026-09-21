@@ -907,3 +907,72 @@ test('a bind WITHOUT into still replaces the whole payload', async ({ page }) =>
   // No draft, no wrapping — the ordinary path is untouched.
   expect(r).toEqual({ rows: 1 });
 });
+
+test('a page change while GROUPED reaches the components, without a load', async ({ page }) => {
+  /* TRAP T-grouped-page-change-publishes-without-loading.
+
+     While grouped, `#loadOptions` sends no skip/take — so page 1 and page 2
+     make the IDENTICAL state key, the no-op guard skips the load, and the
+     publish inside it never runs. The pager moved and the grid never heard.
+
+     Ungrouped worked throughout, which is what made this look like
+     "pagination is broken" rather than "grouped pagination is broken". */
+  const r = await page.evaluate(async (rows) => {
+    const { ArrayStore, DataSource } = await import('/dist/index.js');
+    const store = new ArrayStore(rows, { key: 'id' });
+    const source = new DataSource({ store, pageSize: 3 });
+
+    // A plain object stands in for a component: what matters is what ARRIVES.
+    const seen: Array<string | null> = [];
+    let loads = 0;
+    const el = {
+      populate() { /* rows are not the point here */ },
+      setAttribute(k: string, v: string) { if (k === 'data-page') seen.push(v); },
+      removeAttribute(k: string) { if (k === 'data-page') seen.push(null); },
+      addEventListener() {}, removeEventListener() {},
+    };
+    source.addEventListener('loading', (e) => {
+      if ((e as CustomEvent).detail.loading) loads += 1;
+    });
+    source.bind(el as never);
+    await source.load();
+
+    const ungrouped = { seen: [...seen], loads };
+
+    // UNGROUPED: a page change loads, because skip/take really did change.
+    source.setPage(2);
+    await new Promise((res) => setTimeout(res, 80));
+    const afterUngrouped = { page: source.state.page, seen: [...seen], loads };
+
+    // GROUPED: the same change must still REACH the component.
+    source.setGroup('team');
+    await new Promise((res) => setTimeout(res, 80));
+    const loadsBeforeGrouped = loads;
+    seen.length = 0;
+
+    source.setPage(2);
+    await new Promise((res) => setTimeout(res, 80));
+
+    return {
+      ungrouped,
+      afterUngrouped,
+      groupedPage: source.state.page,
+      groupedSeen: [...seen],
+      // No load was needed: the store already holds every matching row.
+      extraLoads: loads - loadsBeforeGrouped,
+    };
+  }, [
+    { id: 1, team: 'Blue' }, { id: 2, team: 'Blue' }, { id: 3, team: 'Red' },
+    { id: 4, team: 'Red' }, { id: 5, team: 'Red' }, { id: 6, team: 'Blue' },
+  ]);
+
+  // Ungrouped still behaves exactly as before.
+  expect(r.afterUngrouped.page).toBe(2);
+  expect(r.afterUngrouped.seen).toContain('2');
+
+  // GROUPED: the page reached the component…
+  expect(r.groupedPage).toBe(2);
+  expect(r.groupedSeen).toContain('2');
+  // …and it did NOT cost a load, because the question did not change.
+  expect(r.extraLoads).toBe(0);
+});
