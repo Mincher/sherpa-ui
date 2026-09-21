@@ -184,11 +184,18 @@ export class SherpaPagination extends SherpaElement {
     this.goToPage(parseInt(input.value, 10));
   };
 
+  /**
+   * The rows-per-page picker — the same shape as `goToPage`.
+   *
+   * Reports, and writes only when nothing else will: a bound pager is
+   * `data-locked` and the source broadcasts the new size back after re-paging.
+   * TRAP T-bind-locks-what-it-owns.
+   */
   #onRowsChange = (event: Event): void => {
     const select = event.target as HTMLSelectElement;
     const size = parseInt(select.value, 10);
     if (Number.isNaN(size)) return;
-    this.setAttribute('data-page-size', String(size));
+    if (!this.hasAttribute('data-locked')) this.setAttribute('data-page-size', String(size));
     this.emit('page-size-change', { pageSize: size });
   };
 }

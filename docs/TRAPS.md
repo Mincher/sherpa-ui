@@ -6756,6 +6756,7 @@ filtering were already clean: every component use of `data-group-field` and
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
+- Site: `scripts/check-ownership.mjs`
 
 ### T-one-cycle-for-one-value
 

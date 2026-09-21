@@ -7,11 +7,11 @@
  * this repo has the receipts — the round-trip check printed 22 failures and
  * exited 0 for three months. So the move only happens WITH this gate.
  *
- * THE CONTRACT. Each trap has an id (`T-nav-parent-chain`). It appears twice:
+ * THE CONTRACT. Each trap has an id (`T-example-id`). It appears twice:
  *
- *   docs/TRAPS.md   `### T-nav-parent-chain` followed by the explanation, and a
+ *   docs/TRAPS.md   `### T-example-id` followed by the explanation, and a
  *                   `Site:` line naming every file that cites it
- *   the source      `// TRAP T-nav-parent-chain — one-line summary`
+ *   the source      `// TRAP <the-id> — one-line summary`
  *
  * Four ways that can rot, all of them checked:
  *
@@ -61,6 +61,10 @@ const SOURCES = [
   // (a suspended sort keeps its column, an aggregate does not round) rots the
   // same way a component's does.
   'test/unit/*.mjs',
+  // The GATES themselves. Each encodes a rule and explains why it exists; a
+  // gate whose reasoning has drifted from the trap it enforces is a gate nobody
+  // trusts. `check-ownership.mjs` cites T-bind-locks-what-it-owns.
+  'scripts/check-*.mjs',
   // The EXAMPLES too. They are the working reference for wiring a view —
   // CLAUDE.md says so — and a rule about how a view must be wired rots exactly
   // like a rule about a component. The region chip offering values the data
@@ -68,11 +72,11 @@ const SOURCES = [
   'examples/views/*.js',
 ];
 
-/** `### T-some-id` opens a trap; `Site:` lines list the files that cite it. */
+/** `### <the-id>` opens a trap; `Site:` lines list the files that cite it. */
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;
 const SITE = /^-\s*Site:\s*`([^`]+)`/;
 /**
- * `// TRAP T-some-id — summary`, anywhere in a comment.
+ * `// TRAP <the-id> — summary`, anywhere in a comment.
  *
  * `\s` spans NEWLINES on purpose, and a leading `*` between the two words is
  * allowed: a JSDoc block wraps, so `TRAP` can end one line and the id begin the

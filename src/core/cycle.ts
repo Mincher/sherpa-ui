@@ -21,8 +21,22 @@
  * keeps. A rule each component re-reads from a document is a rule that drifts;
  * a function is not.
  *
- * NO DOM. These take the current state and return the next one. Reading it off
- * an attribute and writing the result back belongs to whoever owns the state —
+ * NO DOM, AND THAT IS WHY IT IS NOT IN `sherpa-element.ts`.
+ *
+ * The obvious home is the base class every component extends — a cycle of one
+ * state is still a cycle, and these are rules about controls. But
+ * `sherpa-element.ts` THROWS on import in Node (`HTMLElement is not defined`),
+ * so anything inside it is unreachable from `sherpa-ui/data` — the DOM-free
+ * half a server, a test and the MCP tools import. Measured, not assumed.
+ *
+ * That matters here specifically: a server deciding what a saved view's sort
+ * should become, and an MCP tool answering "what happens if I click this
+ * twice", both need this arithmetic and neither has a DOM. A component imports
+ * it in one line; the alternative is a second copy for the headless half, which
+ * is the exact duplication this module exists to end.
+ *
+ * These take the current state and return the next one. Reading it off an
+ * attribute and writing the result back belongs to whoever owns the state —
  * which, for a bound component, is the DataSource
  * (`T-a-suspended-sort-is-one-owners-job`).
  *

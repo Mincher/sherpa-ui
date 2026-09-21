@@ -69,4 +69,23 @@ if [ $MCP_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# ONE OWNER PER VALUE. The DataSource writes seven `data-*` attributes onto
+# every component it binds; a component that writes one too is both reporter and
+# owner of the same value. That is the recurring bug this repo hit four times in
+# a week — a grid deleting a sort column the toolbar was suspending, a pager
+# showing a page the query had not reached.
+#
+# `data-locked` is the answer, and it was DOCUMENTED while being honoured by one
+# component of 58, for months. A hand audit found three violations; this gate
+# immediately found a fourth the audit had missed.
+echo "🔒 Checking one owner per value..."
+OWN_OUT=$(npm run check:ownership --silent 2>&1)
+OWN_RESULT=$?
+
+if [ $OWN_RESULT -ne 0 ]; then
+  echo "$OWN_OUT"
+  echo "❌ A component writes a value the DataSource owns. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

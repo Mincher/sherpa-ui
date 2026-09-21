@@ -43,6 +43,7 @@
     "spec:check": "node scripts/generate-component-spec.mjs --all --check",
     "check:traps": "node scripts/check-traps.mjs",
     "check:mcp": "node scripts/check-mcp-tools.mjs",
+    "check:ownership": "node scripts/check-ownership.mjs",
     "format": "prettier --write 'src/**/*.css'",
     "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
