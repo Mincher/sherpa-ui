@@ -44,8 +44,72 @@
 :host([data-advanced]) .group {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  /* 0, and FLUSH — `--sherpa-structure-space-snapped` is an alias for
+     space/none. The seam is thinned by the two 0.25 edge weights below, never
+     by a negative gap or an overlap. */
+  gap: var(--sherpa-structure-space-snapped, 0px);
 }
+
+/* A plain checkbox has no wrapper box at all — `display: contents` means the
+   span generates nothing, so the box lays out exactly as it did before. */
+.box { display: contents; }
+
+/* ── The WRAPPER (Figma `Wrapper - Checkbox`) ────────────────────────────
+ * The box gets its own bordered box so the pair reads as ONE object: rounded
+ * on the outer edge, square where it meets the button.
+ *
+ * `.sherpa-snap-group` on the parent writes the four corner variables BY
+ * POSITION — `[data-snap]` is a plain selector in tokens.css, which reaches
+ * the document and never a shadow root, so the attribute stays as the honest
+ * description and the class does the joining. Same reason sherpa-pagination
+ * spells it out on its own `.pair`.
+ *
+ * The SEAM is two 0.25px weights meeting, exactly as Figma binds them
+ * (border/left 0.5, border/right 0.25 on the wrapper; the mirror on the
+ * button) — two halves of one hairline rather than two full strokes.
+ * TRAP T-advanced-checkbox-is-a-snapped-pair.
+ */
+:host([data-advanced]) .box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 24 SQUARE, matching Figma's wrapper and the `sm` button beside it. A
+     labelled checkbox still grows, because the label sits inside this box. */
+  block-size: var(--sherpa-display-mode-space-xl, 24px);
+  min-inline-size: var(--sherpa-display-mode-space-xl, 24px);
+  padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
+  /* The label's gap is only wanted when there IS a label. Without this the
+     empty text span still claimed its 8px and the box drew 30 against the
+     caret's 24 — a pair that no longer reads as one object. */
+  --_field-gap: 0px;
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 0px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 0px);
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  /* HALF a stroke on the shared edge. The button carries the other half. */
+  --sherpa-border-right: 0.25px;
+}
+:host([data-advanced]) .caret {
+  --sherpa-border-left: 0.25px;
+}
+
+/* THE BOX INSIDE THE WRAPPER KEEPS ITS OWN SHAPE.
+ * `.sherpa-snap-group` writes the four corner variables on its CHILDREN, and
+ * custom properties inherit — so they reached the checkbox's own drawn box and
+ * squared two of its corners. The wrapper is what snaps; the control inside it
+ * is still a checkbox. Reset them here, where they stop inheriting further.
+ * TRAP T-advanced-checkbox-is-a-snapped-pair. */
+:host([data-advanced]) .field,
+:host([data-advanced]) .control {
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+
 
 /* The caret and the menu exist in the template always; CSS reveals them. */
 .caret { display: none; }
@@ -60,7 +124,7 @@ slot[name="menu"] { display: contents; }
 .field {
   display: inline-flex;
   align-items: flex-start;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  gap: var(--_field-gap, var(--sherpa-display-mode-space-xs, 8px));
   cursor: pointer;
   user-select: none;
   inline-size: 100%;

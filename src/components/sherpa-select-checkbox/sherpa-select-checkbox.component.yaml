@@ -18,41 +18,49 @@ element:
 templates:
   - default
 anatomy:
-  root:
-    el: div
-    class: group
-    part: group
-    children:
-      - el: label
-        class: field
-        part: field
-        children:
-          - el: input
-            class: control
-            part: control
-            attrs:
-              type: checkbox
-          - el: span
-            class: text
-            part: text
-            children:
-              - el: span
-                class: label
-                part: label
-              - el: span
-                class: description
-                part: description
-              - slot: ""
-      - el: sherpa-button
-        class: caret
-        part: caret
-        attrs:
-          data-type: icon
-          data-icon-start: fa-solid fa-caret-down
-          aria-haspopup: menu
-          aria-expanded: "false"
-          aria-label: Selection options
-      - slot: menu
+  roots:
+    - el: div
+      class: group sherpa-snap-group
+      part: group
+      children:
+        - el: span
+          class: box sherpa-border-edges
+          part: box
+          attrs:
+            data-snap: start
+          children:
+            - el: label
+              class: field
+              part: field
+              children:
+                - el: input
+                  class: control
+                  part: control
+                  attrs:
+                    type: checkbox
+                - el: span
+                  class: text
+                  part: text
+                  children:
+                    - el: span
+                      class: label
+                      part: label
+                    - el: span
+                      class: description
+                      part: description
+                    - slot: ""
+        - el: sherpa-button
+          class: caret
+          part: caret
+          attrs:
+            data-type: icon
+            data-size: sm
+            data-snap: end
+            data-icon-start: fa-solid fa-caret-down
+            aria-haspopup: menu
+            aria-expanded: "false"
+            aria-label: Selection options
+    - slot: menu
 props:
   - $type: prop
     name: data-advanced

@@ -4746,6 +4746,46 @@ filter inputs, and `filter-change`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-advanced-checkbox-is-a-snapped-pair
+
+`Checkbox - Advanced` is **two bordered boxes touching**, not one box with a
+button beside it. Figma's own numbers say so:
+
+| | corners | border left / right |
+|---|---|---|
+| `Wrapper - Checkbox` | `4 0 0 4` | 0.5 / **0.25** |
+| `Button` | `0 4 4 0` | **0.25** / 0.5 |
+
+Rounded on the outer edges, square where they meet, and **0.25 on each side of
+the seam** — two halves of one hairline rather than two full strokes. Drop the
+wrapper and you get a checkbox with a detached button, which is what the first
+attempt shipped.
+
+The wrapper is a real element with `.sherpa-border-edges`, and `.group` carries
+`.sherpa-snap-group`. Three things about that are easy to get wrong:
+
+**The joining is BY POSITION, not by `[data-snap]`.** That attribute is a plain
+selector in `tokens.css`, which reaches the document and never a shadow root
+(`T-datasnap-not-in-shadow`). It stays on each half as the honest description;
+`.sherpa-snap-group` writes the four corner variables, and those DO cross a
+shadow boundary — which is how the caret's inner `sherpa-button` gets its
+square inner corner without a selector reaching into it.
+
+**The `<slot>` must be OUTSIDE the group.** `.sherpa-snap-group > :last-child`
+rounds the last child, and a slot sitting there took that role — leaving the
+caret square on both edges and the pair looking clipped. The menu is a popover
+in the top layer anyway, so it has no business in a layout group.
+
+**The gap is 0 and FLUSH.** `--sherpa-structure-space-snapped` is an alias for
+`space/none`; the seam is thinned by the two 0.25 weights, never by a negative
+margin or an overlap. `T-two-snapped-tokens` says this and has had to say it
+more than once.
+
+A plain checkbox is untouched: `.box` is `display: contents` until
+`data-advanced` is set, so the wrapper generates no box at all.
+
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
+
 ### T-advanced-checkbox-widens-the-select-column
 
 The grid's header checkbox is `Checkbox - Advanced` (Figma 1334:8173): the same

@@ -42,22 +42,34 @@
        button beside the label, and a <button> inside a <label> would toggle the
        checkbox on every click. CSS collapses this to the label alone when the
        variant is off, so a plain checkbox is unchanged. -->
-  <div class="group" part="group">
-    <label class="field" part="field">
-      <input class="control" part="control" type="checkbox" />
-      <span class="text" part="text">
-        <span class="label" part="label"></span>
-        <span class="description" part="description"></span>
-        <slot></slot>
-      </span>
-    </label>
+  <div class="group sherpa-snap-group" part="group">
+    <!-- Figma's `Wrapper - Checkbox`: the box gets its OWN bordered box so the
+         pair reads as one object. Rounded on the outer edge, square where it
+         meets the button, and `data-snap="start"` is the honest description of
+         what it is — `.sherpa-snap-group` on the parent does the joining by
+         POSITION, so a re-order survives. -->
+    <span class="box sherpa-border-edges" part="box" data-snap="start">
+      <label class="field" part="field">
+        <input class="control" part="control" type="checkbox" />
+        <span class="text" part="text">
+          <span class="label" part="label"></span>
+          <span class="description" part="description"></span>
+          <slot></slot>
+        </span>
+      </label>
+    </span>
 
     <!-- Figma's Button, Type=icon with a triangle-down. A real sherpa-button,
          not a hand-drawn one — T-compose-never-reimplement. -->
-    <sherpa-button class="caret" part="caret" data-type="icon"
+    <sherpa-button class="caret" part="caret" data-type="icon" data-size="sm"
+                   data-snap="end"
                    data-icon-start="fa-solid fa-caret-down"
                    aria-haspopup="menu" aria-expanded="false"
                    aria-label="Selection options"></sherpa-button>
-    <slot name="menu"></slot>
   </div>
+  <!-- OUTSIDE the snap group. `.sherpa-snap-group > :last-child` rounds the
+       last child, and a <slot> inside it took that role — leaving the caret
+       square on both edges. The menu is a popover in the top layer, so it has
+       no business in a layout group either way. -->
+  <slot name="menu"></slot>
 </template>

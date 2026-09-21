@@ -177,7 +177,14 @@
   --_select-w: var(--sherpa-display-mode-space-2xl, 32px);
 }
 :host([data-advanced-select]) {
-  --_select-w: 60px;   /* off-grid-ok: the 56px control plus its 2px breathing room */
+  /* The pair is 48 — two 24 halves, flush — plus the cell's own 4px padding on
+     each side. Written as the sum rather than a single token, because no token
+     is 56 and inventing one to fit a layout is how a scale stops meaning
+     anything. */
+  --_select-w: calc(
+    var(--sherpa-display-mode-size-4xl, 48px) +
+    2 * var(--sherpa-display-mode-space-2xs, 4px)
+  );
 }
 
 .select-col {

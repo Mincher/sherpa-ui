@@ -2287,6 +2287,28 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
     // The VARIANT is on because there are rows, and the column widened for it.
     const advanced = box.hasAttribute('data-advanced');
     const hostFlag = el.hasAttribute('data-advanced-select');
+
+    /* THE SNAPPED PAIR (Figma `Wrapper - Checkbox` + Button): rounded on the
+       outer edges, square where they meet, gap 0.
+       TRAP T-advanced-checkbox-is-a-snapped-pair */
+    const corners = (el2: Element) => {
+      const c = getComputedStyle(el2);
+      return [c.borderStartStartRadius, c.borderStartEndRadius,
+              c.borderEndEndRadius, c.borderEndStartRadius].join(' ');
+    };
+    const size = (el2: Element) => {
+      const r = el2.getBoundingClientRect();
+      return `${Math.round(r.width)}x${Math.round(r.height)}`;
+    };
+    const snap = {
+      box: corners(box.shadowRoot!.querySelector('.box')!),
+      caret: corners(box.shadowRoot!.querySelector('.caret')!),
+      gap: getComputedStyle(box.shadowRoot!.querySelector('.group')!).gap,
+      boxSize: size(box.shadowRoot!.querySelector('.box')!),
+      caretSize: size(box.shadowRoot!.querySelector('.caret')!),
+      // The CONTROL keeps its own rounding — the snap belongs to the wrapper.
+      control: corners(box.shadowRoot!.querySelector('.control')!),
+    };
     const colW = getComputedStyle(sr.querySelector('.select-col')!).width;
     const caretShown = getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display;
 
@@ -2317,7 +2339,7 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
 
     return {
       tag: box.tagName.toLowerCase(),
-      advanced, hostFlag, colW, caretShown, menuH, rows,
+      advanced, hostFlag, colW, caretShown, menuH, rows, snap,
       afterAll,
       afterClear: el.selectedRecords.length,
     };
@@ -2328,9 +2350,21 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
   expect(r.advanced).toBe(true);
   expect(r.caretShown).toBe('flex');
 
+  // Two bordered boxes TOUCHING — not a box with a detached button beside it.
+  expect(r.snap.box).toBe('4px 0px 0px 4px');
+  expect(r.snap.caret).toBe('0px 4px 4px 0px');
+  // FLUSH, never overlapped — the seam is two 0.25 weights, not a negative gap.
+  expect(r.snap.gap).toBe('0px');
+  // 24 SQUARE each, as Figma draws them.
+  expect(r.snap.boxSize).toBe('24x24');
+  expect(r.snap.caretSize).toBe('24x24');
+  // The checkbox INSIDE keeps all four of its own corners: the group's variables
+  // inherit, and without a reset they squared two of them.
+  expect(r.snap.control).toBe('4px 4px 4px 4px');
+
   // The column widened for the caret, or it draws behind the next column.
   expect(r.hostFlag).toBe(true);
-  expect(r.colW).toBe('60px');
+  expect(r.colW).toBe('56px');
 
   // The menu RENDERS. `display: none` on the slot left it open at 0 by 0.
   expect(r.menuH).toBeGreaterThan(80);
