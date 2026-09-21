@@ -262,6 +262,7 @@ reading as a menu affordance rather than "this column can be sorted". `fa-sort`
 is the neutral pair the state actually means.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/render-icon.ts`
 
 ### T-actions-were-a-slot
 
@@ -2056,40 +2057,58 @@ nothing, with no warning anywhere.
 
 ### T-icon-box-is-not-the-glyph
 
-**An icon's BOX and its GLYPH are two sizes, not one.** A Figma icon is a
-`content/size/*` frame with `clipsContent`, holding a vector that differs per
-icon: `filter` (17:4701) is 10.5 x 9.625 inside its 14 box, `triangle-down` is
-7 x 4.375, and only 20 of the 214 fill all 14. The frame is the layout contract
-and never moves; the art inside it varies.
+**An icon's BOX and its DRAWING are two sizes, not one.** A Figma icon is a
+`content/size/*` square holding art that differs per icon: `filter` (17:4701) is
+10.5 x 9.625 inside its 14 frame, `triangle-down` is 7 x 4.375, and only 20 of
+the 214 fill all 14. The square is the layout contract and never moves; the art
+inside it varies.
 
-Driving both from one variable — `inline-size`, `block-size` and `font-size` all
-`var(--sherpa-theme-content-size-base)` — is the obvious approach and is wrong.
-Font Awesome at `font-size == box` paints about **101%** of that box, against a
-Figma median of 87.5%, so every glyph came out roughly 1.3x its vector and ate
-the air around it. Measured on the filter chip: a correct 24 chip and a correct
-14 box, with a funnel painting 14.1 x 12.4 where Figma draws 10.5 x 9.625.
+Will's rule: **the drawing's LONGEST axis is 100% of the square**, it keeps its
+1:1 aspect, and it never paints outside. `.sherpa-icon-box` in
+`src/core/sherpa-icon.css` owns the square (`--_icon-size`, `flex-shrink: 0`,
+inherited colour); the fit is an SVG `viewBox` set to the art's own INK bbox
+plus `preserveAspectRatio="xMidYMid meet"`.
+
+**Three approaches failed before that one, each measured:**
+
+`font-size` cannot do it. Font Awesome at `font-size == box` paints about
+**101%** of the box — `fa-house` overflowed a 14px box at 15.75px wide — and
+each glyph needs a DIFFERENT size to reach 100%: filter 14.00px, house 12.28px,
+caret-down 21.88px. A flat ratio is wrong for every icon but one.
+
+`minmax()` cannot do it. It is a Grid track function; `CSS.supports('width',
+'minmax(0, 100%)')` is **false**. It is not valid in `width` or `font-size`.
+
+`getBBox()` on SVG `<text>` cannot do it. It returns the font's line metrics,
+not the glyph's ink, so fitting to it gave 59–100% while looking correct in a
+screenshot. The ink has to be measured off the path.
 
 It is invisible in the numbers a reviewer checks. Chip height, icon width and
-icon height were all exactly right; only the ink inside was wrong.
+icon height were all exactly right; only the art inside was wrong.
 
-`.sherpa-icon-box` in `sherpa-base.css` owns both halves: the component sets
-`--_icon-size` for the bounds, and the glyph follows on
-`--sherpa-icon-glyph-scale`. The box also sets `flex-shrink: 0` and
-`overflow: clip`, which is what Figma's `clipsContent` does — bounds cannot be
-squeezed by a flex parent nor grown by an oversized glyph.
+**The icons are Figma's**, exported to `src/icons/` and compiled by
+`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/icon-paths.ts`
+with each ink bbox. Font Awesome NAMES still resolve, through `ICON_ALIASES`,
+to the Figma drawing that means the same thing — `house` is Figma's `home`,
+`xmark` its `cross` — so 88 call sites did not have to be rewritten.
 
-**An earlier fix asserted the opposite** and shipped a test demanding
-`font-size == box height`. It was solving a real bug (a glyph left to inherit
-the neighbouring text size) but over-corrected into a rule Figma does not hold.
-The replacement asserts the box exactly and the glyph as a RATIO of it, which
-still catches an inherited glyph without freezing the art.
+**A drawing cannot be chosen by a CSS `content:` the way a webfont glyph was.**
+Toast, callout and the quick-filter caret picked their icon in CSS off
+`[data-status]`. All members are now stamped and CSS reveals ONE, so the choice
+stays CSS-owned and no JS branches on the status.
 
 **A component that rewrites `className` erases the class.** `sherpa-input-text`
-rebuilds its icon's whole class list in `#syncIcon`, so the shared class has to
-be restated in that string; the template alone is not enough. It failed as a
-16px glyph in a 14px box, with the CSS looking correct.
+rebuilds its icon's whole class list in `#syncIcon`, so the shared box class has
+to be restated in that string; the template alone is not enough. It failed as a
+16px icon in a 14px box, with the CSS looking correct.
 
-- Site: `src/core/sherpa-base.css`
+**An unknown name draws NOTHING, deliberately** — an empty wrapper is visible to
+a test, where `T-fa-pro-icons-fail-silently` was not. That is why the tests
+measure the PATH: the wrapper is its full size either way.
+
+- Site: `src/core/sherpa-icon.css`
+- Site: `src/core/render-icon.ts`
+- Site: `src/core/sherpa-element.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
 
@@ -6597,6 +6616,7 @@ Two related choices in the same module:
 
 - Site: `src/core/aggregate.ts`
 - Site: `examples/views/dashboard.js`
+- Site: `examples/views/records.js`
 
 ### T-number-of-null-is-zero
 
@@ -6647,6 +6667,7 @@ category nothing matched is noise, unless the categories are a fixed scale
 
 - Site: `src/core/aggregate.ts`
 - Site: `examples/views/dashboard-data.js`
+- Site: `examples/views/records.js`
 
 ### T-the-last-band-includes-its-top
 
@@ -7118,3 +7139,39 @@ and let the neighbour keep a full one. The `[data-group]` tokens, which come
 from Figma, are what caught it.
 
 - Site: `src/core/sherpa-grouping.css`
+
+### T-a-summary-binds-to-all-the-rows
+
+`DataSource.bind()` hands a component `#result.rows`, which is **the page** —
+`applyOptions` slices to `skip`/`take` and reports the pre-slice count
+separately as `total`. That is right for a grid and wrong for every summary: a
+chart bound the default way on a 25-row page of 100 records counts 25, draws a
+perfectly reasonable picture, and is silently wrong.
+
+`scope: 'all'` is the fix. The adapter is handed every row matching the filter,
+unpaged:
+
+```js
+source.bind(chart, { readonly: true, scope: 'all', as: (rows) => countBy(rows, 'status') });
+```
+
+Three things make it safe:
+
+- **It costs nothing when unused.** The second, unwindowed store call happens
+  only while some bind asks for it (`#wantsAllRows`), and is skipped entirely
+  when the query was never windowed — no `pageSize`, or grouped, where the page
+  already IS everything. A node test asserts every store call still carries its
+  window when no summary is bound.
+- **A LATE bind still fills.** Binding a summary after the first load would
+  otherwise find `#allRows` empty and draw blank, because nothing would ask
+  again; `bind` forces a reload in that one case.
+- **The skip-if-unchanged guard follows the scope.** It compares the array this
+  particular bind receives, not `#result.rows` — otherwise a summary would be
+  skipped whenever the page array happened to be unchanged.
+
+`examples/views/dashboard.js` predates this and is correct only by accident: its
+source declares no `pageSize`, so nothing was ever sliced.
+
+- Site: `src/core/data-source.ts`
+- Site: `test/unit/summary-scope.test.mjs`
+- Site: `examples/views/records.js`

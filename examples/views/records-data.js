@@ -18,7 +18,9 @@ const last  = ['Okafor','Reyes','Khan','Moreau','Berg','Haddad','Nair','Walsh','
                'Sharma','Jensen','Rossi','Farah','Lindqvist','Marek','Osei','Dubois','Yilmaz','Kaur'];
 /** Exported: the Add dialog offers these, and a second copy would offer a plan no record can have. */
 export const plans = ['Free','Starter','Pro','Enterprise'];
-const states  = ['active','trial','suspended','churned'];
+/** Exported: a chart's category ORDER must be these values, so a colour stays
+    put when a filter removes the category above it. */
+export const states = ['active','trial','suspended','churned'];
 /** Exported: the header's Region chip filters these records, so its options must BE these values. */
 export const regions = ['EMEA','AMER','APAC','LATAM'];
 /** Who owns each account, internally — a member of staff, not the customer. */

@@ -2,6 +2,46 @@
      content slot by the SPA router. views/records.js wires the data.
      No section header: the APP HEADER owns the view's name. -->
 <div class="sherpa-grid">
+  <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the view's DataSource
+       with an `as` adapter, so a filter set anywhere re-computes all of them.
+       Nothing here is hardcoded and nothing recounts by hand.
+       records.js binds each one with `scope: 'all'`. -->
+  <sherpa-metric id="m-customers" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-spend" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-seats" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-tickets" data-span="3"></sherpa-metric>
+
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="By status"></sherpa-container-header>
+    <sherpa-barchart id="r-bar" data-label="Customers by status" data-legend="horizontal">
+      <sherpa-chart-legend slot="legend" id="r-bar-legend"
+                           data-orientation="horizontal"></sherpa-chart-legend>
+    </sherpa-barchart>
+  </sherpa-container>
+
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="By plan"></sherpa-container-header>
+    <sherpa-donut-chart id="r-donut">
+      <sherpa-chart-legend slot="legend" id="r-donut-legend"
+                           data-orientation="vertical"></sherpa-chart-legend>
+    </sherpa-donut-chart>
+  </sherpa-container>
+
+  <!-- The gauge's legend names its ZONES, not a series, so it is read-only. -->
+  <sherpa-container data-span="4" data-rows="6">
+    <sherpa-container-header slot="header" data-heading="Mean health"></sherpa-container-header>
+    <sherpa-gauge-chart
+      id="r-gauge"
+      data-min="0"
+      data-max="100"
+      data-unit="%"
+      data-zones="0-60:critical,60-80:warning,80-100:success"
+      data-legend="horizontal">
+      <sherpa-chart-legend slot="legend" id="r-gauge-legend"
+                           data-orientation="horizontal" data-readonly></sherpa-chart-legend>
+    </sherpa-gauge-chart>
+  </sherpa-container>
+
   <!-- data-rows="8" fixes the card height so the grid SCROLLS inside it instead
        of pushing the pager off screen. data-padding="none" keeps the block inset
        at zero so each part's own divider meets both card edges. -->

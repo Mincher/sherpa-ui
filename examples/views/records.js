@@ -5,8 +5,9 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
+  countBy, reduceRows,
 } from '../../dist/index.js';
-import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs }
+import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
@@ -195,6 +196,54 @@ export async function init(root) {
     signal,
   });
   source.bind(pager, { signal });
+
+  /* ── Summaries ────────────────────────────────────────────────────────
+     Every tile and chart is the SAME rows, counted a different way, so one
+     filter re-draws all of them and nothing recounts by hand.
+
+     `scope: 'all'` is what makes them right: the default bind hands over the
+     PAGE, and a chart counting 25 of 100 looks perfectly reasonable.
+     TRAP T-a-summary-binds-to-all-the-rows */
+  const summary = (sel, as) => {
+    const el = root.querySelector(sel);
+    if (el) source.bind(el, { readonly: true, scope: 'all', as, signal });
+  };
+
+  const money = (n) => `$${Math.round(n).toLocaleString('en-GB')}`;
+
+  summary('#m-customers', (rows) => ({ label: 'Customers', value: rows.length }));
+  summary('#m-spend', (rows) => ({
+    label: 'Total spend', value: money(reduceRows(rows, 'sum', 'spend')),
+  }));
+  summary('#m-seats', (rows) => ({
+    label: 'Seats', value: reduceRows(rows, 'sum', 'seats').toLocaleString('en-GB'),
+  }));
+  summary('#m-tickets', (rows) => ({
+    label: 'Open tickets', value: reduceRows(rows, 'sum', 'openTickets'),
+  }));
+
+  /* A chart and its legend share ONE array — a legend row IS a chart datum.
+     Sharing also keeps the source's skip-if-unchanged guard, which compares by
+     identity. The declared `order` keeps a category's colour when a filter
+     removes the one above it. TRAP T-a-category-keeps-its-colour */
+  const byStatus = (rows) => countBy(rows, 'status', { order: states });
+  const byPlan = (rows) => countBy(rows, 'plan', { order: plans });
+
+  summary('#r-bar', byStatus);
+  summary('#r-bar-legend', byStatus);
+  summary('#r-donut', byPlan);
+  summary('#r-donut-legend', byPlan);
+
+  /* The gauge reads ONE number, unrounded — rounding is presentation.
+     TRAP T-an-aggregate-returns-the-number */
+  summary('#r-gauge', (rows) => reduceRows(rows, 'mean', 'health'));
+  /* The gauge legend names THRESHOLD ZONES, not a series, so no colour
+     indices: a zone's colour is a status. Static, so it is populated once. */
+  root.querySelector('#r-gauge-legend')?.populate([
+    { label: 'At risk (0–60)', status: 'critical' },
+    { label: 'Watch (60–80)', status: 'warning' },
+    { label: 'Healthy (80–100)', status: 'success' },
+  ]);
 
   /* STEER-ONLY: the toolbar's populate() means "here are your CHIPS", so a
      plain bind() overwrites the bar with records. Its events still reach the

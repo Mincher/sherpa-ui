@@ -54,6 +54,13 @@ export interface BindOptions {
   ignore?: readonly string[];
   /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
+  /**
+   * Which rows this component is given. `'page'` (the default) is the window a
+   * grid draws; `'all'` is every row matching the filter, unpaged — what a
+   * SUMMARY needs, because a chart counting 25 of 100 is quietly wrong.
+   * TRAP T-a-summary-binds-to-all-the-rows
+   */
+  scope?: 'page' | 'all';
 }
 
 /** What `change` carries, for a listener that wants the result without asking. */
@@ -88,11 +95,19 @@ export class DataSource extends EventTarget {
       as?: BindOptions['as'];
       /** The named part of the payload this bind owns — see BindOptions.into. */
       into?: string;
+      /** See BindOptions.scope. */
+      scope: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
     }
   >();
   #result: LoadResult = { rows: [], total: 0 };
+  /**
+   * Every row matching the filter, unpaged — for a `scope: 'all'` bind. Loaded
+   * only when one exists, so a view with no summary asks the store once as
+   * before. TRAP T-a-summary-binds-to-all-the-rows
+   */
+  #allRows: readonly Row[] = [];
   /**
    * The page count a GROUPED view reported; `null` until the first draw.
    * TRAP T-grouped-paging-belongs-to-the-view
@@ -306,6 +321,12 @@ export class DataSource extends EventTarget {
 
   /* ── Loading ───────────────────────────────────────────────────────── */
 
+  /** Is any bind asking for the unpaged set? TRAP T-a-summary-binds-to-all-the-rows */
+  #wantsAllRows(): boolean {
+    for (const entry of this.#bound.values()) if (entry.scope === 'all') return true;
+    return false;
+  }
+
   /** Build the load options the store is asked with. */
   #loadOptions(): LoadOptions {
     const { filter, sort, group, search, page, pageSize } = this.#state;
@@ -351,6 +372,19 @@ export class DataSource extends EventTarget {
       this.#result = result;
       this.#lastLoadKey = key;
       this.#loaded = true;
+
+      /* A SUMMARY sees every matching row. When nothing was windowed the page
+         IS everything, so the second ask is skipped.
+         TRAP T-a-summary-binds-to-all-the-rows */
+      const windowed = this.#state.pageSize != null && !this.#state.group;
+      if (!this.#wantsAllRows()) this.#allRows = [];
+      else if (!windowed) this.#allRows = result.rows;
+      else {
+        const { skip: _skip, take: _take, ...rest } = this.#loadOptions();
+        const all = await this.store.load(rest);
+        if (this.#inFlight !== ticket) return this.#result;
+        this.#allRows = all.rows;
+      }
 
       // Re-clamp and reload ONCE, FORCED. Never while GROUPED: the page count
       // there is the GRID's to report, and the re-load would ask the same thing.
@@ -429,6 +463,7 @@ export class DataSource extends EventTarget {
       readonly: readonlyBind,
       steerOnly: options.steerOnly ?? false,
       off,
+      scope: options.scope ?? 'page',
       ...(options.as ? { as: options.as } : {}),
       ...(options.into ? { into: options.into } : {}),
     });
@@ -438,7 +473,13 @@ export class DataSource extends EventTarget {
 
     // Whatever is already loaded, so a component bound late is not blank.
     this.#push(el);
-    if (this.#autoLoad && !this.#result.rows.length) void this.load();
+    /* A summary bound AFTER the first load would otherwise draw blank: the
+       unpaged set is fetched by `load`, and nothing would ask for it again.
+       TRAP T-a-summary-binds-to-all-the-rows */
+    const needsAll = options.scope === 'all' && !this.#allRows.length;
+    if (this.#autoLoad && (!this.#result.rows.length || needsAll)) {
+      void this.load({ force: needsAll });
+    }
 
     return () => this.unbind(el);
   }
@@ -552,13 +593,14 @@ export class DataSource extends EventTarget {
     // Skip a push that would hand over the same rows again.
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    if (entry && entry.lastRows === this.#result.rows) return;
-    if (entry) entry.lastRows = this.#result.rows;
+    const pushRows = entry?.scope === 'all' ? this.#allRows : this.#result.rows;
+    if (entry && entry.lastRows === pushRows) return;
+    if (entry) entry.lastRows = pushRows;
 
     // populate() waits for the first render itself, so a component bound
     // before it upgraded still gets its rows.
     const adapt = entry?.as;
-    const payload = adapt ? adapt(this.#result.rows, this) : this.#result.rows;
+    const payload = adapt ? adapt(pushRows as Row[], this) : pushRows;
 
     // ONE NAMED PART, when the bind asked for one — see BindOptions.into.
     if (entry?.into) {
