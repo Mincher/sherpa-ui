@@ -1,13 +1,9 @@
 /**
- * sherpa-accordion — a disclosure card backed by native <details> / <summary>.
+ * sherpa-accordion — a disclosure card over native <details> / <summary>.
  *
- * Native-first (naming standard D2/D12): the open/closed state IS the native
- * <details open> attribute — the <summary> gives us the button role, keyboard
- * (Enter / Space) and focus for free, and clicking it toggles with no JS. This
- * file is thin: it renders the `data-heading` label, mirrors the `open` property
- * onto the inner <details>, and re-dispatches the native `toggle` event as a
- * composed `toggle` (the native one bubbles inside the shadow root but is NOT
- * composed, so app code wouldn't otherwise see it).
+ * The open state IS `<details open>`; <summary> gives the button role, keyboard
+ * and focus for free. The native `toggle` is not composed, so app code cannot
+ * see it — this re-dispatches it as a composed component event.
  *
  * @prop {boolean} open — whether the disclosure is expanded (delegates to <details>)
  */
@@ -30,9 +26,7 @@ export class SherpaAccordion extends SherpaElement {
   override onRender(): void {
     const details = this.#details();
     if (!details) return;
-    // Adopt any pre-set host state onto the real control.
     if (this.hasAttribute('open')) details.open = true;
-    // Re-dispatch the native toggle as a composed component event.
     details.addEventListener('toggle', this.#onToggle);
   }
 
@@ -43,8 +37,7 @@ export class SherpaAccordion extends SherpaElement {
     }
   }
 
-  /* ── Public API ──────────────────────────────────────────────────────── */
-
+  /** Mirrors `<details open>`. */
   get open(): boolean {
     return this.#details()?.open ?? this.hasAttribute('open');
   }
@@ -53,12 +46,6 @@ export class SherpaAccordion extends SherpaElement {
     if (details) details.open = value;
     this.toggleAttribute('open', value);
   }
-
-  /* ── Private ─────────────────────────────────────────────────────────── */
-
-  /** Write data-heading into the label span (skipped when a heading slot is used). */
-
-  /** Write data-description into the secondary line (skipped when a description slot is used). */
 
   #onToggle = (): void => {
     const open = this.#details()?.open ?? false;

@@ -1,16 +1,9 @@
 <!--
-  sherpa-app-shell — the boilerplate frame for an app or a view.
+  sherpa-app-shell — the boilerplate frame for an app or a view. The nav and
+  header are PRE-COMPOSED; slotting your own replaces the default.
 
-  A nav rail OVERLAID down the left edge at full height, with the header + content
-  wrapper inset past it. Matching the Figma App Shell, the nav and header are
-  PRE-COMPOSED: a <sherpa-nav> and a <sherpa-app-header> ship in place. Drop your
-  view content in the default slot; override the nav/header by slotting your own
-  into the named slots (which replace the defaults).
-
-  The inset is the COLLAPSED rail width (40px) while the rail is collapsed or
-  hovered, so hovering reveals the rail OVER the content instead of reflowing the
-  page. It grows to the open width only when the rail is latched (pinned/settings).
-  The shell mirrors the rail's data-nav-state onto itself, so CSS can do that.
+  The content inset stays at the COLLAPSED rail width while the rail is hovered,
+  so hovering reveals the rail OVER the content instead of reflowing the page.
 
   Public API:
     data-nav-state   collapsed (default) | hover | default | pinned | settings —
@@ -28,16 +21,10 @@
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
     <!--
-      The header sits INSIDE the scrolling region, as its sticky first child.
-
-      It used to be a grid ROW above the scroller, which meant it never moved and
-      so could never be "stuck" — `position: sticky` and a
-      `scroll-state(stuck: top)` query both did nothing. In here it really does
-      stick, and the query fires, which is what gives it a drop shadow the moment
-      content passes underneath. No scroll listener.
-
-      The view's own padding moved onto .view for the same reason: the header must
-      bleed the full width while the content below it stays inset.
+      The header must be INSIDE the scroller as its sticky first child — as a grid
+      row above it, it never moves, so `position: sticky` and `scroll-state(stuck:
+      top)` both silently do nothing. The view padding lives on .view so the header
+      can bleed full width.
     -->
     <div class="frame" part="frame">
       <main class="region content" part="content">

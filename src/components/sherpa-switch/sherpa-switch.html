@@ -1,13 +1,10 @@
 <!--
   sherpa-switch — an immediate binary toggle.
 
-  Native-first (naming standard D1/D11): a real <input type="checkbox" role="switch">
-  owns the value, keyboard (Space), focus and form participation. A <label> wraps the
-  whole track so a click anywhere toggles the input natively — no JS click handler.
-  An <input> can't hold child elements, so the visual knob + ON/OFF label are sibling
-  spans; CSS keys them off the input's :checked / :disabled / :focus-visible state via
-  the sibling combinator. The visual form (rectangular default vs. simple pill) is a
-  CSS variant on data-type — the same track markup restyles, no second template.
+  A real <input type="checkbox" role="switch"> owns value, keyboard, focus and
+  form participation; the <label> makes a click anywhere toggle it natively.
+  An <input> can hold no children, so the knob and ON/OFF label are SIBLING
+  spans keyed off :checked / :disabled via the sibling combinator.
 
   Public API:
     checked    — native boolean       (current value; drives :checked visuals)

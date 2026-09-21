@@ -1,31 +1,14 @@
 /**
- * sherpa-nav — the main navigation rail down the side of the app.
+ * sherpa-nav — the side navigation rail.
  *
- * The rail is the FIVE-MODE state machine from the Figma Navigation collection
- * (32:937): collapsed · hover · default · pinned · settings. It starts COLLAPSED
- * (a 40px icon rail). Pointer in → hover (opens, lifts). Pointer out → back to
- * collapsed, unless the pin has latched it. Pin → pinned. Settings → settings.
+ * A five-mode machine from the Figma Navigation collection (32:937). Fill it with
+ * populate(config) — a NavConfig, or a plain NavEntry[] treated as one section.
  *
- * This file only ever writes `data-nav-state`; the CSS + the projected Navigation
- * token region own every visual (width, surface, shadow, label visibility, indents).
- *
- * Fill it with populate(config):
- *   {
- *     product?:    { name?, icon? },
- *     quickItems?: NavEntry[],   // omitted → Home · Recent · Favorites
- *     sections?:   [{ label?, items: NavEntry[] }],
- *   }
- * where NavEntry = { id, label, icon?, href?, badge?, indicator?, children?, expanded? }.
- * You can also pass a plain list of items, and it's treated as one group.
- *
- * Nest with `children`. A parent gets the Figma hasChildren chevron and starts
- * closed; its children indent to the next tier, carry NO icon (only top-level rows
- * do), and are hidden entirely in the 40px collapsed rail.
- *
+ * TRAP T-nav-state-writes-only-the-attribute
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
-/** What a stamped row actually shows. `icon` is undefined on a child row —
+/** What a stamped row shows. `icon` is undefined on a child row —
  *  TRAP T-nav-child-rows-carry-no-icon. */
 export interface NavRowInfo {
   id: string;
@@ -36,25 +19,15 @@ export interface NavRowInfo {
 export interface NavEntry {
   id: string;
   label: string;
-  /**
-   * Leading icon — a Font Awesome class list, on TOP-LEVEL items only.
-   * TRAP T-nav-child-rows-carry-no-icon — a child's icon is dropped.
-   */
+  /** FA class list. TOP-LEVEL rows only — a child's icon is dropped. */
   icon?: string;
   href?: string;
   badge?: string;
-  /** Show the trailing indicator dot (Figma "Indicator (atom)"). */
+  /** Show the trailing indicator dot. */
   indicator?: boolean;
-  /**
-   * Nested items. A parent gets the Figma hasChildren chevron, and its children
-   * are stamped one tier deeper. Prefer this over a hand-set `tier` —
-   * TRAP T-nav-child-rows-carry-no-icon.
-   */
+  /** Nested items. Prefer this over a hand-set `tier`. */
   children?: NavEntry[];
-  /**
-   * Nesting depth 1–3 → the Figma indent tiers (8 / 32 / 48). Derived from
-   * `children` nesting; set it directly only for a flat list you tier yourself.
-   */
+  /** Indent tier 1–3. Derived from `children`; set it only for a flat list. */
   tier?: 1 | 2 | 3;
   /** Start a parent expanded. Parents are collapsed by default. */
   expanded?: boolean;
@@ -72,28 +45,21 @@ export interface NavConfig {
   product?: { name?: string; icon?: string };
   quickItems?: NavEntry[];
   sections?: NavSection[];
-  /**
-   * The section list shown while the rail is in SETTINGS mode. The settings button
-   * swaps the whole rail over to these — settings pages are a different place, not a
-   * nav item in the product tree. Omit it and the settings mode keeps the main list.
-   */
+  /** Shown instead of `sections` in SETTINGS mode. Omit it to keep the main list. */
   settingsSections?: NavSection[];
 }
 
 /** The five Figma Navigation modes. */
 export type NavState = 'collapsed' | 'hover' | 'default' | 'pinned' | 'settings';
 
-/**
- * The quick-nav row every product nav opens with (Figma shows three icon rows
- * above the section list). Overridable via config.quickItems.
- */
+/** The quick rows a nav opens with, unless config.quickItems overrides them. */
 const DEFAULT_QUICK: NavEntry[] = [
   { id: 'home', label: 'Home', icon: 'fa-solid fa-house' },
   { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
   { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
 ];
 
-/** Modes in which the rail is open (i.e. NOT the 40px icon rail). */
+/** Modes in which the rail is open, i.e. not the 40px icon rail. */
 const OPEN: ReadonlySet<string> = new Set<NavState>(['hover', 'default', 'pinned', 'settings']);
 /** Modes that latch the rail open — a pointer leave must not collapse these. */
 const LATCHED: ReadonlySet<string> = new Set<NavState>(['pinned', 'settings']);
@@ -106,10 +72,9 @@ export class SherpaNav extends SherpaElement {
   #config: NavConfig = {};
 
   override onRender(): void {
-    // The rail starts collapsed unless the author pinned it up front.
     if (!this.dataset['navState']) this.dataset['navState'] = 'collapsed';
 
-    // One delegated listener for every stamped item — rows come and go, this stays.
+    // Delegated — rows come and go, these listeners stay.
     this.$('.rail')?.addEventListener('item-click', this.#onItemClick as EventListener);
     this.$('.rail')?.addEventListener('item-expand', this.#onItemExpand as EventListener);
     this.$<HTMLInputElement>('.search-input')?.addEventListener('input', this.#onSearch);
@@ -117,10 +82,9 @@ export class SherpaNav extends SherpaElement {
     this.$('.pin')?.addEventListener('click', this.#onPin);
     this.$('.settings')?.addEventListener('click', this.#onSettings);
 
-    // Hover opens the rail; leaving returns it to collapsed unless it is latched.
     this.addEventListener('pointerenter', this.#onEnter);
     this.addEventListener('pointerleave', this.#onLeave);
-    // Keyboard users get the same reveal when focus lands inside the collapsed rail.
+    // Focus gives a keyboard user the same reveal as a pointer.
     this.addEventListener('focusin', this.#onEnter);
     this.addEventListener('focusout', this.#onFocusOut);
 
@@ -139,8 +103,7 @@ export class SherpaNav extends SherpaElement {
     if (name === 'data-active-id') this.#applyActive();
     if (name === 'data-nav-state') {
       this.#applyState();
-      // Only the SETTINGS EDGE re-stamps — TRAP
-      // T-nav-state-writes-only-the-attribute.
+      // Only the settings edge re-stamps; every other mode is CSS.
       const was = oldValue === 'settings';
       const now = newValue === 'settings';
       if (was !== now && this.#hasContent()) {
@@ -158,7 +121,6 @@ export class SherpaNav extends SherpaElement {
     return (this.dataset['navState'] as NavState) ?? 'collapsed';
   }
   set state(value: NavState) {
-    // Through the state machine — TRAP T-nav-state-writes-only-the-attribute.
     this.#setState(value);
   }
 
@@ -176,10 +138,9 @@ export class SherpaNav extends SherpaElement {
     this.#render();
   }
 
-  /* ── State machine ──────────────────────────────────────────────────
-     Every transition funnels through #setState — TRAP
-     T-nav-state-writes-only-the-attribute. */
+  /* ── State machine ─────────────────────────────────────────────── */
 
+  /** Every transition funnels through here. */
   #setState(next: NavState): void {
     const previous = this.state;
     if (previous === next) return;
@@ -188,15 +149,13 @@ export class SherpaNav extends SherpaElement {
     this.emit('nav-state-change', { state: next });
   }
 
-  /** Mirror the projected per-mode button switches onto the two header buttons. */
+  /** Mirror the mode onto the two header buttons and the rail's aria-expanded. */
   #applyState(): void {
     const state = this.state;
-    // Figma nav-container-pin-button / -setting-button: which look each button takes.
     const pinActive = state === 'pinned' || state === 'settings' || state === 'default';
     const settingsActive = state === 'settings';
     this.$('.pin')?.setAttribute('aria-pressed', String(pinActive));
     this.$('.settings')?.setAttribute('aria-pressed', String(settingsActive));
-    // The header label is a Figma STRING token; only settings changes it.
     const product = this.$('.product');
     if (product) {
       product.textContent =
@@ -221,8 +180,7 @@ export class SherpaNav extends SherpaElement {
   };
 
   #onPin = (): void => {
-    // Un-pinning from SETTINGS hands the rail back to hover: the pointer is
-    // still over it, so collapsing under the cursor would feel broken.
+    // Leaving settings goes to hover, not collapsed — the pointer is still on the rail.
     if (this.state === 'settings') {
       this.#setState('hover');
       return;
@@ -231,7 +189,6 @@ export class SherpaNav extends SherpaElement {
   };
 
   #onSettings = (): void => {
-    // Settings is its own latched mode; clicking it again returns to the pinned rail.
     this.#setState(this.state === 'settings' ? 'pinned' : 'settings');
   };
 
@@ -258,11 +215,11 @@ export class SherpaNav extends SherpaElement {
 
   #renderBrand(): void {
     const iconSlot = this.$('.brand-icon');
-    // A slotted icon wins — TRAP T-brand-icon-must-empty-its-host.
+    // A slotted icon wins over the configured one.
     if (iconSlot && this.#config.product?.icon && !iconSlot.querySelector('[slot]')) {
       this.#applyIcon(iconSlot, this.#config.product.icon);
     }
-    // Search belongs to a full product nav (a product name implies one).
+    // A product name implies a full nav, which has search.
     if (this.#config.product) this.toggleAttribute('data-searchable', true);
   }
 
@@ -270,8 +227,7 @@ export class SherpaNav extends SherpaElement {
     const list = this.$('.quick');
     if (!list) return;
     list.replaceChildren();
-    // SETTINGS mode has NO quick items — TRAP
-    // T-nav-state-writes-only-the-attribute.
+    // Settings mode has no quick items.
     if (this.state === 'settings') return;
     const quick = this.#config.quickItems ?? DEFAULT_QUICK;
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
@@ -282,10 +238,9 @@ export class SherpaNav extends SherpaElement {
     const sectionTpl = this.$<HTMLTemplateElement>('template.section-tpl');
     if (!content || !sectionTpl) return;
 
-    // Clear previously-stamped sections (keep the <slot> for hand-authored content).
+    // Clear stamped sections only — the <slot> keeps hand-authored content.
     for (const s of this.$$('.section')) s.remove();
 
-    // SETTINGS mode shows its own list of settings pages, not the product tree.
     const sections =
       this.state === 'settings' && this.#config.settingsSections?.length
         ? this.#config.settingsSections
@@ -301,15 +256,13 @@ export class SherpaNav extends SherpaElement {
       content.appendChild(el);
     }
     // Parents start closed, so their children must start hidden.
-    // TRAP T-parent-chain-walk-not-a-selector
     this.#syncRowVisibility();
   }
 
   /**
-   * Stamp an entry and all of its descendants into a FLAT list of rows.
+   * Stamp an entry and its descendants into a FLAT list of rows.
    *
-   * TRAP T-parent-chain-walk-not-a-selector — flat because the Figma rail is,
-   * and `data-parent` / `data-depth` are what make depth recoverable.
+   * `data-parent` / `data-depth` are what make depth recoverable afterwards.
    */
   #buildRows(entry: NavEntry, depth: 1 | 2 | 3, parentId?: string): HTMLElement[] {
     const row = this.clone('template.item-tpl');
@@ -320,12 +273,12 @@ export class SherpaNav extends SherpaElement {
 
     const item = row.querySelector('sherpa-nav-item') as HTMLElement;
     item.dataset['label'] = entry.label;
-    // depth === 1 only — TRAP T-nav-child-rows-carry-no-icon.
+    // Top level only — TRAP T-nav-child-rows-carry-no-icon.
     if (entry.icon && depth === 1) item.dataset['icon'] = entry.icon;
     if (entry.href) item.dataset['href'] = entry.href;
     if (entry.badge) item.dataset['badge'] = entry.badge;
     if (entry.indicator) item.dataset['statusDot'] = '';
-    // Depth → the Figma indent tier the item's CSS reads (tier 1 needs no attr).
+    // Tier 1 needs no attribute.
     const tier = entry.tier ?? depth;
     if (tier > 1) item.dataset['tier'] = String(tier);
 
@@ -333,7 +286,7 @@ export class SherpaNav extends SherpaElement {
     const rows = [row];
     if (!kids.length) return rows;
 
-    // A parent gets the Figma hasChildren chevron, and starts CLOSED unless asked.
+    // A parent gets the chevron, and starts closed unless asked.
     item.dataset['expandable'] = '';
     if (entry.expanded) item.dataset['expanded'] = '';
     row.dataset['expanded'] = entry.expanded ? 'true' : 'false';
@@ -346,8 +299,8 @@ export class SherpaNav extends SherpaElement {
   /**
    * Set an icon as FA classes when it looks like one, else as a text glyph.
    *
-   * TRAP T-brand-icon-must-empty-its-host — NOT `writeIcon`: the wrapper holds
-   * a `<slot>` with a fallback `<i>`, so it must be emptied first.
+   * NOT `writeIcon` — the host holds a `<slot>` with a fallback `<i>`, so it has
+   * to be emptied first. TRAP T-brand-icon-must-empty-its-host.
    */
   #applyIcon(host: Element, value: string): void {
     if (/\bfa-/.test(value)) {
@@ -373,11 +326,8 @@ export class SherpaNav extends SherpaElement {
   /* ── Interaction ────────────────────────────────────────────────── */
 
   /**
-   * What a row shows: its label, and its icon if it has one.
-   *
-   * Read back off the stamped ROW, not off the config, so it is true for a rail
-   * filled any way — populate(), or hand-authored rows in the light DOM.
-   * TRAP T-nav-child-rows-carry-no-icon — `icon` is undefined on a child row.
+   * What a row shows. Read off the stamped ROW, not the config, so it is also
+   * true for hand-authored rows in the light DOM.
    */
   entry(id: string): NavRowInfo | null {
     const row = this.$$<HTMLElement>('.nav-row').find((r) => r.dataset['id'] === id);
@@ -397,11 +347,11 @@ export class SherpaNav extends SherpaElement {
     const id = row?.dataset['id'];
     if (!id) return;
     this.setAttribute('data-active-id', id);
-    // The label and the icon ride along — TRAP T-nav-child-rows-carry-no-icon.
+    // The label and the icon ride along.
     this.emit('nav-select', { id, ...this.entry(id) });
   };
 
-  /** A parent row's chevron was toggled — record it, then re-derive visibility. */
+  /** A chevron was toggled — record it, then re-derive visibility. */
   #onItemExpand = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     if (!row?.dataset['id']) return;
@@ -410,14 +360,14 @@ export class SherpaNav extends SherpaElement {
   };
 
   /**
-   * Decide which child rows are showing, and write `data-hidden` for CSS to act on.
+   * Write `data-hidden` on rows under a closed parent, for CSS to act on.
    *
-   * TRAP T-parent-chain-walk-not-a-selector — a walk up `data-parent`, because
-   * `:has()` on flat siblings would hide unrelated branches.
+   * A walk up `data-parent`, because `:has()` on flat siblings would hide
+   * unrelated branches. TRAP T-parent-chain-walk-not-a-selector.
    */
   #syncRowVisibility(): void {
     const rows = this.$$<HTMLElement>('.nav-row');
-    // id → is that row expanded (absent = not a parent, so irrelevant)
+    // Absent from `open` = not a parent.
     const open = new Map<string, boolean>();
     const parent = new Map<string, string>();
     for (const row of rows) {
@@ -448,7 +398,7 @@ export class SherpaNav extends SherpaElement {
     this.emit('nav-search', { query });
   };
 
-  /** Clear the search box, restore every row, and hand focus back to the field. */
+  /** Clear the box, restore every row, hand focus back to the field. */
   #onSearchClear = (): void => {
     const input = this.$<HTMLInputElement>('.search-input');
     if (input) input.value = '';
@@ -458,9 +408,7 @@ export class SherpaNav extends SherpaElement {
     input?.focus();
   };
 
-  /* ── Search filtering + native highlighting ──────────────────────────
-     TRAP T-nav-search-uses-a-real-highlight — the CSS Custom Highlight API, and
-     why each row has to highlight its own label. */
+  /* ── Search ─────────────────────────────────────────────────────── */
 
   #filter(rawQuery: string): void {
     const query = rawQuery.trim().toLowerCase();
@@ -471,13 +419,15 @@ export class SherpaNav extends SherpaElement {
       }) | null;
       const label = item?.dataset['label'] ?? '';
       const match = !query || label.toLowerCase().includes(query);
-      // CSS owns the hiding; JS only marks the row. Each row highlights its own
-      // label — TRAP T-nav-search-uses-a-real-highlight.
+      // CSS owns the hiding; JS only marks the row. Each row highlights its OWN
+      // label: a custom highlight is not painted for shadow text unless it is
+      // registered and styled inside that same tree.
+      // TRAP T-nav-search-uses-a-real-highlight.
       row.toggleAttribute('data-filtered-out', !match);
       item?.highlight?.(match ? query : null);
     }
 
-    // A section with no surviving rows hides its label + rule too.
+    // A section with no surviving rows hides its label and rule too.
     for (const section of this.$$<HTMLElement>('.section')) {
       const rows = Array.from(section.querySelectorAll('.nav-row'));
       const anyVisible = rows.some((r) => !(r as HTMLElement).hasAttribute('data-filtered-out'));

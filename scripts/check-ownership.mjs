@@ -2,26 +2,12 @@
 /**
  * check-ownership.mjs — one owner per value, enforced.
  *
- * `DataSource.#push` writes seven `data-*` attributes onto every bound
- * component. A component that ALSO writes one of them is both reporter and
- * owner of the same value, which is the recurring bug this repo has hit four
- * times in a week: the grid deleting a sort column the toolbar was suspending,
- * a chip deriving an on/off state a grid also set, a pager showing a page the
- * query had not reached.
+ * `DataSource.#push` writes the OWNED attributes onto every bound component.
+ * A component that writes one too is both reporter and owner of that value —
+ * flagged unless a nearby `data-locked` check guards it, or it sits in a
+ * `set <name>(…)` accessor (the host's own channel).
  *
- * `data-locked` is the answer — a bound component reports its interaction and
- * stops writing its own state — and a rule nothing checks is a rule that
- * drifts. It was documented, and honoured by ONE component of 58, for months.
- *
- * WHAT COUNTS AS A VIOLATION. A write to an owned attribute that is not:
- *
- *   - guarded by a `data-locked` check on a nearby line, OR
- *   - inside a `set <name>(…)` accessor — a host calling `pager.page = 2` is
- *     the state channel working as intended, not a component owning a value.
- *
- * Deliberately CRUDE. It reads lines, not an AST, so a determined author can
- * slip past it — the point is to catch the accidental reintroduction, which is
- * how every one of those four bugs arrived.
+ * Crude by design: lines, not an AST — it catches the accidental relapse.
  *
  *   node scripts/check-ownership.mjs
  *
@@ -34,11 +20,7 @@ import { dirname, join, relative } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/**
- * The attributes `DataSource.#push` writes. Kept here rather than parsed out of
- * data-source.ts: a list this short is clearer stated, and the gate should fail
- * loudly if someone adds an eighth without thinking about who owns it.
- */
+/** Mirrors `DataSource.#push` — add one here when you add one there. */
 const OWNED = [
   'data-sort-field',
   'data-sort-direction',
@@ -49,11 +31,11 @@ const OWNED = [
   'data-page-size',
 ];
 
-/** `data-sort-field` → `sortField`, for the `dataset` spelling. */
+/** `data-sort-field` → `sortField`. */
 const camel = (attr) =>
   attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
-/** How many lines either side of a write a `data-locked` guard may sit. */
+/** Lines either side of a write a `data-locked` guard may sit. */
 const GUARD_WINDOW = 3;
 
 const problems = [];
@@ -61,7 +43,7 @@ const problems = [];
 for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   const lines = readFileSync(join(ROOT, file), 'utf8').split('\n');
 
-  // Which lines are inside a `set <name>(…)` accessor — a host's own channel.
+  // Lines inside a `set <name>(…)` accessor.
   const inSetter = new Array(lines.length).fill(false);
   let depth = null;
   for (let i = 0; i < lines.length; i++) {

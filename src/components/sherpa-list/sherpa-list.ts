@@ -1,13 +1,6 @@
 /**
- * sherpa-list — a vertical stack of rows.
- *
- * Two ways to fill it:
- *   1. Slot in sherpa-list-item children yourself.
- *   2. Give it data with populate([{ title, description?, active?, interactive? }])
- *      and it draws the rows for you.
- *
- * Only one row is current at a time — clicking a row clears the others. If
- * there are no rows, an empty-state message (data-empty) shows in their place.
+ * sherpa-list — a vertical stack of rows, filled by slotting
+ * sherpa-list-item children or by populate(). One row is current at a time.
  *
  * Public API:
  *   data-type  (default — dividers between rows) | bordered | plain (no dividers)
@@ -36,8 +29,7 @@ export class SherpaList extends SherpaElement {
   #rows: ListRow[] = [];
 
   override onRender(): void {
-    // One delegated listener enforces a single current row across every row,
-    // whether the rows were slotted or stamped by populate().
+    // One delegated listener covers slotted and stamped rows alike.
     this.addEventListener('item-click', this.#onItemClick);
     this.$('slot')?.addEventListener('slotchange', this.#syncEmpty);
     if (this.#rows.length) this.#render();
@@ -57,7 +49,7 @@ export class SherpaList extends SherpaElement {
         const row: ListRow = { title: String(r['title'] ?? '') };
         if (r['description'] != null) row.description = String(r['description']);
         if (r['active']) row.active = true;
-        // Data-driven rows default to interactive unless explicitly disabled.
+        // Data rows are interactive unless explicitly false.
         row.interactive = r['interactive'] !== false;
         return row;
       });
@@ -65,8 +57,7 @@ export class SherpaList extends SherpaElement {
   }
 
   #render(): void {
-    // The row prototype declares its own field mapping. `own-children`: clear only
-    // the previously-stamped rows — a blanket replaceChildren() would take the
+    // `own-children` clears only stamped rows — a blanket clear would take the
     // <slot> beside them with it.
     this.renderItems('.body', 'template.row-tpl', this.#rows, {
       clear: 'own-children',
@@ -75,24 +66,23 @@ export class SherpaList extends SherpaElement {
     this.#syncEmpty();
   }
 
-  /** Live count of rows across both fill modes (slotted + data-driven). */
+  /** Rows across both fill modes: slotted + stamped. */
   #rowCount(): number {
     const slotted = this.querySelectorAll(':scope > sherpa-list-item').length;
     const stamped = this.$$('.body > .row-item').length;
     return slotted + stamped;
   }
 
-  // The TEXT is a declared prop; this toggles the VISIBILITY flag, which depends
-  // on the row count and so cannot be expressed as an attribute write.
+  // The text is a declared prop; only the visibility flag needs JS, because it
+  // depends on the row count.
   #syncEmpty = (): void => {
     const empty = this.#rowCount() === 0 && !!this.dataset['empty'];
     this.toggleAttribute('data-empty-visible', empty);
   };
 
-  /** Enforce a single current row: clear every row except the one just clicked. */
+  /** Clear every row but the one just clicked. */
   #onItemClick = (event: Event): void => {
-    // item-click is composed: crossing into this list's shadow tree retargets
-    // event.target to the list host, so find the real item via composedPath().
+    // A composed event retargets event.target to the host, so read the path.
     const clicked = event
       .composedPath()
       .find(

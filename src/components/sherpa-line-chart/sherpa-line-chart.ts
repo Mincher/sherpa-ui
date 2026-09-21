@@ -1,18 +1,14 @@
 /**
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  *
- * Give it data with populate({ labels, series }). JS turns each set of numbers
- * into a line and a filled area on an SVG canvas, spacing the points evenly and
- * putting bigger values higher up. CSS handles the line colour, fill, and width.
- *
- * `setSeriesHidden(index, hidden)` hides one series so a chart legend can toggle
- * it. TRAP T-hiding-a-series-rescales-the-axis — hiding is a RE-RENDER.
+ * populate({ labels, series }) draws each set as an SVG polyline + area; CSS
+ * owns colour, fill and width.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-/** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
+/** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
 
 interface Series {
@@ -37,7 +33,6 @@ export class SherpaLineChart extends SherpaElement {
 
   #labels: string[] = [];
   #series: Series[] = [];
-  /** Series indices the legend has switched off. */
   #hidden = new Set<number>();
 
   override onRender(): void {
@@ -51,9 +46,8 @@ export class SherpaLineChart extends SherpaElement {
   /* ── Public API ──────────────────────────────────────────────────── */
 
   /**
-   * Show or hide one series by index — the hook a chart legend toggles.
-   *
-   * TRAP T-hiding-a-series-rescales-the-axis
+   * Show or hide one series — the hook a legend toggles. Hiding RE-RENDERS:
+   * the axis rescales to what is left. TRAP T-hiding-a-series-rescales-the-axis
    */
   setSeriesHidden(index: number, hidden = true): void {
     if (hidden) this.#hidden.add(index);
@@ -67,10 +61,8 @@ export class SherpaLineChart extends SherpaElement {
   }
 
   /**
-   * Hide exactly these series, by index — a saved view, a preset, an agent.
-   *
-   * TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES, and an
-   * out-of-range index is kept.
+   * Hide exactly these series — it REPLACES, and an out-of-range index is kept.
+   * TRAP T-hidden-set-is-view-state-and-replaces
    */
   set hiddenSeries(indices: readonly number[]) {
     this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
@@ -84,7 +76,7 @@ export class SherpaLineChart extends SherpaElement {
     this.#series = (Array.isArray(d.series) ? d.series : []).map((s) =>
       Array.isArray(s) ? { values: s } : s,
     );
-    // TRAP T-hiding-a-series-rescales-the-axis — stale indices hide the wrong series.
+    // Stale indices would hide the wrong series.
     this.#hidden.clear();
     this.#render();
   }
@@ -98,12 +90,12 @@ export class SherpaLineChart extends SherpaElement {
     const dotTpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
     if (!layer || !grid || !xAxis || !xtpl) return;
 
-    // TRAP T-hiding-a-series-rescales-the-axis
+    // Bounds come from the VISIBLE series only.
     const all = this.#series
       .filter((_, i) => !this.#hidden.has(i))
       .flatMap((s) => s.values);
-    // TRAP T-nan-is-the-not-given-sentinel — an absent bound is DERIVED, and
-    // num() treats an empty attribute as absent where Number('') is 0.
+    // NaN is the not-given sentinel — num() reads an empty attribute as absent
+    // where Number('') is 0. TRAP T-nan-is-the-not-given-sentinel
     const explicitMin = this.num('data-min', NaN);
     const explicitMax = this.num('data-max', NaN);
     const min = Number.isFinite(explicitMin) ? explicitMin : Math.min(0, ...all);
@@ -112,7 +104,8 @@ export class SherpaLineChart extends SherpaElement {
 
     this.#renderYAxis(min, max);
 
-    // TRAP T-gridlines-run-to-the-top-label — INCLUSIVE of `bands`, from i=1.
+    // From i=1, INCLUSIVE of `bands`, so a line meets the top label.
+    // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
     const bands = this.#tickSteps();
     for (let i = 1; i <= bands; i++) {
@@ -125,12 +118,11 @@ export class SherpaLineChart extends SherpaElement {
       grid.appendChild(line);
     }
 
-    // Series polylines + area paths.
     layer.replaceChildren();
     hotspots?.replaceChildren();
     this.#series.forEach((s, si) => {
-      // Nothing drawn at all — no empty <g>. TRAP T-hiding-a-series-rescales-the-axis
-      // covers why the hue still comes from `si`.
+      // No empty <g>. The hue stays keyed to `si`, so a visible series keeps
+      // its colour when a neighbour is hidden.
       if (this.#hidden.has(si)) return;
       const hue = seriesVar(si, s.colorIndex);
       const pts = s.values.map((v, i) => {
@@ -160,8 +152,7 @@ export class SherpaLineChart extends SherpaElement {
       g.append(area, line);
       layer.appendChild(g);
 
-      // Hover dots — one per point, on the SAME x/y percentages the polyline was
-      // drawn from. TRAP T-chart-tip-is-a-sibling-of-its-dot.
+      // Hover dots sit on the SAME x/y percentages as the polyline.
       if (hotspots && dotTpl) {
         pts.forEach(([x, y], i) => {
           const frag = dotTpl.content.cloneNode(true) as DocumentFragment;
@@ -172,9 +163,8 @@ export class SherpaLineChart extends SherpaElement {
           dot.style.setProperty('--_x', `${x}%`);
           dot.style.setProperty('--_y', `${y}%`);
           dot.style.setProperty('--_hue', hue);
-          // TRAP T-chart-tip-is-a-sibling-of-its-dot — a dot inherits nothing
-          // from the <g>, the anchor name goes on BOTH, and the label names the
-          // series as well as the point.
+          // A dot inherits nothing from the <g>, so the anchor name goes on
+          // BOTH. TRAP T-chart-tip-is-a-sibling-of-its-dot
           dot.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
           dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
           tip.style.setProperty('--_anchor', `--line-${si}-${i}`);
@@ -188,7 +178,6 @@ export class SherpaLineChart extends SherpaElement {
       }
     });
 
-    // X labels.
     xAxis.replaceChildren();
     for (const label of this.#labels) {
       const span = xtpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -199,10 +188,8 @@ export class SherpaLineChart extends SherpaElement {
   }
 
   /**
-   * The number of value divisions — shared by the axis and the gridlines.
-   *
-   * TRAP T-y-axis-width-is-fixed-not-measured — min: 0, so a negative count
-   * clamps to "no ticks" rather than falling back to the default.
+   * Value divisions, shared by the axis and the gridlines. min: 0, so a
+   * negative count clamps to "no ticks" rather than to the default.
    */
   #tickSteps(): number {
     return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
@@ -215,8 +202,8 @@ export class SherpaLineChart extends SherpaElement {
 
     const steps = this.#tickSteps();
     axis.replaceChildren();
-    // TRAP T-y-axis-width-is-fixed-not-measured — written, not inferred, and one
-    // label per division BOUNDARY at its gridline's own percentage.
+    // The flag is WRITTEN, never inferred by measuring.
+    // TRAP T-y-axis-width-is-fixed-not-measured
     this.toggleAttribute('data-has-y-axis', steps > 0 && this.#series.length > 0);
     if (steps <= 0 || !this.#series.length) return;
 

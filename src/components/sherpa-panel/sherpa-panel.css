@@ -1,11 +1,6 @@
 /**
  * sherpa-panel.css — a persistent inline panel surface.
- *
- * The card look mirrors sherpa-container: one --_surface / --_border pair that
- * the status cascade (--_status-*) re-points. It stretches to fill its parent
- * (fill is the panel default). Header / body / footer collapse the same way as
- * the container; the header also appears when a data-heading is set.
- * data-collapsed hides the body + footer. All visibility is CSS-only.
+ * Card look mirrors sherpa-container; all visibility is CSS-only.
  */
 
 :host {
@@ -17,24 +12,21 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Internal divider is a lighter neutral than the outer box border, matching the
-     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  /* Divider is one step lighter than the outer box border, as in the container. */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 
   background: var(--_surface);
-  /* Figma Panel: strokes on the LEFT and RIGHT edges only (0.5), none top/bottom —
-     it sits flush between other in-flow surfaces. Per-edge widths come from the
-     Border collection so a [data-border] tier can zero them. */
+  /* Strokes on the left/right edges only — the panel sits flush between other
+     in-flow surfaces. Per-edge widths so a [data-border] tier can zero them. */
   border-block-style: none;
   border-inline-style: solid;
   border-inline-color: var(--_border);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  /* Figma: panel is a square in-flow surface (border/rounding/none). */
   border-radius: var(--sherpa-display-mode-border-rounding-none, 0);
   color: var(--sherpa-style-content-base, #0c0b11);
-  /* Figma pins Elevation=sm on the Panel (Theme elevation "small" tokens). */
+  /* Figma pins Elevation=sm. */
   box-shadow:
     var(--sherpa-display-mode-size-4xs, 2px)
     var(--sherpa-display-mode-size-4xs, 2px)
@@ -51,10 +43,9 @@
 }
 
 /* ── Regions ─────────────────────────────────────────────────────────
-   Figma Panel = Container Header (pad 8, own 0.5 divider) + content (pad 16) +
-   Container Footer (pad 8×16, own divider). Regions are bare wrappers; a composed
-   <sherpa-container-header>/<sherpa-container-footer> brings its own chrome, and
-   plain slotted content / the data-heading label get it here. */
+   Bare wrappers: a composed <sherpa-container-header>/<sherpa-container-footer>
+   brings its own chrome, so only plain slotted content gets padding + a divider
+   here. */
 .header,
 .footer {
   display: none;
@@ -70,7 +61,6 @@
 :host([data-heading]) .header { display: block; }
 :host([data-has-footer]) .footer { display: block; }
 
-/* data-heading (plain label) → the Container Header row metrics. */
 :host([data-heading]:not([data-has-header])) .header {
   padding: var(--sherpa-theme-padding-md, 8px);
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
@@ -86,7 +76,6 @@
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
-/* Figma header title: content/body/base 14/20 medium. */
 .heading-text {
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-font-size-body-base, 14px);

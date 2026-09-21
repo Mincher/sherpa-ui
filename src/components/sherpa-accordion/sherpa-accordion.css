@@ -1,11 +1,6 @@
 /**
- * sherpa-accordion.css — a disclosure card surface.
- *
- * A bordered card whose <summary> is a full-width toggle row and whose body
- * shows only while the native <details> is [open]. The surface tokens mirror
- * sherpa-container: one --_surface / --_border pair that the status cascade
- * (--_status-*) re-points, no accent bars. JS never toggles visibility — the
- * body's presence is driven purely by the native [open] attribute.
+ * sherpa-accordion.css — a disclosure card.
+ * Visibility is the native <details> [open] attribute; JS never toggles it.
  */
 
 :host {
@@ -14,8 +9,7 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Body divider is a lighter neutral than the outer border, matching the
-     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  /* Divider is one step lighter than the outer border (Figma: default/+1 vs +2). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
 
   background: var(--_surface);
@@ -25,7 +19,7 @@
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  /* Figma pins Structure: snap-all-edges → square corners (stacks flush). */
+  /* Square corners so stacked accordions sit flush. */
   border-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
 
@@ -37,7 +31,6 @@
 }
 
 /* ── Summary: the toggle row ─────────────────────────────────────────── */
-/* Figma Container Header/Variant=accordion: padding/md 8, gap/sm 4. */
 .header {
   display: flex;
   align-items: center;
@@ -48,7 +41,7 @@
   color: var(--sherpa-style-content-base, #0c0b11);
   border-radius: inherit;
 
-  /* Kill the native disclosure triangle across engines. */
+  /* Both rules needed — engines differ on which marker they draw. */
   &::-webkit-details-marker { display: none; }
   &::marker { content: ''; }
 
@@ -58,7 +51,7 @@
   }
 }
 
-/* ── Titles block — heading + optional description, stacked (Figma gap 2) ── */
+/* ── Titles ──────────────────────────────────────────────────────────── */
 .titles {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -67,7 +60,6 @@
   gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
-/* Title: content/body/base 14/20 medium. */
 .heading {
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -75,8 +67,7 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* Optional secondary line — content/body/+1 12/16 regular; hidden until a value
-   or slotted content exists. */
+/* Hidden until an attribute or slotted content exists. */
 .description {
   display: none;
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -89,7 +80,7 @@
   display: block;
 }
 
-/* ── Chevron — trailing; rotates when open ───────────────────────────── */
+/* ── Chevron ─────────────────────────────────────────────────────────── */
 .chevron {
   inline-size: 10px; /* off-grid-ok */
   block-size: 10px; /* off-grid-ok */
@@ -105,7 +96,7 @@
   transform: rotate(45deg);
 }
 
-/* ── Body: shown only while open (the divider matches the card border) ── */
+/* ── Body ────────────────────────────────────────────────────────────── */
 .body {
   padding: var(--_pad);
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);

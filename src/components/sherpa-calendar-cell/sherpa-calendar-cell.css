@@ -1,14 +1,6 @@
 /**
  * sherpa-calendar-cell.css — one day in a calendar's grid.
- *
- * Every value here is read from the Figma "Calendar Cell" node (276:16589) and
- * checked against the projected token, not eyeballed:
- *
- *   32×32                     display-mode/size/2xl
- *   rounding 4                display-mode/border/rounding/base
- *   today fill    #008BBA4D   theme/surface/info/transparent
- *   selected fill #F2DFFF     theme/surface/active/base
- *   text          #35353D     content/body/+1, 14 on 20, regular, centred
+ * Values read from the Figma "Calendar Cell" node (276:16589).
  */
 
 :host {
@@ -16,9 +8,8 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
-/* The BUTTON is the hit area and the focus ring; the content box inside it
-   carries the state. Keeping them apart is what lets a range square its inner
-   corners without also squaring the ring. */
+/* The button is the hit area and the focus ring; the content box inside carries
+   the state — so a range can square its inner corners without squaring the ring. */
 .cell {
   display: flex;
   align-items: center;
@@ -38,8 +29,6 @@
   }
 }
 
-/* The CONTENT box — the node's own inner frame, which owns the fill and the
-   rounding per State. Transparent by default (the node's #FFFFFF00). */
 .content {
   display: flex;
   align-items: center;
@@ -52,31 +41,25 @@
   font-size: var(--sherpa-theme-content-size-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  /* A calendar is a grid of NUMBERS, so it takes the same mono face every other
-     number in the system does — the metrics also keep each column aligned. */
+  /* Mono: numbers take the same face as every other number in the system, and
+     the metrics keep each column aligned. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   transition: background-color 100ms ease, color 100ms ease;
 }
 
-/* Hover — a light preview of what pressing will mark, one step under the
-   selected tint so the two never read the same. */
+/* Hover sits one step under the selected tint so the two never read the same. */
 @supports (color: color-mix(in oklab, red, blue)) {
   .cell:hover:not(:disabled) .content {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
 }
 
-/* ── State = today ───────────────────────────────────────────────────────
-   The node fills its Content with style-surface/INFO at 30%. Today is a
-   statement of fact, not a selection — which is why it is the info tint and not
-   the active one. */
+/* Today is a statement of fact, not a selection — info tint, not active. */
 :host([data-state="today"]) .content {
   background: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-3, #008bba) 30%, transparent);
 }
 
-/* ── State = selected / selected-range ───────────────────────────────────
-   surface/active/base — the brand tint the system uses for "chosen". */
 :host([data-state="selected"]) .content,
 :host([data-state="range-start"]) .content,
 :host([data-state="range-end"]) .content,
@@ -84,9 +67,8 @@
   background: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
-/* A RANGE squares the corners that meet, so a run of days reads as one band
-   rather than a row of separate pills. The node's selected-range variant has
-   rounding 0 for exactly this reason; the two ENDS keep their outer corners. */
+/* A range squares the corners that meet, so a run of days reads as one band.
+   The two ends keep their outer corners. */
 :host([data-state="range-mid"]) .content {
   border-radius: 0;
 }
@@ -99,8 +81,7 @@
   border-end-start-radius: 0;
 }
 
-/* A day from the neighbouring month — present so the grid keeps its shape, but
-   dimmed to the secondary ink so it does not compete with this month's days. */
+/* A day from the neighbouring month — kept so the grid holds its shape. */
 :host([data-outside]) .content {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }

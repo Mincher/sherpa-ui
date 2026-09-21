@@ -1,15 +1,7 @@
 /**
  * sherpa-input-text — a text field with a label.
  *
- * JS copies the label, description, error, icon glyphs, placeholder, and native
- * attributes onto the shadow DOM, exposes the control's `value`, and re-fires
- * the input and change events. The control-row look, icon/actions visibility,
- * and the filled critical validation bar are all handled by CSS; JS just carries
- * the text and value.
- *
- * The `actions` slot (trailing steppers/buttons) needs no JS — SherpaElement
- * auto-sets data-has-actions on the host from slot presence and CSS gates it.
- *
+ * JS carries text and value; CSS owns the look and all visibility.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { validateField, type FieldRules } from '../../core/validate.js';
@@ -36,10 +28,8 @@ export class SherpaInputText extends SherpaElement {
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
 
   /**
-   * THIS ELEMENT IS A FORM CONTROL.
-   *
-   * TRAP T-shadow-input-needs-element-internals — a form cannot see an <input>
-   * through a shadow root, so without this the field is invisible to it.
+   * A form cannot see an <input> through a shadow root — without this the field
+   * is invisible to it. TRAP T-shadow-input-needs-element-internals
    */
   static readonly formAssociated = true;
 
@@ -64,11 +54,7 @@ export class SherpaInputText extends SherpaElement {
   /** Both attributes pick the tree, so a change to either has to re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];
 
-  /**
-   * Template selection: the bare inline field (`minimal`), the auto-growing
-   * textarea (`multiline`), or the full molecule (`default`). `minimal` wins —
-   * it has no description/message rows, so multiline is moot there.
-   */
+  /** `minimal` wins: it has no message rows, so multiline is moot there. */
   protected override get templateId(): string | null {
     if (this.dataset['type'] === 'minimal') return 'minimal';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
@@ -81,7 +67,7 @@ export class SherpaInputText extends SherpaElement {
     this.#syncAttrs();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
-    // VALIDATE ON BLUR — TRAP T-validate-on-blur-then-every-keystroke.
+    // Validate on blur, not per keystroke — TRAP T-validate-on-blur-then-every-keystroke.
     this.#control?.addEventListener('blur', this.#onBlur);
     this.#syncValue();
   }
@@ -94,11 +80,10 @@ export class SherpaInputText extends SherpaElement {
   /* ── Form participation ──────────────────────────────────────────── */
 
   /**
-   * Link the control to its own label, description and error for a screen
-   * reader.
+   * Link the control to its label, description and error for a screen reader.
    *
-   * TRAP T-describedby-must-not-be-a-live-region — per-instance ids, and no
-   * `role="alert"` / `aria-live` on the message this points at.
+   * No `role="alert"` / `aria-live` on the message this points at —
+   * TRAP T-describedby-must-not-be-a-live-region.
    */
   #syncIds(): void {
     const control = this.#control;
@@ -108,18 +93,13 @@ export class SherpaInputText extends SherpaElement {
     const message = this.$('.message');
     if (desc) desc.id = `${uid}-description`;
     if (message) message.id = `${uid}-message`;
-    // Both, in reading order — TRAP T-describedby-must-not-be-a-live-region.
+    // Both, in reading order.
     control.setAttribute('aria-describedby', `${uid}-description ${uid}-message`);
   }
 
   static #uid = 0;
 
-  /**
-   * Tell the FORM what this field holds and whether it is acceptable.
-   *
-   * TRAP T-shadow-input-needs-element-internals — setFormValue + setValidity,
-   * why the third argument is the inner control, and why `customError`.
-   */
+  /** Tell the form what this field holds and whether it is acceptable. */
   #syncValue(): void {
     const control = this.#control;
     if (!control) return;
@@ -141,13 +121,8 @@ export class SherpaInputText extends SherpaElement {
   /* ── Validation ──────────────────────────────────────────────────── */
 
   /**
-   * Check this field and show the result.
-   *
-   * NATIVE constraints first, then `data-rules` — TRAP
-   * T-validate-on-blur-then-every-keystroke.
-   *
-   * Returns true when the field is acceptable, so a caller can gate a submit on
-   * it without reading the DOM.
+   * Check this field and show the result. Native constraints first, then
+   * `data-rules`. True means acceptable, so a caller can gate a submit on it.
    */
   async validate(): Promise<boolean> {
     const control = this.#control;
@@ -169,12 +144,7 @@ export class SherpaInputText extends SherpaElement {
     return true;
   }
 
-  /**
-   * The rule sets a host has registered by name.
-   *
-   * TRAP T-rules-are-named-not-carried — an attribute is a string and a rule is
-   * a function, and an unknown name is not an error.
-   */
+  /** The rule sets a host has registered by name. */
   static #ruleSets = new Map<string, FieldRules>();
 
   static defineRules(name: string, ruleSet: FieldRules): void {
@@ -192,8 +162,7 @@ export class SherpaInputText extends SherpaElement {
   #setError(message: string): void {
     if (message) this.dataset['error'] = message;
     else delete this.dataset['error'];
-    // The other half of the announcement — TRAP
-    // T-describedby-must-not-be-a-live-region.
+    // The other half of the announcement.
     this.#control?.setAttribute('aria-invalid', message ? 'true' : 'false');
     this.#syncValue();
   }
@@ -210,10 +179,7 @@ export class SherpaInputText extends SherpaElement {
     this.#setError('');
   }
 
-  /**
-   * The browser restoring a value — a back-button navigation, or a session
-   * restore. It hands back exactly what setFormValue stored.
-   */
+  /** A back-button or session restore — exactly what setFormValue stored. */
   formStateRestoreCallback(state: string): void {
     if (this.#control) this.#control.value = state;
     this.#syncValue();
@@ -228,16 +194,13 @@ export class SherpaInputText extends SherpaElement {
     set('.label', this.dataset['label']);
     set('.description', this.dataset['description']);
     set('.message', this.dataset['error']);
-    // Icons — a Font Awesome CLASS LIST or a raw glyph character.
     this.#syncIcon('.icon-start', this.dataset['iconStart']);
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
 
   /**
-   * Put one icon on the field.
-   *
-   * TRAP T-input-icon-sink-is-data-glyph — a class list or a raw character, and
-   * why this is NOT `SherpaElement.writeIcon`.
+   * Put one icon on the field: a Font Awesome class list or a raw character.
+   * NOT `SherpaElement.writeIcon` — TRAP T-input-icon-sink-is-data-glyph.
    */
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
@@ -284,8 +247,7 @@ export class SherpaInputText extends SherpaElement {
   }
 
   #onInput = (): void => {
-    // The FORM's copy follows every keystroke; the CHECK only once it has erred.
-    // TRAP T-validate-on-blur-then-every-keystroke
+    // The form's copy follows every keystroke; the CHECK only once it has erred.
     this.#syncValue();
     if (this.dataset['error']) void this.validate();
     this.emit('input', { value: this.value });

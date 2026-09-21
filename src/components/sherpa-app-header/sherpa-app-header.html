@@ -1,40 +1,6 @@
 <!--
   sherpa-app-header — the top application header bar.
-
-  Read from the Figma "App Header" node (150:3690), not from a screenshot. Two
-  stacked rows inside an 8px padded content frame (gap 12), on a flat
-  style-surface/base with NO borders:
-
-    Row 1 — History & Actions (space-between, 24 tall)
-      left   : back button (16px Transparent icon) + breadcrumbs
-      right  : "Ask N-zo" (24-tall default label button, AI icon)
-             · beaker · divider · moon · divider
-             · notifications (bell-ring + badge) · account (user-settings)
-             · support (headset) · divider · app-switcher
-    Row 2 — View Details (gap 12)
-      title row : 16px view icon + view title (content/size/large 16 on
-                  line-height/large 24, regular, content/body/+1)
-      filters   : the embedded quick-filter toolbar (Type=view)
-
-  Every action button is a 24×24 Transparent icon button (Figma Structure=sm), so
-  they are pure chrome until the app wires them. Each is CSS-gated on a data-* flag
-  so a product can drop the ones it does not use.
-
-  ── WHAT CHANGED, AND WHY (2026-09-11) ───────────────────────────────────────
-  The old build claimed to match Figma "exactly" and did not. Corrected against
-  the node's own data:
-    • ACTION ORDER. Figma groups beaker alone, then moon alone, then the
-      bell/account/support run, then the app switcher. The code had
-      chat+beaker+moon | bell+account+help.
-    • NO CHAT BUTTON. Figma has none; the code invented one.
-    • FOUR GLYPHS. help is `headset` (talk to support), not a question mark;
-      account is `user-settings` (it opens settings), not a plain user circle;
-      the menu is `app-switcher` (a grid — it switches APPS), not a hamburger;
-      the bell is `bell-ring`.
-    • NO FAVOURITE STAR. Figma's Title Row holds only the view icon and title.
-      The view-level Filter Toolbar below already carries a ★ firing
-      view-favorite, so a second one here did the same job twice.
-  ──────────────────────────────────────────────────────────────────────────────
+  Row 1: back + breadcrumbs, then the action cluster. Row 2: view title + filters.
 
   Public API:
     data-heading        the view title (row 2)
@@ -67,9 +33,8 @@
       <!-- ── Row 1: history + actions ─────────────────────────────── -->
       <div class="row-history" part="row-history">
         <div class="history" part="history">
-          <!-- Structure=XS (16), not sm. Figma pins the back button one step
-               smaller than the action cluster — it belongs to the breadcrumb
-               line, which is 16 tall, not to the 24-tall actions row. -->
+          <!-- xs, not sm: the back button belongs to the 16-tall breadcrumb
+               line, not the 24-tall actions row. -->
           <sherpa-button class="back" part="back" data-type="icon" data-size="xs"
                          data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
                          aria-label="Back"></sherpa-button>
@@ -79,25 +44,14 @@
         <div class="actions" part="actions">
           <slot name="actions"></slot>
 
-          <!-- Type=LABEL at Structure=sm, pinned Style=DEFAULT — so it keeps the
-               grey border every default button has. It is the one action here
-               that is not Transparent, which is what sets it apart from the
-               icon run beside it. -->
+          <!-- The one action here that is not transparent — the default border
+               is what sets it apart from the icon run beside it. -->
           <sherpa-button class="ai" part="ai" data-size="sm"
                          data-icon-start="fa-solid fa-wand-magic-sparkles">
             <span class="ai-label">Ask N-zo</span>
           </sherpa-button>
 
-          <!--
-            THE DIVIDERS AND THE ORDER ARE FIGMA'S, read from the App Header's
-            `Actions` slot (150:3690):
-
-              Ask N-zo · beaker · │ · moon · │ · bell+badge · user-settings ·
-              headset · │ · app-switcher
-
-            The old order put chat/beaker/moon in one group and bell/account/help
-            in another, with a chat button Figma does not have at all.
-          -->
+          <!-- Order and dividers are Figma's (App Header 150:3690). -->
           <sherpa-button class="labs" part="labs" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-flask"
                          aria-label="Labs"></sherpa-button>
@@ -111,33 +65,27 @@
           <span class="divider divider-tools" aria-hidden="true"></span>
 
           <span class="notifications" part="notifications">
-            <!--
-              Figma's glyph is `bell-ring`. Its closest FREE Font Awesome match is
-              `fa-bell` — `fa-bell-on` is the ringing one but it is PRO, and a Pro
-              class in the free webfont renders NOTHING at all (no glyph, no
-              fallback box, `content: none` and zero width), so the button was
-              silently blank. Verified in the browser rather than assumed.
-            -->
+            <!-- `fa-bell`, not `fa-bell-on`: the ringing glyph is PRO, and a Pro
+                 class in the free webfont renders nothing at all — no glyph, no
+                 fallback box, zero width, no warning. -->
             <sherpa-button class="notif-btn" part="notif-btn" data-type="icon" data-size="sm"
                            data-look="transparent" data-icon-start="fa-solid fa-bell"
                            aria-label="Notifications"></sherpa-button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
-          <!-- `user-settings`, not a plain user circle: this opens account
-               SETTINGS, which is why Figma's glyph carries the cog. -->
+          <!-- A cog, because this opens account SETTINGS. -->
           <sherpa-button class="account" part="account" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-user-gear"
                          aria-label="Account"></sherpa-button>
-          <!-- `headset`, not a question mark: this is "talk to support", not
-               "read the docs". -->
+          <!-- A headset, because this is "talk to support", not "read the docs". -->
           <sherpa-button class="help" part="help" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-headset"
                          aria-label="Support"></sherpa-button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
-          <!-- `app-switcher` (a grid of squares), not a hamburger: it switches
-               APPS, where a hamburger reads as "this page's menu". -->
+          <!-- A grid, because it switches APPS; a hamburger reads as this page's
+               own menu. -->
           <sherpa-button class="menu" part="menu" data-type="icon" data-size="sm"
                          data-look="transparent" data-icon-start="fa-solid fa-grip"
                          aria-label="Switch app"></sherpa-button>
@@ -150,10 +98,8 @@
           <span class="view-icon" part="view-icon" aria-hidden="true"></span>
           <h1 class="title" part="title"></h1>
           <slot name="title"></slot>
-          <!-- NO favourite star. Figma's Title Row (150:3690) holds only the view
-               icon and the title, and the view-level Filter Toolbar below it
-               already carries a ★ that fires view-favorite. Two stars on one
-               screen doing the same job was the divergence. -->
+          <!-- No favourite star here on purpose: the filter toolbar below
+               already fires view-favorite. -->
         </div>
 
         <div class="filters" part="filters">

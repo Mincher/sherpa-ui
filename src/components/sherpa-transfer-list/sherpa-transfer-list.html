@@ -1,13 +1,6 @@
 <!--
   sherpa-transfer-list — a two-pane shuttle (available ↔ selected).
-
-  Matches the Figma "Transfer List": each pane's rows are sherpa-list-item
-  instances (with a leading selection control) and the shuttle controls are
-  sherpa-button instances — composition, not ad-hoc DOM.
-
-  The full pool is supplied via populate([{ value, label, selected? }]); items
-  sit in the left or right pane per their `selected` flag. Selecting rows stages
-  them; the move buttons shuttle staged (or all) items across.
+  Pool comes from populate([{ value, label, selected? }]); `selected` picks the pane.
 
   Public API:
     data-source-heading  heading for the available pane (default "Available")

@@ -1,31 +1,20 @@
 /**
  * sherpa-quick-filter-toolbar — a row of filter chips above a grid or list.
  *
- * populate([{ id, label, type?, active?, icon?, options? }]) fills it; a chip
- * body toggles on/off and the bar reports every chip that is on.
+ * populate([{ id, label, type?, active?, icon?, options? }]) fills it.
  *
- * TRAP T-actions-were-a-slot — the action cluster is built in, not slotted.
- * TRAP T-organise-chips-lead-the-bar — Group and Sort, and why they are not
- * filters.
+ * TRAP T-actions-were-a-slot
+ * TRAP T-organise-chips-lead-the-bar
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-// The sort/group glyphs are SHARED with sherpa-data-grid — see core/icons.
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
-// The enumerated states a sort control steps through — stated once, because
-// this chip and the data grid's column header are two views of ONE value.
 import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
-// Chips with `options` stamp a <sherpa-menu>, so it must be defined.
 import '../sherpa-menu/sherpa-menu.js';
-// The built-in action cluster is made of buttons, so they must be defined.
 import '../sherpa-button/sherpa-button.js';
-// A `date` chip's menu holds a calendar, so it must be defined.
 import '../sherpa-calendar/sherpa-calendar.js';
-// A number chip's menu holds a two-ended slider, and both number and date chips
-// lead with a Range switch.
 import '../sherpa-slider/sherpa-slider.js';
 import '../sherpa-switch/sherpa-switch.js';
-// The overflow menu's rows are composed list items with a tag as their badge.
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-tag/sherpa-tag.js';
 
@@ -49,67 +38,47 @@ export interface QuickFilterDef {
   active?: boolean;
   /** A leading Font Awesome icon class list. */
   icon?: string;
-  /**
-   * Values this chip filters by. Given options, the chip gets a caret and a
-   * <sherpa-menu> of rows: checkboxes when `select` is 'multiple' (the default),
-   * radios when it is 'single'.
-   */
+  /** Values this chip filters by — a caret and a menu of checkbox or radio rows. */
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
   /**
    * What the chip's menu holds.
    *
-   * TRAP T-number-and-date-lead-with-a-range-switch — the three kinds, and why
-   * Range is a switch rather than a second chip.
+   * TRAP T-number-and-date-lead-with-a-range-switch
    */
   kind?: 'values' | 'number' | 'date';
-  /**
-   * A number filter's bounds — the ends of its slider, and the clamp on its
-   * single field. Both default to the slider's own 0..100.
-   */
+  /** A number filter's slider ends and field clamp. Default 0..100. */
   min?: number;
   max?: number;
   /** The slider's increment. Defaults to 1. */
   step?: number;
   /**
    * The days a DATE chip's calendar may pick — ISO strings; every other day
-   * draws inactive. Omit for a free picker. A SET, not a min/max span: a column
-   * of dates is a SCATTER, and a span would leave every empty day pickable.
+   * draws inactive. A SET, not a span: a column of dates is a scatter.
    */
   availableDates?: string[];
   /**
    * A value the user TYPED rather than picked, shown on the chip's caret.
    *
-   * A normal chip reads its value back from its ticked rows; a custom one has no
-   * list, so the finished phrase ("Contains: ana") arrives already made and the
-   * chip opens no menu. Set it via `addCustomFilter()`.
+   * The finished phrase ("Contains: ana") arrives already made and the chip
+   * opens no menu. Set it via `addCustomFilter()`.
    */
   customValue?: string;
-  /**
-   * Start a number or date chip in RANGE mode rather than single.
-   *
-   * The switch is the user's to flip either way; this only says which side it
-   * starts on. Off by default: "equals this" is the simpler question and the one
-   * a reader can answer without deciding on two numbers first.
-   */
+  /** Start a number or date chip in RANGE mode. The user may still flip it. */
   range?: boolean;
   /**
    * A chip that cannot be switched OFF — a SELECTOR rather than a toggle.
    *
-   * TRAP T-persistent-chip-is-a-selector — the six rules, and the amber view chip.
+   * TRAP T-persistent-chip-is-a-selector
    */
   persistent?: boolean;
   /**
-   * Offer "Remove" at the foot of this chip's menu.
-   *
-   * OPT-IN: a filter the user ADDED can be taken off again, a chip the host put
-   * there deliberately must not offer a row that deletes it (see `persistent`).
-   * `addFilter()` sets it on anything picked from the Add menu.
+   * Offer "Remove" at the foot of this chip's menu. OPT-IN: a chip the host put
+   * there must not offer a row that deletes it.
    */
   removable?: boolean;
   /**
-   * Override whether this chip's menu DEFERS its picks behind an Apply/Cancel
-   * footer instead of applying each tick as it is made.
+   * Override whether this chip's menu defers its picks behind Apply/Cancel.
    *
    * TRAP T-commit-follows-select-mode — the mode decides; override only against it.
    */
@@ -143,24 +112,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override html = new URL('./sherpa-quick-filter-toolbar.html', import.meta.url);
 
   /**
-   * THE SORT, written from outside — by a DataSource, or by a data grid whose
-   * own column header was clicked.
-   *
-   * The bar's Sort chip and a grid's column headers are two views of ONE value,
-   * and only one column can be sorted at a time. Without observing these the
-   * link ran one way: the chip steered the grid, and sorting from a column
-   * header left the chip saying nothing.
+   * THE SORT and GROUP, written from outside — by a DataSource, or by a grid
+   * whose own column header was clicked. Without observing these the link runs
+   * one way and a header click leaves the chip saying nothing.
    */
   static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
 
   #filters: QuickFilterDef[] = [];
   #organise: OrganiseDef = {};
-  /**
-   * Filters the user MAY add but has not — the Add chip's menu.
-   *
-   * Separate from #filters because they are the two halves of one idea: what is
-   * on the bar, and what else could be. Picking one moves it across.
-   */
+  /** Filters the user MAY add but has not — the Add chip's menu. */
   #available: QuickFilterDef[] = [];
 
   /* ── Fitting the bar ─────────────────────────────────────────────── */
@@ -169,7 +129,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The pending reflow frame, so a burst of resizes measures once. */
   #frame: number | null = null;
 
-  /** How far the action cluster has folded — see TRAP T-reflow-resets-before-measuring. */
+  /** How far the action cluster has folded. */
   static readonly COLLAPSE_STEPS = 3;
 
   /**
@@ -215,15 +175,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Fill the overflow chip: its badge, and one menu row per folded filter.
    *
-   * Each row names the FILTER'S FIELD and badges its value count, so the bar
-   * says what is inside, not only how much. See TRAP T-drill-moves-not-clones.
+   * TRAP T-drill-moves-not-clones
    */
   #renderFolded(folded: readonly HTMLElement[]): void {
     const chip = this.$<HTMLElement>('.overflow-chip');
     if (!chip) return;
 
-    // The badge is the COUNT OF FOLDED FILTERS, not of values — "three filters
-    // are in here" is what a reader needs before they open it.
+    // The count of folded FILTERS, not of values.
     chip.dataset['count'] = String(folded.length);
 
     let menu = chip.querySelector('sherpa-menu');
@@ -241,8 +199,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = source.dataset['id'] ?? '';
       const label = source.dataset['label'] ?? id;
 
-      // A BOOLEAN chip — no menu of its own — has nothing to drill into, so it
-      // gets a TICKABLE row rather than a chevron that does nothing.
+      // A BOOLEAN chip has no menu to drill into, so it gets a tickable row.
       if (!source.querySelector('sherpa-menu')) {
         const toggle = this.clone('template.qf-toggle-tpl');
         if (!toggle) continue;
@@ -250,7 +207,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         const box = toggle.querySelector<HTMLInputElement>('input');
         const text = toggle.querySelector('.qf-toggle-label');
         if (text) text.textContent = label;
-        // The tick MIRRORS the chip, so the menu and the bar cannot disagree.
         if (box) box.checked = source.hasAttribute('data-current');
         // Bound to the BOX: a native `change` is not composed, so it stops at
         // the menu and never reaches the host.
@@ -262,8 +218,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const row = this.clone('template.qf-folded-tpl');
       if (!row) continue;
       row.dataset['for'] = id;
-      // The list item names itself from data-label — the component's own API,
-      // so there is no inner element for this to reach into.
+      // The list item names itself from data-label — its own API.
       row.dataset['label'] = label;
       const glyph = source.dataset['iconStart'];
       if (glyph) row.dataset['icon'] = glyph;
@@ -277,8 +232,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Re-read every folded row's value count.
    *
-   * Separate from row STAMPING: the counts move without the rows doing, and
-   * re-stamping would rebuild the list the reader is looking at.
+   * Separate from row STAMPING: re-stamping would rebuild the list the reader
+   * is looking at.
    */
   #syncFoldedBadges(): void {
     const chip = this.$<HTMLElement>('.overflow-chip');
@@ -289,23 +244,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const source = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
       const badge = row.querySelector<HTMLElement>('.qf-folded-count');
       if (!source || !badge) continue;
-      // The same figure the filter's own chip wears, read from the same place,
-      // so the two can never disagree.
       const count = this.#chipPicks(source).length;
       badge.textContent = String(count);
       /* A data-* ON THE ROW, not `hidden` on the badge: CSS owns visibility, and
-         the badge is not a host — nothing can write `:host(...)` for an element
-         inside a menu. Same vocabulary as the chip's `:host([data-count])`. */
+         nothing can write `:host(...)` for an element inside a menu. */
       badge.closest('.qf-folded')?.toggleAttribute('data-count', count > 0);
     }
   }
 
-  /**
-   * A folded TOGGLE was ticked — flip the chip it stands for.
-   *
-   * The chip is the source of truth, so a folded filter behaves exactly as it
-   * does on the bar: the row asks the chip to toggle, same as a click.
-   */
+  /** A folded TOGGLE was ticked — flip the chip it stands for, and let IT report. */
   #onFoldedToggle = (event: Event): void => {
     const box = event.target;
     if (!(box instanceof HTMLInputElement)) return;
@@ -314,8 +261,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = row.dataset['for'];
     const chip = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
     if (!chip) return;
-    // Mirror onto the chip and let IT tell the host, so a folded toggle and a
-    // bar toggle are the same event to a listener.
     if (box.checked) chip.setAttribute('data-current', '');
     else chip.removeAttribute('data-current');
     this.emit('quick-filter-change', {
@@ -333,8 +278,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * The menu attributes that belong to a FILTER rather than to the card.
    *
-   * TRAP T-drill-flags-travel-and-replace — replaced, never merged; `data-type`
-   * is the crushed calendar.
+   * TRAP T-drill-flags-travel-and-replace — replaced, never merged.
    */
   static readonly DRILL_FLAGS = [
     'data-commit',
@@ -344,20 +288,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-type',
   ] as const;
 
-  /**
-   * A folded filter's row was clicked — drill into that filter.
-   *
-   * TRAP T-drill-moves-not-clones — its real rows are MOVED, not copied.
-   */
+  /** A folded filter's row was clicked — drill into that filter. */
   #onFoldedClick = (event: Event): void => {
     const path = event.composedPath();
 
-    // A FOLDED TOGGLE ticks in place — let the click through so the checkbox
-    // flips natively; stopping it here would leave the box unticked.
+    // A FOLDED TOGGLE ticks in place — stopping the click leaves the box unticked.
     if (path.some((n) => n instanceof HTMLElement && n.classList.contains('qf-toggle'))) return;
 
-    // The path, not `target`: the click starts in the list item's own shadow
-    // root (see `pathFind`).
+    // The path, not `target`: the click starts in the list item's own shadow root.
     const row = path.find(
       (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('qf-folded'),
     );
@@ -372,22 +310,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const into = chip?.querySelector<HTMLElement>('sherpa-menu');
     if (!from || !into || !chip) return;
 
-    // Already drilled? Put the last one back first, so Back is one level deep
-    // and never a chain of them.
+    // Put the last drill back first, so Back is one level deep, never a chain.
     if (this.#drill) this.#drillOut();
 
-    // Park the overflow list so it can come back exactly as it was, then move
-    // the filter's own rows across.
+    // Park the overflow list, then MOVE the filter's own rows across.
     this.#drill = { home: from, rows: [...into.children] };
     into.replaceChildren(...from.childNodes);
 
-    // The HEADER says where you are and how to get out. `data-drill` is what
-    // CSS reveals the back arrow off; the heading carries the breadcrumb.
     into.setAttribute('data-drill', '');
     into.dataset['drillFrom'] = chip.dataset['label'] ?? 'More';
     into.setAttribute('data-heading', row.dataset['label'] ?? '');
-    // TRAP T-drill-flags-travel-and-replace — restored to what the TARGET had,
-    // never merged.
+    // TRAP T-drill-flags-travel-and-replace — restored to what the TARGET had.
     for (const flag of SherpaQuickFilterToolbar.DRILL_FLAGS) {
       const value = from.getAttribute(flag);
       if (value == null) into.removeAttribute(flag);
@@ -395,18 +328,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   };
 
-  /**
-   * A calendar picked a day or completed a range — relabel its chip.
-   *
-   * The chip is found by path, not `target` — see `pathFind`.
-   */
+  /** A calendar picked a day or completed a range — relabel its chip. */
   #onDatePicked = (event: Event): void => {
     // TRAP T-path-not-target-finds-chip-host — match the TAG, not `.chip`.
     const chip = this.pathFind(event, 'sherpa-quick-filter');
     if (!chip) return;
     this.#syncDateLabel(chip);
-    // A date chip turns itself ON by picking — it has no body toggle to switch
-    // it on beforehand, unlike a value chip.
+    // A date chip turns itself ON by picking — it has no body toggle.
     chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
     this.#emitChange();
   };
@@ -422,7 +350,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Shut the overflow menu, putting any drilled rows back first.
    *
-   * ORDER MATTERS — see TRAP T-drill-moves-not-clones.
+   * ORDER MATTERS — TRAP T-drill-moves-not-clones.
    */
   #closeOverflow(): void {
     this.#drillOut();
@@ -438,7 +366,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const drill = this.#drill;
     if (!menu || !drill) return;
 
-    // Back to the filter's own menu — the chip was parked off-screen, not emptied.
     drill.home.replaceChildren(...menu.childNodes);
     menu.replaceChildren(...drill.rows);
     this.#drill = null;
@@ -460,7 +387,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Does the chip run want more room than it has?
    *
-   * TRAP T-overflowing-needs-1px-slack — the +1 and the forced layout both matter.
+   * TRAP T-overflowing-needs-1px-slack — the +1 matters.
    */
   #overflowing(): boolean {
     const chips = this.$('.chips');
@@ -475,9 +402,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   #onResize = (): void => {
-    /* ONE measure per frame — a resize drag fires this per pixel and each pass
-       reads layout.
-
+    /* ONE measure per frame — a resize drag fires this per pixel.
        TRAP T-resize-reschedule-never-drop — cancel and re-queue, never return
        when a frame is already pending. */
     if (this.#frame != null) cancelAnimationFrame(this.#frame);
@@ -489,50 +414,38 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   override onRender(): void {
     this.addEventListener('quick-filter-click', this.#onChipClick);
-    // The cluster is delegated from its own zone, not per button: every control
-    // is a sherpa-button firing the same button-click, so one listener reads
-    // data-act off whichever one was pressed.
+    // Delegated from the zone: every control is a sherpa-button firing the same
+    // button-click, so one listener reads data-act off whichever was pressed.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
-    // The organise chips carry MENUS, so their selection arrives as the chip's
-    // own quick-filter-change (relayed from <sherpa-menu>), not as a body click.
-    // CAPTURE, and the reason is TRAP T-capture-beats-registration-order.
+    // CAPTURE — TRAP T-capture-beats-registration-order.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
-    // A folded filter's badge counts what it holds, and that moves without the
-    // rows doing — a value ticked while drilled, or the filter's own menu
-    // applied. Re-read on every change rather than re-stamping the list, which
-    // would rebuild what the reader is looking at.
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-change', this.#onFoldedCountsChanged);
-    // A COMMITTING menu fires nothing while its rows are being ticked — the set
-    // is a draft until Apply — so a value picked inside a drill reaches no
-    // listener at all. `change` is the native one from the row itself, which
-    // does bubble this far: the rows are in the CHIP's light DOM, not behind a
-    // second shadow boundary.
+    // A COMMITTING menu fires nothing while its rows are ticked, so a value
+    // picked inside a drill reaches no listener. The native `change` from the
+    // row does bubble this far: the rows are in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     // Action rows (the "Remove" button) report separately from value rows.
     this.addEventListener('menu-select', this.#onMenuSelect);
-    // A CALENDAR commits through its own events, not through the menu's. An
-    // auto-applying date chip has no Apply button, so without these its label
-    // only ever caught up when something else happened to re-render the bar.
+    // A CALENDAR commits through its own events, not the menu's; an auto-applying
+    // date chip has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
     this.addEventListener('range-select', this.#onDatePicked);
-    // The RANGE switch on a number or date menu. sherpa-switch re-dispatches its
-    // native change as a COMPOSED one, so this reaches here where a bare
-    // checkbox's would not.
+    // sherpa-switch re-dispatches its native change as a COMPOSED one, so this
+    // reaches here where a bare checkbox's would not.
     this.addEventListener('change', this.#onRangeToggle);
-    // The ADD menu hangs off a sherpa-BUTTON, which — unlike a chip — does not
-    // relay menu-change as quick-filter-change. So its commit is heard directly.
+    // The ADD menu hangs off a sherpa-BUTTON, which does not relay menu-change
+    // as quick-filter-change, so its commit is heard directly.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
 
-    // CLICK, not hover (TRAP T-drill-moves-not-clones): a drill replaces what is
-    // on screen, and a pointer passing over a row would move the list out from
-    // under it.
+    // CLICK, not hover: a drill replaces what is on screen, and a passing
+    // pointer would move the list out from under it.
     this.addEventListener('click', this.#onFoldedClick, true);
-    // BACK out of a drill. The arrow is two shadow boundaries away, so the menu
-    // re-emits its click as a composed `menu-back`.
+    // The back arrow is two shadow boundaries away, so the menu re-emits its
+    // click as a composed `menu-back`.
     this.addEventListener('menu-back', this.#drillOutHandler);
 
     this.#observer = new ResizeObserver(this.#onResize);
@@ -550,7 +463,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * populate([{ id, label, type?, active?, icon?, options? }]) — the filter chips.
    *
-   * TRAP T-toggle-chip-has-no-count — why there is no `count`.
+   * TRAP T-toggle-chip-has-no-count
    */
   protected override renderData(data: unknown): void {
     this.#filters = Array.isArray(data) ? (data as QuickFilterDef[]) : [];
@@ -579,8 +492,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const out: Record<string, string[]> = {};
     for (const chip of this.#chips()) {
       if (!chip.hasAttribute('data-menu')) continue;
-      // OFF = this field is not being filtered. The picks survive; they are just
-      // not applied.
+      // OFF = this field is not being filtered. The picks survive.
       if (!chip.hasAttribute('data-current')) continue;
       const id = chip.dataset['id'];
       if (!id) continue;
@@ -601,32 +513,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'];
       if (!id || !chip.hasAttribute('data-menu')) continue;
       const wanted = next[id];
-      // Persistent (see `persistent`): never switched off, but it still FOLLOWS
-      // a pick. Not naming one leaves it as it is.
+      // Persistent: never switched off, but it still FOLLOWS a pick.
       if (chip.hasAttribute('data-persistent')) {
         if (wanted?.length) chip.values = wanted;
         continue;
       }
 
       if (wanted?.length) {
-        // The CHIP owns its own face — label, badge, tooltip, on/off — so it
-        // sets them, not this bar. Writing them from here was two places
-        // deriving one thing, which is the bug this whole model exists to stop.
+        // The CHIP owns its own face — label, badge, tooltip, on/off.
         chip.values = wanted;
       } else {
         // NOT named by the view: off, but its picks survive. "Off" and "gone"
-        // are different states, and collapsing them makes a reader re-choose
-        // every time they look at another view.
+        // are different states.
         chip.current = false;
       }
     }
   }
 
   /**
-   * Every menu chip's picks, on or OFF.
+   * Every menu chip's picks, on or OFF — what the chips REMEMBER.
    *
-   * The counterpart to `values`: this is what the chip REMEMBERS, which is what a
-   * "restore my view" feature needs, whereas `values` is what is being applied.
+   * The counterpart to `values`, which is what is being applied.
    */
   get pickedValues(): Record<string, string[]> {
     const out: Record<string, string[]> = {};
@@ -644,21 +551,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * What one chip's menu holds — the values ticked, or the day picked.
    *
    * TRAP T-values-reports-on-chips-in-one-shape — a DATE chip reports its day as
-   * a single-entry array, and a range two, for the one-shape rule.
+   * a single-entry array, and a range two.
    */
   #chipPicks(chip: HTMLElement): string[] {
-    // A chip whose rows are currently DRILLED INTO the overflow menu reports
-    // from there. The rows are moved, not copied — there is one set of inputs
-    // and this is where they are right now — so reading the chip's own empty
-    // menu would say "nothing picked" for a filter the user is editing.
+    // A chip DRILLED INTO the overflow menu reports from there: the rows are
+    // moved, not copied, so its own menu is empty right now.
     if (this.#drill && this.#drill.home === chip.querySelector('sherpa-menu')) {
       const live = this.$<HTMLElement & { values: string[] }>('.overflow-chip');
       const menu = live?.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
       if (menu) return menu.values;
     }
-    // A NUMBER chip's menu reports its own value — one number, or the two ends
-    // of its range — because the menu is what knows which shape its Range switch
-    // has it in. Reading it here as well would be the same rule written twice.
+    // A NUMBER chip's menu reports its own value — it knows which shape its
+    // Range switch has it in.
     if (chip.querySelector('.qf-number')) {
       const menu = chip.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
       return menu?.values ?? [];
@@ -672,8 +576,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const value = cal.dataset['value'];
       return value ? [value] : [];
     }
-    // NON_VALUE_ROWS, not a local `.qf-all` — see that constant for what a row
-    // has to be to count as a pick.
+    // NON_VALUE_ROWS — see that constant for what counts as a pick.
     return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked'))
       .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
@@ -693,17 +596,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if ('valueLabel' in target) target.valueLabel = '';
       return;
     }
-    // The ISO string is parsed as UTC, so it is FORMATTED as UTC too — otherwise
-    // a browser west of Greenwich renders the previous day.
+    // Parsed as UTC, so FORMATTED as UTC — otherwise a browser west of
+    // Greenwich renders the previous day.
     const at = (iso: string): Date | null => {
       const d = new Date(`${iso}T00:00:00Z`);
       return Number.isNaN(d.getTime()) ? null : d;
     };
-    // DAY THEN MONTH, always — "03 Sep", never "Sep 03". `toLocaleDateString`
-    // orders the parts by locale, so a US reader got the month first and the
-    // shape the design asks for was lost. formatToParts gives the localised
-    // MONTH NAME (which should follow the reader's locale) while this code keeps
-    // the order (which should not).
+    // DAY THEN MONTH, always. `toLocaleDateString` orders parts by locale, so
+    // formatToParts gives the localised month NAME while this keeps the order.
     const dayMonth = (d: Date): string => {
       const parts = new Intl.DateTimeFormat(undefined, {
         day: '2-digit',
@@ -717,8 +617,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const year = (d: Date): string =>
       d.toLocaleDateString(undefined, { year: 'numeric', timeZone: 'UTC' });
 
-    // TRAP T-date-label-reads-in-full — in full, never abbreviated, and the
-    // year is stated once at the end when both ends share it.
     const start = at(picked[0]!);
     const end = picked.length > 1 ? at(picked[1]!) : null;
 
@@ -732,8 +630,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     if ('valueLabel' in target) target.valueLabel = label;
 
-    // NO COUNT BADGE. The label says both days outright, so a "2" beside it
-    // would only repeat how many are in the sentence already read.
+    // No count badge: the label says both days outright.
     delete chip.dataset['count'];
   }
 
@@ -770,11 +667,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.dataset['id'] = f.id;
       chip.setAttribute('data-label', f.label);
       if (f.type) chip.setAttribute('data-type', f.type);
-      // The chip's LIVE state wins over its definition's; a chip the user has
-      // never touched has no live entry and falls back to `active`.
+      // LIVE state wins over the definition; an untouched chip falls back to `active`.
       if (prior ? prior.on : f.active) chip.setAttribute('data-current', '');
-      // The view selector's glyph is the toolbar's to decide, not the app's —
-      // see #icons.view. Any other chip takes whatever icon it was given.
+      // The view selector's glyph is the toolbar's to decide, not the app's.
       const glyph = f.id === 'view' ? SherpaQuickFilterToolbar.#icons.view : f.icon;
       if (glyph) chip.setAttribute('data-icon-start', glyph);
       // A selector, not a toggle: always on, and its body does not flip it.
@@ -782,36 +677,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-persistent', '');
         chip.setAttribute('data-current', '');
       }
-      // A DATE chip's menu is a calendar and a NUMBER chip's is a field or a
-      // slider, so neither carries `options` — the menu is stamped on kind as
-      // well as on having values to list.
+      // A date or number chip carries no `options`, so the menu is stamped on
+      // kind as well as on having values to list.
       const hasOwnContent = f.kind === 'date' || f.kind === 'number';
       if (f.options?.length || hasOwnContent) this.#addMenu(chip, f, prior?.picked);
-      // A CUSTOM chip's value was typed, not picked, so there is no list to open
-      // and no menu to build. The finished phrase goes onto the caret through
-      // the chip's own `valueLabel` setter — the same door a date chip's
-      // formatted day uses, and for the same reason: the value is not the
-      // chip's to derive, only to show.
       if (f.customValue) {
-        // `data-custom` is what makes it findable: it is in neither `active`
-        // (which skips menu chips) nor `values` (which reads ticked rows).
+        // `data-custom` is what makes it findable: it is in neither `active` nor
+        // `values`.
         chip.setAttribute('data-custom', '');
         chip.setAttribute('data-menu', '');
-        // It reads in FULL: "Contains: ana" truncated to "Contains: a…" names a
-        // condition whose subject the reader cannot see.
+        // It reads in FULL: "Contains: a…" names a condition with no subject.
         chip.setAttribute('data-full-value', '');
-        // No menu is slotted, so the caret click is already a no-op (it calls
-        // `this.menu?.toggle?.()`). The caret is still DRAWN, because that is
-        // where the value reads — it just opens nothing.
+        // The caret is still DRAWN — that is where the value reads — but no menu
+        // is slotted, so clicking it is already a no-op.
         customLabels.push([chip, f.customValue]);
       }
       list.appendChild(chip);
-      // A date chip's label carries its chosen day, so it has to be re-derived
-      // after a rebuild like everything else.
       if (f.kind === 'date') {
-        // A date range reads in full — see #syncDateLabel. Every part of
-        // "03 Sep - 18 Oct, 2026" carries meaning, and there is no count that
-        // could stand in for a truncated end.
+        // A date range reads in full — see #syncDateLabel.
         chip.setAttribute('data-full-value', '');
         this.#syncDateLabel(chip);
       }
@@ -824,17 +707,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       void Promise.resolve(el.rendered).then(() => { el.valueLabel = text; });
     }
 
-    // The run just changed, so what fits has changed with it. The ResizeObserver
-    // only fires on a size change, and populating a bar that was already its
-    // final width is not one — without this, a bar loaded with eleven chips
-    // stayed overflowing until the window happened to be resized.
+    // The run changed, so what fits changed with it. A ResizeObserver only fires
+    // on a size change, and populating an already-final-width bar is not one.
     this.#onResize();
   }
 
   /**
    * Give a chip its value menu: a <sherpa-menu> of real checkbox/radio rows in the
-   * chip's light DOM. Cloned from the menu prototypes in the template, so no
-   * structural innerHTML is written.
+   * chip's light DOM, cloned from the template's menu prototypes.
    */
   #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
     const rowTpl = this.$<HTMLTemplateElement>('template.qf-row-tpl');
@@ -847,29 +727,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // same slot, so the one prototype serves both.
     menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-select', single ? 'single' : 'multiple');
-    // TRAP T-commit-follows-select-mode — including why a DATE or NUMBER chip
-    // counts as single, and why RANGE mode defers (see #onRangeToggle).
-    // A NUMBER defaults to a range, so it does NOT pick one — the same default
-    // `#addRangeSwitch` applies, said once here and read the same way.
+    // TRAP T-commit-follows-select-mode. A NUMBER defaults to a range, the same
+    // default `#addRangeSwitch` applies.
     const asRange = def.range ?? def.kind === 'number';
     const picksOne = (def.kind === 'date' || def.kind === 'number') && !asRange;
     const defers = def.commit ?? (!single && !picksOne);
     if (defers) menu.setAttribute('data-commit', '');
     // TRAP T-every-chip-menu-gets-clear-and-search — Clear is a HEADER button,
-    // a persistent chip gets none, and every value menu gets a search.
+    // and a persistent chip gets none.
     if (!def.persistent) menu.setAttribute('data-clearable', '');
     menu.setAttribute('data-search', '');
-    // The card stays inside the region the HOST names, not merely the window —
-    // a menu hanging over the nav or out of a panel belongs to neither. The
-    // toolbar passes its own `data-bounds` straight through; without one the
-    // menu falls back to the viewport, which is what it always used.
+    // The card stays inside the region the HOST names. Without a `data-bounds`
+    // the menu falls back to the viewport.
     const bounds = this.dataset['bounds'];
     if (bounds) menu.setAttribute('data-bounds', bounds);
 
-    // A NUMBER chip's menu holds a Range switch over either one field or a
-    // two-ended slider. Both exist from the start and CSS reveals one, so the
-    // switch is an attribute write rather than a rebuild — and whatever was
-    // typed on the other side survives a flip back.
+    // A NUMBER chip's menu holds a Range switch over one field or a two-ended
+    // slider. Both exist from the start and CSS reveals one, so a flip back
+    // keeps whatever was typed on the other side.
     if (def.kind === 'number') {
       // Nothing to search: there is no list, only a value to type or drag.
       menu.removeAttribute('data-search');
@@ -878,7 +753,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (box) {
         const slider = box.querySelector('sherpa-slider');
         const field = box.querySelector('input');
-        // The bounds are the SLIDER's ends and the field's clamp, so typing 500
+        // The bounds are the slider's ends and the field's clamp, so typing 500
         // into a 0..100 filter cannot ask for a row that cannot exist.
         const min = def.min ?? 0;
         const max = def.max ?? 100;
@@ -888,9 +763,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           el.setAttribute('max', String(max));
           if (def.step != null) el.setAttribute('step', String(def.step));
         }
-        // A fresh range spans the WHOLE span, so the filter starts by excluding
-        // nothing — a slider that opened at 0..0 would empty the view before the
-        // user had asked it anything.
+        // A fresh range spans the WHOLE span, so it starts by excluding nothing.
         slider?.setAttribute('value-start', String(min));
         slider?.setAttribute('value-end', String(max));
         menu.appendChild(box);
@@ -901,30 +774,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    // A DATE chip's menu holds a CALENDAR instead of value rows. Everything
-    // above — the heading, the commit mode — is the same, so a date filter
-    // applies exactly like any other chip.
+    // A DATE chip's menu holds a CALENDAR instead of value rows.
     if (def.kind === 'date') {
-      // The RANGE switch comes FIRST, above the calendar — it decides what the
-      // calendar below it is, so reading it after the grid would be backwards.
+      // The RANGE switch comes FIRST: it decides what the calendar below it is.
       this.#addRangeSwitch(menu, def);
       const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
       if (calTpl) {
         const cal = calTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        // The calendar's own two-ended mode, which it already has: `range` is a
-        // two-click start→end selection with the days between banded.
+        // The calendar's own two-click start→end mode.
         if (def.range) cal.setAttribute('data-type', 'range');
-        // The days that exist in the data. Absent leaves every day pickable —
-        // see `availableDates`.
+        // Absent leaves every day pickable — see `availableDates`.
         if (def.availableDates) {
           cal.setAttribute('data-available', def.availableDates.join(','));
         }
         // TRAP T-calendar-header-has-no-heading — a calendar is not a list to
-        // search, so the header's second row is the month stepper; CLEAR stays,
-        // because a date chip had no other way back to "no date".
+        // search; CLEAR stays, as a date chip had no other way back to "no date".
         menu.removeAttribute('data-search');
-        // The Menu set's own `Type = Calendar` variant: a wider card whose list
-        // region runs horizontally. The calendar is the CONTENT, the menu the card.
+        // The Menu set's own `Type = Calendar` variant: a wider card.
         menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
@@ -951,31 +817,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       input.type = single ? 'radio' : 'checkbox';
       input.value = option.value;
       if (single) input.name = `qf-${def.id}`;
-      // A LIVE pick beats the definition's `selected`: the set is what the user
-      // has ticked since, and is absent only for a chip being built for the
-      // first time.
-      // The fallback is the LAST word only where there is no pick at all — a
-      // live set that the user has emptied is still an answer for an ordinary
-      // chip, and `fallback` is undefined there because it is persistent-only.
+      // A LIVE pick beats the definition's `selected`; the fallback is the last
+      // word only where there is no pick at all.
       input.checked = isOn(option);
-      // Marks the row as one the current filters cannot reach. CSS dims it; the
-      // row stays selectable, because a user broadening a filter back out needs
-      // the way through.
+      // CSS dims it; the row stays selectable, because a user broadening a
+      // filter back out needs the way through.
       if (option.available === false) row.setAttribute('data-unavailable', '');
       row.querySelector('.qf-row-label')!.textContent = option.label;
       menu.appendChild(row);
     };
 
     // THE ORDER: Select all/Clear all (multi only) · available · divider ·
-    // unavailable. SPLIT, not sorted by a flag — two groups with a rule between
-    // them say "these are different" where a scattered dimmed row does not.
+    // unavailable. SPLIT, not sorted by a flag.
     if (!single) this.#addSelectAll(menu, options);
 
     const reachable = options.filter((o) => o.available !== false);
     const unreachable = options.filter((o) => o.available === false);
     for (const option of reachable) addRow(option);
-    // The divider only earns its place when there is something on BOTH sides —
-    // a rule above an empty group, or below one, is a line to nowhere.
+    // The divider only earns its place with something on BOTH sides.
     if (reachable.length && unreachable.length) {
       const hr = this.clone('template.qf-divider-tpl');
       if (hr) menu.appendChild(hr);
@@ -991,8 +850,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Whether this chip's commit mode was PINNED by its definition.
    *
-   * A host that named `commit` meant it either way, so the Range switch must not
-   * move it — the switch only supplies the default the definition left out.
+   * A host that named `commit` meant it either way, so the Range switch must
+   * not move it.
    */
   #chipDefers(sw: HTMLElement): boolean {
     const id = sw.closest<HTMLElement>('.chip')?.dataset['id'];
@@ -1003,22 +862,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Put the RANGE switch at the top of a number or date menu.
    *
-   * TRAP T-range-switch-swaps-not-rebuilds — one filter, two shapes, nothing rebuilt.
+   * TRAP T-range-switch-swaps-not-rebuilds — one filter, two shapes.
    */
   #addRangeSwitch(menu: HTMLElement, def: QuickFilterDef): void {
     const row = this.clone('template.qf-range-tpl');
     if (!row) return;
     const sw = row.querySelector('sherpa-switch');
-    /* A NUMBER chip opens as a RANGE unless its definition says otherwise.
-     *
-     * "Between 10 and 240" is what a reader almost always wants from a number,
-     * and the slider is already sized to the chip's own min/max, so the range
-     * excludes nothing until they drag it. A DATE keeps whatever it declared —
-     * "on this day" is the common ask there.
-     *
-     * `def.range ?? kind === 'number'`, so an explicit `range: false` still
-     * wins: this is a DEFAULT, not an override.
-     * TRAP T-a-default-is-not-an-override. */
+    /* A NUMBER opens as a RANGE, a DATE keeps what it declared. An explicit
+       `range: false` still wins — this is a DEFAULT, not an override.
+       TRAP T-a-default-is-not-an-override. */
     if (def.range ?? def.kind === 'number') {
       sw?.setAttribute('checked', '');
       menu.setAttribute('data-range', '');
@@ -1030,36 +882,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * The Range switch was flipped — swap the menu between its two shapes.
    *
    * sherpa-switch re-dispatches its native change as a COMPOSED one, so unlike
-   * the value rows this does cross the shadow boundary and can be heard here.
+   * the value rows this crosses the shadow boundary and can be heard here.
    */
   #onRangeToggle = (event: Event): void => {
-    // The change starts on the switch's own inner <input> — see `pathFind`.
+    // The change starts on the switch's own inner <input>.
     const sw = this.pathFind(event, '.qf-range-switch');
     if (!sw) return;
     const on = (sw as HTMLElement & { checked: boolean }).checked;
     const menu = sw.closest('sherpa-menu');
     if (!menu) return;
     menu.toggleAttribute('data-range', on);
-    // A RANGE has two ends, so the pick is not finished on the first one —
-    // applying there would filter to a span the user has not named yet. Single
-    // mode holds one value and applies on the tick, as it always did. A chip
-    // whose definition named `commit` keeps what it asked for.
+    // A RANGE defers: the pick is not finished on its first end. A chip whose
+    // definition named `commit` keeps what it asked for.
     if (!this.#chipDefers(sw)) menu.toggleAttribute('data-commit', on);
-    // A CALENDAR reads the mode as its own type: `range` is a two-click
-    // start→end selection with the days between banded. Its previous single
-    // pick is left alone — re-picking is how a range is started anyway.
+    // The calendar reads the mode as its own type. Its previous single pick is
+    // left alone — re-picking is how a range is started anyway.
     menu.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
-    // The filter's SHAPE changed, so what it means changed with it — a host
-    // reading `values` needs to hear that even though no value moved.
+    // The filter's SHAPE changed, so what it means changed with it.
     this.#emitChange();
   };
 
   /**
    * Put a "Select all / Clear all" row at the top of a MULTI-select menu.
    *
-   * TRAP T-select-all-is-not-a-value — one row, not two, and its label.
-   * TRAP T-native-change-stops-at-the-host — stamped here, owned by the menu. A
-   * SINGLE menu gets none: you cannot select all of a set of radios.
+   * TRAP T-select-all-is-not-a-value — one row, not two.
+   * TRAP T-native-change-stops-at-the-host — stamped here, owned by the menu.
    */
   #addSelectAll(menu: HTMLElement, options: readonly QuickFilterOption[]): void {
     if (!options.length) return;
@@ -1070,8 +917,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Give a chip's menu its "Remove" action — a FOOTER BUTTON.
    *
-   * TRAP T-remove-is-opt-in-and-a-footer-button — why a footer button, why
-   * opt-in, and what it emits.
+   * TRAP T-remove-is-opt-in-and-a-footer-button
    */
   #addRemove(chip: HTMLElement, menu: HTMLElement, def: QuickFilterDef): void {
     if (!chip.classList.contains('chip')) return;
@@ -1082,9 +928,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * A "Remove" row was clicked — take that chip off the bar.
    *
-   * The menu fires `menu-select` for ACTION rows (buttons), separately from the
-   * `menu-change` its value rows commit on Apply, so a remove never has to be
-   * told apart from a value pick.
+   * The menu fires `menu-select` for ACTION rows, separately from the
+   * `menu-change` its value rows commit on Apply.
    */
   #onMenuSelect = (event: Event): void => {
     if ((event as CustomEvent).detail?.value !== 'remove') return;
@@ -1093,8 +938,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const id = chip?.dataset['id'];
     if (!id) return;
     event.stopImmediatePropagation();
-    // Shut the menu first: it is about to be removed from the DOM with its chip,
-    // and a popover destroyed while open leaves the top layer confused.
+    // Shut the menu first: a popover destroyed while open leaves the top layer
+    // confused, and the chip is about to go.
     (chip.querySelector('sherpa-menu') as HTMLElement & { hide?: () => void })?.hide?.();
     this.#removeFilter(id);
   };
@@ -1103,10 +948,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // quick-filter-click is composed → find the originating chip on the path.
     const path = event.composedPath();
 
-    // The SORT chip's body is a TRI-STATE toggle: asc → desc → off. "Off" does
-    // NOT clear the chosen column — it suspends the sort, so one more click
-    // brings the same column back ascending. The column itself only changes from
-    // the menu.
+    // The SORT chip's body is a TRI-STATE toggle: asc → desc → off. "Off"
+    // suspends rather than clears; the column only changes from the menu.
     const sortChip = path.find(
       (n): n is HTMLElement => n instanceof HTMLElement && n.dataset['id'] === 'sort',
     );
@@ -1117,15 +960,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    /* THE GROUP CHIP'S BODY IS A TWO-STATE TOGGLE, and it needs its own branch
-       for the same reason Sort does: the loop below looks for `.chip`, and an
-       organise chip is a `.organise-chip`. Without this the Group chip flipped
-       its own `data-current` off, looked ungrouped, and told nobody — the grid
-       stayed grouped while the chip said it was not.
-
-       Unlike Sort there is no third state: grouping is on or off, and turning
-       it off CLEARS the pick, because a chip remembering a column it is not
-       grouping by would report a grouping that is not running.
+    /* THE GROUP CHIP'S BODY IS A TWO-STATE TOGGLE, and needs its own branch
+       because the loop below looks for `.chip` and an organise chip is a
+       `.organise-chip`. Without this the Group chip flipped itself off and told
+       nobody, so the grid stayed grouped.
        TRAP T-group-chip-body-toggles-grouping. */
     const groupChip = path.find(
       (n): n is HTMLElement => n instanceof HTMLElement && n.dataset['id'] === 'group',
@@ -1141,8 +979,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     );
     if (!chip) return;
 
-    // A persistent chip has ALREADY flipped itself off by the time this fires —
-    // a chip is a two-state toggle by default — so put it back. See `persistent`.
+    // A persistent chip has ALREADY flipped itself off by the time this fires,
+    // so put it back.
     if (chip.hasAttribute('data-persistent')) {
       chip.toggleAttribute('data-current', true);
       return;
@@ -1167,14 +1005,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const field = this.dataset['sortField'] ?? '';
     const raw = this.dataset['sortDirection'];
     const direction = raw === 'desc' ? 'desc' : 'asc';
-    /* AN EMPTY DIRECTION IS A SUSPENDED SORT. The source keeps pushing the
-       remembered column, so the field alone no longer says whether anything is
-       being ordered — the direction does.
+    /* AN EMPTY DIRECTION IS A SUSPENDED SORT — the source keeps pushing the
+       remembered column, so only the direction says whether it runs.
        TRAP T-a-suspended-sort-is-one-owners-job. */
     const suspended = raw === '';
 
-    // NO FIELD means no sort at all — the chip goes off and keeps whatever pick
-    // it had, the same suspended state its own third click produces.
+    // NO FIELD means no sort at all — off, keeping whatever pick it had.
     if (!field) {
       chip.removeAttribute('data-current');
       this.#syncSortLabel(chip);
@@ -1187,19 +1023,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       radio.checked = radio.value === field;
     }
     // A resume starts ASCENDING, so a suspended chip must not keep pointing at
-    // the `desc` it was left at — the same rewind its own cycle does.
+    // the `desc` it was left at.
     chip.dataset['direction'] = suspended ? 'asc' : direction;
     chip.toggleAttribute('data-current', !suspended);
     this.#syncSortLabel(chip);
   }
 
   /**
-   * Point the Group chip at whatever `data-group-field` says.
+   * Point the Group chip at whatever `data-group-field` says. The twin of
+   * `#syncSortFromAttrs`; both SUSPEND on empty rather than clearing.
    *
-   * The twin of `#syncSortFromAttrs` — both organise chips are single-select,
-   * and both SUSPEND on empty rather than clearing.
-   * TRAP T-a-chip-body-cycles-its-states — why this door exists, and why it
-   * emits no event.
+   * TRAP T-a-chip-body-cycles-its-states — why this door emits no event.
    */
   #syncGroupFromAttrs(): void {
     const chip = this.$<HTMLElement>('.organise-chip[data-id="group"]');
@@ -1207,11 +1041,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const field = this.dataset['groupField'] ?? '';
 
-    /* NO FIELD means ungrouped — SUSPENDED, exactly as a sort is, and the pick
-       is KEPT. A chip's body cycles its states; off is one of those states,
-       not a delete. Group has two and Sort has three, and neither throws the
-       column away: one more click brings the same grouping back without
-       re-picking it. T-grid-suspend-is-not-clear. */
+    // NO FIELD means ungrouped — SUSPENDED, and the pick is KEPT, so one more
+    // click brings the same grouping back without re-picking it.
     if (!field) {
       chip.removeAttribute('data-current');
       this.#syncGroupLabel(chip);
@@ -1238,21 +1069,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * Report the whole filter state: the active toggle chips AND every menu chip's
    * picks.
    *
-   * TRAP T-toggle-chips-have-no-field — why `active` alone could not describe a
-   * menu chip.
+   * TRAP T-toggle-chips-have-no-field
    */
   #emitChange(): void {
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — the marker says outright WHICH shape
-      // this is, instead of leaving a host to guess (and empty the grid).
+      // this is, instead of leaving a host to guess.
       scope: 'bar',
       active: this.active,
       // What is APPLIED — only the chips that are ON.
       values: this.values,
-      // What is REMEMBERED — including chips toggled off, whose picks survive.
+      // What is REMEMBERED — including chips toggled off.
       picked: this.pickedValues,
-      // TRAP T-custom-chips-are-reported-separately — a custom chip is in
-      // neither list above, so it needs its own.
+      // TRAP T-custom-chips-are-reported-separately — in neither list above.
       custom: this.customFilters,
     });
   }
@@ -1275,49 +1104,42 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Advance the sort chip: ascending → descending → suspended → ascending …
    *
-   * TRAP T-sort-is-tri-state — undo the chip's own flip, rewind the direction,
-   * and give OFF its own glyph.
+   * TRAP T-sort-is-tri-state
    */
   /**
    * Flip grouping on or off from the chip's body.
    *
-   * SUSPEND, NEVER CLEAR — the rule every other chip follows
-   * (`T-grid-suspend-is-not-clear`). Off means "stop applying this", not
-   * "delete it": the radio keeps its column, so one more click brings the same
-   * grouping back without re-picking it from the menu.
-   *
-   * The chip has ALREADY flipped its own `data-current`, so this reads the new
-   * state rather than setting it.
+   * SUSPEND, NEVER CLEAR — the radio keeps its column, so one more click brings
+   * the same grouping back. The chip has ALREADY flipped its own
+   * `data-current`, so this reads the new state rather than setting it.
    *
    * TRAP T-group-chip-body-toggles-grouping.
    */
   #toggleGroup(chip: HTMLElement): void {
     /* Turning it ON with nothing ever picked would light a chip that groups
-       nothing — the host writes `data-group-field=""` straight back and the
-       chip corrects itself a tick later, which reads as a flicker. That is a
-       chip with NO pick, not a suspended one, and it stays off. */
+       nothing, and the host would write `data-group-field=""` straight back —
+       a flicker. That is a chip with NO pick, not a suspended one. */
     if (chip.hasAttribute('data-current') && !this.#menuValue('group')) {
       chip.removeAttribute('data-current');
     }
     this.#syncGroupLabel(chip);
     // REPORTS, as every chip does — the host owns the grouping and writes
-    // `data-group-field` back, which `#syncGroupFromAttrs` then reflects.
+    // `data-group-field` back.
     this.emit('group-change', { field: this.groupField });
   }
 
   #cycleSort(chip: HTMLElement): void {
     /* ONE CYCLE, stated in `core/cycle.ts` — the same function the data grid's
-       column header runs. The two were written separately and DRIFTED: this
-       suspended the column on its third click while the grid deleted it, so
-       two controls of one value disagreed about what their shared third state
-       keeps. TRAP T-a-chip-body-cycles-its-states, TRAP T-one-cycle-for-one-value.
+       column header runs. Written separately the two DRIFTED over what their
+       shared third state keeps.
+       TRAP T-a-chip-body-cycles-its-states, TRAP T-one-cycle-for-one-value.
 
-       The chip has ALREADY flipped its own `data-current` by the time this
-       runs, so the live state is the INVERSE of what it now says. */
+       The chip has ALREADY flipped its own `data-current`, so the live state is
+       the INVERSE of what it now says. */
     const wasLive = !chip.hasAttribute('data-current');
     const column = this.#menuValue('sort') ?? '';
     /* SUSPENDED is a NULL direction, whatever `data-direction` says — that
-       attribute is where the direction is REMEMBERED, not whether it runs. */
+       attribute REMEMBERS the direction, not whether it runs. */
     const held = wasLive ? (sortDirectionFrom(chip.dataset['direction']) ?? 'asc') : null;
     const next = nextSort(column, column, held);
 
@@ -1347,10 +1169,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * available([...]) — the filters the Add chip offers.
+   * available([...]) — the filters the Add chip offers, over the populate() set.
    *
-   * The filters a user may add OVER the populate() defaults.
-   * TRAP T-add-menu-batches — the Add control's shape, and what picking one does.
+   * TRAP T-add-menu-batches
    */
   available(defs: QuickFilterDef[]): void {
     this.#available = Array.isArray(defs) ? defs : [];
@@ -1361,8 +1182,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #renderAvailable(): void {
     const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
-    // Nothing left to add — the button would open an empty list, so it is
-    // disabled rather than lying about what it can do.
+    // Nothing left to add — disabled rather than opening an empty list.
     const any = this.#available.length > 0;
     this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
@@ -1371,14 +1191,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#addMenu(add, {
       id: 'add',
       label: 'Add filter',
-      // MULTI-select: adding filters is a batch job — a user setting up a view
-      // wants three of them, and a single-select menu made that three separate
-      // open-pick-apply rounds.
+      // MULTI-select: adding filters is a batch job.
       select: 'multiple',
-      // …and the one menu that KEEPS its Apply footer now that chips auto-apply.
-      // Each tick here STAMPS A CHIP onto the bar, so applying per tick would
-      // rebuild the run three times mid-selection and close the list out from
-      // under the user. Batching is the whole point of the control.
+      // …and the one menu that KEEPS its Apply footer. Each tick STAMPS A CHIP,
+      // so applying per tick would rebuild the run mid-selection and close the
+      // list out from under the user.
       commit: true,
       options: this.#available.map((f) => ({ value: f.id, label: f.label })),
     });
@@ -1393,9 +1210,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const i = this.#available.findIndex((f) => f.id === id);
       if (i < 0) continue;
       const [def] = this.#available.splice(i, 1);
-      // ON on arrival: a filter you just chose should be doing something. And
-      // REMOVABLE: a chip the user put on the bar is one they may take off
-      // again, so the Add path grants the opt-in the host did not have to.
+      // ON on arrival, and REMOVABLE: a chip the user put on the bar is one
+      // they may take off again.
       added.push({ ...def!, active: true, removable: true });
     }
     if (!added.length) return;
@@ -1430,8 +1246,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * One listener for the whole cluster.
    *
    * Every control fires the same `button-click`, so the ACTION is read off
-   * `data-act` — a new button needs one map line, not new wiring. The event
-   * names are Figma's own.
+   * `data-act` — a new button needs one map line, not new wiring.
    */
   #onAction = (event: Event): void => {
     const path = event.composedPath();
@@ -1445,8 +1260,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('ai-filter-request', {});
         break;
       case 'clear':
-        // The undo button RESETS rather than merely announcing: a host should not
-        // have to reach into the shadow root to clear chips it did not stamp.
+        // RESETS rather than merely announcing: a host should not have to reach
+        // into the shadow root to clear chips it did not stamp.
         this.clearAll();
         break;
       case 'configure':
@@ -1468,9 +1283,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.#toggleFavourite(btn);
         break;
       case 'add':
-        // The button IS the trigger now — there is no caret to open the list.
-        // Adding a filter always meant "show me the options", so a body/caret
-        // split was two controls doing one job.
+        // The button IS the trigger — there is no caret to open the list.
         this.#openAddMenu(btn);
         break;
     }
@@ -1479,9 +1292,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * The Add menu committed — put the chosen filters on the bar.
    *
-   * Heard as `menu-change` rather than `quick-filter-change`: the menu hangs off
-   * a sherpa-button, and only a CHIP re-emits its menu's commit under the
-   * quick-filter name. A menu on a plain button reports for itself.
+   * Heard as `menu-change`, not `quick-filter-change`: only a CHIP re-emits its
+   * menu's commit under the quick-filter name.
    */
   #onAddCommit = (event: Event): void => {
     const add = this.pathFind(event, '.add-btn');
@@ -1494,8 +1306,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Open the Add button's menu, anchored to the button.
    *
-   * `aria-expanded` tracks it so the control announces itself as a menu button,
-   * which is what makes a plain <button> an acceptable trigger for a popover.
+   * `aria-expanded` tracks it, which is what makes a plain <button> an
+   * acceptable trigger for a popover.
    */
   #openAddMenu(btn: HTMLElement): void {
     const menu = btn.querySelector<HTMLElement & { show?: (t: HTMLElement) => void }>(
@@ -1517,8 +1329,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #toggleFavourite(btn: HTMLElement): void {
     const on = !this.hasAttribute('data-favourite');
     this.toggleAttribute('data-favourite', on);
-    // TRAP T-tokens-css-never-reaches-shadow — `active` is a real Style MODE
-    // (see the CSS), which is why THIS sheet paints it.
+    // TRAP T-tokens-css-never-reaches-shadow — `active` is a real Style MODE,
+    // which is why THIS sheet paints it.
     if (on) btn.setAttribute('data-status', 'active');
     else btn.removeAttribute('data-status');
     btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
@@ -1529,15 +1341,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Put a CUSTOM filter on the bar — one whose value is TYPED, not picked.
    *
-   * TRAP T-custom-chips-are-reported-separately — why this door exists, what
-   * REPLACES, what removes, and what `filter-remove` carries back.
+   * TRAP T-custom-chips-are-reported-separately
    */
   addCustomFilter(spec: { id: string; label: string; value?: string | null }): void {
     const { id, label, value } = spec;
     const i = this.#filters.findIndex((f) => f.id === id);
 
-    // No value means no filter. Removing rather than leaving a chip that reads
-    // "Name:" and narrows nothing.
+    // No value means no filter — removed, rather than a chip reading "Name:"
+    // that narrows nothing.
     if (value == null || value === '') {
       if (i >= 0) {
         this.#filters.splice(i, 1);
@@ -1553,9 +1364,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       active: true,
       // The user typed this one, so it is theirs to remove.
       removable: true,
-      // `customValue` is what the chip's caret reads. No `options`, so the chip
-      // gets no value menu — there is no list to open, and a caret that opened
-      // an empty card would be worse than none.
+      // `customValue` is what the chip's caret reads. No `options`, so no menu.
       customValue: value,
     };
 
@@ -1596,11 +1405,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */
 
   /**
-   * Glyphs for the organise chips, mirroring the Figma icons page (`group`,
-   * `sort-none`, `sort-ascending`, `sort-descending`).
+   * Glyphs for the organise chips, mirroring the Figma icons page.
    *
-   * TRAP T-organise-glyphs-are-named-not-inline — why they are named, why the
-   * four shared ones live in core/icons, and why `view` stays here.
+   * TRAP T-organise-glyphs-are-named-not-inline — why `view` stays here while
+   * the four shared ones live in core/icons.
    */
   static readonly #icons = {
     view: 'fa-solid fa-desktop',
@@ -1630,11 +1438,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * The column the grid is sorted by, or null.
-   *
-   * Null while the chip is SUSPENDED (its third state), even though the chip
-   * still remembers the column — a suspended sort must not order anything, and a
-   * host reading this should see "no sort", not a sort it is expected to ignore.
+   * The column the grid is sorted by, or null — including while the chip is
+   * SUSPENDED, though it still remembers the column.
    */
   get sortField(): string | null {
     const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
@@ -1657,8 +1462,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Stamp the Group and Sort chips into the organise zone.
    *
-   * TRAP T-organise-chips-lead-the-bar — both single-select, and why Sort offers
-   * each column twice as `field:asc` / `field:desc`.
+   * TRAP T-organise-chips-lead-the-bar — both single-select.
    */
   #renderOrganise(): void {
     const zone = this.$('.organise-zone');
@@ -1668,24 +1472,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const group = this.#organise.group ?? [];
     const sort = this.#organise.sort ?? [];
     zone.replaceChildren();
-    // Written by the JS, not inferred: CSS cannot see whether the zone has
-    // children, and an empty zone would leave its divider rule floating.
+    // Written by the JS: CSS cannot see whether the zone has children, and an
+    // empty zone would leave its divider rule floating.
     this.toggleAttribute('data-has-organise', group.length > 0 || sort.length > 0);
 
     if (group.length) {
       zone.appendChild(
-        // fa-SOLID: the free Font Awesome set the examples load has no regular
-        // weight for these two glyphs, so `fa-regular` rendered the missing-glyph
-        // box. The other toolbar chips (tag, user) are solid for the same reason.
+        // fa-SOLID: the free Font Awesome set has no regular weight for these
+        // two glyphs, so `fa-regular` rendered the missing-glyph box.
         this.#organiseChip('group', 'Group', SherpaQuickFilterToolbar.#icons.group,
           group.map((c) => ({ value: c.field, label: c.label }))),
       );
     }
     if (sort.length) {
-      // The MENU picks the column; the chip BODY cycles the direction. Listing
-      // each column twice (A-Z and Z-A) doubled a long menu and made "turn the
-      // sort off but keep the column" impossible to express.
-      // Built in the OFF state, so it opens with the sort-none glyph.
+      // The MENU picks the column; the chip BODY cycles the direction. Built in
+      // the OFF state, so it opens with the sort-none glyph.
       const chip = this.#organiseChip('sort', 'Sort', SherpaQuickFilterToolbar.#icons.sortNone,
         sort.map((c) => ({ value: c.field, label: c.label })));
       chip.dataset['direction'] = 'asc';
@@ -1719,34 +1520,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   #onOrganiseChange = (event: Event): void => {
-    // This listener hears the chips' quick-filter-change AND the toolbar's own
-    // (emit() is composed, so it re-enters here). Only act on an event that came
-    // from an organise chip, and stop it there so a host listening for
-    // quick-filter-change never sees a group/sort pick as a filter change.
+    // This hears the chips' quick-filter-change AND the toolbar's own (emit() is
+    // composed, so it re-enters here). Act only on an organise chip's, and stop
+    // it there so a host never sees a group/sort pick as a filter change.
     const path = event.composedPath();
     const chip = path.find(
       (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('organise-chip'),
     );
     if (!chip) {
-      // The ADD chip's menu committed — the user picked a filter to put on the
-      // bar. That is not a change to the filter SET's values, it is a change to
-      // which chips exist, so it is handled here and never reaches #emitChange
-      // as a value edit.
-      // A FILTER menu chip committed its selection (Apply). The chip's own event
-      // reports one chip's values; the toolbar must re-report the WHOLE state, so
-      // swap it for the toolbar-level one.
+      // A FILTER menu chip committed (Apply). Its own event reports one chip's
+      // values; the toolbar must re-report the WHOLE state, so swap it for the
+      // toolbar-level one.
       const filterChip = path.find(
         (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('chip'),
       );
       if (filterChip) {
         event.stopImmediatePropagation();
-        // A menu chip is ON while it holds picks — that is what makes an applied
-        // value filter visible in the bar. A persistent one is on even when the
-        // pick is empty, because an empty pick is still a view (see `persistent`).
-        // Read the chip's OWN picks, not `values`. `values` reports only chips
-        // that are already ON, so a chip currently off could never turn itself
-        // on by committing — which is every date chip's first pick, since a
-        // calendar has no body toggle to switch it on beforehand.
+        // Read the chip's OWN picks, not `values`: `values` reports only chips
+        // already ON, so a chip currently off could never turn itself on by
+        // committing — which is every date chip's first pick.
         filterChip.toggleAttribute(
           'data-current',
           filterChip.hasAttribute('data-persistent') || this.#chipPicks(filterChip).length > 0,
@@ -1761,8 +1553,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // itself read a group/sort pick as a filter change.
     event.stopImmediatePropagation();
 
-    // The chip shows itself as ON while it holds a choice, which is what makes an
-    // applied grouping visible in the bar (Figma's populated chip treatment).
+    // The chip shows itself as ON while it holds a choice, which is what makes
+    // an applied grouping visible in the bar.
     const id = chip.dataset['id'];
     const picked = !!this.#menuValue(id ?? '');
     chip.toggleAttribute('data-current', picked);

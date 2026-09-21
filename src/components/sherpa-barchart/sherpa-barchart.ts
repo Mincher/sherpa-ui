@@ -1,12 +1,7 @@
 /**
- * sherpa-barchart — a vertical bar chart for comparing categories.
+ * sherpa-barchart — a vertical bar chart. JS hands CSS a height percent and a
+ * colour per bar; CSS grows each bar from the baseline.
  *
- * Give it data with populate([{ label, value, colorIndex? }]). JS draws one bar
- * per item and hands two numbers to CSS: the bar's height (as a percent of the
- * tallest) and its colour. CSS grows each bar up from the baseline. Clicking a
- * bar fires bar-click.
- *
- * `setBarHidden(index, hidden)` drops a bar so a chart legend can toggle it.
  * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
@@ -16,12 +11,7 @@ import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/
 /** Gridlines when data-ticks is absent — 4 matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
 
-/**
- * One bar.
- *
- * TRAP T-chart-datum-aliases-are-not-copies — an ALIAS of `ChartDatum`, not a
- * copy; the name stays because it reads better at a call site.
- */
+/** One bar. TRAP T-chart-datum-aliases-are-not-copies — an alias, not a copy. */
 export type BarDatum = ChartDatum;
 
 export class SherpaBarchart extends SherpaElement {
@@ -49,16 +39,12 @@ export class SherpaBarchart extends SherpaElement {
   /** populate([{ label, value, colorIndex? }]) — the bars. */
   protected override renderData(data: unknown): void {
     this.#data = Array.isArray(data) ? (data as BarDatum[]) : [];
-    // TRAP T-hiding-a-series-rescales-the-axis — a stale hide drops the wrong bar.
+    // A stale hide would drop the wrong bar.
     this.#hidden.clear();
     this.#render();
   }
 
-  /**
-   * Hide or show one bar, so a chart legend can toggle it.
-   *
-   * TRAP T-hiding-a-series-rescales-the-axis
-   */
+  /** Hide or show one bar, so a chart legend can toggle it. */
   setBarHidden(index: number, hidden = true): void {
     if (hidden) this.#hidden.add(index);
     else this.#hidden.delete(index);
@@ -71,7 +57,7 @@ export class SherpaBarchart extends SherpaElement {
   }
 
   /**
-   * Hide exactly these bars, by index — a saved view, a preset, an agent.
+   * Hide exactly these bars, by index.
    *
    * TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES, and an
    * out-of-range index is kept.
@@ -88,7 +74,6 @@ export class SherpaBarchart extends SherpaElement {
     const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
-    // TRAP T-hiding-a-series-rescales-the-axis
     const shown = this.#data
       .map((d, i) => ({ d, i }))
       .filter(({ i }) => !this.#hidden.has(i));
@@ -114,7 +99,7 @@ export class SherpaBarchart extends SherpaElement {
       bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
 
       // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS supplies the anchor NAME
-      // and nothing else about the placement.
+      // only; CSS owns the placement.
       col.style.setProperty('--_anchor', `--bar-mark-${i}`);
       col.querySelector('.chart-tip-label')!.textContent = d.label;
       col.querySelector('.chart-tip-value')!.textContent = formatTick(d.value);
@@ -129,21 +114,15 @@ export class SherpaBarchart extends SherpaElement {
     }
   }
 
-  /**
-   * Stamp the y-axis values, top (max) to bottom (0).
-   *
-   * TRAP T-y-axis-width-is-fixed-not-measured — descending, and CSS spaces them
-   * with space-between on a zero-height cell so each centre lands on its line.
-   */
+  /** Stamp the y-axis values, top (max) to bottom (0). */
   #renderYAxis(max: number, shownCount: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
     if (!axis || !tpl) return;
 
     const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
-    // TRAP T-y-axis-width-is-fixed-not-measured — clear FIRST (before the early
-    // return), write the flag rather than inferring it, count from the SHOWN
-    // bars, and hand CSS the ONE `--_bands` the gradient and the labels share.
+    // TRAP T-y-axis-width-is-fixed-not-measured — clear BEFORE the early return,
+    // and `--_bands` is the one value the gradient and the labels share.
     axis.replaceChildren();
     this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
     this.style.setProperty('--_bands', String(steps));

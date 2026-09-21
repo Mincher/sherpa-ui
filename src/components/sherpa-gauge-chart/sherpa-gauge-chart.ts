@@ -1,12 +1,11 @@
 /**
  * sherpa-gauge-chart — a half-circle gauge for one value on a 0–100 scale.
  *
- * HALF A DONUT WITH A NEEDLE, from 9 o'clock to 3. With data-zones there is one
- * band per threshold; without, one band as long as the value. The leftover is a
- * grey remainder band.
+ * With data-zones, one band per threshold; without, one band as long as the
+ * value. A grey remainder band covers the rest.
  *
- * TRAP T-gauge-band-is-a-closed-path — a conic gradient and then a stroked
- * circle both failed here; the constants below are path geometry, not style.
+ * TRAP T-gauge-band-is-a-closed-path — the constants below are path geometry,
+ * not style.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.js';
@@ -15,11 +14,11 @@ import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.
 interface Zone {
   from: number;
   to: number;
-  /** The band's translucent FILL — the status sequence's mid step at 50%. */
+  /** Translucent FILL — the status sequence's mid step at 50%. */
   color: string;
-  /** Its SOLID outline — the same sequence's `border` variable. */
+  /** SOLID outline — the same sequence's `border` variable. */
   border: string;
-  /** The band's bounds on the RAW scale, for its hover tooltip's label. */
+  /** The band's bounds on the RAW scale, for its tooltip label. */
   rawFrom: number;
   rawTo: number;
   /** The colour NAME as written (a status name, or a raw CSS colour). */
@@ -29,24 +28,20 @@ interface Zone {
 /**
  * The status names a zone may be declared with.
  *
- * TRAP T-gauge-status-is-named — a status resolves to `--sherpa-status-<name>`
- * (its `-fill` companion is the same colour at the marks' 50%), from the Status
- * extension of Figma's Data Viz collection. The positional reading gave three
- * shades of green.
+ * TRAP T-gauge-status-is-named — resolved BY NAME, never by position.
  */
 const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
 /** Centre of the 100-unit circle. Only its TOP half is inside the viewBox. */
 const CENTRE = 50;
 
-/* Path GEOMETRY in viewBox units, all four of them — an SVG `d` cannot read a
-   custom property, so none of these can move to CSS.
-   TRAP T-gauge-band-is-a-closed-path names every value and why it is that. */
+/* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
+   none of these can move to CSS. */
 
-/** Ring thickness — the donut's band: innerRadius 0.7 of a 100-unit circle. */
+/** Ring thickness: innerRadius 0.7 of a 100-unit circle. */
 const RING_WIDTH = 15;
 
-/** Corner rounding — the donut's 2px on a 200px chart. */
+/** Corner rounding — 2px on a 200px chart. */
 const CORNER = 1;
 
 /** Outline thickness — 1px on a 200px chart, aligned INSIDE as in Figma. */
@@ -59,9 +54,8 @@ const SPAN_DEG = 180;
 export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
-  // ONE LINE, deliberately: the spec generator parses this declaration off a
-  // single line. Split across lines it reads only the first and the round-trip
-  // check then reports props the TS does not have.
+  // ONE LINE, deliberately: the spec generator reads only the first line, so a
+  // split declaration makes the round-trip check report phantom props.
   static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit'];
 
   override onRender(): void {
@@ -84,6 +78,7 @@ export class SherpaGaugeChart extends SherpaElement {
     this.dataset['value'] = String(v);
   }
 
+  /** Redraw everything from the current attributes. */
   #sync(): void {
     const min = this.num('data-min', 0);
     const max = this.num('data-max', 100);
@@ -93,14 +88,12 @@ export class SherpaGaugeChart extends SherpaElement {
     // Needle: -90deg (left) → +90deg (right) across the half.
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
 
-    // One arc per threshold band; with no bands, one arc as long as the value.
     const zones = this.#parseZones(min, max);
-    // Stamped from what was DRAWN — TRAP T-hotspots-follow-what-was-drawn.
+    // Hotspots follow what was DRAWN — TRAP T-hotspots-follow-what-was-drawn.
     this.#renderHotspots(this.#renderArcs(zones, frac));
 
-    // THREE SCALE TICKS: min, the MIDPOINT above the crown, max. The middle one
-    // is a TICK, not the reading — TRAP T-zones-paint-in-full. `data-unit`
-    // suffixes all three (Figma's gauge reads 0% / 50% / 100%).
+    // Three SCALE ticks: min, midpoint, max. The middle one is a tick, not the
+    // reading — TRAP T-zones-paint-in-full.
     const unit = this.dataset['unit'] ?? '';
     const tick = (n: number): string => `${formatTick(n)}${unit}`;
     const mid = this.$('.value');
@@ -110,7 +103,7 @@ export class SherpaGaugeChart extends SherpaElement {
     const maxEl = this.$('.max');
     if (maxEl) maxEl.textContent = tick(max);
 
-    // Caption text (the caption slot, when filled, wins via light-DOM content).
+    // A filled caption slot wins via light-DOM content.
     const caption = this.$('.caption');
     if (caption && !this.dataset['hasCaption']) {
       const slot = caption.querySelector('slot');
@@ -121,9 +114,9 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /**
    * Parse data-zones into resolved bands (fractions of the scale).
-   * Accepts a compact string "0-50:success,50-80:warning,80-100:critical"
-   * or a JSON array [{to,color}] / [{from,to,color}]. Missing `from` chains
-   * from the previous band's `to`. Values are on the min–max scale.
+   *
+   * Accepts "0-50:success,50-80:warning" or a JSON array [{from?,to,color}].
+   * A missing `from` chains from the previous band's `to`.
    */
   #parseZones(min: number, max: number): Zone[] {
     const spec = this.dataset['zones'];
@@ -163,7 +156,7 @@ export class SherpaGaugeChart extends SherpaElement {
         to: clamp(band.to),
         color: this.#zoneColour(band.color),
         border: this.#zoneBorder(band.color),
-        // The tooltip names the band on the reader's scale ("60–85"), not 0–1.
+        // Kept unclamped: the tooltip names the band on the reader's scale.
         rawFrom: from,
         rawTo: band.to,
         name: band.color,
@@ -176,8 +169,7 @@ export class SherpaGaugeChart extends SherpaElement {
   /**
    * Stamp one hover dot per DRAWN zone band, on that band's mid-angle.
    *
-   * TRAP T-hotspots-follow-what-was-drawn — the drawn list, sibling dot + tip,
-   * the anchor name, and why the accessible name goes on the arc.
+   * TRAP T-hotspots-follow-what-was-drawn.
    */
   #renderHotspots(zones: Zone[]): void {
     const host = this.$('.hotspots');
@@ -186,8 +178,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
     host.replaceChildren();
     zones.forEach((zone, i) => {
-      // The dot and its tip are SIBLINGS, and the index pairs the arc with the
-      // tip — TRAP T-hotspots-follow-what-was-drawn.
+      // The dot and its tip are SIBLINGS; the index pairs each with its arc.
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
       const dot = frag.querySelector<HTMLElement>('.hotspot')!;
       const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
@@ -206,8 +197,8 @@ export class SherpaGaugeChart extends SherpaElement {
       const isStatus = (STATUS_ORDER as readonly string[]).includes(zone.name);
       const label = isStatus ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
-      // The range on the scale the reader sees ("60–85"), not a 0–1 fraction.
       tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
+      // The accessible name goes on the ARC, which is what a reader reaches.
       const arc = this.$(`.zone[data-index="${i}"]`);
       if (arc) {
         arc.setAttribute('role', 'img');
@@ -222,12 +213,7 @@ export class SherpaGaugeChart extends SherpaElement {
     return name.charAt(0).toUpperCase() + name.slice(1);
   }
 
-  /**
-   * A zone's colour name → the CSS colour its band paints with.
-   *
-   * TRAP T-gauge-status-is-named — anything not a status is a raw CSS colour,
-   * passed through.
-   */
+  /** A zone's colour name → its band's fill. Anything unknown passes through. */
   #zoneColour(name: string): string {
     const known = (STATUS_ORDER as readonly string[]).includes(name);
     return known ? `var(--sherpa-status-${name}-fill)` : name;
@@ -241,23 +227,19 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /**
    * Draw the ring: one closed ring-segment path per band (or one for the value).
-   *
-   * Same primitive as a donut slice — ringSegmentPath() over the half circle,
-   * with no transform and no dash offset: a band's fraction maps straight onto
-   * START_DEG + fraction * SPAN_DEG. TRAP T-gauge-band-is-a-closed-path.
-   *
    * The last band is the grey filler, so there is no separate track element.
    *
-   * Returns the zones it actually DREW, in order — TRAP
-   * T-hotspots-follow-what-was-drawn.
+   * Returns the zones it actually DREW, in order.
+   *
+   * TRAP T-gauge-band-is-a-closed-path
+   * TRAP T-hotspots-follow-what-was-drawn
    */
   #renderArcs(zones: Zone[], frac: number): Zone[] {
     const host = this.$('.zones');
     const tpl = this.$<HTMLTemplateElement>('template.zone-tpl');
     if (!host || !tpl) return [];
 
-    // The TRUE band edges; the path is inset half an outline inside them —
-    // TRAP T-gauge-band-is-a-closed-path.
+    // The TRUE band edges; the path is inset half an outline inside them.
     const outer = CENTRE - OUTLINE / 2;
     const inner = CENTRE - RING_WIDTH + OUTLINE / 2;
 
@@ -273,15 +255,14 @@ export class SherpaGaugeChart extends SherpaElement {
       ? zones.map((z) => ({ from: z.from, to: z.to, color: z.color, border: z.border, zone: z }))
       : [{ from: 0, to: frac, color: null }];
 
-    // The FILLER — one grey band over whatever the bands leave uncovered, so the
-    // gauge reads full width. TRAP T-zones-paint-in-full.
+    // One grey band over whatever the bands leave uncovered, so the gauge reads
+    // full width.
     const covered = bands.length ? bands[bands.length - 1]!.to : 0;
     if (covered < 1) bands.push({ from: covered, to: 1, color: null, rest: true });
 
     host.replaceChildren();
     const drawn: Zone[] = [];
-    // Counts only bands that REACHED the screen, so the dots have no holes —
-    // TRAP T-hotspots-follow-what-was-drawn.
+    // Counts only bands that REACHED the screen, so the dot indices have no holes.
     let index = 0;
     bands.forEach((band) => {
       if (band.to <= band.from) return;
@@ -303,10 +284,9 @@ export class SherpaGaugeChart extends SherpaElement {
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
       arc.dataset['index'] = String(i);
-      // The remainder is chrome, not data — TRAP T-zones-paint-in-full.
+      // The remainder is chrome, not data.
       if (band.rest) arc.dataset['rest'] = '';
       if (band.color) arc.style.setProperty('--_hue', band.color);
-      // The status sequence's own solid `border`; the fill is its mid step at 50%.
       if (band.border) arc.style.setProperty('--_border', band.border);
       host.appendChild(arc);
       // The remainder names no zone, so it gets no hover dot.

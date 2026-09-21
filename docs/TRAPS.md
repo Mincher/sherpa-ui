@@ -626,6 +626,7 @@ attribute straight back, and the chip would correct itself a tick later — a
 flicker. It stays off, and the menu is where a column is chosen.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 

@@ -1,12 +1,7 @@
 /**
- * sherpa-file-upload — a drag-and-drop area for picking files.
+ * sherpa-file-upload — a drop zone plus a list of picked files.
  *
- * It has a drop zone, a note about the max size and allowed types, a list of
- * picked files (each row shows an icon, name, size, status, and a remove button),
- * and a row of actions to clear all or upload. A native "browse" button opens the
- * file picker; you can also drop files onto the zone. CSS handles the drag
- * highlight and disabled look; JS holds the files and fires the events.
- *
+ * CSS owns the drag highlight and the disabled look; JS holds the files.
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -116,9 +111,8 @@ export class SherpaFileUpload extends SherpaElement {
     this.emit('files-change', { files: this.#files });
   }
 
+  /** Size is written here because it is computed; name and index are declared. */
   #render(): void {
-    // The name and the index are declared on the prototype. The SIZE is not —
-    // a raw byte count is unreadable, and formatting it is a computation.
     this.renderItems('.file-list', 'template.file-item-tpl', this.#files, {
       after: (row, file) => {
         row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
@@ -131,9 +125,7 @@ export class SherpaFileUpload extends SherpaElement {
     const btn = (event.target as HTMLElement).closest('.file-remove');
     if (!btn) return;
     const row = btn.closest<HTMLElement>('.file-item');
-    // -1 as the "no index" sentinel, NOT Number(): `Number(null)` is 0, so a row
-    // that had lost its data-index would have spliced the FIRST file instead of
-    // none. coerceNum treats absent, empty and unparseable alike.
+    // -1, not Number(): `Number(null)` is 0, which would splice the FIRST file.
     const idx = coerceNum(row?.dataset['index'], -1, { int: true });
     if (idx < 0 || idx >= this.#files.length) return;
     const [removed] = this.#files.splice(idx, 1);

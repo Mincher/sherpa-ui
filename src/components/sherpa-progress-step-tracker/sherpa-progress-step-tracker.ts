@@ -1,11 +1,7 @@
 /**
  * sherpa-progress-step-tracker — a row of steps showing where you are in a flow.
  *
- * Give it steps with populate([{ label, description? }]). Each step is marked
- * done, active, or to-do by comparing it to data-current-step, and CSS draws it
- * to match, with connector lines between the steps. JS only holds the steps and
- * the current position; the rest is CSS.
- *
+ * JS holds the steps and the current index; CSS draws done / active / to-do.
  */
 import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
 
@@ -22,7 +18,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
   #steps: Step[] = [];
 
   override onRender(): void {
-    // One delegated listener for the whole track — steps come and go, this stays.
+    // Delegated, because the steps are replaced on every render.
     this.$('.steps')?.addEventListener('click', this.#onClick);
     if (this.#steps.length) this.#render();
   }
@@ -62,10 +58,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
 
     track.replaceChildren();
     this.#steps.forEach((step, i) => {
-      // The label, description and index are declared on the prototype. The
-      // NUMBER is not a field — it is the position counted from one — and the
-      // connector is a second prototype woven BETWEEN the steps, which is
-      // structure rather than content.
+      // The number is position, not a field, so the prototype cannot declare it.
       const item = this.cloneItem('template.step-tpl', step, i);
       if (!item) return;
       item.querySelector('.number')!.textContent = String(i + 1);
@@ -77,13 +70,12 @@ export class SherpaProgressStepTracker extends SherpaElement {
     this.#applyStates();
   }
 
-  /** Reflect current-step onto each node as data-state (CSS styles it). */
+  /** Reflect current-step onto each node as data-state; CSS styles it. */
   #applyStates(): void {
     const current = this.currentStep;
     for (const node of this.$$('.step')) {
       const i = coerceNum(node.dataset['index'], -1, { int: true });
       node.dataset['state'] = i < current ? 'done' : i === current ? 'active' : 'todo';
-      // Expose the active step to assistive tech (WAI-ARIA current step).
       if (i === current) node.setAttribute('aria-current', 'step');
       else node.removeAttribute('aria-current');
     }
@@ -92,8 +84,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
   #onClick = (event: Event): void => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('.step');
     if (!node) return;
-    // A .step without a data-index used to emit `index: NaN`. -1 is the sentinel,
-    // and a step that names no index is not a click worth reporting.
+    // -1 sentinel: a .step with no data-index must not emit `index: NaN`.
     const index = coerceNum(node.dataset['index'], -1, { int: true });
     if (index < 0 || index >= this.#steps.length) return;
     this.emit('step-click', { index, label: this.#steps[index]?.label ?? '' });

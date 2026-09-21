@@ -1,23 +1,13 @@
 /**
  * sherpa-container-header.css — all container-header presentation.
- *
- * Matches the Figma "Container Header": an optional drag handle + icon lead a
- * title + optional description, then a trailing actions region with an optional
- * collapse toggle and a dismiss button. Each affordance is CSS-toggled off a
- * data-* flag (or slot presence); JS only writes text and wires the events.
- *
- * Colour model (Figma): the row fills its status surface via the [data-status]
- * cascade — background: var(--_status-surface, transparent) — its title follows
- * var(--_status-text, content/title) and the description content/secondary. With
- * no ancestor status it is transparent over the container surface.
+ * Every affordance is CSS-toggled off a data-* flag or slot presence.
  */
 
 :host {
   display: block;
   container: sherpa-container-header / inline-size;
   background: var(--_status-surface, transparent);
-  /* Figma Container Header: bottom stroke border/width/sm on style-border/base +1 —
-     the header OWNS its divider (the container region is a bare wrapper). */
+  /* The header owns its divider — the container region is a bare wrapper. */
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-1, #e8e8f6);
 }
 
@@ -68,7 +58,6 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  /* Figma icon: width content/size/base → 14. */
   inline-size: var(--sherpa-theme-content-size-base, 14px);
   block-size: var(--sherpa-theme-content-size-base, 14px);
   color: var(--_status-icon, var(--sherpa-theme-content-body-1, #35353d));
@@ -112,10 +101,8 @@ slot[name="heading"] { display: contents; }
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
 
-/* The toggle and close are composed sherpa-buttons (Figma: Button/Type=icon at
-   Structure xs + the Transparent look), so the box, padding, hover, focus ring
-   and disabled inking are the COMPONENT's. Only visibility is described here —
-   what used to sit in this place was a second copy of all of it. */
+/* Composed sherpa-buttons: box, hover, focus ring and disabled inking are the
+   button's. Only visibility belongs here. */
 .toggle,
 .close {
   display: none;
@@ -124,20 +111,14 @@ slot[name="heading"] { display: contents; }
 :host([data-collapsible]) .toggle { display: inline-flex; }
 :host([data-dismissible]) .close { display: inline-flex; }
 
-/* Collapsed rotates the chevron. The glyph lives inside the button's own shadow
-   root, so the rotation goes on the HOST — ::part would reach the inner <button>
-   but not the <i>, and a transform on the host turns the whole control, which is
-   the same picture. */
+/* The chevron glyph lives in the button's own shadow root, so ::part cannot
+   reach it — rotate the host instead. */
 .toggle { transition: transform 120ms ease; }
 :host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
-/* Hide the whole actions region only when it truly has nothing. */
 :host(:not([data-has-actions]):not([data-dismissible]):not([data-collapsible])) .actions { display: none; }
 
 /* ── Metadata strip ───────────────────────────────────────────────────── */
-/* A bottom row below the heading. Empty by default: only shows once light DOM
-   assigns the metadata slot (base class reflects data-has-metadata). */
-/* Figma metadata slot: gap 12 between blocks, 12/16 regular content/body/+1. */
 .metadata {
   display: none;
   align-items: center;
@@ -150,9 +131,7 @@ slot[name="heading"] { display: contents; }
 }
 :host([data-has-metadata]) .metadata { display: flex; }
 
-/* ── Panel variant ────────────────────────────────────────────────────── */
-/* Panel = link-style title, a right-aligned actions group, and the bottom
-   metadata strip. It reuses the shared skeleton — only the look changes. */
+/* ── Panel variant — same skeleton, different look ────────────────────── */
 :host([data-type="panel"]) .title { color: var(--sherpa-theme-content-link-1, #2b34b4); }
 :host([data-type="panel"]) .actions { margin-inline-start: auto; }
 

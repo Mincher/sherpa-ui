@@ -5,35 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sherpa-UI — example app</title>
 
-  <!-- Design tokens (light DOM → inherit into every shadow root). -->
+  <!-- Design tokens in the light DOM, so they inherit into every shadow root. -->
   <link rel="stylesheet" href="../dist/styles/tokens/tokens.css" />
 
 </head>
 <body>
-  <!-- ── The app-shell + nav + header live ONCE. Only the content swaps. ── -->
+  <!-- The app-shell + nav + header live ONCE. Only the content swaps. -->
   <sherpa-app-shell>
     <sherpa-nav slot="nav"></sherpa-nav>
 
-    <!-- Every header action is opt-in, so a product shows only what it wires. -->
-    <!-- NO data-heading / data-icon here. The title and the icon ARE the selected
-         nav row's — the script copies them across on every view load, so a value
-         hard-coded here would just be a second copy to go stale. -->
+    <!-- No data-heading / data-icon: the script copies them from the selected
+         nav row on every view load, so one hard-coded here would go stale. -->
     <sherpa-app-header slot="header"
                        data-ai data-labs data-theme-toggle
                        data-account data-help data-menu
                        data-notifications="4">
       <!-- app-header.populate() stamps into these empty children by slot name. -->
       <sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs>
-      <!-- data-type="view": the VIEW-level toolbar, so its action cluster gains
-           the snapped [star | Save | caret] group. The records view's own
-           toolbar is data type, and shows the cluster without it. -->
-      <!--
-        `data-reset-on-populate`: the header's filters belong to the VIEW, not to
-        the session. Each view populates this bar with its own set, and carrying
-        the last view's picks into the next would filter it by choices made
-        somewhere else — which is exactly what a saved view or a preset is meant
-        to decide for itself.
-      -->
+      <!-- data-type="view" gives the action cluster the snapped
+           [star | Save | caret] group; the records view's toolbar is data type.
+           data-reset-on-populate: these filters belong to the VIEW, so the last
+           view's picks must not carry into the next. -->
       <sherpa-quick-filter-toolbar slot="filters" data-type="view"
                                    data-reset-on-populate></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
@@ -42,29 +34,16 @@
     <main id="view-root"></main>
   </sherpa-app-shell>
 
-  <!--
-    THE BELL'S LIST. Outside the app shell on purpose: its menu is a popover in
-    the TOP LAYER, so it needs no place in the layout — and every one of the
-    header's slots is NAMED, so an unslotted child put inside it is never
-    projected and gets no layout at all.
-
-    Fed by a DataSource in the script below, so the list and the badge are two
-    views of one set of records rather than two things to keep in step.
-  -->
+  <!-- Outside the app shell on purpose: the menu is a popover in the top layer,
+       and every header slot is NAMED, so an unslotted child there gets no
+       layout at all. Fed by a DataSource below, so list and badge are two views
+       of one set. -->
   <sherpa-notifications id="notifications"></sherpa-notifications>
 
-  <!-- The ASSISTANT, as a right-pinned overlay over the content.
-
-       sherpa-overlay-panel is already a right-hand floating panel — a <dialog>
-       opened with show() (not showModal()), so the page behind stays live and a
-       person can keep working while it is open. That is what makes it the right
-       home for an assistant, and it is why the Assistant NAV ITEM is gone: a
-       whole page you have to navigate away to reach cannot answer a question
-       about the page you left.
-
-       It lives OUTSIDE the app-shell so a view swap cannot take it with it, and
-       its content is fetched from the same chat template the view used, so the
-       two can never drift apart. -->
+  <!-- The assistant: sherpa-overlay-panel is a <dialog> opened with show(), not
+       showModal(), so the page behind stays live. Outside the app-shell so a
+       view swap cannot take it, and its content is the same chat template the
+       full-page view uses. -->
   <sherpa-overlay-panel id="assistant"
                         data-title="Assistant"
                         data-icon="fa-solid fa-wand-magic-sparkles"
@@ -73,12 +52,11 @@
   <script type="module">
     import { installIcons, ArrayStore, DataSource, SessionStore } from '../dist/index.js';
 
-    // Font Awesome must be in the DOCUMENT too, not just adopted into shadow roots:
-    // the class rules reach shadow DOM via sharedStyles, but the @font-face — and any
-    // light-DOM <i class="fa-…"> — need the stylesheet in <head>.
+    // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
+    // rules into shadow roots, but @font-face and light-DOM <i> need <head>.
     installIcons();
 
-    // Sentinel to prove hot-swaps stay in the SAME document (never a full reload).
+    // Sentinel proving hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
 
     const VIEWS = ['dashboard', 'records', 'settings', 'chat'];
@@ -87,25 +65,15 @@
     const viewRoot = document.getElementById('view-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
 
-    // ── Shared nav config: the "Views" section links the 4 views. ──────
-    // Icons are Font Awesome class lists (Sherpa's icon system) — never unicode
-    // glyphs, which render at the wrong size and weight.
-    // quickItems names the Figma default trio (Home · Recent · Favorites), but
-    // gives HOME a real destination: it opens the dashboard, because the
-    // dashboard IS this product's home. That makes a separate Dashboard row
-    // redundant, so the Views section carries only Records now — the same
-    // reasoning that removed the Assistant row when Ask N-zo opened the panel.
-    //
-    // EVERY ROW LINKS TO A REAL PAGE. The rail used to carry a fuller tree —
-    // Monitor / Manage / Admin, nested children, badges — to exercise the nav
-    // component, but those rows pointed at `#anchor` hrefs with nothing behind
-    // them. A demo that navigates nowhere teaches the wrong thing about the
-    // component; the nav's own tests cover nesting, badges and indicators.
+    // Shared nav config. Icons are Font Awesome class lists, never unicode
+    // glyphs — those render at the wrong size and weight.
+    // Home opens the dashboard, so no separate Dashboard row is needed. Every
+    // row links to a REAL page; the nav's own tests cover nesting and badges.
     const navConfig = {
       product: { name: 'N-central', icon: 'fa-solid fa-cubes' },
       quickItems: [
-        // Home IS the dashboard. The component's own default carries no href —
-        // it cannot know where a product's home lives — so the app supplies it.
+        // The component's default Home carries no href — it cannot know where a
+        // product's home lives — so the app supplies it.
         { id: 'home', label: 'Home', icon: 'fa-solid fa-house', href: '?view=dashboard' },
         { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
         { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
@@ -115,8 +83,7 @@
           { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
         ] },
       ],
-      // SETTINGS mode — the settings BUTTON in the nav header swaps the rail to
-      // these pages. Settings is a place of its own, not a row in the product tree.
+      // The settings BUTTON in the nav header swaps the rail to these pages.
       settingsSections: [
         { label: 'Account', items: [
           { id: 'view-settings', label: 'Preferences', icon: 'fa-solid fa-sliders', href: '?view=settings' },
@@ -124,13 +91,8 @@
       ],
     };
 
-    /* Which nav row maps to which view.
-
-       Read from the row's HREF, not from a `view-` id prefix. The prefix was a
-       naming convention the router depended on, so the moment a row that is NOT
-       called `view-…` needed a destination — Home, which opens the dashboard —
-       it was silently ignored. The href is the thing that actually says where a
-       row goes, and it is already there for right-click and deep-linking. */
+    /* Which nav row maps to which view — read from the HREF, not from a `view-`
+       id prefix, so a row named anything else (Home) still routes. */
     const viewForHref = (href) => {
       if (!href?.startsWith('?view=')) return null;
       const v = new URLSearchParams(href.slice(1)).get('view');
@@ -138,11 +100,8 @@
     };
     const idForView  = (v) => `view-${v}`;
 
-    /** The id of whichever nav row points at this view.
-     *
-     * settingsSections is searched too: Preferences is a real row that opens a
-     * real view, and leaving it out meant the rail never lit it up and the header
-     * had nothing to copy its name from. */
+    /** The id of whichever nav row points at this view. settingsSections counts:
+     * Preferences is a real row opening a real view. */
     const navRowIdForView = (view) => {
       const all = [...(navConfig.quickItems ?? []),
                    ...(navConfig.sections ?? []).flatMap((s) => s.items ?? []),
@@ -150,25 +109,19 @@
       return all.find((i) => viewForHref(i.href) === view)?.id ?? null;
     };
 
-    /* A view that no nav row opens (the assistant, reached from the header's
-       "Ask N-zo") still needs a name in the header. It is a fallback ONLY — a
-       view with a row always takes the row's label and icon, so the two can
-       never disagree. */
+    /* Fallback ONLY, for a view no nav row opens (the assistant, reached from
+       "Ask N-zo"). A view with a row always takes the row's label and icon. */
     const HEADLESS_VIEWS = {
       chat: { label: 'Assistant', icon: 'fa-solid fa-comments' },
     };
 
-    /* Write the rail's CURRENT row onto the header.
-
-       The rail is asked what it shows (nav.activeEntry) rather than the config
-       being read a second time here: the rows are the thing on screen, so they
-       are the honest source, and a rail filled any other way still works. */
+    /* Write the rail's CURRENT row onto the header. The rail is asked what it
+       shows rather than the config being read twice. */
     const syncHeaderToNav = (header, view) => {
       const entry = nav.activeEntry ?? HEADLESS_VIEWS[view];
       if (!header || !entry) return;
       header.setAttribute('data-heading', entry.label ?? '');
-      // No icon on the row → no icon on the header. Clearing is the point: a
-      // stale glyph from the previous view is worse than none.
+      // No icon on the row → clear it: a stale glyph is worse than none.
       if (entry.icon) header.setAttribute('data-icon', entry.icon);
       else header.removeAttribute('data-icon');
     };
@@ -189,38 +142,22 @@
       // Tear down the previous view (e.g. chat's data-no-header).
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
 
-      // Keep the nav active-state synced to the current view.
-      // The row that OWNS this view — found by href, so Home lights up for the
-      // dashboard rather than a `view-dashboard` row that no longer exists.
+      // Found by href, so Home lights up for the dashboard.
       nav.dataset.activeId = navRowIdForView(name) ?? idForView(name);
 
-      // The settings view lives behind the nav header's settings button, so landing
-      // on it (or leaving it) switches the rail's mode — which swaps the whole
-      // section list to the settings pages.
-      /* Through the rail's OWN setter, not a raw dataset write plus a hand-rolled
-         event. The setter announces the change itself, so the app-shell's content
-         inset follows without this file re-creating the rail's event — a copy that
-         could go out of step with the real one and had no way to be told. */
+      /* Through the rail's OWN setter, not a raw dataset write: the setter
+         announces the change, so the app-shell's content inset follows. */
       nav.state = name === 'settings' ? 'settings' : 'collapsed';
 
       // 1) Fetch the bespoke content-only markup for the view.
       const markup = await (await fetch(`/template/view/${name}`)).text();
       if (token !== loadToken) return;   // a newer navigation superseded us
 
-      /* The BACK button belongs to a view you can go back FROM. Home is the root,
-         so it has nothing behind it — and a control that does nothing is worse
-         than no control. Every other view gets one. */
+      /* Home is the root, so it has nothing to go back from. */
       const header = document.querySelector('sherpa-app-header');
       header?.toggleAttribute('data-back', name !== DEFAULT_VIEW);
 
-      /* The header's title and icon ARE the selected nav row's — one value, one
-         owner. Each view used to set its own heading by hand, which is two copies
-         of the same string in two files: rename a nav row and the header kept the
-         old name with nothing to catch it.
-
-         A row with NO icon must CLEAR the header's, not leave the last view's
-         behind — so a missing icon removes the attribute, and the header's CSS
-         (`:host([data-icon]) .view-icon`) hides the slot. */
+      /* Title and icon ARE the selected nav row's — one value, one owner. */
       syncHeaderToNav(header, name);
 
       // 2) Inject into the app-shell content slot.
@@ -236,17 +173,15 @@
       cleanup = await mod.init(viewRoot);
     }
 
-    // ── Populate the shared nav once. ──────────────────────────────────
+    // Populate the shared nav once.
     await customElements.whenDefined('sherpa-nav');
-    /* AWAITED. populate() defers its work to the component's own render promise,
-       so calling it is not the same as the rows existing — and the header reads
-       its title off a stamped ROW. */
+    /* AWAITED below: populate() defers to the component's render promise, so
+       calling it is not the same as the rows existing — and the header reads its
+       title off a stamped ROW. */
     const navReady = nav.populate(navConfig);
 
-    /* A row that opens a view is mirrored by loadView. A row that does NOT —
-       Recent, Favorites — never reaches the router, so the header would keep the
-       previous view's name. The rail's own event covers both, and it carries the
-       label and icon with it, so nothing is looked up twice. */
+    /* Rows that open no view (Recent, Favorites) never reach the router, so the
+       rail's own event updates the header for both cases. */
     nav.addEventListener('nav-select', (e) => {
       const header = document.querySelector('sherpa-app-header');
       if (!header) return;
@@ -255,16 +190,9 @@
       else header.removeAttribute('data-icon');
     });
 
-    /* ── Notifications, through the data layer ────────────────────────
-       The bell's badge and the list are TWO VIEWS OF ONE SET, not two things to
-       keep in step. An ArrayStore stands in for the live feed here; swapping it
-       for a SocketStore is the only change a real app makes:
-
-         const feed = new SocketStore({ url: 'wss://…/notifications' });
-         const notifications = new DataSource({ store: feed });
-         feed.connect();
-
-       …and every push then redraws both, with nothing else to wire. */
+    /* Notifications, through the data layer: the badge and the list are TWO
+       VIEWS OF ONE SET. Swapping the ArrayStore for a SocketStore is the only
+       change a real app makes. */
     const notificationFeed = new ArrayStore([
       { id: 'n1', label: 'Northwind renewed', description: 'Enterprise, 3 years',
         icon: 'fa-solid fa-circle-check', time: '2m ago', unread: true },
@@ -286,12 +214,9 @@
     // The LIST is bound. Rows in, and its own events out.
     notificationSource.bind(notifications);
 
-    // The BADGE is derived from the SOURCE's own rows, not from the component's.
-    // The list fills itself through populate(), which waits for its first render
-    // — so reading the component here counted an empty list on the first pass
-    // and the badge never appeared. The source has the records the moment they
-    // load, which is also the honest thing to summarise: the badge and the list
-    // are two views of ONE set, and this is that set.
+    // The BADGE counts the SOURCE's rows, not the component's: the list fills
+    // through populate(), which waits for its first render, so reading the
+    // component here counts an empty list on the first pass.
     const syncBadge = () => {
       const unread = notificationSource.rows.filter((n) => n.unread).length;
       if (unread > 0) appHeader.setAttribute('data-notifications', String(unread));
@@ -305,8 +230,7 @@
     });
 
     // "Mark all read" persists through the STORE, which is what makes the badge
-    // follow: the list marked itself immediately, and this records it so a
-    // reload does not bring the pips back.
+    // follow — the list has already marked itself.
     notifications.addEventListener('notification-read', async (e) => {
       for (const id of e.detail.ids) await notificationFeed.update(id, { unread: false });
       syncBadge();
@@ -319,9 +243,8 @@
 
     notificationSource.load().then(syncBadge);
 
-    // The Views nav rows render as real <a href="?view=…"> links (right-clickable,
-    // deep-linkable). Intercept the click so we swap in-page instead of a full
-    // reload — preventDefault must happen on the real click event, not on the
+    // Nav rows render as real <a href="?view=…"> links. Intercept the click to
+    // swap in-page — preventDefault must happen on the real click, not on the
     // synthetic nav-select. A modified click (new tab / middle) is left alone.
     nav.addEventListener('click', (e) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -335,10 +258,8 @@
       loadView(view);
     });
 
-    // A BREADCRUMB click swaps in-page too. The header fires breadcrumb-click
-    // with the crumb's href, so the same `?view=` hrefs the nav uses work here
-    // without the page reloading. A crumb with no href is the current page and
-    // carries no link at all.
+    // A BREADCRUMB click swaps in-page too — the header fires breadcrumb-click
+    // with the crumb's href. A crumb with no href is the current page.
     document.addEventListener('breadcrumb-click', (e) => {
       const href = e.detail?.href;
       if (!href?.startsWith('?view=')) return;
@@ -349,32 +270,19 @@
       loadView(view);
     });
 
-    /* The moon button flips light ↔ dark.
-       The header already FIRES theme-toggle; nothing was listening, so the button
-       did nothing. The whole switch is one attribute on <html>: the display-mode
-       layer owns light/dark and re-points every semantic token from there, so no
-       component knows a mode exists.
+    /* The moon button flips light ↔ dark. The whole switch is one attribute on
+       <html>: the display-mode layer re-points every semantic token from there,
+       so no component knows a mode exists.
 
-       The choice is remembered in localStorage — a theme a user has to re-pick on
-       every page load is not a preference. Wrapped, because storage throws in a
-       private window and a failed WRITE must not stop the theme changing. */
-    /* THE SESSION STORE holds it, and `persist` does the remembering.
-
-       This was a key constant, a try/catch to read, a try/catch to write, and a
-       wrapper to keep the two in step — four pieces to get right, for ONE
-       preference, in an example every consumer would copy. `persist` restores
-       on registration too, so the stored mode is already on before anything
-       subscribes and there is no flash of the wrong theme. */
+       The SessionStore holds it and `persist` remembers it, restoring on
+       registration so there is no flash of the wrong theme. */
     const session = new SessionStore({ theme: { mode: document.documentElement.dataset.mode ?? 'light' } });
     session.persist('/theme/mode');
 
-    /* The button shows what you will GET, not what you have: a moon offers dark,
-       a sun offers light. `data-mode` lives on <html>, which CSS inside the
-       header's shadow root cannot select, so the glyph is set from here.
-
-       ONE SUBSCRIBER does both jobs — the attribute and the glyph — so there is
-       no `setMode` wrapper to keep in step with anything. Anything that changes
-       the mode, from anywhere, lands here. */
+    /* The button shows what you will GET: a moon offers dark, a sun offers
+       light. `data-mode` lives on <html>, which the header's shadow CSS cannot
+       select, so the glyph is set here. ONE subscriber does both jobs, so
+       anything that changes the mode, from anywhere, lands here. */
     session.subscribe('/theme/mode', (mode) => {
       document.documentElement.dataset.mode = mode;
       const btn = document.querySelector('sherpa-app-header')?.shadowRoot
@@ -384,46 +292,33 @@
       btn?.setAttribute('aria-label',
         mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
     });
-    /* Apply whatever persist() restored, then again once the header has
-       actually RENDERED.
-
-       `whenDefined` is not enough: it resolves when the class registers, and
-       SherpaElement builds its shadow root asynchronously after that — so a
-       glyph written on `whenDefined` lands before the button exists. After a
-       reload that left the theme dark, the mode was right and the icon still
-       offered dark. `rendered` is the promise that means the DOM is there. */
+    /* Apply what persist() restored, then again once the header has RENDERED.
+       `whenDefined` resolves when the class registers, but SherpaElement builds
+       its shadow root after that, so a glyph written then lands before the
+       button exists. `rendered` is the promise that means the DOM is there. */
     const resync = () => session.set('/theme/mode', session.get('/theme/mode'));
     resync();
     void customElements.whenDefined('sherpa-app-header')
       .then(() => document.querySelector('sherpa-app-header')?.rendered)
       .then(resync);
 
-    /* Ask N-zo opens the assistant panel.
-       Its markup is the CHAT template, fetched on first open and kept — a person
-       re-opening the panel should find the thread they left, not a blank one. The
-       chat module is imported once too, so the composer is wired the same way it
-       is in the full-page view. */
+    /* Ask N-zo opens the assistant panel. Its markup is the CHAT template,
+       fetched on first open and KEPT, so re-opening finds the thread you left. */
     const assistant = document.getElementById('assistant');
     let assistantReady = null;
     document.addEventListener('ai-click', () => {
       assistantReady ??= (async () => {
         assistant.innerHTML = await (await fetch('/template/view/chat')).text();
 
-        /* UNWRAP the card. The chat view is a sherpa-container because a PAGE
-           needs one — a bordered surface holding the thread. Inside a panel the
-           PANEL is that surface, so the card was a box drawn inside a box, and
-           its own footer sat 43px above the panel's bottom edge.
-
-           So the two halves are re-slotted onto the panel itself: the thread into
-           its content region, the composer into its `footer` slot — which is the
-           same sherpa-container-footer, now the panel's rather than the card's. */
+        /* UNWRAP the card: inside a panel the PANEL is the surface, so the chat
+           view's sherpa-container would be a box drawn inside a box. The two
+           halves are re-slotted onto the panel itself. */
         const card = assistant.querySelector('sherpa-container');
         if (card) {
           const thread = card.querySelector('#thread');
-          /* The COMPOSER moves across, not the card's footer around it. The panel
-             already IS a sherpa-container-footer in that region, so slotting
-             another one inside drew two dividers — and the inner one shrink-wrapped
-             its content, so the second rule spanned only half the width. */
+          /* The COMPOSER moves across, not the card's footer around it — the
+             panel already IS a sherpa-container-footer there, and a second one
+             drew two dividers, the inner shrink-wrapped to half the width. */
           const composer = card.querySelector('sherpa-prompt-composer');
           if (composer) composer.setAttribute('slot', 'footer');
           card.replaceWith(...[thread, composer].filter(Boolean));
@@ -431,8 +326,8 @@
 
         await customElements.whenDefined('sherpa-overlay-panel');
         const mod = await import('./views/chat.js');
-        // The chat view hides the app header for its full-page form; inside a
-        // panel the header must stay, so its shell tweak is undone straight away.
+        // The chat view hides the app header for its full-page form; in a panel
+        // the header must stay, so its shell tweak is undone straight away.
         const cleanup = await mod.init(assistant);
         cleanup?.();
       })();
@@ -446,12 +341,8 @@
     // Back/forward → load without pushing.
     window.addEventListener('popstate', () => loadView(viewFromURL()));
 
-    /* First paint: load the view named in the URL.
-
-       AFTER the rail has stamped its rows. Without this await the very first
-       load found an empty rail and the header came up blank; every later
-       navigation worked, which is exactly the shape of bug that survives a
-       manual click-through. */
+    /* First paint, AFTER the rail has stamped its rows: without this await the
+       first load finds an empty rail and the header comes up blank. */
     await navReady;
     loadView(viewFromURL());
   </script>

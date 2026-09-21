@@ -1,18 +1,10 @@
-/**
- * sherpa-progress-step-tracker.css — all presentation.
- *
- * A horizontal row of step markers joined by connector lines. Each step's state
- * (done | active | todo) is a data-state attribute set by JS; every visual
- * difference between the three is pure CSS here.
- */
+/* A row of step markers joined by connectors. JS sets data-state
+   (done | active | todo); every visual difference is CSS here. */
 
 :host {
   display: block;
-  /* Figma Progress Steps (67:2252): the row carries space/xs 8 padding. */
   padding: var(--sherpa-display-mode-space-xs, 8px);
-  /* Strong accent (surface-accent/+2 = #3b4ccd) for done/active steps. The -base
-     step resolves to the pale #8aa3ff, which would put a white check on a light disc
-     (done) and give a washed-out active ring — both low-contrast. */
+  /* +2, not -base: -base is pale #8aa3ff — white check on a light disc. */
   --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_line: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_idle: var(--sherpa-theme-content-body-1, #35353d);
@@ -30,7 +22,7 @@
   flex: 0 0 auto;
 }
 
-/* ── Step node — a native button; reset chrome, CSS owns the look ─────── */
+/* ── Step node — a native button ──────────────────────────────────────── */
 .step {
   display: flex;
   flex-direction: column;
@@ -88,7 +80,7 @@
   &:empty { display: none; }
 }
 
-/* ── Connector line between steps ────────────────────────────────────── */
+/* ── Connector ───────────────────────────────────────────────────────── */
 .connector {
   flex: 1 1 auto;
   block-size: var(--sherpa-display-mode-border-width-lg, 2px);
@@ -96,7 +88,7 @@
   background: var(--_line);
 }
 
-/* ── State: done ─────────────────────────────────────────────────────── */
+/* ── done ────────────────────────────────────────────────────────────── */
 .step[data-state='done'] .marker {
   background: var(--_accent);
   border-color: var(--_accent);
@@ -105,7 +97,7 @@
 .step[data-state='done'] .number { display: none; }
 .step[data-state='done'] .check { display: block; }
 
-/* ── State: active ───────────────────────────────────────────────────── */
+/* ── active ──────────────────────────────────────────────────────────── */
 .step[data-state='active'] .marker {
   border-color: var(--_accent);
   color: var(--_accent);
@@ -121,4 +113,3 @@
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 
-/* ── State: todo — inherits the idle defaults (no extra rules needed) ─── */

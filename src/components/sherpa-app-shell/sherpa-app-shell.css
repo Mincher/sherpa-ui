@@ -1,31 +1,12 @@
 /**
- * sherpa-app-shell.css — the app/view frame.
- *
- * The nav rail is an OVERLAY, not a grid column. It is absolutely positioned down
- * the left edge at full height, and the header/content wrapper is inset by the
- * COLLAPSED rail width only:
- *
- *     ┌──┬─────────────────────┐     margin-inline-start = 40 (collapsed width)
- *     │▓▓│ header              │     always — even while the rail is open
- *     │▓▓├─────────────────────┤
- *     │▓▓│ content             │     so `hover` reveals the rail OVER the content
- *     └──┴─────────────────────┘     instead of shoving the page sideways
- *
- * That is what makes expand/collapse and hover behave correctly: hovering the rail
- * must not reflow the app. When the rail is LATCHED open (pinned or settings) the
- * inset grows to the full width, because the user has chosen to keep it there and
- * the content should sit beside it.
- *
- * Widths come from the Figma Navigation collection (nav-layout/width: 40 collapsed,
- * 320 open) — the shell reads them, it does not invent its own.
+ * sherpa-app-shell.css — the app/view frame. The nav rail is an OVERLAY, not a
+ * grid column: the content is inset by the COLLAPSED width only, so hovering the
+ * rail reveals it over the content instead of reflowing the app.
  */
 
 :host {
-  /* Figma Navigation nav-layout/width — the two rail widths. */
   --_nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);
   --_nav-open: 320px;
-  /* How far the content is pushed. Defaults to the COLLAPSED width and only grows
-     when the rail is latched (see the [data-nav-state] rules below). */
   --_content-inset: var(--_nav-collapsed);
 
   display: block;
@@ -43,9 +24,7 @@
 }
 
 /* ── Nav rail — the overlay ──────────────────────────────────────────────
-   Pinned to the left edge, full height, above the content. It sizes itself (the
-   rail owns nav-layout/width), so the shell only positions it. No border: the
-   Figma rail has none — its hover elevation is the separation. */
+   The rail sizes itself; the shell only positions it. No border by design. */
 .nav {
   position: absolute;
   inset-block: 0;
@@ -59,8 +38,6 @@
 }
 
 /* ── Header + content wrapper — inset past the rail ─────────────────── */
-/* One column now: the header lives INSIDE the scroller, so there is no header row
-   to reserve. */
 .frame {
   display: grid;
   grid-template-rows: 1fr;
@@ -70,17 +47,10 @@
   transition: margin-inline-start 160ms ease;
 }
 
-/* Header — STICKY at the top of the scrolling region, and its own `scroll-state`
-   container so it can tell whether content is passing underneath.
-
-   The container must be the STICKY ELEMENT ITSELF: a scroll-state container
-   styles its DESCENDANTS, not itself, and a query on the scroller styling a
-   sibling does nothing at all. Verified both shapes in isolation — only this one
-   fires. It is also why the header had to move in here: as a grid row ABOVE the
-   scroller it never moved, so it could never be stuck.
-
-   No border — the Figma App Header has none. The separation is the ELEVATION
-   below, which appears only once there is something to separate from. */
+/* The scroll-state container must be the STICKY ELEMENT ITSELF: it styles its
+   DESCENDANTS, not itself, and a query on the scroller styling a sibling does
+   nothing. Hence the header sits inside the scroller — as a grid row above it,
+   it could never be stuck. No border by design; the elevation below separates. */
 .header {
   position: sticky;
   inset-block-start: 0;
@@ -92,11 +62,8 @@
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* THE DROP SHADOW, only while content is scrolled under.
-   `stuck: top` is true exactly when a sticky element has left its natural
-   position — precisely "there is content underneath me now". It un-sets itself on
-   the way back up, with no JS. Elevation=md, the tokens every floating surface
-   uses. */
+/* `stuck: top` is true exactly when there is content underneath, and un-sets
+   itself on the way back up — no JS. */
 @container scroll-state(stuck: top) {
   .header ::slotted(*) {
     box-shadow:
@@ -108,63 +75,39 @@
   }
 }
 
-/* Content — the scrolling view area. */
+/* No padding: the header is a child of this box and must bleed the full width.
+   `isolation: isolate` resolves every z-index inside — a data grid's sticky
+   header — within this box, so it cannot paint over the hovered nav rail. */
 .content {
   min-inline-size: 0;
   min-block-size: 0;
   overflow: auto;
-  /* NO padding here — it moved to .view. The header is a child of this box now
-     and must bleed the full width, which padding here would inset. */
-  /* NOTHING in the content area may sit above the nav rail.
-     `isolation: isolate` makes this a stacking context, so every z-index inside
-     it — including a data grid's sticky header, which needs to beat its own rows
-     — is resolved WITHIN this box and then the whole box is stacked as one, below
-     the rail's z-index: 2. Without it a sticky header's z-index competed directly
-     with the rail's and painted over the hovered navigation. */
   position: relative;
   z-index: 1;
   isolation: isolate;
 }
 
-/* ── The inset follows the rail's LATCHED state only ─────────────────────
-   collapsed / hover  → stay at the collapsed width (hover reveals over the top)
-   pinned / settings  → grow to the open width (the user latched it there)
-   The shell reads the rail's state from its own data-nav-state, which the app
-   mirrors from the rail (or sets directly). */
+/* The inset follows the rail's LATCHED state only — hover reveals over the top. */
 :host([data-nav-state="pinned"]),
 :host([data-nav-state="settings"]) {
   --_content-inset: var(--_nav-open);
 }
 
-/* NO PADDING HERE. The LAYOUT GRID owns the view's inset — `.sherpa-grid` already
-   applies --sherpa-layout-grid-padding, and applying it here too inset the content
-   TWICE: 16 from the shell plus 16 from the grid, so a card sat 32px off the rail
-   instead of 16.
-
-   The grid is the right owner of the two: it is projected straight from Figma's
-   layout collection, so the inset stays in step with the columns and gutters it
-   was designed against. A view that does not use the grid supplies its own. */
+/* NO PADDING HERE — `.sherpa-grid` already applies --sherpa-layout-grid-padding,
+   and adding it here insets the content twice. A COLUMN, because a percentage
+   height resolves against the PARENT's, so one `auto` in the chain collapses
+   everything below it to content height. */
 .view {
   min-inline-size: 0;
-  /* A COLUMN, so a view that fills the screen (a chat thread, a scrolling data
-     grid) has an unbroken height to resolve against.
-
-     A percentage height resolves against the PARENT's height, so one `auto`
-     anywhere in the chain collapses everything below it to content height. The
-     app used to patch this from outside with `#view-root { height: 100% }` in
-     its own <style> block — which every app then had to know to write. */
   display: flex;
   flex-direction: column;
   min-block-size: 0;
 }
-/* Whatever the app slots in — a <main> wrapper, a view element — takes the
-   column's spare height and hands it on. */
 .view ::slotted(*) {
   flex: 1 1 auto;
   min-block-size: 0;
 }
 
-/* No header — the content spans the whole frame. */
 :host([data-no-header]) .header {
   display: none;
 }

@@ -1,17 +1,9 @@
 /**
- * sherpa-toast — a pop-up message that goes away on its own.
+ * sherpa-toast — a pop-up message that removes itself after a delay.
  *
- * A card with a message and a close button. It lives in the TOP-RIGHT corner,
- * slides in, waits five seconds, then slides out and removes itself. You can also
- * close it early. Either way it fires toast-dismiss. CSS owns the colour (from
- * data-status), the corner and both animations.
- *
- * Several toasts stack: the factory helpers drop them into one shared
- * `.sherpa-toast-stack` column in the top-right, so a new toast pushes the older
- * ones down instead of covering them.
- *
- * Shortcut: SherpaToast.info/success/warning/critical(message, opts?) makes a
- * toast, adds it to the page, and hands it back.
+ * The static helpers drop toasts into one shared `.sherpa-toast-stack` column,
+ * so a new toast pushes the older ones down. CSS owns colour, corner and both
+ * animations.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -28,10 +20,8 @@ export interface ToastOptions {
 }
 
 /**
- * A SAFETY NET for the leave animation, not its duration.
- *
- * TRAP T-css-owns-the-leave-duration — generous on purpose, and it must never
- * beat a real animation to the finish.
+ * A safety net for the leave animation, not its duration — it must never beat a
+ * real animation to the finish. TRAP T-css-owns-the-leave-duration
  */
 const LEAVE_FALLBACK_MS = 1000;
 /** The default auto-dismiss delay. */
@@ -43,9 +33,8 @@ export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
   static override props = {
-    // `skipWhen`: the heading span CONTAINS a <slot>, so a slotted heading must
-    // survive — TRAP T-slot-guards-only-when-filled.
-    // `fallbackAttr`: data-message is the legacy alias for data-heading.
+    // The heading span contains a <slot>, so a slotted heading must survive —
+    // TRAP T-slot-guards-only-when-filled. data-message is the legacy alias.
     'data-heading': {
       type: 'string', kind: 'content', to: '.heading',
       fallbackAttr: 'data-message', skipWhen: 'slot',
@@ -62,7 +51,6 @@ export class SherpaToast extends SherpaElement {
   }
 
   override onConnect(): void {
-    // TRAP T-css-owns-the-leave-duration — num(), not Number().
     const duration = this.num('data-duration', DEFAULT_DURATION);
     if (duration > 0) {
       this.#timer = setTimeout(() => this.dismiss(), duration);
@@ -74,12 +62,7 @@ export class SherpaToast extends SherpaElement {
     this.#timer = null;
   }
 
-  /**
-   * Dismiss the toast: stop the timer, announce, play the leave animation, then
-   * remove the node.
-   *
-   * TRAP T-css-owns-the-leave-duration — the event fires immediately.
-   */
+  /** Stop the timer, announce, play the leave animation, then remove the node. */
   dismiss(): void {
     if (this.#timer) {
       clearTimeout(this.#timer);
@@ -89,8 +72,7 @@ export class SherpaToast extends SherpaElement {
     this.emit('toast-dismiss');
     this.toggleAttribute('data-leaving', true);
 
-    // TRAP T-css-owns-the-leave-duration — `once`, plus a fallback for the case
-    // where the animation never runs at all.
+    // The fallback covers the case where the animation never runs at all.
     let done = false;
     const finish = (): void => {
       if (done) return;
@@ -125,10 +107,7 @@ export class SherpaToast extends SherpaElement {
     return toast;
   }
 
-  /**
-   * The shared top-right stack, created on first use. A light-DOM element (not a
-   * shadow root), so its geometry is plain CSS the app can also target.
-   */
+  /** The shared top-right stack, created on first use. Light DOM, so the app can target it. */
   static #stack(): HTMLElement {
     const existing = document.querySelector<HTMLElement>('.sherpa-toast-stack');
     if (existing) return existing;

@@ -28,27 +28,17 @@
 /**
  * sherpa-switch — presentation.
  *
- * A pill track with a sliding knob and an ON/OFF label, built on a native
- * <input type="checkbox" role="switch">. The <label class="track"> is the visible
- * control; the real input is visually hidden but focusable and drives every state
- * through the sibling combinator (.input:checked ~ …, .input:disabled ~ …). No JS
- * touches visibility. The visual form (rectangular default vs. simple pill) is driven
- * by the projected switch tokens above — this file never re-declares radius/thumb/track
- * per style. State routes through a single --_fill custom property: OFF = the inactive
- * neutral surface, ON = the strong success surface (Figma "on" track). Routing state
- * through one property (not swapping the `background` rule) keeps the computed value
- * reliable across an early getComputedStyle read. The knob "slides" by flipping the
- * track flex-direction: OFF at the start, ON at the end. Disabled uses inactive tokens,
- * never opacity.
+ * Native <input type="checkbox" role="switch">, visually hidden but focusable;
+ * every state routes through sibling selectors off it. No JS touches visibility.
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
 
-  /* One fill + one border token the track consumes; ON re-points both.
-     OFF (Figma Value=off, Style default): style-surface/base +2 · style-border/base.
-     ON  (Figma Value=on, Style:Saturated=success): surface #00ad62 · border #36de8c. */
+  /* One fill + one border token the track consumes; ON re-points both. Routing
+     state through a property (not swapping the `background` rule) keeps the
+     computed value reliable across an early getComputedStyle read. */
   --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
@@ -67,26 +57,24 @@
   border-radius: var(--sherpa-switch-radius-track, 4px);
   background: var(--_fill);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* Figma label: content/size/small 12 · content/weight/regular 400 · line-height/small 16. */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease;
 
-  /* Focus ring lives on the track when the (hidden) input is keyboard-focused. */
+  /* Focus ring lives on the track — the focused input is the hidden sibling. */
   &:has(.input:focus-visible) {
     outline: none;
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 
-  /* ── ON state — re-point the fill to the strong success surface ── */
   &:has(.input:checked) {
     --_fill: var(--sherpa-theme-surface-success-3, #00ad62);
     --_border: var(--sherpa-theme-border-success-2, #36de8c);
   }
 
-  /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
+  /* Disabled — inactive tokens, never opacity. */
   &:has(.input:disabled) {
     cursor: not-allowed;
     background: var(--sherpa-theme-surface-default-2, #b3b3c3);
@@ -94,9 +82,8 @@
   }
 }
 
-/* ── Input: the real, focusable checkbox — visually removed, semantics kept ──
-   appearance:none strips the native tick box; it stays a zero-footprint sibling so
-   the knob/label lay the track out. Keyboard Space toggles it natively. ── */
+/* Input: real and focusable, with a zero footprint so the knob and label lay
+   the track out. Keyboard Space toggles it natively. */
 .input {
   appearance: none;
   position: absolute;
@@ -114,15 +101,14 @@
   block-size: var(--sherpa-switch-size-thumb, 16px);
   border-radius: var(--sherpa-switch-radius-thumb, 3px);
   background: var(--sherpa-theme-content-body-4, #ffffff);
-  /* OFF: hard against the start of the track (the ON rule pushes it with a margin). */
   margin-inline-start: 0;
   transition: margin-inline-start 120ms ease;
 }
 
-/* ── Label: ON / OFF text ─────────────────────────────────────────────────
-   Visibility is Figma-driven: --_has-label = revert-layer (standard) / none
-   (simple), set by the projected token region above. ── */
+/* ── Label: ON / OFF text ───────────────────────────────────────────────── */
 .label {
+  /* --_has-label is set by the projected token region above: revert-layer
+     (standard) or none (simple). */
   display: var(--_has-label, inline-flex);
   flex: 1 1 auto;
   justify-content: center;
@@ -136,11 +122,8 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── ON state — slide the knob to the end ──────────────────────────────────
-   Pushed with an auto margin, NOT `order`. Reordering only moves the knob past a
-   SIBLING, so in the `simple` style — where the ON/OFF label is display:none — there
-   was nothing to move past and the thumb never slid. An auto margin eats the free
-   space in the track, so it works with or without the label. */
+/* ON — slide the knob with an auto margin, NOT `order`. Reordering only moves
+   the knob past a SIBLING, and the `simple` style has no label to move past. */
 .input:checked ~ .knob {
   margin-inline-start: auto;
   transition: margin-inline-start 120ms ease;
@@ -150,9 +133,8 @@
 :host([disabled]) {
   pointer-events: none;
 }
-/* Disabled: keep the ON/OFF label readable against the grey inactive track.
-   content-body-2 (#b3b3c3) equals the disabled track surface → invisible ON text;
-   use the darker inactive ink (content-body-1) so both ON and OFF stay legible. */
+/* content-body-2 equals the disabled track surface, so ON text would vanish;
+   use the darker content-body-1 for both labels. */
 .track:has(.input:disabled) .label,
 .track:has(.input:disabled) .input:checked ~ .label::after,
 .track:has(.input:disabled) .input:not(:checked) ~ .label::after {

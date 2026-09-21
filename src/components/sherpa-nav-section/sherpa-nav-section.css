@@ -1,14 +1,6 @@
 /**
- * sherpa-nav-section.css — a section-label divider for a navigation rail.
- *
- * A horizontal row: a short label + a hairline rule that fills the remaining
- * width. Pure data-* selectors; JS only mirrors data-label into the label span.
- *
- * Figma bindings (node 32:43134): the row is a transparent surface (no fill),
- * height 24px, padding space/2xs (4px) block × space/xs (8px) inline, gap
- * space/xs (8px), centred. The label is content/body/+1 ink at content/size/xs
- * (10px) in the body font at regular weight. The rule is a border/stroke/200
- * hairline in border/default/+2. Collapsed (isExpanded=false) hides the label.
+ * sherpa-nav-section.css — a section-label divider for a navigation rail:
+ * a short label plus a hairline rule that fills the remaining width.
  */
 
 :host {
@@ -31,7 +23,6 @@
   text-overflow: ellipsis;
 }
 
-/* Collapsed rail — only the rule remains. */
 :host([data-collapsed]) .label { display: none; }
 
 .rule {

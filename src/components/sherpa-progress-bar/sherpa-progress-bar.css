@@ -1,12 +1,5 @@
 /**
  * sherpa-progress-bar.css — native <progress>, styled.
- *
- * Native-first: the fill/track are the <progress> vendor pseudo-elements
- * (::-webkit-progress-bar = track, ::-webkit-progress-value / ::-moz-progress-bar
- * = fill). `appearance: none` strips the OS chrome so our tokens apply. The fill
- * colour is the strong status surface (via the [data-status] cascade) else the
- * accent indicator colour. Determinate width is the native value/max — no JS width.
- * Indeterminate = a native valueless <progress> + our sweep animation on the fill.
  */
 
 :host {
@@ -16,13 +9,12 @@
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* Fill colour — the strong status surface wins, else the accent indicator
-     (Figma "control-indicator/accent" #3b4ccd, same token the loader arc uses). */
+  /* Strong status surface wins, else the accent indicator the loader arc uses. */
   --_fill: var(--_status-surface-strong, var(--sherpa-style-indicator-accent, #3b4ccd));
   --_track: var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* ── Label (above the bar; only when data-label is set) ───────────────── */
+/* ── Label ────────────────────────────────────────────────────────────── */
 .label {
   display: none;
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -42,18 +34,16 @@
   overflow: hidden;
   background: var(--_track); /* Firefox track + fallback */
 
-  /* Track (WebKit/Blink) */
+  /* appearance:none strips OS chrome so these tokens apply. */
   &::-webkit-progress-bar {
     background: var(--_track);
     border-radius: inherit;
   }
-  /* Fill (WebKit/Blink) */
   &::-webkit-progress-value {
     background: var(--_fill);
     border-radius: inherit;
     transition: inline-size 240ms ease;
   }
-  /* Fill (Firefox) */
   &::-moz-progress-bar {
     background: var(--_fill);
     border-radius: inherit;

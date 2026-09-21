@@ -1,20 +1,6 @@
 /**
- * sherpa-toolbar.css — a horizontal control strip.
- *
- * A single flex row: leading / trailing zones. Per the Figma Toolbar page,
- * LEADING hugs and holds the primary action, and TRAILING grows with its content
- * pushed to the end (the item count, a search field). Zones collapse when their
- * slot is empty (data-has-{slot}, reflected by the base class). Pure data-* CSS —
- * JS never touches visibility.
- *
- * Figma bindings (visual-diff 2026-09-08): the toolbar is a TRANSPARENT bare
- * strip — no fill, no radius. Under a [data-status] ancestor it takes the status
- * surface via the cascade (--_status-surface), otherwise transparent. Block
- * padding = Theme padding/md (8px); inline padding = Theme padding/MD (8px too —
- * Will's call: at sm 4 the leading control sat closer to the card edge than
- * anything below it, so the bar read as narrower than the content it heads).
- * Zone gap = space/xs (8px). Text
- * ink = content/secondary/base.
+ * sherpa-toolbar.css — a horizontal control strip: one flex row, leading /
+ * trailing zones, collapsing when their slot is empty.
  */
 
 :host {
@@ -23,10 +9,8 @@
   --_gap: var(--sherpa-display-mode-space-xs, 8px);
   display: block;
   inline-size: 100%;
-  /* Figma toolbar is a transparent bare strip — a [data-status] ancestor can
-     still fill it via the cascade; the resting bar is transparent. */
+  /* Bare strip by design; a [data-status] ancestor fills it via the cascade. */
   background: var(--_status-surface, transparent);
-  /* Figma toolbar text ("1,234 items"): content/body/base 12/16 regular. */
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -43,7 +27,6 @@
   padding-inline: var(--_px);
 }
 
-/* Bordered variant adds the Figma toolbar's bottom rule — status-border cascade. */
 :host([data-type="bordered"]) .bar {
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid
     var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
@@ -55,23 +38,16 @@
   gap: var(--_gap);
 }
 
-/* THE ZONES ARE THE OTHER WAY ROUND from what this used to say.
-   Re-read from the Figma Toolbar page: `leading` is HUG and holds the PRIMARY
-   ACTION ("Primary action", "Actions"); `trailing` is FILL with MAX alignment and
-   holds the item count and the search field. So the growing zone is the TRAILING
-   one, which is what pushes its own content to the end while the primary action
-   stays at the start.
-
-   It was inverted here, which put a primary action on the RIGHT. */
+/* The GROWING zone is the trailing one. Leading hugs the primary action;
+   inverting these puts the primary action on the right. */
 .leading { flex: 0 0 auto; }
 
 .trailing {
   flex: 1 1 0;
   min-inline-size: 0;
-  /* MAX in Figma: the count / search sit at the far end of the growing zone. */
   justify-content: flex-end;
 }
 
-/* Collapse empty zones (base class reflects data-has-{slot} on the host). */
+/* data-has-{slot} is reflected onto the host by the base class. */
 :host(:not([data-has-leading])) .leading { display: none; }
 :host(:not([data-has-trailing])) .trailing { display: none; }

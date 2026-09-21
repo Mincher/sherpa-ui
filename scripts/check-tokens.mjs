@@ -1,50 +1,18 @@
 #!/usr/bin/env node
 /**
- * check-tokens.mjs — diff a LIVE Figma variable read against figma.tokens.json.
- *
- * Figma is the source of truth. This reports, per collection and mode, every leaf
- * whose value or alias target has drifted, and (with --patch) rewrites the dump so
- * a re-projection picks the change up.
+ * Diff a LIVE Figma variable read against figma.tokens.json. Figma wins.
+ * With --patch, rewrites the dump; otherwise exits non-zero on drift (CI gate).
  *
  *   node scripts/check-tokens.mjs <live-tokens.json> [--patch] [--collection=slug]
  *
- * Exits non-zero when drift is found and --patch was NOT passed, so it works as a
- * CI gate.
+ * The live snapshot is a figma_execute read of BASE collections only, resolved one
+ * level: `{slug.dotted.path}` stays unresolved so a re-point shows as a changed
+ * target. Extension overrides read back EMPTY from `valuesByMode` and are out of
+ * scope — they need a bound-probe (figma.extensions.json).
  *
- * ── Why this exists ─────────────────────────────────────────────────────────
- * `figma_export_tokens` over the whole file rewrites 800+ leaves and drags in the
- * known dangling cross-library aliases, so a two-token change arrives as an
- * unreviewable diff. This compares instead, and touches only what moved.
- *
- * ── The live snapshot ───────────────────────────────────────────────────────
- * Produced by a figma_execute read over the variable collections — every leaf's
- * per-mode value, resolved one level (a `{slug.dotted.path}` string is an alias
- * left unresolved on purpose, so a re-point shows up as a changed TARGET):
- *
- *   { "<collection-slug>": {
- *       slug, primaryMode,
- *       vars: { "<leaf/path>": { "<mode name>": "#hex" | "{slug.dotted.path}" } } } }
- *
- * Only BASE collections appear. An extension collection carries no leaves of its
- * own, and its overrides read back EMPTY from `valuesByMode` — they need a
- * bound-probe via a scratch node pinned to the extension's mode, which is what
- * src/styles/tokens/figma.extensions.json caches. Extensions are therefore out of
- * scope here and must be swept separately.
- *
- * ── Comparison rules (each one is a bug this script was written to avoid) ───
- *  • THE PRIMARY MODE LIVES IN `$value`, not in `$extensions[…].modes` (which
- *    holds only the non-primary modes). Reading the primary mode out of `modes`
- *    finds `undefined` and reports no drift — which is exactly how a real
- *    style-content change was missed once.
- *  • Reference PREFIXES differ by side. The dump writes `{theme.content.size.base}`
- *    where a live read of the same alias is `{theme.content.size.base}` only if the
- *    target lives in `theme`; the dump ALSO inlines every `primitives.*` reference
- *    to its literal, because the Primitives collection is never emitted. So a dump
- *    leaf holding a hex where Figma holds `{primitives.…}` is NOT drift.
- *  • HEX CASE IS NOT DRIFT. A previous pass found 139 of 147 reported differences
- *    were case only.
- *  • A `{MISSING:VariableID:…}` target is a cross-library reference, not drift.
- *    Reported separately and never patched.
+ * Three things that look like drift and are not: a hex where Figma holds
+ * `{primitives.…}` (the projector inlines those), hex case, and a
+ * `{MISSING:VariableID:…}` cross-library target.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -66,7 +34,7 @@ const live = JSON.parse(readFileSync(livePath, 'utf8'));
 const dumpRaw = readFileSync(DUMP, 'utf8');
 const dump = JSON.parse(dumpRaw);
 
-/** Walk a collection's leaves, yielding [slash/path, leafObject]. */
+/** Yield [slash/path, leafObject] for every leaf. */
 function* leaves(node, path = '') {
   if (!node || typeof node !== 'object') return;
   if ('$value' in node) {
@@ -79,14 +47,12 @@ function* leaves(node, path = '') {
   }
 }
 
-/** Case-fold a hex so `#B3B3C3` and `#b3b3c3` compare equal. */
+/** Case-fold a hex — case is not drift. */
 const fold = (v) => (typeof v === 'string' && v.startsWith('#') ? v.toLowerCase() : v);
 
 /**
- * The dump's own reference for a mode.
- *
- * `modes` carries the NON-PRIMARY modes; the primary one is the leaf's `$value`.
- * Returns `undefined` when the dump has nothing for that mode at all.
+ * `modes` carries only the NON-PRIMARY modes; the primary one is the leaf's
+ * `$value`. Reading the primary out of `modes` silently finds `undefined`.
  */
 function dumpValue(leaf, mode, primaryMode) {
   const ext = leaf.$extensions?.['figma-console-mcp'] ?? {};
@@ -121,8 +87,7 @@ for (const [slug, col] of Object.entries(live)) {
       const dumpVal = dumpValue(leaf, mode, col.primaryMode);
       if (dumpVal === undefined) continue; // the dump does not model this mode
 
-      // A dump leaf holding a LITERAL where Figma holds a primitives alias is the
-      // projector's documented inlining, not drift.
+      // Primitives are inlined by the projector, so a literal here is not drift.
       if (
         typeof figmaVal === 'string' &&
         figmaVal.startsWith('{primitives.') &&
@@ -176,8 +141,7 @@ if (PATCH && drift.length) {
         : d.figma;
     ext.lastSyncedAt = stamp;
   }
-  // ensure_ascii equivalent: the dump escapes every em dash in its $descriptions,
-  // and re-encoding them raw turns a 6-line diff into a 132-line one.
+  // The dump stores non-ASCII escaped; re-encoding raw would bloat the diff.
   const json = JSON.stringify(dump, null, 2).replace(/[-￿]/g, (c) =>
     `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`,
   );

@@ -1,19 +1,8 @@
 /**
- * sherpa-app-header — the bar across the top of the app.
+ * sherpa-app-header — the bar across the top of the app (Figma 150:3690).
  *
- * Two rows over a loading bar, matching the Figma App Header (150:3690):
- *   row 1  back + breadcrumbs  ‖  Ask N-zo · chat · labs · theme · notifications ·
- *          account · help · menu (with 1×16 dividers between the groups)
- *   row 2  view icon + title  ·  the embedded quick-filter toolbar
- *
- * CSS owns the layout, which buttons show, the badge and the loading animation.
- * This file keeps the title / icon / count in sync, latches the favourite star,
- * and fires one event per action.
- *
- * populate({ breadcrumb?, filters? }) is a shortcut: slot the empty hosts in the
- * light DOM (<sherpa-breadcrumbs slot="breadcrumbs">, <sherpa-quick-filter-toolbar
- * slot="filters">) and populate() feeds them their data.
- *
+ * CSS owns the layout, the badge and the loading animation. This file keeps the
+ * title / icon / count in sync and fires one event per action.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 import type { Populatable } from '../../core/apply-state.js';
@@ -30,10 +19,7 @@ interface AppHeaderConfig {
 }
 
 
-/** Every plain action button: its class → the event it fires.
- *
- * In FIGMA'S ORDER (App Header 150:3690 `Actions` slot) — TRAP
- * T-header-actions-are-composed-buttons. */
+/** Each plain action button: its class → the event it fires, in Figma's order. */
 const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.back', 'back-click'],
   ['.ai', 'ai-click'],
@@ -61,13 +47,10 @@ export class SherpaAppHeader extends SherpaElement {
 
   override onRender(): void {
     this.#sync();
-    // One listener per plain action — each just announces itself.
     for (const [sel, event] of ACTIONS) {
-      // `button-click`, not the native `click` — TRAP
-      // T-header-actions-are-composed-buttons.
+      // `button-click`, not the native `click`.
       this.$(sel)?.addEventListener('button-click', () => this.emit(event, {}));
     }
-    // Re-dispatch a slotted breadcrumbs' selection as our own header event.
     this.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
   }
 
@@ -85,8 +68,7 @@ export class SherpaAppHeader extends SherpaElement {
     if (Array.isArray(cfg.filters)) {
       waits.push(this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters));
     }
-    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist —
-    // this header's data lands in slotted CHILDREN.
+    // RETURNED, so `await header.populate(…)` settles once the CHIPS exist.
     // TRAP T-populate-settles-after-render-data
     return waits.length ? Promise.all(waits).then(() => undefined) : undefined;
   }
@@ -100,12 +82,7 @@ export class SherpaAppHeader extends SherpaElement {
     return this.#toolbar()?.values ?? {};
   }
 
-  /**
-   * Set every filter chip — `{ region: ['emea'] }`.
-   *
-   * REPLACES the set, and is silent — TRAP
-   * T-header-owns-the-filter-bar-surface.
-   */
+  /** Set every filter chip — `{ region: ['emea'] }`. REPLACES the set, silently. */
   set values(next: Record<string, readonly string[]>) {
     const bar = this.#toolbar();
     if (bar) bar.values = next;
@@ -120,7 +97,6 @@ export class SherpaAppHeader extends SherpaElement {
     const el = this.querySelector<Populatable>(`${tag}[slot="${slot}"]`);
     if (!el) return; // consumer must slot the empty host; we never create one
     // A child that has not upgraded yet has no `rendered` to wait on.
-    // TRAP T-header-owns-the-filter-bar-surface
     if (!el.rendered) await new Promise<void>((res) => queueMicrotask(res));
     await Promise.resolve(el.rendered);
     await Promise.resolve(el.populate?.(data));
@@ -129,12 +105,10 @@ export class SherpaAppHeader extends SherpaElement {
   /* ── Sync data-* → DOM ──────────────────────────────────────────── */
 
   #sync(): void {
-    // FA class list → classes, raw character → text; the policy is in the base
-    // class rather than copied here.
     const icon = this.$('.view-icon');
     if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
 
-    // Notification count → badge text; CSS shows/hides via [data-notifications].
+    // CSS shows/hides the badge via [data-notifications].
     const count = this.dataset['notifications'];
     const badge = this.$('.notif-badge');
     if (badge) badge.textContent = count && count !== '0' ? count : '';

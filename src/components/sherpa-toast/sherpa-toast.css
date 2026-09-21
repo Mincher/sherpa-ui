@@ -1,25 +1,10 @@
 /**
- * sherpa-toast — presentation.
- *
- * Figma Toast (27:750, data-extracted; pinned Style=success, Elevation=md): the
- * CARD fills the PALE status tint — style-surface/base +1 (success → #f0fff5) — with
- * the neutral 0.5 style-border/base ring and an Elevation=md shadow whose colour is
- * the STATUS shadow (style-surface/shadow → #36de8c4d). Heading = style-content/
- * secondary (#35353d, status-independent) 14/20 semibold; value = style-content/base
- * (status ink) 12/16; action = content/link/+1 12/16 regular; a 14px status glyph
- * leads and a 12px close icon trails. Geometry chains to Structure/Theme.
- *
- *   card    → var(--_status-surface-subtle, style-surface-base)  (pale status tint)
- *   shadow  → var(--_status-shadow, style-surface-shadow)         (status-tinted)
- *   value   → var(--_status-text, style-content-base)             (status ink)
- *   glyph   → var(--_status-icon, …)                              (strong status hue)
+ * sherpa-toast — presentation. Figma Toast 27:750.
+ * The card takes the PALE status tint (--_status-surface-subtle), not the base one.
  */
 
-/* Toasts stack in the TOP-RIGHT corner. The host is the fixed positioner so a toast
-   appended anywhere (SherpaToast.success(…) drops it on <body>) always lands in the
-   same place. Each new toast pushes the previous ones down, because the shared
-   .sherpa-toast-stack container is a flex column — but a bare toast with no container
-   still positions itself, so the corner is guaranteed either way. */
+/* The host is the fixed positioner, so a toast appended anywhere still finds the
+   top-right corner with no stack container. */
 :host {
   position: fixed;
   inset-block-start: var(--sherpa-display-mode-space-base, 16px);
@@ -28,7 +13,6 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* Slide in from off-screen right, then settle. Reversed on the way out. */
   animation: sherpa-toast-in 180ms ease-out both;
 
   --_surface: var(--_status-surface-subtle, var(--sherpa-style-surface-base, #ffffff));
@@ -38,18 +22,15 @@
   --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #35353d4c));
 }
 
-/* Inside a stack the container owns the corner, so the toast goes back in flow. The
-   stack itself is pointer-events:none (it must never block the page), so each toast
-   turns interaction back on for its own box. */
+/* In a stack the container owns the corner. The stack is pointer-events:none so it
+   never blocks the page — each toast turns interaction back on for its own box. */
 :host([data-stacked]) {
   position: static;
   inset: auto;
   pointer-events: auto;
 }
 
-/* Leaving — JS sets data-leaving, waits for `animationend`, then removes the
-   node. The duration lives HERE and nowhere else: JS listens for the event
-   rather than holding a matching number. */
+/* The duration lives HERE only — JS waits for `animationend`, it holds no number. */
 :host([data-leaving]) {
   animation: sherpa-toast-out 160ms ease-in both;
   pointer-events: none;
@@ -79,7 +60,6 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--_surface);
   color: var(--_content);
-  /* Elevation=md (Theme elevation "base" tokens) in the status shadow colour. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
@@ -88,7 +68,7 @@
     var(--_shadow-color);
 }
 
-/* ── Status icon — a 14px Apex status glyph in the status hue (FA solid). ── */
+/* ── Status icon ───────────────────────────────────────────────────── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
@@ -118,14 +98,14 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
-/* Heading binds style-content/secondary → #35353d in every status (not the status ink). */
+/* Heading is status-independent — content-body-1, never the status ink. */
 .heading {
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-/* Value detail — only with data-value; carries the status ink. */
+/* Carries the status ink. */
 .value { display: none; }
 :host([data-value]) .value {
   display: block;
@@ -133,7 +113,6 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-/* Action link — only with data-action: content/link/+1 12/16 regular. */
 .action { display: none; }
 :host([data-action]) .action {
   display: inline-block;
@@ -158,7 +137,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Figma close: cross glyph at size/icon/2xs → 12. */
   inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
   block-size: var(--sherpa-theme-size-icon-2xs, 10px);
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* centre on the heading line */

@@ -1,11 +1,8 @@
 /**
- * sherpa-tooltip — a little hint bubble that shows on hover or focus.
+ * sherpa-tooltip — a hint bubble shown on hover or focus.
  *
- * Wrap it around whatever it describes. Showing and hiding is pure CSS off hover
- * and focus — no JS. The bubble sits to whichever side data-placement picks, and
- * CSS handles that. JS does just two things: write the tip text into the bubble,
- * and link it to the trigger so screen readers read it out.
- *
+ * Showing, hiding and placement are pure CSS. JS writes the tip text and links
+ * the bubble to the trigger for screen readers.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -14,7 +11,6 @@ let uid = 0;
 export class SherpaTooltip extends SherpaElement {
   static override css = new URL('./sherpa-tooltip.css', import.meta.url);
   static override html = new URL('./sherpa-tooltip.html', import.meta.url);
-  /** Mirror data-text into the bubble's text span (CSS handles all visibility). */
   static override props = {
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
   } as const;
@@ -28,15 +24,8 @@ export class SherpaTooltip extends SherpaElement {
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
 
-    // FLOATING MODE only. The bubble goes into the top layer, past every
-    // ancestor's clip, and is placed from measured coordinates — so JS has to
-    // know when it is showing. The ordinary mode stays pure CSS.
-    //
-    // The listeners go on the ANCHOR, which is this element unless data-anchor
-    // names another. That is how a tooltip can describe a box it does not wrap:
-    // wrapping is not always possible, because an element inserted between a
-    // host and its content breaks every `:host(…) .child` rule in that
-    // component's stylesheet.
+    // Listeners are for FLOATING MODE only; the ordinary mode stays pure CSS.
+    // They go on the ANCHOR so a tooltip can describe a box it does not wrap.
     const anchor = this.#anchor();
     anchor.addEventListener('pointerenter', this.#onShow);
     anchor.addEventListener('pointerleave', this.#onHide);
@@ -47,9 +36,8 @@ export class SherpaTooltip extends SherpaElement {
   /**
    * What the bubble describes: this element, or the box `data-anchor` names.
    *
-   * The selector is resolved against the tooltip's own ROOT — its shadow host's
-   * tree — so a component can point it at one of its own parts without exposing
-   * an id to the document.
+   * Resolved against the tooltip's own root, so a component can point it at one
+   * of its own parts without exposing an id to the document.
    */
   #anchor(): HTMLElement {
     const sel = this.dataset['anchor'];
@@ -59,8 +47,7 @@ export class SherpaTooltip extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    // A popover left open in the top layer would outlive the element it belongs
-    // to — it is not a child of it any more, as far as painting goes.
+    // A popover left open in the top layer outlives the element it belongs to.
     this.#hide();
     const anchor = this.#anchor();
     anchor.removeEventListener('pointerenter', this.#onShow);
@@ -78,19 +65,15 @@ export class SherpaTooltip extends SherpaElement {
 
   #onShow = (): void => {
     if (!this.#floating) return;
-    // NOTHING TO SAY, nothing to show. A tooltip with no text and no slotted tip
-    // would open an empty bubble — a bare shadow over the trigger.
+    // No text and no slotted tip would open an empty bubble.
     if (!this.dataset['text'] && !this.hasAttribute('data-has-tip')) return;
     const bubble = this.$<HTMLElement>('.bubble');
     if (!bubble) return;
-    // SHOW FIRST, then measure: a closed popover is `display: none` and its own
-    // size reads as 0, so it cannot be centred before it is up.
+    // SHOW FIRST, then measure: a closed popover is `display: none` and reads 0.
     bubble.showPopover();
     this.#place();
-    // A scroll or a resize moves the trigger; the bubble is fixed in the top
-    // layer and would stay behind. It is a HINT, so closing is honest and
-    // cheaper than following. `capture`, because an ancestor's scroll does not
-    // bubble.
+    // Scroll or resize moves the trigger while the bubble stays put, so close.
+    // `capture`, because an ancestor's scroll does not bubble.
     window.addEventListener('scroll', this.#onHide, { capture: true, passive: true });
     window.addEventListener('resize', this.#onHide, { passive: true });
   };
@@ -112,7 +95,7 @@ export class SherpaTooltip extends SherpaElement {
   static readonly OFFSET = 4;
 
   /**
-   * Put the floating bubble above its trigger, centred, and inside the viewport.
+   * Put the floating bubble above its trigger, centred, inside the viewport.
    *
    * Measured rather than anchored — TRAP T-anchor-cross-root.
    */
@@ -129,13 +112,8 @@ export class SherpaTooltip extends SherpaElement {
     let y = t.top - gap - b.height;
     if (y < gap) y = Math.min(vh - b.height - gap, t.bottom + gap);
 
-    /* Centred, pulled back inside either edge.
-       NOT clampNum, and the difference is real: clampNum applies min THEN max,
-       so `max` wins a conflict. Here the order is reversed — `min` wins — and
-       that matters when the bubble is WIDER than the viewport, where max would
-       be less than min. Pinning to the LEFT edge shows the start of the text;
-       pinning right would show its end. Left is the readable answer, so the
-       order is deliberate and stays written out. */
+    // NOT clampNum: here `min` wins the conflict, so a bubble wider than the
+    // viewport pins LEFT and shows the start of its text. The order is deliberate.
     let x = t.left + t.width / 2 - b.width / 2;
     if (x + b.width > vw - gap) x = vw - b.width - gap;
     if (x < gap) x = gap;

@@ -1,20 +1,7 @@
 /**
- * examples/views/records.js — the records / CRUD-table view's logic.
- *
- * Exported as init(root): builds 100 customers, puts them in a store, and binds
- * the grid / quick-filter toolbar / pagination inside `root` to ONE DataSource.
- * The shared nav/header live once in index.html.
- *
- * This view is the data layer's proof. It used to hand-wire the whole pipeline —
- * applyFilter, a compare function, applySort, currentRows, render — plus six
- * event handlers, INCLUDING two rival `sort-change` listeners whose own comment
- * admitted they were being held together by hand. All of that is now three
- * bind() calls: the grid's column header and the toolbar's Sort chip read and
- * write one shared value, so they cannot disagree.
- *
- * 100 rows over 10 pages is the point: it exercises pagination, the grid's own
- * internal scroll inside a fixed-height panel, and grouping across a row count
- * that no longer fits on one screen.
+ * The records / CRUD-table view. init(root) binds the grid, quick-filter
+ * toolbar and pagination inside `root` to ONE DataSource. Nav/header are shared
+ * and live in index.html.
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
@@ -25,71 +12,39 @@ import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 export async function init(root) {
-  /* ── The data layer ───────────────────────────────────────────────── */
-
-  /* One store holds the records; ONE source holds how they are being viewed.
-     This replaces ~80 lines of hand-wired pipeline — applyFilter, compare,
-     applySort, currentRows and render — and, more importantly, replaces the two
-     separate `sort-change` handlers this file used to carry. The grid's column
-     header and the toolbar's Sort chip now read and write the SAME value, so
-     they cannot disagree; the comment that used to sit here admitting they were
-     being held together by hand is gone with them. */
-  /* THE STORE IS THE APP'S, not this view's — see records-data.js. Built here,
-     it died with the view: adding a customer took the grid to 5 pages and
-     coming back put it at 4, with the record gone.
-
-     The SOURCE is still this view's, and that is the rule: a store holds
-     records, which outlive a screen; a source holds one QUERY over them, which
-     does not. */
+  /* The store is the APP's (records outlive a screen); the source is this
+     view's (one query over them). */
   const store = customerStore;
-  /* THE SEED HAS TO LAND BEFORE THE FIRST LOAD. The store is IndexedDB now, so
-     "are there any records" is a question with a wait in it — a source that
-     loaded first would draw an empty grid and never hear that the seed arrived.
-     On a second visit this has already resolved and costs nothing. */
+  /* SEED BEFORE FIRST LOAD. The store is IndexedDB, so a source that loaded
+     first would draw an empty grid and never hear the seed arrive. */
   await customersReady;
   const source = new DataSource({
     store,
-    // 25 to match sherpa-pagination's own default — a different number here
-    // would silently disagree with the select beside it.
+    // Matches sherpa-pagination's own default; a different number here would
+    // silently disagree with the select beside it.
     pageSize: 25,
     searchFields: ['name', 'email', 'owner'],
   });
 
-  /* Columns holding an ISO date — two picks on one of these is a RANGE, where
-     two picks on any other column means "either of these values". */
+  /* Two picks on a DATE column mean a RANGE; on any other column, either/or. */
   const dateFields = new Set(['created', 'lastSeen']);
-  /* The NUMBER columns. Their chips are `kind: 'number'`, so two picks mean the
-     two ends of a range exactly as two dates do — and one pick is one value. */
+  /* NUMBER columns: two picks are the ends of a range, one pick is one value. */
   const numberFields = new Set(['seats', 'spend', 'openTickets', 'health']);
 
-  /* The toolbar reports its chips as `{ values: { field: [picked] } }`, and the
-     source turns that into a filter on its own. The one thing it cannot guess is
-     that two picks on a DATE column mean a range rather than an either/or, so
-     that is translated here and handed over as a real filter. */
-  /* The four TOGGLE chips are status values, not fields: their ids are `active`,
-     `trial`, `suspended`, `churned`, and turning one on means "show me customers
-     in that status". Only this view knows that — a chip id is a field name for
-     every MENU chip, so the source cannot guess which column a toggle names. They
-     arrive in `active`, separately from the menu chips' `values`, and used to be
-     dropped on the floor here, which is why clicking them did nothing. */
+  /* Toggle chips name a STATUS VALUE, not a field — only this view knows that,
+     and they arrive in `active`, separately from the menu chips' `values`. */
   const statusChips = new Set(['active', 'trial', 'suspended', 'churned']);
 
-  /* COLUMN FILTERS — one clause per column heading the reader has filtered.
-
-     The grid reports each as a ready FilterClause and lights that column, but
-     it does not narrow its own rows: it holds one column's clause at a time and
-     cannot know what the toolbar is doing. Combining them is this view's job,
-     the same as combining the chips.
-
-     Kept by field, so setting "contains ana" and then "contains bo" on the same
-     column is one filter, not two fighting each other. */
+  /* One clause per filtered column heading. The grid reports a ready
+     FilterClause and lights the column but does not narrow its own rows —
+     combining them is this view's job. Kept by field, so a second condition on
+     one column replaces the first rather than fighting it. */
   const columnClauses = new Map();
 
   const filterFromChips = (values, active = []) => {
     const clauses = [];
     const statuses = active.filter((id) => statusChips.has(id));
-    // Several statuses on at once is an OR — "active OR trial" — and the whole
-    // set ANDs with whatever the menu chips narrow to.
+    // Several statuses at once is an OR; the set ANDs with the menu chips.
     if (statuses.length === 1) clauses.push(['status', 'eq', statuses[0]]);
     else if (statuses.length > 1) clauses.push(['status', 'in', statuses]);
 
@@ -98,8 +53,8 @@ export async function init(root) {
       if (picked.length === 2 && dateFields.has(field)) {
         clauses.push([field, 'between', [...picked].sort()]);
       } else if (picked.length === 2 && numberFields.has(field)) {
-        // NUMERIC, so the ends are compared as numbers — a lexical sort would
-        // put "1000" below "9" and the range would match nothing.
+        // Numeric sort: a lexical one puts "1000" below "9" and the range
+        // matches nothing.
         const ends = picked.map(Number).sort((a, b) => a - b);
         clauses.push([field, 'between', ends]);
       } else if (picked.length === 1 && numberFields.has(field)) {
@@ -113,23 +68,15 @@ export async function init(root) {
     return clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined;
   };
 
-  /* THREE WRITERS, THREE NAMED PARTS.
-
-     The app's saved view, this page's chips, and the grid's column headings all
-     narrow the same query, and each owns its own key. The source ANDs them.
-
-     It used to be four variables composed by hand — lastChips, columnClauses,
-     viewClause and one reapplyFilter() that rebuilt the whole filter from all
-     three. Every writer had to know about the others, and the last one to run
-     won: a saved view's clause was silently dropped the moment any chip
-     changed. `contribute` removes the coordination entirely. */
+  /* THREE WRITERS, THREE NAMED PARTS: the saved view, this page's chips, and
+     the grid's column headings each own a `contribute` key and the source ANDs
+     them — so no writer has to know about the others. */
   const pushColumns = () => {
     const clauses = [...columnClauses.values()];
     source.contribute('columns',
       clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined);
   };
 
-  /* ── Cache view refs (scoped to root) ────────────────────────────── */
   const grid      = root.querySelector('#grid');
   const qft       = root.querySelector('#qft');
   const pager     = root.querySelector('#pager');
@@ -152,101 +99,56 @@ export async function init(root) {
     customElements.whenDefined('sherpa-toast'),
   ]);
 
-  /* App header breadcrumb. */
   header?.populate({
     breadcrumb: [
-      // Every crumb links to a REAL page. The trail used to name sections
-      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
-      // anchors, so clicking one went nowhere.
+      // Every crumb links to a REAL page.
       { label: 'Home', href: '?view=dashboard' },
       { label: 'Records' },
     ],
-    // The header's toolbar is the VIEW-level one (data-type="view" in
-    // index.html), so its chips are SAVED VIEWS, not the grid's column filters.
-    // A view is a whole saved arrangement — which is why this bar, and not the
-    // data bar below it, is the one that carries Save / favourite.
-    // THE GLOBAL FILTERS — View, Customer, Region and Date range. They sit
-    // above every page and trickle DOWN: whatever they narrow to is the
-    // population this grid then works within, and the bar BELOW narrows further
-    // inside that. See global-filters.js.
-    // DERIVED from the view definitions, so a label cannot drift from the view
-    // it names. Each option's value is a key into RECORDS_VIEWS.
-    /* OPTIONS FROM THE DATA. Both lists used to be invented — lowercase
-       regions the records never held, and five company names against no field
-       at all — so picking either filtered to nothing.
+    /* THE GLOBAL FILTERS — View, Customer, Region, Date range. They sit above
+       every page and trickle DOWN; the bar below narrows further inside that.
+       See global-filters.js. Options are DERIVED from the view definitions and
+       the records, so neither can name something the data does not have.
        TRAP T-a-chip-filters-the-values-the-data-has. */
     filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs),
   });
 
-  /* Quick-filter chips — status segments with counts, plus two value pickers.
-     A chip with `options` shows a caret and opens a menu of real checkbox/radio
-     rows; a chip without them is a plain on/off toggle. */
-  /* No `count` on the toggle chips. A badge there would have to mean "how many
-     rows match", which a real app with a server-side query does not know when
-     the bar is built — so the toolbar no longer takes one. The badge is reserved
-     for "how many VALUES are picked", which each menu chip sets itself. */
+  /* Quick-filter chips. A chip with `options` opens a menu; one without is a
+     plain on/off toggle. No `count` on the toggles — the badge means "how many
+     VALUES are picked", which each menu chip sets itself. */
   const valuesOf = (field) => [...new Set(customers.map((c) => c[field]))].sort();
   const asOptions = (field) =>
     valuesOf(field).map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
-  /* `removable: true` on the menu chips — the DATA bar is the user's own to
-     arrange, so each of these offers "Remove filter" at the foot of its menu and
-     returns to the Add list. It is opt-in: the view SELECTOR in the header does
-     not take it, because "no view" is not a state the page can be in.
-
-     `commit: true` on TWO of them — Owner and Created. Chips AUTO-APPLY by
-     default: a tick changes the filter there and then, with no footer and no
-     second click, which is what a filter chip should feel like. Committing is
-     the opt-out, for a field whose query is genuinely expensive — a person
-     lookup or a date scan — where applying per tick would fire three or four
-     requests for a selection the user had not finished building. These two are
-     here so both behaviours are visible side by side in one bar. */
+  /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
+     chip offers "Remove filter". `commit: true` on Owner and Created only:
+     chips AUTO-APPLY by default, and committing is the opt-out for a field
+     whose query is expensive. Both behaviours are here side by side. */
   qft.populate([
     { id: 'active',    label: 'Active',    type: 'data' },
     { id: 'trial',     label: 'Trial',     type: 'data' },
     { id: 'suspended', label: 'Suspended', type: 'data' },
     { id: 'churned',   label: 'Churned',   type: 'data' },
-    // MULTI-select: any number of plans / regions / tiers. Picking exactly one
-    // reads back as "Plan: Pro" on the chip; two or more show the count badge.
+    // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
       select: 'multiple', removable: true, options: asOptions('plan') },
-    // NO Region chip here. It is a GLOBAL filter now, in the app header — it
-    // narrows every page, not just this grid, and two chips for one field would
-    // make the reader guess which one was in force.
+    // No Region chip: it is a GLOBAL filter in the app header, and two chips for
+    // one field would make the reader guess which is in force.
     { id: 'tier', label: 'Tier', type: 'data', icon: 'fa-solid fa-award',
       select: 'multiple', removable: true, options: asOptions('tier') },
-    // SINGLE-select: one owner at a time. COMMITTING — a person lookup stands in
-    // for the expensive server-side query, so its rows are a draft behind an
-    // Apply/Cancel footer and Cancel throws them away.
+    // SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel.
     { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
       select: 'single', removable: true, commit: true, options: asOptions('owner') },
-    // A DATE chip: its menu is a calendar rather than a list of values, and its
-    // label carries the chosen day. `kind` is what picks the menu's content —
-    // date-range and time will be values here, not new chip types.
-    // Also COMMITTING: a date scan is the other expensive case, and its footer
-    // shows the full four-button row (Today · Remove · Cancel · Apply).
-    // ONLY the days the data actually carries are pickable. A `created` column
-    // is a scatter, not a span — most days have no record at all — so every
-    // other day is drawn inactive and a reader cannot choose one that would
-    // empty the grid. Derived from the records themselves, so it can never
-    // drift from them.
+    // `kind` picks the menu's content: a calendar rather than a list of values.
+    // `availableDates` is derived from the records, so only days that hold one
+    // are pickable — a `created` column is a scatter, not a span.
     { id: 'created', label: 'Created', type: 'data', kind: 'date',
       removable: true, commit: true, icon: 'fa-solid fa-calendar',
       availableDates: [...new Set(customers.map((c) => c.created))].sort() },
   ]);
 
-  /* What the ADD chip offers — filters a user can put on the bar OVER AND ABOVE
-     the defaults above. That is what the Add control is for in the design: its
-     caret opens this list, and picking one stamps the chip into the run and
-     drops it from the menu (a filter already on the bar is not one you can add
-     again).
-
-     These are the columns the default set leaves out, so the bar starts with the
-     common ones and the rest are a click away rather than crowding it. */
-  /* The four NUMERIC columns are `kind: 'number'`, not value lists. A column of
-     240 distinct seat counts is not a set anybody picks from — the question is
-     "how many" or "between what and what", which is what the Range switch on a
-     number menu asks. The bounds are the data's own, so the slider spans exactly
-     what exists rather than an arbitrary 0..100. */
+  /* What the ADD chip offers — the columns the default set leaves out. These
+     four are `kind: 'number'`, not value lists: a column of 240 distinct seat
+     counts is not a set anybody picks from. Bounds are the data's own. */
   qft.available([
     { id: 'seats', label: 'Seats', type: 'data', icon: 'fa-solid fa-chair',
       kind: 'number', min: 1, max: 240, step: 1 },
@@ -258,62 +160,35 @@ export async function init(root) {
       kind: 'number', min: 0, max: 8, step: 1 },
   ]);
 
-  /* The leading Group and Sort chips — how the grid is ARRANGED, at the start of
-     the toolbar (Figma Filter Toolbar Type=data opens with these two, then a
-     divider, then the filter chips). Their own events, so a group/sort pick is
-     never mistaken for a filter change. */
+  /* The leading Group and Sort chips — how the grid is ARRANGED. Their own
+     events, so a group/sort pick is never mistaken for a filter change. */
   const organiseCols = columns.map((c) => ({ field: c.field, label: c.header }));
   qft.organise({ group: organiseCols, sort: organiseCols });
 
   /* Plan radio group in the dialog. */
   planGroup.populate(plans.map((p) => ({ value: p.toLowerCase(), label: p })));
 
-  /* ── Binding ─────────────────────────────────────────────────────── */
+  /* Three components, ONE source: each READS (rows plus view state as data-*)
+     and WRITES (its noun-verb events steer the source). */
 
-  /* Three components, ONE source. Each one both READS (the source populates it
-     and writes the view state onto it as data-*) and WRITES (its own noun-verb
-     events steer the source). Neither half needed a new component API — the
-     events were already ratified and composed, and data-sort-field /
-     data-sort-direction / data-group-field are the standard attribute names.
-
-     What used to be six hand-written handlers below is now three bind() calls,
-     and the two rival `sort-change` listeners collapse into one shared value. */
-
-  // The grid takes { columns, rows }, not a bare array — so the shape is adapted
-  // AT THE BINDING, which is where the mismatch actually is.
-  /* `ignore` on filter-change for the same reason the toolbar carries it: this
-     view owns the whole filter. The grid's secondary header row emits
-     filter-change with ONE column's text, and the source would set the filter
-     to that alone — wiping both the chips and the other columns' clauses. */
-  /* THE BINDS, kept so the view can end them.
-
-     The router calls whatever a view's init() returns when it swaps away.
-     Without a teardown the source kept pushing rows into components that had
-     been removed from the DOM — one live source per view visit, each holding
-     detached elements.
-
-     ONE AbortController for the whole view, because `bind`, `persistView` and
-     `onViewPicked` all take the platform's `signal`. A list of unbind functions
-     is a list someone forgets — which is exactly what happened on the dashboard
-     when a second, shorter-lived list appeared beside the first. */
+  /* ONE AbortController for the whole view — `bind`, `persistView` and
+     `onViewPicked` all take a `signal`. Without a teardown the source keeps
+     pushing rows into components the router has already removed. */
   const page = new AbortController();
   const signal = page.signal;
 
-  /* THE ROW ACTIONS, declared ONCE.
-
-     The grid draws them in its pinned trailing column, and the toolbar below
-     reads the same list back through `grid.actionsFor(count)` — so the two
-     cannot disagree, which is the whole reason the grid owns the declaration
-     rather than each surface keeping its own copy.
-
-     `multi` is the interesting field. Deleting five customers is one action;
-     editing five is not, so Edit is absent from the bulk bar the moment a
-     second row is ticked. */
+  /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
+     column and the toolbar reads the same list back via `grid.actionsFor(n)`,
+     so the two cannot disagree. `multi` is what survives a multi-row
+     selection — deleting five is one action, editing five is not. */
   const ROW_ACTIONS = [
     { id: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
     { id: 'delete', label: 'Delete', icon: 'fa-solid fa-trash', multi: true, danger: true },
   ];
 
+  /* `as` adapts the shape at the binding. `ignore` on filter-change because
+     this view owns the whole filter: the grid's secondary header row emits it
+     with ONE column's text, which would wipe the chips and the other columns. */
   source.bind(grid, {
     as: (rows) => ({ columns, rows, key: 'email', actions: ROW_ACTIONS }),
     ignore: ['filter-change'],
@@ -321,43 +196,25 @@ export async function init(root) {
   });
   source.bind(pager, { signal });
 
-  /* STEER-ONLY. The toolbar's populate() means "here are your CHIPS", not "here
-     are your rows" — a plain bind() overwrote the bar with records and it came
-     back holding only Group and Sort. `steerOnly` sends its events to the source
-     and pushes no rows back, while the STATE attributes still arrive: that is
-     what keeps its Sort chip and the grid's header arrow two views of one value
-     rather than two rival listeners racing to set it.
-
-     Sort and group need no listener at all now — the source understands both
-     events. Only the FILTER stays hand-written, because translating chips is
-     view knowledge: only this page knows two picks on `created` mean a RANGE
-     rather than an either/or. */
-  /* `ignore` on the FILTER event, because this view owns the whole filter: it
-     folds the chips together with the data grid's column filters, and only it
-     can do that. Left to the source, `quick-filter-change` would set the filter
-     from the chips alone and the column clauses would vanish on every chip
-     click. Sort and group are untouched — the source still handles those. */
+  /* STEER-ONLY: the toolbar's populate() means "here are your CHIPS", so a
+     plain bind() overwrites the bar with records. Its events still reach the
+     source and the state attributes still arrive — which is what keeps its Sort
+     chip and the grid's header arrow two views of one value. `ignore` on the
+     FILTER event only, because translating chips is view knowledge; sort and
+     group the source handles itself. */
   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
     source.contribute('chips', filterFromChips(e.detail.values, e.detail.active));
-    /* A CUSTOM chip's body is a TOGGLE, exactly like any other chip's: off
-       means "stop applying this", not "delete it". The chip stays on the bar
-       with its condition still written on it, ready to come back on.
-
-       Only REMOVE deletes — from either menu, the toolbar chip's or the column
-       heading's. So this suspends the clause and restores it, and never
-       touches the chip itself.
-
-       A custom chip shows in neither `active` (which skips menu chips) nor
-       `values` (which reads ticked rows), so the toolbar reports it in its own
-       `custom` map. */
+    /* A custom chip's body is a TOGGLE: off means "stop applying this", not
+       "delete it" — only REMOVE deletes. So this suspends and restores the
+       clause and never touches the chip. A custom chip shows in neither
+       `active` nor `values`, so the toolbar reports it in `custom`. */
     for (const [id, on] of Object.entries(e.detail.custom ?? {})) {
       if (!id.startsWith('col:')) continue;
       const field = id.slice(4);
-      /* The grid keeps the clause either way; this only says whether it is
-         being APPLIED. Suspended, the heading stops reading active and its
-         match marks come off — the column is narrowing nothing, and a lit
-         column that filters nothing is a lie. */
+      /* The grid keeps the clause; this only says whether it is APPLIED.
+         Suspended, the heading stops reading active — a lit column that filters
+         nothing is a lie. */
       grid.suspendColumnFilter(field, !on);
       const clause = on ? grid.columnClause(field) : null;
       if (clause) columnClauses.set(field, clause);
@@ -366,52 +223,37 @@ export async function init(root) {
     pushColumns();
   });
 
-  /* The COLUMN chip's CARET opens that column's own filter menu — the real
-     one, borrowed from the grid's heading, so the two places cannot drift about
-     what the column is filtered by.
-
-     The caret, not the body: a chip's body is its on/off toggle, and turning
-     the chip off already means "stop filtering that column" (handled above).
-     One gesture per meaning. */
+  /* The column chip's CARET opens that column's own grid menu, so the two
+     places cannot drift. The caret, not the body — the body is the on/off
+     toggle, handled above. */
   qft.addEventListener('click', (e) => {
     const path = e.composedPath();
     if (!path.some((n) => n.classList?.contains?.('caret'))) return;
     const chip = path.find((n) => n.dataset?.id?.startsWith?.('col:'));
     if (!chip) return;
     grid.openColumnFilter(chip.dataset.id.slice(4), chip);
-  }, true); /* CAPTURE. The chip's own caret handler calls stopPropagation() —
-               it is guarding its menu from the body's toggle — so a bubbling
-               listener out here never runs. Capture reaches the event on the
-               way DOWN, before the chip sees it. */
+  }, true); /* CAPTURE: the chip's caret handler calls stopPropagation() to
+               guard its menu, so a bubbling listener here never runs. */
 
-  /* COLUMN FILTERS — the funnel in each column heading.
-
-     The grid says what was asked for; this view decides what it means for the
-     query, because only this view knows what else is filtering. The clause
-     arrives ready, so there is nothing to translate.
-
-     It also goes onto the TOOLBAR as a chip, so a reader who scrolls the grid
-     sideways still sees that the view is narrowed and by what. `header` is the
-     field name and `label` the condition and value — "Name" / "Contains: ana". */
+  /* COLUMN FILTERS — the funnel in each column heading. The clause arrives
+     ready; this view decides what it means for the query, because only it knows
+     what else is filtering. It also goes onto the toolbar as a chip, so a
+     sideways scroll still shows the view is narrowed and by what. */
   grid.addEventListener('column-filter-change', (e) => {
     const { field, header, clause, label } = e.detail;
     if (clause) columnClauses.set(field, clause);
     else columnClauses.delete(field);
-    /* THE CHIP FIRST, then the filter.
-
-       Putting the chip on the bar makes the toolbar emit `quick-filter-change`,
-       and the source is bound to the toolbar — so it hears that event and sets
-       the filter from the CHIPS alone, throwing this column's clause away. Done
-       in this order the source's own write lands first and the column
-       contribution has the last word on its own key. */
+    /* CHIP FIRST, then the filter. Adding the chip makes the toolbar emit
+       `quick-filter-change`, which the bound source answers by setting the
+       filter from the chips alone — so the column contribution must land after
+       it to have the last word on its own key. */
     qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
     pushColumns();
   });
 
-  /* Taking the chip OFF the bar has to reach back and clear the column, or the
-     heading stays lit and its menu still holds a clause the bar no longer
-     shows. `clearColumnFilter` is silent by design — it does not echo the
-     event back, which would clear the clause twice. */
+  /* Taking the chip off the bar must reach back and clear the column, or the
+     heading stays lit. `clearColumnFilter` is silent by design — echoing the
+     event back would clear the clause twice. */
   qft.addEventListener('filter-remove', (e) => {
     const id = e.detail?.id ?? '';
     if (!id.startsWith('col:')) return;
@@ -420,118 +262,64 @@ export async function init(root) {
     grid.clearColumnFilter(field);
     pushColumns();
   });
-  // The GRID does the grouping — data-group-field makes it drop that column and
-  // draw a collapsible group row per value. The source writes that attribute on
-  // every bound component, so the grid gets it without this view wiring it.
+  // Grouping needs no wiring: the source writes data-group-field on every bound
+  // component, and the grid draws the collapsible group rows.
 
-  /* REMEMBER THE WHOLE VIEW ACROSS A RELOAD — as ONE definition.
-
-     An accidental refresh used to throw away every filter, sort and page, and
-     the reader started again.
-
-     This was two mechanisms: persistViewState for the source, plus a
-     hand-written sessionStorage line for the grid's column clauses — with a
-     third needed for selection and a fourth for the toolbar's chips. Four
-     shapes, four restore paths, one idea. Now one snapshot, in the same shape a
-     PRESET or a shared link would use, so all three are interchangeable.
-
-     sessionStorage, so two tabs on this screen keep their own filters — which
-     is a feature, not a bug. It restores BEFORE the first load, so the source
-     queries once with the remembered state rather than loading empty and
-     loading again. */
+  /* REMEMBER THE WHOLE VIEW ACROSS A RELOAD, as ONE snapshot — the same shape a
+     preset or a shared link uses. sessionStorage, so two tabs keep their own
+     filters. It restores BEFORE the first load, so the source queries once. */
   persistView('records', { source, elements: { grid } }, {
-    /* WHAT THE GRID CONTRIBUTES. The view names it rather than the helper
-       guessing: only this view knows that a column filter belongs in a saved
-       view and a scroll position does not.
-
-       Each entry is an ElementNode.state block — the same shape renderElement
-       takes, which is why a saved view and a preset are the same object. */
+    /* What the grid contributes: the view names it, because only this view
+       knows a column filter belongs in a saved view and a scroll position does
+       not. Each entry is an ElementNode.state block. */
     grid: () => {
       const state = { select: [grid.selectedKeys] };
-      // A LIST OF CALLS, because setColumnFilter runs once per filtered column
-      // and a state block is a map — one method, one key.
+      // A LIST OF CALLS: setColumnFilter runs once per filtered column, and a
+      // state block is a map — one method, one key.
       const calls = [...columnClauses].map(([field, clause]) => [field, clause]);
       if (calls.length) state.setColumnFilter = calls.length === 1 ? calls[0] : calls;
       return state;
     },
   });
 
-  /* THE APP HEADER'S GLOBAL FILTERS — Customer, Region, Date range.
-
-     These trickle DOWN: whatever they narrow to is the population this grid
-     then works within, and the bar below narrows further inside that. That is
-     the whole reason there are two toolbars (see global-filters.js).
-
-     They reached NOTHING. The header was found, populated and handed to
-     `onViewPicked` for its View chip, and its other three chips were never
-     listened to — so picking a region lit the chip, emitted the event and
-     changed no data. The story was written; the wire was not.
-     TRAP T-the-header-chips-must-reach-the-query.
-
-     Its OWN key, so it ANDs with the view bar's chips, the column filters and
-     a saved view's clause without any of them knowing about the others — the
-     same `contribute` split those three already use.
-
-     `view` is skipped: that chip is the saved-view SELECTOR, handled by
-     `onViewPicked` below, and folding it in here would filter by a view id. */
-  /* WHICH FIELD each header chip narrows, for THESE records.
-
-     A header chip is named for the business question, and the field that
-     answers it differs per page. "Customer" is this product's word for an
-     ORGANISATION — each record here is a person who belongs to one, so it is
-     the `customer` field and not the record's own name, nor `owner`, which is
-     the member of STAFF who looks after the account. "Date range" has to pick
-     one of the two date columns, because a record carries both.
-
-     A chip whose id is not here narrows nothing, rather than building a clause
-     against a field no record has — which is how `['region','eq','emea']` got
-     through before. */
+  /* WHICH FIELD each header chip narrows, for THESE records. A header chip is
+     named for the business question and the answering field differs per page —
+     "Customer" is the `customer` organisation, not the record's own name, nor
+     `owner`, who is the member of staff. A chip that is not here narrows
+     nothing, rather than building a clause against a field no record has.
+     `view` is absent on purpose: it is the saved-view SELECTOR, handled by
+     `onViewPicked` below, and folding it in would filter by a view id.
+     TRAP T-the-header-chips-must-reach-the-query. */
   const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: 'created' };
 
   header?.addEventListener('quick-filter-change', (e) => {
     const picked = {};
     for (const [id, values] of Object.entries(e.detail.values ?? {})) {
-      // `view` is the saved-view SELECTOR, handled by `onViewPicked` below.
-      // Folding it in here would filter by a view id.
       const field = HEADER_FIELDS[id];
       if (field && values?.length) picked[field] = values;
     }
+    // Its OWN key, so it ANDs with the chips, the columns and a saved view.
     source.contribute('global', filterFromChips(picked, []));
   }, { signal });
 
-  /* SAVED VIEWS — the header's View chip.
-
-     Each option is a real definition, not a label: a ViewSnapshot holding the
-     query AND every component's state. Picking one applies it, and the screen
-     reconfigures — filter, sort, grouping, and the grid's own column filters.
-
-     The same call a user's saved view would take, and the same one an agent
-     would make over MCP. That is the point of one shape: a preset, a saved
-     view and a shared link are not three features. */
-  /* ONE CALL. `onViewPicked` reads the View chip's id, applies that snapshot,
-     and reports what a stale definition could not restore — the same call the
-     dashboard makes, because picking a saved view is not this page's idea.
-
-     `after` is the half only this page knows: the QUERY here is composed from
-     named parts, so the view's own clause has to be re-contributed and the
-     grid's column clauses read back. */
+  /* SAVED VIEWS — the header's View chip. Each option is a ViewSnapshot holding
+     the query AND every component's state, so picking one reconfigures the
+     screen. `onViewPicked` applies it; `after` is the half only this page knows,
+     because the query here is composed from named parts. */
   onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
     signal,
-    /* 'all' is on screen already — the same id `viewOptions` was given above.
-       Without this the first Region or Customer pick of a session re-applies
-       it and wipes the pick. TRAP T-a-persistent-chip-reports-on-every-change. */
+    /* 'all' is on screen already. Without this the first Region or Customer
+       pick of a session re-applies it and wipes the pick.
+       TRAP T-a-persistent-chip-reports-on-every-change. */
     applied: 'all',
     after: ({ view }) => {
-      /* AFTER the snapshot, not before. `setState` treats a restored filter as
-         the WHOLE query and clears the named parts with it — right for a host
-         that does not compose, wrong here. So the view's own clause goes back
-         under its own key. The order is the whole subtlety. */
+      /* AFTER the snapshot, not before: `setState` treats a restored filter as
+         the WHOLE query and clears the named parts with it, so the view's own
+         clause goes back under its own key. The order is the whole subtlety. */
       source.contribute('view', view.snapshot.source?.filter);
 
-      /* Read the grid's clauses back into the 'columns' part. The snapshot set
-         them ON THE GRID; the source still has to be told. Cleared first — a
-         view that names no column filters means none, not "keep the last
-         view's". */
+      /* The snapshot set the clauses ON THE GRID; the source still has to be
+         told. Cleared first — a view naming no column filters means none. */
       columnClauses.clear();
       queueMicrotask(() => {
         for (const col of columns) {
@@ -543,9 +331,7 @@ export async function init(root) {
     },
   });
 
-  /* The view's OWN map has to agree with the grid after a restore. The snapshot
-     put the clauses back into the GRID; this reads them out again so the
-     query — which this view composes, not the grid — includes them. */
+  /* Same read-back after a restore, so this view's map agrees with the grid. */
   for (const col of columns) {
     const clause = grid.columnClause(col.field);
     if (clause) columnClauses.set(col.field, clause);
@@ -553,12 +339,10 @@ export async function init(root) {
 
   await source.load();
 
-  /* ── ROW ACTIONS ──────────────────────────────────────────────────
-     The grid REPORTS an action; this view decides what it means. Deleting a
-     record is the app's call, not the grid's — a grid that removed the row
-     itself would own state the store owns. */
+  /* ROW ACTIONS — the grid REPORTS an action; this view decides what it means.
+     A grid that deleted the row itself would own state the store owns. */
 
-  /** The record being edited, or null for a new one. The key, so it survives a reload. */
+  /** The record being edited, or null for a new one. */
   let editing = null;
 
   /** Open the dialog for one record, or for a new one when given nothing. */
@@ -567,23 +351,17 @@ export async function init(root) {
     dialog.dataset.heading = record ? 'Edit customer' : 'Add customer';
     root.querySelector('#f-name').value = record?.name ?? '';
     root.querySelector('#f-email').value = record?.email ?? '';
-    // sherpa-dialog's method is show(), not the native showModal() — the
-    // component owns the modality and the `open` attribute.
+    // show(), not the native showModal() — the component owns modality and the
+    // `open` attribute.
     dialog.show();
   };
 
   /**
-   * Delete records — THE MUTATION, after the reader has confirmed.
+   * Delete records, after the reader has confirmed.
    *
-   * Each `remove` is awaited and its failure caught PER RECORD, so a bulk
-   * delete that fails halfway says what actually happened rather than throwing
-   * away the whole result. A rejected promise here used to reach nothing: the
-   * only caller was `void runAction(...)`, so a store that refused did so in
-   * complete silence and the row stayed on screen with no explanation.
-   *
-   * The screen is never updated by hand. The store announces its own change and
-   * every bound view reloads — so a record that did NOT delete simply stays,
-   * which is the honest outcome.
+   * Failure is caught PER RECORD, so a bulk delete that fails halfway says what
+   * happened. The screen is never updated by hand: the store announces its own
+   * change and every bound view reloads, so a record that did NOT delete stays.
    *
    * TRAP T-a-failed-mutation-must-reach-the-reader.
    */
@@ -598,9 +376,8 @@ export async function init(root) {
     }
 
     const gone = records.length - failed.length;
-    // KEEP what refused. The selection becomes exactly the records that are
-    // still there, so the reader can try those again — and a delete that fully
-    // succeeded clears it, because `select([])` is a clear.
+    // KEEP what refused, so the reader can try those again; a full success
+    // clears the selection, because `select([])` is a clear.
     grid.select(failed.map((f) => f.record.email));
 
     if (gone) {
@@ -610,8 +387,8 @@ export async function init(root) {
       );
     }
     if (failed.length) {
-      // SAID OUT LOUD, and with the reason. A failure the reader cannot see is
-      // a record they think is gone.
+      // With the reason: a failure the reader cannot see is a record they think
+      // is gone.
       const first = failed[0];
       SherpaToast.critical(
         failed.length === 1
@@ -622,12 +399,7 @@ export async function init(root) {
     }
   };
 
-  /**
-   * Ask first. The reader confirms, THEN the mutation runs.
-   *
-   * The pending records are held in a closure rather than on the dialog,
-   * because the dialog is a view of the question and not the answer to it.
-   */
+  /** Held in a closure, not on the dialog: the dialog is the question. */
   let pendingDelete = [];
 
   const askToDelete = (records) => {
@@ -635,8 +407,8 @@ export async function init(root) {
     pendingDelete = records;
     confirm.dataset['heading'] =
       records.length === 1 ? 'Delete customer?' : `Delete ${records.length} customers?`;
-    // NAMED, not counted, when there is one — "Delete Aisha Cohen?" is a
-    // question the reader can answer; "Delete 1 customer?" is not.
+    // NAMED, not counted, when there is one — "Delete 1 customer?" is not a
+    // question the reader can answer.
     confirmText.textContent = records.length === 1
       ? `${records[0].name} will be permanently deleted. This cannot be undone.`
       : `${records.length} customers will be permanently deleted. This cannot be undone.`;
@@ -651,8 +423,8 @@ export async function init(root) {
   root.querySelector('#confirm-delete')?.addEventListener('click', () => {
     const records = pendingDelete;
     pendingDelete = [];
-    // SHUT FIRST. The mutation reloads every bound view, and a modal still open
-    // over a grid that has just rebuilt beneath it reads as a stuck dialog.
+    // SHUT FIRST: the mutation reloads every bound view, and a modal left open
+    // over a grid rebuilding beneath it reads as stuck.
     confirm.close();
     void deleteRecords(records);
   }, { signal });
@@ -661,10 +433,7 @@ export async function init(root) {
   const runAction = (id, records) => {
     if (!records.length) return;
     if (id === 'edit') openDialog(records[0]);
-    // ASK, never delete outright. Both surfaces route through here, so the row
-    // menu and the bulk bar cannot disagree about whether it confirms.
-    // NOT async any more: both branches now OPEN something and return. The
-    // awaiting happens after the reader answers.
+    // ASK, never delete outright. The awaiting happens after the reader answers.
     if (id === 'delete') askToDelete(records);
   };
 
@@ -672,9 +441,9 @@ export async function init(root) {
     runAction(e.detail.id, e.detail.records ?? []);
   }, { signal });
 
-  /* THE BULK BAR. `grid.actionsFor(count)` is the same list the row menu draws,
-     narrowed to what survives a multi-row selection — so Edit disappears the
-     moment a second row is ticked, without this view knowing why. */
+  /* THE BULK BAR. `grid.actionsFor(count)` is the row menu's own list, narrowed
+     to what survives a multi-row selection — so Edit disappears the moment a
+     second row is ticked, without this view knowing why. */
   const bulkCount = root.querySelector('#bulk-count');
   const bulkActions = root.querySelector('#bulk-actions');
 
@@ -706,16 +475,12 @@ export async function init(root) {
     const email = root.querySelector('#f-email').value;
     const plan = root.querySelector('#f-plan').value;
 
-    /* This ACTUALLY ADDS THE RECORD now. It used to close the dialog and show a
-       success toast having written nothing — the backlog's "Add Customer does
-       not add data". The store is the fix, and it is the whole fix: inserting
-       announces a change, the source reloads, and every bound component
-       re-populates. Where the new row lands against the active sort, whether an
-       active filter hides it, and what the page totals become are all the
-       source's existing work, not five separate things to remember here. */
-    /* EDIT or ADD, through the same button. `editing` holds the key when the
-       dialog was opened from a row's Edit action; update MERGES, so only the
-       fields this form owns are touched and the rest of the record survives. */
+    /* The store is the whole fix: writing announces a change, the source
+       reloads, every bound component re-populates. Where the new row lands
+       against the active sort, whether a filter hides it and what the page
+       totals become are the source's existing work. */
+    /* EDIT or ADD through one button. `editing` holds the key from the row's
+       Edit action; update MERGES, so the rest of the record survives. */
     if (editing) {
       const saved = await store.update(editing, { name, email: email || editing });
       editing = null;
@@ -743,24 +508,16 @@ export async function init(root) {
     });
 
     dialog.close();
-    // The FACTORY, not a hand-built element: it owns the shared top-right stack
-    // (so a second toast pushes the first down rather than covering it), the
-    // auto-dismiss timer and the removal. The view used to build the node itself
-    // and append it to a hand-made `.toast-region` div — a second stack, in a
-    // different corner, that the component knew nothing about.
+    // The FACTORY, not a hand-built element: it owns the shared top-right stack,
+    // the auto-dismiss timer and the removal.
     SherpaToast.success(`${name} saved`, {
       value: 'The customer record was created.',
     });
   });
 
-  /* THE TEARDOWN the router calls when it swaps to another view.
-
-     Unbinding is what ends the source's hold on these three components. The
-     components themselves go with the view's markup; the SOURCE would have
-     kept pushing rows into them, and a filter set on the next visit would fan
-     out to every detached copy from every previous one. */
+  /* The teardown the router calls when it swaps away. ONE abort ends every
+     binding, the persister and the view picker. */
   return () => {
-    // ONE ABORT: every binding, the persister and the view picker.
     page.abort();
   };
 }

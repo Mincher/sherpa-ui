@@ -1,9 +1,7 @@
 /**
  * sherpa-sparkline — a tiny inline trend chart.
  *
- * CSS handles the whole look — the line, the fill, the bars, the hover points.
- * The one thing JS does is hand CSS the numbers: it passes the values and their
- * range to CSS, and CSS scales them to fit and draws the shape.
+ * JS hands CSS the numbers and the range; CSS draws the line, fill, bars and dots.
  *
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
@@ -12,12 +10,7 @@ import { formatTick } from '../../core/format-tick.js';
 
 /** Fixed point slots (0..SLOTS-1); SLOTS-1 segments between them. */
 const SLOTS = 8;
-/**
- * How much of the box the trend line is allowed to occupy, vertically.
- *
- * TRAP T-sparkline-headroom-is-a-share-of-the-box — a fraction of the BOX, not
- * of the data's spread.
- */
+/** Share of the BOX the line may fill — TRAP T-sparkline-headroom-is-a-share-of-the-box. */
 const LINE_SHARE = 0.62;
 
 export class SherpaSparkline extends SherpaElement {
@@ -55,9 +48,8 @@ export class SherpaSparkline extends SherpaElement {
     return parsed.map(Number).filter((n) => Number.isFinite(n));
   }
 
-  /** Bridge the value list into the --_v0..7 / --_min / --_range custom properties CSS reads. */
+  /** Bridge the values into the --_v0..7 / --_min / --_range properties CSS reads. */
   #apply(): void {
-    // Keep only the most recent SLOTS values.
     const values = this.#parse().slice(-SLOTS);
     const count = values.length;
 
@@ -70,18 +62,14 @@ export class SherpaSparkline extends SherpaElement {
     const max = Math.max(...values);
     const spread = max - min || 1;
 
-    // HEADROOM below the lowest point, and a little above the peak.
-    // TRAP T-sparkline-headroom-is-a-share-of-the-box
     const extra = spread / LINE_SHARE - spread;
     const below = extra * 0.8;
     const paddedMin = min - below;
     const range = spread + extra;
 
-    // JS→CSS-var bridge (geometry, not style): raw values + normalisation range.
     this.style.setProperty('--_min', String(paddedMin));
     this.style.setProperty('--_range', String(range));
-    // TRAP T-sparkline-headroom-is-a-share-of-the-box — the COUNT is all the
-    // hover dots need; no per-dot x position from JS.
+    // The COUNT is all the hover dots need; no per-dot x position from JS.
     this.style.setProperty('--_len', String(count));
     for (let i = 0; i < SLOTS; i++) {
       if (i < count) this.style.setProperty(`--_v${i}`, String(values[i]));
@@ -92,10 +80,10 @@ export class SherpaSparkline extends SherpaElement {
   }
 
   /**
-   * Fill each hover dot's tooltip with its own value.
+   * Fill each hover dot's tooltip with its own value — the TEXT only.
    *
-   * TRAP T-chart-tip-is-a-sibling-of-its-dot — only the TEXT; the dots and the
-   * tips are siblings, paired by index, and place themselves in CSS.
+   * TRAP T-chart-tip-is-a-sibling-of-its-dot — dots and tips are siblings paired
+   * by index, and place themselves in CSS.
    */
   #applyTips(values: number[]): void {
     const tips = this.$$<HTMLElement>('.chart-tip .chart-tip-value');

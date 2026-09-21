@@ -1,13 +1,8 @@
 <!--
   sherpa-calendar — a date picker with day / month / year views.
 
-  Two selection TYPES (Figma Calendar `Type` axis) and an optional time picker
-  (Figma `hasTime` boolean). The day/month/year VIEW is the code's own zoom
-  mechanism — it is the equivalent of the Figma Calendar's Grid-collection swap
-  (which grid the component shows), NOT the Figma Type axis. The header label is a
-  button that zooms OUT (day → month → year); picking a month/year zooms back IN.
-  Prev/next step whatever the current view shows. A day grid, a month grid, and a
-  year grid are stamped from cloning prototypes; CSS shows the one matching data-view.
+  The header label zooms OUT (day → month → year); picking a month/year zooms
+  back IN. Prev/next step whatever the current view shows.
 
   Public API:
     data-type       single | range (default single) — one day, or a two-click start→end range
@@ -26,12 +21,9 @@
     data-has-time   (boolean) show a native <input type=time> in the footer
     data-embedded   (boolean) the HOST owns the card's chrome — see the note below
 
-  data-embedded, in full: Figma's Calendar (268:14601) is a card of three parts —
-  a `header` SLOT holding the month stepper, the day/month/year grid, and a
-  Container Footer. A calendar IS a menu in this system. So when embedded, this
-  component contributes only its GRID: the footer is hidden (the host draws the
-  action row) and the stepper is PROJECTED into the host's `header` slot, so the
-  menu is the card and there is one header and one footer rather than two.
+  data-embedded: this component contributes only its GRID — the footer is hidden
+  and the stepper is projected into the host's `header` slot, so a menu hosting a
+  calendar has ONE header and ONE footer rather than two.
 
   Fires:
     datetime-change (detail: value string — a single day or its date+time chosen)
@@ -41,20 +33,7 @@
 -->
 <template id="default">
   <div class="cal" part="cal">
-    <!--
-      HEADER — three composed <sherpa-button>s, SNAPPED into one control.
-
-      Read from the Menu set's Calendar variant (1156:29240 > Type=Calendar >
-      header): it is not a bare row of text arrows but three Button instances —
-
-        prev   Type=icon,  32 x 32, Structure: snap-right-edge
-        month  Type=label, fills,   Structure: snap-all-edges
-        next   Type=icon,  32 x 32, Structure: snap-left-edge
-
-      all at Style=default. Their borders meet, so the trio reads as a single
-      stepper. It used to be hand-rolled <button>s with borders copied here,
-      which is the duplication the composition rule exists to stop.
-    -->
+    <!-- Header — three composed buttons, snapped into one stepper (Menu set 1156:29240 > Type=Calendar). -->
     <div class="cal-header sherpa-snap-group" part="header">
       <sherpa-button class="cal-nav cal-prev" part="prev" data-type="icon" data-snap="right"
                      data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
@@ -63,11 +42,7 @@
                      data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>
 
-    <!--
-      Weekday captions. The SECOND set and the gap between them exist from the
-      start and CSS reveals them for a range calendar's two-month grid — there is
-      no createElement here, and a single calendar's row is the seven it was.
-    -->
+    <!-- The SECOND weekday set and the gap exist from the start; CSS reveals them for a range calendar's two-month grid. -->
     <div class="cal-weekdays" part="weekdays" aria-hidden="true">
       <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span>
       <span>Fri</span><span>Sat</span><span>Sun</span>
@@ -81,14 +56,13 @@
     <div class="cal-months cal-grid" part="months" role="grid"></div>
     <div class="cal-years cal-grid" part="years" role="grid"></div>
 
-    <!-- Native time picker — shown only when data-has-time is set (CSS owns it). -->
+    <!-- Shown only when data-has-time is set (CSS owns it). -->
     <div class="cal-time-row" part="time-row">
       <label class="cal-time-label" part="time-label">Time
         <input type="time" class="cal-time sherpa-border-edges" part="time" />
       </label>
     </div>
 
-    <!-- Footer action row — a Today link on the left, Cancel / Apply on the right. -->
     <div class="cal-footer" part="footer">
       <button type="button" class="cal-today" part="today">Today</button>
       <div class="cal-actions" part="actions">
@@ -99,34 +73,15 @@
   </div>
 
   <!--
-    The month stepper, as a LIGHT-DOM prototype.
-
-    `data-embedded` moves the header OUT of this shadow root and into the host's
-    own — a clone of this goes in the light DOM carrying `slot="header"`, so a
-    sherpa-menu hosts it in its `header` region natively.
-
-    That is the Calendar node's own shape (268:14601): a card of three regions,
-    whose FIRST is a `header` SLOT holding ‹ · "August 2026" · ›. A calendar IS a
-    menu in this system, so the stepper belongs to the menu's header rather than
-    to a second header drawn inside a nested component.
-
-    The same three classes as the shadow header, so one set of listeners and one
-    label sync serve both — see #headerEls() in the TS.
+    The stepper as a LIGHT-DOM clone for data-embedded, carrying slot="header".
+    Same three classes as the shadow header, so one set of listeners and one label
+    sync serve both — see #headerEls() in the TS.
   -->
   <template class="cal-header-tpl">
     <!--
-      The two END buttons keep their OUTER corners, written INLINE.
-
-      This clone is projected into the MENU's light DOM, which is outside this
-      component's shadow root — so no rule in sherpa-calendar.css can reach it,
-      and `::slotted()` in sherpa-menu.css cannot reach a slotted element's
-      children either. An inline custom property travels with the clone and
-      inherits into the button, which is the one channel that crosses both
-      boundaries. The menu's `::slotted(.cal-header)` rule squares all four
-      corners on the row; these two take the ends back.
-
-      The `month` button stays square all round — Figma pins it to
-      Structure: snap-all-edges.
+      Outer corners are written INLINE because this clone lands in the MENU's light
+      DOM: no rule here can reach it, and ::slotted() cannot reach a slotted
+      element's children. An inline custom property inherits across both boundaries.
     -->
     <div class="cal-header cal-header-projected" slot="header">
       <sherpa-button class="cal-nav cal-prev" data-type="icon" data-snap="right"
@@ -140,16 +95,7 @@
     </div>
   </template>
 
-  <!-- Cell prototype — cloned per day/month/year by JS, never rendered directly. -->
-  <!--
-    One grid cell — a composed <sherpa-calendar-cell>, which is the Figma
-    "Calendar Cell" (276:16589) Will split onto the Calendar page as one of the
-    parts a calendar is built FROM. It owns the cell's 32x32 box, its three
-    states and its text; this component owns which day each one is.
-
-    It was a bare <button> styled here, which is the duplication the system's
-    composition rule exists to stop.
-  -->
+  <!-- Cloned per day/month/year by JS, never rendered directly. -->
   <template class="cal-cell-tpl">
     <sherpa-calendar-cell class="cal-cell" role="gridcell"></sherpa-calendar-cell>
   </template>

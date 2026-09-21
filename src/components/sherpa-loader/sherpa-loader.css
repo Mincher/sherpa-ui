@@ -1,22 +1,14 @@
 /**
- * sherpa-loader.css — all loader presentation.
- *
- * A track ring plus a single rotating arc (the ::after worm). The track ring
- * binds the neutral Style border; the moving arc is the accent colour, routed
- * through the semantic --_arc property so it stays a single source of truth. The
- * loader is a neutral spinner — it carries no status binding. Size, orientation,
- * and the optional panel surface are pure data-* selectors.
+ * sherpa-loader.css — a track ring plus one rotating ::after arc.
+ * Neutral spinner: no status binding.
  */
 
 :host {
-  /* private knobs, overridden per size */
   --_spinner-size: var(--sherpa-display-mode-size-md, 20px);
   --_spinner-weight: 2px;
-  /* The rotating arc: the accent indicator token (Figma style-indicator/accent) —
-     one place to re-point it. Accent blue, NOT the active purple. */
+  /* Accent blue, NOT the active purple. */
   --_arc: var(--sherpa-style-indicator-accent, #3b4ccd);
 
-  /* Figma Loading Spinner (atom): no padding on the component; gap space/sm 12. */
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-sm, 12px);
@@ -25,7 +17,7 @@
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
-/* ── Panel: solid surface background for full-area loading ─────────────── */
+/* ── Panel ─────────────────────────────────────────────────────────────── */
 :host([data-panel]) {
   padding: var(--sherpa-display-mode-space-base, 16px);
   background: var(--sherpa-style-surface-base, #ffffff);
@@ -43,18 +35,16 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* ── Spinner: track ring + rotating arc ────────────────────────────────── */
+/* ── Spinner ───────────────────────────────────────────────────────────── */
 .spinner {
   flex-shrink: 0;
   position: relative;
   inline-size: var(--_spinner-size);
   block-size: var(--_spinner-size);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  /* Figma track binds style-surface/darker (a stale alias resolving to #b3b3c3);
-     the nearest live token is theme-surface-default-2. */
+  /* Figma's track alias is stale; this is the nearest live token. */
   border: var(--_spinner-weight) solid var(--sherpa-theme-surface-default-2, #b3b3c3);
 
-  /* The rotating worm — one arc drawn over the track, top edge cut away. */
   &::after {
     content: "";
     position: absolute;
@@ -72,7 +62,6 @@
   --_spinner-weight: 1px;
 }
 :host([data-size="lg"]) {
-  /* Figma Size=lg spinner is 48px (size-4xl), not 40px. */
   --_spinner-size: var(--sherpa-display-mode-size-4xl, 48px);
   --_spinner-weight: 4px;
 }

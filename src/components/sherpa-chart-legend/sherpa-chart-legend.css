@@ -1,26 +1,13 @@
 /**
  * sherpa-chart-legend.css — a GRID of swatch · category · value entries.
+ * Three shared tracks so values line up down the column. Figma: Chart Legend
+ * 1098:37846.
  *
- * Data-matched to the rebuilt Figma "Chart Legend" (1098:37846):
- *   frame    padding space/xs 8 all round, entries gap space/xs 8 apart
- *   grid     3 columns · column gap space/xs 8 · row gap space/2xs 4
- *   swatch   the "Legend Swatch" component (1098:37786): 12×12, radius 4, the
- *            series hue at 60% with a solid 1px stroke in the same hue
- *   text     content/size/small 12 on line-height/xs 16, regular;
- *            category = content/body/+1, value = content/body/base
+ * Each entry stays ONE button (one click target, one tab stop) that adopts the
+ * parent's tracks via subgrid. Separate grid items would align too, but leave
+ * three tab stops per series.
  *
- * WHY A GRID. With one flex row per entry the value sits wherever its own label
- * ends, so a legend of mixed label lengths has ragged values. Three shared grid
- * tracks line the values up down the column — which is exactly what the Figma
- * rebuild changed.
- *
- * Each entry stays ONE button (a single click target and tab stop) that inherits
- * the parent's tracks via `display: grid` + `grid-column: 1 / -1` + subgrid.
- * Splitting the cells into separate grid items would align them too, but would
- * leave three tab stops per series.
- *
- * The swatch colour is a --_hue custom property the JS sets per entry from the
- * item's colorIndex, into var(--sherpa-data-viz-series-N).
+ * The swatch colour is a --_hue custom property the JS sets per entry.
  */
 
 :host {
@@ -30,10 +17,8 @@
 
 .legend {
   display: grid;
-  /* swatch (fixed) · category · value — all THREE hug their content.
-     `1fr` on the category made the label track swallow the whole parent (1200px
-     for a 10-character label), so the legend could not sit beside a chart. Figma
-     sizes the Category cell to its text; the legend is content-width. */
+  /* All THREE hug. `1fr` on the category swallowed the whole parent width, so
+     the legend could not sit beside a chart. */
   grid-template-columns: auto auto auto;
   justify-content: start;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
@@ -42,33 +27,22 @@
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Horizontal: Figma's variant is ONE row of 9 columns — three cells per entry,
-   every entry in row 0 — so the entries flow across instead of stacking.
+/* FLEX WITH WRAP, not `grid-auto-flow: column` — that kept one row at any width
+   and crushed every label to a single letter in a narrow panel.
 
-   FLEX WITH WRAP, not `grid-auto-flow: column`. That kept everything on one row
-   at any width, so six entries in a 4-of-12 panel crushed every label to a single
-   letter ("D 42", "C 31"). Wrapping keeps the labels readable and only costs a
-   second line when the panel is genuinely too narrow — which is the honest
-   trade. Figma's single row is what it looks like WHEN IT FITS.
-
-   The gap stays space/xs 8: the entry separation IS the gap here, so a wider one
+   The gap stays space/xs 8: entry separation IS the gap here, so a wider one
    would space a swatch from its own label too. */
 :host([data-orientation="horizontal"]) .legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  /* CENTRED, unlike the vertical legend.
-     A horizontal legend sits BELOW its chart and spans the container's full
-     width, so a start-aligned row hangs off the left while the chart it labels
-     is centred above it. A vertical legend stacks BESIDE the chart and keeps
-     `start`, because there its labels read as a left-aligned list. */
+  /* CENTRED: a horizontal legend spans the full width below a centred chart.
+     The vertical one keeps `start` — beside a chart it reads as a list. */
   justify-content: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* ── Entry ───────────────────────────────────────────────────────────────
-   Spans all three tracks and adopts them with `subgrid`, so its cells land in the
-   PARENT's columns and every entry's value aligns. */
+/* ── Entry ─────────────────────────────────────────────────────────────── */
 .item {
   grid-column: 1 / -1;
   display: grid;
@@ -82,19 +56,10 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  /* The ROW's ink is the CATEGORY's, because the label is the row's own text and
-     the value overrides it below. Read from the Figma node's bindings
-     (Chart Legend 1099:37879): the Category text binds content/body/+1 and the
-     value text binds content/body/base — two different inks, where the code had
-     one. */
+  /* The row carries the CATEGORY's ink; .value overrides it below. */
   color: var(--sherpa-theme-content-body-1, #35353d);
-  /* MONOSPACED. Figma binds every Category and value text in the Chart Legend
-     (1099:37879) to content/font/MONOSPACED, not the body face — a legend sits
-     beside a chart's own labels and reads as part of the same numeric run. */
+  /* MONOSPACED by design — a legend reads as part of the chart's numeric run. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-  /* Figma: content/size/SMALL 12 on line-height/xs 16, regular. It was size/xs
-     10 here; the bound variable on every Category and value text node is
-     content/size/small. */
   font-size: var(--sherpa-theme-content-size-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
@@ -108,16 +73,14 @@
   }
 }
 
-/* A READ-ONLY legend is a key, not a filter. A gauge's rows name thresholds and
-   there is nothing to hide, so they must not offer a click they will not honour.
-   The JS drops the button semantics too (see #render), so keyboard and pointer
-   agree — styling alone would leave a focusable control that does nothing. */
+/* A read-only legend is a key, not a filter. The JS drops the button semantics
+   too (see #render) — styling alone would leave a focusable control that does
+   nothing. */
 :host([data-readonly]) .item { cursor: default; }
 
-/* `subgrid` needs the entry to be a grid ITEM of the parent, which it is not when
-   the parent is a flex row — so a horizontal legend gives each entry its own
-   tracks instead. `flex: 0 0 auto` is what stops flex SHRINKING an entry: without
-   it every label was squeezed to one letter before the row would wrap. */
+/* `subgrid` needs a grid PARENT, which a flex row is not — so give each entry
+   its own tracks here. `flex: 0 0 auto` is what stops flex shrinking a label to
+   one letter before the row wraps. */
 :host([data-orientation="horizontal"]) .item {
   grid-column: auto;
   grid-template-columns: auto auto auto;
@@ -126,14 +89,12 @@
 }
 
 /* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
-   also wash out the swatch's own translucency and compound in dark mode). */
+   wash out the swatch's translucency and compound in dark mode). */
 .item[aria-pressed="false"] {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
-/* The VALUE greys with its label. It carries its own darker ink (Figma binds it
-   to content/body/base where the Category binds content/body/+1), and that
-   colour beat the row's dimmed one — so a switched-off entry kept a fully dark
-   number beside a greyed-out name, which read as still active. */
+/* The value's own darker ink beats the row's dimmed one, so it needs dimming
+   explicitly or a switched-off entry keeps a fully dark number. */
 .item[aria-pressed="false"] .value {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
@@ -156,22 +117,11 @@
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
 }
-/* A STATUS swatch — a gauge's bands are THRESHOLDS, not a data series, so their
-   key must come from the status ramp rather than the categorical wheel.
-   Re-pointing --_hue means every rule below (the border, the 60% fill, the
-   no-color-mix fallback) keeps working unchanged.
-
-   NAMED PER STATUS, not via --_status-border-strong. The status cascade's
-   `[data-status]` blocks live in tokens.css, which is LIGHT-DOM ONLY: a custom
-   property inherits across a shadow boundary but a SELECTOR does not, so a
-   data-status set on an element INSIDE this shadow root never matched and every
-   swatch fell back to neutral grey.
-
-   The names are set INLINE by the TS now, from the same
-   `--sherpa-status-<name>-fill` / `--sherpa-status-<name>` pair a gauge band
-   uses — so a zone's key and the band it labels are painted from one source.
-   The CSS rules that lived here set `--_hue` to a SOLID colour, which also
-   overrode the 50% the fill is supposed to carry. */
+/* A STATUS swatch re-points --_hue, so every rule above keeps working. The TS
+   sets it INLINE per status: the status cascade's `[data-status]` blocks live
+   in tokens.css, which is LIGHT-DOM ONLY — a custom property inherits across a
+   shadow boundary but a SELECTOR does not, so the rules that once lived here
+   never matched and every swatch fell back to grey. */
 
 @supports (color: color-mix(in srgb, red 60%, transparent)) {
   .swatch {
@@ -187,12 +137,9 @@
   white-space: nowrap;
 }
 
-/* The value hugs its digits at the end of the row; an entry without one leaves the
-   track empty rather than collapsing it, so the other entries stay aligned.
-
-   DARKER than its label: Figma binds the value text to content/body/base and the
-   Category text to content/body/+1, so the number reads as the fact and the name
-   as its caption. The row carries the label's ink, and this overrides it. */
+/* Darker than its label by design: the number is the fact, the name its
+   caption. An entry with no value leaves the track empty rather than
+   collapsing it, so the other entries stay aligned. */
 .value {
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   text-align: end;
@@ -200,16 +147,12 @@
 }
 
 /* ── The "Other" roll-up row ────────────────────────────────────────────────
- * The capped legend's last row carries a second control: an xsmall icon button
- * that opens an itemised breakdown of the folded categories.
+ * A WRAPPER, not a button: a menu button nested inside a button is invalid
+ * HTML — the browser un-nests it and the inner control stops working. So the
+ * toggle and the menu button are siblings.
  *
- * It is a WRAPPER, not a button, because a menu button nested inside a button is
- * invalid HTML — the browser un-nests it and the inner control stops working. So
- * the toggle and the menu button are siblings.
- *
- * The wrapper takes the parent's tracks (`grid-column: 1 / -1` + subgrid) exactly
- * as a plain entry does, then adds a FOURTH implicit column for the button, so the
- * swatch / label / value still line up with every row above. */
+ * It takes the parent's three tracks and adds a FOURTH implicit column for the
+ * button, so swatch / label / value still line up with the rows above. */
 .rollup {
   grid-column: 1 / -1;
   display: grid;
@@ -217,16 +160,14 @@
   align-items: center;
 }
 /* The toggle spans the three real tracks; the button lands in the implicit one
-   after them. `subgrid` gives the wrapper exactly three, so the button is placed
-   past the end rather than fighting the value for its cell. */
+   after them, rather than fighting the value for its cell. */
 .rollup-toggle {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
 }
 
-/* A HORIZONTAL legend flows in columns, so `subgrid` has no parent tracks to
-   adopt — same reason a plain entry gets its own tracks there. */
+/* No parent tracks to adopt in a flex row — same reason as .item above. */
 :host([data-orientation="horizontal"]) .rollup {
   grid-column: auto;
   display: flex;

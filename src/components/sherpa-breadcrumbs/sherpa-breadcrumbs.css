@@ -1,11 +1,5 @@
 /**
- * sherpa-breadcrumbs.css — all breadcrumb presentation.
- *
- * A horizontal trail of crumbs. Each crumb after the first draws its own
- * separator via ::before, so separators need no DOM. Link crumbs are the accent
- * link colour (content/link/base); the current crumb (aria-current) is the title
- * colour (content/title/base) and non-interactive. The separator glyph sizes to
- * the icon token (size/icon/2xs) and all gaps bind the single space/xs token.
+ * sherpa-breadcrumbs.css — breadcrumb presentation.
  */
 
 :host {
@@ -33,8 +27,7 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Separator: every crumb except the first draws a leading chevron-right icon
-   (Figma: a 12×12 chevron-right instance, size/icon/2xs) — Font Awesome solid. */
+/* Separator glyph — no DOM node. Needs the Font Awesome family + weight 900. */
 .crumb + .crumb::before {
   content: "\f054"; /* chevron-right */
   display: inline-flex;
@@ -50,7 +43,6 @@
   user-select: none;
 }
 
-/* Crumbs: content/link/+1 12/16 regular; no extra block padding (16px line box). */
 .link {
   color: var(--sherpa-theme-content-link-1, #2b34b4);
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -60,7 +52,7 @@
   padding: 0;
   cursor: pointer;
 
-  /* An anchor with an href is an active crumb — underline on hover. */
+  /* [href] = a live crumb; the current one has none. */
   &[href]:hover { text-decoration: underline; }
 
   &:focus-visible {
@@ -69,7 +61,6 @@
   }
 }
 
-/* Current page crumb: title colour, regular weight, non-interactive. */
 .link[aria-current="page"] {
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-weight: var(--sherpa-font-weight-regular, 400);

@@ -1,15 +1,6 @@
 /**
- * sherpa-overlay-panel.css — a non-modal floating panel on native <dialog>.
- *
- * Same card look as sherpa-dialog (one --_surface / --_border pair, status
- * cascade, elevation), but positioned as a right-hand floating panel and with
- * NO ::backdrop (non-modal, opened via show()).
- *
- * Matches the Figma "Overlay Panel" header chrome: a lead icon + link-style
- * title + a description/metadata row, then a trailing toolbar of collapse /
- * expand / external / close icon-buttons. Each toolbar button is CSS-toggled off
- * a data-* flag; JS only wires the events. Collapsed hides the body + footer.
- * All visibility is CSS-only — JS never toggles display.
+ * sherpa-overlay-panel.css — a non-modal floating panel on native <dialog>,
+ * docked right. Same card look as sherpa-dialog, no ::backdrop.
  */
 
 :host {
@@ -17,19 +8,13 @@
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Internal divider is a lighter neutral than the outer border, matching the
-     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  /* Divider is a lighter neutral than the outer border (+1 vs +2). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
-/* The scrim: a tint over everything behind the panel.
-
-   `pointer-events: none` is what keeps this a NON-MODAL panel — the page behind
-   stays live and clickable, which is why an assistant belongs in one. It is
-   purely a visual layer telling the reader where their attention is.
-
-   Shown only while the panel is open; :host([open]) reflects the dialog. */
+/* `pointer-events: none` is what keeps this NON-modal — the page behind stays
+   clickable. The scrim is purely a visual tint. */
 .scrim {
   display: none;
   position: fixed;
@@ -40,18 +25,14 @@
 }
 :host([open]) .scrim { display: block; }
 
-/* Open — the UA sets [open] when show()/close() runs. */
 .root[open] {
   display: flex;
 }
 
 .root {
-  /* A closed <dialog> is hidden by the UA with `display: none`. Setting `display`
-     unconditionally CLOBBERS that, so the panel rendered whether it was open or
-     not — permanently on screen before anything opened it. The open layout has to
-     be scoped to [open]. sherpa-dialog already carries this fix and the same
-     comment; the panel was left behind, and only showed once it became full-height
-     and opaque enough to notice. */
+  /* A closed <dialog> is hidden by the UA with `display: none`; setting `display`
+     unconditionally clobbers that and the panel renders permanently. Keep the
+     open layout scoped to [open]. */
   display: none;
   flex-direction: column;
   min-inline-size: 0;
@@ -59,48 +40,31 @@
   padding: 0;
   overflow: auto;
 
-  /* Docked to the right edge and FULL HEIGHT — a side panel that stopped short
-     of the viewport left a strip of page under it and read as a floating card
-     rather than a docked region. `inset-block` pins both ends, so the height
-     follows the window with no 85vh guess. */
   position: fixed;
   inset-block: 0;
   inset-inline-end: 0;
   inset-inline-start: auto;
-  /* A <dialog> carries UA `margin: auto`, which CENTRES it against the inset box
-     — with both block edges pinned that made the element taller than the window
-     and hung it off the top. Zero margin lets inset-block mean what it says. */
+  /* A <dialog> carries UA `margin: auto`, which centres it against the inset box
+     — with both block edges pinned that overflows the window. */
   margin: 0;
   block-size: auto;
-  /* ABOVE everything the app draws — the nav rail is z-index 2, and a panel the
-     rail covered would be worse than no panel. One step above the scrim so the
-     tint never lands on top of the card it is tinting behind. */
+  /* Above the nav rail (z-index 2), one step above the scrim. */
   z-index: calc(var(--_z, 100) + 1);
 
   background: var(--_surface);
   border-style: solid;
   border-color: var(--_border);
-  /* Rounded on the LEADING edge only, square on the trailing one — the Grouping
-     "snap-right-edge" shape. The panel is docked to the right of the window, so
-     its right corners meet an edge they must sit flush against while its left
-     corners face the page and stay rounded.
-
-     Set as custom properties rather than a literal radius: the four
-     --sherpa-border-rounding-* vars are the same ones every other surface reads,
-     so a change to the rounding scale reaches here too. They cannot come from
-     tokens.css's own [data-snap] rules — a bare attribute selector there matches
-     the DOCUMENT only and never crosses into a shadow root. */
+  /* Rounded on the leading edge only — the Grouping "snap-right-edge" shape.
+     The rounding vars cannot come from tokens.css's [data-snap] rules: a bare
+     attribute selector there matches the document only, never a shadow root. */
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  /* The trailing corners are squared DIRECTLY, not by re-pointing
-     --sherpa-border-rounding-*-right. Those are inherited custom properties, so
-     zeroing them here reached every descendant — the composer and each chat
-     message lost their own right-hand rounding because they read the same vars.
-     A panel's own shape must not travel into its content. */
+  /* Squared directly, NOT by re-pointing --sherpa-border-rounding-*-right —
+     those inherit, so zeroing them strips rounding from every descendant. */
   border-start-end-radius: 0;
   border-end-end-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
-  /* Figma pins Elevation=lg (Theme elevation "large" tokens). */
+  /* Figma pins Elevation=lg. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
@@ -109,63 +73,45 @@
     var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
-/* No backdrop — a non-modal panel must leave the page behind interactive. */
+/* No backdrop — a non-modal panel leaves the page behind interactive. */
 .root::backdrop { background: transparent; }
 
 /* ── Regions ───────────────────────────────────────────────────────────
-   The header and footer are COMPOSED components now (sherpa-container-header /
-   sherpa-container-footer), exactly as Figma's Overlay Panel instances them, so
-   they own their own padding, dividers, typography and controls. What used to be
-   here — a hand-drawn row, labels, title, four buttons and their hover, focus and
-   glyph rules — was a second copy of all of that, and the copy is gone.
-
-   Only the panel's own layout remains: which region flexes, and which is fixed. */
+   Header and footer are composed components (sherpa-container-header /
+   -footer) and own their own chrome. Only layout remains here. */
 .header,
 .footer {
   flex-shrink: 0;
 }
 
-/* The footer's own inline padding is deliberately ZERO — the Container Footer
-   binds padding/none on both sides so its controls line up with the edge of
-   whatever holds it, and the HOLDER supplies the gutter. Here that holder is the
-   panel, so it supplies one: the same --_pad the content region uses, which is
-   what puts the composer on the same left edge as the thread above it. */
+/* Container Footer binds padding/none inline, so the HOLDER supplies the
+   gutter — the same --_pad the content region uses. */
 .footer {
   padding-inline: var(--_pad);
 }
 
-/* The content region is a single-column GRID, one row of `1fr`.
-   A grid row of 1fr is BOUNDED by the track, where a flex child is bounded only
-   by its own content — so anything slotted in gets exactly the height left over
-   after the header and footer, and cannot push past the panel. That is what lets
-   a composed card inside hand its own footer (a chat composer) to the bottom
-   while its body scrolls: the chain of heights is unbroken from the panel down.
+/* A grid row of 1fr is bounded by the track, where a flex child is bounded by
+   its own content — so a slotted card gets exactly the leftover height and can
+   pin its own footer while its body scrolls.
 
-   `overflow: hidden`, not auto: the PANEL must not scroll. Whatever is slotted in
-   owns its own scrolling region, which is the only way a composer can stay put
-   while the thread above it moves. */
+   `overflow: hidden`, not auto: the PANEL must not scroll; the slotted child
+   owns its scrolling region. */
 .body {
   display: grid;
   grid-template-rows: 1fr;
   flex: 1 1 auto;
   min-block-size: 0;
   overflow: hidden;
-  /* NO bottom padding: the footer sits directly under this region, so an inset
-     here opened a gap between the content and the control bar below it. The
-     footer component brings its own block padding, which is the spacing that
-     belongs there. */
+  /* No bottom padding — the footer component brings its own block padding. */
   padding: var(--_pad) var(--_pad) 0;
 }
-/* The slotted child fills the row and resolves its own percentage heights
-   against it, rather than hugging its content. */
+/* Fill the row so percentage heights inside resolve against it. */
 .body ::slotted(*) {
   min-block-size: 0;
   block-size: 100%;
 }
 
-/* The two controls specific to a FLOATING panel, sitting in the composed
-   header's `actions` slot. Each is a sherpa-button, so only their arrangement
-   is described here. */
+/* Floating-panel controls in the composed header's `actions` slot. */
 .toolbar {
   display: flex;
   align-items: center;
@@ -174,6 +120,6 @@
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
 
-/* Collapsed → only the header shows (body + footer fold away). */
+/* Collapsed → only the header shows. */
 :host([data-collapsed]) .body,
 :host([data-collapsed][data-has-footer]) .footer { display: none; }

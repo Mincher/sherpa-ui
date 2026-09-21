@@ -1,16 +1,8 @@
 <!--
   sherpa-line-chart — a line/area chart over a numeric series.
 
-  populate({ labels, series }) — one or more series of numbers over shared x
-  labels. The JS computes SVG coordinates and writes the polyline points + area
-  path into an inline <svg> (viewBox 0 0 100 100, preserveAspectRatio none, so it
-  stretches). Colour is categorical per series. data-type=area fills under the
-  line.
-
-  The Y AXIS matches the Figma "Chart Axis" (Orientation=vertical): value labels
-  with a tick marker between each pair, drawn with a 0.5px style-border/base rule.
-  The x labels already existed; an axis caption can now sit beside either.
-  Axis text is content/size/base 14 on line-height/base 20, content/body/+1.
+  populate({ labels, series }) writes polyline points + area path into the inline
+  <svg> (viewBox 0 0 100 100, preserveAspectRatio none, so it stretches).
 
   Public API:
     data-label       chart title
@@ -42,16 +34,9 @@
           <g class="series-layer"></g>
         </svg>
         <!--
-          HOVER DOTS — one per data point, per series, and the tooltip anchors.
-
-          Real HTML buttons, NOT the SVG polyline's vertices: an SVG element
-          cannot be a CSS anchor in Chromium (anchor-name is accepted and silently
-          never resolves, so the tip lands in the viewport corner).
-
-          The TS already computes every point as an x/y PERCENTAGE of the plot for
-          the polyline, so a dot reuses those two numbers directly — one source of
-          truth for where a point sits, and it follows the plot at any size with
-          nothing measured and no resize handler.
+          Hover dots are real HTML buttons, NOT the polyline's vertices: an SVG
+          element cannot be a CSS anchor in Chromium — anchor-name is accepted and
+          silently never resolves, so the tip lands in the viewport corner.
         -->
         <div class="hotspots" part="hotspots"></div>
 
@@ -60,39 +45,31 @@
       </div>
     </div>
 
-    <!-- The legend belongs to the CHART, not to the card around it — the same
-         rule sherpa-donut-chart already follows for its own. A HORIZONTAL legend
-         sits BELOW the plot (this slot, in the host's flex column); a VERTICAL one
-         sits BESIDE it, which the CSS switches to a two-column grid on. -->
+    <!-- The legend belongs to the CHART, not the card around it. -->
     <slot name="legend"></slot>
   </figure>
 
-  <!-- One y value + its tick rule (see the barchart for the same prototype). -->
+  <!-- One y value + its tick rule. -->
   <template class="ytick-tpl">
     <span class="y-tick"><span class="y-value"></span></span>
   </template>
 
   <!--
-    Series <g>/<path>/<polyline> are built in the TS via createElementNS (SVG
-    elements can't be cloned from an HTML template — they'd land in the wrong
-    namespace). This is data-driven structural DOM, which the golden rules allow.
+    Series <g>/<path>/<polyline> are built in the TS via createElementNS — SVG
+    cloned from an HTML template lands in the wrong namespace and paints nothing.
   -->
   <template class="xlabel-tpl">
     <span class="x-label"></span>
   </template>
 
-  <!-- One data point's hover dot + tooltip. The JS sets --_x / --_y (percentages
-       of the plot, the same pair the polyline uses) and the text. -->
   <!--
     TWO SIBLINGS, cloned together — a dot and its tip.
 
-    The tip must NOT be inside the dot, and not inside a positioned wrapper
-    either. An `position: absolute` ancestor breaks anchor positioning for a
-    `position: fixed` tip: proved it in isolation, where a tip inside a static
-    layer places above its mark correctly while the same tip inside an absolute
-    box drops to that box's own corner. The dot has to be absolute to sit on its
-    data point, so the tip lives OUTSIDE it, in the static .hotspots layer, and
-    finds it by anchor name. `.chart-mark:hover + .chart-tip` pairs them.
+    The tip must NOT be inside the dot or any positioned wrapper: an
+    `position: absolute` ancestor breaks anchor positioning for a `position: fixed`
+    tip, dropping it to that box's corner. The dot must be absolute to sit on its
+    data point, so the tip stays in the static .hotspots layer and finds it by
+    anchor name. `.chart-mark:hover + .chart-tip` pairs them.
   -->
   <template class="hotspot-tpl">
     <button class="hotspot chart-mark" type="button" tabindex="-1"></button>

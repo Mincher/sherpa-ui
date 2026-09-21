@@ -1,74 +1,26 @@
 #!/usr/bin/env node
 /**
- * check-traps.mjs — keeps docs/TRAPS.md and the code pointing at each other.
+ * check-traps.mjs — gate: every trap id cited in the code has a `### <id>`
+ * section in docs/TRAPS.md, and that section's `Site:` lines name exactly the
+ * files that cite it. Drift in either direction exits 1.
  *
- * A trap moved out of the source is a fact that no longer sits next to the code
- * it constrains. A comment cannot lie about the line under it; a doc can, and
- * this repo has the receipts — the round-trip check printed 22 failures and
- * exited 0 for three months. So the move only happens WITH this gate.
- *
- * THE CONTRACT. Each trap has an id (`T-example-id`). It appears twice:
- *
- *   docs/TRAPS.md   `### T-example-id` followed by the explanation, and a
- *                   `Site:` line naming every file that cites it
- *   the source      `// TRAP <the-id> — one-line summary`
- *
- * Four ways that can rot, all of them checked:
- *
- *   1. a source cites an id TRAPS.md does not define        (dangling pointer)
- *   2. TRAPS.md defines an id nothing cites                 (orphan trap)
- *   3. a trap's `Site:` names a file that does not cite it  (stale site list)
- *   4. a cited file has no `Site:` entry                    (unlisted site)
- *
- * It reads only text, so it is fast enough for the pre-commit hook.
- *
- * Exit 1 on any failure — see the hook's own comment about checks that report
- * and never enforce.
+ *   node scripts/check-traps.mjs
  */
 import { readFileSync, existsSync, globSync } from 'node:fs';
 
 const DOC = 'docs/TRAPS.md';
-/**
- * Everywhere a citation may live.
- *
- * CSS is in here, and had to be added BEFORE the first `/* TRAP … *​/` was
- * written into a stylesheet — a gate that does not scan a file cannot catch a
- * dangling pointer in it, and an unenforced check is the failure this whole
- * mechanism exists to prevent.
- *
- * THE TEST HARNESS AND THE PLAYWRIGHT CONFIG are in for the same reason, added
- * the day the first trap was cited in one (`T-harness-serves-font-awesome-locally`,
- * which explains why the harness serves Font Awesome from node_modules and why
- * a retry exists). A rule about how the suite RUNS is as easy to undo as a rule
- * about how a component renders, and it had no gate at all.
- */
+/** Everywhere a citation may live. A file not scanned here is not gated. */
 const SOURCES = [
   'src/components/*/*.ts',
   'src/core/*.ts',
   'src/components/*/*.css',
-  // SHARED CSS too. `sherpa-base.css` is adopted into all 58 shadow roots, so a
-  // rule recorded there reaches further than any component's own — and it was
-  // the one source directory whose .css nothing checked.
+  // sherpa-base.css — adopted into every shadow root.
   'src/core/*.css',
   'test/reforged/harness.html',
   'playwright.config.ts',
-  // The SPEC files too, for the same reason the harness is here: a rule about
-  // how a test must be written (what a synthetic click can reach, what a
-  // selector now matches twice) is as easy to undo as a rule about rendering,
-  // and an undone one turns a working component into a red test.
   'test/e2e/*.ts',
-  // The NODE tests too: they are the DOM-free contract, and a rule they encode
-  // (a suspended sort keeps its column, an aggregate does not round) rots the
-  // same way a component's does.
   'test/unit/*.mjs',
-  // The GATES themselves. Each encodes a rule and explains why it exists; a
-  // gate whose reasoning has drifted from the trap it enforces is a gate nobody
-  // trusts. `check-ownership.mjs` cites T-bind-locks-what-it-owns.
   'scripts/check-*.mjs',
-  // The EXAMPLES too. They are the working reference for wiring a view —
-  // CLAUDE.md says so — and a rule about how a view must be wired rots exactly
-  // like a rule about a component. The region chip offering values the data
-  // never held survived because nothing checked.
   'examples/views/*.js',
 ];
 
@@ -76,17 +28,13 @@ const SOURCES = [
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;
 const SITE = /^-\s*Site:\s*`([^`]+)`/;
 /**
- * `// TRAP <the-id> — summary`, anywhere in a comment.
- *
- * `\s` spans NEWLINES on purpose, and a leading `*` between the two words is
- * allowed: a JSDoc block wraps, so `TRAP` can end one line and the id begin the
- * next. The first version anchored both to one line, reported a real citation in
- * sherpa-menu as missing, and would have had someone "fix" working code.
+ * A citation: the word TRAP, then the id. `\s` spans NEWLINES and an optional
+ * `*` may sit between the two, because a JSDoc block wraps mid-citation —
+ * anchoring both to one line hides real citations.
  */
 const CITE = /\bTRAP\s*(?:\*\s*)?(T-[a-z0-9-]+)\b/g;
 
 if (!existsSync(DOC)) {
-  // No doc yet means no traps have been moved — nothing to be inconsistent with.
   console.log('check-traps: no docs/TRAPS.md yet, nothing to check');
   process.exit(0);
 }
@@ -121,7 +69,7 @@ for (const pattern of SOURCES) {
   }
 }
 
-// ── Compare, and report every failure rather than the first ───────────────────
+// ── Compare — report every failure, not just the first ───────────────────────
 const problems = [];
 
 for (const [id, files] of cited) {

@@ -1,15 +1,8 @@
 /**
  * sherpa-list.css — a vertical row container.
  *
- * The body is a single flex column holding both the stamped data rows (.rows)
- * and slotted rows (the default slot), so variant treatments apply uniformly.
- * Variants (default is divided | bordered | plain) and the empty state are pure
- * CSS off data-* on the host; JS only stamps rows and toggles data-empty-visible.
- *
- * Figma model: the list is a container. Its geometry binds the container-scoped
- * collection (container-border/*, container-surface/default); rows within bind
- * the control-scoped collection. A [data-status] ancestor fills the whole
- * bordered/divided body with the status surface via the --_status-* cascade.
+ * Stamped rows (.rows) and slotted rows share one flex column so variants apply
+ * to both. Variants and the empty state are pure CSS off data-* on the host.
  */
 
 :host {
@@ -19,8 +12,7 @@
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
-/* Native <ul> — reset the default list chrome; it is a flex column so both
-   fill modes (stamped <li> + slotted rows) stack evenly. */
+/* Native <ul> — reset the default list chrome. */
 .body {
   margin: 0;
   padding: 0;
@@ -35,10 +27,9 @@
   flex-direction: column;
 }
 
-/* ── Default = the Figma List (49:66025): a BORDERED, rounded surface (style-
-   surface/base fill, 0.5 style-border/base ring, rounding 4) with 1px
-   border/default/+2 dividers between rows. `bordered` is kept as an alias; only
-   data-type="plain" opts out of the box + dividers. ───────────────────── */
+/* ── Default = the Figma List (49:66025): a bordered, rounded surface.
+   `bordered` is an alias; only data-type="plain" opts out. Functional
+   :host(:not(…)) form — the chained form is broken in shadow DOM. ───── */
 :host(:not([data-type="plain"])) {
   --_row-gap: 0;
 }
@@ -57,14 +48,14 @@
   overflow: hidden;
 }
 
-/* Dividers — Figma: 1px rectangles in border/default/+2 between adjacent rows. */
+/* Dividers between adjacent rows. */
 :host(:not([data-type="plain"])) .body > .row-item:not(:last-child),
 :host(:not([data-type="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
   border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
-/* Plain — no dividers, spaced rows (the former "default" look). */
+/* Plain — no dividers, spaced rows. */
 :host([data-type="plain"]) {
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }

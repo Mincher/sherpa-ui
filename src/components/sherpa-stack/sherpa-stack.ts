@@ -1,15 +1,8 @@
 /**
  * sherpa-stack — a run of items in one direction, with a token gap.
  *
- * There is no JS. Every part of it is a [data-*] selector in the CSS: the
- * direction, the gap, the alignment, whether items wrap. The class exists only
- * to give the element a shadow root and its stylesheet.
- *
- * It is the vertical counterpart to sherpa-toolbar (the horizontal two-zone
- * strip). Before it, every app hand-wrote `display: flex; flex-direction:
- * column; gap: …` in its own stylesheet for a form, a settings page, a dialog
- * footer or a row of cards.
- *
+ * No JS: direction, gap, alignment and wrapping are all [data-*] selectors in
+ * the CSS. The class exists only to give the element a shadow root and sheet.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 

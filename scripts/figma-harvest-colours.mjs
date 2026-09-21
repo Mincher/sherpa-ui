@@ -1,70 +1,24 @@
 #!/usr/bin/env node
 /**
- * figma-harvest-colours.mjs — print the figma_execute snippet that harvests
- * every component's COLOUR BINDINGS, and (given the result) diff them against
- * the CSS each component actually consumes.
+ * figma-harvest-colours.mjs — checks that a component's CSS consumes the colour
+ * variable Figma actually BINDS. Token values can be in sync while a component
+ * points at a different token, and nothing else asks this question.
  *
  *   node scripts/figma-harvest-colours.mjs --snippet [--batch=N]
- *   node scripts/figma-harvest-colours.mjs --diff <harvest.json>
+ *   node scripts/figma-harvest-colours.mjs --names
+ *   node scripts/figma-harvest-colours.mjs --diff=<harvest.json> [--wrong-only]
  *
- * ── Why this exists ─────────────────────────────────────────────────────────
- * The sweep has been run "a couple of times already" and still missed things —
- * the Key Value Pair's value chip was still the old dark grey (#b3b3c3) when
- * Figma had moved it to style-surface/base +1 (#e8e8f6). The CSS even carried a
- * comment saying "Figma: Value Slot = surface/default-2", which had been true
- * once and was never re-checked.
+ * A binding counts as satisfied when the CSS mentions the projected custom
+ * property anywhere — deliberately loose, because the two sides share no
+ * element↔selector correspondence.
  *
- * That is the whole gap. The existing tools answer two DIFFERENT questions:
- *
- *   check-tokens.mjs      do the token VALUES match Figma?          (values)
- *   audit-bindings.mjs    should this raw number be a variable?     (Figma-side)
- *   figma-extract-component.js   print a node for a human to read   (manual)
- *
- * NOTHING asked: does the CSS consume the variable Figma actually BINDS? So a
- * token could be perfectly in sync and the component could still be pointing at
- * a different one — which is exactly what happened. A human comparing a printout
- * to a stylesheet will miss cases; that is not a reason to be more careful, it
- * is a reason to automate the comparison.
- *
- * ── What it compares ────────────────────────────────────────────────────────
- * Figma side: every visible SOLID fill / stroke on every component (and its
- * variants and nested instances), with the variable bound to its colour.
- *
- * Code side: every colour-valued `var(--sherpa-*)` in the component's CSS.
- *
- * A binding is SATISFIED when the component's CSS mentions the CSS custom
- * property the Figma variable projects to. Deliberately loose about WHERE: this
- * finds "the component never mentions this token at all", which is the miss that
- * actually happens. A property-by-property map would need an element↔selector
- * correspondence the two sides do not share.
- *
- * ── Known false positives ───────────────────────────────────────────────────
- * A nested INSTANCE reports its own component's bindings (a Button inside a
- * Container Header is the Button's business). Those are filtered by `ownRows`.
- *
- * FOUR more that the full sweep turned up. None is silenced automatically —
- * each needs a human to look at the node — but knowing the shapes saves
- * re-deriving them:
- *
- *  1. JS-DRIVEN COLOUR. sherpa-barchart sets its series hue in TypeScript
- *     (`bar.style.setProperty('--_hue', 'var(--sherpa-data-viz-series-N)')`),
- *     so a CSS-only scan sees series 1 and misses 2 and 3. Grep the .ts before
- *     believing a data-viz miss.
- *  2. SLOTTED CONTENT. The Callout's action link is whatever the caller slots
- *     in, so its colour is not the component's to set. Figma draws a specimen;
- *     the component correctly has no rule for it.
- *  3. ONE FIGMA NODE, MANY COMPONENTS. `Data Field` is the figmaName of
- *     barchart, line-chart AND sparkline, so one node's rows are judged three
- *     times and a bar chart's bars are reported against a sparkline that has
- *     none. See the `oneToMany` divergence convention.
- *  4. STATUS-CASCADE COLOUR. A Toast's surface comes from --_status-surface-
- *     subtle; Figma's node shows the SUCCESS specimen (#f0fff5). The component
- *     is right and the scan cannot see a cascade it is not under.
- *
- * ── What it catches that nothing else does ──────────────────────────────────
- * Besides drifted tokens: a figmaName that no longer resolves. `Legend Item`
- * had been renamed `Chart Legend` in Figma, so sherpa-chart-legend's binding
- * pointed at nothing and every check that followed it silently passed.
+ * Known false positives, none silenced automatically:
+ *  1. JS-DRIVEN COLOUR — sherpa-barchart sets series hues in TS, so a CSS-only
+ *     scan misses series 2 and 3. Grep the .ts before believing a data-viz miss.
+ *  2. SLOTTED CONTENT — Figma draws a specimen the component does not own.
+ *  3. ONE FIGMA NODE, MANY COMPONENTS — `Data Field` is the figmaName of three
+ *     components, so one node's rows are judged three times.
+ *  4. STATUS-CASCADE COLOUR — the scan cannot see a cascade it is not under.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -87,12 +41,10 @@ export function componentMap() {
 
 /**
  * A Figma variable path → the CSS custom property the projector emits.
- *
  * "Style::style-surface/base +1" → "--sherpa-style-surface-base-1"
  *
- * Mirrors project-tokens.mjs: the collection becomes the prefix, "/" and " "
- * become "-", and a "+N" suffix becomes "-N". Kept here rather than imported
- * because the projector's own slugger is wound through its emit path.
+ * Mirrors project-tokens.mjs; copied rather than imported because the
+ * projector's slugger is wound through its emit path.
  */
 export function cssVarFor(figmaPath) {
   const [collection, ...rest] = figmaPath.split('::');
@@ -106,10 +58,7 @@ export function cssVarFor(figmaPath) {
     .replace(/-+/g, '-')
     .toLowerCase();
   const col = slug(collection);
-  // The projector drops the collection prefix for Display Mode / Theme / Style /
-  // Structure / Elevation etc. only insofar as the LEAF already carries it —
-  // "style-surface/base" under "Style" projects as --sherpa-style-surface-base,
-  // not --sherpa-style-style-surface-base.
+  // The collection prefix is dropped only when the LEAF already carries it.
   const leafSlug = slug(leaf);
   return leafSlug.startsWith(col + '-') || leafSlug === col
     ? `--sherpa-${leafSlug}`
@@ -117,14 +66,10 @@ export function cssVarFor(figmaPath) {
 }
 
 /**
- * Every `--sherpa-*` custom property a component's CSS mentions.
- *
- * Includes the GENERATED scoped-token region at the top of the file. A
- * component-scoped Figma collection (navigation, input, switch, button) is
- * projected THERE and not into tokens.css, so a checker that only reads
- * tokens.css declares every one of those 15 navigation tokens missing. That was
- * the first false alarm this tool produced, and it is worth the comment: the
- * absence of a token from tokens.css is not evidence of anything.
+ * Every `--sherpa-*` custom property a component's CSS mentions, INCLUDING the
+ * generated scoped-token region at the top. Component-scoped collections
+ * (navigation, input, switch, button) project there and not into tokens.css, so
+ * a token's absence from tokens.css is not evidence of anything.
  */
 export function cssTokensUsed(dir) {
   let text;
@@ -134,12 +79,8 @@ export function cssTokensUsed(dir) {
 
 /**
  * Rows that belong to THIS component rather than to something it instances.
- *
- * A Button nested in a Container Header reports the Button's own bindings, and
- * holding the Container Header responsible for them would bury every real miss
- * in noise. A row is foreign once its path passes through another component's
- * name — matched on the path SEGMENTS, so "Container Header" inside "Container"
- * is foreign while "Container" itself is not.
+ * A row is foreign once its path passes through another component's name,
+ * matched on path SEGMENTS so "Container Header" is not a match for "Container".
  */
 export function ownRows(rows, selfName, allFigmaNames) {
   const others = new Set(allFigmaNames.filter((n) => n !== selfName));
@@ -151,12 +92,9 @@ export function ownRows(rows, selfName, allFigmaNames) {
 }
 
 /**
- * Every `--sherpa-*` token's RESOLVED hex, by following the alias chain in
- * tokens.css to a literal.
- *
- * Only the FIRST (light, :root) definition is taken. A token redefined under a
- * dark or density block is the same token — resolving it twice would report one
- * binding as two colours.
+ * Every `--sherpa-*` token's RESOLVED hex, following the alias chain in
+ * tokens.css. Only the FIRST (light, :root) definition is taken — resolving a
+ * dark or density redefinition too would report one binding as two colours.
  */
 export function resolvedColours() {
   const css = readFileSync(join(ROOT, 'src/styles/tokens/tokens.css'), 'utf8');
@@ -193,31 +131,12 @@ function sameColour(a, b) {
 }
 
 /**
- * Diff a harvest against the CSS.
+ * Diff a harvest against the CSS. Three buckets, and keeping them apart is the
+ * whole value of this — a name-only check buries the real bugs in the rest:
  *
- * Two DIFFERENT verdicts, and keeping them apart is the whole value of this:
- *
- *   WRONG COLOUR  the CSS paints something Figma does not. A real bug — the
- *                 Key Value Pair's value chip took theme-surface/default/+2
- *                 (#b3b3c3, dark) where Figma binds style-surface/base +1
- *                 (#e8e8f6, light).
- *   OTHER ROUTE   the CSS reaches the SAME colour through a different token.
- *                 The grid cell's header takes theme-surface/default/+1, which
- *                 is also #e8e8f6. Worth knowing — Figma's route is the one to
- *                 follow, so a re-point on the Style side reaches the component
- *                 — but it is not a visual bug and must not be reported as one.
- *
- * A name-only check calls both of those a miss, which buries the first ten deep
- * in the second. That is how the earlier sweeps produced noise and got skimmed.
- *
- * A third bucket, `raw`, is for paint that is GENUINELY unbound in Figma. It
- * deliberately EXCLUDES the opacity idiom: a translucent paint of a hue the
- * component can already reach is bound correctly. Figma's Legend Swatch is
- * data-viz/categorical/color 1 at 60% — the variable sits on the STROKE and the
- * fill takes the same hue through the paint's own opacity. The first version of
- * this tool folded alpha into the hex, found no `boundVariables.color` on that
- * layer, and reported a correct design as Figma-side drift. Hue and opacity are
- * carried separately now.
+ *   wrong   the CSS cannot paint Figma's colour at all. A real bug.
+ *   routed  the same colour via a different token. Not a visual bug.
+ *   raw     genuinely unbound in Figma.
  */
 export function diff(harvest) {
   const map = componentMap();
@@ -229,9 +148,7 @@ export function diff(harvest) {
     if (!entry) continue;
     if (entry.missing) { report.push({ dir, figmaName, noNode: true, wrong: [], routed: [], raws: [] }); continue; }
     const used = cssTokensUsed(dir);
-    // What the component's CSS can actually paint — every colour it reaches by
-    // any token. A binding is satisfied when the colour is reachable, even if
-    // the component gets there by a different name.
+    // Every colour the CSS can reach by any token.
     const reachable = new Set(
       [...used].map((t) => colours.get(t)).filter(Boolean).map((h) => h.slice(0, 7)),
     );
@@ -240,12 +157,9 @@ export function diff(harvest) {
     const seen = new Set();
     for (const row of mine) {
       if (row.token === 'RAW') {
-        // A TRANSLUCENT paint of a colour the component can already reach is
-        // not unbound drift — it is the system's opacity idiom. Figma's Legend
-        // Swatch is data-viz/categorical/color 1 painted at 60%, with only the
-        // STROKE carrying the variable; the fill takes the same hue through the
-        // paint's own opacity. Reporting that as RAW was my misreading, not a
-        // Figma problem.
+        // A translucent paint of a reachable hue is the opacity idiom, not
+        // drift: the variable sits on the STROKE and the fill takes the same
+        // hue at reduced opacity. Hue and opacity are carried separately.
         const reachableHue = reachable.has(row.hex.slice(0, 7));
         if (reachableHue && (row.opacity ?? 1) < 1) continue;
         const k = 'raw' + row.at + row.prop + row.hex;
@@ -261,8 +175,8 @@ export function diff(harvest) {
       const k = row.token + row.prop;
       if (seen.has(k)) continue;
       seen.add(k);
-      // A fully transparent paint is a NON-colour: Figma still names a variable
-      // on it, but the component correctly paints nothing. Never a bug.
+      // A fully transparent paint still names a variable in Figma, but the
+      // component correctly paints nothing. Never a bug.
       if (/^#[0-9a-f]{6}00$/i.test(row.hex)) continue;
       const want = colours.get(cssVar);
       const entry2 = { ...row, cssVar, want: want ?? null };
@@ -308,12 +222,9 @@ if (diffArg) {
 }
 
 /**
- * `--names` — print the snippet that checks every figmaName still RESOLVES.
- *
- * The cheapest and highest-value check here. A renamed Figma component leaves a
- * spec pointing at nothing, and every tool that follows the name then passes
- * silently — sherpa-chart-legend named "Legend Item" long after Figma had
- * renamed it "Chart Legend", so nothing had checked its bindings in months.
+ * `--names` — the snippet that checks every figmaName still RESOLVES. A renamed
+ * Figma component leaves a spec pointing at nothing, and every tool that
+ * follows the name then passes SILENTLY.
  */
 if (process.argv.includes('--names')) {
   const names = [...new Set(Object.values(componentMap()))].sort();

@@ -1,10 +1,8 @@
 /**
  * sherpa-slider — a slider for picking one value in a range.
  *
- * A real range input does the dragging, keyboard, and accessibility; this class
- * just wraps it. JS copies min/max/step/value onto the input, and hands CSS the
- * one thing it can't work out — how far along the track the fill should reach.
- * It also re-fires the native input and change events with a { value } detail.
+ * A native range input does the dragging, keyboard and accessibility; this class
+ * mirrors min/max/step/value onto it and hands CSS the fill percentage.
  *
  * @prop {number} value — the current value (read/write, clamped to min/max)
  * @prop {[number, number]} range — the two ends (read/write); low end first
@@ -13,11 +11,8 @@
 import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
 
 interface SliderData {
-  /** Current value (single mode). */
   value?: number;
-  /** The range's low end (range mode). */
   start?: number;
-  /** The range's high end (range mode). */
   end?: number;
 }
 
@@ -40,12 +35,7 @@ export class SherpaSlider extends SherpaElement {
     'data-value-readonly',
   ];
 
-  /**
-   * The two native range inputs.
-   *
-   * TRAP T-slider-second-thumb-is-revealed-not-built — range mode REVEALS the
-   * second; `#input` is the whole control in single mode, the LOW end in range.
-   */
+  /** TRAP T-slider-second-thumb-is-revealed-not-built — `#input` is the whole control in single mode, the LOW end in range. */
   #input: HTMLInputElement | null = null;
   #endInput: HTMLInputElement | null = null;
   /** The editable number field beside the track — the HIGH end in range mode. */
@@ -58,8 +48,7 @@ export class SherpaSlider extends SherpaElement {
     this.#endInput = this.$<HTMLInputElement>('.range-end');
     this.#valueField = this.$<HTMLInputElement>('.value-end');
     this.#startField = this.$<HTMLInputElement>('.value-start');
-    // TRAP T-abort-controller-per-connect — one `signal`, not eight paired
-    // removeEventListener calls; nothing to forget when a ninth is added.
+    // TRAP T-abort-controller-per-connect
     const signal = this.signal;
     this.#input?.addEventListener('input', this.#onInput, { signal });
     this.#input?.addEventListener('change', this.#onChange, { signal });
@@ -107,17 +96,11 @@ export class SherpaSlider extends SherpaElement {
     this.setAttribute('value', String(this.#clamp(v)));
   }
 
-  /** Whether this slider has two ends. */
   get #isRange(): boolean {
     return this.dataset['type'] === 'range';
   }
 
-  /**
-   * The two ends, LOW first.
-   *
-   * TRAP T-range-reads-ordered-but-drags-clamped — reading ORDERS the pair; an
-   * absent end defaults to its bound.
-   */
+  /** The two ends, LOW first. TRAP T-range-reads-ordered-but-drags-clamped — reading ORDERS the pair. */
   get range(): [number, number] {
     const lo = this.#clamp(this.getAttribute('value-start') ?? String(this.#min));
     const hi = this.#clamp(this.getAttribute('value-end') ?? String(this.#max));
@@ -132,8 +115,7 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Bounds ──────────────────────────────────────────────────────────── */
 
-  // TRAP T-num-is-stricter-than-parsefloat — native names, and a non-numeric
-  // bound is rejected rather than half-read.
+  // TRAP T-num-is-stricter-than-parsefloat — a non-numeric bound is rejected, not half-read; a non-positive step falls back.
   get #min(): number {
     return this.num('min', 0);
   }
@@ -142,7 +124,6 @@ export class SherpaSlider extends SherpaElement {
   }
   get #step(): number {
     const n = this.num('step', 1);
-    // TRAP T-num-is-stricter-than-parsefloat — a non-positive step FALLS BACK.
     return n > 0 ? n : 1;
   }
 
@@ -159,8 +140,7 @@ export class SherpaSlider extends SherpaElement {
     const min = String(this.#min), max = String(this.#max), step = String(this.#step);
     const disabled = this.hasAttribute('disabled');
     const readOnly = this.hasAttribute('data-value-readonly');
-    // TRAP T-slider-second-thumb-is-revealed-not-built — the SAME bounds on every
-    // input, so the two thumbs are directly comparable.
+    // TRAP T-slider-second-thumb-is-revealed-not-built — the SAME bounds on every input.
     for (const el of [this.#input, this.#endInput]) {
       if (!el) continue;
       el.min = min; el.max = max; el.step = step;
@@ -170,7 +150,6 @@ export class SherpaSlider extends SherpaElement {
       if (!el) continue;
       el.min = min; el.max = max; el.step = step;
       el.disabled = disabled;
-      // Mirror data-value-readonly onto the native input so it is truly read-only.
       el.readOnly = readOnly;
     }
   }
@@ -181,11 +160,7 @@ export class SherpaSlider extends SherpaElement {
     return ((value - this.#min) / span) * 100;
   }
 
-  /**
-   * Write a value into a native input without fighting a user who is typing in it.
-   *
-   * TRAP T-never-fight-a-focused-field
-   */
+  /** Write into a native input. TRAP T-never-fight-a-focused-field. */
   #put(el: HTMLInputElement | null, value: number): void {
     if (!el || el === this.shadowRoot?.activeElement) return;
     const text = String(value);
@@ -196,8 +171,7 @@ export class SherpaSlider extends SherpaElement {
   #sync(): void {
     if (this.#isRange) {
       const [start, end] = this.range;
-      // TRAP T-slider-second-thumb-is-revealed-not-built — BOTH are written even
-      // mid-drag, which is what stops a thumb passing its partner.
+      // BOTH are written even mid-drag — that is what stops a thumb passing its partner.
       this.#put(this.#input, start);
       this.#put(this.#endInput, end);
       this.#put(this.#startField, start);
@@ -215,12 +189,7 @@ export class SherpaSlider extends SherpaElement {
     this.style.setProperty('--_pct', `${this.#pctOf(value)}%`);
   }
 
-  /**
-   * Set one end of the range and report it.
-   *
-   * TRAP T-range-reads-ordered-but-drags-clamped — the ends CLAMP here, they do
-   * not swap.
-   */
+  /** Set one end and report it. The ends CLAMP here, they do not swap. */
   #setEnd(which: 'start' | 'end', raw: number, event: 'input' | 'change'): void {
     const [start, end] = this.range;
     const value = this.#clamp(raw);
@@ -238,7 +207,6 @@ export class SherpaSlider extends SherpaElement {
     return this.#clamp(Number.isFinite(n) ? n : this.#min);
   }
 
-  // TRAP T-slider-second-thumb-is-revealed-not-built — one branch per handler.
   #onInput = (): void => {
     if (this.#isRange) return this.#setEnd('start', this.#readInput(), 'input');
     const value = this.#readInput();
@@ -275,20 +243,20 @@ export class SherpaSlider extends SherpaElement {
     if (this.#partial(raw)) return;
     if (this.#isRange) return this.#setEnd('end', this.#clamp(raw), 'input');
     const value = this.#clamp(raw);
-    this.setAttribute('value', String(value)); // #sync leaves the focused field alone
+    this.setAttribute('value', String(value));
     this.emit('input', { value });
   };
 
   #onFieldChange = (): void => {
     if (this.#isRange) {
       this.#setEnd('end', this.#clamp(this.#valueField?.value ?? ''), 'change');
-      // TRAP T-never-fight-a-focused-field — snap to what the clamp settled on.
+      // Snap to what the clamp settled on.
       if (this.#valueField) this.#valueField.value = String(this.range[1]);
       return;
     }
     const value = this.#clamp(this.#valueField?.value ?? '');
     this.setAttribute('value', String(value));
-    if (this.#valueField) this.#valueField.value = String(value); // snap the field to the clamped value on commit
+    if (this.#valueField) this.#valueField.value = String(value);
     this.emit('change', { value });
   };
 

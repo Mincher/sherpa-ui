@@ -1,13 +1,6 @@
 /**
  * sherpa-list-item — presentation.
- *
- * The Figma "Menu List Item": a leading region (drag handle, expand toggle,
- * selection control, icon) → content (title + description) → trailing slot. Each
- * leading affordance is CSS-toggled off a data-* flag. Interactive rows get
- * hover/focus; the current row fills surface-active-base with active ink; a
- * [data-status] ancestor fills the row via the look-tier cascade (--_status-*).
- * Disabled uses inactive tokens (never opacity). Geometry chains to the shared
- * Structure/Theme tokens; logical properties throughout.
+ * Lead (drag / expand / control / icon) → content (title + description) → trailing.
  */
 
 :host {
@@ -38,8 +31,6 @@
   min-block-size: var(--sherpa-font-size-body-large, 16px);
 }
 
-/* Drag handle (Figma: 12px drag-handle-vertical glyph) + expand toggle (Figma:
-   Button/Type=icon 32×32 in the Transparent look): hidden by default. */
 .drag,
 .expand {
   display: none;
@@ -69,11 +60,8 @@
 .expand-glyph { transition: transform 120ms ease; }
 :host([data-expanded]) .expand-glyph { transform: rotate(90deg); }
 
-/* Leading selection control — the built-in native checkbox, or a slotted control */
 .control { display: none; align-items: center; flex-shrink: 0; }
 :host([data-selectable]) .control { display: inline-flex; }
-/* Figma Checkbox (Atom) as the leading control: 20×20, 1px style-border/base ring,
-   rounding 4, white face. */
 .checkbox {
   appearance: none;
   position: relative;
@@ -90,9 +78,7 @@
   box-sizing: border-box;
   cursor: pointer;
 }
-/* Selection reflects the host state (JS keeps data-selected + the input checked
-   in sync). Checked = the box keeps its face + ring and an INSET accent indicator
-   (the Figma checkmark instance, radius 1, inset space/3xs) appears. */
+/* Both selectors: the host attribute and the native :checked are kept in sync. */
 :host([data-selected]) .checkbox::before,
 .checkbox:checked::before {
   content: "";
@@ -102,8 +88,6 @@
   background: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
-/* Leading icon / avatar slot — shown when data-icon set or a leading slot filled.
-   Figma icon: size/icon/2xs → 12. */
 .leading {
   display: none;
   align-items: center;
@@ -112,17 +96,13 @@
 }
 :host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }
-/* A Font Awesome icon carries CLASSES and no text, so `:empty` would hide the very
-   icon it was meant to reveal. `:host([data-icon])` above already gates the region,
-   so the empty case is covered without this. */
+/* A Font Awesome icon is classes with no text, so a bare :empty would hide it. */
 .icon:not([class*="fa-"]):empty { display: none; }
 
-/* Collapse the whole lead region only when nothing in it is shown. */
+/* Chained :host:not() is broken in shadow DOM — functional form only. */
 :host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }
 
 /* ── Content column (title + description) ──────────────────────────── */
-/* Interactive rows expose a native <button> as the click target; static rows a
-   plain span. CSS shows exactly one off :host([data-interactive]). */
 .content {
   flex: 1 1 auto;
   min-inline-size: 0;
@@ -141,7 +121,6 @@
 :host([data-interactive]) .content-button { display: flex; cursor: pointer; }
 :host([data-interactive]) .content-static { display: none; }
 
-/* Title content/body/base 14/20 medium · description content/body/+1 12/16. */
 .title {
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -159,7 +138,7 @@
 }
 :host(:not([data-description])) .description { display: none; }
 
-/* ── Trailing (actions / badges slot) — shown only when filled; Figma gap 4 ── */
+/* ── Trailing (actions / badges slot) ──────────────────────────────── */
 .trailing {
   display: none;
   align-items: center;
@@ -175,7 +154,7 @@
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
 }
-/* Focus lands on the native <button> content target — ring it there. */
+/* Focus lands on the inner <button>, not the host — ring it there. */
 .content-button:focus-visible {
   outline: none;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
@@ -195,11 +174,10 @@
 :host([disabled]) { pointer-events: none; }
 :host([disabled]) .row {
   cursor: not-allowed;
-  /* Light inactive surface (never the mid-grey surface-default-2, which equals
-     the dimmed text colour and would hide the content). */
+  /* Not surface-default-2 — it equals the dimmed ink, so the text vanishes. */
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
-/* Text binds Theme content in Figma → inactive keeps the dark ink. */
+/* Disabled keeps dark ink; the surface carries the state. */
 :host([disabled]) :is(.title, .description, .leading) {
   color: var(--sherpa-theme-content-body-1, #35353d);
 }

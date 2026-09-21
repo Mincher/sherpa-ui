@@ -1,18 +1,8 @@
 /**
  * sherpa-tag — presentation.
  *
- * The Figma Tag: a NEUTRAL pill by default (white surface, grey border, dark
- * ink), coloured only through the look-tier cascade. Colour routes through the
- * --_status-* custom properties (emitted by an ancestor/own [data-status] or
- * [data-look]); with no look active it falls back to the plain Style neutrals.
- * A leading icon and a trailing dismiss (dismissible template) sit inside. No
- * categorical hues — those live in the data-viz layer, not on tags.
- *
- *   surface → var(--_status-surface, theme-surface-default-base)  #ffffff (white)
- *   content → var(--_status-text,    theme-content-body-1)        #35353d (ink)
- *   border  → var(--_status-border,  theme-border-default-2)      #b3b3c3 (grey)
- *
- * Pure data-* selectors; JS only mirrors the label / icon / dismissible template.
+ * Neutral pill by default; colour arrives only through the --_status-* custom
+ * properties emitted by an ancestor's (or its own) [data-status]/[data-look].
  */
 
 :host {
@@ -20,26 +10,15 @@
   vertical-align: middle;
   inline-size: fit-content;
 
-  /* Look-tier routing — neutral until a [data-status]/[data-look] lights it up.
-
-     The UNSTATUSED fallbacks are read from the Tag node (10:2187 > Type=full):
-     surface style-surface/base #ffffff, border style-border/base #b3b3c3, and
-     content style-content/base #0c0b11 on BOTH the label and the icon.
-
-     The content fallback was theme-content/body/+1 #35353d — a lighter grey, so
-     a plain tag's text sat one step too faint. The three now route through the
-     STYLE layer together, which is the layer Figma binds and the one a status
-     mode re-points; mixing a Theme fallback in meant one of the three did not
-     follow the other two. */
+  /* All three unstatused fallbacks must come from the STYLE layer — that is the
+     layer a status mode re-points, so a Theme fallback here would not follow. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
 }
 
-/* Figma Tag/Type=full (Structure=xs): FIXED height 16 (Structure::height), padding
-   padding/xs 2 · padding/sm 4, gap 4, radius rounding/xl 16, stroke 0.5. Label is
-   content/size/xs 10 on line-height/xs 16 — the 16px line fills the 16px pill, so
-   block padding is 0 here (Figma's 2px is inside the fixed height). */
+/* Figma Tag/Type=full: block padding is 0 because the 16px line-height already
+   fills the fixed 16px pill (Figma's 2px sits inside that height). */
 .pill {
   display: inline-flex;
   align-items: center;
@@ -58,7 +37,7 @@
   white-space: nowrap;
 }
 
-/* ── Leading icon (slotted glyph) ──────────────────────────────────── */
+/* ── Leading icon ──────────────────────────────────────────────────── */
 .icon {
   display: inline-flex;
   align-items: center;
@@ -99,7 +78,7 @@
   }
 }
 
-/* ── Dot type: a small square/round indicator (no text metrics) ───── */
+/* ── Dot type ──────────────────────────────────────────────────────── */
 :host([data-type="dot"]) .pill {
   inline-size: var(--sherpa-display-mode-space-xs, 8px);
   block-size: var(--sherpa-display-mode-space-xs, 8px);
@@ -107,6 +86,6 @@
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   overflow: hidden;
   font-size: 0;
-  /* The dot carries the strong status colour, else the neutral border grey. */
+  /* Strong status colour, else the neutral border grey. */
   background: var(--_status-surface-strong, var(--_border));
 }

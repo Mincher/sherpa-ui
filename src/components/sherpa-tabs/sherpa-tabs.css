@@ -1,15 +1,8 @@
 /**
- * sherpa-tabs.css — all tab presentation.
+ * sherpa-tabs.css — tab strip and panel presentation.
  *
- * A horizontal strip of button tabs above a panel area. The current tab (matched
- * by data-current-id on the host, reflected onto the button's data-current) gets
- * an accent underline; the others carry the neutral base rule. Panel visibility
- * is pure CSS: every slotted [data-tab] is hidden, and only the one matching
- * data-current-id shows. JS only stamps the buttons and reflects the current id.
- *
- * Figma model: the resting rule binds border/primary at border/width/sm; the
- * active underline swaps its colour to border/interactive/active (brand). Tab
- * labels take content/secondary/base and lift to the active brand colour when active.
+ * Panel visibility is pure CSS: every slotted [data-tab] is hidden and only the
+ * one carrying data-tab-active shows. JS stamps buttons and reflects ids only.
  */
 
 :host {
@@ -19,8 +12,7 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
-/* ── Tab strip — Figma Tab Group: ONE 0.5px border/default/+2 rule under the whole
-   strip; each Tab's own 2px bottom stroke is TRANSPARENT until active. ─────── */
+/* ── Tab strip ────────────────────────────────────────────────────────── */
 .strip {
   display: flex;
   align-items: stretch;
@@ -45,7 +37,7 @@
 }
 :host([data-has-detail]) .detail { display: inline-flex; }
 
-/* ── Tab buttons (stamped from the cloning prototype) ─────────────────── */
+/* ── Tab buttons ──────────────────────────────────────────────────────── */
 .tab {
   display: inline-flex;
   align-items: center;
@@ -54,7 +46,7 @@
   margin: 0;
   background: transparent;
   border: none;
-  /* Transparent look: style-border/base → #ffffff00 at rest (border/width/lg 2). */
+  /* Reserved at rest so the active underline adds no height. */
   border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
   margin-block-end: calc(-1 * var(--sherpa-display-mode-border-width-sm, 0.5px)); /* sit on the strip rule */
   font-family: inherit;
@@ -67,10 +59,7 @@
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
   &:hover {
-    /* Figma's Theme surface transparent variables are GONE — opacity is now
-       applied where it is USED, not carried by a token. This one was
-       #FFFFFF00: fully clear, i.e. paints nothing. `transparent` says that
-       plainly and needs no token at all. */
+    /* Figma's hover fill is #FFFFFF00 — fully clear, so no token is needed. */
     background: transparent;
     color: var(--sherpa-theme-content-body-base, #0c0b11);
   }
@@ -80,21 +69,17 @@
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 
-  /* ── Active tab — accent underline + accent label ─────────────────────── */
   &[data-current] {
     border-block-end-color: var(--sherpa-theme-border-active-2, #c046ff);
     color: var(--sherpa-theme-content-active-1, #8300b6);
   }
 }
 
-/* ── Panels — only the active one shows ───────────────────────────────── */
+/* ── Panels ───────────────────────────────────────────────────────────── */
 .panels {
   flex: 1 1 auto;
   min-block-size: 0;
   padding-block-start: var(--sherpa-display-mode-space-base, 16px);
 }
-/* All slotted panels are hidden; the active one is marked data-tab-active
-   (a data-* attribute the JS reflects onto the consumer's light-DOM child —
-   CSS still owns the actual display switch). */
 ::slotted([data-tab]) { display: none; }
 ::slotted([data-tab-active]) { display: block; }

@@ -1,34 +1,18 @@
 #!/usr/bin/env node
 /**
- * check-mcp-tools.mjs — keeps each tool module's header comment honest.
+ * check-mcp-tools.mjs — run: node scripts/check-mcp-tools.mjs
  *
- * Every file in mcp-server/tools/ opens with a list of the tools it provides.
- * That list is what a person reads before the code, and on 2026-09-18 one of
- * them was wrong: `discover.js` promised `explain_token` and `browse_ontology`
- * — deleted with the ontology two days earlier — and omitted `find_token`,
- * which replaced them. Nothing noticed, because nothing looked.
- *
- * This is the same failure the spec round-trip gate exists for: a description
- * of some code, sitting beside that code, drifting from it silently. The repo's
- * rule is that such a check must RUN, not merely be possible — see the note in
- * check-traps.mjs about a gate that reported for three months and enforced
- * never.
- *
- * THE CONTRACT. In each `mcp-server/tools/*.js`:
- *
- *   the header     ` *   tool_name   — what it does`, one line per tool
- *   the code       `server.registerTool("tool_name", …)`
- *
- * The two sets must match exactly. Exit 1 on any difference.
+ * Each mcp-server/tools/*.js header lists the tools it provides; the code calls
+ * server.registerTool(). The two sets must match exactly, or a header promises a
+ * deleted tool and nothing notices. Exit 1 on any difference.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIR = 'mcp-server/tools';
 
-/** The header's list: an indented ` *   name — …` line inside the opening block. */
+/** A header entry: an indented ` *   name — …` line. */
 const HEADER_LINE = /^\s*\*\s{2,}([a-z][a-z0-9_]*)\s+[—-]/;
-/** A real registration. The name is the first argument, on its own line or not. */
 const REGISTERED = /server\.registerTool\(\s*["']([a-z][a-z0-9_]*)["']/g;
 
 let problems = 0;
@@ -37,8 +21,7 @@ for (const file of readdirSync(DIR).filter((f) => f.endsWith('.js')).sort()) {
   const path = join(DIR, file);
   const src = readFileSync(path, 'utf8');
 
-  // The header is the FIRST block comment only — a later one listing example
-  // names is prose, not a promise.
+  // The FIRST block comment only — a later one listing names is prose, not a promise.
   const header = src.slice(0, src.indexOf('*/') + 2);
   const claimed = new Set(
     header.split('\n').map((l) => HEADER_LINE.exec(l)?.[1]).filter(Boolean),

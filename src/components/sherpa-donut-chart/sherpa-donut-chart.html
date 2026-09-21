@@ -1,22 +1,10 @@
 <!--
   sherpa-donut-chart — a donut / pie for part-to-whole data.
 
-  Matches the Figma "Donut Chart" (200×200), which draws each slice as its own arc:
-  five ELLIPSE nodes with arcData.innerRadius 0.7 (a hole at 70% of the radius),
-  cornerRadius 2 and a 1px INSIDE stroke, each filled with its series hue at 60%.
-
-  So the ring is SVG, one CLOSED <path> per slice — not a conic-gradient, and no
-  longer a stroked circle either. A stroke is a thick LINE: it has two caps and no
-  corners, so it can carry neither a border round the whole slice nor a radius on
-  all four corners. A closed path expresses both in one element: `fill` tints the
-  body, `stroke` traces the entire boundary, and the corner arcs are part of the
-  outline. Slices are stamped from the .slice-tpl cloning prototype; the geometry
-  comes from ringSegmentPath() in src/core/format-tick.ts.
-
-  Slices TOUCH, with no gap — as in Figma, where the rounding alone separates them.
-
-  The viewBox is a fixed 0 0 100 100 with the arcs drawn as a stroked circle, so the
-  ring scales with the element while staying perfectly circular.
+  The ring is SVG, one CLOSED <path> per slice (not a stroked circle): a stroke has
+  caps, not corners, so it can carry neither a border round the slice nor rounded
+  corners. Geometry comes from ringSegmentPath() in src/core/format-tick.ts.
+  Slices TOUCH — the rounding alone separates them, as in Figma.
 
   Public API:
     data-type   donut (default) | pie   (pie fills to the centre, no hole)
@@ -34,18 +22,9 @@
            aria-label="Donut chart" preserveAspectRatio="xMidYMid meet">
         <g class="slices"></g>
       </svg>
-      <!--
-        HOVER DOTS — one per slice, and the tooltip ANCHORS.
-
-        HTML buttons, not the SVG arcs themselves: an SVG element cannot be a CSS
-        anchor in Chromium (anchor-name is accepted and silently never resolves, so
-        the tip lands in the viewport corner).
-
-        Each dot places itself on its slice's MID-ANGLE with CSS trig — the JS
-        supplies only the angle, and `cos()` / `sin()` do the geometry in
-        percentages of the ring box. So the dots follow the ring at any size with
-        nothing measured in JS.
-      -->
+      <!-- Tooltip anchors. An SVG element cannot be a CSS anchor in Chromium —
+           anchor-name is accepted, silently never resolves, and the tip lands in
+           the viewport corner. -->
       <div class="hotspots" part="hotspots"></div>
 
       <div class="centre">
@@ -57,27 +36,17 @@
   </figure>
 
   <!--
-    One closed path per slice. JS sets the `d` (built by ringSegmentPath) and the hue.
-
-    The prototype is WRAPPED IN AN <svg>. Without that wrapper the HTML parser
-    reads `<path>` as unknown HTML and builds an HTMLUnknownElement in the XHTML
-    namespace: it clones and appends without error, reports the right attributes,
-    and paints absolutely nothing. Inside an <svg> the parser switches to the SVG
-    namespace, so the clone is a real SVGPathElement.
+    JS sets the `d` and the hue. The prototype is WRAPPED IN AN <svg>: without it
+    the parser builds an HTMLUnknownElement that clones, appends and reports its
+    attributes without error, and paints nothing.
   -->
   <template class="slice-tpl">
     <svg><path class="slice" /></svg>
   </template>
 
-  <!-- One slice's hover dot + tooltip. JS sets --_angle (the slice's mid-angle)
-       and the text; CSS trig puts the dot on the ring. -->
   <!--
-    An invisible ANCHOR POINT plus its tooltip, per slice.
-
-    There is no visible marker: the reader hovers the SEGMENT ITSELF, which is
-    what they are already pointing at. The anchor exists only because an SVG
-    element cannot be a CSS anchor in Chromium — so a zero-size HTML span sits at
-    the slice's mid-arc and the tip anchors to that.
+    A zero-size anchor point plus its tooltip, per slice. JS sets --_angle (the
+    slice's mid-angle) and the text; CSS trig places the point on the ring.
 
     The tip is a SIBLING, never a descendant of a positioned box: an
     absolutely-placed ancestor breaks anchor positioning for a fixed tip.

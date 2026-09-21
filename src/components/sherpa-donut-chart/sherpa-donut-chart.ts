@@ -1,26 +1,18 @@
 /**
  * sherpa-donut-chart — a donut (or pie) showing parts of a whole.
  *
- * Give it data with populate([{ label, value, colorIndex? }]). Each slice becomes
- * its own SVG arc, matching the Figma component (five ELLIPSE arcs with
- * arcData.innerRadius 0.7, cornerRadius 2, a 1px stroke and a 60% fill).
- *
- * TRAP T-donut-slice-is-a-closed-path — each slice is ONE closed <path>, a
- * stroked circle could express neither the full border nor the rounded corners,
- * and slices TOUCH because the rounding alone separates them.
- *
- * `setSliceHidden(index, hidden)` drops a slice so a chart legend can toggle it.
+ * TRAP T-donut-slice-is-a-closed-path — each slice is ONE closed <path>; a
+ * stroked circle can express neither the full border nor the rounded corners.
  * TRAP T-hiding-a-series-rescales-the-axis — the rest re-share the full circle.
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, radialArea, ringSegmentPath, seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 
-/** One slice — an alias of the shared `ChartDatum`. See chart-datum.ts. */
+/** One slice — an alias of the shared `ChartDatum`. */
 export type DonutSlice = ChartDatum;
 
-/* Path GEOMETRY in viewBox units of a 100×100 box.
-   TRAP T-donut-slice-is-a-closed-path names every value and why it is that. */
+/* Geometry in viewBox units of a 100×100 box. */
 const BOX = 100;
 const CENTRE = BOX / 2;
 const CORNER = 1;
@@ -33,7 +25,6 @@ export class SherpaDonutChart extends SherpaElement {
   static override observed = ['data-label', 'data-sublabel', 'data-type'];
 
   #slices: DonutSlice[] = [];
-  /** Slice indices the legend has switched off. */
   #hidden = new Set<number>();
 
   override onRender(): void {
@@ -44,14 +35,14 @@ export class SherpaDonutChart extends SherpaElement {
 
   override onChange(): void {
     this.#syncCentre();
-    // data-type changes the ring's thickness, so the arcs must be re-measured.
+    // data-type changes ring thickness, so the arcs must be re-measured.
     if (this.#slices.length) this.#renderRing();
   }
 
   /** populate([{ label, value, colorIndex? }]) — the slices. */
   protected override renderData(data: unknown): void {
     this.#slices = Array.isArray(data) ? (data as DonutSlice[]) : [];
-    // TRAP T-hiding-a-series-rescales-the-axis — stale indices hide the wrong slice.
+    // Stale indices would hide the wrong slice.
     this.#hidden.clear();
     this.#renderRing();
   }
@@ -60,11 +51,7 @@ export class SherpaDonutChart extends SherpaElement {
     return [...this.#slices];
   }
 
-  /**
-   * Show or hide one slice by index — the hook a chart legend toggles.
-   *
-   * TRAP T-hiding-a-series-rescales-the-axis
-   */
+  /** Show or hide one slice by index — the hook a chart legend toggles. */
   setSliceHidden(index: number, hidden = true): void {
     if (hidden) this.#hidden.add(index);
     else this.#hidden.delete(index);
@@ -88,27 +75,25 @@ export class SherpaDonutChart extends SherpaElement {
     group.replaceChildren();
     hotspots?.replaceChildren();
 
-    // TRAP T-donut-slice-is-a-closed-path — the TRUE edges; the path is inset
-    // half an outline so the stroke lands INSIDE them.
+    // Inset half an outline, so the stroke lands INSIDE the true edges.
     const pie = this.dataset['type'] === 'pie';
     const outer = CENTRE - OUTLINE / 2;
     const inner = pie ? 0 : CENTRE * 0.7 + OUTLINE / 2;
 
-    // TRAP T-hiding-a-series-rescales-the-axis — so the ring always closes.
+    // Only the visible slices share the circle, so the ring always closes.
     const visible = this.#slices.filter((_, i) => !this.#hidden.has(i));
     const total = visible.reduce((sum, s) => sum + Math.max(0, s.value), 0);
     if (total <= 0) return;
 
     let acc = 0;
     this.#slices.forEach((slice, i) => {
-      // TRAP T-hiding-a-series-rescales-the-axis — skip AFTER indexing.
+      // Skip AFTER indexing, so an index still names the same slice.
       if (this.#hidden.has(i)) return;
       const value = Math.max(0, slice.value);
-      // TRAP T-donut-slice-is-a-closed-path — floored to MIN_SHARE.
       const share = Math.max(value / total, MIN_SHARE);
 
-      // TRAP T-donut-slice-is-a-closed-path — clone the <path> INSIDE the <svg>,
-      // and no -90deg transform: ringSegmentPath already measures from 12 o'clock.
+      // Clone the <path> INSIDE the <svg>, and add no -90deg transform:
+      // ringSegmentPath already measures from 12 o'clock.
       const arc = tpl.content.querySelector('.slice')!.cloneNode(true) as SVGPathElement;
       arc.dataset['index'] = String(i);
       arc.setAttribute(
@@ -125,16 +110,13 @@ export class SherpaDonutChart extends SherpaElement {
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
       arc.style.setProperty('--_hue', seriesVar(i, slice.colorIndex));
-      // TRAP T-donut-slice-is-a-closed-path — the border does not move along the ramp.
+      // The border is fixed — it does not move along the ramp with the fill.
       arc.style.setProperty('--_border', seriesBorderVar(i, slice.colorIndex));
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
 
-      // The hover dot + its tooltip.
-      // TRAP T-chart-tip-is-a-sibling-of-its-dot — the ONLY number JS gives CSS
-      // is the MID-ANGLE, the tip carries the index too (the slice is inside
-      // <svg>), radialArea pushes it clear of the ring, and the anchor NAME goes
-      // on BOTH or the browser parks the tip wherever it likes.
+      // TRAP T-chart-tip-is-a-sibling-of-its-dot — the anchor name goes on BOTH
+      // dot and tip, or the browser parks the tip wherever it likes.
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
         const dot = frag.querySelector<HTMLElement>('.hotspot')!;

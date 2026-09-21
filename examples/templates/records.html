@@ -1,96 +1,45 @@
-<!-- Content-only markup for the "records" view.
-     Served by the template server (GET /template/view/records) and injected into
-     the app-shell's default (content) slot by the SPA router in index.html.
-     views/records.js builds the data and populates the grid / toolbar / dialog.
-
-     EVERY box here is a Sherpa component or the projected layout grid. There is
-     no view-level CSS.
-
-     NO section header. The APP HEADER owns the view's name (views/records.js sets
-     data-heading="Customers"), so a heading here repeated it. Page actions live in
-     the GRID's own toolbar, with the data they act on. -->
+<!-- Content-only markup for the "records" view, injected into the app-shell's
+     content slot by the SPA router. views/records.js wires the data.
+     No section header: the APP HEADER owns the view's name. -->
 <div class="sherpa-grid">
-  <!-- A data table always wants every column it can get. `data-rows="8"` fixes the
-       card at 8 layout-grid rows tall, so the grid SCROLLS inside it rather than
-       the card growing with the row count and pushing the pager off the screen.
-
-       data-padding="none": the toolbars, the grid and the pager each carry their
-       own Figma padding, so a second inset from the card would double it. -->
-  <!-- A data table always wants every column it can get. `data-rows="8"` fixes the
-       card at 8 layout-grid rows tall, so the grid SCROLLS inside it rather than
-       the card growing with the row count and pushing the pager off the screen.
-
-       data-padding="none" keeps the BLOCK inset at zero, so each part's own
-       divider still meets both card edges; data-padding-inline="md" gives the
-       content 8px of horizontal breathing room without bringing that inset back. -->
+  <!-- data-rows="8" fixes the card height so the grid SCROLLS inside it instead
+       of pushing the pager off screen. data-padding="none" keeps the block inset
+       at zero so each part's own divider meets both card edges. -->
   <sherpa-container data-span="full" data-rows="8"
                     data-padding="none" data-padding-inline="md" data-fill>
 
-    <!-- HEADER — the page-level actions for this grid's data. Add customer sits
-         with the data it acts on rather than in a section header above the card.
-         The toolbar brings its own padding and bottom rule, so the container
+    <!-- The toolbar brings its own padding and bottom rule, so the container
          leaves it bare (see .header ::slotted in sherpa-container.css). -->
     <sherpa-toolbar slot="header" id="grid-actions">
-      <!-- A real ICON, not the literal "+" character this used to pass.
-           sherpa-button accepts either (a raw glyph is back-compat), but a
-           text "+" only inks about half its em, so it drew ~7px inside the
-           correct 14px box and read as too small. A Font Awesome glyph fills
-           the box Figma sizes with `icon-size`. -->
       <sherpa-button slot="leading" id="add-btn"
                      data-look="saturated" data-icon-start="fa-solid fa-plus">
         Add customer
       </sherpa-button>
 
-      <!-- BULK ACTIONS — the same actions the row menu offers, for the rows the
-           reader has ticked. Empty until a selection exists; records.js fills it
-           from `grid.actionsFor(count)`, so the two lists cannot disagree.
-
-           SPLIT ACROSS THE TWO ZONES, and they do different jobs.
-
-           The ACTIONS are leading, straight after the CTA: they are things to
-           DO, and they belong with the page's own primary action rather than
-           adrift at the far end. They come after Add rather than before it, so
-           the primary action keeps the first position.
-
-           The COUNT is trailing — Figma describes that zone as holding "the
-           item count", and it is a READOUT, not a control. Putting it between
-           the CTA and the actions is what pushed the buttons sideways every
-           time the reader ticked a row.
-
-           EMPTY IN THE MARKUP, not absent: every element a view will ever show
-           is in the template from the start, and CSS hides an empty container.
-           The SPAN carries the count, which is the one thing the buttons cannot
-           say for themselves. -->
-      <!-- A FLEX ROW with the toolbar's own gap. The span was a plain block, so
-           two actions (Edit and Delete, on a single selection) sat flush
-           against each other — the zone's 8px separates the span from the CTA
-           but says nothing about what is inside it.
-           `space-xs` is the 8, the same token `sherpa-toolbar` uses for its
-           own zone gap, so the two rows read as one. -->
+      <!-- BULK ACTIONS — filled by records.js from `grid.actionsFor(count)`, so
+           they cannot disagree with the row menu. Actions lead (after the CTA),
+           the count trails, or it shifts the buttons on every tick. Empty here,
+           not absent; CSS hides an empty container. Inline flex because a plain
+           block leaves two actions flush against each other. -->
       <span slot="leading" id="bulk-actions"
             style="display: flex; align-items: center;
                    gap: var(--sherpa-display-mode-space-xs, 8px)"></span>
       <span slot="trailing" id="bulk-count" class="bulk-count" hidden></span>
     </sherpa-toolbar>
 
-    <!-- CONTENT — the filter toolbar and the grid it filters.
-         data-gap="md": the two need real space between them. This was "none" on
-         the assumption each part carried its own divider, which is true of the
-         HEADER toolbar and the pager but NOT of the filter toolbar — Figma's
-         Type=data bar (150:3688) binds a bottom stroke WEIGHT but paints no
-         stroke, so it has no rule of its own and the grid sat flush against it. -->
+    <!-- data-gap="md": the filter toolbar has no rule of its own (Figma's
+         Type=data bar binds a bottom stroke weight but paints no stroke), so at
+         "none" the grid sits flush against it. -->
     <sherpa-stack data-gap="md" data-grow data-fill>
       <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
-      <!-- data-grow: this is the item that takes the card's leftover height, so
-           the grid scrolls INSIDE the card while the header and footer stay put. -->
+      <!-- data-grow: takes the card's leftover height, so the grid scrolls
+           INSIDE the card while header and footer stay put. -->
       <sherpa-data-grid id="grid" data-grow data-selectable data-column-filters></sherpa-data-grid>
     </sherpa-stack>
 
-    <!-- FOOTER — the pager, pinned below the scrolling content. It carries its
-         own padding and top rule, so the container leaves it bare too.
-         NO data-page-size: the component defaults to 25, and naming a size here
-         would override it for no reason. The source overwrites data-page and
-         data-total-pages on every load, so these are only the pre-JS values. -->
+    <!-- The pager carries its own padding and top rule, so the container leaves
+         it bare. No data-page-size — the component defaults to 25. The source
+         overwrites data-page and data-total-pages, so these are pre-JS only. -->
     <sherpa-pagination
       slot="footer"
       id="pager"
@@ -108,29 +57,20 @@
     <sherpa-select-group id="f-plan" data-label="Plan"></sherpa-select-group>
   </sherpa-stack>
 
-  <!-- The footer is a Container Footer, which brings its own 8×16 padding, its
-       0.5px divider and its end alignment — the dialog's CSS already knows not to
-       add a second set around a composed one. -->
+  <!-- Container Footer brings its own padding, divider and end alignment; the
+       dialog's CSS knows not to add a second set around a composed one. -->
   <sherpa-container-footer slot="footer">
     <sherpa-button id="cancel-btn">Cancel</sherpa-button>
     <sherpa-button id="save-btn" data-look="saturated">Save</sherpa-button>
   </sherpa-container-footer>
 </sherpa-dialog>
 
-<!-- CONFIRM DELETE. A SECOND dialog, not the add/edit one wearing a costume:
-     deleting is a different question with a different answer, and re-labelling
-     one dialog means every open has to undo whatever the last one set.
-
-     `data-status="critical"` rather than a red button: the status cascade
-     re-points the whole card's surface, border and ink from one attribute, and
-     the Delete button reads it too.
-
-     The message is EMPTY here and written by the view, because only the view
-     knows how many records are going and what they are called. -->
+<!-- A SECOND dialog, not the add/edit one re-labelled — re-use means every open
+     has to undo what the last one set. data-status="critical" re-points the card
+     and the Delete button from one attribute. The view writes the message. -->
 <sherpa-dialog id="confirm" data-heading="Delete customer?" data-status="critical">
-  <!-- No class: there is no example stylesheet, and the dialog's body already
-       brings its 16px padding. The browser's own <p> margins would ADD to that,
-       so the margin is zeroed inline — the one thing this needs. -->
+  <!-- Margin zeroed inline: the dialog body already brings its padding and the
+       browser's own <p> margins would add to it. -->
   <p id="confirm-text" style="margin: 0"></p>
 
   <sherpa-container-footer slot="footer">
@@ -140,6 +80,5 @@
   </sherpa-container-footer>
 </sherpa-dialog>
 
-<!-- NO toast region. sherpa-toast makes its own `.sherpa-toast-stack` in the
-     top-right corner on first use (SherpaToast.success(…)), so a hand-made
-     region was a second stack in a different corner. -->
+<!-- No toast region: sherpa-toast makes its own `.sherpa-toast-stack` on first
+     use, so a hand-made one is a second stack in a different corner. -->

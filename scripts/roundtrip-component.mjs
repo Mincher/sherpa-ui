@@ -1,40 +1,15 @@
 #!/usr/bin/env node
 /**
- * roundtrip-component.mjs — the lossless / round-trip guard for the DTCG-dialect
- * component spec (schemas/component.v1.json is the contract).
+ * Round-trip guard: <name>.component.yaml → specToDef → compileDef → compare to
+ * the on-disk component files. Exit non-zero on any mismatch.
  *
  *   node scripts/roundtrip-component.mjs <sherpa-name>
  *
- * Load <name>.component.yaml → specToDef (adapter) → compileDef (the existing pure
- * compiler) → compare the generated {ts,html,css} to the on-disk component files.
- * Exit 0 on match, non-zero on any mismatch, printing a clear diff.
- *
- * ── Comparison contract (why it is SEMANTIC, not byte-stable) ──────────────────
- * compileDef is a *scaffold* generator: given a def it emits the systematic parts
- * of the three files (anatomy → HTML, token map → CSS bindings, class shell → TS).
- * It deliberately does NOT reproduce hand-written JS behaviour or hand-written CSS
- * state rules — the real sherpa-switch.{ts,css} carry those, authored by a human.
- * So a byte-stable compare is impossible by design. Instead the guard asserts,
- * per file, exactly what the spec fully determines, and reports the residue it
- * cannot round-trip as a documented limitation (never loosened to force green):
- *
- *   HTML  SEMANTIC-STRUCTURAL. Parse each <template>'s node tree from generated
- *         and real; compare tag / class / attrs(as a set) / slot / child order.
- *         This proves the anatomy block regenerates the real Shadow-DOM markup.
- *
- *   CSS   TOKEN-BINDING assertion, against the AUTHORED region only. The .css now
- *         opens with a generated `/* == sherpa:tokens … == *␣/` region (projected
- *         --sherpa-switch-* vars); the compiler does not emit it, so the guard
- *         strips it and compares only the authored CSS below
- *         `/* == end sherpa:tokens == *␣/`. It asserts every `element.property →
- *         var(--sherpa-X)` binding the compiler emits is present in the authored
- *         base rule for that element. (The full hand-written CSS — state rules,
- *         ::after, focus, disabled, --_fill — is the declared residue.)
- *
- *   TS    STRUCTURAL. Assert class name, the css/html URL statics, and the
- *         `observed` attribute list. The hand-written method bodies (onClick,
- *         #syncAria, getters/setters) are the declared residue compileDef cannot
- *         and does not reproduce.
+ * The compare is SEMANTIC, not byte-stable: compileDef is a scaffold generator,
+ * so hand-written JS behaviour and CSS state rules are declared residue, reported
+ * every run but never failed. Each file asserts only what the spec fully determines
+ * — HTML node trees, CSS token bindings (authored region only), TS class shell +
+ * observed. Never loosen an assertion to force green.
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -55,13 +30,8 @@ function checkHtml(genHtml, realHtml) {
   return diffs;
 }
 
-// ── CSS: authored region + token-binding extraction ────────────────────────────
-// authoredCss + binding extraction now come from the shared PostCSS reader
-// (./lib/css-reader.mjs). extractBindingsMap returns { '.el': { prop: 'sherpa-x' } }
-// taking the FIRST binding per el.prop, with the `border` shorthand expanded to
-// border-width/border-color — identical to the former local regex reader.
-
-// what compileDef emitted, parsed the same way (its output has no token region)
+// extractBindingsMap takes the FIRST binding per el.prop; `border` shorthand is
+// expanded to border-width/border-color. compileDef's output has no token region.
 function checkCss(genCss, realCssAuthored) {
   const gen = extractBindingsMap(genCss);
   const real = extractBindingsMap(realCssAuthored);
@@ -82,10 +52,8 @@ function tsFacts(ts) {
   f.class = (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null;
   f.css = (/static override css = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
   f.html = (/static override html = new URL\('([^']+)'/.exec(ts) || [])[1] ?? null;
-  // The SHARED reader — it strips comments and expands a `...SPREAD` of a
-  // module-level const. This used to be a bare regex here, and both of those
-  // fixes had landed in the spec generator only, so this script disagreed with
-  // the gate on 5 of 58 components.
+  // Must stay the SHARED reader: a bare regex here misses comment-stripping and
+  // `...SPREAD` expansion, and silently disagrees with the spec generator.
   f.observed = parseObserved(ts);
   f.define = (/customElements\.define\('([^']+)'/.exec(ts) || [])[1] ?? null;
   return f;
@@ -101,16 +69,12 @@ function checkTs(genTs, realTs) {
   return diffs;
 }
 
-// ── residue report: what the spec provably CANNOT round-trip today ─────────────
-// Surfaced every run so the limitation is loud, not hidden — but does NOT fail the
-// guard (it is inherent to compileDef being a scaffold generator).
+// Reported every run; never fails the guard.
 function residueReport(realTs, realCssAuthored) {
   const notes = [];
-  // hand-written .ts methods beyond the generated shell
   const methods = [...realTs.matchAll(/^\s*(?:override |#|get |set )([\w#]+)\s*[(=]/gm)].map((m) => m[1]);
   const handMethods = methods.filter((m) => !['constructor'].includes(m));
   if (handMethods.length) notes.push(`.ts: ${handMethods.length} hand-written member(s) not produced by compileDef — ${[...new Set(handMethods)].join(', ')}.`);
-  // hand-written CSS state rules (any :host([…]) / :focus-visible / ::after)
   const stateRules = (realCssAuthored.match(/:host\(|:focus-visible|::after|::before/g) || []).length;
   if (stateRules) notes.push(`.css: ~${stateRules} hand-written state selector(s) (:host([…]) / :focus-visible / ::after) — compileDef emits none of these.`);
   return notes;

@@ -1,11 +1,8 @@
 /**
  * sherpa-dialog — a modal surface backed by the native <dialog> element.
  *
- * Native-first (naming standard D2/D12): showModal() gives us modality, the
- * ::backdrop, a focus-trap, ESC-to-close and the top layer for free. This file
- * only opens/closes the dialog, keeps the `open` attribute in sync, renders the
- * optional data-heading, and re-dispatches the native `close` event as a
- * composed one (the native close does not cross the shadow boundary).
+ * The native `close` event does not cross the shadow boundary, so it is
+ * re-dispatched composed.
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
@@ -38,8 +35,6 @@ export class SherpaDialog extends SherpaElement {
     }
   }
 
-  /* ── Public API ──────────────────────────────────────────────────────── */
-
   get open(): boolean {
     return this.#dialog()?.open ?? this.hasAttribute('open');
   }
@@ -48,7 +43,7 @@ export class SherpaDialog extends SherpaElement {
     else this.close();
   }
 
-  /** Open as a modal (top layer, backdrop, focus trap). */
+  /** Open as a modal — top layer, backdrop, focus trap. */
   show(): void {
     const dialog = this.#dialog();
     if (dialog && !dialog.open) dialog.showModal();
@@ -61,8 +56,6 @@ export class SherpaDialog extends SherpaElement {
     if (dialog?.open) dialog.close();
     this.toggleAttribute('open', false);
   }
-
-  /* ── Private ─────────────────────────────────────────────────────────── */
 
   #onClose = (): void => {
     this.toggleAttribute('open', false);

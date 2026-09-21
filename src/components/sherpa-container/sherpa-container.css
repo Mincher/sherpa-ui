@@ -1,16 +1,5 @@
 /**
- * sherpa-container.css — the base card surface.
- *
- * A bordered, optionally-elevated card with header / body / footer regions. The
- * header and footer collapse when empty (driven by data-has-{slot} the base class
- * reflects). Elevation, variant, padding, and state are all data-* selectors;
- * JS never touches visibility here.
- *
- * Colour model (Figma): the whole card fills a single --_surface custom property.
- * That resolves, in order of precedence, to (1) the look-tier status surface
- * (--_status-surface) under a [data-status] ancestor; (2) the neutral Style
- * surface. Borders follow the same cascade. No accent bars. Geometry binds the
- * shared Structure vars.
+ * sherpa-container.css — the base card surface: header / body / footer regions.
  */
 
 :host {
@@ -19,19 +8,14 @@
   position: relative;
   min-inline-size: 0;
 
-  /* One surface token the box + regions consume; colour-set / status re-point it. */
+  /* One surface token the box + regions consume; status re-points it. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Internal header/footer dividers are a lighter neutral than the outer box
-     border (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2
-     #b3b3c3). Status tints the divider in Figma (border/{status}/+2) but the
-     status cascade exposes no tinted-border hook, so the divider stays neutral. */
+  /* Divider stays neutral: the status cascade exposes no tinted-border hook. */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
 
   background: var(--_surface);
-  /* Per-edge widths from the Border collection (Figma: custom borders), so a
-     [data-border] tier or a snap extension can zero an individual edge. Colour
-     still comes from Style. */
+  /* Per-edge widths, so a snap extension can zero one edge. Not a shorthand. */
   border-style: solid;
   border-color: var(--_border);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
@@ -47,26 +31,18 @@
   --_pad: var(--sherpa-theme-padding-lg, 16px);
   --_shadow: none;
   box-shadow: var(--_shadow);
-  /* Elevation shadow colour (Figma Elevation collection → style-surface/shadow). */
   --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
-/* ── Sizing: fills its parent by default ─────────────────────────────
-   NO ATTRIBUTE. This was a fill/fit variant attribute, and NAMING-STANDARD rules
-   that fill/fit sizing is pure CSS: a host is in the LIGHT DOM, so a consumer
-   writes `align-self: flex-start; height: auto` on the element itself and gets
-   "fit" without the component owning an axis for it.
-
-   Nothing in the repo ever set `fit` — `fill` was the bare-:host default and
-   the attribute only ever restated it. */
+/* ── Sizing: fills its parent. No attribute — the host is in the light DOM, so
+   a consumer writes `align-self: flex-start; height: auto` to get "fit". ── */
 :host {
   align-self: stretch;
   height: 100%;
 }
 
-/* ── Elevation — the Figma Elevation modes (sm/md/lg = small/base/large), written
-   from the Theme elevation tokens because the [data-elevation] cascade vars are
-   resolved at :root (zero) and cannot be re-pointed inside a shadow root. ── */
+/* ── Elevation — written from Theme tokens, not the [data-elevation] cascade
+   vars: those resolve at :root and cannot be re-pointed in a shadow root. ── */
 :host([data-elevation="sm"]) {
   --_shadow: var(--sherpa-display-mode-size-3xs, 4px) var(--sherpa-display-mode-size-3xs, 4px)
     var(--sherpa-display-mode-size-2xs, 8px) -4px var(--_shadow-color);
@@ -80,35 +56,19 @@
     var(--sherpa-display-mode-size-2xl, 32px) -8px var(--_shadow-color);
 }
 
-/* ── Padding scale — bound to the scoped container-space vars ──────── */
+/* ── Padding scale ──────────────────────────────────────────────────── */
 :host([data-padding="none"]) { --_pad: var(--sherpa-theme-padding-none, 0); }
 :host([data-padding="sm"]) { --_pad: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding="lg"]) { --_pad: var(--sherpa-display-mode-space-lg, 20px); }
 
-/* Inline padding, set SEPARATELY from the block padding.
-   A card full of full-bleed parts — a toolbar with its own bottom rule, a grid,
-   a pager with its own top rule — wants `data-padding="none"` VERTICALLY so each
-   divider still meets both card edges, but the content itself still needs to
-   breathe horizontally. `data-padding-inline` gives that without reintroducing
-   the top and bottom inset that would break the dividers. */
+/* Inline padding, separate from block: a card of full-bleed parts wants no
+   block padding (so dividers meet both edges) but still needs inline room. */
 :host([data-padding-inline="sm"]) { --_pad-inline: var(--sherpa-theme-padding-sm, 4px); }
 :host([data-padding-inline="md"]) { --_pad-inline: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding-inline="lg"]) { --_pad-inline: var(--sherpa-theme-padding-lg, 16px); }
 
-/* ── data-rows — a card sized in LAYOUT GRID ROWS ─────────────────────────
-   A card with no height is as tall as whatever is inside it, which is wrong for
-   two common cases: a chart hugs its own minimum and leaves the card part empty,
-   and a data grid grows with its row count until "rows per page = 50" pushes the
-   page metres long and the pager off the bottom of the screen.
-
-   `data-rows="N"` makes the card exactly N grid rows tall — N row heights plus
-   the (N-1) vertical gutters between them, both projected layout tokens. So a
-   card lines up with the grid it sits on rather than with an invented pixel
-   number, and it re-sizes at each breakpoint for free.
-
-   Its content then FILLS that height: the body is already `flex: 1 1 auto`, and
-   the rule below hands the body's own height to whatever is in it. A grid
-   scrolls inside its box; a chart draws into the space it is given. */
+/* ── data-rows="N" — the card is N layout-grid rows tall: N row heights plus
+   the (N-1) gutters between them, so it lines up with the grid it sits on. ── */
 :host([data-rows]) {
   block-size: calc(
     var(--_rows, 6) * var(--sherpa-layout-grid-row-height, 64px)
@@ -121,13 +81,8 @@
 :host([data-rows="10"]) { --_rows: 10; }
 :host([data-rows="12"]) { --_rows: 12; }
 
-/* The body of a SIZED card is a column whose content fills it.
-
-   `min-block-size: 0` is the part that matters: a flex item's default floor is
-   its min-content size, so without it a tall data grid or a wide chart refuses
-   to shrink below its own content and overflows the card it was told to fit
-   inside. At a floor of 0 the item takes the height it is given and its own
-   scroll box (a grid) or ratio box (a chart) takes over. */
+/* `min-block-size: 0` matters: a flex item's default floor is its min-content
+   size, so a tall grid or chart would refuse to shrink and overflow the card. */
 :host([data-rows]) .body {
   display: flex;
   flex-direction: column;
@@ -137,47 +92,26 @@
 :host([data-rows]) .body ::slotted(*) {
   min-block-size: 0;
 }
-/* Everything in the body GROWS by default, so a single chart or grid fills the
-   card it was told to fit.
-
-   `:only-child` cannot be used here. It counts every LIGHT-DOM sibling, and a
-   card almost always has a `slot="header"` sibling — so a chart beside a header
-   was never an only child, took `flex: 0 0 auto`, and a line chart drew itself
-   1342px tall inside a 464px card. The slot an element is assigned to is
-   invisible to `:only-child`.
-
-   Growing by default is also the right way round: the common card holds ONE
-   thing, and `data-grow` is only needed to pick between several. */
+/* Everything in the body grows by default. Not `:only-child`: it counts every
+   light-DOM sibling, blind to slots, so a header sibling defeats it. */
 :host([data-rows]) .body ::slotted(*) {
   flex: 1 1 auto;
 }
-/* With a grower named, everything else keeps its natural height.
-
-   Written without `:has()` on purpose: `:host(:has(…))` does not PARSE (`:has()`
-   is not a valid argument to `:host()` and the whole rule is dropped silently),
-   and the chained `:host:has(…)` parses but matches every host, ignoring the
-   `:has()`. So the card is told which item grows rather than working it out.
-
-   `data-fill` is the switch. Without it every child grows (the line above); with
-   it only the `data-grow` child does. */
+/* With `data-fill`, only the `data-grow` child grows. No `:has()`: `:host(:has())`
+   is dropped silently, and chained `:host:has()` matches every host. */
 :host([data-rows][data-fill]) .body ::slotted(*:not([data-grow])) {
   flex: 0 0 auto;
 }
 
-/* ── Regions ───────────────────────────────────────────────────────────
-   Figma Container = Container Header instance + content slot (padding/lg 16) +
-   Container Footer instance. The header/footer COMPONENTS own their padding
-   (8 / 8×16) and their 0.5px border/default/+1 divider, so the regions here are
-   bare wrappers. Plain (non-component) slotted content gets the same padding +
-   divider via ::slotted so a bare <div slot="header"> still reads as a header. */
+/* ── Regions — the header/footer COMPONENTS own their own padding and divider,
+   so these wrappers are bare; plain slotted content is given them below. ── */
 .header,
 .footer {
   display: none;
   padding: 0;
 }
 .body {
-  /* Block from the padding scale; inline from it too UNLESS data-padding-inline
-     names its own — so the two axes can differ without a second scale. */
+  /* Inline falls back to the block padding unless data-padding-inline names one. */
   padding-block: var(--_pad);
   padding-inline: var(--_pad-inline, var(--_pad));
   flex: 1 1 auto;
@@ -188,10 +122,8 @@
 :host([data-has-header]) .header { display: block; }
 :host([data-has-footer]) .footer { display: block; }
 
-/* A component that already carries its own Figma padding and divider is left
-   alone — sherpa-toolbar (8 x 4 + a bottom rule) and sherpa-pagination (8 x 12 +
-   a top rule) are the two that commonly fill these regions, and wrapping either
-   in a second inset drew the padding and the rule twice. */
+/* The excluded components carry their own padding and divider; wrapping one in
+   a second inset draws both twice. */
 .header ::slotted(:not(sherpa-container-header, sherpa-toolbar, sherpa-quick-filter-toolbar)) {
   display: block;
   padding: var(--sherpa-theme-padding-md, 8px);
@@ -203,15 +135,7 @@
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
-/* ── State overlay — one region, driven by data-loading + slot presence ─
-   This scrim is a UX affordance, not a status surface: it dims the card while a
-   state is active. It is deliberately a neutral surface overlay, never a tint.
-
-   loading is the one explicit state attribute (data-loading). empty / error are
-   SLOT-DRIVEN (ratified D6): the base class reflects named-slot presence as
-   data-has-{slot} on the host, so slotting content into [slot="empty"] /
-   [slot="error"] shows that overlay. No data-state attribute, no :host(:has())
-   (which silently no-ops in Chromium). */
+/* ── State overlay. A neutral scrim, deliberately never a status tint. ── */
 .state {
   display: none;
   position: absolute;
@@ -224,17 +148,15 @@
 .state > slot { display: none; }
 .state-text { color: var(--sherpa-theme-content-body-1, #35353d); font-size: var(--sherpa-font-size-body-base, 14px); }
 
-/* data-loading is the ratified boolean-verb loading state. empty / error are
-   slot-driven (D6): data-has-empty / data-has-error come from the base class's
-   slot-presence reflection. The overlay shows when any of the three is active. */
+/* empty / error are slot-driven: data-has-* comes from the base class reflecting
+   named-slot presence. */
 :host(:is([data-loading], [data-has-empty], [data-has-error])) .state { display: flex; }
 :host([data-loading]) .state-loading { display: inline-flex; }
 :host([data-has-empty]) .state-empty { display: inline-flex; }
 :host([data-has-error]) .state-error { display: inline-flex; }
 :host([data-has-error]) .state-text { color: var(--sherpa-theme-content-critical-1, #b72200); }
 
-/* Minimal spinner (the default loading content) — mirrors sherpa-loader md:
-   surface/default/+2 track, style-indicator/accent arc. */
+/* Default loading content — mirrors sherpa-loader md. */
 .spinner {
   inline-size: var(--sherpa-display-mode-size-md, 20px);
   block-size: var(--sherpa-display-mode-size-md, 20px);

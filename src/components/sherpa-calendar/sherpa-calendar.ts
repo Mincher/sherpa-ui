@@ -1,15 +1,11 @@
 /**
  * sherpa-calendar — a date picker.
  *
- * data-min / data-max bound the pickable days; data-available narrows that to
- * the days a host says exist in its data. Each cell's look is CSS.
- *
  * TRAP T-calendar-view-is-not-the-figma-type — data-type is Figma's axis,
- * data-view is the code's own zoom; data-has-time adds the time tail.
+ * data-view is the code's own zoom.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-// Composed, as Figma instances them: a Calendar Cell per grid cell, and three
-// snapped Buttons for the stepper — so both must be defined.
+// Composed: cells and the stepper's buttons must be defined.
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
 
@@ -27,7 +23,7 @@ type CalType = 'single' | 'range';
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const toIso = (y: number, m: number, d: number): string => `${y}-${pad2(m + 1)}-${pad2(d)}`;
 
-/** The date part (YYYY-MM-DD) of a value that may carry a `Thh:mm` time tail. */
+/** The date part of a value that may carry a `Thh:mm` tail. */
 const datePart = (v: string | null | undefined): string => (v ?? '').split('T')[0] ?? '';
 
 function parseIso(iso: string | null | undefined): [number, number, number] | null {
@@ -45,14 +41,12 @@ export class SherpaCalendar extends SherpaElement {
     'data-min', 'data-max', 'data-available', 'data-view', 'data-type', 'data-has-time',
   ];
 
-  /** Currently viewed year / 0-indexed month (drives the grids). */
+  /** Currently viewed year / 0-indexed month. */
   #viewYear = new Date().getFullYear();
   #viewMonth = new Date().getMonth();
   /**
    * True while the USER's own click is writing a value.
-   *
-   * TRAP T-picking-stops-the-grid-following — onChange follows a HOST's value,
-   * never the user's own click.
+   * TRAP T-picking-stops-the-grid-following — the grid follows a HOST's value only.
    */
   #picking = false;
 
@@ -61,7 +55,7 @@ export class SherpaCalendar extends SherpaElement {
       ?? this.#availableAnchor();
     if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
     if (!this.dataset['view']) this.dataset['view'] = 'day';
-    // EMBEDDED: project the stepper before binding, so it exists to bind to.
+    // Project the stepper BEFORE binding, so it exists to bind to.
     if (this.hasAttribute('data-embedded')) this.#projectHeader();
     for (const el of this.#headerEls('.cal-prev')) el.addEventListener('click', this.#onPrev);
     for (const el of this.#headerEls('.cal-next')) el.addEventListener('click', this.#onNext);
@@ -79,8 +73,7 @@ export class SherpaCalendar extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-value' || name === 'data-value-start') {
-      // JUMP TO THE VALUE only when a HOST set it.
-      // TRAP T-picking-stops-the-grid-following
+      // Jump to the value only when a HOST set it — TRAP T-picking-stops-the-grid-following.
       if (!this.#picking) {
         const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart']);
         if (anchor) { this.#viewYear = anchor[0]; this.#viewMonth = anchor[1]; }
@@ -111,10 +104,9 @@ export class SherpaCalendar extends SherpaElement {
   /* ── Rendering ──────────────────────────────────────────────────────── */
 
   /**
-   * One header control, wherever it lives.
-   *
+   * One header control, wherever it lives — own shadow DOM or projected.
    * TRAP T-slot-assigns-direct-children-only — an embedded header is a sibling
-   * in the PARENT, so a list keeps both sides of the boundary on one path.
+   * in the PARENT, so both sides of the boundary come back on one path.
    */
   #headerEls(sel: string): HTMLElement[] {
     const own = this.$<HTMLElement>(sel);
@@ -124,12 +116,7 @@ export class SherpaCalendar extends SherpaElement {
     return [own, projected].filter((e): e is HTMLElement => !!e);
   }
 
-  /**
-   * Put the month stepper in the HOST's header slot.
-   *
-   * TRAP T-slot-assigns-direct-children-only — it goes into the PARENT, not
-   * into this element, or the slot never assigns it. Idempotent.
-   */
+  /** Stepper into the HOST's header, not this element, or the slot never assigns it. */
   #projectHeader(): void {
     const header = this.clone('template.cal-header-tpl');
     if (!header) return;
@@ -150,12 +137,7 @@ export class SherpaCalendar extends SherpaElement {
     else this.#renderYears();
   }
 
-  /**
-   * What the stepper says in day view.
-   *
-   * TRAP T-range-header-names-both-months — a range names both months, and
-   * states the year once when they share it.
-   */
+  /** What the stepper says in day view — TRAP T-range-header-names-both-months. */
   #dayLabel(): string {
     const left = `${MONTHS[this.#viewMonth]}`;
     if (this.#type !== 'range') return `${left} ${this.#viewYear}`;
@@ -173,12 +155,7 @@ export class SherpaCalendar extends SherpaElement {
     return cell;
   }
 
-  /**
-   * Stamp the day grid.
-   *
-   * TRAP T-two-months-share-one-grid — a range draws two months into ONE grid,
-   * and `data-two-up` goes on the grid, not the host.
-   */
+  /** Stamp the day grid. TRAP T-two-months-share-one-grid — `data-two-up` is the GRID's. */
   #renderDays(): void {
     const grid = this.$('.cal-days');
     if (!grid) return;
@@ -191,16 +168,14 @@ export class SherpaCalendar extends SherpaElement {
     this.#stampMonth(grid, this.#viewYear, this.#viewMonth, 1);
     if (!twoUp) return;
 
-    // The month AFTER the one in view, which is what a range reads forward into.
     const next = new Date(this.#viewYear, this.#viewMonth + 1, 1);
     this.#stampMonth(grid, next.getFullYear(), next.getMonth(), 9);
   }
 
   /**
-   * The month to OPEN ON when nothing is picked yet — the latest available day.
-   *
-   * TRAP T-calendar-anchors-where-the-data-is — data-available is a SET, and
-   * opening on a month it does not reach shows a grid of disabled cells.
+   * The month to open on when nothing is picked yet — the latest available day.
+   * TRAP T-calendar-anchors-where-the-data-is — anywhere else is a grid of
+   * disabled cells.
    */
   #availableAnchor(): [number, number, number] | null {
     const days = this.#availableDays();
@@ -222,10 +197,8 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   /**
-   * Stamp one month's cells into the grid, starting at `column`.
-   *
-   * TRAP T-two-months-share-one-grid — `column` is 1 or 9 in the shared
-   * 15-track grid, and every cell states its own column and row.
+   * Stamp one month's cells into the grid, starting at `column` (1 or 9 in the
+   * shared 15-track grid), so every cell must state its own column and row.
    */
   #stampMonth(grid: HTMLElement, y: number, m: number, column: number): void {
     // Mon=0…Sun=6, so column 1 is Monday as in the Figma weekday header.
@@ -236,12 +209,10 @@ export class SherpaCalendar extends SherpaElement {
     const available = this.#availableDays();
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
-    // single mode: one day. range mode: a start/end pair + the band between.
     const single = this.#type === 'single' ? datePart(this.dataset['value']) : '';
     const start = this.#type === 'range' ? datePart(this.dataset['valueStart']) : '';
     const end = this.#type === 'range' ? datePart(this.dataset['valueEnd']) : '';
 
-    // Where each cell lands — TRAP T-two-months-share-one-grid.
     let slot = 0;
     let row = 1;
     const place = (cell: HTMLElement): void => {
@@ -267,14 +238,13 @@ export class SherpaCalendar extends SherpaElement {
       cell.setAttribute('data-label', String(d));
       cell.dataset['value'] = iso;
       cell.dataset['iso'] = iso;
-      // TRAP T-cell-state-is-the-only-paint — data-state is what the cell paints
-      // from; the older flags stay for the month and year grids' own CSS.
+      // TRAP T-cell-state-is-the-only-paint — the cell paints from data-state;
+      // the older flags stay for the month and year grids' own CSS.
       if (iso === todayIso) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
         cell.setAttribute('aria-current', 'date');
       }
-      // Out of the SPAN, or not in the SET (checked only when a host gave one).
       const outOfSpan = (min && iso < min) || (max && iso > max);
       const notInData = available != null && !available.has(iso);
       if (outOfSpan || notInData) cell.setAttribute('disabled', '');
@@ -291,8 +261,7 @@ export class SherpaCalendar extends SherpaElement {
         if (isStart || isEnd) {
           cell.setAttribute('data-selected', '');
           cell.setAttribute('data-range-end', '');
-          // TRAP T-cell-state-is-the-only-paint — three states where the node
-          // draws one; a single-day range is both ends at once.
+          // A single-day range is both ends at once.
           cell.setAttribute(
             'data-state',
             isStart && isEnd ? 'selected' : isStart ? 'range-start' : 'range-end',
@@ -319,7 +288,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
-      // TODAY first, SELECTED second — TRAP T-cell-state-is-the-only-paint.
+      // Today first, selected second — selected wins.
       if (now.getFullYear() === this.#viewYear && now.getMonth() === i) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -346,7 +315,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
-      // TODAY first, SELECTED second — TRAP T-cell-state-is-the-only-paint.
+      // Today first, selected second — selected wins.
       if (year === nowY) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');
@@ -366,7 +335,7 @@ export class SherpaCalendar extends SherpaElement {
     return this.#viewYear - ((this.#viewYear % 12));
   }
 
-  /** Push the date part of data-value into the time input (keeps them in step). */
+  /** Keep the time input in step with data-value's time tail. */
   #syncTimeInput(): void {
     const input = this.$<HTMLInputElement>('.cal-time');
     if (!input) return;
@@ -380,7 +349,7 @@ export class SherpaCalendar extends SherpaElement {
   #onPrev = (): void => this.#step(-1);
   #onNext = (): void => this.#step(+1);
 
-  /** Prev/next steps by month (day), year (month), or 12-year block (year). */
+  /** Steps by month, year, or 12-year block — whichever the view shows. */
   #step(direction: number): void {
     if (this.#view === 'day') {
       let m = this.#viewMonth + direction, y = this.#viewYear;
@@ -405,7 +374,7 @@ export class SherpaCalendar extends SherpaElement {
     const m = cell?.dataset['month'];
     if (m == null) return;
     this.#viewMonth = Number(m);
-    this.dataset['view'] = 'day'; // zoom back in to the days of the chosen month
+    this.dataset['view'] = 'day';
     this.#render();
   };
 
@@ -414,7 +383,7 @@ export class SherpaCalendar extends SherpaElement {
     const y = cell?.dataset['year'];
     if (y == null) return;
     this.#viewYear = Number(y);
-    this.dataset['view'] = 'month'; // zoom in to the months of the chosen year
+    this.dataset['view'] = 'month';
     this.#render();
   };
 
@@ -427,7 +396,7 @@ export class SherpaCalendar extends SherpaElement {
     else this.#pickSingle(iso);
   };
 
-  /** Single mode — set data-value (with the current time tail if hasTime), emit. */
+  /** Single mode — set data-value, with the time tail if hasTime. */
   #pickSingle(iso: string): void {
     const time = this.#hasTime ? this.#currentTime() : '';
     const value = time ? `${iso}T${time}` : iso;
@@ -437,25 +406,18 @@ export class SherpaCalendar extends SherpaElement {
     this.emit('datetime-change', { value });
   }
 
-  /**
-   * Range mode — two-click start→end.
-   *   1st click (or a 3rd, restarting): set start, clear end.
-   *   2nd click: record the end day (swap if it lands before the start), emit range-select.
-   */
+  /** Range mode — two-click start→end; a 3rd click restarts. Ends are ordered. */
   #pickRange(iso: string): void {
     const start = datePart(this.dataset['valueStart']);
     const end = datePart(this.dataset['valueEnd']);
-    // TRAP T-picking-stops-the-grid-following — the grid must not follow a click.
     this.#picking = true;
     try {
       if (!start || (start && end)) {
-        // begin a fresh range
         this.dataset['valueStart'] = iso;
         delete this.dataset['valueEnd'];
         this.#render();
         return;
       }
-      // complete the range (order the two ends)
       let s = start, e = iso;
       if (e < s) { [s, e] = [e, s]; }
       this.dataset['valueStart'] = s;
@@ -464,21 +426,20 @@ export class SherpaCalendar extends SherpaElement {
       this.emit('range-select', { start: s, end: e });
     } finally {
       // `finally`: a stuck flag would ignore the host for good.
-      // TRAP T-picking-stops-the-grid-following
       this.#picking = false;
     }
   }
 
-  /** hh:mm currently held in the time input (empty if unset). */
+  /** hh:mm currently held in the time input; empty if unset. */
   #currentTime(): string {
     const input = this.$<HTMLInputElement>('.cal-time');
     return input && TIME_RE.test(input.value) ? input.value : '';
   }
 
-  /** Time input changed — fold it into data-value and re-emit datetime-change. */
+  /** Time input changed — fold it into data-value. */
   #onTimeInput = (): void => {
     const date = datePart(this.dataset['value']);
-    if (!date) return; // no day chosen yet — nothing to combine with
+    if (!date) return;
     const time = this.#currentTime();
     const value = time ? `${date}T${time}` : date;
     this.dataset['value'] = value;
@@ -489,15 +450,14 @@ export class SherpaCalendar extends SherpaElement {
 
   /**
    * Jump to today and select it.
-   *
    * TRAP T-embedded-footer-needs-a-public-verb — an embedded calendar's Today
-   * button lives in the HOST's footer, so the behaviour needs a public door.
+   * button lives in the HOST's footer, so it needs a public door.
    */
   today(): void {
     this.#onToday();
   }
 
-  /** Today — jump there and pick it, via the normal pick path so events fire. */
+  /** Goes through the normal pick path, so the events fire. */
   #onToday = (): void => {
     const now = new Date();
     this.#viewYear = now.getFullYear();
@@ -511,12 +471,12 @@ export class SherpaCalendar extends SherpaElement {
     else this.#pickSingle(iso);
   };
 
-  /** Cancel — let the host tear down / revert. Carries no value. */
+  /** Cancel — carries no value; the host tears down or reverts. */
   #onCancel = (): void => {
     this.emit('calendar-cancel', {});
   };
 
-  /** Apply — confirm the current value (the single day, or its date+time tail). */
+  /** Apply — confirm the current value. */
   #onApply = (): void => {
     this.emit('calendar-apply', { value: this.dataset['value'] ?? '' });
   };

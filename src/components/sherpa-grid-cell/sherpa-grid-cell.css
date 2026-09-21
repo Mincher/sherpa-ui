@@ -1,10 +1,6 @@
 /**
  * sherpa-grid-cell — presentation.
- *
- * One atomic Data Grid cell. data-type sets the role treatment; the checkbox,
- * actions, and group-toggle parts are CSS-gated off data-* flags. Surfaces are
- * neutral Style tokens; the header band is a slightly stronger fill. Numeric
- * right-alignment / emphasis live in the slotted content, not here.
+ * One Data Grid cell; data-type sets the role, data-* flags gate the parts.
  */
 
 :host {
@@ -14,9 +10,7 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* Figma Grid Cell (926:34253): FIXED 32 tall, padding space/2xs 4, gap 8, a 0.5px
-   style-border/base stroke on ALL sides, label style-content/base 14/20 REGULAR in
-   every type. Header / group / filter fill the neutral band (#e8e8f6). */
+/* Figma Grid Cell 926:34253. */
 .cell {
   display: flex;
   align-items: center;
@@ -29,8 +23,7 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* Header / filter / group sit on the neutral band. The label weight does NOT change
-   (Figma binds content/weight/regular in every type). */
+/* Band types only — label weight stays regular in every type. */
 :host([data-type="header"]) .cell,
 :host([data-type="filter"]) .cell,
 :host([data-type="group"]) .cell {
@@ -42,7 +35,7 @@
   min-inline-size: 0;
 }
 
-/* ── Leading checkbox — only with data-has-checkbox ─────────────────── */
+/* ── Leading checkbox ─────────────────────────────────────────────── */
 .checkbox { display: none; }
 :host([data-has-checkbox]) .checkbox {
   display: inline-flex;
@@ -50,14 +43,13 @@
   flex: 0 0 auto;
 }
 
-/* ── Group toggle — only for data-type="group" ─────────────────────── */
+/* ── Group toggle ─────────────────────────────────────────────────── */
 .toggle { display: none; }
 :host([data-type="group"]) .toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  /* Figma toggle: Button/Type=icon at Structure xs → 16×16, Transparent look. */
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
@@ -79,7 +71,7 @@
 }
 :host([data-expanded]) .toggle-caret { transform: rotate(90deg); }
 
-/* ── Trailing actions — only with data-has-actions ─────────────────── */
+/* ── Trailing actions ─────────────────────────────────────────────── */
 .actions { display: none; }
 :host([data-has-actions]) .actions {
   display: inline-flex;
@@ -101,7 +93,6 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  /* Figma sort/menu: Transparent icon buttons in style-content/base ink. */
   color: var(--sherpa-style-content-base, #0c0b11);
   cursor: pointer;
 
@@ -110,7 +101,7 @@
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
-/* Sort caret — a small triangle; direction flips it, unset = faint neutral. */
+/* Drawn triangle; direction flips it. */
 .sort-caret {
   inline-size: 0;
   block-size: 0;

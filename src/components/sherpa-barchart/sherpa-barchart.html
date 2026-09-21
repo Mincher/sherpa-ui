@@ -1,15 +1,7 @@
 <!--
   sherpa-barchart — a vertical bar chart for categorical comparison.
-
-  populate([{ label, value, colorIndex? }]) stamps a bar per category from a
-  cloning prototype. Each bar's height is a --_h custom property (its value as a
-  percentage of the max) that CSS turns into the bar height. Colour is categorical.
-
-  The Y AXIS matches the Figma "Chart Axis" (Orientation=vertical): value labels
-  with a tick marker between each pair, drawn with a 0.5px style-border/base rule,
-  and an optional rotated axis label beside them. The ticks are the axis's own
-  right edge, so they line up with the plot without a second element to keep in
-  step. Axis text is content/size/base 14 on line-height/base 20, content/body/+1.
+  populate([{ label, value, colorIndex? }]) stamps a bar per category; each bar's
+  height is a --_h custom property CSS turns into the height.
 
   Public API:
     data-label       chart title
@@ -30,62 +22,41 @@
       <span class="title"><slot name="title"></slot></span>
     </figcaption>
     <div class="chart-body">
-      <!-- Y axis: a caption plus the value/tick column, both CSS-gated. -->
       <span class="axis-label axis-label-y" part="axis-label"></span>
       <div class="y-axis" part="y-axis" aria-hidden="true"></div>
 
       <div class="plot" part="plot" role="img" aria-label="Bar chart">
-        <!-- One rule per value division, behind the bars (Figma's Data Field
-             gridlines). A repeating gradient, so the line spacing and the axis
-             label spacing are both just the division count. -->
+        <!-- A repeating gradient, so line spacing and axis-label spacing are both
+             just the division count. -->
         <div class="gridlines" part="gridlines" aria-hidden="true"></div>
         <div class="bars" part="bars"></div>
       </div>
 
-      <!-- The HORIZONTAL axis: category labels in their OWN grid row, BELOW the
-           baseline rule the plot ends on. They used to live inside .bar-col, which
-           put them above that rule (inside the drawing area) and let a long label
-           shrink the bars. As a sibling row they share the plot's column tracks
-           via `subgrid`, so label N is always exactly under bar N. -->
+      <!-- Category labels are a SIBLING row, not inside .bar-col: they sit below
+           the baseline rule and share the plot's column tracks via `subgrid`, so a
+           long label cannot shrink the bars. -->
       <div class="x-axis-row" part="x-axis" aria-hidden="true"></div>
     </div>
 
-    <!-- The legend belongs to the CHART, not to the card around it. A categorical
-         series is only readable if the reader can name the colours, so the pair is
-         one thing and the ratio between them is this component's business — the
-         same rule sherpa-donut-chart already follows for its own legend.
-
-         A HORIZONTAL legend sits BELOW the plot (this slot, in the host's flex
-         column); a VERTICAL one sits BESIDE it, which the CSS switches to a two
-         column grid on. -->
+    <!-- The legend belongs to the CHART, not the card around it. -->
     <slot name="legend"></slot>
   </figure>
 
-  <!-- One y value + its tick rule. The rule is the cell's own border, so the tick
-       cannot drift out of step with the label it belongs to. -->
+  <!-- The tick rule is the cell's own border, so it cannot drift out of step with
+       its label. -->
   <template class="ytick-tpl">
     <span class="y-tick"><span class="y-value"></span></span>
   </template>
 
   <!--
-    One bar, plus its hover tooltip.
-
-    The tip is a CHILD of the bar's <button>, not a sibling: the button is the
-    hover target AND the anchor, and nesting means one `:hover` selector covers
-    both without the tip needing to know its own index. Placement is entirely
-    declarative — see the .chart-tip rules in core/sherpa-base.css, which use
-    anchor positioning and position-try-fallbacks to flip the tip to whichever
-    side has room. No JS measures anything.
+    The tip is a CHILD of the button, not a sibling: the button is both hover
+    target and anchor, so one `:hover` covers both. Placement is declarative —
+    see .chart-tip in core/sherpa-base.css. No JS measures anything.
   -->
   <template class="bar-tpl">
     <button class="bar-col chart-mark" type="button">
-      <!--
-        The BAR is the anchor, not the column. A .bar-col is the full plot height
-        (179px on a 180px plot), so anchoring to it put the tip above the COLUMN —
-        far from a short bar, and flipped below whenever the plot sat near the top
-        of the viewport. Anchoring to the bar itself puts the tip just above the
-        value it describes.
-      -->
+      <!-- The BAR is the anchor, not the column: a .bar-col is the full plot
+           height, so anchoring to it puts the tip far above a short bar. -->
       <span class="bar chart-anchor" part="bar"></span>
       <span class="chart-tip" part="tip" role="tooltip">
         <span class="chart-tip-label"></span>
@@ -94,14 +65,12 @@
     </button>
   </template>
 
-  <!-- One category label, stamped into .x-axis-row alongside its bar. -->
   <template class="xlabel-tpl">
     <span class="bar-label" part="bar-label"></span>
   </template>
 </template>
 <!--
-  The <figure> is a display:contents wrapper so the host's flex column still
-  lays out the caption + plot directly; it adds figure/figcaption semantics
-  without changing layout. The plot is role="img" so AT treats the CSS-drawn
-  bars as one labelled image rather than descending into meaningless divs.
+  The <figure> is display:contents — figure/figcaption semantics without changing
+  layout. The plot is role="img" so AT reads the CSS-drawn bars as one labelled
+  image rather than descending into meaningless divs.
 -->

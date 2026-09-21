@@ -1,20 +1,10 @@
 /**
- * sherpa-sparkline.css — all sparkline presentation.
- *
- * A CSS-only trend chart. JS provides the ONE thing CSS cannot compute: the raw
- * data values, written to --_v0..--_v7 plus --_min / --_range on the host (a
- * data→CSS-variable bridge, not styling). CSS normalises each value to 0–100
- * with calc() and draws it: line variant renders an angled area + stroke via
- * clip-path on pseudo-elements; bar variant flattens each segment's top edge to
- * a column. Segment/point visibility is driven by the host's data-len via
- * :host([data-len="…"]) selectors — JS never sets display/width/colour here.
+ * sherpa-sparkline.css — a CSS-only trend chart. JS writes the raw values to
+ * --_v0..7 plus --_min / --_range on the host; CSS normalises and draws them.
  */
 
-/* Typed JS→CSS bridges: TS writes the raw values (--_v0..7) plus the normalisation
- * range (--_min / --_range) on the host; the calc()s on .shape read them. Typing as
- * <number> guards the syntax and lets the trend animate; inherits so the host-set
- * values reach the descendants. Non-Chromium falls back to the plain declarations
- * on :host below. */
+/* Typed so the values animate and inherit to descendants. Non-Chromium falls
+ * back to the plain declarations on :host below. */
 @property --_v0 { syntax: "<number>"; inherits: true; initial-value: 0; }
 @property --_v1 { syntax: "<number>"; inherits: true; initial-value: 0; }
 @property --_v2 { syntax: "<number>"; inherits: true; initial-value: 0; }
@@ -33,25 +23,16 @@
   min-inline-size: 40px;
   block-size: var(--sherpa-display-mode-size-xl, 28px);
 
-  /* Trend colour — the DATA-VIZ role of the current status, not a card's border
-     step. `style-border/data-viz` is a Style variable with the same 8 status
-     modes as every other, so a sparkline inside a [data-status="warning"] Metric
-     picks up amber through the ordinary cascade with no chart-specific code.
-
-     It read `--_status-border-strong` (style-border/base +1) before: a CARD's
-     strong border step, which happened to be status-tinted but is not a data
-     colour — so a sparkline and a chart mark of the same status did not match.
-
-     The fallback is the default mode's own data-viz colour (sequence 1). */
+  /* The DATA-VIZ role of the current status, not a card's border step — so a
+     sparkline matches a chart mark of the same status. */
   --_line: var(--_status-data-viz-border, var(--sherpa-style-border-data-viz,
     var(--sherpa-data-viz-series-1, #8364c880)));
 
-  /* Raw values set by JS; CSS normalises them via calc() in .shape. */
   --_v0: 0; --_v1: 0; --_v2: 0; --_v3: 0;
   --_v4: 0; --_v5: 0; --_v6: 0; --_v7: 0;
   --_min: 0;
   --_range: 1;
-  /* Halved from 1.5: at a 28px sparkline height a 1.5px line read as a bar. */
+  /* At a 28px height anything thicker reads as a bar. */
   --_stroke: 0.75px;
   --_point-size: var(--sherpa-display-mode-space-xs, 8px);
 }
@@ -63,8 +44,7 @@
   inline-size: 100%;
   block-size: 100%;
   color: var(--_line);
-  /* The containing block for the absolutely-placed .hotspots overlay, so a dot's
-     percentage offsets are of the CHART, not of the page. */
+  /* Containing block for .hotspots — dot offsets are % of the CHART. */
   position: relative;
 }
 
@@ -74,7 +54,7 @@
 
 /* ── Shapes: one per adjacent value pair ───────────────────────────── */
 .shape {
-  /* CSS normalisation — raw value → 0–100 */
+  /* raw value → 0–100 */
   --_n-start: calc((var(--_v-start) - var(--_min)) / var(--_range) * 100);
   --_n-end: calc((var(--_v-end) - var(--_min)) / var(--_range) * 100);
 
@@ -82,7 +62,6 @@
   flex: 1 1 0%;
   min-inline-size: 0;
 
-  /* Map each shape to its adjacent raw-value pair. */
   &[data-index="0"] { --_v-start: var(--_v0); --_v-end: var(--_v1); }
   &[data-index="1"] { --_v-start: var(--_v1); --_v-end: var(--_v2); }
   &[data-index="2"] { --_v-start: var(--_v2); --_v-end: var(--_v3); }
@@ -91,12 +70,12 @@
   &[data-index="5"] { --_v-start: var(--_v5); --_v-end: var(--_v6); }
   &[data-index="6"] { --_v-start: var(--_v6); --_v-end: var(--_v7); }
 
-  /* Filled area under the line — pseudo so points aren't clipped. */
+  /* Pseudo so points aren't clipped. */
   &::before {
     content: "";
     position: absolute;
     inset: 0;
-    /* Translucent area fill; degrades to no fill (stroke still shows) where color-mix is absent. */
+    /* No fill where color-mix is absent; the stroke still shows. */
     background: transparent;
     clip-path: polygon(
       0% calc(100% - var(--_n-start) * 1%),
@@ -105,10 +84,8 @@
       0% 100%
     );
   }
-  /* A GRADIENT from the status colour down to fully transparent, so the fill
-     fades out rather than sitting as a flat 24% wash. `transparent` is
-     transparent BLACK in some engines, which greys the mid-tones — an explicit
-     0%-alpha of the same hue keeps the ramp clean. */
+  /* `transparent` is transparent BLACK in some engines, which greys the
+     mid-tones — an explicit 0%-alpha of the same hue keeps the ramp clean. */
   @supports (color: color-mix(in srgb, red, blue)) {
     &::before {
       background: linear-gradient(
@@ -119,7 +96,6 @@
     }
   }
 
-  /* Stroke on the top edge. */
   &::after {
     content: "";
     position: absolute;
@@ -159,10 +135,9 @@
 
 :host([data-type="bar"]) .point { display: none; }
 
-/* ── Data-presence collapse — CSS owns visibility from the host's data-len ──
- * JS reflects the value count on the host as data-len; CSS reveals the live
- * shapes (index < len-1) and points (index < len). Everything is hidden until
- * data-len says otherwise, so an unfed sparkline draws nothing. */
+/* ── Data-presence collapse ────────────────────────────────────────────────
+ * Hidden until the host's data-len says otherwise, so an unfed sparkline draws
+ * nothing. */
 .shape,
 .point { display: none; }
 
@@ -236,24 +211,15 @@
   display: block;
 }
 
-/* Bar variant never shows points, regardless of length. */
 :host([data-type="bar"]) .point { display: none; }
 
-/* Hover reveals the live points. */
 :host(:hover) .point { opacity: 1; }
 
 /* ── Hover dots + tooltip anchors ────────────────────────────────────────────
- * One dot per data point. They are real HTML buttons, NOT SVG: an SVG element
- * cannot be a CSS anchor in Chromium (anchor-name is accepted and silently never
- * resolves — the tip lands in the viewport corner).
- *
- * Position comes from calc() on the SAME --_vN / --_min / --_range bridge the
- * shapes use, in PERCENTAGES of the chart box. So there is one source of truth for
- * where a point sits, and the dots stay correct at any size without JS measuring
- * anything or re-running on resize.
- *
- * The layer sits over the whole chart and is transparent to the pointer; only the
- * dots themselves take the hover. */
+ * The dots are real HTML buttons, NOT SVG: an SVG element cannot be a CSS anchor
+ * in Chromium — anchor-name is accepted, silently never resolves, and the tip
+ * lands in the viewport corner. The layer is transparent to the pointer; only
+ * the dots take the hover. */
 .hotspots {
   position: absolute;
   inset: 0;
@@ -265,19 +231,14 @@
   --_n: calc((var(--_v) - var(--_min)) / var(--_range) * 100);
 
   position: absolute;
-  /* The x position is index / (len - 1) across the box: point 0 at the left edge,
-     the last point at the right. --_len comes from the host's value count, which is
-     the one number CSS cannot count for itself. */
+  /* index / (len - 1) across the box. --_len comes from the host's value
+     count — the one number CSS cannot count for itself. */
   inset-inline-start: calc(var(--_i) / max(1, var(--_len, 1) - 1) * 100%);
   inset-block-start: calc(100% - var(--_n) * 1%);
-  /* Centre the dot ON the point rather than hanging off it. */
   translate: -50% -50%;
 
-  /* A generous hit area — an 8px dot is a cruel hover target. The visible dot is
-     drawn by ::after inside it, so the target can be bigger than the mark.
-     `size-base` 16, not 24: the box is also the tooltip's ANCHOR, so an oversized
-     one pushes the tip away from the dot it is meant to point at. 16 is twice the
-     dot and still an easy target. */
+  /* A hit area bigger than the 8px mark. 16, not 24: this box is also the
+     tooltip's ANCHOR, so an oversized one pushes the tip off the dot. */
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
@@ -286,8 +247,7 @@
   cursor: pointer;
   pointer-events: auto;
 
-  /* The visible dot, revealed on hover so the reader sees WHICH point they are
-     reading. Drawn in the trend colour, so it matches its own line. */
+  /* The visible dot. */
   &::after {
     content: "";
     position: absolute;
@@ -308,8 +268,6 @@
     &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
   }
 
-  /* Each dot's own value and index. The anchor NAME is set below, on BOTH the dot
-     and its tip — CSS cannot derive a per-element name. */
   &[data-index="0"] { --_i: 0; --_v: var(--_v0); }
   &[data-index="1"] { --_i: 1; --_v: var(--_v1); }
   &[data-index="2"] { --_i: 2; --_v: var(--_v2); }
@@ -320,8 +278,8 @@
   &[data-index="7"] { --_i: 7; --_v: var(--_v7); }
 }
 
-/* The anchor NAME, on the dot AND on its tip. They are SIBLINGS now (an absolute
-   mark breaks anchor positioning for a nested fixed tip), so the name is the only
+/* The anchor NAME, on the dot AND its tip. They are SIBLINGS — an absolute mark
+   breaks anchor positioning for a nested fixed tip — so the name is the only
    thing joining them. */
 :is(.hotspot, .chart-tip)[data-index="0"] { --_anchor: --spark-0; }
 :is(.hotspot, .chart-tip)[data-index="1"] { --_anchor: --spark-1; }
@@ -332,16 +290,10 @@
 :is(.hotspot, .chart-tip)[data-index="6"] { --_anchor: --spark-6; }
 :is(.hotspot, .chart-tip)[data-index="7"] { --_anchor: --spark-7; }
 
-/* Hovering a dot reveals ITS tip. They are adjacent siblings, so `+` reaches it —
-   the shared rule in core/sherpa-base.css already covers this pairing. */
+/* Hover reveal lives in core/sherpa-base.css — dot + tip are adjacent siblings. */
 
-/* A dot beyond the data length has no point to sit on. Hidden by default and
-   revealed per data-len, the same way the shapes and points already are — so an
-   unfed sparkline offers no phantom hover targets.
-
-   Selected by data-INDEX, not :nth-child. The dots and their tips now alternate
-   as siblings, so `:nth-child(-n + 2)` would match dot 0 and TIP 0 rather than
-   dots 0 and 1. */
+/* Selected by data-INDEX, not :nth-child: dots and tips alternate as siblings,
+   so `:nth-child(-n + 2)` would match dot 0 and TIP 0, not dots 0 and 1. */
 .hotspot { display: none; }
 
 :host([data-len="2"]) .hotspot[data-index="0"],

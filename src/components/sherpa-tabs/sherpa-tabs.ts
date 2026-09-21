@@ -1,10 +1,8 @@
 /**
- * sherpa-tabs — a set of tabs that switch between panels.
+ * sherpa-tabs — tabs that switch between slotted panels.
  *
- * Give it tabs with populate([{ id, label }]). data-current-id says which tab is
- * open: CSS gives that tab the underline and shows its matching panel. Clicking a
- * tab switches to it and fires tab-change. The arrow keys move between tabs, and
- * Home/End jump to the first and last; Enter or Space opens a tab.
+ * Tabs come from populate([{ id, label }]); data-current-id says which is open
+ * and CSS does the rest. Arrow keys / Home / End move between tabs.
  *
  * @prop {string} currentId — currently active tab id (read/write)
  * @method select(id) — activate a tab by id
@@ -24,7 +22,7 @@ export class SherpaTabs extends SherpaElement {
   #tabs: TabDef[] = [];
 
   override onRender(): void {
-    // One delegated listener for the whole strip — tabs come and go, this stays.
+    // Delegated — tabs come and go, the strip stays.
     this.$('.tabs')?.addEventListener('click', this.#onClick);
     this.$('.tabs')?.addEventListener('keydown', this.#onKeyDown);
     if (this.#tabs.length) this.#render();
@@ -34,8 +32,6 @@ export class SherpaTabs extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-current-id') this.#applyCurrent();
   }
-
-  /* ── Public API ──────────────────────────────────────────────────────── */
 
   get currentId(): string {
     return this.dataset['currentId'] ?? '';
@@ -53,32 +49,25 @@ export class SherpaTabs extends SherpaElement {
     this.emit('tab-change', { id });
   }
 
-  /* ── Data path: populate([{ id, label }]) ────────────────────────────── */
-
   protected override renderData(data: unknown): void {
     const list = Array.isArray(data) ? (data as TabDef[]) : [];
     this.#tabs = list
       .filter((t): t is TabDef => t != null && typeof t === 'object')
       .map((t) => ({ id: String(t.id ?? ''), label: String(t.label ?? '') }))
       .filter((t) => t.id);
-    // Default the active tab to the first one when none is set.
     if (!this.dataset['currentId'] && this.#tabs[0]) {
       this.setAttribute('data-current-id', this.#tabs[0].id);
     }
     this.#render();
   }
 
-  /* ── Private ─────────────────────────────────────────────────────────── */
-
+  /** The prototype declares id and label; only the derived a11y wiring is left. */
   #render(): void {
-    // The id and the label are declared on the prototype. What is left is the
-    // a11y wiring, which is derived rather than copied: two ids built AROUND the
-    // tab's own, and a roving tabindex that depends on the position.
     this.renderItems('.tabs', 'template.tab-tpl', this.#tabs, {
       after: (btn, tab, i) => {
         btn.id = `tab-${tab.id}`;
         btn.setAttribute('aria-controls', `panel-${tab.id}`);
-        // Roving tabindex — only the first tab is tab-reachable until active applies.
+        // Roving tabindex, until #applyCurrent moves it to the active tab.
         btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
       },
     });
@@ -95,12 +84,12 @@ export class SherpaTabs extends SherpaElement {
       btn.setAttribute('aria-selected', String(on));
       btn.setAttribute('tabindex', on ? '0' : '-1');
     }
-    // If nothing matched (e.g. before render), keep the first tab reachable.
+    // Nothing matched (e.g. before render) — keep one tab reachable.
     if (active === '' && this.#tabs[0]) {
       this.$(`.tab[data-id="${this.#tabs[0].id}"]`)?.setAttribute('tabindex', '0');
     }
 
-    // Mark the matching slotted panel (consumer's light DOM); CSS reveals it.
+    // Panels are the consumer's light DOM; CSS reveals the marked one.
     for (const panel of this.#panels()) {
       panel.toggleAttribute('data-tab-active', panel.dataset['tab'] === active);
       panel.setAttribute('role', 'tabpanel');
@@ -119,8 +108,7 @@ export class SherpaTabs extends SherpaElement {
   }
 
   #onClick = (event: Event): void => {
-    // Tabs are our own shadow-DOM buttons — event.target is not retargeted, so a
-    // plain closest() is correct here (no composedPath needed).
+    // Our own shadow buttons — target is not retargeted, so closest() suffices.
     const btn = (event.target as HTMLElement).closest<HTMLElement>('.tab');
     const id = btn?.dataset['id'];
     if (id) this.select(id);

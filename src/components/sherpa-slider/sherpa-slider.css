@@ -1,32 +1,17 @@
 /**
- * sherpa-slider.css — all slider presentation.
- *
- * A native <input type=range> laid transparently over a styled track. The filled
- * portion is a separate .fill element whose width is the ONE value JS supplies,
- * via the --_pct custom property (value → --_pct in TS); everything else —
- * the track, the thumb, the label/value visibility, the disabled look — is pure
- * CSS off data-*. JS never sets width/display/colour here.
- *
- * Per its Figma bindings the empty rail fills a NEUTRAL surface (surface/default/+2);
- * the filled portion + thumb take the primary accent (--_accent, Figma
- * surface/interactive/primary). The old status-cascade accent was drift and is gone.
- *
- * Accepted divergence: the value field here is a bare native number input, whereas
- * Figma dresses it as the fuller Input Field (atom) chrome — left as-is by design.
+ * sherpa-slider.css — a native <input type=range> laid transparently over a
+ * styled track. JS supplies only --_pct; everything else is CSS off data-*.
  */
 
-/* Typed JS→CSS bridge: TS writes value→--_pct as a percentage. Typing it lets the
- * fill width animate and guards the syntax; inherits so the host-set value reaches
- * the descendant .fill. Non-Chromium ignores @property and falls back to the plain
- * `--_pct: 0%` declaration on :host below. */
+/* Typed so the fill width animates; inherits so the host-set value reaches .fill.
+ * Non-Chromium ignores @property and falls back to the `--_pct: 0%` on :host. */
 @property --_pct {
   syntax: "<percentage>";
   inherits: true;
   initial-value: 0%;
 }
 
-/* The START of the fill. 0 in single mode, so `.fill` runs from the rail's head
-   to --_pct exactly as it always did and the single-value path is unchanged. */
+/* Start of the fill. 0 in single mode, so .fill runs from the rail's head. */
 @property --_pct-start {
   syntax: "<percentage>";
   inherits: true;
@@ -40,10 +25,7 @@
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* Filled range + thumb take the accent indicator (Figma: style-indicator/accent
-     → surface/accent/+2 = #3b4ccd). */
   --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
-  /* Figma handle: 16×16 ellipse, accent fill, 2px inside stroke style-border/base. */
   --_thumb: var(--sherpa-display-mode-size-sm, 16px);
   --_rail: var(--sherpa-display-mode-space-2xs, 4px);
   --_pct: 0%;
@@ -73,7 +55,7 @@
   gap: var(--sherpa-display-mode-space-sm, 12px);
 }
 
-/* Numeric value input — mono + right-aligned per the numeric convention */
+/* Mono + right-aligned per the numeric convention. */
 .value-input {
   display: none;
   inline-size: var(--sherpa-display-mode-size-6xl, 64px);
@@ -88,7 +70,7 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
   box-sizing: border-box;
-  /* hide the native number spinners — the slider is the primary control */
+  /* Hide the native spinners — the slider is the primary control. */
   appearance: textfield;
   -moz-appearance: textfield;
 
@@ -101,8 +83,7 @@
   }
 }
 :host([data-show-value]) .value-end { display: block; }
-/* The START field exists only in a range. A single slider has one value, and an
-   empty box beside it would read as a second one that failed to fill. */
+/* Range only: beside a single slider an empty box reads as a value that failed. */
 :host([data-type="range"][data-show-value]) .value-start { display: block; }
 :host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
 :host([disabled]) .value-input {
@@ -129,9 +110,7 @@
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   overflow: hidden;
 }
-/* The filled span. `margin-inline-start` offsets it to the range's start and the
-   width is what is left, so ONE element serves both modes: in single mode the
-   start is 0 and this is the old "fill from the head" behaviour exactly. */
+/* One element serves both modes: offset to the range start, width is the rest. */
 .fill {
   block-size: 100%;
   margin-inline-start: var(--_pct-start, 0%);
@@ -158,7 +137,6 @@
   &::-webkit-slider-runnable-track { background: transparent; block-size: var(--_thumb); }
   &::-moz-range-track { background: transparent; block-size: var(--_thumb); }
 
-  /* Thumb. */
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -176,7 +154,7 @@
     border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
   }
 
-  /* Focus ring — explicit box-shadow, never a silent --focus-ring(). */
+  /* Explicit box-shadow — a CSS @function fails silently where unsupported. */
   &:focus-visible::-webkit-slider-thumb {
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
@@ -186,9 +164,7 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-/* The rail is surface/default/+2 (#b3b3c3). content-body-2 is the SAME grey, so a
-   disabled fill/thumb would vanish into the rail. Use the darker inactive ink so the
-   filled portion + thumb still read (matches the disabled-checked tick treatment). */
+/* content-body-2 is the same grey as the rail, so the fill would vanish into it. */
 :host([disabled]) { --_accent: var(--sherpa-theme-content-body-1, #35353d); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
 :host([disabled]) .track {
@@ -196,23 +172,14 @@
 }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
-/* ── Range mode: two thumbs on one track ─────────────────────────────
- * There is no native two-thumb range input, so range mode stacks TWO of them on
- * the same rail and gives each one end. That buys the browser's own dragging,
- * keyboard stepping and a11y for both thumbs instead of re-implementing them.
- *
- * The catch is that a stacked input covers the whole track, so the one painted
- * on top would swallow every click — including clicks nearer the other thumb.
- * `pointer-events: none` on the input with `auto` on its THUMB is the fix: only
- * the 16px handles are hittable, and the bare rail belongs to neither.
+/* ── Range mode: two stacked inputs, one per end ─────────────────────
+ * The top input covers the whole track and would swallow every click, so the
+ * inputs take pointer-events: none and only their thumbs are hittable.
  */
 .range-end { display: none; }
 
 :host([data-type="range"]) .range,
 :host([data-type="range"]) .range-end {
-  /* Both inputs occupy the same box. The first is in flow; the second is pulled
-     back over it, so the two rails coincide exactly and a percentage means the
-     same position on either. */
   pointer-events: none;
 }
 :host([data-type="range"]) .range-end {

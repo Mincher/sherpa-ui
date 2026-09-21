@@ -1,19 +1,6 @@
 /**
  * sherpa-tooltip.css — all tooltip presentation.
- *
- * The host is an inline wrapper; the trigger sits in .anchor and the tip in .bubble.
- * The bubble is hidden by default and revealed purely by CSS on :host(:hover) /
- * :host(:focus-within) — no JS visibility, no JS positioning. data-placement picks
- * which side the bubble sits on with plain absolute positioning + a small offset.
- *
- * Figma binding model (Tooltip (atom), data-extracted): the bubble fills
- * style-content/base (#35353d) with white 12/16 regular text; the corner rounds
- * border/rounding/base (4) and the tip pads space/2xs × space/xs with gap/md 8. The
- * component pins Elevation=md → one bound drop shadow (offset 8,8 · blur 16 ·
- * spread −4 · style-surface/shadow, now neutral/fixed/color 4 at 30% =
- * #35353d4c), written out here because a [data-elevation] pin is a bare
- * selector in tokens.css and is not inherited into this shadow root. A 12×6 pointer arrow (.arrow) in the same fill points from the
- * bubble back toward the trigger; its side flips with data-placement.
+ * Trigger in .anchor, tip in .bubble; show/hide and placement are CSS only.
  */
 
 :host {
@@ -34,8 +21,7 @@
 .bubble {
   position: absolute;
   z-index: 10;
-  /* The UA gives a popover a border, a background and its own inset. None of
-     them belong to this bubble, which paints its own. */
+  /* Reset the UA popover border/background/inset — the bubble paints its own. */
   margin: 0;
   border: 0;
   overflow: visible;
@@ -52,7 +38,8 @@
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  /* Elevation=md (Figma pin on the atom). */
+  /* Elevation=md, written out: a [data-elevation] pin is a bare selector in
+     tokens.css and never reaches this shadow root. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
@@ -60,33 +47,24 @@
     -4px
     var(--sherpa-style-surface-shadow, #35353d4c);
 
-  /* Hidden state — no layout, unreadable to AT, no pointer capture. */
+  /* Hidden state — unreadable to AT, no pointer capture. */
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease, visibility 120ms ease;
 }
 
-/* ── The pointer arrow — a CSS border-triangle in the bubble fill ─────────
-   Figma draws a 12×6 tail (same fill as the bubble) that points from the
-   bubble back toward the trigger. Rendered here as a border-triangle whose
-   coloured border edge faces the anchor; the three transparent edges shape
-   the wide, shallow triangle. Default (placement top) points down.
-
-   NOTE: the arrow deliberately keeps PHYSICAL top/right/bottom/left offsets.
-   They are welded to the physical border-width/border-color triangle geometry
-   (a physical border edge is coloured to make the point); swapping only the
-   offsets to logical inset-* would desync the point direction from the coloured
-   border in RTL. Geometry, not spacing — leave physical. */
+/* ── The pointer arrow — a 12×6 CSS border-triangle in the bubble fill ───
+   The offsets stay PHYSICAL on purpose: they are welded to the physical
+   border-width/border-color that makes the point, so logical inset-* would
+   desync point direction from coloured edge in RTL. */
 .arrow {
   position: absolute;
   width: 0;
   height: 0;
   border-style: solid;
-  /* Down-pointing: 12 wide (2×6 side borders) × 6 tall (top border). */
   border-width: 6px 6px 0 6px;
   border-color: var(--_bg) transparent transparent transparent;
-  /* Sit centred on the bubble's bottom edge. */
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
@@ -126,7 +104,6 @@ slot[name="tip"] { display: none; }
 
 /* ── Arrow follows the placement — always points back at the trigger ────── */
 :host([data-placement="bottom"]) .arrow {
-  /* Points up, sits on the bubble's top edge. */
   top: auto;
   bottom: 100%;
   left: 50%;
@@ -135,7 +112,6 @@ slot[name="tip"] { display: none; }
   border-color: transparent transparent var(--_bg) transparent;
 }
 :host([data-placement="left"]) .arrow {
-  /* Points right, sits on the bubble's right edge. */
   top: 50%;
   bottom: auto;
   left: 100%;
@@ -144,7 +120,6 @@ slot[name="tip"] { display: none; }
   border-color: transparent transparent transparent var(--_bg);
 }
 :host([data-placement="right"]) .arrow {
-  /* Points left, sits on the bubble's left edge. */
   top: 50%;
   bottom: auto;
   left: auto;
@@ -155,14 +130,8 @@ slot[name="tip"] { display: none; }
 }
 
 /* ── Floating mode: the bubble lives in the TOP LAYER ────────────────
- * A tooltip stands outside the box it belongs to by definition, so any ancestor
- * with `overflow` cuts it off — a filter toolbar's chip run clips, and the tip
- * above a chip's count badge was lost entirely.
- *
- * `popover` puts it in the top layer, past every clip and stacking context. A
- * popover is `position: fixed` there, so the host's own offsets mean nothing and
- * JS supplies measured viewport coordinates instead — the same --_x / --_y
- * bridge sherpa-menu uses, and for the same reason: CSS anchor positioning
+ * `popover` escapes every ancestor `overflow` clip. A popover is fixed, so JS
+ * measures viewport coordinates into --_x / --_y — CSS anchor positioning
  * cannot cross a shadow boundary.
  */
 :host([data-floating]) .bubble {
@@ -170,22 +139,19 @@ slot[name="tip"] { display: none; }
   inset: auto;
   inset-block-start: var(--_y, 0);
   inset-inline-start: var(--_x, 0);
-  /* Centred on the trigger by JS, which measures both boxes — the 50% + translate
-     pair below places against the HOST, which a fixed box no longer sits in. */
+  /* JS centres it; the 50% + translate pair places against the HOST, which a
+     fixed box no longer sits in. */
   transform: none;
 }
 
-/* VISIBLE whenever it is open. Ordinary mode reveals on :hover / :focus-within
-   of the wrapped trigger — but a floating tooltip may not wrap anything at all
-   (see data-anchor), so there is no hover state here to key off. Its JS opens
-   and closes the popover, and `:popover-open` is the state that follows. */
+/* A floating tooltip may wrap nothing (see data-anchor), so there is no hover
+   state to key off — `:popover-open` is the state instead. */
 :host([data-floating]) .bubble:popover-open {
   visibility: visible;
   opacity: 1;
 }
 
-/* The arrow points DOWN from a bubble sitting above its trigger, which is where
-   floating mode always puts it. */
+/* Floating mode always sits the bubble above its trigger. */
 :host([data-floating]) .arrow {
   inset-block-start: 100%;
   inset-block-end: auto;

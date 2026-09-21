@@ -1,18 +1,9 @@
 /**
  * sherpa-app-shell — the boilerplate frame for an app or a view.
  *
- * The nav rail is an OVERLAY down the left edge at full height; the header +
- * content wrapper is inset past it. Matching the Figma App Shell, the nav and
- * header are PRE-COMPOSED — a <sherpa-nav> and <sherpa-app-header> ship as the
- * named-slot defaults; consumers drop view content in the default slot and can
- * replace either by slotting their own.
- *
- * The inset stays at the COLLAPSED rail width while the rail is collapsed or
- * hovered, so hovering reveals the rail over the content rather than reflowing the
- * page; it grows only when the rail is latched open (pinned/settings). CSS owns
- * that; this file's only job is to mirror the rail's state onto the host so the
- * CSS has something to key off.
- *
+ * The nav rail is a full-height OVERLAY; the header + content wrapper is inset
+ * past it. Nav and header are pre-composed as named-slot defaults. CSS owns the
+ * inset; this file only mirrors the rail's state onto the host.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -22,11 +13,9 @@ export class SherpaAppShell extends SherpaElement {
   static override observed = ['data-nav-state', 'data-no-header'];
 
   override onRender(): void {
-    // The rail owns its own state machine; the shell only needs to know which mode
-    // it is in so the content inset can follow. nav-state-change bubbles out of the
-    // rail (composed), so one listener covers the default rail and a slotted one.
+    // The event is composed, so one listener covers the default rail and a slotted one.
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);
-    // Adopt the rail's starting mode (it sets itself to `collapsed` on first render).
+    // Deferred: the rail sets itself to `collapsed` on its own first render.
     queueMicrotask(() => this.#adoptRailState());
   }
 
@@ -40,7 +29,7 @@ export class SherpaAppShell extends SherpaElement {
     const rail =
       this.querySelector<HTMLElement>('[slot="nav"]') ??
       this.$<HTMLElement>('sherpa-nav') ??
-      // A slotted rail may be nested inside a wrapper the consumer provided.
+      // A slotted rail may sit inside a consumer's wrapper.
       this.querySelector<HTMLElement>('sherpa-nav');
     const state = rail?.dataset['navState'];
     if (state) this.dataset['navState'] = state;

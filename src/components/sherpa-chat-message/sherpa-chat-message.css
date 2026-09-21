@@ -1,24 +1,9 @@
 /**
- * sherpa-chat-message.css — a single chat bubble.
+ * sherpa-chat-message.css — a single chat bubble. data-type drives layout and
+ * colour: assistant (default), user, system. No border — the fill separates it.
  *
- * Layout and colour are driven entirely by data-type:
- *   assistant (default) — left-aligned, neutral Style surface, avatar shown
- *   user                — right-aligned, Saturated accent surface, no avatar
- *   system              — centred, muted, no avatar
- *
- * The bubble has NO border in Figma — the fill alone separates it. Each role
- * re-points ONE pair of private custom properties (--_surface / --_ink); the
- * bubble consumes them, so the computed background is reliable across an early
- * getComputedStyle read. The user bubble binds the FIXED Saturated accent
- * (surface/accent/+2 = #3b4ccd) with fixed white ink, mirroring Figma — it does
- * NOT route through the status cascade (which would blow it out to a light status
- * surface, white-on-white, under any ancestor data-status). Corner radii bind the
- * shared Structure vars. The author/time meta row and the avatar collapse when
- * empty. Pure data-* selectors — JS never styles.
- *
- * NOTE (Figma-side divergence): Figma's Type=system variant is a clone of
- * assistant (white bubble, avatar, left-aligned). Code keeps the more useful
- * centred / muted system treatment as a deliberate, documented divergence.
+ * Figma's Type=system is a clone of assistant; the centred/muted treatment here
+ * is a deliberate divergence.
  */
 
 :host {
@@ -26,12 +11,12 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
 
-  /* private surface + ink for the bubble; role blocks re-pin these */
+  /* Role blocks re-pin these; the bubble reads them, so an early
+     getComputedStyle sees the right background. */
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
-/* Figma Chat Message: avatar (14, content/size/base) + bubble, gap space/xs 8. */
 .message {
   display: grid;
   grid-template-columns: var(--sherpa-theme-content-size-base, 14px) minmax(0, 1fr);
@@ -46,7 +31,7 @@
   min-inline-size: 0;
 }
 
-/* ── Avatar — Figma: a 14px Icon instance, no disc behind it ─────────── */
+/* ── Avatar ──────────────────────────────────────────────────────────── */
 .avatar {
   inline-size: var(--sherpa-theme-content-size-base, 14px);
   block-size: var(--sherpa-theme-content-size-base, 14px);
@@ -60,7 +45,7 @@
   line-height: 1;
   overflow: hidden;
 }
-/* Default glyph: a Font Awesome robot for the assistant; a slotted avatar replaces it. */
+/* A slotted avatar replaces this glyph. */
 .avatar-glyph {
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
@@ -69,8 +54,7 @@
   &::before { content: "\f544"; } /* robot */
 }
 
-/* ── Meta row (name + time) — INSIDE the bubble: gap space/xs 8, name 12/16
-   regular content/body/+1, timestamp content/size/xs 10 on 16. ──────────── */
+/* ── Meta row (name + time), inside the bubble ───────────────────────── */
 .meta {
   display: none;
   gap: var(--sherpa-display-mode-space-xs, 8px);
@@ -94,8 +78,6 @@
 :host(:not([data-timestamp]):not([data-time])) .time { display: none; }
 
 /* ── Bubble ──────────────────────────────────────────────────────────── */
-/* Figma bubble: padding space/xs 8 × space/sm 12, gap 4 (meta → message), radius
-   rounding 4, message 14/20. */
 .bubble {
   display: flex;
   flex-direction: column;
@@ -120,14 +102,14 @@
 .bubble ::slotted(*) { margin: 0; }
 .bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 
-/* ── Assistant (default): left-aligned, neutral Style surface, avatar shown ─ */
+/* ── Assistant (default) ─────────────────────────────────────────────── */
 :host,
 :host([data-type="assistant"]) {
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
-/* ── User: right-aligned, accent surface, no avatar ──────────────────── */
+/* ── User ────────────────────────────────────────────────────────────── */
 :host([data-type="user"]) .message {
   grid-template-columns: minmax(0, 1fr);
   justify-items: end;
@@ -135,15 +117,14 @@
 :host([data-type="user"]) .avatar { display: none; }
 :host([data-type="user"]) .stack { align-items: flex-end; max-inline-size: 85%; }
 :host([data-type="user"]) {
-  /* Figma binds the user bubble to surface/accent/+2 (a fixed Saturated accent),
-     with fixed white ink (content/body/base-fixed) — NOT the status cascade, which
-     would blow the bubble out to a light status surface (white-on-white) whenever an
-     ancestor carries data-status. */
+  /* Fixed Saturated accent + fixed white ink, NOT the status cascade — that
+     would give a light status surface, white-on-white, under any ancestor
+     data-status. */
   --_surface: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   --_ink: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
-/* ── System: centred, muted, no avatar ───────────────────────────────── */
+/* ── System ──────────────────────────────────────────────────────────── */
 :host([data-type="system"]) .message {
   grid-template-columns: minmax(0, 1fr);
   justify-items: center;

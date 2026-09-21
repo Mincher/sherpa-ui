@@ -1,13 +1,5 @@
 /**
- * sherpa-transfer-list.css — two-pane shuttle layout.
- *
- * A three-column grid: available pane | move buttons | selected pane. Each pane
- * fills status-surface via the [data-status] cascade (--_status-surface, neutral
- * surface/primary/base fallback) with a status-border (--_status-border); its
- * outer corners bind the border/grouping radii. Rows are native checkbox fields
- * with control-scoped radii. Empty panes swap their list for a placeholder via
- * data-empty (CSS owns visibility). Disabled uses inactive tokens; focus is a
- * box-shadow ring. JS never styles.
+ * sherpa-transfer-list.css — two-pane shuttle: available | moves | selected.
  */
 
 :host {
@@ -20,7 +12,7 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 
-  /* cascade fallbacks so a bare (status-less) list still resolves */
+  /* [data-status] cascade may be absent — fall back so a bare list resolves */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
@@ -43,8 +35,6 @@
   background: var(--_surface);
   overflow: hidden;
 }
-/* Figma pane header: padding 8×12, neutral color 2 fill, 1px bottom rule, title
-   content/body/+1 12/16 REGULAR. */
 .pane-heading {
   margin: 0;
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
@@ -55,7 +45,7 @@
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-/* Figma rows frame: no padding — the Menu List Items (pad 8) sit flush. */
+/* No padding — the slotted list items carry their own. */
 .pane-list {
   list-style: none;
   margin: 0;
@@ -71,7 +61,6 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
   text-align: center;
 }
-/* Empty pane: hide the list, show the placeholder. */
 .pane[data-empty] .pane-list { display: none; }
 .pane[data-empty] .pane-empty { display: block; }
 
@@ -83,7 +72,6 @@
     var(--sherpa-border-rounding-bottom-right, 4px)
     var(--sherpa-border-rounding-bottom-left, 4px);
 }
-/* Rows are sherpa-list-item instances — they own their own look/selection. */
 .row sherpa-list-item { display: block; }
 
 /* ── Move buttons ─────────────────────────────────────────────────── */
@@ -93,10 +81,9 @@
   justify-content: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-/* The move controls are sherpa-button instances — they own their own look. */
 .move { flex-shrink: 0; }
 
-/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+/* ── Disabled ─────────────────────────────────────────────────────── */
 :host([disabled]) {
   pointer-events: none;
 }
@@ -105,7 +92,7 @@
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 
-/* ── Responsive: stack panes when narrow ──────────────────────────── */
+/* ── Narrow: stack ────────────────────────────────────────────────── */
 :host { container: sherpa-transfer / inline-size; }
 @container sherpa-transfer (max-width: 420px) {
   :host {

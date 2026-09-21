@@ -1,11 +1,6 @@
 /**
- * sherpa-transfer-list — two lists you shuttle items between.
- *
- * Give it all the items with populate([{ value, label, selected? }]); each one
- * starts in the left (available) or right (selected) list based on its `selected`
- * flag. Tick some rows, then use the arrow buttons in the middle to move them
- * across. Each move fires transfer-change with the values now on the right.
- *
+ * sherpa-transfer-list — two panes you shuttle items between.
+ * An item's `selected` flag IS its pane; each move fires transfer-change.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -36,7 +31,6 @@ export class SherpaTransferList extends SherpaElement {
 
   override onRender(): void {
     this.$('.moves')?.addEventListener('click', this.#onMoveClick);
-    // A row's leading control fires item-select; stage/unstage on it.
     this.$('.panes')?.addEventListener('item-select', this.#onRowSelect as EventListener);
     this.#render();
   }
@@ -63,35 +57,17 @@ export class SherpaTransferList extends SherpaElement {
   }
 
   /**
-   * Move exactly these values to the selected pane — a saved view, a preset, a
-   * deep link, an agent.
-   *
-   * It was a GETTER ONLY, which made a reader's choices readable and not
-   * restorable: a value you can read and not write is half an API, and a saved
-   * view could record what was transferred and never put it back.
-   *
-   * REPLACES rather than adds: a restore means "this is what is selected", not
-   * "also select these". `selected = []` moves everything back to the source
-   * pane, which is how a reset is expressed.
-   *
-   * Values matching no item are IGNORED rather than throwing — a saved view
-   * outlives the list it was made from, and one removed option must not stop
-   * the rest being restored.
+   * REPLACES the selected pane — `selected = []` is the reset. Unknown values
+   * are ignored, so a saved view outlives an option being removed.
    */
   set selected(values: readonly string[]) {
     const wanted = new Set(values);
     for (const item of this.#items) item.selected = wanted.has(item.value);
-    // The STAGED set is a half-finished gesture — which rows are ticked ready
-    // to move. A restore replaces the outcome, so anything mid-gesture is no
-    // longer about anything.
     this.#staged.clear();
     this.#render();
   }
 
-  /**
-   * @deprecated Read `selected` instead — this is the same value under a second
-   * name, and two names for one thing is how they drift.
-   */
+  /** @deprecated Read `selected` instead. */
   getSelectedValues(): string[] {
     return this.selected;
   }
@@ -108,9 +84,6 @@ export class SherpaTransferList extends SherpaElement {
     targetList.replaceChildren();
 
     for (const item of this.#items) {
-      // The value and the heading are declared on the prototype. Which PANE the
-      // row lands in, and the staged tick, are not fields the item carries —
-      // `selected` is the pane, and `#staged` is this component's own draft.
       const row = this.cloneItem('template.row-tpl', item);
       if (!row) continue;
       row
@@ -118,12 +91,11 @@ export class SherpaTransferList extends SherpaElement {
         .toggleAttribute('data-selected', this.#staged.has(item.value));
       (item.selected ? targetList : sourceList).appendChild(row);
     }
-    // Empty-state visibility is CSS, keyed on whether a pane has rows.
     this.$('.source')?.toggleAttribute('data-empty', !this.#items.some((i) => !i.selected));
     this.$('.target')?.toggleAttribute('data-empty', !this.#items.some((i) => i.selected));
   }
 
-  /* ── Interaction (all same shadow tree — event.target is reliable) ──── */
+  /* ── Interaction (one shadow tree, so event.target is reliable) ─────── */
 
   #onRowSelect = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.row');
@@ -146,10 +118,7 @@ export class SherpaTransferList extends SherpaElement {
     }
   };
 
-  /**
-   * Move items into (select=true) or out of the selected pane. When `all`, every
-   * item in the origin pane moves; otherwise only staged (checked) items do.
-   */
+  /** Move into (select) or out of the selected pane — `all` ignores staging. */
   #move(select: boolean, all: boolean): void {
     const moved: string[] = [];
     for (const item of this.#items) {

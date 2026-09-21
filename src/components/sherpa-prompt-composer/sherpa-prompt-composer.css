@@ -1,31 +1,20 @@
 /**
- * sherpa-prompt-composer.css — an AI prompt input.
+ * sherpa-prompt-composer.css — an AI prompt input: auto-growing textarea
+ * (JS sets the height; the cap and scroll are here) plus a send button.
  *
- * A rounded surface holding an auto-growing textarea (JS sets the height; the
- * cap and scroll are here) and an accent circular send button. The surround
- * fills status-surface via the [data-status] cascade (--_status-surface, neutral
- * style-surface/base fallback) with a status-border (--_status-border). The send
- * button is the STRONG accent action (surface-accent/+2 = #3b4ccd) — surface-accent
- * -base resolves to the pale #8aa3ff, too light under a white glyph. Focus, hover,
- * and disabled are pure CSS off native pseudo-classes / :host([disabled]).
- *
- * NOTE (Figma-side): Figma 228:6617 models the send as a NEUTRAL bordered icon
- * button (no accent / brand fill), and there is no semantic brand-surface token to
- * bind a "brand purple" send. Code keeps a legible strong-accent send pending a
- * ratified brand token / Figma update.
+ * Divergence: Figma 228:6617 draws the send NEUTRAL. Code uses accent pending a
+ * ratified brand-surface token.
  */
 
 :host {
   display: block;
 
-  /* cascade fallbacks so a bare (status-less) composer still resolves */
+  /* fallbacks so a status-less composer still resolves */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
-/* Figma Prompt Composer (228:6617): padding 12 / 12 / 8 / 12, gap space/xs 8, 1px
-   border/default/+2 ring (border/width/base), radius Primitives 150 = 3 (kept on
-   the 4px structure step). */
+/* Figma Prompt Composer 228:6617. */
 .form {
   display: flex;
   flex-direction: column;
@@ -87,8 +76,7 @@
 }
 :host([data-has-extras]) .extras { display: flex; }
 
-/* Default leading buttons — Figma: Button/Type=icon at Structure sm (24×24, radius
-   4) in the Transparent look. */
+/* Leading buttons — Figma Button/Type=icon, Structure sm, Transparent look. */
 .lead-btn {
   display: inline-flex;
   align-items: center;
@@ -108,8 +96,7 @@
   transition: background-color 120ms ease, color 120ms ease;
 
   &:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
-  /* On press the surface goes dark (surface/default/+3); invert the glyph to a
-     fixed light ink so it doesn't vanish into the dark press surface. */
+  /* The press surface is dark, so the glyph flips to fixed light ink. */
   &:active {
     background: var(--sherpa-theme-surface-default-3, #35353d);
     color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
@@ -124,11 +111,10 @@
   block-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
-/* Hide the two default leading buttons when opted out */
+/* Opt out of the default leading buttons. */
 :host([data-no-leading-actions]) .lead-btn { display: none; }
 
-/* ── Send button — accent primary action (Will's ruling: accent blue). Geometry
-   follows the Figma send: Button/Type=icon at Structure sm → 24×24, radius 4. ── */
+/* ── Send — accent primary action ──────────────────────────────────── */
 .send {
   display: inline-flex;
   align-items: center;
@@ -140,9 +126,8 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  /* Strong accent disc so the white glyph stays legible. surface-accent-base
-     resolves to the PALE accent (#8aa3ff) — too light under a white glyph — so the
-     send binds the strong step (surface-accent/+2 = #3b4ccd). */
+  /* The strong step, not -base: -base is the pale #8aa3ff, too light under a
+     white glyph. */
   background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   cursor: pointer;
@@ -168,9 +153,8 @@
   cursor: not-allowed;
 }
 :host([disabled]) .send {
-  /* Keep the disabled send legible: content-body-2 (#b3b3c3) on surface-default-2
-     (#b3b3c3) would be glyph-on-same-colour (invisible). Darken the disabled surface
-     one step so the muted glyph reads. */
+  /* One step darker than the other disabled surfaces: content-body-2 on
+     surface-default-2 is the same colour, so the glyph would vanish. */
   background: var(--sherpa-theme-surface-default-3, #35353d);
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
   cursor: not-allowed;

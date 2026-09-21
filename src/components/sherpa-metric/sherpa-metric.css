@@ -1,27 +1,8 @@
 /**
- * sherpa-metric.css — all KPI-tile presentation.
- *
- * A label, a large value, a delta with a directional arrow, and an optional
- * embedded sparkline. Everything is pure CSS off data-*: the trend direction
- * colours the delta and reveals the matching arrow; the sparkline region only
- * appears once JS has fed it (data-has-values). JS never sets display/colour
- * here — it only writes text and toggles data-* attributes.
- *
- * Figma model: the resting tile carries a subtle surface (surface/default/+1).
- * The tile is status-fillable — a [data-status] ancestor overrides it, filling the
- * whole tile with the status surface (status-surface/default → --_status-surface)
- * and outlining it with the status border.
- *
- * The TEXT does not follow. Read from the Figma node (61:263): the label binds
- * content/body/+1 and the value binds content/body/BASE — plain Theme tokens with
- * no status in them — where only the DELTA binds style-content/base, which does
- * follow the cascade. The status belongs to the CHANGE, not to the figure: 1,284
- * endpoints is neither good nor bad, and +3.1% is the part that carries a verdict.
+ * sherpa-metric.css — KPI tile: label, value, delta + arrow, optional sparkline.
+ * JS only writes text and toggles data-*; display and colour live here.
  */
 
-/* Figma Metric (61:263): the LABEL sits ABOVE the card (gap space/xs 8); the CARD
-   is a rounding/lg (8) surface/default/+1 tile with structure-space/padding 8 and
-   gap 8 holding value + trend and the sparkline slot. */
 :host {
   display: flex;
   flex-direction: column;
@@ -34,15 +15,9 @@
   --_delta: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }
 
-/* ── Label — content/body/+1 12/16 regular, outside the card ───────────
-   NEUTRAL, not status ink: Figma binds it to Theme content/body/+1, and it sits
-   OUTSIDE the card, so it names the metric rather than reporting on it. Reading
-   --_status-text first turned every title green or red, which read as part of the
-   reading instead of its caption. The delta and the sparkline carry the status. */
-/* LIGHT and UPPERCASE — read from the Figma node (Metric 61:263): the label text
-   binds content/weight/LIGHT (300) and carries textCase: UPPER. It was regular
-   400 sentence case here. The caps are a CSS transform rather than capitalised
-   content, so the accessible name and the host's data-label stay as written. */
+/* ── Label — outside the card, uppercase via CSS so the accessible name and
+   data-label stay as written. Theme ink, NOT --_status-text: the label names the
+   metric, it does not report on it. ─────────────────────────────────────── */
 .label {
   margin: 0;
   font-size: var(--sherpa-theme-content-size-small, 12px);
@@ -59,13 +34,8 @@
 }
 
 /* ── Card row: figures + sparkline ───────────────────────────────────────
-   Re-read from Figma: the card binds Style::style-surface/base, which is WHITE in
-   every status mode (only `active` and `inactive` re-point it). So the card is NOT
-   tinted — the STATUS shows in the delta ink and the sparkline stroke, which is
-   what the mode actually re-points. It has STROKE NONE too, so no border.
-
-   I had it on --_status-surface-subtle (the +1 tint) from an earlier extract, which
-   filled the whole tile green/red. That was wrong. */
+   style-surface/base is WHITE in every status mode bar active/inactive, so the
+   card is NOT tinted — the status shows in the delta ink and sparkline stroke. */
 .row {
   display: flex;
   align-items: center;
@@ -83,38 +53,24 @@
   min-inline-size: 0;
 }
 
-/* ── Value — content/size/h1 24 on line-height/h1 32, semibold, MONO, −0.2 tracking ── */
+/* ── Value ───────────────────────────────────────────────────────────── */
 .value {
   margin: 0;
-  /* MONOSPACED. Figma binds this text to content/font/MONOSPACED (JetBrains
-     Mono), not the body face — the comment here said content/font/hero, which is
-     a different variable and resolved to Inter. A metric is a NUMBER, and mono's
-     tabular figures stop the digits shifting as the value updates. */
+  /* MONO — tabular figures stop the digits shifting as the value updates. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-theme-content-size-h1, 24px);
-  /* REGULAR, not semibold. At 24px in a monospaced face the weight is already
-     doing plenty of work — Bold read as shouting beside the light-caps label
-     above it, and mono's even stems make a heavy weight look heavier than the
-     same weight in Inter. Will's call; Figma re-pointed to match. */
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
-  /* NO status in this colour. Figma binds the value text to
-     content/body/BASE — a plain Theme token with no status in it — where the
-     DELTA binds style-content/base, which does follow the status cascade.
-
-     Reading --_status-text first turned the whole reading green or red, which
-     said "this number is a success" when the status belongs to the CHANGE, not
-     to the figure. 1,284 endpoints is neither good nor bad; +3.1% is the part
-     that carries a verdict. Same reasoning as the label above.
-
-     (The rule: text that FOLLOWS status reaches for the cascade; text that
-     ignores it names the Theme token directly.) */
+  /* Theme ink, NOT --_status-text. The status belongs to the CHANGE, not the
+     figure: 1,284 endpoints is neither good nor bad, +3.1% carries the verdict.
+     Text that FOLLOWS status reaches for the cascade; text that ignores it names
+     the Theme token directly. */
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
-/* ── Trend + delta — 12px arrow + 12/16 status-ink delta, gap 4 ───────── */
+/* ── Trend + delta ───────────────────────────────────────────────────── */
 .trend {
   display: flex;
   align-items: center;
@@ -126,7 +82,7 @@
 .delta:empty { display: none; }
 
 .arrow { display: none; font-size: var(--sherpa-font-size-body-small, 12px); line-height: 1; }
-/* Trend ink: success/critical CONTENT tokens (ink, not surface) per the Figma model. */
+/* CONTENT tokens — ink, not surface. */
 :host([data-trend="up"])   { --_delta: var(--sherpa-theme-content-success-1, #00ad62); }
 :host([data-trend="down"]) { --_delta: var(--sherpa-theme-content-critical-1, #b72200); }
 :host([data-trend="up"])   .arrow-up   { display: inline-flex; }
@@ -140,10 +96,9 @@
   align-self: stretch;
 }
 :host([data-has-values]) .spark { display: flex; }
-/* FILL the card's height, down to the bottom of the trend label beside it. The
-   sparkline's own :host sets a fixed 28px block-size (its standalone default), so
-   without this override the fill stopped level with the value and left a gap under
-   it. `align-self: stretch` on .spark only stretches the WRAPPER. */
+/* sherpa-sparkline's own :host sets a fixed 28px block-size, so without this
+   override the fill stops level with the value and leaves a gap under it —
+   `align-self: stretch` on .spark only stretches the WRAPPER. */
 .spark > sherpa-sparkline {
   flex: 1 1 auto;
   inline-size: 100%;

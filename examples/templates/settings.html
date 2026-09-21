@@ -1,15 +1,6 @@
-<!-- Content-only markup for the "settings" view.
-     Served by the template server (GET /template/view/settings) and injected into
-     the app-shell's default (content) slot by the SPA router in index.html.
-     views/settings.js populates the data-driven controls and wires events.
-
-     EVERY box here is a Sherpa component or the projected layout grid. There is
-     no view-level CSS: the grid places the cards, sherpa-container draws them,
-     and sherpa-stack runs the fields down each one.
-
-     Settings is a single reading column ON the grid: 8 of 12 on desktop rather
-     than a hardcoded pixel measure, so it comes from the same track system as
-     every other view and re-flows at the breakpoints for free. -->
+<!-- Content-only markup for the "settings" view, injected into the app-shell's
+     content slot by the SPA router. views/settings.js populates and wires it.
+     One reading column ON the grid (8 of 12), so it re-flows with every other view. -->
 <form id="settings-form" novalidate>
   <div class="sherpa-grid">
 
@@ -49,14 +40,8 @@
                                data-heading="Preferences"
                                data-description="Control notifications and appearance."></sherpa-container-header>
       <sherpa-stack data-gap="xl">
-        <!-- A labelled row with a control on the end IS a list item: a title, a
-             description under it, and a `trailing` slot. It was three hand-written
-             CSS rules (a flex row, a nested column, two font sizes) re-drawing a
-             component that already existed — and the type scale in those rules had
-             drifted off the token scale.
-
-             sherpa-list carries the rows so the dividers between them are the
-             list's, not a border each row draws for itself. -->
+        <!-- A labelled row with a control on the end IS a list item. sherpa-list
+             carries the rows so the dividers belong to the list, not to each row. -->
         <sherpa-list>
           <sherpa-list-item data-label="Email notifications"
                             data-description="Weekly digest and mentions.">
@@ -93,9 +78,7 @@
                                data-heading="Plan features"
                                data-description="Turn optional capabilities on or off."></sherpa-container-header>
       <sherpa-select-group id="features" data-label="Included features" data-multiple>
-        <!-- data-wrap: the three cards share one row on a desktop and fall to one
-             per row on a phone, each floored at data-min-item. No media query and
-             no grid definition — the row does it. -->
+        <!-- data-wrap: the row reflows the cards at data-min-item — no media query. -->
         <sherpa-stack slot="options" data-direction="inline" data-gap="lg" data-wrap>
           <sherpa-select-card
             data-select-mode="checkbox"
@@ -121,8 +104,7 @@
       Changes apply immediately for you, and roll out to your team within a few minutes.
     </sherpa-callout>
 
-    <!-- Figma Container Footer/action-bar: Cancel is the DEFAULT look (white face,
-         grey ring); only Apply takes the Saturated primary. -->
+    <!-- Action bar: only the primary action takes data-look="saturated". -->
     <sherpa-container-footer data-span="8" data-align="end">
       <sherpa-button type="button" id="cancel-btn">Cancel</sherpa-button>
       <sherpa-button type="submit" id="save-btn" data-look="saturated">Save changes</sherpa-button>

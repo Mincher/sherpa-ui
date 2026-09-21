@@ -1,16 +1,9 @@
 #!/usr/bin/env node
 /**
- * validate-component.mjs — validate a *.component.yaml against
- * schemas/component.v1.json (JSON Schema draft 2020-12).
+ * Validate a *.component.yaml against schemas/component.v1.json.
+ * A schema error fails; an unresolved {ref} only warns.
  *
- *   node scripts/validate-component.mjs sherpa-switch
- *   node scripts/validate-component.mjs src/components/sherpa-switch/sherpa-switch.component.yaml
- *   node scripts/validate-component.mjs --all
- *
- * Uses ajv (already a dependency). Also runs a light {ref}-resolvability pass:
- * every {ref} in the spec is walked with scripts/lib/component-ref.mjs against
- * BOTH the spec and the token DTCG, and unresolved refs are reported as
- * warnings (non-fatal — the token file is a moving target during the reforge).
+ *   node scripts/validate-component.mjs <name|path>... | --all
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, isAbsolute } from 'node:path';
@@ -34,21 +27,19 @@ function loadTokens() {
   catch { return null; }
 }
 
-/** Resolve a name/path argument to a *.component.yaml file path. */
 function specPathFor(arg) {
   if (arg.endsWith('.component.yaml')) return isAbsolute(arg) ? arg : join(ROOT, arg);
   const name = arg.startsWith('sherpa-') ? arg : `sherpa-${arg}`;
   return join(C, name, `${name}.component.yaml`);
 }
 
-/** Walk every string in the spec and collect {ref}s that don't resolve. */
 function checkRefs(spec, tokens) {
   const unresolved = [];
   const walk = (node, path) => {
     if (typeof node === 'string') {
       if (isRef(node)) {
         const r = resolveRef(node, { spec, tokens });
-        // 'alias' ({sherpa.*}) is always OK — it's a CSS seam, not a lookup.
+        // {sherpa.*} resolves to 'alias' — a CSS seam, never a lookup, so never unresolved.
         if (r.kind === 'unresolved') unresolved.push({ at: path, ref: node });
       }
       return;

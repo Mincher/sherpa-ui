@@ -2,8 +2,7 @@
   sherpa-tooltip — a hover/focus tooltip wrapping a trigger.
 
   Show/hide is entirely CSS (:hover / :focus-within on the host); JS never toggles
-  visibility. The bubble's side is picked by CSS off data-placement, and a small
-  CSS-drawn arrow (.arrow) points from the bubble back toward the trigger.
+  visibility.
 
   Public API:
     data-text       tip text (or use the `tip` slot)
@@ -24,16 +23,10 @@
     <slot></slot>
   </span>
   <!--
-    `popover=manual` puts the bubble in the TOP LAYER, above every ancestor's
-    clip and stacking context — a tooltip stands outside the box it belongs to
-    by definition, and any ancestor with `overflow` cut it off. `manual` because
-    the visibility is still CSS's off :hover / :focus-within; nothing here
-    dismisses it, and `auto` would close it on any outside click.
-
-    A popover is `position: fixed` in that layer, so `data-floating` mode places
-    it from measured viewport coordinates (--_x / --_y) the way sherpa-menu
-    does. Without that flag the bubble is positioned relative to the host
-    exactly as it always was.
+    `popover=manual` lifts the bubble into the TOP LAYER, past any clipping
+    ancestor. `manual`, not `auto`: visibility stays CSS's, and `auto` would
+    dismiss on any outside click. A popover is `position: fixed`, so
+    `data-floating` places it from measured viewport coords (--_x / --_y).
   -->
   <span class="bubble" part="bubble" role="tooltip" popover="manual">
     <span class="tip-text"></span>

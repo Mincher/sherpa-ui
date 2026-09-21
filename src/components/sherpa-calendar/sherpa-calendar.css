@@ -1,29 +1,15 @@
 /**
  * sherpa-calendar.css — the month-grid picker.
- *
- * A card surface holding a nav header, a weekday row, and a 7-column day grid.
- * Day state (selected / today / out-of-range / blank) is pure CSS keyed off the
- * data-* / disabled attributes JS stamps on each cell — JS never styles.
+ * Day state is pure CSS keyed off the data-* / disabled attributes JS stamps.
  */
 
-/* Figma Calendar (268:14601, data-extracted): a 1px border/default/+2 card (radius
-   primitive 3 → 4 step) on surface/default/base; the HEADER is a snapped segmented
-   control — [prev 32 ▏month label (fill) ▕ next 32] all in the DEFAULT button look
-   (white, 0.5 style-border/base ring, label 14/20 regular); the day grid sits in an
-   8px-padded content frame. Day states are the Calendar Button atoms: default =
-   transparent. The per-day states — today, selected, and the three range steps —
-   belong to <sherpa-calendar-cell>, which is Figma's own Calendar Cell node. */
+/* Figma Calendar 268:14601. */
 :host {
-  /* BLOCK, not inline-block: the grid inside fills its container now, and an
-     inline-block host shrink-wraps to its content and never gives it one. */
+  /* BLOCK: an inline-block host shrink-wraps and never gives the grid a width. */
   display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_accent: var(--sherpa-theme-surface-active-2, #c046ff);
   --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  /* --_today and --_range are GONE with the cell block that read them:
-     <sherpa-calendar-cell> carries those two fills itself, straight off the
-     node. --_accent stays — this component's own footer still paints with it
-     when it is not embedded in a menu. */
 }
 
 .cal {
@@ -44,89 +30,37 @@
 }
 
 /* ── Header — prev | month | next, three composed sherpa-buttons ─────────
- *
- * Read from the Menu set's Calendar variant (1156:29240 > Type=Calendar >
- * header). The three are Button instances at Style=default with a Structure
- * snap mode each — snap-right-edge, snap-all-edges, snap-left-edge — so their
- * borders meet and the trio reads as ONE stepper.
- *
- * Nothing here styles a button. The buttons style themselves; this file says
- * only how they sit together, which is the whole point of composing them. */
+ * Nothing here styles a button; this file says only how they sit together. */
 .cal-header {
   display: flex;
   align-items: center;
   gap: 0;
 }
 
-/* The borders OVERLAP so the seam is one stroke, not two. CSS `gap` cannot be
-   negative, so the overlap is a negative margin on the followers — the same
-   idiom every other snapped group in the system uses. */
+/* The borders OVERLAP so the seam is one stroke. `gap` cannot be negative, so
+   the overlap is a negative margin on the followers. */
 .cal-header > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* The month button takes the free width (Figma: prev/next hug at 32, month
-   FILLS) and centres its label. */
+/* prev/next hug at 32, month FILLS. */
 .cal-label { flex: 1 1 auto; }
 .cal-nav { flex: 0 0 auto; }
 
-/* The end buttons take their OUTER corners back. These four rules are written on
-   the buttons themselves rather than on the row, because when the header is
-   PROJECTED into a menu's header slot the row lives in the menu's light DOM and
-   `.cal-header > :first-child` — a rule in THIS shadow root — cannot match it.
-   A rule that targets the button by its own class is carried in the clone and
-   applies wherever the clone is hosted. See #projectHeader() and the matching
-   `::slotted(.cal-header)` block in sherpa-menu.css. */
+/* The snapped corners are `.sherpa-snap-group` in core/sherpa-base.css, which
+   `.cal-header` carries. They cannot be left to `[data-snap]`: that is a bare
+   selector in tokens.css, which loads into the DOCUMENT and not into
+   sharedStyles, so it never reaches a button inside this shadow root. */
 
-/* THE SNAPPED CORNERS, written here rather than left to `[data-snap]`.
-   `[data-snap]` is a bare selector in tokens.css, which is loaded into the
-   DOCUMENT and deliberately NOT into SherpaElement.sharedStyles — so it reaches
-   a button in the light DOM but never one inside this shadow root. The
-   attribute stays on the buttons (it is the honest description of what they
-   are, and it works if one is re-hosted); the four corner variables are also
-   written directly so the group actually joins.
-
-   By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
-/* The snapped-group corner rules used to be written out here. They are now
-   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
-   in three components under three wrapper names. `.cal-header` carries the class. */
-
-/* ── Weekday row + day grid share the 7-column track (Figma content frame: padding
-   8, gap 4; the Calendar Button atoms are 32×32). ───────────────────────── */
-/* ── The grids — every track 1fr, inside ONE fixed-width box ──────────────
- *
- * Read from the Calendar's Grid frame (962:6062): 7 columns and 7 rows, every
- * one FLEX 1, colGap 0, rowGap 2 — and the frame itself is 224 wide with BOTH
- * axes set to FIXED, sitting in a `content` slot that is also 224. Its own slot
- * description says that slot holds "day grid, month grid, or year grid", so all
- * three views share that one 224-wide box.
- *
- * THAT FIXED WIDTH IS THE WHOLE POINT, and missing it is what broke the month
- * and year views. `1fr` divides a width it is GIVEN; it cannot invent one. In
- * Figma the frame is already 224, so 1fr there means "a seventh of 224" = 32.
- * In code the grid was left to size itself, so inside a menu card that hugs its
- * content (`inline-size: max-content`) a 1fr track collapsed to the widest
- * label it held:
- *
- *     month view   3 columns at 25.2px   ("Sep")
- *     year view    3 columns at 33.6px   ("2022")
- *
- * — squished together, exactly as Will described, while the day view looked
- * fine because 7 two-digit numbers happen to add up near the right width.
- *
- * So the WIDTH is declared once, on the shared grid box, and 1fr then does its
- * job in all three views. 7 x 32 = 224, which is the node's number. */
+/* ── The grids — every track 1fr, inside ONE shared box ──────────────────
+ * Figma's grid frame (962:6062) is FIXED at 224 = 7 × 32. `1fr` divides a width
+ * it is GIVEN, so without a declared width the month and year views collapsed
+ * to their widest label. All three views share this one box. */
 .cal-grid,
 .cal-weekdays {
-  /* FILLS whatever holds it, with Figma's 224 (7 × 32) as the FLOOR.
-     Fixed at 224 the grid hugged, so a calendar in a wider menu sat in a narrow
-     column with the card's width unused beside it. Every view still shares one
-     box, so switching day → month → year cannot change the width. */
-  /* FILLS whatever holds it, flooring at the node's seven 32px tracks.
-     `border-box` with the side padding ADDED to the floor, so the tracks
-     themselves never fall below 32 — under content-box the box was 224 of
-     tracks PLUS 16 of padding and overflowed its container, and under a plain
-     border-box floor the padding ate into the tracks and a day drew 29.7. */
+  /* FILLS its container, flooring at seven 32px tracks. `border-box` with the
+     side padding ADDED to the floor — under content-box the box overflowed, and
+     under a plain border-box floor the padding ate into the tracks. */
   inline-size: 100%;
   min-inline-size: calc(
     7 * var(--sherpa-display-mode-size-2xl, 32px) + 2 * var(--sherpa-theme-padding-md, 8px)
@@ -145,22 +79,15 @@
 }
 
 /* ── RANGE: two months side by side ─────────────────────────────────
- * Figma's Type=range (268:13874) is a 15-track grid — seven day columns, a
- * DIVIDER track, then seven more. A range is a span between two dates, and
- * picking one whose ends fall in different months through a single month that
- * has to be stepped is the case the second month exists for.
- *
- * Both months share ONE grid, so every cell is a real 1fr of the same track set
- * and the two halves cannot drift apart by a pixel. The middle track takes the
- * same 1fr as a day so the two months are symmetrical about it.
- */
+ * 15 tracks — seven days, a divider, seven more. Both months share ONE grid so
+ * the halves cannot drift apart by a pixel. */
 .cal-days[data-two-up],
 .cal-weekdays[data-two-up] {
   grid-template-columns: repeat(15, 1fr);
 }
 
-/* The divider itself — a hairline down track 8, drawn on the grid rather than as
-   a cell, so it spans every row without a stamped element per row. */
+/* The divider is drawn on the grid, not as a cell, so it spans every row
+   without a stamped element per row. */
 .cal-days[data-two-up] {
   position: relative;
 }
@@ -168,26 +95,22 @@
   content: "";
   position: absolute;
   inset-block: 0;
-  /* Centred on the middle of the 15 tracks: seven columns plus half of the
-     eighth, as a fraction of the whole. */
+  /* Seven columns plus half of the eighth, as a fraction of the whole. */
   inset-inline-start: calc(100% * 7.5 / 15);
   inline-size: var(--sherpa-border-left, 0.5px);
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
   pointer-events: none;
 }
 
-/* The second month's weekday captions. Hidden until a range needs them, so a
-   single calendar's header row is the seven it always was. */
+/* The second month's captions, and the spacer holding the divider track open. */
 .cal-weekdays .wd-2 { display: none; }
 .cal-weekdays[data-two-up] .wd-2 { display: block; }
-/* …and the spacer that holds the divider track open in the caption row. */
 .cal-weekdays .wd-gap { display: none; }
 .cal-weekdays[data-two-up] .wd-gap { display: block; }
 .cal-weekdays { padding-block-start: var(--sherpa-theme-padding-md, 8px); }
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
-/* Month / year: the same 224 box and the same 1fr tracks, three across rather
-   than seven — so a month cell is a third of the width a week is. */
+/* Month / year: the same box, three tracks rather than seven. */
 .cal-months,
 .cal-years {
   display: grid;
@@ -200,10 +123,8 @@
 :host(:is(:not([data-view]), [data-view="day"])) .cal-days { display: grid; }
 :host([data-view="month"]) .cal-months { display: grid; }
 :host([data-view="year"]) .cal-years { display: grid; }
-/* The weekday row belongs to the day layout only. */
 :host(:is([data-view="month"], [data-view="year"])) .cal-weekdays { display: none; }
 
-/* Weekday captions are Calendar Buttons too: 14/20 regular content/body/+1. */
 .cal-weekdays span {
   display: inline-flex;
   align-items: center;
@@ -216,21 +137,10 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── Day cells ──────────────────────────────────────────────────────── */
-/* ── The cells ───────────────────────────────────────────────────────────
- *
- * There is NOTHING here about how a cell looks. <sherpa-calendar-cell> is
- * Figma's own "Calendar Cell" component and owns its box, its three states and
- * its text; this file owns only WHICH day each one is and where it sits.
- *
- * A ~80-line block used to redraw all of that on the host — its own border,
- * fill, hover, today, selected and range states — left behind when the cell
- * became a component. It was not merely dead: its `border: 0.5px solid
- * transparent` took 1px off each side, so every cell painted 2px narrower than
- * its own grid track and the content box sat clipped inside it.
- *
- * The cell stretches to fill its track, which is what makes one rule serve the
- * day, month and year grids at their three different track sizes. */
+/* ── Day cells ───────────────────────────────────────────────────────────
+ * Nothing here says how a cell LOOKS — <sherpa-calendar-cell> owns its box,
+ * states and text. The cell stretches to fill its track, which is what lets one
+ * rule serve the day, month and year grids at their three track sizes. */
 .cal-cell {
   inline-size: 100%;
   block-size: 100%;
@@ -276,39 +186,22 @@
   }
 }
 
-/* ── EMBEDDED — the host IS the card ─────────────────────────────────────
- * Will's split (2026-09-11): the Menu component now carries `Type = Calendar`,
- * and the Calendar page holds only the visual parts a calendar is built FROM
- * (Calendar Cell, time-clock). So an embedded calendar contributes its GRID and
- * its month logic, and nothing else — the surrounding card is the menu's.
- *
- * Everything the card is made of goes:
- *   • the border, radius and surface (the menu draws them)
- *   • the header (projected into the menu's `header` slot instead)
- *   • the footer (the menu's Container Footer owns Today / Cancel / Apply)
- */
+/* ── EMBEDDED — the menu is the card ─────────────────────────────────────
+ * An embedded calendar contributes its grid and its month logic and nothing
+ * else: the menu draws the border, radius and surface, takes the header into
+ * its `header` slot, and owns Today / Cancel / Apply in its own footer. */
 :host([data-embedded]) .cal {
   border: 0;
   border-radius: 0;
   background: none;
-  /* No clipping either: the card's own overflow belongs to the card. */
   overflow: visible;
-  /* FILLS the menu's list region rather than hugging, so the grid can stretch
-     to whatever width the menu gives it. */
   inline-size: 100%;
 }
 :host([data-embedded]) { display: block; }
 
 :host([data-embedded]) .cal-header { display: none; }
 
-/* EMBEDDED — the host owns the action row.
-   Figma's Calendar composes a `Container Footer` (Type=action-bar) rather than
-   drawing its own, and a Calendar inside a Menu therefore has ONE footer: the
-   menu's. Without this a date filter chip showed two Apply/Cancel pairs stacked
-   on top of each other.
-
-   The Today link goes with it — it belongs to that action row. A host that wants
-   it can put one in its own footer. */
+/* Without this a date filter chip showed two Apply/Cancel pairs stacked. */
 :host([data-embedded]) .cal-footer { display: none; }
 
 /* ── Footer action row — Today link | Cancel / Apply ────────────────────── */
@@ -368,10 +261,7 @@
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
   &:hover {
-    /* Figma's Theme surface transparent variables are GONE — opacity is now
-       applied where it is USED, not carried by a token. This one was
-       #FFFFFF00: fully clear, i.e. paints nothing. `transparent` says that
-       plainly and needs no token at all. */
+    /* Figma's hover fill is #FFFFFF00 — fully clear, so no token is needed. */
     background: transparent;
   }
   &:focus-visible {
@@ -393,6 +283,5 @@
 }
 
 
-/* The PROJECTED stepper lives in the LIGHT DOM, so this component's own sheet
-   cannot reach it — its host styles it. Nothing here; the rule is a note so the
-   next reader does not go looking for one. */
+/* The PROJECTED stepper lives in the LIGHT DOM; its host styles it, not this
+   sheet. See #projectHeader() and `::slotted(.cal-header)` in sherpa-menu.css. */

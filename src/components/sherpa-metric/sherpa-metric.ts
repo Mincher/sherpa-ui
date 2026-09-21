@@ -1,10 +1,5 @@
 /**
- * sherpa-metric — a KPI tile (a headline number with its trend).
- *
- * CSS handles the look — the trend colour, the up/down arrow, and whether the
- * mini trend chart shows. JS writes the label, value, and change text, and sets
- * the trend direction. The little trend chart is a sherpa-sparkline inside; it's
- * imported here so it's ready before this tile draws.
+ * sherpa-metric — a KPI tile: a headline number with its trend.
  *
  * @method populate(data: MetricData) — the single data path
  */
@@ -12,11 +7,7 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {
-  /**
-   * The metric's name.
-   *
-   * TRAP T-populate-label-not-name
-   */
+  /** The metric's name. TRAP T-populate-label-not-name */
   label?: string;
   /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
   name?: string;
@@ -51,12 +42,10 @@ export class SherpaMetric extends SherpaElement {
   protected override renderData(source: unknown): void {
     const data = (source ?? {}) as MetricData;
 
-    // TRAP T-populate-label-not-name — `label` wins; `name` is still honoured.
     const label = data.label ?? data.name;
     if (label != null) this.dataset['label'] = String(label);
     if (data.value != null) this.dataset['value'] = String(data.value);
 
-    // TRAP T-metric-status-follows-the-trend — derived when not given.
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
@@ -91,8 +80,7 @@ export class SherpaMetric extends SherpaElement {
   /**
    * Set data-status from the trend, or remove it.
    *
-   * TRAP T-metric-status-follows-the-trend — the component owns this, and
-   * "default" means NO attribute at all.
+   * TRAP T-metric-status-follows-the-trend — "default" means NO attribute.
    */
   #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
     const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;
@@ -100,6 +88,7 @@ export class SherpaMetric extends SherpaElement {
     else delete this.dataset['status'];
   }
 
+  /** Trend from the percent, when the caller gave none. */
   #deriveTrend(deltaPercent?: number): 'up' | 'down' | 'flat' | null {
     if (deltaPercent == null || !Number.isFinite(deltaPercent)) return null;
     if (deltaPercent > 0) return 'up';

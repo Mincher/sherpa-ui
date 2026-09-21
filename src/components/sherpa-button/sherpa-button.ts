@@ -1,9 +1,8 @@
 /**
  * sherpa-button — the thing you click.
  *
- * CSS handles how it looks — the styles, sizes, states, and the disabled look.
- * This file only sets sensible defaults, copies the label and icon into place,
- * and fires button-click when someone clicks it.
+ * CSS owns the look. This file sets the label, icons and badge, and emits
+ * button-click.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
 
@@ -27,12 +26,8 @@ export class SherpaButton extends SherpaElement {
   }
 
   override onRender(): void {
-    // No appearance default: a bare <sherpa-button> is the DEFAULT ("secondary")
-    // look — white surface, grey border, dark ink. Emphasis is opt-in via
-    // data-look="saturated" (primary) / "transparent" (tertiary), the shared
-    // look-tier system (matches Figma — the Button has no variant axis).
-    // No size default either: a bare button uses the base :host {} token block;
-    // sizes come from the Structure collection (2xs | xs | sm | lg | xl).
+    // No look or size default: a bare button is the secondary look at base size.
+    // Emphasis is opt-in via data-look; sizes come from the Structure collection.
     this.#syncLabel();
     this.#syncIcons();
     this.#syncBadge();
@@ -63,15 +58,9 @@ export class SherpaButton extends SherpaElement {
   }
 
   /**
-   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk"), set as CSS
-   * classes on the `<i>`; CSS `:host([data-icon-*])` controls visibility. A
-   * legacy single-glyph value (no "fa-" token) falls back to text.
-   *
-   * `writeIcon` is the shared writer. This used to rebuild `className` from a
-   * hard-coded `base` string — which works only while nothing else touches
-   * those classes, and silently drops anything that does. `writeIcon` removes
-   * the `fa-*` classes and leaves the rest, so the structural
-   * `icon icon-start|end` survive because they were never removed.
+   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk"). `writeIcon`
+   * strips only the `fa-*` classes, so the structural `icon icon-start|end`
+   * survive — rebuilding className from a base string silently drops them.
    */
   #syncIcons(): void {
     const start = this.$('.icon-start');

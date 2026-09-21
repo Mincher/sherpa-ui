@@ -1,15 +1,10 @@
 /**
  * sherpa-chart-legend — the colour key beside a chart.
  *
- * Give it a list with populate([{ label, value?, colorIndex }]) and it draws one
- * entry per item in a three-column grid (swatch · category · value), matching the
- * rebuilt Figma component. JS tells each entry which colour to use; CSS draws the
- * swatch and the grid.
- *
- * Clicking an entry toggles it and fires legend-item-click. The legend does not
- * know what it labels, so the PAGE joins them up — it listens for that event and
- * calls the chart's setSeriesHidden / setSliceHidden / setBarHidden. Prefer
- * `detail.indices` over `detail.index`: an "Other" row stands for several.
+ * The legend does not know what it labels: the PAGE listens for
+ * legend-item-click and calls the chart's setSeriesHidden / setSliceHidden /
+ * setBarHidden. Prefer `detail.indices` over `detail.index` — an "Other" row
+ * stands for several.
  *
  * TRAP T-readonly-legend-is-a-key-not-a-filter — `data-readonly` is a pure KEY.
  * TRAP T-legend-status-swatch-shares-the-band-tokens — `status` beats colorIndex.
@@ -19,24 +14,14 @@
 import type { LegendDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
 import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
-// The roll-up row composes a real button + a committing menu, so both must be
-// defined here — the page may not have imported them.
+// The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 
-/**
- * The most rows a legend will ever draw.
- *
- * TRAP T-legend-caps-at-six-and-rolls-up — past six it stops being a key, so
- * the tail folds into one "Other" total.
- */
+/** The most rows a legend will ever draw — TRAP T-legend-caps-at-six-and-rolls-up. */
 const MAX_ITEMS = 6;
 
-/**
- * One legend row — an alias of the shared `LegendDatum`.
- *
- * TRAP T-chart-datum-aliases-are-not-copies
- */
+/** One legend row — TRAP T-chart-datum-aliases-are-not-copies. */
 export type LegendItem = LegendDatum;
 
 /** @tier sub-component — renders inside charts; excluded from the public catalog. */
@@ -46,15 +31,10 @@ export class SherpaChartLegend extends SherpaElement {
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 
   #items: LegendItem[] = [];
-  /** Whether the tail was rolled into an "Other" row (see #cap). */
   #rolledUp = false;
-  /**
-   * The categories folded into the "Other" row, with their ORIGINAL indices.
-   *
-   * TRAP T-rollup-row-has-its-own-prototype — the row itself only knows a total.
-   */
+  /** The folded categories, with their ORIGINAL indices. */
   #rolled: Array<{ index: number; item: LegendItem }> = [];
-  /** Which rolled-up categories are currently ON. Indices into the SOURCE list. */
+  /** Which rolled-up categories are ON. Indices into the SOURCE list. */
   #rolledActive = new Set<number>();
 
   override onRender(): void {
@@ -68,12 +48,7 @@ export class SherpaChartLegend extends SherpaElement {
     this.#render();
   }
 
-  /**
-   * Cap the legend at MAX_ITEMS, rolling the tail into a single "Other" row.
-   *
-   * TRAP T-legend-caps-at-six-and-rolls-up — why six, why the roll-up only
-   * happens past MAX_ITEMS + 1, and why only numeric values are summed.
-   */
+  /** Cap at MAX_ITEMS, rolling the tail into one "Other" row. */
   #cap(items: LegendItem[]): LegendItem[] {
     this.#rolledUp = items.length > MAX_ITEMS;
     if (items.length <= MAX_ITEMS) {
@@ -84,8 +59,6 @@ export class SherpaChartLegend extends SherpaElement {
 
     const kept = items.slice(0, MAX_ITEMS - 1);
     const rest = items.slice(MAX_ITEMS - 1);
-    // The folded categories AND their original indices — TRAP
-    // T-legend-caps-at-six-and-rolls-up.
     this.#rolled = rest.map((item, k) => ({ index: MAX_ITEMS - 1 + k, item }));
     this.#rolledActive = new Set(this.#rolled.map((r) => r.index));
     const numeric = rest
@@ -114,8 +87,8 @@ export class SherpaChartLegend extends SherpaElement {
     const readonly = this.hasAttribute('data-readonly');
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      // TRAP T-rollup-row-has-its-own-prototype — the "Other" row comes from a
-      // different template, so this clones per row rather than via renderList.
+      // TRAP T-rollup-row-has-its-own-prototype — the "Other" row is a different
+      // template, so this clones per row rather than via renderList.
       const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
       const wrapper = isRollup ? this.clone('template.rollup-tpl') : this.clone('template.item-tpl');
       if (!wrapper) return;
@@ -126,13 +99,12 @@ export class SherpaChartLegend extends SherpaElement {
       entry.dataset['index'] = String(i);
       const swatch = entry.querySelector<HTMLElement>('.swatch')!;
       if (item.status) {
-        // TRAP T-legend-status-swatch-shares-the-band-tokens — the same pair the
-        // band paints from, never the `--_status-*` cascade.
+        // TRAP T-legend-status-swatch-shares-the-band-tokens — the pair the band
+        // paints from, never the `--_status-*` cascade.
         entry.dataset['status'] = item.status;
         swatch.style.setProperty('--_hue', `var(--sherpa-status-${item.status}-fill)`);
         swatch.style.setProperty('--_border', `var(--sherpa-status-${item.status})`);
       } else {
-        // The series hue by 1-based index, wrapping at the palette size.
         swatch.style.setProperty('--_hue', seriesVar(i, item.colorIndex));
         swatch.style.setProperty('--_border', seriesBorderVar(i, item.colorIndex));
       }
@@ -150,13 +122,7 @@ export class SherpaChartLegend extends SherpaElement {
     });
   }
 
-  /**
-   * Fill the roll-up row's breakdown menu with one CHECKBOX row per folded
-   * category, and wire its Apply.
-   *
-   * TRAP T-rollup-row-has-its-own-prototype — checkboxes plus `data-commit`,
-   * and why the menu button's click must not reach the toggle.
-   */
+  /** One checkbox row per folded category, plus its Apply. */
   #buildBreakdown(wrapper: HTMLElement): void {
     const menu = wrapper.querySelector<HTMLElement & {
       toggle?: (t?: HTMLElement) => void;
@@ -168,7 +134,7 @@ export class SherpaChartLegend extends SherpaElement {
     for (const { index, item } of this.#rolled) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const input = row.querySelector('input')!;
-      // The SOURCE index — TRAP T-rollup-row-has-its-own-prototype.
+      // The SOURCE index, not the row's position.
       input.value = String(index);
       input.checked = this.#rolledActive.has(index);
       row.querySelector('.rollup-row-label')!.textContent = item.label;
@@ -176,7 +142,7 @@ export class SherpaChartLegend extends SherpaElement {
     }
 
     button.addEventListener('click', (event) => {
-      // A SIBLING of the toggle — TRAP T-rollup-row-has-its-own-prototype.
+      // The button is a SIBLING of the toggle, so its click must not reach it.
       event.stopPropagation();
       menu.toggle?.(button);
     });
@@ -186,12 +152,10 @@ export class SherpaChartLegend extends SherpaElement {
       const values = (event.detail?.values ?? []) as string[];
       const on = new Set(values.map(Number));
       this.#rolledActive = on;
-      // Applying a SUSPENDED group's breakdown turns the row back on —
-      // TRAP T-legend-suspend-remembers-the-set.
+      // Applying a SUSPENDED group's breakdown turns the row back on.
       const row = wrapper.querySelector('.rollup-toggle');
       row?.setAttribute('aria-pressed', String(on.size > 0));
-      // Every rolled-up index with whether it survived, so a chart applies the
-      // whole set in one pass rather than diffing.
+      // The whole set, so a chart applies it in one pass rather than diffing.
       this.emit('legend-breakdown-change', {
         active: [...on].sort((a, b) => a - b),
         hidden: this.#rolled.map((r) => r.index).filter((i) => !on.has(i)),
@@ -200,20 +164,18 @@ export class SherpaChartLegend extends SherpaElement {
   }
 
   #onClick = (event: Event): void => {
-    // Guarded here, not only in CSS, so pointer and keyboard agree —
-    // TRAP T-readonly-legend-is-a-key-not-a-filter.
+    // Guarded here, not only in CSS, so pointer and keyboard agree.
     if (this.hasAttribute('data-readonly')) return;
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
     if (raw == null || !item) return;
-    // aria-pressed is BOTH the accessible state and the CSS hook for the dimmed
-    // look — TRAP T-legend-suspend-remembers-the-set.
+    // aria-pressed is BOTH the accessible state and the CSS hook for the dimmed look.
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
-    // The "Other" row's toggle SUSPENDS its whole group, and suspend ≠ clear —
+    // The "Other" toggle SUSPENDS its whole group, and suspend ≠ clear —
     // TRAP T-legend-suspend-remembers-the-set.
     if (isRollup) this.#syncBreakdownBoxes(active);
 
@@ -221,8 +183,7 @@ export class SherpaChartLegend extends SherpaElement {
       index,
       label: this.#items[index]?.label ?? '',
       active,
-      // The indices this row stands for in the data the CALLER passed in —
-      // TRAP T-legend-caps-at-six-and-rolls-up. Normally just [index].
+      // The indices this row stands for in the CALLER's data. Normally just [index].
       indices: isRollup
         ? (active
             ? [...this.#rolledActive].sort((a, b) => a - b)
@@ -232,10 +193,9 @@ export class SherpaChartLegend extends SherpaElement {
   };
 
   /**
-   * Tick or untick the breakdown's checkboxes to match the "Other" row's state.
+   * Match the breakdown's checkboxes to the "Other" row's state.
    *
-   * TRAP T-legend-suspend-remembers-the-set — #rolledActive is never touched
-   * here, which is what makes the round trip lossless.
+   * #rolledActive is never touched here — that is what makes the round trip lossless.
    */
   #syncBreakdownBoxes(active: boolean): void {
     for (const box of this.$$<HTMLInputElement>('.rollup-menu input')) {

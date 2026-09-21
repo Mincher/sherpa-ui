@@ -1,15 +1,11 @@
 /**
  * sherpa-select-checkbox — a checkbox with a label.
  *
- * A thin wrapper around a real checkbox. JS copies the label, description, and
- * native attributes onto it, exposes its checked, indeterminate, and value
- * states, and re-fires the change event. CSS handles the whole look — the box,
- * the tick, the dash, disabled, and focus.
+ * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-// SIDE-EFFECT imports: the template STAMPS these, and an undefined custom
-// element renders inert. Only the `data-advanced` variant shows them, but the
-// template holds them either way — T-every-element-in-the-template.
+// Side-effect imports: the template stamps these and an undefined element renders
+// inert, even though only `data-advanced` shows them — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 
@@ -19,7 +15,6 @@ const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
 export class SherpaSelectCheckbox extends SherpaElement {
   static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);
   static override html = new URL('./sherpa-select-checkbox.html', import.meta.url);
-  /** Label + description text into the shadow (CSS collapses empties). */
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
@@ -39,11 +34,10 @@ export class SherpaSelectCheckbox extends SherpaElement {
     this.#control = this.$<HTMLInputElement>('.control');
     this.#syncState();
     this.#control?.addEventListener('change', this.#onChange);
-    // The ADVANCED half. Wired unconditionally: the elements are in the template
-    // either way, and a listener on a hidden button costs nothing.
+    // Wired unconditionally — the advanced elements are in the template either way.
     this.$('.caret')?.addEventListener('button-click', this.#onCaret);
-    // The menu is SLOTTED, so its event reaches the host by bubbling — this
-    // listener is on the host, not on a shadow node that cannot see it.
+    // The menu is SLOTTED, so its event reaches the host by bubbling; a shadow
+    // node could not see it.
     this.addEventListener('menu-select', this.#onScenario as EventListener);
   }
 
@@ -108,8 +102,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
 
   /** Open or shut the slotted menu, anchored to the caret. */
   #onCaret = (event: Event): void => {
-    // The caret sits OUTSIDE the <label>, so this cannot toggle the box — but
-    // the click still reaches a host listener, which has no reason to see it.
+    // The caret sits outside the <label>, so this cannot toggle the box — the
+    // stop only spares a host listener a click it has no use for.
     event.stopPropagation();
     const menu = this.#menu();
     const caret = this.$('.caret');
@@ -121,12 +115,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
     );
   };
 
-  /**
-   * A scenario was chosen. REPORT it; applying it is the host's job.
-   *
-   * "Select all rows" means nothing here — this component knows about one
-   * checkbox, not a collection. The host owns the rows, so the host decides.
-   */
+  /** A scenario was chosen. REPORT it — the host owns the rows, so it applies it. */
   #onScenario = (event: CustomEvent): void => {
     const value = event.detail?.['value'] as string | undefined;
     if (!value) return;
@@ -140,21 +129,9 @@ export class SherpaSelectCheckbox extends SherpaElement {
     const c = this.#control;
     if (!c) return;
     this.toggleAttribute('checked', c.checked);
-    /* A USER'S CLICK ENDS THE MIXED STATE.
-     *
-     * `indeterminate` is a JS-only property: the browser does NOT clear it on
-     * click, it only flips `checked`. So a mixed box that the reader clicked
-     * became checked AND stayed indeterminate, and CSS draws the dash over the
-     * tick — the box still read as "some" after the reader had just said "all".
-     *
-     * The comment here said "native toggling clears indeterminate", and it
-     * does not. Measured: after a click the inner input reports
-     * `checked: true, indeterminate: true`.
-     *
-     * Cleared on the PROPERTY as well as the attribute, because CSS selects
-     * `:indeterminate` on the property.
-     * TRAP T-a-click-does-not-clear-indeterminate.
-     */
+    // A click flips `checked` but does NOT clear `indeterminate`, so the dash
+    // would draw over the tick. Clear the PROPERTY too — CSS selects
+    // `:indeterminate` on it. TRAP T-a-click-does-not-clear-indeterminate.
     c.indeterminate = false;
     this.removeAttribute('indeterminate');
     this.emit('change', {

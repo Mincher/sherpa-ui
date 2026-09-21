@@ -1,36 +1,12 @@
 <!--
-  sherpa-chart-legend — a legend for charts.
+  sherpa-chart-legend — a legend for charts. Figma "Chart Legend" (1098:37846).
 
-  Matches the rebuilt Figma "Chart Legend" (1098:37846), which is a GRID, not a
-  list of rows: three columns — swatch · category · value — with a 8px column gap
-  and a 4px row gap, inside a frame padded 8 all round.
+  A GRID of three tracks (swatch · category · value), not one flex row per entry,
+  so values line up down the column. Each entry is still ONE button spanning all
+  three tracks — one click target, one tab stop.
 
-  A grid, not one flex row per entry, because that is what aligns the columns: with
-  per-row flex the value sits wherever its own label ends, so a legend of mixed
-  label lengths has ragged values. The grid gives every entry the same three
-  tracks, so the values line up down the column.
-
-  Each entry is still ONE button spanning the three tracks (`display: grid` with
-  `grid-column: 1 / -1` and its own subgrid), so the whole entry stays a single
-  click target and a single tab stop. Splitting the cells into separate grid items
-  would align them but leave three tab stops per series.
-
-  The swatch is the Figma "Legend Swatch" (1098:37786): 12×12, radius 4, the series
-  hue at 60% with a solid 1px stroke in the same hue.
-
-  populate([{ label, value?, colorIndex }]) stamps the entries from the cloning
-  prototype. Clicking one toggles it and emits legend-item-click, which the page
-  wires to the chart's setSeriesHidden / setSliceHidden.
-
-  PLACEMENT follows the orientation, and the two are not interchangeable. A
-  VERTICAL legend is one entry per row on three shared tracks, so it sits BESIDE a
-  chart — slot it into the chart's [slot=legend]. A HORIZONTAL one puts every entry
-  on ONE row (Figma's 9-column variant), so it sits BELOW a chart, as a sibling
-  after it. A vertical legend under a chart wastes a column of height; a horizontal
-  one beside it is too wide to fit.
-
-  Orientation is handled entirely in CSS, so the component observes no attributes:
-  changing data-orientation re-styles with no re-render.
+  A VERTICAL legend goes in the chart's [slot=legend]; a HORIZONTAL one goes BELOW
+  the chart as a sibling after it. Orientation is pure CSS, so nothing re-renders.
 
   Public API:
     data-orientation  vertical (default) | horizontal
@@ -49,17 +25,11 @@
   </template>
 
   <!--
-    The "OTHER" entry — the roll-up row, which needs a second control.
+    The "OTHER" roll-up entry. It cannot reuse .item-tpl: that prototype IS a
+    <button>, and a nested button is un-nested by the browser, which silently
+    kills the inner control. Hence a wrapper holding two sibling controls.
 
-    It cannot reuse .item-tpl: that prototype IS a <button>, and a menu button
-    nested inside a button is invalid HTML (the browser un-nests it and the inner
-    control stops working). So the roll-up row is a WRAPPER holding two siblings:
-    the toggle button (identical to a normal entry) and an xsmall icon button that
-    opens the breakdown menu.
-
-    The menu lists the rolled-up categories as CHECKBOX rows with an Apply/Cancel
-    footer, so the reader can tick several without the menu closing after each
-    click. sherpa-menu already does exactly that with data-commit.
+    data-commit keeps the menu open while several rows are ticked.
   -->
   <template class="rollup-tpl">
     <span class="rollup" role="listitem">
@@ -68,10 +38,7 @@
         <span class="label" part="label"></span>
         <span class="value" part="value"></span>
       </button>
-      <!-- Figma's `triangle-down`, which every other menu control in the system
-           wears (the quick-filter chip's caret, the toolbar's Save caret) — so
-           "this opens a list" looks the same wherever it appears. It was a
-           horizontal ellipsis, which reads as "more actions", not "expand". -->
+      <!-- caret-down, as every other menu control in the system wears. -->
       <sherpa-button
         class="rollup-menu-btn"
         data-size="xs"

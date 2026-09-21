@@ -1,18 +1,7 @@
 <!--
   sherpa-overlay-panel — a NON-modal floating panel on native <dialog>.
-
-  Native-first (naming standard D2/D12): a native <dialog> opened with show()
-  (not showModal()) is a floating panel — it sits in the top layer but WITHOUT a
-  backdrop, without a focus-trap, and without ESC-to-close, so the page behind
-  stays interactive. We chose <dialog>.show() over the Popover API because it
-  shares sherpa-dialog's exact structure and lifecycle (one difference: show vs
-  showModal) and gives an imperative show()/close() API.
-
-  Matches the Figma "Overlay Panel" (node 1003:33705): a rich header chrome
-  (lead icon + link-style title + a description/metadata row + a trailing toolbar
-  of collapse / expand / external / close buttons), a body region, and a footer
-  region for slotted actions (e.g. Cancel / Apply). Header chrome is rendered by
-  the panel itself; the body and footer are slots.
+  Opened with show(), not showModal(): top layer, no backdrop, no focus trap,
+  no ESC-to-close, so the page behind stays interactive.
 
   Public API:
     data-icon         a glyph before the title (shows the icon slot area)
@@ -40,35 +29,19 @@
     close            (detail: { })
 -->
 <template id="default">
-  <!-- The SCRIM. A non-modal <dialog> (show(), not showModal()) gets no
-       ::backdrop at all — that pseudo-element only paints for a modal — so the
-       tint behind the panel has to be a real element. It is pointer-transparent,
-       which is the whole point of a non-modal panel: the page behind stays live
-       and clickable while the assistant is open. -->
+  <!-- A non-modal <dialog> gets no ::backdrop, so the tint is a real element.
+       Pointer-transparent by design: the page behind stays clickable. -->
   <div class="scrim" part="scrim" aria-hidden="true"></div>
   <dialog class="root sherpa-border-edges" part="root">
-    <!-- COMPOSED, not hand-drawn. Figma's Overlay Panel (1003:33705) instances a
-         Container Header and a Container Footer around a content slot, and that
-         component already owns the heading, icon, description, collapse toggle
-         and close button — plus the `actions` slot the expand / external buttons
-         sit in.
-
-         The DEFAULT variant (Will's call), not data-type="panel": that one
-         inks the title link-blue, which reads as something you can click when it
-         is only a name.
-
-         Its own events (header-collapse, header-dismiss) are re-emitted by this
-         file as panel-collapse / panel-close, so the panel's public API does not
-         change with its internals. -->
+    <!-- Container Header owns the heading, icon, description, collapse and close.
+         DEFAULT variant, not data-type="panel" — that inks the title link-blue.
+         Its header-collapse / header-dismiss are re-emitted as the panel's own
+         events, so the public API does not follow its internals. -->
     <sherpa-container-header class="header" part="header">
       <slot name="icon" slot="icon"></slot>
       <slot name="description" slot="metadata" data-accepts="content,control"></slot>
 
-      <!-- The two controls the Container Header does NOT own — they are specific
-           to a FLOATING panel, so they sit in its actions slot rather than moving
-           into it. Composed sherpa-buttons, like every other internal control in
-           the library: a hand-written <button> would re-draw the icon sizing,
-           hover, focus ring and disabled inking the component already owns. -->
+      <!-- Specific to a FLOATING panel, so they sit in the actions slot. -->
       <span slot="actions" class="toolbar" part="toolbar">
         <sherpa-button class="expand" part="expand" data-type="icon" data-size="xs"
                        data-look="transparent" data-icon-start="fa-solid fa-up-right-and-down-left-from-center"
@@ -83,9 +56,8 @@
       <slot></slot>
     </div>
 
-    <!-- data-align="stretch": a panel's footer holds ONE full-width control far
-         more often than a row of buttons at one end — a chat composer, a search
-         field, a form's primary action. -->
+    <!-- data-align="stretch": a panel footer usually holds ONE full-width
+         control — a composer, a search field, a primary action. -->
     <sherpa-container-footer class="footer" part="footer" data-align="stretch">
       <slot name="footer" data-accepts="control,input"></slot>
     </sherpa-container-footer>

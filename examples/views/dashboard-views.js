@@ -1,30 +1,18 @@
 /**
- * The saved VIEWS the dashboard offers — each one a real definition.
+ * The saved VIEWS the dashboard offers. Same `ViewSnapshot` shape as
+ * `records-views.js`, so a link, a stored view and an MCP call all say it once.
  *
- * Identical in shape to `records-views.js`, deliberately. Two pages with two
- * shapes for "a saved view" would be two things to learn, two things to
- * serialise, and two things for an agent to get wrong. A view is a
- * `ViewSnapshot` everywhere: the query to run, and the state every component
- * should be in.
- *
- * The dashboard used to carry its own `{ label, filter, chips }` object and a
- * hand-written apply step. It said the same things this does, in a vocabulary
- * only this page knew — so a link, a stored view and an MCP call could not have
- * expressed one.
- *
- * FILTERING IS THE POINT. Each view sets BOTH `source.filter` (what the charts
- * summarise) and the header's chips (what the reader sees). A view that moved
- * only the data left the bar claiming nothing was filtered while eight charts
- * disagreed — and a filter nobody can see is a filter nobody can undo.
+ * Each view sets BOTH `source.filter` (what the charts summarise) and the
+ * header's chips (what the reader sees) — a filter nobody can see is a filter
+ * nobody can undo.
  */
 
 /** @type {Record<string, { label: string, snapshot: import('../../dist/index.js').ViewSnapshot }>} */
 export const DASHBOARD_VIEWS = {
   fleet: {
     label: 'Fleet overview',
-    // The BASELINE. Every field is STATED, never omitted: applying a view is a
-    // merge, so a view silent about the filter would keep the last view's one
-    // and show the reader a state nobody defined.
+    // The BASELINE. Applying a view is a merge, so every field is stated — a
+    // view silent about the filter keeps the last view's one.
     snapshot: {
       v: 1,
       source: { filter: undefined, sort: [], group: null, search: '', page: 1 },
@@ -40,8 +28,8 @@ export const DASHBOARD_VIEWS = {
         filter: ['severity', 'eq', 'critical'],
         sort: [], group: null, search: '', page: 1,
       },
-      // NO header chip names severity — it is this page's own axis, not a slice
-      // of the business — so the bar says only which view is on, which is true.
+      // No chip for severity: it is this page's own axis, not a slice of the
+      // business.
       elements: { header: { values: { view: ['critical'] } } },
     },
   },
@@ -54,35 +42,21 @@ export const DASHBOARD_VIEWS = {
         filter: ['region', 'eq', 'EMEA'],
         sort: [], group: null, search: '', page: 1,
       },
-      // The chip and the filter are ONE FACT said twice — once to the data,
-      // once to the reader. Held together here so they cannot drift. They HAD
-      // drifted: the filter said 'EMEA' and the chip said 'emea', so the saved
-      // view narrowed the data while its own chip claimed nothing was picked.
-      // `view` stays lowercase — that is a key into this object, not a record
-      // value. TRAP T-a-chip-filters-the-values-the-data-has.
+      // Chip and filter are one fact said twice — held together so the case
+      // cannot drift. `view` stays lowercase: it is a key into this object, not
+      // a record value. TRAP T-a-chip-filters-the-values-the-data-has.
       elements: { header: { values: { view: ['emea'], region: ['EMEA'] } } },
     },
   },
 
   capacity: {
     label: 'Capacity planning',
-    /* THE ONE THAT LOOKS DIFFERENT.
-       Every other view here is the same eight charts over fewer rows. This one
-       is not a summary at all: planning capacity means naming the devices that
-       are nearly full, so it wants a TABLE and a distribution, and none of the
-       donut, gauge or line series say anything useful about it.
-
-       `content` is the view's own MARKUP — the same HTML an authored template
-       holds — so the components, their nesting and their spans sit beside the
-       query that fills them. `snapshot.elements` then configures them through
-       their own APIs, addressing the ids in the markup. */
-    /* MARKUP, not an object. Every authored screen in examples/templates is
-       HTML dropped into the app shell, and a saved view is the same thing a
-       USER made instead of an author — so it is the same format. This used to
-       be a 40-line ViewDefinition describing the twelve lines below.
-
-       Parsed through the allow-list in core/view-markup.ts on the way in, and
-       the ids are what `snapshot.elements` addresses. */
+    /* The one view that is not the same eight charts over fewer rows: planning
+       capacity names the devices that are nearly full, so it wants a table and
+       a distribution. */
+    /* `content` is the view's own MARKUP — the same HTML an authored template
+       holds, parsed through the allow-list in core/view-markup.ts on the way
+       in. Its ids are what `snapshot.elements` addresses. */
     content: `
       <div class="sherpa-grid">
         <!-- A HISTOGRAM, not a donut: storage is a continuous quantity, and
