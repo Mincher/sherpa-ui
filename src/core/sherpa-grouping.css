@@ -6,8 +6,9 @@
 
 /* ══ A GROUP of controls ════════════════════════════════════════════════════
  * Mirrors the Figma Grouping collections: horizontal (the default) and
- * vertical and grid. BY POSITION, not by an attribute on each child, so a
- * re-order survives. */
+ * vertical and grid. BY POSITION, so a re-order survives — the twin of
+ * `data-group`, which STATES the position instead.
+ * TRAP T-grouping-is-an-attribute-and-a-class. */
 
 /* Every child loses every inner edge; the ends put theirs back below. */
 .sherpa-group > * {
@@ -17,10 +18,14 @@
   --sherpa-border-rounding-bottom-right: 0px;
 }
 
-/* ── Horizontal (the default) ───────────────────────────────────────────── */
+/* ── Horizontal (the default) ─────────────────────────────────────────────
+   A shared edge is HALVED on BOTH sides: each neighbour draws 0.25px and the
+   joint reads 0.5px, the same weight as the group's outer border. Never
+   dropped on one side — that is the Figma design.
+   TRAP T-a-shared-edge-is-halved-on-both-sides. */
 .sherpa-group > * {
-  /* A shared edge is drawn ONCE, by the child on its start side. */
   --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
 }
 .sherpa-group > :first-child {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
@@ -28,6 +33,7 @@
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 .sherpa-group > :last-child {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
@@ -35,7 +41,9 @@
 /* ── Vertical ───────────────────────────────────────────────────────────── */
 .sherpa-group-vertical > * {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-top: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-xs, 0.25px);
 }
 .sherpa-group-vertical > :first-child {
   --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
@@ -43,6 +51,7 @@
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 .sherpa-group-vertical > :last-child {
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
@@ -68,7 +77,9 @@
 .sherpa-group-grid > * {
   /* Every cell an outer box. The gate below joins them. */
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm, 0.5px);
 
   --sherpa-group-index: calc(sibling-index() - 1);
   --sherpa-group-col: calc(
@@ -81,13 +92,24 @@
 
 @supports (width: if(style(--x: 1): 1px; else: 2px)) {
   .sherpa-group-grid > * {
-    /* A shared edge is drawn ONCE, by the cell on its start side. */
+    /* A shared edge is HALVED on both sides — the outer four stay full.
+       TRAP T-a-shared-edge-is-halved-on-both-sides. */
     --sherpa-border-left: if(
       style(--sherpa-group-col: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
       else: var(--sherpa-display-mode-border-width-xs, 0.25px)
     );
+    --sherpa-border-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col)):
+        var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
     --sherpa-border-top: if(
       style(--sherpa-group-row: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    --sherpa-border-bottom: if(
+      style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-width-sm, 0.5px);
       else: var(--sherpa-display-mode-border-width-xs, 0.25px)
     );
 

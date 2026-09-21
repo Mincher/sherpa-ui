@@ -108,8 +108,7 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* Corners come from `.sherpa-group` in core/sherpa-grouping.css, by POSITION.
-   `[data-snap]` in tokens.css is document-scoped and never reaches this shadow root. */
+/* Corners come from `.sherpa-group` in core/sherpa-grouping.css, by POSITION. */
 
 /* ── Disabled fields ──────────────────────────────────────────────────────
    NOT `.sherpa-inert`: that class is static markup, so it cannot follow

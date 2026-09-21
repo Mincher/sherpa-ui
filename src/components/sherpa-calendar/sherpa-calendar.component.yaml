@@ -26,7 +26,7 @@ anatomy:
       part: cal
       children:
         - el: div
-          class: cal-header
+          class: cal-header sherpa-group
           part: header
           children:
             - el: sherpa-button
@@ -34,21 +34,21 @@ anatomy:
               part: prev
               attrs:
                 data-type: icon
-                data-snap: right
+                data-group: start
                 data-icon-start: fa-solid fa-chevron-left
                 aria-label: Previous
             - el: sherpa-button
               class: cal-label
               part: label
               attrs:
-                data-snap: all
+                data-group: mid
                 aria-live: polite
             - el: sherpa-button
               class: cal-nav cal-next
               part: next
               attrs:
                 data-type: icon
-                data-snap: left
+                data-group: end
                 data-icon-start: fa-solid fa-chevron-right
                 aria-label: Next
         - el: div
@@ -104,7 +104,7 @@ anatomy:
               part: time-label
               children:
                 - el: input
-                  class: cal-time
+                  class: cal-time sherpa-border-edges
                   part: time
                   attrs:
                     type: time
@@ -127,7 +127,7 @@ anatomy:
                   attrs:
                     type: button
                 - el: button
-                  class: cal-apply
+                  class: cal-apply sherpa-border-edges
                   part: apply
                   attrs:
                     type: button
@@ -143,7 +143,7 @@ anatomy:
               class: cal-nav cal-prev
               attrs:
                 data-type: icon
-                data-snap: right
+                data-group: start
                 style: >-
                   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base,
                   4px); --sherpa-border-rounding-bottom-left:
@@ -153,14 +153,14 @@ anatomy:
             - el: sherpa-button
               class: cal-label
               attrs:
-                data-snap: all
+                data-group: mid
                 aria-live: polite
                 style: "margin-inline-start: var(--sherpa-structure-space-snapped, 0px); flex: 1 1 auto;"
             - el: sherpa-button
               class: cal-nav cal-next
               attrs:
                 data-type: icon
-                data-snap: left
+                data-group: end
                 style: >-
                   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
                   --sherpa-border-rounding-top-right:
@@ -185,12 +185,9 @@ props:
     kind: style
     default: false
     description: >-
-      the HOST owns the card's chrome — see the note below data-embedded, in full: Figma's Calendar
-      (268:14601) is a card of three parts — a `header` SLOT holding the month stepper, the
-      day/month/year grid, and a Container Footer. A calendar IS a menu in this system. So when
-      embedded, this component contributes only its GRID: the footer is hidden (the host draws the
-      action row) and the stepper is PROJECTED into the host's `header` slot, so the menu is the
-      card and there is one header and one footer rather than two.
+      the HOST owns the card's chrome — see the note below data-embedded: this component contributes
+      only its GRID — the footer is hidden and the stepper is projected into the host's `header`
+      slot, so a menu hosting a calendar has ONE header and ONE footer rather than two.
   - $type: prop
     name: data-has-time
     type: boolean
@@ -321,10 +318,6 @@ tokens:
   cal-time-label.color: "{sherpa.theme-content-body-1}"
   cal-time.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-time.padding-inline: "{sherpa.display-mode-space-xs}"
-  cal-time.border-block-start-width: "{sherpa.border-top}"
-  cal-time.border-block-end-width: "{sherpa.border-bottom}"
-  cal-time.border-inline-start-width: "{sherpa.border-left}"
-  cal-time.border-inline-end-width: "{sherpa.border-right}"
   cal-time.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-time.background: "{sherpa.style-surface-base}"
   cal-time.color: "{sherpa.theme-content-body-1}"
@@ -339,10 +332,6 @@ tokens:
   cal-cancel.block-size: "{sherpa.structure-height}"
   cal-cancel.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-cancel.padding-inline: "{sherpa.theme-padding-lg}"
-  cal-cancel.border-block-start-width: "{sherpa.border-top}"
-  cal-cancel.border-block-end-width: "{sherpa.border-bottom}"
-  cal-cancel.border-inline-start-width: "{sherpa.border-left}"
-  cal-cancel.border-inline-end-width: "{sherpa.border-right}"
   cal-cancel.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-cancel.background: "{sherpa.style-surface-base}"
   cal-cancel.color: "{sherpa.theme-content-body-1}"
@@ -351,10 +340,6 @@ tokens:
   cal-apply.block-size: "{sherpa.structure-height}"
   cal-apply.padding-block: "{sherpa.display-mode-space-3xs}"
   cal-apply.padding-inline: "{sherpa.theme-padding-lg}"
-  cal-apply.border-block-start-width: "{sherpa.border-top}"
-  cal-apply.border-block-end-width: "{sherpa.border-bottom}"
-  cal-apply.border-inline-start-width: "{sherpa.border-left}"
-  cal-apply.border-inline-end-width: "{sherpa.border-right}"
   cal-apply.border-radius: "{sherpa.display-mode-border-rounding-base}"
   cal-apply.background: "{sherpa.style-surface-base}"
   cal-apply.color: "{sherpa.theme-content-body-1}"

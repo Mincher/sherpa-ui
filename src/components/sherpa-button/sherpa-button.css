@@ -71,7 +71,7 @@
   vertical-align: middle;
   inline-size: fit-content;
 
-  /* Per-corner so [data-snap] can join buttons into a seamless group. */
+  /* Per-corner so a group joins buttons into one seamless object. */
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);

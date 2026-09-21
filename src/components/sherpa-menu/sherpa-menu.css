@@ -125,9 +125,7 @@
      cannot be negative — the negative margin is inline on the clone. */
   gap: 0;
 
-  /* Squared all round; the ends take their outer corners back on the clone.
-     The [data-snap] block in tokens.css is a bare document-sheet selector and
-     never reaches a shadow root, so the values are mirrored here. */
+  /* Squared all round; the ends take their outer corners back on the clone. */
   --sherpa-border-rounding-top-left: 0px;
   --sherpa-border-rounding-top-right: 0px;
   --sherpa-border-rounding-bottom-left: 0px;

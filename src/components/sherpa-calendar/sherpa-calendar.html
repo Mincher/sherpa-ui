@@ -33,10 +33,10 @@
   <div class="cal" part="cal">
     <!-- Three composed buttons, snapped into one stepper (Menu set 1156:29240 > Type=Calendar). -->
     <div class="cal-header sherpa-group" part="header">
-      <sherpa-button class="cal-nav cal-prev" part="prev" data-type="icon" data-snap="right"
+      <sherpa-button class="cal-nav cal-prev" part="prev" data-type="icon" data-group="start"
                      data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
-      <sherpa-button class="cal-label" part="label" data-snap="all" aria-live="polite"></sherpa-button>
-      <sherpa-button class="cal-nav cal-next" part="next" data-type="icon" data-snap="left"
+      <sherpa-button class="cal-label" part="label" data-group="mid" aria-live="polite"></sherpa-button>
+      <sherpa-button class="cal-nav cal-next" part="next" data-type="icon" data-group="end"
                      data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>
 
@@ -81,12 +81,12 @@
       children. An inline custom property inherits across both boundaries.
     -->
     <div class="cal-header cal-header-projected" slot="header">
-      <sherpa-button class="cal-nav cal-prev" data-type="icon" data-snap="right"
+      <sherpa-button class="cal-nav cal-prev" data-type="icon" data-group="start"
                      style="--sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);"
                      data-icon-start="fa-solid fa-chevron-left" aria-label="Previous"></sherpa-button>
-      <sherpa-button class="cal-label" data-snap="all" aria-live="polite"
+      <sherpa-button class="cal-label" data-group="mid" aria-live="polite"
                      style="margin-inline-start: var(--sherpa-structure-space-snapped, 0px); flex: 1 1 auto;"></sherpa-button>
-      <sherpa-button class="cal-nav cal-next" data-type="icon" data-snap="left"
+      <sherpa-button class="cal-nav cal-next" data-type="icon" data-group="end"
                      style="margin-inline-start: var(--sherpa-structure-space-snapped, 0px); --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);"
                      data-icon-start="fa-solid fa-chevron-right" aria-label="Next"></sherpa-button>
     </div>

@@ -29,6 +29,8 @@ SherpaElement.sharedStyles = [
   new URL('./core/sherpa-base.css', import.meta.url),
   new URL('./core/sherpa-typography.css', import.meta.url),
   new URL('./core/sherpa-grouping.css', import.meta.url),
+  new URL('./core/sherpa-icon.css', import.meta.url),
+  new URL('./core/sherpa-group-positions.css', import.meta.url),
   new URL('./core/sherpa-anchor.css', import.meta.url),
   new URL('./core/sherpa-motion.css', import.meta.url),
   new URL(FA_CDN),

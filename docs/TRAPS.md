@@ -6952,6 +6952,7 @@ the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/sherpa-typography.css`
 - Site: `src/index.ts`
+- Site: `src/core/sherpa-group-positions.css`
 
 ### T-import-dies-in-an-adopted-sheet
 
@@ -7056,3 +7057,64 @@ those four never needed a typed value.
 - Site: `src/core/sherpa-grouping.css`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-grouping.spec.ts`
+
+### T-grouping-is-an-attribute-and-a-class
+
+Grouping — making a row, column or grid of controls read as ONE object — has
+two doors, and both are real:
+
+| | |
+|---|---|
+| `data-group="start"` | the POSITION, stated. Works from an HTML template or a JS property change, with no CSS of its own. The 21 Figma positions: `solo`/`start`/`mid`/`end`, `vertical-*`, `grid-{top,mid,bottom}-*` |
+| `.sherpa-group` on a wrapper | DERIVES the same thing by position, so a re-order, insert or delete needs nothing |
+
+The attribute is the configuration channel and matches every other Sherpa API:
+`data-*` in, CSS responds. The class is for a container that owns its children
+and would otherwise re-stamp attributes on every change.
+
+**The blocks are emitted TWICE, and that is deliberate.** A bare
+`[data-group="start"]` in `tokens.css` can never match an element inside a
+shadow root; the same rule in an adopted sheet can never match one in the page.
+A host app groups controls in its own markup and a component groups them in its
+template, so `scripts/project-tokens.mjs` writes the generated blocks to both
+`tokens.css` and `src/core/sherpa-group-positions.css`. Removing either half
+silently un-joins one of the two.
+
+**Two renames cleared the way.**
+
+`data-snap` is gone. It was written at 38 sites across 5 components and styled
+by **nothing** — grepped: not one CSS rule anywhere selected on it, and seven
+component comments existed only to explain that the `[data-snap]` rules in
+`tokens.css` never reached a shadow root. Its values also named the SIDE that
+was snapped rather than the position, so `data-snap="right"` meant the item sat
+at the START of a row. Migrated: `right`→`start`, `left`→`end`, `all`→`mid`.
+
+`sherpa-data-grid` used `data-group` for something else entirely — the group
+KEY of a row, an arbitrary value like `"EMEA"` or a status. That collided: a key
+of `"end"`, `"mid"` or `"solo"` would have silently restyled that row's borders.
+It is now `data-group-key`, which is internal — 8 `dataset` sites plus one CSS
+selector in a test, and nothing outside the component reads it.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/core/sherpa-group-positions.css`
+- Site: `src/core/sherpa-grouping.css`
+
+### T-a-shared-edge-is-halved-on-both-sides
+
+Will's ruling, 2026-09-15. An edge SHARED with a neighbour is aliased one step
+down the width ramp — `sm` 0.5px → `xs` 0.25px — on **both** items. The two
+halves meet at zero spacing and read as one full-weight stroke.
+
+It is not drawn once by one side, and never overlapped negatively. Getting this
+wrong is invisible in a screenshot and invisible to `getComputedStyle`, which
+floors every sub-pixel border to `"1px"`
+(T-a-sub-pixel-border-reads-back-as-1px) — so a joint of 0.75px reads exactly
+like a correct one. Read the custom property.
+
+A corner is round only when BOTH of its edges are outer.
+
+`.sherpa-group` got this wrong on its first pass: it halved only the start edge
+and let the neighbour keep a full one. The `[data-group]` tokens, which come
+from Figma, are what caught it.
+
+- Site: `src/core/sherpa-grouping.css`

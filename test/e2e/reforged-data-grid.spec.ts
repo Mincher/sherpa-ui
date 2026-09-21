@@ -778,7 +778,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     });
 
     const rowsIn = (key: string) =>
-      Array.from(sr.querySelectorAll<HTMLElement>('.row')).filter((r) => r.dataset['group'] === key);
+      Array.from(sr.querySelectorAll<HTMLElement>('.row')).filter((r) => r.dataset['groupKey'] === key);
     const checkedIn = (key: string) =>
       rowsIn(key).filter(
         (r) => r.querySelector<HTMLElement & { checked: boolean }>('.row-multi')!.checked,
@@ -789,7 +789,7 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     // the inner input inside its own shadow root.
     // TRAP T-a-test-must-click-what-the-listener-is-on.
     const blueBox = sr.querySelector<HTMLElement & { checked: boolean; indeterminate: boolean }>(
-      '.group-row[data-group="Blue"] .group-select',
+      '.group-row[data-group-key="Blue"] .group-select',
     )!;
     blueBox.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();

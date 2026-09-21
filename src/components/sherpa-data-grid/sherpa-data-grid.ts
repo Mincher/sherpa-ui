@@ -770,7 +770,7 @@ export class SherpaDataGrid extends SherpaElement {
         box.checked = this.#selected.has(record);
       }
       // Its group, so CSS hides it when that group is shut — no `display` write.
-      if (group && lastGroup !== null) tr.dataset['group'] = lastGroup;
+      if (group && lastGroup !== null) tr.dataset['groupKey'] = lastGroup;
       columns.forEach((col, c) => {
         const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         if (col.type) td.dataset['type'] = col.type;
@@ -916,7 +916,7 @@ export class SherpaDataGrid extends SherpaElement {
   #groupRow(key: string, size: number, columnCount: number): HTMLElement {
     const tr = this.clone('template.group-row-tpl');
     if (!tr) throw new Error('sherpa-data-grid: template.group-row-tpl is missing or empty');
-    tr.dataset['group'] = key;
+    tr.dataset['groupKey'] = key;
     const collapsed = this.#collapsed.has(key);
     // CSS draws the chevron rotation and hides the group's rows off this flag.
     tr.toggleAttribute('data-collapsed', collapsed);
@@ -1133,7 +1133,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Fold a group. `#collapsed` remembers it across the next body rebuild. */
   #toggleGroup(groupRow: HTMLElement): void {
-    const key = groupRow.dataset['group'] ?? '';
+    const key = groupRow.dataset['groupKey'] ?? '';
     const collapsed = !groupRow.hasAttribute('data-collapsed');
     groupRow.toggleAttribute('data-collapsed', collapsed);
     if (collapsed) this.#collapsed.add(key);
@@ -1164,7 +1164,7 @@ export class SherpaDataGrid extends SherpaElement {
   /** Mark every row whose group is collapsed; CSS hides them. */
   #syncGroupVisibility(): void {
     for (const row of this.$$<HTMLElement>('.row')) {
-      const key = row.dataset['group'];
+      const key = row.dataset['groupKey'];
       row.toggleAttribute('data-hidden', key != null && this.#collapsed.has(key));
     }
   }
@@ -1305,10 +1305,10 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Set every row in one group to match its group checkbox, then broadcast. */
   #selectGroup(box: SelectBox): void {
-    const key = box.closest<HTMLElement>('.group-row')?.dataset['group'];
+    const key = box.closest<HTMLElement>('.group-row')?.dataset['groupKey'];
     if (key == null) return;
     for (const row of this.$$<HTMLElement>('.row')) {
-      if (row.dataset['group'] !== key) continue;
+      if (row.dataset['groupKey'] !== key) continue;
       const rowBox = this.#rowBox(row);
       if (rowBox) rowBox.checked = box.checked;
       const record = this.#recordFor(row);
@@ -1323,10 +1323,10 @@ export class SherpaDataGrid extends SherpaElement {
   /** Reflect all/none/indeterminate on each group checkbox. */
   #syncGroupSelects(): void {
     for (const groupRow of this.$$<HTMLElement>('.group-row')) {
-      const key = groupRow.dataset['group'];
+      const key = groupRow.dataset['groupKey'];
       const box = groupRow.querySelector<SelectBox>('.group-select');
       if (!box || key == null) continue;
-      const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['group'] === key);
+      const rows = this.$$<HTMLElement>('.row').filter((r) => r.dataset['groupKey'] === key);
       const checked = rows.filter((r) => this.#rowBox(r)?.checked).length;
       box.checked = checked > 0 && checked === rows.length;
       box.indeterminate = checked > 0 && checked < rows.length;

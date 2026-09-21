@@ -143,8 +143,7 @@
 }
 
 /* Corner squaring is `.sherpa-group` (core/sherpa-grouping.css), which
-   `.view-group` carries: a bare `[data-snap]` rule in tokens.css is a document
-   rule and never reaches inside this shadow root. */
+   `.view-group` carries. */
 
 /* The lit star. These are written here because tokens.css's
    [data-status="active"] is a document rule that never matches in a shadow

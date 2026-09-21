@@ -31,9 +31,9 @@
   <!-- The GROUP, not the label, is the host's child: a <button> inside a
        <label> would toggle the checkbox on every click. -->
   <div class="group sherpa-group" part="group">
-    <!-- `data-snap` describes this child; `.sherpa-group` joins by
-         POSITION, so a re-order survives. -->
-    <span class="box sherpa-border-edges" part="box" data-snap="start">
+    <!-- `data-group` names this child's POSITION; `.sherpa-group` on the
+         wrapper derives the same thing, so a re-order survives either way. -->
+    <span class="box sherpa-border-edges" part="box" data-group="start">
       <label class="field" part="field">
         <input class="control" part="control" type="checkbox" />
         <span class="text" part="text">
@@ -46,7 +46,7 @@
 
     <!-- A real sherpa-button, not a hand-drawn one — T-compose-never-reimplement. -->
     <sherpa-button class="caret" part="caret" data-type="icon" data-size="sm"
-                   data-snap="end"
+                   data-group="end"
                    data-icon-start="fa-solid fa-caret-down"
                    aria-haspopup="menu" aria-expanded="false"
                    aria-label="Selection options"></sherpa-button>

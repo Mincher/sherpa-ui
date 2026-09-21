@@ -27,7 +27,7 @@ anatomy:
           class: box sherpa-border-edges
           part: box
           attrs:
-            data-snap: start
+            data-group: start
           children:
             - el: label
               class: field
@@ -55,7 +55,7 @@ anatomy:
           attrs:
             data-type: icon
             data-size: sm
-            data-snap: end
+            data-group: end
             data-icon-start: fa-solid fa-caret-down
             aria-haspopup: menu
             aria-expanded: "false"

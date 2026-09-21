@@ -43,7 +43,7 @@ anatomy:
             aria-label: Pagination
           children:
             - el: span
-              class: pair pair-back
+              class: pair pair-back sherpa-group
               children:
                 - el: sherpa-button
                   class: btn first
@@ -51,7 +51,7 @@ anatomy:
                     data-action: first
                     data-type: icon
                     data-look: transparent
-                    data-snap: right
+                    data-group: start
                     data-icon-start: fa-solid fa-angles-left
                     aria-label: First page
                 - el: sherpa-button
@@ -60,11 +60,11 @@ anatomy:
                     data-action: prev
                     data-type: icon
                     data-look: transparent
-                    data-snap: left
+                    data-group: end
                     data-icon-start: fa-solid fa-angle-left
                     aria-label: Previous page
             - el: input
-              class: page-input
+              class: page-input sherpa-border-edges
               part: page-input
               attrs:
                 type: number
@@ -78,7 +78,7 @@ anatomy:
               attrs:
                 aria-hidden: "true"
             - el: span
-              class: pair pair-fwd
+              class: pair pair-fwd sherpa-group
               children:
                 - el: sherpa-button
                   class: btn next
@@ -86,7 +86,7 @@ anatomy:
                     data-action: next
                     data-type: icon
                     data-look: transparent
-                    data-snap: right
+                    data-group: start
                     data-icon-start: fa-solid fa-angle-right
                     aria-label: Next page
                 - el: sherpa-button
@@ -95,7 +95,7 @@ anatomy:
                     data-action: last
                     data-type: icon
                     data-look: transparent
-                    data-snap: left
+                    data-group: end
                     data-icon-start: fa-solid fa-angles-right
                     aria-label: Last page
     - el: template
@@ -158,21 +158,10 @@ events:
       pageSize: unknown
 tokens:
   results.gap: "{sherpa.display-mode-space-xs}"
-  rows-label.color: "{sherpa.theme-content-body-base}"
-  rows-label.font-size: "{sherpa.font-size-body-small}"
-  rows-label.line-height: "{sherpa.theme-content-line-height-small}"
-  page-input.margin-inline: "{sherpa.display-mode-space-xs}"
   total.margin-inline-end: "{sherpa.display-mode-space-xs}"
-  total.color: "{sherpa.theme-content-body-base}"
-  total.font-size: "{sherpa.font-size-body-small}"
-  total.line-height: "{sherpa.theme-content-line-height-small}"
   pagination.gap: "{sherpa.display-mode-space-base}"
   pagination.padding: "{sherpa.display-mode-space-xs}"
   rows.padding: "{sherpa.theme-padding-sm}"
-  rows.border-block-start-width: "{sherpa.border-top}"
-  rows.border-block-end-width: "{sherpa.border-bottom}"
-  rows.border-inline-start-width: "{sherpa.border-left}"
-  rows.border-inline-end-width: "{sherpa.border-right}"
   rows.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   rows.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   rows.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -181,10 +170,6 @@ tokens:
   rows.color: "{sherpa.theme-content-body-1}"
   rows.font-size: "{sherpa.font-size-body-base}"
   page-input.padding: "{sherpa.theme-padding-sm}"
-  page-input.border-block-start-width: "{sherpa.border-top}"
-  page-input.border-block-end-width: "{sherpa.border-bottom}"
-  page-input.border-inline-start-width: "{sherpa.border-left}"
-  page-input.border-inline-end-width: "{sherpa.border-right}"
   page-input.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   page-input.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   page-input.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -193,6 +178,7 @@ tokens:
   page-input.color: "{sherpa.theme-content-body-1}"
   page-input.font-size: "{sherpa.font-size-body-base}"
   rows.padding-inline-end: "{sherpa.structure-space-padding}"
+  page-input.margin-inline: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Pagination

@@ -1311,6 +1311,7 @@
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
   }
 
+  /* Grouping — per-position borders + rounding ([data-group]). */
   [data-group="solo"] {
     --sherpa-border-top: var(--sherpa-display-mode-border-width-sm);
     --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm);
@@ -1355,7 +1356,6 @@
     --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base);
   }
 
-  /* Grouping — per-position borders + rounding ([data-group]). */
   [data-group="vertical-solo"] {
     --sherpa-border-top: 0.5px;
     --sherpa-border-bottom: 0.5px;

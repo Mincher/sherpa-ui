@@ -50,9 +50,7 @@
   background: var(--_surface);
   border-style: solid;
   border-color: var(--_border);
-  /* Rounded on the leading edge only — the Grouping "snap-right-edge" shape.
-     The rounding vars cannot come from tokens.css's [data-snap] rules: a bare
-     attribute selector there matches the document only, never a shadow root. */
+  /* Rounded on the leading edge only — the Grouping `start` shape. */
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   /* Squared directly, NOT by re-pointing --sherpa-border-rounding-*-right —

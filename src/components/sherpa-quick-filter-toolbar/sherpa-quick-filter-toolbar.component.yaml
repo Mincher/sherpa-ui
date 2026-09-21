@@ -91,7 +91,7 @@ anatomy:
               attrs:
                 aria-hidden: "true"
             - el: span
-              class: view-group
+              class: view-group sherpa-group
               children:
                 - el: sherpa-button
                   class: act
@@ -99,7 +99,7 @@ anatomy:
                     data-size: sm
                     data-act: favourite
                     data-type: icon
-                    data-snap: right
+                    data-group: start
                     data-icon-start: fa-regular fa-star
                     aria-label: Favourite this view
                     aria-pressed: "false"
@@ -108,7 +108,7 @@ anatomy:
                   attrs:
                     data-size: sm
                     data-act: save
-                    data-snap: all
+                    data-group: mid
                     data-icon-start: fa-solid fa-upload
                 - el: sherpa-button
                   class: act
@@ -116,7 +116,7 @@ anatomy:
                     data-size: sm
                     data-act: view-menu
                     data-type: icon
-                    data-snap: left
+                    data-group: end
                     data-icon-start: fa-solid fa-caret-down
                     aria-label: View options
                     aria-haspopup: menu
@@ -302,11 +302,11 @@ tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
   bar.padding-block: "{sherpa.display-mode-space-2xs}"
   bar.padding-inline: "{sherpa.theme-padding-none}"
-  chips.gap: "{sherpa.display-mode-space-xs}"
-  actions-zone.gap: "{sherpa.display-mode-space-xs}"
   act-divider.inline-size: "{sherpa.display-mode-border-width-base}"
   act-divider.block-size: "{sherpa.display-mode-size-sm}"
   act-divider.background: "{sherpa.theme-border-default-2}"
+  chips.gap: "{sherpa.display-mode-space-xs}"
+  actions-zone.gap: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Filter Toolbar
@@ -314,19 +314,19 @@ $extensions:
       - $type: method
         name: available
         args: "defs: QuickFilterDef[]"
-        description: available([...]) — the filters the Add chip offers.
+        description: available([...]) — the filters the Add chip offers, over the populate() set.
       - $type: method
         name: addCustomFilter
         args: "spec: { id: string; label: string; value?: string | null }"
-        description: Put a CUSTOM filter on the bar — one whose value is typed, not picked.
+        description: Put a CUSTOM filter on the bar — one whose value is TYPED, not picked.
       - $type: method
         name: clearAll
         args: ""
-        description: Turn every chip off and drop every picked value.
+        description: TRAP T-clear-all-resets-organise-too — organise chips included; three events afterwards.
       - $type: method
         name: organise
         args: "def: OrganiseDef"
-        description: "organise({ group: [...], sort: [...] }) — the columns the leading chips offer."
+        description: organise({ group, sort }). TRAP T-organise-chips-lead-the-bar — separate from populate().
     category: control
     variantAxes:
       - name: Type
