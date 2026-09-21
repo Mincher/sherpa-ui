@@ -50,11 +50,28 @@ anatomy:
                       attrs:
                         scope: col
                       children:
-                        - el: input
+                        - el: sherpa-select-checkbox
                           class: select-all
                           attrs:
-                            type: checkbox
                             aria-label: Select all rows
+                          children:
+                            - el: sherpa-menu
+                              attrs:
+                                slot: menu
+                                data-align: start
+                              children:
+                                - el: button
+                                  attrs:
+                                    value: page
+                                    type: button
+                                - el: button
+                                  attrs:
+                                    value: all
+                                    type: button
+                                - el: button
+                                  attrs:
+                                    value: none
+                                    type: button
                     - el: th
                       class: actions-cell actions-head
                       attrs:
@@ -224,6 +241,9 @@ states:
   - $type: state
     name: selectable
     selector: ":host([data-selectable])"
+  - $type: state
+    name: advanced-select
+    selector: ":host([data-advanced-select])"
   - $type: state
     name: filterable
     selector: ":host([data-filterable])"

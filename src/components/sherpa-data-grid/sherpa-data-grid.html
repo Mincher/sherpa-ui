@@ -134,7 +134,17 @@
     <thead class="head" part="head">
       <tr class="head-row">
         <th class="select-cell select-head" scope="col">
-          <input class="select-all" type="checkbox" aria-label="Select all rows" />
+          <!-- The ADVANCED checkbox (Figma `Checkbox - Advanced`, 1334:8173): the
+               same box, plus a caret whose menu offers the selection scenarios
+               only the GRID can carry out. `data-advanced` is set by JS when the
+               grid has rows, so a grid with none shows a plain box. -->
+          <sherpa-select-checkbox class="select-all" aria-label="Select all rows">
+            <sherpa-menu slot="menu" data-align="start">
+              <button value="page" type="button">Select all on page</button>
+              <button value="all" type="button">Select all rows</button>
+              <button value="none" type="button">Clear selection</button>
+            </sherpa-menu>
+          </sherpa-select-checkbox>
         </th>
         <!-- LAST in the row, so it needs no re-ordering when columns change.
              `Actions` is a real heading for a screen reader; CSS hides the text

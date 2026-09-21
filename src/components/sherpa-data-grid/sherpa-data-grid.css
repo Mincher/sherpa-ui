@@ -165,16 +165,31 @@
    pixel, and the grid drew 381 + 172 instead of 160 + 160. `display: none` on a
    <col> removes the column from the table's sizing, so the <col>s and the
    columns stay one-to-one either way. */
+/* THE ADVANCED HEADER IS WIDER THAN THE BOX. `Checkbox - Advanced` is 48 in
+   Figma — a 24 box plus a 24 caret — so a 32px column clips the caret behind
+   the first data column. The column follows the control, not the other way
+   round; the body's plain checkboxes simply centre in the wider cell.
+   TRAP T-advanced-checkbox-widens-the-select-column. */
+/* Keyed off an attribute the GRID sets, not `:host(:has(…))` — that does not
+   PARSE, as sherpa-container, sherpa-barchart and sherpa-gauge-chart each
+   record. `#render` writes `data-advanced-select` beside the checkbox's own. */
+:host {
+  --_select-w: var(--sherpa-display-mode-space-2xl, 32px);
+}
+:host([data-advanced-select]) {
+  --_select-w: 60px;   /* off-grid-ok: the 56px control plus its 2px breathing room */
+}
+
 .select-col {
   display: none;
   /* `width`, not `inline-size`: a fixed table reads the <col>'s used WIDTH and
      Chromium does not feed the logical property into that calculation. */
-  width: var(--sherpa-display-mode-space-2xl, 32px);
+  width: var(--_select-w, var(--sherpa-display-mode-space-2xl, 32px));
 }
 :host([data-selectable]) .select-col { display: table-column; }
 
 .select-cell {
-  inline-size: var(--sherpa-display-mode-space-2xl, 32px);
+  inline-size: var(--_select-w, var(--sherpa-display-mode-space-2xl, 32px));
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   vertical-align: middle;

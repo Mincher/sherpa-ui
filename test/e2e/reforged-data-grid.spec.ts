@@ -810,7 +810,11 @@ test('a group checkbox selects every row in that group', async ({ page }) => {
     const cleared = { blue: checkedIn('Blue'), emitted: emitted.length };
 
     // The header select-all fills every group box in.
-    sr.querySelector<HTMLInputElement>('.select-all')!.click();
+    /* The header box is a `sherpa-select-checkbox` now, not a raw <input> —
+       clicking the HOST does not toggle the control inside it, which is what a
+       real user clicks. */
+    sr.querySelector('.select-all')!.shadowRoot!
+      .querySelector<HTMLInputElement>('.control')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const all = {
       groups: Array.from(sr.querySelectorAll<HTMLInputElement>('.group-select')).map((b) => b.checked),
@@ -2247,4 +2251,122 @@ test('no actions declared: no column, no menu, no attribute', async ({ page }) =
   // The <col> hides WITH its cells, or the browser matches the wrong <col> to
   // the first drawn column — see the note on `.select-col` in the CSS.
   expect(r.colDisplay).toBe('none');
+});
+
+test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid acts', async ({ page }) => {
+  /* Figma `Checkbox - Advanced` (1334:8173) composes the Checkbox atom and a
+     Button with Type=icon — both of which already existed, so this is a VARIANT
+     of sherpa-select-checkbox rather than a 59th component.
+     TRAP T-advanced-checkbox-widens-the-select-column
+     TRAP T-select-all-is-the-visible-rows */
+  const r = await page.evaluate(async () => {
+    const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): Promise<void> | void;
+      selectedRecords: Array<Record<string, unknown>>;
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await el.populate({
+      key: 'email',
+      columns: [{ field: 'name', header: 'Name' }],
+      rows: [
+        { email: 'a@x', name: 'Ada' },
+        { email: 'b@x', name: 'Bo' },
+        { email: 'c@x', name: 'Cy' },
+      ],
+    });
+    await settled();
+
+    const sr = el.shadowRoot!;
+    const box = sr.querySelector('.select-all') as HTMLElement & { checked: boolean };
+    const menu = box.querySelector('[slot="menu"]') as HTMLElement & { open?: boolean };
+
+    // The VARIANT is on because there are rows, and the column widened for it.
+    const advanced = box.hasAttribute('data-advanced');
+    const hostFlag = el.hasAttribute('data-advanced-select');
+    const colW = getComputedStyle(sr.querySelector('.select-col')!).width;
+    const caretShown = getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display;
+
+    // Open it the way a person does — the inner trigger, not the host.
+    (box.shadowRoot!.querySelector('.caret') as HTMLElement)
+      .shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 250));
+
+    const card = menu.shadowRoot!.querySelector('[popover]')!;
+    const menuH = Math.round(card.getBoundingClientRect().height);
+    const rows = [...menu.querySelectorAll('button')].map((b) => b.textContent!.trim());
+
+    // Select all rows.
+    menu.querySelector<HTMLElement>('[value="all"]')!.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 250));
+    const afterAll = el.selectedRecords.length;
+
+    // …then clear.
+    (box.shadowRoot!.querySelector('.caret') as HTMLElement)
+      .shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 250));
+    menu.querySelector<HTMLElement>('[value="none"]')!.click();
+    await settled();
+    await new Promise((res) => setTimeout(res, 250));
+
+    return {
+      tag: box.tagName.toLowerCase(),
+      advanced, hostFlag, colW, caretShown, menuH, rows,
+      afterAll,
+      afterClear: el.selectedRecords.length,
+    };
+  });
+
+  // It is the CHECKBOX COMPONENT, not a raw input — the variant, not a rewrite.
+  expect(r.tag).toBe('sherpa-select-checkbox');
+  expect(r.advanced).toBe(true);
+  expect(r.caretShown).toBe('flex');
+
+  // The column widened for the caret, or it draws behind the next column.
+  expect(r.hostFlag).toBe(true);
+  expect(r.colW).toBe('60px');
+
+  // The menu RENDERS. `display: none` on the slot left it open at 0 by 0.
+  expect(r.menuH).toBeGreaterThan(80);
+  expect(r.rows).toEqual(['Select all on page', 'Select all rows', 'Clear selection']);
+
+  // …and the GRID carries the scenario out, because it owns the rows.
+  expect(r.afterAll).toBe(3);
+  expect(r.afterClear).toBe(0);
+});
+
+test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page }) => {
+  // "Select all" against nothing is a control that does nothing.
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): Promise<void> | void;
+    };
+    el.setAttribute('data-selectable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await el.populate({ columns: [{ field: 'name' }], rows: [] });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const box = sr.querySelector('.select-all')!;
+    return {
+      advanced: box.hasAttribute('data-advanced'),
+      hostFlag: el.hasAttribute('data-advanced-select'),
+      caret: getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display,
+      colW: getComputedStyle(sr.querySelector('.select-col')!).width,
+    };
+  });
+
+  expect(r.advanced).toBe(false);
+  expect(r.caret).toBe('none');
+  expect(r.hostFlag).toBe(false);
+  // …and the column goes back to the plain box's width.
+  expect(r.colW).toBe('32px');
 });

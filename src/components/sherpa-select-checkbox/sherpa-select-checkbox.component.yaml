@@ -13,34 +13,52 @@ $name: sherpa-select-checkbox
 $description: a labelled checkbox.
 element:
   $type: element
-  tag: label
-  provides:
-    - click-forwarding
+  tag: div
+  provides: []
 templates:
   - default
 anatomy:
   root:
-    el: label
-    class: field
-    part: field
+    el: div
+    class: group
+    part: group
     children:
-      - el: input
-        class: control
-        part: control
-        attrs:
-          type: checkbox
-      - el: span
-        class: text
-        part: text
+      - el: label
+        class: field
+        part: field
         children:
+          - el: input
+            class: control
+            part: control
+            attrs:
+              type: checkbox
           - el: span
-            class: label
-            part: label
-          - el: span
-            class: description
-            part: description
-          - slot: ""
+            class: text
+            part: text
+            children:
+              - el: span
+                class: label
+                part: label
+              - el: span
+                class: description
+                part: description
+              - slot: ""
+      - el: sherpa-button
+        class: caret
+        part: caret
+        attrs:
+          data-type: icon
+          data-icon-start: fa-solid fa-caret-down
+          aria-haspopup: menu
+          aria-expanded: "false"
+          aria-label: Selection options
+      - slot: menu
 props:
+  - $type: prop
+    name: data-advanced
+    type: string
+    kind: content
+    description: show the caret + its slotted menu
   - $type: prop
     name: data-description
     type: string
@@ -93,6 +111,9 @@ props:
     description: submitted value when checked
 states:
   - $type: state
+    name: advanced
+    selector: ":host([data-advanced])"
+  - $type: state
     name: status
     selector: ":host([data-status])"
   - $type: state
@@ -118,6 +139,12 @@ events:
     detail:
       checked: unknown
       indeterminate: unknown
+      value: unknown
+  - $type: event
+    name: selection-scenario
+    bubbles: true
+    composed: true
+    detail:
       value: unknown
 tokens:
   field.gap: "{sherpa.display-mode-space-xs}"

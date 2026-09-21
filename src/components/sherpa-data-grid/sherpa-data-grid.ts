@@ -24,6 +24,7 @@ import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
 // element renders inert — no shadow root, no menu.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
@@ -206,6 +207,9 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.body')?.addEventListener('click', this.#onRowClick);
     // Selection: select-all in the header, per-row boxes delegated on the body.
     this.$('.select-all')?.addEventListener('change', this.#onSelectAll);
+    // The advanced checkbox REPORTS a scenario; the grid owns the rows, so the
+    // grid is what carries it out.
+    this.$('.select-all')?.addEventListener('selection-scenario', this.#onScenario as EventListener);
     this.$('.body')?.addEventListener('change', this.#onRowSelect);
     // Filter: delegate both the typing and the clear button from the filter row.
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
@@ -270,6 +274,15 @@ export class SherpaDataGrid extends SherpaElement {
 
   #render(): void {
     this.toggleAttribute('data-empty', this.#rows.length === 0);
+    /* The header checkbox takes its ADVANCED variant only when there are rows
+       to act on: "Select all" against nothing is a control that does nothing.
+       CSS owns the caret's reveal; this is the attribute it selects on. */
+    const advanced = this.#rows.length > 0;
+    this.$('.select-all')?.toggleAttribute('data-advanced', advanced);
+    /* …and on the HOST too, so the selection column can widen for the caret.
+       `:host(:has(.select-all[data-advanced]))` would be the obvious selector
+       and does not PARSE — see sherpa-container's note on the same thing. */
+    this.toggleAttribute('data-advanced-select', advanced);
     this.#renderHead();
     this.#renderBody();
     // TRAP T-grid-select-all-is-derived — resetting it here threw the user's
@@ -1590,6 +1603,43 @@ export class SherpaDataGrid extends SherpaElement {
       box.checked = checked > 0 && checked === rows.length;
       box.indeterminate = checked > 0 && checked < rows.length;
     }
+  }
+
+  /**
+   * A selection scenario from the header's advanced checkbox.
+   *
+   * `page` and `all` differ ONLY when the grid is paging: `page` takes what is
+   * drawn, `all` takes every row that survives the current filters. On an
+   * unpaged grid they are the same set, and saying so is more honest than
+   * hiding one of them.
+   *
+   * TRAP T-select-all-is-the-visible-rows — neither reaches a record a filter
+   * is hiding, because a selection the reader cannot see is one they cannot
+   * undo.
+   */
+  #onScenario = (event: CustomEvent): void => {
+    const value = event.detail?.['value'] as string | undefined;
+    if (!value) return;
+
+    if (value === 'none') {
+      this.#selected.clear();
+    } else {
+      // `page` is what the body drew; `all` is every row the filters kept.
+      const rows = value === 'page' ? this.#pageRecords() : this.#visibleRows();
+      for (const record of rows) this.#selected.add(record);
+    }
+
+    this.#renderBody();
+    this.#syncSelectAll();
+    this.#syncGroupSelects();
+    this.#emitSelection();
+  };
+
+  /** The records the body actually drew — one page when the grid pages. */
+  #pageRecords(): GridRow[] {
+    return this.$$<HTMLElement>('.row')
+      .map((tr) => this.#visibleRows()[coerceNum(tr.dataset['index'], -1, { int: true })])
+      .filter((r): r is GridRow => r !== undefined);
   }
 
   /** Reflect all/none/indeterminate on the header select-all box. */

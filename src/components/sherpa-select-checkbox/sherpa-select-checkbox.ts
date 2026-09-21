@@ -7,6 +7,11 @@
  * the tick, the dash, disabled, and focus.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+// SIDE-EFFECT imports: the template STAMPS these, and an undefined custom
+// element renders inert. Only the `data-advanced` variant shows them, but the
+// template holds them either way — T-every-element-in-the-template.
+import '../sherpa-button/sherpa-button.js';
+import '../sherpa-menu/sherpa-menu.js';
 
 /** Native attributes mirrored verbatim from the host onto the inner control. */
 const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
@@ -23,6 +28,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
   static override observed = [
     'checked',
     'indeterminate',
+    // CSS owns the caret's reveal; declared so JS has a typed door to it.
+    'data-advanced',
     ...MIRRORED,
   ];
 
@@ -32,6 +39,12 @@ export class SherpaSelectCheckbox extends SherpaElement {
     this.#control = this.$<HTMLInputElement>('.control');
     this.#syncState();
     this.#control?.addEventListener('change', this.#onChange);
+    // The ADVANCED half. Wired unconditionally: the elements are in the template
+    // either way, and a listener on a hidden button costs nothing.
+    this.$('.caret')?.addEventListener('button-click', this.#onCaret);
+    // The menu is SLOTTED, so its event reaches the host by bubbling — this
+    // listener is on the host, not on a shadow node that cannot see it.
+    this.addEventListener('menu-select', this.#onScenario as EventListener);
   }
 
   override onChange(): void {
@@ -85,6 +98,42 @@ export class SherpaSelectCheckbox extends SherpaElement {
   override focus(options?: FocusOptions): void {
     this.#control?.focus(options);
   }
+
+  /* ── The advanced variant ─────────────────────────────────────────── */
+
+  /** The menu a host slotted, if any. */
+  #menu(): (HTMLElement & { toggle?: (t?: HTMLElement) => void }) | null {
+    return this.querySelector('[slot="menu"]');
+  }
+
+  /** Open or shut the slotted menu, anchored to the caret. */
+  #onCaret = (event: Event): void => {
+    // The caret sits OUTSIDE the <label>, so this cannot toggle the box — but
+    // the click still reaches a host listener, which has no reason to see it.
+    event.stopPropagation();
+    const menu = this.#menu();
+    const caret = this.$('.caret');
+    if (!menu || !caret) return;
+    menu.toggle?.(caret);
+    caret.setAttribute(
+      'aria-expanded',
+      String((menu as HTMLElement & { open?: boolean }).open ?? false),
+    );
+  };
+
+  /**
+   * A scenario was chosen. REPORT it; applying it is the host's job.
+   *
+   * "Select all rows" means nothing here — this component knows about one
+   * checkbox, not a collection. The host owns the rows, so the host decides.
+   */
+  #onScenario = (event: CustomEvent): void => {
+    const value = event.detail?.['value'] as string | undefined;
+    if (!value) return;
+    event.stopPropagation();
+    this.$('.caret')?.setAttribute('aria-expanded', 'false');
+    this.emit('selection-scenario', { value });
+  };
 
   /** Mirror the native checked state back to the host, then re-dispatch change. */
   #onChange = (): void => {

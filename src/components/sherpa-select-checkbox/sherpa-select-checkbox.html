@@ -5,24 +5,59 @@
   the visible box is drawn in CSS off the input's :checked / :indeterminate /
   :disabled states. JS never toggles the visual.
 
+  ADVANCED (Figma `Checkbox - Advanced`, 1334:8173). `data-advanced` adds a caret
+  button beside the box, opening a menu of selection scenarios. The Figma node
+  composes the same two things this does: the Checkbox atom, and a Button with
+  Type=icon. Nothing new is drawn.
+
+  A host slots the menu rows, because only the host knows what "all" means:
+
+    <sherpa-select-checkbox data-advanced>
+      <sherpa-menu slot="menu">
+        <button value="page">Select all on page</button>
+        <button value="all">Select all rows</button>
+        <button value="none">Clear selection</button>
+      </sherpa-menu>
+    </sherpa-select-checkbox>
+
+  Choosing one emits `selection-scenario` with the button's value. The component
+  REPORTS; applying the scenario is the host's job — it owns the rows.
+
   Public API:
     data-label        label text to the right of the box (or default slot)
     data-description   helper line below the label
+    data-advanced      show the caret + its slotted menu
     checked           native checked state (also a JS property)
     indeterminate     mixed state (JS property → input.indeterminate; CSS :indeterminate)
     value             submitted value when checked (default "on")
     name / disabled / required
                       native attributes, mirrored to the inner control
 
-  Fires: change (re-dispatched from the inner control) — detail { checked, value, indeterminate }
+  Fires:
+    change — re-dispatched from the inner control. detail { checked, value, indeterminate }
+    selection-scenario — a menu row was chosen. detail { value }
 -->
 <template id="default">
-  <label class="field" part="field">
-    <input class="control" part="control" type="checkbox" />
-    <span class="text" part="text">
-      <span class="label" part="label"></span>
-      <span class="description" part="description"></span>
-      <slot></slot>
-    </span>
-  </label>
+  <!-- The GROUP, not the label, is the host's child: `data-advanced` puts a
+       button beside the label, and a <button> inside a <label> would toggle the
+       checkbox on every click. CSS collapses this to the label alone when the
+       variant is off, so a plain checkbox is unchanged. -->
+  <div class="group" part="group">
+    <label class="field" part="field">
+      <input class="control" part="control" type="checkbox" />
+      <span class="text" part="text">
+        <span class="label" part="label"></span>
+        <span class="description" part="description"></span>
+        <slot></slot>
+      </span>
+    </label>
+
+    <!-- Figma's Button, Type=icon with a triangle-down. A real sherpa-button,
+         not a hand-drawn one — T-compose-never-reimplement. -->
+    <sherpa-button class="caret" part="caret" data-type="icon"
+                   data-icon-start="fa-solid fa-caret-down"
+                   aria-haspopup="menu" aria-expanded="false"
+                   aria-label="Selection options"></sherpa-button>
+    <slot name="menu"></slot>
+  </div>
 </template>

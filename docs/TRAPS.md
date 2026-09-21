@@ -4746,6 +4746,56 @@ filter inputs, and `filter-change`).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-advanced-checkbox-widens-the-select-column
+
+The grid's header checkbox is `Checkbox - Advanced` (Figma 1334:8173): the same
+box, plus a caret whose menu carries the selection scenarios. It is **48 wide
+in Figma and 56 rendered**, against a selection column of **32**.
+
+So the caret drew off the end of its cell and sat hidden behind the first data
+column — visible in a screenshot, invisible to every DOM assertion, because the
+element was there and `display: flex` the whole time.
+
+The column follows the control: `--_select-w` is 32 normally and 60 when the
+variant is on. The body's plain checkboxes simply centre in the wider cell.
+
+**KEYED OFF AN ATTRIBUTE ON THE HOST, not `:host(:has(…))`.** That selector
+does not PARSE — `sherpa-container`, `sherpa-barchart` and `sherpa-gauge-chart`
+each carry their own note about it. `#render` writes `data-advanced-select` on
+the grid beside the `data-advanced` it writes on the checkbox, and CSS reads
+the one it can see.
+
+The variant itself only appears when there ARE rows: "Select all" against an
+empty grid is a control that does nothing.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+### T-select-all-is-the-visible-rows
+
+**`page` and `all` differ only when the grid is paging**, and neither reaches a
+record a filter is hiding.
+
+| scenario | takes |
+|---|---|
+| Select all on page | the rows the body DREW — one page when the grid pages |
+| Select all rows | every row that survives the current filters |
+| Clear selection | nothing |
+
+On an unpaged grid the first two are the same set, and offering both anyway is
+more honest than hiding one: a reader who pages through 4 pages needs to know
+which of the two they are getting, and a grid that quietly merged them would
+teach the wrong thing the first time paging was switched on.
+
+**Neither is "every record in the store."** A selection the reader cannot see
+is one they cannot undo — the same rule `#onSelectAll` has always followed, and
+the reason it walks `#visibleRows()` rather than `#rows`.
+
+The advanced checkbox REPORTS the scenario and the grid carries it out: the
+component knows about one checkbox, and "all rows" means nothing to it. The
+grid owns the rows, so the grid decides.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+
 ### T-grid-actions-are-declared-once-used-twice
 
 **One list of actions, two surfaces that draw it.**

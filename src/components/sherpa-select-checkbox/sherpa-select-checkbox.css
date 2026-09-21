@@ -31,6 +31,32 @@
   --_focus: var(--sherpa-style-border-base, #b3b3c3);
 }
 
+/* ── The ADVANCED group ─────────────────────────────────────────────────
+ * Figma `Checkbox - Advanced` (1334:8173): the Checkbox atom and a Button with
+ * Type=icon, side by side. Both already exist, so this adds layout and nothing
+ * else — T-compose-never-reimplement.
+ *
+ * `display: contents` when the variant is OFF: the wrapper stops generating a
+ * box entirely, so a plain checkbox lays out exactly as it did before the
+ * variant existed. That is what keeps this a variant rather than a rewrite.
+ */
+.group { display: contents; }
+:host([data-advanced]) .group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* The caret and the menu exist in the template always; CSS reveals them. */
+.caret { display: none; }
+:host([data-advanced]) .caret { display: inline-flex; }
+/* `display: none` on the slot would take the MENU with it — and a popover
+   inside a `display: none` subtree renders at zero size even when open, which
+   is exactly how this failed: the card reported `open: true` and 0 by 0.
+   `display: contents` instead: the slot generates no box of its own, the menu
+   is projected, and the browser's top layer does the rest. */
+slot[name="menu"] { display: contents; }
+
 .field {
   display: inline-flex;
   align-items: flex-start;
@@ -40,6 +66,9 @@
   inline-size: 100%;
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
+/* In the group the label hugs its box rather than filling the row, or the caret
+   is pushed to the far edge of whatever contains it. */
+:host([data-advanced]) .field { inline-size: auto; }
 
 /* ── The control (native input, custom-drawn box) ─────────────────── */
 .control {
