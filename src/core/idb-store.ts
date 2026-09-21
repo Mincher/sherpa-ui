@@ -29,20 +29,19 @@ import {
   type LoadOptions,
   type LoadResult,
   type Row,
-  type Store,
-  type StoreChangeDetail,
 } from './store.js';
-import { validate, type Issue, type StandardSchema } from './validate.js';
+import { ValidationError } from './validate.js';
+// The half every store shares: the key, the schema guard both ways,
+// totalCount and announce. TRAP T-one-class-to-catch.
+import { BaseStore, type StoreOptions } from './base-store.js';
 
 /* ── Options ───────────────────────────────────────────────────────────── */
 
-export interface IdbStoreOptions {
+export interface IdbStoreOptions extends StoreOptions {
   /** The object store's name, and the database's unless `database` says otherwise. */
   name: string;
   /** The database name. Defaults to `sherpa`, so several stores share one. */
   database?: string;
-  /** The field holding each row's identity. Default `'id'`. */
-  key?: string;
   /**
    * Fields to build an INDEX on.
    *
@@ -58,15 +57,9 @@ export interface IdbStoreOptions {
    * TRAP T-idb-open-is-a-handshake-not-a-call.
    */
   version?: number;
-  /** Check every row the store WRITES, and refuse the ones that fail. */
-  schema?: StandardSchema;
-  /** On a READ, check only the first N rows. 0 or absent = all of them. */
-  sample?: number;
-  /**
-   * Keep at most this many rows, dropping the OLDEST first — by INSERTION, the
-   * same rule `ArrayStore` follows (`T-max-rows-is-oldest-out-by-insertion`).
-   */
-  maxRows?: number;
+  /* `key`, `schema`, `sample` and `maxRows` come from `StoreOptions` — they are
+     the same options every store takes, and a second copy of each here is how
+     the two halves drifted apart in the first place. */
 }
 
 /* ── The store ─────────────────────────────────────────────────────────── */
@@ -74,14 +67,12 @@ export interface IdbStoreOptions {
 /**
  * Records in IndexedDB — the real local store.
  *
- * Extends EventTarget so `change` is a real DOM event, exactly as the other
- * stores do: a `DataSource` subscribes with its usual `addEventListener`.
+ * Extends `BaseStore` like every other store, so the key field, the schema
+ * guard both ways, `totalCount` and `announce` are stated once — and `change`
+ * is a real DOM event a `DataSource` subscribes to with `addEventListener`.
  */
-export class IdbStore extends EventTarget implements Store {
-  readonly key: string;
+export class IdbStore extends BaseStore {
   readonly #options: IdbStoreOptions;
-  readonly #schema: StandardSchema | undefined;
-  readonly #sampleSize: number;
   readonly #maxRows: number;
   readonly #indexes: readonly string[];
 
@@ -95,11 +86,11 @@ export class IdbStore extends EventTarget implements Store {
   #opening: Promise<IDBDatabase> | null = null;
 
   constructor(options: IdbStoreOptions) {
-    super();
+    // The key, the schema and the read sample are BaseStore's — it holds them
+    // for every store, and holding a second copy here is how the two halves
+    // drifted. TRAP T-one-class-to-catch.
+    super(options);
     this.#options = options;
-    this.key = options.key ?? 'id';
-    this.#schema = options.schema;
-    this.#sampleSize = options.sample ?? 0;
     this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
     this.#indexes = options.indexes ?? [];
   }
@@ -197,7 +188,7 @@ export class IdbStore extends EventTarget implements Store {
   async clear(): Promise<void> {
     const db = await this.#db();
     await promised(this.#tx(db, 'readwrite').clear());
-    this.#announce({ type: 'remove' });
+    this.announce({ type: 'remove' });
   }
 
   /* ── Reads ───────────────────────────────────────────────────────── */
@@ -206,7 +197,7 @@ export class IdbStore extends EventTarget implements Store {
     const rows = await this.#readRows(options.filter);
     // The index only NARROWED the read. applyOptions still filters, sorts,
     // searches and pages — TRAP T-idb-index-narrows-it-never-answers-it.
-    return this.#checkRows(applyOptions(rows, options));
+    return this.checkRows(applyOptions(rows, options));
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -229,22 +220,15 @@ export class IdbStore extends EventTarget implements Store {
     return found ? { ...found } : undefined;
   }
 
-  async totalCount(options?: LoadOptions): Promise<number> {
-    // skip/take are dropped: a COUNT is of the matches, not of one page.
-    const { skip: _skip, take: _take, ...rest } = options ?? {};
-    const result = await this.load(rest);
-    return result.total;
-  }
-
   /* ── Writes ──────────────────────────────────────────────────────── */
 
   async insert(values: Row): Promise<Row> {
     // CHECKED FIRST, so a refused row never reaches the database.
-    const row = { ...(await this.#check(values)) };
+    const row = { ...(await this.check(values)) };
     const db = await this.#db();
     await promised(this.#tx(db, 'readwrite').add(row));
     await this.#trim();
-    this.#announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
+    this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
     return { ...row };
   }
 
@@ -253,10 +237,10 @@ export class IdbStore extends EventTarget implements Store {
     if (!existing) throw new Error(`IdbStore: no row with ${this.key} ${String(key)}`);
     // MERGE, not replace, and the MERGED row is what gets checked — the rule
     // every store in this layer follows (T-array-store-copies-both-ways).
-    const row = await this.#check({ ...existing, ...values });
+    const row = await this.check({ ...existing, ...values });
     const db = await this.#db();
     await promised(this.#tx(db, 'readwrite').put({ ...row }));
-    this.#announce({ type: 'update', key, row: { ...row } });
+    this.announce({ type: 'update', key, row: { ...row } });
     return { ...row };
   }
 
@@ -267,7 +251,7 @@ export class IdbStore extends EventTarget implements Store {
     // The row's OWN key, not the caller's — byKey accepts '7' for 7, and
     // delete would not.
     await promised(this.#tx(db, 'readwrite').delete(readField(existing, this.key) as IDBValidKey));
-    this.#announce({ type: 'remove', key });
+    this.announce({ type: 'remove', key });
   }
 
   /**
@@ -286,7 +270,7 @@ export class IdbStore extends EventTarget implements Store {
     // auto-commits the moment it stops having work, and an `await` on anything
     // else — a schema's async validate — is exactly that pause. Every await
     // that is not a request of this transaction must happen first.
-    for (const row of rows) checked.push({ ...(await this.#check(row)) });
+    for (const row of rows) checked.push({ ...(await this.check(row)) });
 
     const db = await this.#db();
     const tx = db.transaction(this.#options.name, 'readwrite');
@@ -302,7 +286,7 @@ export class IdbStore extends EventTarget implements Store {
 
     await this.#trim();
     // ONE event for the batch — see the trap. A DataSource reloads once.
-    this.#announce({ type: 'update' });
+    this.announce({ type: 'update' });
     return checked.length;
   }
 
@@ -423,64 +407,24 @@ export class IdbStore extends EventTarget implements Store {
    * value back, and no schema means no check
    * (`T-schema-guard-belongs-at-the-store`).
    */
-  async #check(values: Row): Promise<Row> {
-    if (!this.#schema) return values;
-    const result = await validate(this.#schema, values);
-    if (result.issues) throw new IdbValidationError(result.issues);
-    return (result.value ?? values) as Row;
-  }
 
-  /**
-   * Check rows ARRIVING, dropping the ones the schema refuses.
-   *
-   * `T-read-check-drops-where-a-write-throws` — one bad row in a thousand must
-   * not empty a grid.
-   */
-  async #checkRows(result: LoadResult): Promise<LoadResult> {
-    if (!this.#schema) return result;
-
-    const limit = this.#sampleSize > 0
-      ? Math.min(this.#sampleSize, result.rows.length)
-      : result.rows.length;
-
-    const rows: Row[] = [];
-    const issues: Issue[] = [];
-    for (let i = 0; i < limit; i++) {
-      const row = result.rows[i]!;
-      const checked = await validate(this.#schema, row);
-      if (checked.issues) issues.push(...checked.issues);
-      else rows.push((checked.value ?? row) as Row);
-    }
-    // The tail, UNCHECKED and unchanged — T-schema-sample-cost.
-    for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
-
-    const dropped = result.rows.length - rows.length;
-    if (!dropped) return { ...result, rows };
-    return {
-      ...result,
-      rows,
-      total: Math.max(0, result.total - dropped),
-      dropped,
-      issues: issues.slice(0, 5),
-    };
-  }
-
-  /** Tell every listener the records changed. */
-  #announce(detail: StoreChangeDetail): void {
-    this.dispatchEvent(new CustomEvent('change', { detail }));
-  }
 }
 
 /** A write this store's schema refused. Carries the ISSUES, not just a message. */
-export class IdbValidationError extends Error {
-  readonly issues: ReadonlyArray<Issue>;
-
-  constructor(issues: ReadonlyArray<Issue>) {
-    super(issues.map((i) => `${String(i.path?.[0] ?? '')}: ${i.message}`.trim()).join('; '));
-    this.name = 'ValidationError';
-    this.issues = issues;
-  }
-}
+/**
+ * KEPT AS AN ALIAS, deprecated. This was a private copy of `ValidationError` —
+ * identical fields, identical message, and `this.name` set to the very same
+ * `'ValidationError'` — but a different class, so a caller doing the documented
+ * `catch (e) { if (e instanceof ValidationError) }` silently missed every
+ * IndexedDB refusal while the log said it was one.
+ *
+ * `IdbStore` now throws the real thing. The name stays exported so nothing that
+ * imported it breaks, and it IS the same class, so an `instanceof` on either
+ * now answers true. TRAP T-one-class-to-catch.
+ *
+ * @deprecated Catch `ValidationError`.
+ */
+export { ValidationError as IdbValidationError };
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 

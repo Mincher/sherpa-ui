@@ -18,148 +18,20 @@ import {
   type LoadOptions,
   type LoadResult,
   type Row,
-  type Store,
   type StoreChangeDetail,
 } from './store.js';
-import { validate, type Issue, type StandardSchema } from './validate.js';
-
-/** Options every store shares. */
-export interface StoreOptions {
-  /** The field holding each row's identity. Default `'id'`. */
-  key?: string;
-  /**
-   * Check every row the store WRITES, and refuse the ones that fail.
-   *
-   * TRAP T-schema-guard-belongs-at-the-store — a rule enforced in one screen is
-   * not a rule.
-   */
-  schema?: StandardSchema;
-  /**
-   * Keep at most this many rows, dropping the OLDEST first.
-   *
-   * TRAP T-max-rows-is-oldest-out-by-insertion — insertion order, not a field,
-   * and every write honours it.
-   */
-  maxRows?: number;
-  /**
-   * On a READ, check only the first N rows rather than every one.
-   *
-   * TRAP T-schema-sample-cost — what a sample is for, and when it must NOT be
-   * used. Writes are always checked in full.
-   */
-  sample?: number;
-}
+// The shared half every store extends — its own module so IdbStore reaches it too.
+import { BaseStore, type StoreOptions } from './base-store.js';
+export { BaseStore, type StoreOptions };
 
 /**
- * Shared plumbing: the key field, and announcing a change.
+ * A write the schema refused — declared in `validate.ts`, re-exported here.
  *
- * Extends EventTarget so `change` is a real DOM event — no emitter to write, and
- * a DataSource subscribes with its usual addEventListener.
+ * ONE class, because every store throws it and a caller must be able to catch
+ * all of them with one `instanceof`. TRAP T-one-class-to-catch, and
+ * TRAP T-schema-guard-belongs-at-the-store for why a store throws at all.
  */
-abstract class BaseStore extends EventTarget implements Store {
-  readonly key: string;
-  /** The write guard, if the caller gave one — see StoreOptions.schema. */
-  protected readonly schema: StandardSchema | undefined;
-  /** How many rows a READ checks. 0 or absent = all of them — see StoreOptions.sample. */
-  protected readonly sampleSize: number;
-
-  constructor(options: StoreOptions = {}) {
-    super();
-    this.key = options.key ?? 'id';
-    this.schema = options.schema;
-    this.sampleSize = options.sample ?? 0;
-  }
-
-  abstract load(options?: LoadOptions): Promise<LoadResult>;
-  abstract byKey(key: unknown): Promise<Row | undefined>;
-  abstract insert(values: Row): Promise<Row>;
-  abstract update(key: unknown, values: Row): Promise<Row>;
-  abstract remove(key: unknown): Promise<void>;
-
-  /** Matching rows before paging — what a pager counts pages from. */
-  async totalCount(options?: LoadOptions): Promise<number> {
-    // skip/take are dropped: a COUNT is of the matches, not of one page.
-    const { skip: _skip, take: _take, ...rest } = options ?? {};
-    const result = await this.load(rest);
-    return result.total;
-  }
-
-  /**
-   * Check a row against the schema, THROWING if it fails.
-   *
-   * TRAP T-schema-guard-belongs-at-the-store — a throw not a `false`, the PARSED
-   * value back, and no schema means no check.
-   */
-  protected async check(values: Row): Promise<Row> {
-    if (!this.schema) return values;
-    const result = await validate(this.schema, values);
-    if (result.issues) throw new ValidationError(result.issues);
-    return (result.value ?? values) as Row;
-  }
-
-  /**
-   * Check ROWS ARRIVING, dropping the ones the schema refuses.
-   *
-   * TRAP T-read-check-drops-where-a-write-throws — one bad row in a thousand
-   * must not empty a grid, so it is dropped and counted. No schema, no check.
-   */
-  protected async checkRows(result: LoadResult): Promise<LoadResult> {
-    if (!this.schema) return result;
-
-    /* THE SAMPLE. `undefined` or 0 means check everything, which stays the
-       default: a guard you have to opt out of is a guard people keep. */
-    const limit = this.sampleSize && this.sampleSize > 0
-      ? Math.min(this.sampleSize, result.rows.length)
-      : result.rows.length;
-
-    const rows: Row[] = [];
-    // The first few issues only — TRAP T-read-check-drops-where-a-write-throws.
-    const issues: Issue[] = [];
-    for (let i = 0; i < limit; i++) {
-      const row = result.rows[i]!;
-      const checked = await validate(this.schema, row);
-      if (checked.issues) issues.push(...checked.issues);
-      else rows.push((checked.value ?? row) as Row);
-    }
-    // The tail, UNCHECKED and unchanged — TRAP T-schema-sample-cost.
-    for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
-
-    const dropped = result.rows.length - rows.length;
-    if (!dropped) return { ...result, rows };
-
-    return {
-      ...result,
-      rows,
-      // TRAP T-dropped-rows-must-be-countable — the total drops with the rows,
-      // and only the first few issues travel.
-      total: Math.max(0, result.total - dropped),
-      dropped,
-      issues: issues.slice(0, 5),
-    };
-  }
-
-  /** Tell every listener the records changed. */
-  protected announce(detail: StoreChangeDetail): void {
-    this.dispatchEvent(new CustomEvent('change', { detail }));
-  }
-}
-
-/**
- * A write the schema refused.
- *
- * Carries the ISSUES, not just a message —
- * TRAP T-schema-guard-belongs-at-the-store.
- */
-export class ValidationError extends Error {
-  readonly issues: ReadonlyArray<Issue>;
-
-  constructor(issues: ReadonlyArray<Issue>) {
-    // The message is for a log or an unhandled throw; `issues` is what a UI reads.
-    super(issues.map((i) => `${String(i.path?.[0] ?? '')}: ${i.message}`.trim()).join('; '));
-    this.name = 'ValidationError';
-    this.issues = issues;
-  }
-}
+export { ValidationError } from './validate.js';
 
 /* ── ArrayStore ────────────────────────────────────────────────────────── */
 

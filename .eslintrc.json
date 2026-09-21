@@ -119,6 +119,7 @@
       // HTMLElement in a signature.
       "files": [
         "src/core/store.ts",
+        "src/core/base-store.ts",
         "src/core/validate.ts",
         "src/core/pointer.ts",
         "src/core/chart-datum.ts",

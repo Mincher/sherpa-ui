@@ -228,7 +228,7 @@ would disagree. Sample only when the schema purely VALIDATES.
 
 Writes are always checked in full.
 
-- Site: `src/core/stores.ts`
+- Site: `src/core/base-store.ts`
 
 ---
 
@@ -1329,7 +1329,7 @@ This is the only path by which a schema's refusals are readable, which is why
 `total`.
 
 - Site: `src/core/store.ts`
-- Site: `src/core/stores.ts`
+- Site: `src/core/base-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-one-collator-for-the-library
@@ -4088,6 +4088,7 @@ Three places apply it, and each does so once:
   happens once in `JsonStore.load`, never twice.
 
 - Site: `src/core/stores.ts`
+- Site: `src/core/base-store.ts`
 
 ### T-max-rows-is-oldest-out-by-insertion
 
@@ -4106,6 +4107,7 @@ hand out. A live feed inserts for ever; that is where an uncapped store would gr
 without bound.
 
 - Site: `src/core/stores.ts`
+- Site: `src/core/base-store.ts`
 
 ### T-read-check-drops-where-a-write-throws
 
@@ -4131,6 +4133,7 @@ somewhere else, over a wire, shaped by a backend this code does not own. If a sc
 is going to be applied anywhere on a read, it is there.
 
 - Site: `src/core/stores.ts`
+- Site: `src/core/base-store.ts`
 
 ### T-array-store-copies-both-ways
 
@@ -6617,3 +6620,40 @@ its neighbours rather than a drop to zero. The x-axis is the caller's — the
 days, the buckets, the steps — and the series has to fill it.
 
 - Site: `src/core/aggregate.ts`
+
+### T-one-class-to-catch
+
+`IdbStore` threw `IdbValidationError`: the same fields, the same message, and
+`this.name` set to the very same string `'ValidationError'` — but a DIFFERENT
+class. So the documented way to handle a refused write —
+
+```ts
+catch (e) { if (e instanceof ValidationError) showIssues(e.issues); }
+```
+
+— was **false for every IndexedDB refusal**, while the error itself said
+`ValidationError` in every log line. Measured: `new IdbValidationError([…])
+instanceof ValidationError` returned `false`.
+
+It happened because `BaseStore` lived inside `stores.ts` and was not exported,
+so `idb-store.ts` could not reach it and re-implemented the shared half:
+`totalCount` (character for character), `check`, `checkRows`, `announce`, and
+its own error class — about 43 lines, plus four constructor fields
+(`key`, `schema`, `sample`, `maxRows`) that `StoreOptions` already declared.
+
+`BaseStore` and `StoreOptions` now live in `base-store.ts` and every store
+extends it, including `IdbStore`. `ValidationError` moved to `validate.ts`,
+which owns `Issue` and which both halves already imported.
+`IdbValidationError` is kept as a deprecated ALIAS of the real class, so
+nothing that imported it breaks and an `instanceof` on either name now answers
+true.
+
+**The general shape:** a duplicated class is worse than duplicated code,
+because the copy is `instanceof`-incompatible with the original while being
+indistinguishable in a log. If two modules need the same class, it belongs in
+the module they both already import.
+
+- Site: `src/core/base-store.ts`
+- Site: `src/core/idb-store.ts`
+- Site: `src/core/validate.ts`
+- Site: `src/core/stores.ts`

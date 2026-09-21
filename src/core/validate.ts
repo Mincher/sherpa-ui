@@ -275,3 +275,30 @@ export function issuesFor(result: Result, field: string): string[] {
     .filter((issue) => String(issue.path?.[0] ?? '') === field)
     .map((issue) => issue.message);
 }
+
+/* ── The refusal ───────────────────────────────────────────────────────── */
+
+/**
+ * A write the schema refused.
+ *
+ * Carries the ISSUES, not just a message — a UI reads them per field; the
+ * message is for a log or an unhandled throw.
+ *
+ * DECLARED HERE, not beside a store, because EVERY store throws it and there
+ * must be exactly one class to catch. `idb-store.ts` had its own
+ * `IdbValidationError`: same fields, same message, and `this.name` set to the
+ * very same `'ValidationError'` — but a DIFFERENT class, so
+ * `catch (e) { if (e instanceof ValidationError) … }` was false for an
+ * IndexedDB failure while claiming to be one in every log line.
+ *
+ * TRAP T-one-class-to-catch.
+ */
+export class ValidationError extends Error {
+  readonly issues: ReadonlyArray<Issue>;
+
+  constructor(issues: ReadonlyArray<Issue>) {
+    super(issues.map((i) => `${String(i.path?.[0] ?? '')}: ${i.message}`.trim()).join('; '));
+    this.name = 'ValidationError';
+    this.issues = issues;
+  }
+}
