@@ -260,7 +260,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 .filter-cell[data-has-value] .filter-clear { display: inline-flex; }
@@ -279,7 +279,7 @@
    button inside it, rather than drawing a second ring around it. */
 .filter-field:focus-within {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */
@@ -440,7 +440,7 @@
 .head-filter-body input:focus-visible {
   outline: none;
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 
 /* ONE of the two number shapes shows. Both stay in the DOM, so flipping Range
@@ -512,7 +512,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -651,7 +651,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 .actions-trigger:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 
 /* One menu row. A real <button>, so it keeps Enter, Space and focus for free. */
@@ -673,7 +673,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 .action-item:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 /* A DESTRUCTIVE action reads as one before it is clicked — status colour, not a
    component token. */
@@ -878,7 +878,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
     border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
     border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
     border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);

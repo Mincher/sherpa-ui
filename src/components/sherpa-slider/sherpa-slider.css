@@ -79,7 +79,7 @@
   &:focus-visible {
     outline: none;
     border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 :host([data-show-value]) .value-end { display: block; }
@@ -155,10 +155,10 @@
 
   /* Explicit box-shadow — a CSS @function fails silently where unsupported. */
   &:focus-visible::-webkit-slider-thumb {
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
   &:focus-visible::-moz-range-thumb {
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 

@@ -90,7 +90,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -195,7 +195,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -269,7 +269,7 @@
 .clear-all:focus-visible,
 .upload:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 :host([data-loading]) .upload,
 :host([disabled]) .clear-all,

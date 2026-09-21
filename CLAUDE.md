@@ -380,8 +380,12 @@ toolbar overlaps whatever sits beside it):
 }
 ```
 
-**This exact token and fallback, verbatim** — 47 sites across 29 components use
-it and nothing else. This doc named `--sherpa-border-control-primary-default`
+**Use `var(--sherpa-focus-ring)`.** Declared once on `:host` in
+`sherpa-base.css`, which every shadow root adopts, so it inherits everywhere.
+It was written by hand at 48 sites across 29 files — see
+`T-one-value-one-declaration` for why it is a custom property and not a class.
+
+The value it carries, for reference: This doc named `--sherpa-border-control-primary-default`
 until 2026-09-16; **that token does not exist** in `tokens.css`, so anyone who
 followed the doc got a focus ring drawn in the fallback colour only, and a
 slightly wrong one. A ring nobody can see is the accessibility bug the rule

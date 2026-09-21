@@ -6787,3 +6787,35 @@ delete" is stated once for both.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
+
+### T-one-value-one-declaration
+
+The focus indicator was written by hand at **48 sites across 29 files** —
+`box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd)`,
+verbatim each time. `CLAUDE.md` already said "this exact token and fallback,
+verbatim", which is the shape of a rule nothing enforces: the doc had named the
+WRONG token for months, and everyone who followed it got a ring drawn in the
+fallback colour only.
+
+It is a **custom property on `:host` in `sherpa-base.css`**, not a class:
+
+- A bare `:host` cannot wear a class from its own sheet — the note on
+  `.sherpa-border-edges` records the same problem, and seven sites there still
+  write the widths inline because of it.
+- The 48 selectors are all DIFFERENT (`&:focus-visible`, `.upload:focus-visible`,
+  `::slotted(:is(label, button):focus-visible)`). The declarations repeat; the
+  rule does not. A class can only share a rule.
+- Custom properties inherit through every shadow boundary, so one declaration in
+  the adopted sheet reaches all 58 components. Verified in Chromium before the
+  change, and after: a real keyboard focus renders
+  `rgb(59, 76, 205) 0px 0px 0px 2px inset`, identical to before.
+
+`.sherpa-truncate` and `.sherpa-inert` went in as CLASSES for the opposite
+reason: they apply to inner nodes, where a class is reachable, and they are
+whole rules rather than one value.
+
+**`.sherpa-inert` carries only the two INTERACTION declarations.** The colours
+stay per-component, because each picks a different inactive token — and never
+`opacity`, which compounds in dark mode.
+
+- Site: `src/core/sherpa-base.css`

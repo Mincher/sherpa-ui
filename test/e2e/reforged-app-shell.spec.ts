@@ -128,3 +128,24 @@ test('data-no-header hides the header region', async ({ page }) => {
   expect(r.shown).not.toBe('none');
   expect(r.hidden).toBe('none');
 });
+
+test('data-no-nav hides the rail and drops the content inset', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const nav = () => el.shadowRoot!.querySelector('.nav') as HTMLElement;
+    const shown = getComputedStyle(nav()).display;
+    el.setAttribute('data-no-nav', '');
+    // Latched open would inset 320px; with no rail it must still be 0.
+    el.setAttribute('data-nav-state', 'pinned');
+    await el.rendered;
+    // `.frame` transitions its margin, so the computed value is mid-animation
+    // for 160ms. The custom property settles immediately — read that.
+    const inset = getComputedStyle(el).getPropertyValue('--_content-inset').trim();
+    return { shown, hidden: getComputedStyle(nav()).display, inset };
+  });
+  expect(r.shown).not.toBe('none');
+  expect(r.hidden).toBe('none');
+  expect(r.inset).toBe('0px');
+});

@@ -108,6 +108,17 @@
   min-block-size: 0;
 }
 
+/* ── Optional regions ───────────────────────────────────────────────────
+   Dropping the rail must also drop the inset, or the content keeps a gutter
+   beside nothing. The inset override has to beat the latched-state rules
+   above, so it is declared after them. */
+:host([data-no-nav]) .nav {
+  display: none;
+}
+:host([data-no-nav]) {
+  --_content-inset: 0px;
+}
+
 :host([data-no-header]) .header {
   display: none;
 }

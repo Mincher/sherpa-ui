@@ -173,7 +173,7 @@ slot[name="menu"] { display: contents; }
   /* ── Focus — inset ring, never a bare outline (WCAG 2.4.11) ───────── */
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 

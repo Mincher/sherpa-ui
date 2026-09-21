@@ -64,7 +64,7 @@
     position: relative;
     z-index: 1;
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -76,7 +76,7 @@
   position: relative;
   z-index: 1;
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+  box-shadow: var(--sherpa-focus-ring);
 }
 
 /* Snapped: flat right corners on the body (Structure ext `snap-right-edge`). */
@@ -216,7 +216,7 @@
     position: relative;
     z-index: 1;
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 

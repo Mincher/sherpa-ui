@@ -182,7 +182,7 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -235,7 +235,7 @@
   &:hover { text-decoration: underline; }
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
     border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   }
 }
@@ -266,7 +266,7 @@
   }
   &:focus-visible {
     outline: none;
-    box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 

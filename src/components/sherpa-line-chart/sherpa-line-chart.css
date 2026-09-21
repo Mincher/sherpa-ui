@@ -275,7 +275,7 @@
 
   &:focus-visible {
     outline: none;
-    &::after { box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd); }
+    &::after { box-shadow: var(--sherpa-focus-ring); }
   }
 }
 

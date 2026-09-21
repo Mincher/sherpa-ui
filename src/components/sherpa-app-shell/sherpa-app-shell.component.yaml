@@ -67,6 +67,12 @@ props:
     kind: content
     default: false
     description: let the content span the full height (no header row)
+  - $type: prop
+    name: data-no-nav
+    type: boolean
+    kind: content
+    default: false
+    description: drop the nav rail; the content spans the full width
 states:
   - $type: state
     name: pinned
@@ -74,6 +80,9 @@ states:
   - $type: state
     name: settings
     selector: ":host([data-nav-state=\"settings\"])"
+  - $type: state
+    name: no-nav
+    selector: ":host([data-no-nav])"
   - $type: state
     name: no-header
     selector: ":host([data-no-header])"
