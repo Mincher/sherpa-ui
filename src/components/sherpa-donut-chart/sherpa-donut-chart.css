@@ -1,68 +1,22 @@
-/**
- * sherpa-donut-chart.css — a donut/pie ring.
- *
- * The ring is SVG: one CLOSED PATH per slice — a ring segment with four rounded
- * corners, filled and stroked (see the .slice block, and the TS for the geometry).
- * That is what
- * carries the Figma 2px rounding, which a conic-gradient — the earlier approach —
- * could not: a gradient draws hard-edged bands with no per-slice element to round,
- * stroke or hit-test. The centre label is a sibling, sitting in the hole.
- */
+/* sherpa-donut-chart.css — a donut/pie ring. SVG: one closed path per slice
+   (geometry in the TS); the centre label is a sibling in the hole. */
 
 :host {
-  /* `block`, not `inline-block`: an inline-block hugs its content and never
-     yields to a narrow parent, so the ring could not shrink even with a ratio. */
-  /* A GRID, not a block. A block host with `max-block-size: 100%` caps its own
-     box but does nothing to a child that overflows it — `.layout` computed 300px
-     inside a 140px host, so `max-block-size: 100%` on the ring resolved against
-     300 and the donut hung out of its container. A grid host with one
-     `minmax(0, 1fr)` row forces the child to fit the host's own height, which is
-     what makes the percentage chain mean anything. */
+  /* Grid, not block: the row forces the child to the host's own height, so the
+     ring's percentage sizing resolves against something real. */
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* The host takes its parent's height when there is one to take. A block box
-     is `height: auto`, so it grew to whatever the ring asked for and `100%`
-     inside it resolved against that — which is how a 600x140 container ended up
-     holding a 600x600 ring. `max-block-size: 100%` caps the host at the
-     container instead, and the ring then has a real height to fit into.
-
-     A MAX rather than a fixed height, so an unsized parent (the common case,
-     and every existing consumer) still lets the donut take its natural size. */
-  max-block-size: 100%;
+  max-block-size: 100%; /* max, not fixed — an unsized parent keeps natural size */
   min-block-size: 0;
-  --_size: 200px; /* Figma Donut Chart: 200×200 — the size it draws at unconstrained */
-  /* The ring never draws larger than this however roomy the cell. Figma's 200 is
-     the drawn size, but a donut is still readable — and looks deliberate —
-     scaled up a little; past ~320 it just becomes a big empty circle with a
-     label adrift in the middle. Will's number. */
-  --_max-size: 320px;
-  /* The hole is no longer a CSS mask. Figma's slices carry
-     arcData.innerRadius = 0.7 (a hole at 70% of the radius), and the TS derives
-     the arc radius and stroke width from that, because they also depend on the
-     donut/pie variant. The old `--_hole: 62%` fed a radial-gradient mask, whose
-     percentages are fractions of the DIAMETER — so it was really a 124%-of-radius
-     hole, which is why the ring rendered far too thin. */
+  --_size: 200px; /* Figma Donut Chart: 200×200 unconstrained */
+  --_max-size: 320px; /* past ~320 it is a big empty circle. Will's number */
+  /* No CSS mask for the hole — the TS derives arc radius and stroke width from
+     arcData.innerRadius, as they also depend on donut vs pie. */
 }
 
-/* <figure> element — reset its default margin.
-
-   A 60/40 GRID, not a flex row. Flex let the ring hug its 200px and the legend
-   hug its text, so the pair measured 55% / 33% of the figure with ~12% dead
-   space trailing — no split at all, and neither item centred on anything.
-
-   `7fr 3fr` is 70/30, with the CHART in the wide cell. A legend BESIDE a chart
-   gets more than one below it (80/20): it has to fit its longest label into its
-   own column, where a full-width legend below needs only height. The floor is 0,
-   so the ratio always holds — a label that does not fit truncates rather than
-   stealing the ring's share.
-   Both cells centre their content (`justify-items: center`), so the ring sits in
-   the middle of its 70% and the legend in the middle of its 30% rather than both
-   crowding the inline-start edge.
-
-   The tracks are `minmax(0, Nfr)`: a bare `fr` floors at the item's min-content
-   width, so a long legend label would push the track past its share and quietly
-   break the ratio. */
+/* `minmax(0, Nfr)`, not a bare `fr`: a bare one floors at min-content, so a long
+   legend label would push past its share and break the ratio. */
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
@@ -71,68 +25,30 @@
   gap: var(--sherpa-display-mode-space-lg, 20px);
   margin: 0;
   min-inline-size: 0;
-  /* FILLS the host's height. Without this the grid hugged the ring, so the row
-     was exactly as tall as the ring already was and `max-block-size: 100%` on
-     the ring resolved against itself — the donut could never grow into a tall
-     cell however much room the card had. */
+  /* Fills the host's height, else the grid hugs the ring and the ring's
+     `max-block-size: 100%` resolves against itself. */
   block-size: 100%;
   max-block-size: 100%;
   min-block-size: 0;
-  /* An explicit ROW, floored at 0. A grid's implicit row is `auto`, which sizes
-     to its content — so the ring's own height became the row's height and
-     `max-block-size: 100%` on the ring resolved against the ring. `minmax(0,
-     1fr)` makes the row take the grid's height and lets it shrink below the
-     ring's natural size, which is what gives the ring a real limit to fit. */
+  /* Explicit row floored at 0 — an implicit `auto` row sizes to the ring. */
   grid-template-rows: minmax(0, 1fr);
 }
 
-/* With no legend slotted there is nothing to split, so the ring takes the whole
-   figure instead of sitting in a 60% column with 40% of nothing beside it. */
 :host(:not([data-has-legend])) .layout {
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* The ring must stay CIRCULAR at any size.
-   `--_size` was a fixed 200px, so the donut could not scale with its container at
-   all — and any attempt to size it by width alone would have produced an ellipse,
-   because the height came from a separate declaration. `aspect-ratio: 1` ties the
-   two together, so one dimension is enough and the circle can never distort.
-
-   It shrinks to fit a narrow container but never grows past the Figma 200, so a
-   wide panel does not blow the donut up out of proportion to its own labels. */
-/* SCALES UNIFORMLY to whichever axis runs out first. `aspect-ratio: 1` keeps the
-   ring circular, and capping nothing but the cell lets it GROW: Figma's 200 is
-   the minimum drawn size, not the maximum, so a tall card gets a big donut
-   rather than a 200px ring adrift in it.
-
-   Both `max-*` caps are what force the smaller axis to win — width alone would
-   overflow a short cell, height alone a narrow one. */
 .ring-wrap {
   position: relative;
-  /* SIZED FROM THE HEIGHT, with the width as the cap — not the other way round.
-
-     `inline-size: 100%` + `aspect-ratio` derives the HEIGHT from the width, and
-     a derived height ignores `max-block-size` in the sizing pass: a 600x140 box
-     produced a 600x600 ring hanging 460px out of its container. Going through
-     `block-size: 100%` instead makes the HEIGHT the input, so the ratio derives
-     the width and `max-inline-size` can clamp it.
-
-     With both axes capped and the ratio tying them together, whichever container
-     axis is smaller wins — which is exactly "scale uniformly to fit".
-
-     NO min-inline-size: flooring at --_size stopped the ring shrinking, so a
-     120px card got a 200px donut hanging out of it. `--_size` is the size the
-     donut draws at when nothing constrains it, not a floor it may not cross. */
+  /* Sized from the HEIGHT, width as the cap: a derived height ignores
+     `max-block-size`. No min-inline-size — `--_size` is not a floor. */
   block-size: 100%;
   inline-size: auto;
   min-inline-size: 0;
   min-block-size: 0;
-  /* Capped on BOTH axes — by the cell, and by --_max-size. With the ratio tying
-     the two together, whichever limit bites first wins and the ring stays circular either way. */
   max-inline-size: min(100%, var(--_max-size, 320px));
   max-block-size: min(100%, var(--_max-size, 320px));
   aspect-ratio: 1;
-  /* No block-size: the ratio derives it. Declaring both would let them disagree. */
 }
 .ring {
   display: block;
@@ -142,56 +58,22 @@
 }
 
 /* ── Slices ──────────────────────────────────────────────────────────────
-   Each slice is a CLOSED PATH — a ring segment with all four corners rounded,
-   built by ringSegmentPath() in the TS. It was a stroked circle whose dash
-   exposed its own span, and that could express neither thing Figma asks for: a
-   stroke is a thick LINE, so it has two caps and no corners. The border could
-   only run along the two long edges (as a second arc drawn on top), and the four
-   corners could not be rounded at all.
-
-   One path carries both paints at once, the way Figma draws the slice:
-     fill   — the series hue at 60%
-     stroke — the same hue, solid, 1px on a 200px chart, right round the outline
-
-   Figma aligns that stroke INSIDE. SVG has no inside stroke — it always straddles
-   the path — so the TS draws the path half a stroke in from the true band edges,
-   which lands the stroke inside. Width comes from the TS too, because it is a
-   viewBox-unit geometry value and an SVG stroke-width attribute cannot read a CSS
-   custom property.
-   
-   Slices TOUCH, with no gap. The rounding is what separates them, as in Figma. */
+   SVG has no inside stroke, so the TS insets the path by half a stroke and owns
+   the width (a viewBox-unit attribute cannot read a custom property). */
 .slice {
   fill: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-  /* NO fill-opacity. The series token already carries its 50%, and a
-     fill-opacity here MULTIPLIES it — marks painted at 30%. */
-  /* The OUTLINE has its own token — colour 5 of the series' sequence, at full
-     strength — so it does NOT track the fill. A slice's fill moves along its
-     ramp; its border is the series' identity and stays put, which is what keeps
-     a translucent mark legible on any surface. Falls back to the hue where the
-     border token is not defined. */
+  /* No fill-opacity — the series token carries its 50% and this would multiply it. */
+  /* Outline = colour 5 at full strength, deliberately NOT tracking the fill. */
   stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-  /* ROUND joins. The corner arcs already carry the rounding, but a join sits
-     where two path commands meet, and a mitre there pushes a spike out past the
-     corner on a narrow slice. */
+  /* Round joins — a mitre spikes past the corner on a narrow slice. */
   stroke-linejoin: round;
   transition: fill-opacity 100ms ease;
   cursor: pointer;
 }
 
-/* A slice lifts to full strength on hover, so the pointer target is legible.
-
-   NO `:focus-visible` rule, deliberately. A slice has no tabindex and the
-   hotspot layer is `<span>`, so nothing here can take focus — measured: 0
-   tabbable elements. The rule that used to sit here set `outline: none` and
-   then `fill-opacity: 1`, which is byte-identical to the `:hover` above, so
-   even if a slice could be focused the ring would be indistinguishable from a
-   pointer hover. It was a rule for a state that cannot occur.
-
-   The chart's accessibility contract is `role="img"` + `aria-label` on the ring
-   — one picture with a description, not a set of widgets. Keyboard access to
-   individual marks is a real gap across ALL five charts (none has a tabbable
-   mark; sparkline's eight buttons are `tabindex="-1"` inside `aria-hidden`), and
-   it needs a design, not a CSS rule. See docs/HANDOVER-BACKLOG.md. */
+/* No `:focus-visible` rule: nothing here is tabbable — the contract is
+   `role="img"` + `aria-label`. Mark-level keyboard access is a known gap across
+   all five charts; see docs/HANDOVER-BACKLOG.md. */
 .slice:hover { fill-opacity: 1; }
 
 .centre {
@@ -206,24 +88,16 @@
 }
 :host([data-type="pie"]) .centre { display: none; }
 
-/* Centre: value content/size/h1 24 on 32 semibold (−0.2 tracking); sub 10/16
-   regular. BOTH MONOSPACED — the centre of a donut is its total, a number, and it
-   reads on the same scale as the legend and the axes beside it. Figma's Donut
-   Chart (465:61966) bound content/font/body on both texts until this pass and was
-   re-pointed to content/font/MONOSPACED first, so the two sides agree. */
+/* Centre value + sub are both MONOSPACED, matching the legend and axes beside
+   them. Figma 465:61966 re-pointed to match. */
 .value {
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-theme-content-size-h1, 24px);
-  /* REGULAR, not semibold. At 24px in a monospaced face the weight is already
-     doing plenty of work — Bold read as shouting beside the light-caps label
-     above it, and mono's even stems make a heavy weight look heavier than the
-     same weight in Inter. Will's call; Figma re-pointed to match. */
+  /* Regular, not semibold — mono's even stems read heavier. Will's call. */
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
-  /* content/body/BASE — the darkest ink, as Figma binds it. It read body/+1
-     (#35353D) here, which is the SUBLABEL's colour: the total and its caption
-     were the same grey, so the total did not lead. */
+  /* body/BASE, the darkest ink, so the total leads the sublabel. */
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-variant-numeric: tabular-nums;
 
@@ -239,20 +113,9 @@
 }
 
 /* ── Tooltip anchors ────────────────────────────────────────────────────────
- * NO VISIBLE MARKERS. The reader hovers the SEGMENT — the thing they are already
- * pointing at — and its tooltip appears.
- *
- * These spans are zero-size ANCHOR POINTS, one per slice, placed on the ring by
- * CSS trig. They exist only because an SVG element cannot be a CSS anchor in
- * Chromium (anchor-name computes fine and never resolves), so the tip needs an
- * HTML box at the right place to attach to. Nothing is drawn.
- *
- * The JS supplies ONE number per slice — its mid-angle — and cos()/sin() do the
- * rest, so the anchors ride the ring at any size with nothing measured.
- *
- * --_ring-r is the OUTER radius, 50% of the box, so a tip pushed outward from
- * there clears the ring entirely.
- */
+   Zero-size, drawing nothing: an SVG element cannot be a CSS anchor in Chromium
+   (anchor-name computes but never resolves), so the tip needs an HTML box.
+   --_ring-r is the OUTER radius, so a tip pushed outward clears the ring. */
 .hotspots {
   position: absolute;
   inset: 0;
@@ -261,17 +124,14 @@
 }
 
 .hotspot {
-  /* Polar → cartesian, from the ring's centre. The JS angle is measured from
-     12 o'clock, matching the arcs' own -90deg rotation, so cos drives the
-     VERTICAL offset and sin the horizontal. */
+  /* Polar → cartesian. The JS angle starts at 12 o'clock (matching the arcs'
+     -90deg rotation), so cos drives the vertical and sin the horizontal. */
   inset-inline-start: calc(50% + sin(var(--_angle, 0deg)) * var(--_ring-r));
   inset-block-start: calc(50% - cos(var(--_angle, 0deg)) * var(--_ring-r));
 }
 
-/* Hovering a SLICE reveals its own tip.
-   `:has()` on the wrapper, because the slice is inside <svg> and so is not the
-   tip's sibling — a `+` or `~` selector cannot cross that boundary. The index
-   pairs them: slice N lights tip N. */
+/* `:has()` on the wrapper: the slice is inside <svg>, so `+`/`~` cannot reach
+   the tip. Index N lights tip N. */
 .ring-wrap:has(.slice[data-index="0"]:hover) .chart-tip[data-index="0"],
 .ring-wrap:has(.slice[data-index="1"]:hover) .chart-tip[data-index="1"],
 .ring-wrap:has(.slice[data-index="2"]:hover) .chart-tip[data-index="2"],
@@ -287,5 +147,4 @@
   opacity: 1;
 }
 
-/* The slice is the hover target, so it must accept the pointer. */
 .slice { cursor: pointer; }

@@ -1,19 +1,17 @@
 /**
  * session.ts — the app-level state store: one value, many readers.
  *
- * TRAP T-session-store-is-the-third-tier — records, then one query over them,
- * then everything else an app knows about itself, addressed by JSON pointer.
+ * Third tier: a Store holds records, a DataSource one query over them, this
+ * everything else an app knows about itself. Pointer-addressed, so a
+ * subscriber can watch a BRANCH.
+ *
+ * TRAP T-session-store-is-the-third-tier
  */
 import { getPointer, setPointer, pointersOverlap } from './pointer.js';
 
 /** Where a persisted pointer is kept. */
 export interface PersistOptions {
-  /**
-   * Share across TABS via localStorage rather than keeping it per tab.
-   *
-   * Default TRUE — TRAP T-session-persist-defaults-shared, the opposite of
-   * `persistView`'s default and deliberately so.
-   */
+  /** Share across TABS. Default TRUE — TRAP T-session-persist-defaults-shared. */
   shared?: boolean;
   /** The storage key. Defaults to `sherpa:session:<pointer>`. */
   key?: string;
@@ -21,8 +19,7 @@ export interface PersistOptions {
 
 const PREFIX = 'sherpa:session:';
 
-/** TRAP T-storage-access-throws — every access is wrapped; a failure only means
- *  the value is not kept. */
+/** TRAP T-storage-access-throws — a failure only means the value is not kept. */
 function storage(shared: boolean): Storage | null {
   try {
     return shared ? localStorage : sessionStorage;
@@ -31,11 +28,8 @@ function storage(shared: boolean): Storage | null {
   }
 }
 
-/**
- * What an app knows about itself, addressed by pointer.
- *
- * TRAP T-session-store-is-the-third-tier.
- */
+/** What an app knows about itself, addressed by pointer.
+ *  TRAP T-session-store-is-the-third-tier */
 export class SessionStore {
   #data: Record<string, unknown>;
   #subs = new Set<{ pointer: string; run: (value: unknown) => void }>();
@@ -55,8 +49,8 @@ export class SessionStore {
     for (const sub of this.#subs) {
       if (pointersOverlap(sub.pointer, pointer)) sub.run(this.get(sub.pointer));
     }
-    // …then write through, for this pointer or any ANCESTOR of it —
-    // TRAP T-session-store-is-the-third-tier.
+    // Write through for this pointer or any ANCESTOR: a branch write must not
+    // lose what a leaf write keeps. TRAP T-session-store-is-the-third-tier
     for (const [p, where] of this.#persisted) {
       if (pointersOverlap(p, pointer)) this.#write(p, where);
     }
@@ -73,10 +67,9 @@ export class SessionStore {
   }
 
   /**
-   * Remember this pointer across reloads.
-   *
-   * RESTORES IMMEDIATELY if a stored value exists, and returns whether it did —
-   * TRAP T-session-persist-defaults-shared.
+   * Remember this pointer across reloads. RESTORES IMMEDIATELY if a stored
+   * value exists, and returns whether it did.
+   * TRAP T-session-persist-defaults-shared
    */
   persist(pointer: string, options: PersistOptions = {}): boolean {
     const shared = options.shared ?? true;
@@ -93,8 +86,8 @@ export class SessionStore {
     if (raw == null) return false;
 
     try {
-      // An unreadable shape is DROPPED, not half-applied —
-      // TRAP T-session-persist-defaults-shared.
+      // A stored shape this version cannot read is DROPPED, not half-applied.
+      // TRAP T-session-persist-defaults-shared
       this.set(pointer, JSON.parse(raw));
       return true;
     } catch {

@@ -1,32 +1,31 @@
 /**
- * Format one axis tick value.
+ * format-tick.ts — the arithmetic the charts share: tick labels, gridline
+ * placement, radial tips, ring-segment paths, series colours.
+ */
+
+/**
+ * One axis tick, compacted — "1.5K", not "1500".
  *
- * Axis labels are read at a glance beside the plot, so a raw `1284.0000001` or a
- * 7-digit count is noise. Compacts thousands and millions and drops trailing
- * zeros, as the Figma axis mock-ups show ("1.5K", not "1500"). Shared —
- * TRAP T-one-function-places-label-and-gridline.
+ * TRAP T-one-function-places-label-and-gridline
  */
 export function formatTick(value: number): string {
   if (!Number.isFinite(value)) return '';
   const abs = Math.abs(value);
   if (abs >= 1_000_000) return `${trim(value / 1_000_000)}M`;
   if (abs >= 1_000) return `${trim(value / 1_000)}K`;
-  // Below 10 a single decimal carries real information: a 0–1 ratio axis would
-  // otherwise collapse to "0" and "1" with nothing between.
+  // Below 10, a 0–1 ratio axis without the decimal is just "0" and "1".
   return trim(value, abs < 10 ? 1 : 0);
 }
 
-/** Round to `places` and drop any trailing zeros, so 1.0 reads as "1". */
+/** Round to `places` and drop trailing zeros, so 1.0 reads as "1". */
 function trim(value: number, places = 1): string {
   return String(Number(value.toFixed(places)));
 }
 
 /**
- * Where the i-th of `steps` divisions sits, as a percentage UP from the plot's
- * bottom edge.
+ * Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
  *
- * TRAP T-one-function-places-label-and-gridline — N−1 gridlines against N+1 flex
- * boundaries is how the previous versions drifted.
+ * TRAP T-one-function-places-label-and-gridline
  */
 export function tickPercent(index: number, steps: number): number {
   if (steps <= 0) return 0;
@@ -36,15 +35,13 @@ export function tickPercent(index: number, steps: number): number {
 /**
  * The `position-area` on the OUTWARD side of a radial mark.
  *
- * TRAP T-radial-tip-pushes-outward — markers diverge by construction, so an
- * outward tip never overlaps its neighbours'.
+ * TRAP T-radial-tip-pushes-outward
  *
- * @param angleDeg measured CLOCKWISE from 12 o'clock, matching how both the donut
- *   and the gauge already place their marks.
+ * @param angleDeg CLOCKWISE from 12 o'clock, as the donut and gauge place marks.
  */
 export function radialArea(angleDeg: number): string {
-  // TRAP T-radial-tip-pushes-outward — the half-octant offset keeps 0deg (up)
-  // squarely in `block-start` rather than on a boundary.
+  // The half-octant offset puts 0deg squarely in `block-start`, not on a
+  // boundary. TRAP T-radial-tip-pushes-outward
   const deg = ((angleDeg % 360) + 360) % 360;
   const octant = Math.floor(((deg + 22.5) % 360) / 45);
   return RADIAL_AREAS[octant] ?? 'block-start';
@@ -64,7 +61,7 @@ const RADIAL_AREAS = [
 
 /* ── Ring segments ────────────────────────────────────────────────────── */
 
-/** One point on a circle. Angles run CLOCKWISE from 12 o'clock, like the charts. */
+/** One point on a circle. Angles run CLOCKWISE from 12 o'clock. */
 function polar(cx: number, cy: number, r: number, deg: number): [number, number] {
   const rad = ((deg - 90) * Math.PI) / 180;
   return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
@@ -74,27 +71,22 @@ export interface RingSegmentOptions {
   /** Centre of the ring, in viewBox units. */
   cx: number;
   cy: number;
-  /** Inner radius. 0 draws a solid wedge (a pie slice). */
+  /** Inner radius. 0 draws a solid wedge — a pie slice. */
   inner: number;
   /** Outer radius. */
   outer: number;
-  /** Where the segment starts, CLOCKWISE degrees from 12 o'clock. */
+  /** Start, CLOCKWISE degrees from 12 o'clock. */
   startDeg: number;
-  /** Where it ends. Must be greater than startDeg. */
+  /** End. Must be greater than startDeg. */
   endDeg: number;
-  /** Corner rounding, in viewBox units. Clamped to what the segment can hold. */
+  /** Corner rounding, viewBox units. Clamped to what the segment can hold. */
   radius?: number;
 }
 
 /**
- * The `d` for a CLOSED ring segment — a donut slice — with all four corners
- * rounded.
+ * The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
  *
- * TRAP T-ring-segment-needs-two-radius-clamps — a stroke has caps, not corners;
- * one clamp short and a thin slice paints a bow tie.
- *
- * The outline runs: outer arc left→right, rounded corner down the trailing edge,
- * inner arc back right→left, rounded corner up the leading edge, close.
+ * TRAP T-ring-segment-needs-two-radius-clamps
  */
 export function ringSegmentPath(options: RingSegmentOptions): string {
   const { cx, cy, inner, outer, startDeg, endDeg } = options;
@@ -112,8 +104,7 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
   }
 
   const band = outer - inner;
-  // Degrees of arc that `r` units span at radius `rad` — how much of the corner
-  // radius eats into the sweep at each end.
+  // Degrees of arc that `r` units span at radius `rad`.
   const degFor = (r: number, rad: number): number =>
     rad <= 0 ? 0 : (r / rad) * (180 / Math.PI);
 
@@ -125,7 +116,7 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
 
   const outerInset = degFor(r, outer);
   const innerInset = degFor(r, inner);
-  // A pie's inner "arc" is the single centre point, so its corners collapse.
+  // A pie's inner "arc" is one point, so its corners collapse.
   const pie = inner <= 0;
 
   const oStart = startDeg + outerInset;
@@ -133,7 +124,7 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
   const iStart = startDeg + innerInset;
   const iEnd = endDeg - innerInset;
 
-  // Long-arc flag: SVG needs it once the sweep passes a half circle.
+  // SVG needs the long-arc flag once the sweep passes a half circle.
   const longOuter = oEnd - oStart > 180 ? 1 : 0;
   const longInner = iEnd - iStart > 180 ? 1 : 0;
 
@@ -141,17 +132,15 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
     polar(cx, cy, rad, deg).map((n) => n.toFixed(4)).join(' ');
   const parts: string[] = [];
 
-  // Up the leading edge, from just outside the inner corner to the outer corner.
+  // Leading edge, corner, outer arc, corner, trailing edge.
   parts.push(`M ${p(inner + r, startDeg)}`);
   parts.push(`L ${p(outer - r, startDeg)}`);
-  // Top-left corner, then the outer arc, then the top-right corner.
   parts.push(`A ${r} ${r} 0 0 1 ${p(outer, oStart)}`);
   parts.push(`A ${outer} ${outer} 0 ${longOuter} 1 ${p(outer, oEnd)}`);
   parts.push(`A ${r} ${r} 0 0 1 ${p(outer - r, endDeg)}`);
-  // Down the trailing edge to the inner ring.
   parts.push(`L ${p(inner + r, endDeg)}`);
   if (!pie) {
-    // Bottom-right corner, the inner arc BACKWARDS, bottom-left corner.
+    // Corner, inner arc BACKWARDS, corner.
     parts.push(`A ${r} ${r} 0 0 1 ${p(inner, iEnd)}`);
     parts.push(`A ${inner} ${inner} 0 ${longInner} 0 ${p(inner, iStart)}`);
     parts.push(`A ${r} ${r} 0 0 1 ${p(inner + r, startDeg)}`);
@@ -165,16 +154,15 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
 /**
  * How many data-viz series the token layer defines.
  *
- * TRAP T-series-count-is-ten-not-eleven — a bare `% 11` in four components
- * outlived the palette, and a missing variable paints nothing.
+ * TRAP T-series-count-is-ten-not-eleven
  */
 export const SERIES_COUNT = 10;
 
 /**
- * The CSS custom property a chart mark should paint with, for a 0-based mark
- * index and an optional explicit 1-based `colorIndex` from the data.
+ * The custom property a mark paints with. `index` is 0-based; an explicit
+ * `colorIndex` from the data is 1-based. Wraps.
  *
- * Wraps — TRAP T-series-count-is-ten-not-eleven.
+ * TRAP T-series-count-is-ten-not-eleven
  */
 export function seriesVar(index: number, colorIndex?: number): string {
   const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;
@@ -182,11 +170,10 @@ export function seriesVar(index: number, colorIndex?: number): string {
 }
 
 /**
- * The mark's OUTLINE for the same series — the collection's `border`, which
- * aliases to colour 5 of whichever sequence is active.
- *
- * TRAP T-series-count-is-ten-not-eleven — the fill moves along its ramp, the
+ * The mark's OUTLINE for the same series — the fill moves along its ramp, the
  * border is the series' identity and stays put.
+ *
+ * TRAP T-series-count-is-ten-not-eleven
  */
 export function seriesBorderVar(index: number, colorIndex?: number): string {
   const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;

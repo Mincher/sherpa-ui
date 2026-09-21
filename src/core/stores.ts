@@ -1,16 +1,8 @@
 /**
- * stores.ts — the concrete stores.
+ * stores.ts — the concrete stores: ArrayStore, JsonStore, RestStore, LocalStore.
  *
- * Each one answers the same interface (see store.ts), so a view moves from an
- * in-memory array to an HTTP endpoint without a component knowing.
- *
- *   ArrayStore  a JS array          the common case
- *   JsonStore   a JSON URL          fetch once, then behave as an ArrayStore
- *   RestStore   an HTTP endpoint    load → GET, insert → POST, update → PATCH…
- *   LocalStore  localStorage        saved views and column state, not bulk data
- *
- * Built on the platform: fetch, AbortSignal, URLSearchParams, structuredClone.
- * Zero dependencies.
+ * All answer the one interface in store.ts, so a view moves from an in-memory
+ * array to an HTTP endpoint without a component knowing.
  */
 import {
   applyOptions,
@@ -20,30 +12,22 @@ import {
   type Row,
   type StoreChangeDetail,
 } from './store.js';
-// The shared half every store extends — its own module so IdbStore reaches it too.
+// Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
 export { BaseStore, type StoreOptions };
 
 /**
- * A write the schema refused — declared in `validate.ts`, re-exported here.
- *
- * ONE class, because every store throws it and a caller must be able to catch
- * all of them with one `instanceof`. TRAP T-one-class-to-catch, and
- * TRAP T-schema-guard-belongs-at-the-store for why a store throws at all.
+ * A write the schema refused — one class, so one `instanceof` catches every
+ * store's. TRAP T-one-class-to-catch, TRAP T-schema-guard-belongs-at-the-store
  */
 export { ValidationError } from './validate.js';
 
 /* ── ArrayStore ────────────────────────────────────────────────────────── */
 
-/**
- * Records held in memory.
- *
- * TRAP T-array-store-copies-both-ways — an edit that appears to work and then
- * vanishes on the next reload is a row handed out by reference.
- */
+/** Records held in memory. TRAP T-array-store-copies-both-ways */
 export class ArrayStore extends BaseStore {
   #rows: Row[];
-  /** See StoreOptions.maxRows — 0 or absent means no cap. */
+  /** 0 or absent means no cap. */
   readonly #maxRows: number;
 
   constructor(rows: readonly Row[] = [], options: StoreOptions = {}) {
@@ -52,12 +36,7 @@ export class ArrayStore extends BaseStore {
     this.#rows = this.#trim(rows.map((r) => ({ ...r })));
   }
 
-  /**
-   * Drop the oldest rows past the cap.
-   *
-   * TRAP T-max-rows-is-oldest-out-by-insertion. The caller always owns a fresh
-   * copy by the time this runs.
-   */
+  /** Drop the oldest rows past the cap. TRAP T-max-rows-is-oldest-out-by-insertion */
   #trim(rows: Row[]): Row[] {
     if (!this.#maxRows || rows.length <= this.#maxRows) return rows;
     return rows.slice(rows.length - this.#maxRows);
@@ -71,7 +50,7 @@ export class ArrayStore extends BaseStore {
 
   load(options: LoadOptions = {}): Promise<LoadResult> {
     const result = applyOptions(this.#rows, options);
-    // Copies out — TRAP T-array-store-copies-both-ways.
+    // TRAP T-array-store-copies-both-ways — copies out.
     return this.checkRows({ ...result, rows: result.rows.map((r) => ({ ...r })) });
   }
 
@@ -81,11 +60,10 @@ export class ArrayStore extends BaseStore {
   }
 
   async insert(values: Row): Promise<Row> {
-    // CHECKED FIRST, so a refused row is never pushed and never announced.
+    // Checked FIRST, so a refused row is never pushed and never announced.
     const row = { ...(await this.check(values)) };
     this.#rows.push(row);
-    // …then hold the cap, BEFORE the announce —
-    // TRAP T-max-rows-is-oldest-out-by-insertion.
+    // Cap held BEFORE the announce — TRAP T-max-rows-is-oldest-out-by-insertion.
     this.#rows = this.#trim(this.#rows);
     this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
     return { ...row };
@@ -94,8 +72,7 @@ export class ArrayStore extends BaseStore {
   async update(key: unknown, values: Row): Promise<Row> {
     const i = this.#rows.findIndex((r) => sameKey(readField(r, this.key), key));
     if (i < 0) throw new Error(`ArrayStore: no row with ${this.key} ${String(key)}`);
-    // MERGE, not replace, and the MERGED row is what gets checked —
-    // TRAP T-array-store-copies-both-ways.
+    // Merge, and the MERGED row is checked — TRAP T-array-store-copies-both-ways.
     const row = await this.check({ ...this.#rows[i]!, ...values });
     this.#rows[i] = row;
     this.announce({ type: 'update', key, row: { ...row } });
@@ -111,12 +88,7 @@ export class ArrayStore extends BaseStore {
   }
 }
 
-/**
- * Key comparison.
- *
- * TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false and would report
- * a row as missing.
- */
+/** Key comparison. TRAP T-numeric-keys-compare-as-strings */
 function sameKey(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
@@ -130,17 +102,15 @@ export interface JsonStoreOptions extends StoreOptions {
   url: string;
   /** Dotted path to the array inside the response, e.g. `'data.items'`. */
   rowsPath?: string;
-  /** Passed through to fetch — headers, credentials, mode. */
+  /** Passed through to fetch. */
   init?: RequestInit;
-  /** Abort the request after this many ms. Default 30000. */
+  /** Abort after this many ms. Default 30000. */
   timeout?: number;
 }
 
 /**
- * A JSON document fetched once, then queried in memory.
- *
- * The fetch happens on the FIRST load and is shared by every caller that arrives
- * while it is in flight — three bound components must not make three requests.
+ * A JSON document fetched once, then queried in memory. The first load's fetch
+ * is shared by callers arriving mid-flight — three components, one request.
  */
 export class JsonStore extends BaseStore {
   #inner: ArrayStore;
@@ -152,14 +122,13 @@ export class JsonStore extends BaseStore {
     super(options);
     this.#options = options;
     this.#inner = new ArrayStore([], options);
-    // Forward the inner store's changes as our own, so a consumer never has to
-    // know one store wraps another.
+    // Forward the inner store's changes as our own.
     this.#inner.addEventListener('change', (e) => {
       this.announce((e as CustomEvent<StoreChangeDetail>).detail);
     });
   }
 
-  /** Fetch the document if it has not been fetched. Shared across callers. */
+  /** Fetch once; callers arriving mid-flight share the one promise. */
   async #ensure(): Promise<void> {
     if (this.#loaded) return;
     this.#pending ??= this.#fetch().finally(() => {
@@ -174,8 +143,7 @@ export class JsonStore extends BaseStore {
       ...init,
       signal: AbortSignal.timeout(timeout),
     });
-    // TRAP T-fetch-does-not-reject-on-404 — a missing endpoint would otherwise
-    // read as an empty result set.
+    // TRAP T-fetch-does-not-reject-on-404
     if (!response.ok) {
       throw new Error(`JsonStore: ${url} responded ${response.status} ${response.statusText}`);
     }
@@ -186,8 +154,8 @@ export class JsonStore extends BaseStore {
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     await this.#ensure();
-    // The inner ArrayStore holds no schema of its own, so the check happens once,
-    // here — TRAP T-schema-guard-belongs-at-the-store.
+    // The inner ArrayStore holds no schema, so the check happens once, here —
+    // TRAP T-schema-guard-belongs-at-the-store
     return this.checkRows(await this.#inner.load(options));
   }
 
@@ -240,19 +208,13 @@ export interface RestStoreOptions extends StoreOptions {
   totalPath?: string;
   init?: RequestInit;
   timeout?: number;
-  /**
-   * Turn load options into query parameters. The default sends `skip`, `take`,
-   * `sort` and `filter` as JSON — override it to match a server that names them
-   * differently, which most do.
-   */
+  /** Load options → query parameters. Override to match your server's names. */
   buildQuery?: (options: LoadOptions) => URLSearchParams;
 }
 
 /**
- * Records behind an HTTP endpoint.
- *
- * TRAP T-rest-update-is-patch-not-put — the SERVER filters, sorts and pages, and
- * `load` passes the options through as query parameters.
+ * Records behind an HTTP endpoint — the SERVER filters, sorts and pages.
+ * TRAP T-rest-update-is-patch-not-put
  */
 export class RestStore extends BaseStore {
   #options: RestStoreOptions;
@@ -268,11 +230,11 @@ export class RestStore extends BaseStore {
     const body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
     const rows = rowsAt(body, this.#options.rowsPath);
     // A reported total is believed; otherwise the page length —
-    // TRAP T-rest-update-is-patch-not-put.
+    // TRAP T-rest-update-is-patch-not-put
     const reported = this.#options.totalPath ? readPath(body, this.#options.totalPath) : undefined;
     const total = typeof reported === 'number' ? reported : rows.length;
-    // THE LEAST TRUSTWORTHY PATH IN THE SYSTEM —
-    // TRAP T-read-check-drops-where-a-write-throws.
+    // A bad read DROPS the row; a bad write throws —
+    // TRAP T-read-check-drops-where-a-write-throws
     return this.checkRows({ rows, total });
   }
 
@@ -281,22 +243,22 @@ export class RestStore extends BaseStore {
     try {
       return await this.#request<Row>(url, { method: 'GET' });
     } catch (error) {
-      // A 404 is an ANSWER — TRAP T-fetch-does-not-reject-on-404.
+      // A 404 is an ANSWER — TRAP T-fetch-does-not-reject-on-404
       if (error instanceof HttpError && error.status === 404) return undefined;
       throw error;
     }
   }
 
   async insert(values: Row): Promise<Row> {
-    // CHECKED BEFORE SENDING, and again on the way back —
-    // TRAP T-schema-guard-belongs-at-the-store.
+    // Checked before sending, and again on the way back —
+    // TRAP T-schema-guard-belongs-at-the-store
     const checked = await this.check(values);
     const row = await this.#request<Row>(this.#options.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(checked),
     });
-    // The server's own row wins when it sends one — it may have filled in an id.
+    // The server's row wins when it sends one — it may have filled in an id.
     const saved = row ? await this.check(row) : checked;
     this.announce({ type: 'insert', key: readField(saved, this.key), row: saved });
     return saved;
@@ -305,13 +267,13 @@ export class RestStore extends BaseStore {
   async update(key: unknown, values: Row): Promise<Row> {
     const url = `${this.#options.url}/${encodeURIComponent(String(key))}`;
     const row = await this.#request<Row>(url, {
-      // TRAP T-rest-update-is-patch-not-put — PUT would blank everything not sent.
+      // TRAP T-rest-update-is-patch-not-put — PUT blanks what it is not sent.
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(values),
     });
     // The RESPONSE is checked, the patch is not —
-    // TRAP T-rest-update-is-patch-not-put.
+    // TRAP T-rest-update-is-patch-not-put
     const saved = row ? await this.check(row) : values;
     this.announce({ type: 'update', key, row: saved });
     return saved;
@@ -332,7 +294,7 @@ export class RestStore extends BaseStore {
     });
     if (!response.ok) throw new HttpError(response.status, response.statusText, url);
     // 204 and content-length 0 have no body to parse —
-    // TRAP T-fetch-does-not-reject-on-404.
+    // TRAP T-fetch-does-not-reject-on-404
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       return undefined as T;
     }
@@ -362,12 +324,7 @@ function readPath(body: unknown, path: string): unknown {
   return cur;
 }
 
-/**
- * The default query shape: `skip`, `take`, and `sort`/`filter` as JSON.
- *
- * Deliberately plain: ONE obvious default and an easy override, because every
- * API names these differently.
- */
+/** The default query shape: `skip`, `take`, and `sort`/`filter` as JSON. */
 function defaultQuery(options: LoadOptions): URLSearchParams {
   const q = new URLSearchParams();
   // `append`, never string interpolation: `+` in a value decodes as a space.
@@ -390,10 +347,8 @@ export interface LocalStoreOptions extends StoreOptions {
 }
 
 /**
- * Records in Web Storage — for saved views, column state and preferences.
- *
- * TRAP T-local-store-is-not-for-bulk-data — synchronous, strings only, ~5MB, and
- * every access can throw.
+ * Records in Web Storage — saved views, column state, preferences.
+ * TRAP T-local-store-is-not-for-bulk-data
  */
 export class LocalStore extends BaseStore {
   #options: LocalStoreOptions;
@@ -418,7 +373,7 @@ export class LocalStore extends BaseStore {
       return Array.isArray(parsed) ? (parsed as Row[]) : [];
     } catch {
       // Unreadable or corrupt storage reads as empty —
-      // TRAP T-local-store-is-not-for-bulk-data.
+      // TRAP T-local-store-is-not-for-bulk-data
       return [];
     }
   }
@@ -427,8 +382,7 @@ export class LocalStore extends BaseStore {
     try {
       this.#storage?.setItem(this.#options.name, JSON.stringify(rows));
     } catch {
-      // Quota exceeded, or storage blocked —
-      // TRAP T-storage-access-throws.
+      // Quota exceeded, or storage blocked — TRAP T-storage-access-throws
     }
   }
 
@@ -441,7 +395,7 @@ export class LocalStore extends BaseStore {
   }
 
   async insert(values: Row): Promise<Row> {
-    // CHECKED FIRST, so a refused row never reaches storage.
+    // Checked FIRST, so a refused row never reaches storage.
     const checked = await this.check(values);
     const rows = this.#read();
     rows.push({ ...checked });
@@ -455,7 +409,7 @@ export class LocalStore extends BaseStore {
     const i = rows.findIndex((r) => sameKey(readField(r, this.key), key));
     if (i < 0) throw new Error(`LocalStore: no row with ${this.key} ${String(key)}`);
     // The MERGED row is checked, not the patch —
-    // TRAP T-array-store-copies-both-ways.
+    // TRAP T-array-store-copies-both-ways
     const row = await this.check({ ...rows[i]!, ...values });
     rows[i] = row;
     this.#write(rows);

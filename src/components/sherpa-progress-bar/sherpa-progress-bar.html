@@ -1,10 +1,7 @@
 <!--
-  sherpa-progress-bar — a horizontal task-progress indicator.
-
-  Native-first: a real <progress> owns the value + role=progressbar + aria-valuenow
-  for free. JS only sets .value / .max (or removes value for the indeterminate
-  sweep) and mirrors the label. The fill/track are styled via the progress vendor
-  pseudo-elements (::-webkit-progress-bar / -value, ::-moz-progress-bar).
+  sherpa-progress-bar — horizontal task-progress indicator, built on native <progress>.
+  Fill/track are styled via the vendor pseudo-elements (::-webkit-progress-bar
+  / -value, ::-moz-progress-bar); indeterminate = value removed, not set to 0.
 
   Public API:
     value               0–100 completion (native <progress value>); read/write

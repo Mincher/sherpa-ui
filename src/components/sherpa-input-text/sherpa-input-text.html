@@ -1,21 +1,7 @@
 <!--
   sherpa-input-text — a labelled text field.
-
-  Templates (via data-type / data-multiline):
-    default   — the full form-field molecule: label + description + control + message (vertical)
-    multiline — the default molecule with an auto-growing <textarea>
-    minimal   — a bare inline field: an optional label beside the control, no
-                description / message rows (for dense placements like a grid
-                column filter). data-borderless drops the control's border.
-
-  The control row (default / multiline) is a horizontal field: an optional
-  leading icon glyph, the native control, an optional trailing icon glyph, and
-  an `actions` slot for trailing controls (steppers, buttons). Icons and the
-  actions slot are CSS-gated — they only show when their attribute / slot is set.
-
-  Validation (default / multiline): setting data-error (or the native invalid
-  state) paints a full-width FILLED critical bar with light text directly under
-  the control — the Figma `State=error` variant — not a plain message line.
+  Templates: default (label + description + control + message), multiline
+  (auto-growing <textarea>), minimal (bare inline field, no description/message).
 
   Public API:
     data-type        "minimal" for the bare inline field (default is the full molecule)

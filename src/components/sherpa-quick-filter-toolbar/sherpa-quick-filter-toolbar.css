@@ -1,11 +1,6 @@
 /**
- * sherpa-quick-filter-toolbar.css — the chip strip layout.
- *
- * A flex bar: an optional leading view zone, the wrapping chip run (flex-grows),
- * and a trailing actions zone. Zones collapse when empty. The view-zone divider
- * binds control-border/default at control-border/width. Gaps bind the control /
- * core space vars. All layout; the chips carry their own presentation
- * (sherpa-quick-filter).
+ * sherpa-quick-filter-toolbar.css — the chip strip layout. Zones collapse when
+ * empty; the chips carry their own presentation (sherpa-quick-filter).
  */
 
 :host {
@@ -13,43 +8,25 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 }
 
-/* Figma Filter Toolbar (150:3688, both Type=view and Type=data): padding
-   space/2xs 4 on the BLOCK axis and padding/none on the INLINE one, gap
-   space/xs 8. Zone dividers are 1×16 rectangles (border/default/+2) sitting in
-   the 8px gap — not full-height borders.
-
-   NO INLINE PADDING. The bar's own edges line up with whatever it sits above —
-   a grid, a list — rather than insetting the first chip from them. Its container
-   owns any horizontal breathing room.
-
-   NO BOTTOM RULE. It was drawn here and it is not wanted: the bar sits directly
-   above a grid that already has its own hairline frame, so the two stacked and
-   read as one thick grey line under the chips. (Figma binds a bottom stroke
-   WEIGHT but paints no stroke, so it draws nothing there either.) */
+/* Figma 150:3688. No inline padding and no bottom rule — the bar sits flush
+   above a grid that already draws its own hairline. */
 .bar {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline: var(--sherpa-theme-padding-none, 0);
-  /* The query container the collapse steps read. Declared on the BAR, not the
-     host: the bar is the box the chips and actions actually share, so its width
-     is the one that decides whether they fit. */
+  /* Query container is the BAR, not the host: its width is what the chips and
+     actions share. */
   container: qf-bar / inline-size;
 }
 
-/* The VIEW bar bottom-aligns; the DATA bar centres.
-   Read from the set (150:3688): Type=view is padding-bottom NONE with
-   counterAxisAlignItems MAX, where Type=data keeps 4 and CENTER. The view bar
-   sits in the app header directly opposite the nav's first quick row, and that
-   row's bottom edge is what it lines up with — with 4px underneath, its chips sat
-   4px high of Home. */
+/* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {
   align-items: flex-end;
   padding-block-end: var(--sherpa-theme-padding-none, 0);
-  /* Figma fixes the bar at 32 in BOTH variants. Without that, dropping the
-     bottom padding shrank the bar to 28 and the chips stayed put — the bar has
-     to keep its height and move its content down inside it. */
+  /* Fixed 32 in both variants: without it, dropping the bottom padding shrinks
+     the bar instead of moving its content down. */
   block-size: var(--sherpa-display-mode-size-2xl, 32px);
   box-sizing: border-box;
 }
@@ -60,7 +37,7 @@
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-/* The 1×16 divider rectangle after the view chip. */
+/* 1×16 divider rectangle. */
 :host([data-has-view]) .view-zone::after {
   content: "";
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
@@ -68,21 +45,16 @@
   background: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* The Group / Sort chips, at the START of the bar and before the filter run.
-   Same zone-plus-divider idiom as the view zone above: Figma's Type=data content
-   slot opens with two menu chips, then a 1x16 Divider, then the filter chips.
-   Hidden until the JS writes the flag — with no organise chips there is nothing
-   to divide, and an empty zone would leave a stray rule floating in the bar. */
+/* Hidden until JS writes the flag — an empty zone leaves a stray divider. */
 .organise-zone { display: none; }
 :host([data-has-organise]) .organise-zone {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  /* Never squashed by a long filter run — the whole point is that these two sit
-     at the start and stay reachable. */
+  /* Never squashed by a long filter run. */
   flex: 0 0 auto;
 }
-/* The 1x16 divider rectangle after the organise chips. */
+/* 1x16 divider rectangle. */
 :host([data-has-organise]) .organise-zone::after {
   content: "";
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
@@ -92,58 +64,36 @@
 
 .chips {
   display: flex;
-  /* NOWRAP. A filter toolbar is one line: wrapping pushed the bar to two rows
-     and the action cluster's `margin-inline-start: auto` then sat against a
-     short second line instead of the bar's end. When the chips will not fit,
-     the ANSWER IS THE OVERFLOW CHIP — collapse, not reflow.
-
-     `min-inline-size: 0` is what lets the run shrink below its content so the
-     measurement pass sees an overflow to act on. */
+  /* Overflow is answered by the overflow chip, never by reflow. `min-inline-size:
+     0` lets the run shrink below its content so the measure sees an overflow. */
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   flex: 1 1 auto;
   min-inline-size: 0;
-  /* Clipped, not scrolled: a chip half out of view reads as a rendering fault.
-     Anything that does not fit is moved into the overflow chip by #reflow(), so
-     in the settled state nothing is ever cut. This only covers the frame
-     BETWEEN a resize and the measure that answers it. */
+  /* Clipped, not scrolled; only covers the frame between resize and measure. */
   overflow: clip;
 }
 
 /* ── Action cluster ──────────────────────────────────────────────────
- * Figma's `right-actions` slot, built in. ALWAYS shown now — it used to be an
- * empty slot gated on data-has-actions, so the bar ended at the last filter
- * chip. `data-no-actions` is the way out for a host that owns the trailing end
- * itself.
- *
- * `margin-inline-start: auto` rather than a spacer: the chip run already
- * flex-grows, but it wraps, and on a wrapped second line the grown run no
- * longer reaches the end of the bar. The auto margin pins the cluster to the
- * trailing edge either way. */
+ * Always shown; `data-no-actions` is the way out. The auto margin pins it to
+ * the trailing edge whatever the chip run does. */
 .actions-zone {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  /* Never wraps or squashes — these are the bar's fixed controls. */
+  /* Never wraps or squashes — the bar's fixed controls. */
   flex: 0 0 auto;
   margin-inline-start: auto;
 }
 
-/* ── COLLAPSING THE ACTION CLUSTER ───────────────────────────────────
- * The trailing actions fold into the ⋮ button from the RIGHT-MOST first, so
- * they are pushed onto the top of that menu's stack and come back in the same
- * order as the bar widens.
- *
- * CSS does the first pass, off a container query on the bar's own width, so a
- * narrow bar is already collapsed on the very first paint with no JS in the
- * loop. #reflow() then measures and can collapse FURTHER — the breakpoints
- * below are width guesses, and a bar of eleven long chips needs to fold sooner
- * than one of three short ones. `data-collapse` is what the measurement writes;
- * each step subsumes the ones before it.
+/* ── Collapsing the action cluster ───────────────────────────────────
+ * Right-most folds first, so items return in the same order. The container
+ * query gives a collapsed first paint with no JS; #reflow() may then collapse
+ * FURTHER via `data-collapse`, as these breakpoints are guesses. Each step
+ * subsumes the ones before it.
  */
-/* Step 1 — the view group (★ Save ▾) goes first: it is the widest run and the
-   least used mid-filtering. */
+/* Step 1 — the view group: widest, least used mid-filtering. */
 @container qf-bar (max-width: 900px) {
   .view-group { display: none; }
 }
@@ -161,9 +111,7 @@
   display: none;
 }
 
-/* Step 3 — everything but Add and the ⋮ itself. Add stays because putting a
-   filter ON the bar is the one action a collapsed bar still needs; the ⋮ stays
-   because it is where all of this went. */
+/* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
   .act:not([data-act="add"]):not([data-act="overflow"]) { display: none; }
@@ -173,8 +121,7 @@
   display: none;
 }
 
-/* The ⋮ is pointless with nothing in it, so it appears only once something has
-   folded — either by the container query or by the measured flag. */
+/* The ⋮ appears only once something has folded. */
 .act[data-act="overflow"] { display: none; }
 @container qf-bar (max-width: 900px) {
   .act[data-act="overflow"] { display: inline-flex; }
@@ -182,8 +129,7 @@
 :host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
-/* The 1x16 divider inside the cluster, before the refresh/overflow tail.
-   Same rectangle as the view and organise zone dividers. */
+/* 1x16 divider before the refresh/overflow tail. */
 .act-divider {
   flex: 0 0 auto;
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
@@ -192,12 +138,8 @@
 }
 
 /* ── The view-scope group ────────────────────────────────────────────
- * Figma's "Frame 1": ★ · Save · ▾ at `structure-space/snapped` — they sit FLUSH
- * so the three read as one control. It is a margin on the followers rather than
- * a `gap` because the token is free to go negative later and CSS `gap` cannot;
- * this is the same idiom the snapped control pairs elsewhere use.
- *
- * Only the `view` type has it. Figma's Type=data cluster ends at the divider. */
+ * ★ · Save · ▾ sit flush as one control. A margin, not `gap`, because the
+ * snapped token may go negative and `gap` cannot. Only the `view` type has it. */
 .view-group { display: none; }
 :host([data-type="view"]) .view-group {
   display: inline-flex;
@@ -208,42 +150,14 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* The snapped corners, set HERE rather than left to `data-snap`.
-   `[data-snap]` is a plain selector in tokens.css, which is loaded into the
-   DOCUMENT and deliberately NOT in SherpaElement.sharedStyles — so it reaches a
-   button in the light DOM but never one inside this shadow root. The attribute
-   is kept on the buttons (it is the honest description of what they are, and it
-   works if one is ever re-hosted), and the same four corner variables are
-   written directly so the group actually joins.
+/* Corner squaring is `.sherpa-snap-group` (core/sherpa-base.css), which
+   `.view-group` carries: a bare `[data-snap]` rule in tokens.css is a document
+   rule and never reaches inside this shadow root. */
 
-   The values mirror the [data-snap] block exactly: an edge named is an edge
-   SQUARED. First child keeps its leading corners, last child its trailing ones,
-   and anything between is square all round. Written by position rather than by
-   `[data-snap="…"]` so the rule survives a re-order of the group. */
-/* The snapped-group corner rules used to be written out here. They are now
-   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
-   in three components under three wrapper names. `.view-group` carries the class. */
-
-/* The lit star takes the ACTIVE Style mode, set as data-status on the button
-   itself (see #toggleFavourite) — not a colour written here.
-
-   It used to set `color` on the sherpa-button HOST, which does nothing: the
-   button paints from its own --_content variable inside its shadow root, so the
-   host's colour never reached the trigger and a favourited star looked
-   identical to an unfavourited one. The glyph swap (outline → solid) was
-   carrying the whole state on its own.
-
-   The mode's three tokens are written out HERE rather than left to the
-   [data-status="active"] block in tokens.css. That block is a bare selector in
-   a DOCUMENT stylesheet — it is not in SherpaElement.sharedStyles — so it
-   matches a light-DOM element (verified: --_status-surface resolves to #f2dfff
-   there) and never one inside another component's shadow root. Setting the
-   attribute alone left the star completely unpainted.
-
-   Feeding the --_status-* properties is what makes the BUTTON pick it up: those
-   are custom properties, and custom properties DO inherit across a shadow
-   boundary. The button's own --_surface / --_border / --_content already read
-   them first. */
+/* The lit star. These are written here because tokens.css's
+   [data-status="active"] is a document rule that never matches in a shadow
+   root; feeding --_status-* works because custom properties inherit across the
+   boundary. Setting `color` on the button host does nothing. */
 :host([data-favourite]) [data-act="favourite"] {
   --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
   --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
@@ -251,15 +165,11 @@
 }
 
 /* ── Menu row groups ─────────────────────────────────────────────────
- * The rows live in the CHIP's light DOM and are slotted into the menu, so they
- * sit in neither component's shadow tree — which is exactly why a plain
- * descendant selector from here reaches them and `::slotted()` from the menu
- * cannot reach their children.
+ * These rows sit in the CHIP's light DOM, slotted into the menu — which is why
+ * a plain descendant selector from here reaches them at all.
  */
 
-/* The rule between the values the current filters can reach and the ones they
-   cannot. `border-block-start` rather than the <hr>'s own UA border, which is a
-   3D groove nothing else in the system uses. */
+/* `border-block-start`, not the <hr>'s UA border, which is a 3D groove. */
 .chip .qf-divider {
   margin: var(--sherpa-display-mode-space-2xs, 4px) 0;
   border: 0;
@@ -267,24 +177,17 @@
     var(--sherpa-style-border-base, #b3b3c3);
 }
 
-/* A value no current row carries. DIMMED, not disabled: ticking it is still how
-   a user broadens a filter back out, so it stays selectable and keeps its
-   pointer — only the ink says it would change nothing right now.
-
-   The INK, not opacity: opacity compounds in dark mode, and the inactive content
-   token is how the system says "reachable but not active" everywhere else. */
+/* A value no current row carries. Dimmed, not disabled — ticking it is how a
+   user broadens the filter back out. Ink, not opacity (which compounds in dark). */
 .chip label[data-unavailable] .qf-row-label {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
 
-/* ── The RANGE switch, and a number filter's two shapes ──────────────
- * Both live in the CHIP's light DOM and are slotted into the menu, so a plain
- * descendant selector from here reaches them.
+/* ── The range switch, and a number filter's two shapes ──────────────
+ * Also slotted from the chip's light DOM.
  */
 
-/* The switch row reads as part of the list — the control LEADS and the label
-   follows, exactly where a value row puts its checkbox and its text, so every
-   control in the menu shares one left edge. */
+/* Control leads, label follows, so every menu control shares one left edge. */
 .chip .qf-range-row {
   display: flex;
   align-items: center;
@@ -303,16 +206,12 @@
     var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* ONE of the two shapes shows. Both are in the DOM from the start, so flipping
-   the switch is an attribute write rather than a rebuild — and whatever the user
-   typed on the other side is still there when they flip back. */
+/* Both shapes stay in the DOM, so what was typed on the other side survives. */
 .chip .qf-number-range { display: none; }
 .chip sherpa-menu[data-range] .qf-number-one { display: none; }
 .chip sherpa-menu[data-range] .qf-number-range { display: flex; }
 
-/* The single field. A bare number input: it sits in the chip's light DOM where
-   neither component's sheet reaches it, so a composed sherpa-input-text would
-   carry a shadow tree for a box this file could not style anyway. */
+/* Bare input, not sherpa-input-text: light DOM no component sheet reaches. */
 .chip .qf-number-one {
   inline-size: 100%;
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
@@ -323,7 +222,7 @@
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  /* Numeric values are mono and right-aligned, per the system's convention. */
+  /* Numeric values are mono and right-aligned, per convention. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
@@ -336,73 +235,43 @@
 }
 
 /* ── The overflow chip ───────────────────────────────────────────────
- * Hidden until #reflow() has folded something into it, and pinned OUT of the
- * chip run's clipping: it sits beside `.chips` as the bar's own child, so a run
- * that is overflowing cannot cut off the very control that says so.
+ * A sibling of `.chips`, so the run's clipping cannot cut off the control that
+ * reports the overflow. NOT `.chip` — that class means "a filter the host put
+ * on the bar", and counting this would report one filter too many.
  */
-/* NOT `.chip`. It is a control ABOUT the run, not a member of it, and every
-   `.chip` selector in this file and in the specs means "a filter the host put
-   on the bar" — counting it would report one filter too many everywhere.
-
-   ACTIVE. `data-current` is the chip's own active state, so the More chip wears
-   the same treatment a chip with values picked does — it stands for filters the
-   bar could not show, and should read as "something is in here" rather than as
-   one more empty dropdown.
-
-   `data-persistent` with it, because clicking its body must not toggle it off:
-   it is not a filter you can turn off, it is where the others went. */
 .overflow-chip {
   display: none;
   flex: 0 0 auto;
 }
 :host([data-folded]) .overflow-chip { display: inline-flex; }
 
-/* A chip that has folded into the overflow.
-   NOT `display: none` on the chip itself. Its MENU is still live — the overflow
-   chip's rows open it as a submenu — and a menu inside a `display: none` host
-   has no layout at all: it measured 0x0 and placed itself at the viewport
-   corner. So the chip is taken out of flow and parked off-screen instead, where
-   its menu keeps a real box.
-
-   `position: absolute` removes it from the run, so the very next measurement
-   sees the width without it, which is the whole point of folding. */
+/* A folded chip. NOT `display: none`: its menu is still live as a submenu, and
+   a menu in a display:none host measures 0x0 and lands in the viewport corner.
+   `position: absolute` also takes it out of the run, so the next measure sees
+   the width without it. */
 .chips > .chip[data-folded-away] {
   position: absolute;
-  /* Far enough to be off any screen. Not a spacing value — it is the "park it
-     out of sight" idiom, which is why it is not on the grid. */
+  /* The park-it-off-screen idiom, not a spacing value. */
   inset-inline-start: -9999px; /* off-grid-ok */
   inset-block-start: 0;
-  /* Out of the tab order too — a chip nobody can see should not be reachable by
-     keyboard on the bar. Its values stay reachable through the overflow menu. */
+  /* Out of the tab order; its values stay reachable via the overflow menu. */
   visibility: hidden;
   pointer-events: none;
 }
 
-/* …but the MENU it holds is not hidden with it. `visibility` inherits, so the
-   submenu would have been invisible while perfectly placed. */
+/* …but not its MENU: `visibility` inherits, so the submenu would be invisible
+   while perfectly placed. */
 .chips > .chip[data-folded-away] sherpa-menu {
   visibility: visible;
   pointer-events: auto;
 }
 
-/* ── The overflow chip's menu rows ───────────────────────────────────
- * A composed <sherpa-list-item> with a <sherpa-tag> badge, so the row's box,
- * hover and keyboard activation are the component's and there is almost nothing
- * to style here. They live in the chip's LIGHT DOM and are slotted into the
- * menu, so a plain descendant selector from here reaches them.
- */
+/* ── The overflow chip's menu rows ─────────────────────────────────── */
 :is(.chip, .overflow-chip) .qf-folded { display: block; }
 
-/* Hidden at zero — `nothing applied` is the absence of a badge everywhere else
-   in the bar, and `hidden` on a custom element needs saying because the host is
-   not display:none by default. */
-/* A folded row's badge appears only when it holds something — the same rule the
-   chip's own badge follows (`:host([data-count]) .count`), said the same way.
-   The flag sits on the ROW because a badge inside a menu is not a host. */
+/* The flag sits on the ROW because a badge inside a menu is not a host. */
 :is(.chip, .overflow-chip) .qf-folded-count { display: none; }
 :is(.chip, .overflow-chip) .qf-folded[data-count] .qf-folded-count { display: block; }
 
-/* The drill affordance is a composed transparent icon button — it owns its own
-   size and ink, so there is nothing to style here. It is decorative (the ROW is
-   the click target), so it must not swallow the click that drills. */
+/* Decorative: the ROW is the click target, so it must not swallow the click. */
 :is(.chip, .overflow-chip) .qf-folded-caret { pointer-events: none; }

@@ -1,14 +1,9 @@
 /**
  * sherpa-barchart.css — vertical bars for categorical comparison.
- *
- * Each bar's height is --_h (a 0–100% of the plot, set by JS from value/max); CSS
- * owns the rendering. Bars grow from the baseline, coloured per --_hue
- * (categorical). Hover/focus lift; the x-axis label sits beneath each bar.
+ * JS writes each bar's height as --_h; CSS owns the rest.
  */
 
-/* Typed JS→CSS bridge: TS writes each bar's height as --_h (percentage) on the .bar
- * itself and CSS reads it there — inherits:false so a bar's height never leaks to
- * children. Typing lets the bar grow animate; non-Chromium uses the var() fallback. */
+/* Typed so the bar grow animates; non-Chromium falls back to the var(). */
 @property --_h {
   syntax: "<percentage>";
   inherits: false;
@@ -16,75 +11,42 @@
 }
 
 :host {
-  /* `flex`, not `inline-flex`. An inline box sizes to its content and cannot
-     shrink, so adding the fixed-width y-axis column pushed the plot past the
-     panel's edge instead of narrowing it. */
+  /* `flex`, not `inline-flex`: an inline box cannot shrink, so the y-axis column
+     pushed the plot past the panel edge. */
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* The plot's MINIMUM height, not its fixed one. A chart in a sized cell should
-     fill it — the plot row grows and the axis row keeps its natural height (see
-     .chart-body). Left as a fixed track, a chart in a 290px cell drew 180px of
-     bars and left 110px of white under them. */
+  /* The plot's MINIMUM height, not its fixed one — see .chart-body. */
   --_plot-height: 180px;
-  /* Fill a sized parent; a chart in an unsized one keeps its natural height. */
+  /* Fill a sized parent; keep natural height in an unsized one. */
   min-block-size: 0;
 }
 
-/* Figure semantics without a layout box: its children (caption + plot + legend)
- * stay direct flex items of the host, so the column layout is unchanged. */
+/* Figure semantics without a layout box — children stay flex items of the host. */
 .chart-figure {
   display: contents;
   margin: 0;
 }
 
-/* ── The legend ──────────────────────────────────────────────────────────
-   The chart owns the split with its own legend, exactly as sherpa-donut-chart
-   does. The card around it used to: every panel wrapped the chart and the legend
-   in a `.chart-area` div and wrote the ratio there, which meant the page had to
-   know which orientation a legend was and the pair could never move between
-   cards without its rules.
-
-   The ORIENTATION decides the axis, because the two constrain different things.
-   A legend BELOW runs the full width and needs only height; one BESIDE has to
-   fit its longest label into its own column, so it gets a share of the width.
-
-     horizontal (default) → the host's flex COLUMN, legend under the plot
-     vertical             → a 70/30 GRID, legend beside the plot
-
-   `minmax(0, Nfr)`, not a bare `fr`: a bare fr floors at the item's min-content
-   width, so a long label would push its track past its share and break the
-   ratio. At the floor of 0 it truncates instead, and the plot keeps its 70%. */
+/* ── The legend ────────────────────────────────────────────────────────── */
+/* `minmax(0, Nfr)`, not a bare `fr`: a bare fr floors at min-content, so a long
+   label would break the ratio instead of truncating. */
 ::slotted([slot="legend"]) {
-  /* The plot takes the spare height (.chart-body is `flex: 1 1 auto`); the legend
-     keeps its natural size in both orientations. */
   flex: 0 0 auto;
   min-inline-size: 0;
 }
 
-/* Legend BESIDE — two columns. The host stops being a column and becomes the
-   grid, so the title still spans the full width above both. */
-/* The chart reads the SPLIT from its own `data-legend`, not from the legend's
-   `data-orientation`. CSS cannot see it there: `:host(:has(…))` does not PARSE
-   (`:has()` is not a valid argument to `:host()`, and the rule is dropped
-   silently) and the chained `:host:has(…)` parses but matches every host,
-   ignoring the `:has()` — the same shadow-DOM trap the chained `:host:not()`
-   form has. So the split is declared on the chart:
-
-     (absent, or "horizontal") → the host's flex COLUMN, legend under the plot
-     "vertical"                → a 70/30 GRID, legend beside the plot
-
-   The legend still carries its own data-orientation for its own layout; this
-   attribute says what the CHART does about it. */
+/* The chart reads the split from its OWN `data-legend`, not the legend's
+   `data-orientation`: `:host(:has(…))` does not parse and is dropped silently,
+   and chained `:host:has(…)` matches every host. */
 :host([data-legend="vertical"]) {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
   grid-template-rows: auto minmax(0, 1fr);
   align-items: center;
 }
-/* `display: contents` on .chart-figure means the title, body and legend are the
-   grid's real items, so they are placed directly. */
+/* `display: contents` on .chart-figure makes these the grid's real items. */
 :host([data-legend="vertical"]) .chart-header {
   grid-column: 1 / -1;
   grid-row: 1;
@@ -114,9 +76,7 @@
 .bars {
   display: flex;
   align-items: stretch;
-  /* xs 8, not sm 12. The y-axis takes a fixed 48 + 8 padding now, and at a 12px
-     gap across eight bars every category label truncated to "Di…" / "C…". The
-     x-axis row mirrors this gap exactly — change one, change both. */
+  /* MUST match .x-axis-row's gap — the two rows mirror each other. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   block-size: 100%;
 }
@@ -134,24 +94,16 @@
   cursor: pointer;
 }
 
-/* The category-label row. It mirrors `.bars` EXACTLY — same flex, same gap, same
-   `flex: 1 1 0` children — so label N sits under bar N without either row knowing
-   about the other. (A `subgrid` would be neater, but the bars are a flex row: they
-   need `align-items: stretch` against the plot height, which grid tracks would
-   fight.) The labels being a SIBLING of the plot is the point: they are below the
-   baseline rule, and a long label can no longer steal height from the bars. */
+/* The category-label row mirrors `.bars` exactly — same flex, same gap, same
+   `flex: 1 1 0` — so label N sits under bar N. */
 .x-axis-row {
   display: flex;
-  /* MUST match `.bars` gap — the two rows mirror each other's flex so label N
-     lands under bar N. */
+  /* MUST match `.bars` gap. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* The bar area fills the column above the label; the bar grows from its bottom.
-   Figma Data Field: every mark is a TRANSLUCENT fill with a SOLID 1px stroke in the
-   same series hue — that is what lets overlapping marks stay readable and keeps a
-   thin bar visible when its fill is only a few pixels wide. */
+/* Figma Data Field: translucent fill, solid 1px stroke in the same series hue. */
 .bar {
   align-self: center;
   inline-size: 100%;
@@ -160,22 +112,18 @@
   block-size: var(--_h, 0%);
   min-block-size: 2px;
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px) var(--sherpa-display-mode-border-rounding-sm, 2px) 0 0;
-  /* The border is the series' OWN token — colour 5 of its sequence at full
-     strength — NOT the fill. A mark's fill moves along its ramp; its outline is
-     the series' identity and stays put, which is what keeps a translucent mark
-     legible on any surface. Using --_hue here also inherited the fill's 50%. */
+  /* The border is the series' OWN token at full strength, not the fill —
+     --_hue here inherits the fill's 50% and the outline vanishes. */
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-  /* Solid hue where color-mix is unavailable, so the bar never disappears. */
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
   transition: filter 100ms ease, block-size 300ms ease;
 }
 @supports (color: color-mix(in srgb, red, transparent)) {
   .bar {
-    /* NO extra tint. The series token ALREADY carries its opacity — `series/N` is
-       COMPOSE_COLOR(ramp step, effects/opacity/500) in Figma, so it arrives at
-       50%. A component-side 60% on top of that multiplied down to 30%. */
+    /* NO extra tint: the series token already arrives at 50% (COMPOSE_COLOR in
+       Figma), so a component-side 60% multiplies down to 30%. */
     background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   }
 }
@@ -196,18 +144,12 @@
   flex: 1 1 0;
   min-inline-size: 0;
   text-align: center;
-  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
-     the digits jittering between gridlines as a value changes. Figma's Chart Axis
-     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
-     nodes; it bound content/font/body until this pass and was re-pointed there
-     first, so the two sides agree. */
+  /* MONOSPACED — tabular figures stop digits jittering as values change. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-font-size-body-small, 12px);
-  /* STATED, not `normal`. An unset line-height is resolved by the FONT, and
-     JetBrains Mono resolves it taller than Inter — so switching to mono shrank
-     the label's own box inside the row and the descenders sat on the chart's
-     bottom edge. Figma binds content/line-height/small 16 here. */
+  /* STATED, not `normal`: an unset line-height is resolved by the FONT, and
+     JetBrains Mono resolves taller than Inter, dropping descenders off the edge. */
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
   white-space: nowrap;
@@ -217,44 +159,25 @@
 }
 
 /* ── Axes ────────────────────────────────────────────────────────────────
-   Figma composes a chart as ONE GRID (documented on its Chart 2D page: "a Chart
-   Axis (value axis) + a row of Data Fields + a Chart Legend"), and the axis and
-   the gridlines are the SAME equal divisions of one height.
+   ONE SOURCE OF TRUTH: every tick label is placed at the SAME percentage its
+   gridline is drawn at, on a box the exact height of the plot. Stacking the
+   labels in flex cannot work — `space-between` places N+1 boundaries against
+   N−1 interior gridlines.
 
-   ONE SOURCE OF TRUTH for that: every tick label is positioned at the SAME
-   percentage its gridline is drawn at, by the same formula, on the same box.
-   The label is absolutely placed at `bottom: <pct>%` inside a box the exact
-   height of the plot, and translated up by half its own line so its centre — not
-   its top — sits on the line.
-
-   My earlier attempts stacked the labels in flex and hoped the two heights would
-   agree. `space-between` places N+1 BOUNDARIES against the plot's N−1 interior
-   gridlines, so they could never line up; and a flex sibling's height had to be
-   kept in step with the plot's by hand. Positioning both off one percentage
-   removes the chance of disagreement entirely. */
-/* THE CHART GRID — Figma's own structure, and the reason the axis lines up.
-   Column 1 the rotated caption, column 2 the value labels, column 3 the plot.
-   Row 1 is the drawing area; row 2 holds the category labels, which start at the
-   PLOT column so they cannot shorten the y-axis.
-
-   The y-axis and the plot are cells of the SAME ROW, so CSS makes them the same
-   height — there is nothing to keep in step by hand. */
+   THE CHART GRID: column 1 rotated caption, column 2 value labels, column 3
+   plot; row 1 the drawing area, row 2 the category labels. The y-axis and the
+   plot are cells of the SAME ROW, so CSS keeps them the same height. */
 .chart-body {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
-  /* The plot row GROWS to fill a sized host and floors at --_plot-height; the
-     x-axis row keeps its natural height. `minmax(min, 1fr)` rather than a fixed
-     track, so a chart in a 290px cell draws 290px of plot instead of 180px of
-     plot and 110px of white. In an UNSIZED host there is nothing to fill, so
-     1fr resolves to the minimum and the chart keeps its natural 180px. */
+  /* `minmax(min, 1fr)`, not a fixed track: the plot row grows to fill a sized
+     host and floors at --_plot-height; in an unsized host 1fr resolves to that
+     minimum. */
   grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
-  /* The body is the part that takes the host's spare height. */
   flex: 1 1 auto;
   min-block-size: 0;
-  /* NO column gap. The axis LINE is the y-axis box's trailing border, so it marks
-     the plot's own left edge — a gap there floated the line away from the data it
-     bounds. The breathing room belongs on the other side of that line, between
-     the labels and the rule, which is .y-axis's padding-inline-end. */
+  /* NO column gap: the axis LINE is the y-axis box's trailing border, so a gap
+     floats it away from the plot. Breathing room lives in .y-axis's padding. */
   column-gap: 0;
   min-inline-size: 0;
 }
@@ -265,24 +188,10 @@
 .plot { grid-area: 1 / 3; }
 .x-axis-row { grid-area: 2 / 3; }
 
-/* Gridlines — Figma's Data Field draws one per value division, behind the bars.
-   Positioned with the SAME tickPercent the axis labels use, so a line and its
-   label cannot drift. Drawn as a repeating gradient rather than N elements: the
-   division count is the only variable, and a gradient cannot fall out of step
-   with itself.
-
-   A `to top` repeating gradient puts a line at the START of every band — 0%,
-   25%, 50%, 75% for four bands — and NOTHING at 100%, so the topmost axis value
-   was the one label on the axis with no line beside it. The gradient keeps
-   drawing all the interior lines; the top line is added as the box's own
-   block-start border, which lands exactly on 100%.
-
-   Resizing the gradient to make room was the wrong instinct — shrinking the box
-   shrinks the BAND too, so every interior line moved and the set no longer
-   matched the labels. The repeat has to keep the plot's full height; the last
-   line is a different KIND of thing (a boundary, not a repeat) and is drawn as
-   one. `box-sizing: content-box` keeps the border OUTSIDE the painted area, so
-   it cannot eat a half-pixel out of the gradient's height either. */
+/* Gridlines — one gradient rather than N elements, so lines cannot fall out of
+   step. A `to top` repeat draws at the START of every band and nothing at 100%,
+   so the top line is the box's own border. Do NOT shrink the box to make room:
+   that shrinks the band and moves every interior line. */
 .gridlines {
   position: absolute;
   inset: 0;
@@ -297,6 +206,8 @@
   /* The final line, at exactly 100% — the one the repeat cannot reach. */
   border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
+  /* Keeps the border OUTSIDE the painted area, so it cannot eat into the
+     gradient's height. */
   box-sizing: content-box;
 }
 :host(:not([data-has-y-axis])) .gridlines { display: none; }
@@ -305,59 +216,41 @@
   display: none;
   position: relative;
   flex: 0 0 auto;
-  /* EXACTLY the plot's height — the labels are placed as a percentage of it.
-     Taken from the GRID ROW (100%), not from --_plot-height: that var is the
-     row's MINIMUM now, so in a sized cell the plot grows past it and a hard
-     180px axis left its labels stranded above a 260px run of bars. The row
-     sizes both, so they cannot drift. */
+  /* From the GRID ROW, not --_plot-height: that var is only the row's minimum,
+     so a hard 180px axis strands its labels above a taller run of bars. */
   block-size: 100%;
-  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing to
-     this box — the `auto` grid track collapsed to 0 and every number hung outside
-     the chart's left edge. Sizing it from the data instead (the longest label's
-     length) fixed the overflow but made the axis WIGGLE: the plot got wider or
-     narrower whenever a value crossed a digit boundary. One fixed width, and a
-     label too long for it truncates. HALVED from 4xl 48 to lg 24 — 48 ate too
-     much of the plot and pushed every bar label into an ellipsis. */
+  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing
+     and the `auto` track collapses to 0; sizing from the longest label instead
+     makes the plot wiggle as values cross a digit boundary. */
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
-  /* Room between the LABELS and the axis rule (Figma's 8-wide Marker). `sm` 12,
-     not `xs` 8: at 8 the numbers still crowded the line. This is the gap that
-     matters — the one on the far side of the rule was removed, because it pushed
-     the line away from the plot it bounds. */
+  /* Gap between the LABELS and the rule — the far side has none by design. */
   padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
   box-sizing: content-box;
   border-inline-end: var(--sherpa-border-right, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
-  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
-     the digits jittering between gridlines as a value changes. Figma's Chart Axis
-     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
-     nodes; it bound content/font/body until this pass and was re-pointed there
-     first, so the two sides agree. */
+  /* MONOSPACED — tabular figures stop digits jittering as values change. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
-  /* Axis text: SMALL 12/16, the same size the horizontal axis labels use — the
-     two axes are one scale, and 14 against 12 read as a mistake. */
+  /* Same size as the x-axis labels — the two axes are one scale. */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-/* Written by the JS once it has stamped values — an absent data-ticks means
-   "default 4" and data-ticks="0" means none, which no selector can tell apart. */
+/* Written by JS: an absent data-ticks means "default 4" and data-ticks="0"
+   means none, which no selector can tell apart. */
 :host([data-has-y-axis]) .y-axis { display: block; }
 
-/* Each label sits at its own --_at percentage, centred on that line.
-   Stretched across the axis box (start AND end pinned) and right-aligned, so a
-   short label like "0" still ends flush against the axis rule and a long one
-   cannot escape the reserved width. */
+/* Each label sits at its own --_at percentage, centred on that line. Pinned at
+   both ends and right-aligned so "0" still ends flush against the rule. */
 .y-tick {
   position: absolute;
   inset-inline: 0 0;
   inset-block-end: var(--_at, 0%);
   translate: 0 50%;
   text-align: end;
-  /* Truncate rather than widen: the axis width is fixed so the plot cannot move
-     as the values change. An ellipsis is the honest signal that a number is too
-     long for the axis. */
+  /* Truncate rather than widen — the axis width is fixed so the plot cannot
+     move as values change. */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -367,7 +260,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The caption, rotated to run up the axis (Figma's vertical Axis label). */
+/* The caption, rotated to run up the axis. */
 .axis-label {
   display: none;
   align-self: center;

@@ -1,8 +1,8 @@
 /**
- * store.ts — where records come from.
+ * store.ts — where records come from: the row shape, the filter grammar, and
+ * the in-memory pipeline every store shares.
  *
- * TRAP T-store-is-stateless — the Store/DataSource split, and why `change`
- * means "reload".
+ * TRAP T-store-is-stateless
  */
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
@@ -17,22 +17,14 @@ export interface SortSpec {
   direction?: SortDirection;
 }
 
-/**
- * A filter, in the one shape the whole layer speaks.
- *
- * TRAP T-filter-is-data-not-a-predicate — and why `OP_LABELS` sits beside it.
- */
+/** A filter, in the one shape the whole layer speaks. TRAP T-filter-is-data-not-a-predicate */
 export type FilterOp =
   | 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'
   | 'contains' | 'notcontains' | 'startswith' | 'endswith'
   | 'in' | 'notin'
   | 'between';
 
-/**
- * How each operator READS to a person.
- *
- * TRAP T-filter-is-data-not-a-predicate — a second copy is a second vocabulary.
- */
+/** How each operator READS to a person. A second copy is a second vocabulary. */
 export const OP_LABELS: Record<FilterOp, string> = {
   eq: 'Equals',
   ne: 'Does not equal',
@@ -49,15 +41,11 @@ export const OP_LABELS: Record<FilterOp, string> = {
   between: 'Between',
 };
 
-/**
- * The operators each COLUMN TYPE can sensibly answer.
- *
- * TRAP T-ops-follow-the-column-type — and why `between` is in neither list.
- */
+/** The operators each COLUMN TYPE can answer. TRAP T-ops-follow-the-column-type */
 export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
   text: ['contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne'],
   number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
-  // A date is answered by clicking a calendar, so it offers no operator list.
+  // A date is answered by clicking a calendar — no operator list.
   date: [],
 };
 
@@ -84,20 +72,15 @@ export interface LoadResult {
   rows: Row[];
   /** Matching rows before skip/take — what a pager needs to count pages. */
   total: number;
-  /**
-   * Rows the store's schema REFUSED, and so did not hand over.
-   *
-   * TRAP T-dropped-rows-must-be-countable — a silent drop is worse.
-   */
+  /** Rows the schema REFUSED. TRAP T-dropped-rows-must-be-countable */
   dropped?: number;
   /** Why the dropped rows were refused — the FIRST FEW only. */
   issues?: ReadonlyArray<{ readonly message: string; readonly path?: ReadonlyArray<PropertyKey> }>;
 }
 
 /**
- * The store interface. Identical whatever backs it, so a view can be moved from
- * an in-memory array to an HTTP endpoint without touching the components.
- * TRAP T-store-is-stateless
+ * The store interface — identical whatever backs it, so a view moves from an
+ * array to an HTTP endpoint untouched. TRAP T-store-is-stateless
  */
 export interface Store extends EventTarget {
   load(options?: LoadOptions): Promise<LoadResult>;
@@ -110,12 +93,7 @@ export interface Store extends EventTarget {
   readonly key: string;
 }
 
-/**
- * Fired when a store's records change — after an insert, update or remove.
- *
- * TRAP T-store-is-stateless — `detail` names what happened, but a DataSource
- * simply RELOADS.
- */
+/** Fired after an insert, update or remove. A DataSource just RELOADS. */
 export interface StoreChangeDetail {
   type: 'insert' | 'update' | 'remove';
   key?: unknown;
@@ -124,12 +102,7 @@ export interface StoreChangeDetail {
 
 /* ── Value access ──────────────────────────────────────────────────────── */
 
-/**
- * Read a field from a row, following dots into nested objects.
- *
- * `'customer.name'` reaches into a nested record, as an agent or API payload
- * routinely has. No dot is a plain lookup, so the common case costs one read.
- */
+/** Read a field, following dots (`'customer.name'`) into nested objects. */
 export function readField(row: Row, field: string): unknown {
   if (!field.includes('.')) return row[field];
   let cur: unknown = row;
@@ -142,19 +115,10 @@ export function readField(row: Row, field: string): unknown {
 
 /* ── Comparison ────────────────────────────────────────────────────────── */
 
-/**
- * ONE comparator for the whole library.
- *
- * TRAP T-one-collator-for-the-library — three compares disagreed; nulls last.
- */
+/** ONE comparator for the whole library. TRAP T-one-collator-for-the-library */
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
-/**
- * Compare two field values. Nulls sort LAST in either direction — "no value" is
- * not a small value, and flipping the sort should not march the blanks to the top.
- *
- * TRAP T-one-collator-for-the-library — one shared collator, nulls last.
- */
+/** Compare two field values. Nulls sort LAST in EITHER direction. */
 export function compareValues(a: unknown, b: unknown): number {
   if (a == null && b == null) return 0;
   if (a == null) return 1;
@@ -165,17 +129,13 @@ export function compareValues(a: unknown, b: unknown): number {
   return collator.compare(String(a), String(b));
 }
 
-/**
- * Sort rows by a list of specs, first spec wins and later ones break ties.
- *
- * TRAP T-one-collator-for-the-library — `toSorted`, never `sort`.
- */
+/** Sort by specs, first wins and later ones break ties. `toSorted`, never `sort`. */
 export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[] {
   if (!specs.length) return [...rows];
   return rows.toSorted((a, b) => {
     for (const spec of specs) {
       const dir = spec.direction === 'desc' ? -1 : 1;
-      // TRAP T-one-collator-for-the-library — the direction must NOT flip nulls.
+      // The direction must NOT flip nulls — so they are compared before `dir`.
       const av = readField(a, spec.field);
       const bv = readField(b, spec.field);
       if (av == null || bv == null) {
@@ -192,11 +152,7 @@ export function sortRows(rows: readonly Row[], specs: readonly SortSpec[]): Row[
 
 /* ── Filtering ─────────────────────────────────────────────────────────── */
 
-/**
- * Every FIELD one filter touches, in the order it first appears.
- *
- * TRAP T-filter-fields-flattens-the-tree — a grid needs a flat column list.
- */
+/** Every FIELD a filter touches, first-appearance order. TRAP T-filter-fields-flattens-the-tree */
 export function filterFields(filter: Filter | undefined): string[] {
   const out: string[] = [];
   const walk = (f: Filter | undefined): void => {
@@ -207,7 +163,7 @@ export function filterFields(filter: Filter | undefined): string[] {
       return;
     }
     const [field] = f as FilterClause;
-    // TRAP T-filter-fields-flattens-the-tree — a range is two clauses.
+    // A range is two clauses on one field — list it once.
     if (typeof field === 'string' && !out.includes(field)) out.push(field);
   };
   walk(filter);
@@ -250,7 +206,7 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
     case 'notin':
       return !Array.isArray(value) || !value.some((v) => looseEqual(actual, v));
     case 'between': {
-      // TRAP T-loose-equal-is-case-insensitive — backwards is still a range.
+      // A backwards pair is still a range — order the bounds, do not reject.
       if (!Array.isArray(value) || value.length !== 2 || actual == null) return false;
       const [lo, hi] = compareValues(value[0], value[1]) <= 0
         ? [value[0], value[1]]
@@ -260,11 +216,7 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
   }
 }
 
-/**
- * Compare for filtering, not for sorting.
- *
- * TRAP T-loose-equal-is-case-insensitive — `'pro' === 'Pro'` is false.
- */
+/** Compare for filtering, not sorting. TRAP T-loose-equal-is-case-insensitive */
 function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
@@ -282,12 +234,7 @@ export function filterRows(rows: readonly Row[], filter?: Filter): Row[] {
   return filter ? rows.filter((r) => matchesFilter(r, filter)) : [...rows];
 }
 
-/**
- * Rows matching a free-text search.
- *
- * Searches `fields` when given, else every value that stringifies — an agent or
- * API payload rarely announces which of its fields a human would search.
- */
+/** Rows matching a free-text search — `fields` when given, else every value. */
 export function searchRows(rows: readonly Row[], term: string, fields?: readonly string[]): Row[] {
   const needle = term.trim().toLowerCase();
   if (!needle) return [...rows];
@@ -305,11 +252,7 @@ export interface RowGroup {
   rows: Row[];
 }
 
-/**
- * Group rows by a field, preserving the order they arrive in.
- *
- * TRAP T-pipeline-order-and-no-grouping — grouped AFTER sorting.
- */
+/** Group by a field, keeping arrival order. Grouped AFTER sorting. */
 export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
   const grouped = Map.groupBy(rows, (row) => {
     const v = readField(row, field);
@@ -320,18 +263,14 @@ export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
 
 /* ── The pipeline ──────────────────────────────────────────────────────── */
 
-/**
- * Apply search → filter → sort, then page.
- *
- * TRAP T-pipeline-order-and-no-grouping — paging last; grouping is a SORT.
- */
+/** Apply search → filter → sort, then page. TRAP T-pipeline-order-and-no-grouping */
 export function applyOptions(rows: readonly Row[], options: LoadOptions = {}): LoadResult {
   let out: Row[] = [...rows];
 
   if (options.search) out = searchRows(out, options.search, options.searchFields);
   if (options.filter) out = filterRows(out, options.filter);
 
-  // The GROUP field sorts FIRST — see TRAP T-pipeline-order-and-no-grouping.
+  // Grouping is a SORT: the group field sorts FIRST.
   const specs: SortSpec[] = options.group
     ? [{ field: options.group, direction: 'asc' }, ...(options.sort ?? [])]
     : (options.sort ?? []);

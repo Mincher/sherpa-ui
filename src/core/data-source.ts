@@ -1,8 +1,8 @@
 /**
  * data-source.ts — one place that owns how records are being VIEWED.
  *
- * TRAP T-one-comparator-one-source — why view state lives here, not per control.
- * TRAP T-view-state-lives-in-one-object — the worked example.
+ * TRAP T-one-comparator-one-source
+ * TRAP T-view-state-lives-in-one-object
  */
 import { filterFields } from './store.js';
 import type { Populatable } from './apply-state.js';
@@ -17,19 +17,9 @@ export interface ViewState {
   page: number;
   pageSize: number | null;
   /**
-   * A sort the reader turned OFF but did not throw away.
-   *
-   * `sort` is the QUERY — empty while suspended, because the store must not
-   * order anything. This is the UI half: the column a control still shows, so
-   * one more click brings it back without a trip to a menu.
-   *
-   * It lives HERE and not in a component because the source owns every bound
-   * element's `data-*` (`T-attributes-are-the-state-channel`). A grid that kept
-   * its suspended column in `data-sort-field` had it wiped a microtask later by
-   * the very next push, which is what made the grid and the toolbar's Sort chip
-   * disagree about their shared third state.
-   *
-   * TRAP T-a-suspended-sort-is-one-owners-job.
+   * A sort turned OFF, not thrown away. `sort` is the QUERY, empty while
+   * suspended; this is the column a control still shows.
+   * TRAP T-a-suspended-sort-is-one-owners-job
    */
   sortSuspended?: SortSpec;
 }
@@ -46,52 +36,23 @@ export interface DataSourceOptions {
   group?: string | null;
   /** Fields a free-text search looks at. Omit to search every field. */
   searchFields?: string[];
-  /**
-   * Load as soon as the first component binds. Default true — a bound component
-   * with no rows is a blank panel nobody asked for.
-   */
+  /** Load as soon as the first component binds. Default true. */
   autoLoad?: boolean;
 }
 
 /** What a component may do with the source it is bound to. */
 export interface BindOptions {
-  /**
-   * Write into ONE NAMED PART of the component's payload, not all of it.
-   *
-   * TRAP T-into-merges-on-the-element — two sources, one component, one draft.
-   */
+  /** One NAMED PART of the payload, not all of it. TRAP T-into-merges-on-the-element */
   into?: string;
-  /**
-   * Unbind when this signal aborts — the PLATFORM'S OWN teardown token.
-   *
-   * TRAP T-signal-not-a-teardown-list — one abort, not a list someone forgets.
-   */
+  /** Unbind when this signal aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
-  /**
-   * Read the data but never steer it — the component's events are ignored.
-   *
-   * The dashboard case: a chart beside a steering grid should re-draw when the
-   * filter changes, but clicking a bar must not re-sort the grid.
-   */
+  /** Read the data, never steer it. A chart re-draws; clicking a bar re-sorts nothing. */
   readonly?: boolean;
-  /**
-   * STEER ONLY — the component's events reach the source, but no rows are ever
-   * pushed back to it.
-   *
-   * TRAP T-steer-only-populate-means-chips — its populate() takes chips.
-   */
+  /** STEER ONLY — events reach the source, no rows come back. TRAP T-steer-only-populate-means-chips */
   steerOnly?: boolean;
-  /**
-   * Events from this component the source must NOT act on.
-   *
-   * TRAP T-ignore-is-the-scalpel — a view that owns one event owns it outright.
-   */
+  /** Events the source must NOT act on. TRAP T-ignore-is-the-scalpel */
   ignore?: readonly string[];
-  /**
-   * Reshape the rows before they reach this component.
-   *
-   * TRAP T-adapter-lives-at-the-binding — 21 components, one shape each.
-   */
+  /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
 }
 
@@ -100,11 +61,7 @@ export interface DataChangeDetail extends LoadResult {
   state: ViewState;
 }
 
-/**
- * The events a bound component may send UP to the source.
- *
- * TRAP T-steering-events-are-a-closed-list — why `row-click` is not here.
- */
+/** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
 const STEERING_EVENTS = [
   'sort-change',
   'group-change',
@@ -113,9 +70,8 @@ const STEERING_EVENTS = [
   'page-change',
   'page-size-change',
   'search-change',
-  // A grouped view counting its own pages — see TRAP
-  // T-grouped-paging-belongs-to-the-view. A REPORT, not a request: it changes
-  // what the pager draws, never what the store is asked for.
+  // A REPORT, not a request: changes what the pager draws, never the query.
+  // TRAP T-grouped-paging-belongs-to-the-view
   'grid-pages-change',
 ] as const;
 
@@ -138,10 +94,8 @@ export class DataSource extends EventTarget {
   >();
   #result: LoadResult = { rows: [], total: 0 };
   /**
-   * The page count a GROUPED view reported, because folding decides it and only
-   * the view can count screen lines — see `totalPages`. `null` means nothing has
-   * reported yet, so the record division stands in until the first draw.
-   * TRAP T-grouped-paging-belongs-to-the-view.
+   * The page count a GROUPED view reported; `null` until the first draw.
+   * TRAP T-grouped-paging-belongs-to-the-view
    */
   #viewPages: number | null = null;
   #autoLoad: boolean;
@@ -156,11 +110,7 @@ export class DataSource extends EventTarget {
   #inFlightKey: string | null = null;
   /** A coalesced load is queued for the end of this tick — see `#schedule`. */
   #scheduled = false;
-  /**
-   * The named parts of the filter, in contribution order — see `contribute`.
-   *
-   * TRAP T-parts-order-must-be-stable — a Map, and why the order matters.
-   */
+  /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
 
   constructor(options: DataSourceOptions) {
@@ -176,8 +126,7 @@ export class DataSource extends EventTarget {
       pageSize: options.pageSize ?? null,
       ...(options.filter ? { filter: options.filter } : {}),
     };
-    // The store's rows changed — an insert, an update, a socket message. FORCED,
-    // because the ViewState is identical and the answer is not.
+    // FORCED: the rows changed under an identical ViewState.
     this.store.addEventListener('change', () => void this.load({ force: true }));
   }
 
@@ -188,12 +137,8 @@ export class DataSource extends EventTarget {
     return structuredClone(this.#state);
   }
 
-  /**
-   * Restore a whole view state at once — a saved view, a deep link, or what a
-   * reload threw away.
-   *
-   * TRAP T-set-state-merges-page-last — merge, page last, and no persistence.
-   */
+  /** Restore a whole view state — a saved view, a deep link, a reload.
+   *  TRAP T-set-state-merges-page-last */
   setState(next: Partial<ViewState>): void {
     if ('filter' in next) {
       this.#parts.clear();
@@ -201,8 +146,7 @@ export class DataSource extends EventTarget {
       else delete this.#state.filter;
     }
     if (next.sort) this.#state.sort = next.sort;
-    // The remembered column travels with the query — a saved view that was
-    // captured mid-suspend restores as it was left.
+    // A view captured mid-suspend restores as it was left.
     if ('sortSuspended' in next) {
       if (next.sortSuspended) this.#state.sortSuspended = next.sortSuspended;
       else delete this.#state.sortSuspended;
@@ -214,19 +158,13 @@ export class DataSource extends EventTarget {
     }
     if (next.search != null) this.#state.search = next.search;
     if ('pageSize' in next) this.#state.pageSize = next.pageSize ?? null;
-    // PAGE LAST, and not clamped here: the total it would be clamped against
-    // belongs to the PREVIOUS filter. The load below re-clamps against the new
-    // one, which is the only honest moment to do it.
+    // PAGE LAST, and not clamped here: the total belongs to the PREVIOUS filter.
+    // The load below re-clamps against the new one.
     if (next.page != null) this.#state.page = Math.max(1, Math.trunc(next.page) || 1);
     this.#schedule();
   }
 
-  /**
-   * The whole of the last load's answer — rows, total, and anything else the
-   * store reported.
-   *
-   * TRAP T-result-is-the-hosts-half — for a HOST, and a copy.
-   */
+  /** The whole of the last load's answer. TRAP T-result-is-the-hosts-half */
   get result(): LoadResult {
     return { ...this.#result };
   }
@@ -241,11 +179,9 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Pages at the current size, at least 1.
-   *
-   * While GROUPED this is what the grid reported, not a division: a shut group
-   * is one screen line, so the record count cannot produce the answer.
-   * TRAP T-grouped-paging-belongs-to-the-view.
+   * Pages at the current size, at least 1. GROUPED, it is what the grid
+   * reported — a shut group is one screen line.
+   * TRAP T-grouped-paging-belongs-to-the-view
    */
   get totalPages(): number {
     const size = this.#state.pageSize;
@@ -257,27 +193,18 @@ export class DataSource extends EventTarget {
   /* ── Steering ──────────────────────────────────────────────────────── */
 
   /**
-   * Set the sort. `null` clears it.
+   * Order by one field, or stop. Every re-ordering returns to page 1.
    *
-   * A page is a window onto an ORDER, so every narrowing or re-ordering change
-   * returns to page 1 — page 7 of a freshly filtered list is an empty panel.
-   */
-  /**
-   * Order by one field, or stop ordering.
-   *
-   * `field: null` SUSPENDS rather than forgets: the column that was sorting
-   * moves to `sortSuspended`, so a control can keep showing it and one more
-   * click resumes it. The QUERY loses its sort either way — that is what the
-   * store is asked. `clearSort()` is how a caller means "forget it".
-   * TRAP T-a-suspended-sort-is-one-owners-job.
+   * `field: null` SUSPENDS — the column moves to `sortSuspended`, so one more
+   * click resumes it. `clearSort()` is how a caller forgets.
+   * TRAP T-a-suspended-sort-is-one-owners-job
    */
   setSort(field: string | null, direction: SortDirection = 'asc'): void {
     if (field) {
       this.#state.sort = [{ field, direction }];
       delete this.#state.sortSuspended;
     } else {
-      // REMEMBER what was sorting, so a resume needs no menu. A second
-      // suspend in a row must not overwrite the memory with nothing.
+      // A second suspend in a row must not overwrite the memory with nothing.
       const live = this.#state.sort[0];
       if (live) this.#state.sortSuspended = live;
       this.#state.sort = [];
@@ -286,12 +213,7 @@ export class DataSource extends EventTarget {
     this.#schedule();
   }
 
-  /**
-   * Resume the suspended sort, in the direction it was left in.
-   *
-   * Does nothing when there is none — a caller can offer "resume" without
-   * first asking whether there is anything to resume.
-   */
+  /** Resume the suspended sort. No-op when there is none. */
   resumeSort(): void {
     const held = this.#state.sortSuspended;
     if (!held) return;
@@ -308,30 +230,20 @@ export class DataSource extends EventTarget {
 
   setGroup(field: string | null): void {
     this.#state.group = field;
-    // The old count was measured against the OLD grouping — a different field
-    // makes different groups, and none makes none. Drop it and wait for the
-    // next draw. TRAP T-grouped-paging-belongs-to-the-view.
+    // The old count was measured against the OLD grouping. Drop it and wait for
+    // the next draw. TRAP T-grouped-paging-belongs-to-the-view
     this.#viewPages = null;
     this.#resetPage();
     this.#schedule();
   }
 
-  /**
-   * Replace the WHOLE filter.
-   *
-   * TRAP T-contribute-beats-last-writer — and why this clears contributions.
-   */
+  /** Replace the WHOLE filter, clearing every contribution. TRAP T-contribute-beats-last-writer */
   setFilter(filter: Filter | undefined): void {
     this.#parts.clear();
     this.#setFilterValue(filter);
   }
 
-  /**
-   * Own ONE NAMED PART of the filter.
-   *
-   * TRAP T-contribute-beats-last-writer — every part is ANDed; `undefined`
-   * removes one.
-   */
+  /** Own ONE NAMED PART. Parts are ANDed; `undefined` removes one. TRAP T-contribute-beats-last-writer */
   contribute(key: string, filter: Filter | undefined): void {
     if (filter) this.#parts.set(key, filter);
     else this.#parts.delete(key);
@@ -362,13 +274,9 @@ export class DataSource extends EventTarget {
   setPage(page: number): void {
     // Clamped against the CURRENT total, so a pager cannot walk past the end.
     this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
-    /* GROUPED: the page is a VIEW concern, so no load is needed — and asking
-       for one is worse than useless. `#loadOptions` sends no skip/take while
-       grouped (T-grouped-paging-belongs-to-the-view), so page 1 and page 2
-       produce the IDENTICAL state key, the no-op guard skips the load, and the
-       publish that would have carried the new page never runs. The pager moved
-       and the grid never heard.
-       TRAP T-grouped-page-change-publishes-without-loading. */
+    /* GROUPED: publish, never load. Grouped loads send no skip/take, so every
+       page shares one state key and the no-op guard would eat the publish.
+       TRAP T-grouped-page-change-publishes-without-loading */
     if (this.#state.group) {
       this.#publish();
       return;
@@ -386,11 +294,7 @@ export class DataSource extends EventTarget {
     this.#state.page = 1;
   }
 
-  /**
-   * COALESCE the writes in one tick into a single load.
-   *
-   * TRAP T-coalesce-microtask-not-debounce — a microtask, and why not a timer.
-   */
+  /** COALESCE one tick's writes into a single load. TRAP T-coalesce-microtask-not-debounce */
   #schedule(): void {
     if (this.#scheduled) return;
     this.#scheduled = true;
@@ -413,11 +317,9 @@ export class DataSource extends EventTarget {
       options.search = search;
       if (this.#searchFields) options.searchFields = this.#searchFields;
     }
-    // TRAP T-grouped-paging-belongs-to-the-view — a GROUPED view is paged by
-    // SCREEN LINES, not by records: a shut group is one line however many rows
-    // it holds, and no store window can know which groups the reader has folded.
-    // So while grouped the source asks for EVERY matching row and the grid cuts
-    // the page. Ungrouped, the store's window IS the page, as before.
+    // GROUPED: ask for EVERY matching row and let the grid cut the page — no
+    // store window knows which groups the reader has folded.
+    // TRAP T-grouped-paging-belongs-to-the-view
     if (pageSize && !group) {
       options.skip = (page - 1) * pageSize;
       options.take = pageSize;
@@ -425,18 +327,12 @@ export class DataSource extends EventTarget {
     return options;
   }
 
-  /**
-   * Re-read from the store and push the result to every bound component.
-   *
-   * TRAP T-error-is-a-state-not-a-throw — a failed load keeps the last rows.
-   */
+  /** Re-read and push to every bound component. TRAP T-error-is-a-state-not-a-throw */
   async load(options: { force?: boolean } = {}): Promise<LoadResult> {
-    // SKIP A LOAD THAT WOULD ASK THE SAME QUESTION TWICE.
-    // TRAP T-no-op-load-guard — 667ms, 120 populates, six components, zero
-    // change on screen. `force` is how a load that MUST happen says so, and the
-    // store's `change` listener passes it.
-    // TRAP T-in-flight-ticket-discards-stale — why ANSWERED and ASKED are two
-    // separate checks.
+    // Skip a load that would ask the same question twice. `force` is how a load
+    // that MUST happen says so.
+    // TRAP T-no-op-load-guard
+    // TRAP T-in-flight-ticket-discards-stale — ANSWERED and ASKED are separate.
     const key = this.#stateKey();
     if (!options.force) {
       if (key === this.#lastLoadKey && this.#loaded) return this.#result;  // answered
@@ -456,12 +352,10 @@ export class DataSource extends EventTarget {
       this.#lastLoadKey = key;
       this.#loaded = true;
 
-      // TRAP T-error-is-a-state-not-a-throw — re-clamp and reload ONCE, FORCED.
-      // Not while GROUPED: the load fetched every matching row, so a re-load
-      // would ask the identical question, and the page count there is the
-      // GRID's to report — clamping against a count measured before this load's
-      // rows arrived would move the reader for no reason.
-      // TRAP T-grouped-paging-belongs-to-the-view.
+      // Re-clamp and reload ONCE, FORCED. Never while GROUPED: the page count
+      // there is the GRID's to report, and the re-load would ask the same thing.
+      // TRAP T-error-is-a-state-not-a-throw
+      // TRAP T-grouped-paging-belongs-to-the-view
       const pages = this.totalPages;
       if (!this.#state.group && this.#state.pageSize && this.#state.page > pages) {
         this.#state.page = pages;
@@ -489,13 +383,7 @@ export class DataSource extends EventTarget {
     }
   }
 
-  /**
-   * The current ViewState as one comparable string.
-   *
-   * JSON, because `filter` is a nested tree. Key order is stable — every field
-   * is written by this class in a fixed order — and a few hundred bytes beats
-   * re-filtering the whole collection.
-   */
+  /** The ViewState as one comparable string. Key order is stable by construction. */
   #stateKey(): string {
     return JSON.stringify(this.#loadOptions());
   }
@@ -503,11 +391,8 @@ export class DataSource extends EventTarget {
   /* ── Binding ───────────────────────────────────────────────────────── */
 
   /**
-   * Point a component at this source.
-   *
-   * Two-way by default: the source populates it and writes the view state onto
-   * it as `data-*`, and the component's own steering events write back. Returns
-   * an unbind function.
+   * Point a component at this source. Two-way by default: rows and `data-*`
+   * down, steering events back. Returns an unbind function.
    */
   bind(el: Populatable, options: BindOptions = {}): () => void {
     if (this.#bound.has(el)) return () => this.unbind(el);
@@ -528,29 +413,16 @@ export class DataSource extends EventTarget {
       }
     }
 
-    /* LOCKED, because the source now owns this element's view state.
-     *
-     * `data-locked` is the system's own answer to "a host owns this value": a
-     * locked component reports its interaction and stops writing its own state.
-     * It existed and was honoured by exactly ONE component of 58, and nothing
-     * set it automatically — so every bound component was both reporter and
-     * owner of the same value, which is the shape `T-state-ownership` warns
-     * about.
-     *
-     * NOT for a readonly bind: that element receives rows and steers nothing,
-     * so it owns whatever it had. And removed again on unbind, or a component
-     * that outlives its source is left mute.
-     *
-     * A component with no source is UNLOCKED and writes its own state, which
-     * is what makes a standalone grid work — every grid test runs one.
-     * TRAP T-bind-locks-what-it-owns.
-     */
+    /* LOCKED: the source now owns this element's view state, so it reports its
+       interactions and stops writing them. Not for a readonly bind, which
+       steers nothing. A component with no source stays UNLOCKED and writes its
+       own state — that is what makes a standalone grid work.
+       TRAP T-bind-locks-what-it-owns */
     if (!readonlyBind) el.setAttribute('data-locked', '');
 
     const off = (): void => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
-      // UNLOCKED on the way out: the source no longer owns this element, so it
-      // must go back to writing its own state.
+      // UNLOCKED on the way out, or a component that outlives its source is mute.
       el.removeAttribute('data-locked');
     };
     this.#bound.set(el, {
@@ -582,11 +454,7 @@ export class DataSource extends EventTarget {
     return [...this.#bound.keys()];
   }
 
-  /**
-   * Turn one component's event into a state change.
-   *
-   * TRAP T-steering-events-are-a-closed-list — the detail shapes are ratified.
-   */
+  /** Turn one component's event into a state change. TRAP T-steering-events-are-a-closed-list */
   #steer(type: (typeof STEERING_EVENTS)[number], event: CustomEvent): void {
     const detail = (event.detail ?? {}) as Record<string, unknown>;
 
@@ -622,9 +490,8 @@ export class DataSource extends EventTarget {
         return;
       }
       case 'grid-pages-change': {
-        // The view counted its own screen lines. No load — the rows in hand are
-        // already every matching row (the grouped branch of #loadOptions) — so
-        // this only re-publishes the pager's numbers.
+        // The rows in hand are already every matching row, so re-publish the
+        // pager's numbers and load nothing.
         const pages = detail['pages'];
         if (typeof pages !== 'number' || !Number.isFinite(pages)) return;
         const next = Math.max(1, Math.trunc(pages));
@@ -655,46 +522,35 @@ export class DataSource extends EventTarget {
     for (const el of this.#bound.keys()) this.#push(el);
   }
 
-  /**
-   * Give one component the rows and the view state.
-   *
-   * TRAP T-push-writes-state-as-attributes — and `data-filter-fields`.
-   */
+  /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
   #push(el: Populatable): void {
     const { sort, group, page, pageSize, filter, sortSuspended } = this.#state;
     const first = sort[0];
 
-    /* THE FIELD SURVIVES A SUSPEND; the DIRECTION is what says whether it is
-       being applied. A live sort writes both; a suspended one writes the
-       remembered field with an EMPTY direction, so a control can still show
-       the column while nothing is ordered by it; nothing at all removes both.
-
-       This is why suspension belongs to the source: a component that kept its
-       own suspended column in `data-sort-field` had it wiped by the very next
-       push, one microtask later.
-       TRAP T-a-suspended-sort-is-one-owners-job. */
+    /* The FIELD survives a suspend; the DIRECTION says whether it is applied.
+       Suspended = the remembered field with an EMPTY direction.
+       TRAP T-a-suspended-sort-is-one-owners-job */
     const shown = first ?? sortSuspended;
     setAttr(el, 'data-sort-field', shown?.field);
     setAttr(el, 'data-sort-direction',
       first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined));
     setAttr(el, 'data-group-field', group ?? undefined);
-    // WHICH fields the filter touches, not the filter itself — see
-    // TRAP T-push-writes-state-as-attributes.
+    // WHICH fields the filter touches, not the filter itself.
+    // TRAP T-push-writes-state-as-attributes
     const fields = filterFields(filter);
     setAttr(el, 'data-filter-fields', fields.length ? fields.join(' ') : undefined);
     setAttr(el, 'data-page', pageSize ? String(page) : undefined);
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
     setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);
 
-    // …but the ROWS go only where they mean something.
-    // TRAP T-steer-only-populate-means-chips — the attributes still reach it.
+    // …but the ROWS go only where they mean something — the attributes above
+    // still reach a steer-only bind.
+    // TRAP T-steer-only-populate-means-chips
     const entry = this.#bound.get(el);
     if (entry?.steerOnly) return;
 
-    // SKIP A PUSH THAT WOULD HAND OVER THE SAME ROWS AGAIN. Six bound
-    // components, twenty no-op loads, 120 populates.
-    // TRAP T-no-op-load-guard — and why ArrayStore copies rather than sorting in
-    // place.
+    // Skip a push that would hand over the same rows again.
+    // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
     if (entry && entry.lastRows === this.#result.rows) return;
     if (entry) entry.lastRows = this.#result.rows;
@@ -713,19 +569,13 @@ export class DataSource extends EventTarget {
   }
 }
 
-/**
- * The shared draft each `into` bind writes its own part of.
- *
- * TRAP T-into-merges-on-the-element — on the ELEMENT, and why a Symbol.
- */
+/** The shared draft each `into` bind writes its own part of. TRAP T-into-merges-on-the-element */
 const DRAFT = Symbol('sherpa:into-draft');
 
 /**
- * Write `value` at `path` in the element's shared draft, and return the draft.
- *
- * `series.0` → `{ series: [value] }`, `totals.open` → `{ totals: { open: … } }`.
- * MUTATED and handed back, not rebuilt — see
- * TRAP T-into-merges-on-the-element.
+ * Write `value` at `path` in the element's shared draft, and return it.
+ * `series.0` → `{ series: [value] }`. MUTATED, not rebuilt.
+ * TRAP T-into-merges-on-the-element
  */
 function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   const host = el as unknown as Record<symbol, unknown>;
@@ -753,11 +603,7 @@ function setAttr(el: HTMLElement, name: string, value: string | undefined): void
   else el.setAttribute(name, value);
 }
 
-/**
- * Turn a quick-filter toolbar's change detail into a Filter.
- *
- * TRAP T-toggle-chips-have-no-field — OR within a chip, AND across them.
- */
+/** A quick-filter toolbar's detail → a Filter. OR within a chip, AND across them. */
 function filterFromChips(detail: Record<string, unknown>): Filter | undefined {
   const clauses: Filter[] = [];
 

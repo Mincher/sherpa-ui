@@ -1,20 +1,9 @@
 /**
- * sherpa-gauge-chart.css — a half-circle gauge.
- *
- * The visible top-half arc is a full circle clipped to its top half. The track is
- * a neutral ring. Over it sits the fill:
- *   - No zones: one conic sweep bounded by --_fill-pct (0–50% of the circle =
- *     0–100% of the visible half), coloured by --_fill (status → Saturated accent).
- *   - Zones: JS composes a full conic-gradient value into --_zones (contiguous
- *     threshold bands, e.g. success/warning/urgent/critical) and CSS paints it.
- * The needle rotates by --_angle. The centre value + caption + scale are text.
- * No per-status blocks — the single-colour route relies on the look-tier cascade.
+ * sherpa-gauge-chart.css — a half-circle gauge: ring bands + needle + scale text.
+ * Bands are closed SVG paths (see #renderArcs); the needle rotates by --_angle.
  */
 
-/* Typed JS→CSS bridges: TS writes --_fill-pct (sweep) and --_angle (needle). Typing
- * makes both animate smoothly and guards the syntax; inherits so the host-set values
- * reach the .gauge / .needle descendants. Non-Chromium falls back to the plain
- * declarations on :host below. */
+/* Typed so both animate and inherit down to .gauge / .needle. */
 @property --_fill-pct {
   syntax: "<percentage>";
   inherits: true;
@@ -27,109 +16,55 @@
 }
 
 :host {
-  /* `flex`, not `inline-flex`: an inline box sizes to its content and cannot be
-     given a height by its parent, so the gauge could not fill or scale into a
-     sized cell. */
+  /* `flex`, not `inline-flex`: an inline box cannot be given a height by its parent. */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
+  gap: var(--sherpa-theme-gap-sm, 4px);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* NO --_size. It was a fixed 200px (the Figma chart's own size) that the
-     needle, the scale row and the tooltip anchors all measured themselves
-     against — so none of them scaled when the gauge grew past 200. Every one of
-     them is now a fraction of the gauge's real box. --_max-size is the only size
-     the component declares. */
-  /* The gauge never draws wider than this however roomy the cell. The arc is
-     2:1, so the height caps at half of it. Will's number, matching the donut. */
   --_max-size: 320px;
-  /* The band's thickness as a FRACTION OF THE RADIUS — the CSS mirror of
-     RING_WIDTH in the TS, which draws a 15-unit band on a 50-unit radius.
-
-     A ratio, not a px: the gauge SCALES. `--_ring: 16px` was a fixed mirror of a
-     fixed `--_size`, so the needle kept its 200px-chart length however large the
-     gauge actually drew. Unitless, so it cannot pick up the wrong percentage
-     basis — a `%` here would resolve against whichever box it landed in. */
+  /* Band thickness as a FRACTION OF THE RADIUS (mirrors RING_WIDTH in the TS).
+     Unitless: a `%` would resolve against whichever box it landed in. */
   --_ring: 0.3;
-  /* Strong status colour when a status is set; else the Saturated accent. */
   --_fill: var(--_status-surface-strong, #3b4ccd);
   --_fill-pct: 0%;
   --_angle: -90deg;
 }
 
-/* Figure semantics without a layout box: children stay direct flex items of
- * the host, so the centred column layout is unchanged. */
+/* display:contents — children stay flex items of the host. */
 .chart-figure {
   display: contents;
   margin: 0;
 }
 
-/* The gauge's own stack: ring + scale + caption as ONE centred column, so a
-   vertical legend sits beside the whole gauge rather than beside only the ring.
-   It repeats the host's centring because it is now the box those three live in —
-   the host centres IT, and it centres them. */
+/* Ring + scale + caption as ONE column, so a vertical legend sits beside the
+   whole gauge, not just the ring. */
 .chart-body {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sherpa-theme-gap-sm, 4px); /* Figma grid row gap gap/sm 4 */
+  gap: var(--sherpa-theme-gap-sm, 4px);
   min-inline-size: 0;
   min-block-size: 0;
-  /* FILLS the host's width.
-     `align-items: center` on a flex COLUMN makes the column shrink-wrap its
-     widest child, so without this the body measured exactly the gauge's own
-     200px and `max-inline-size: 100%` on .gauge-wrap then resolved against that
-     — the gauge could never grow, however wide the card. It sat at 200 in a
-     400px cell beside a donut drawing at 320.
-     The vertical-legend branch below already set this for its grid cell; the
-     horizontal case was the one left hugging. */
+  /* Required: a centred flex COLUMN shrink-wraps, so .gauge-wrap's 100% cap would
+     resolve against the gauge's own width and it could never grow. */
   inline-size: 100%;
-  /* Takes the host's spare height, so the gauge grows into a tall card and the
-     legend below keeps its natural size. */
   flex: 1 1 auto;
 }
 
-/* ── The legend ──────────────────────────────────────────────────────────
-   The chart owns the split with its own legend, exactly as sherpa-donut-chart
-   does. The card around it used to: every panel wrapped the chart and the legend
-   in a `.chart-area` div and wrote the ratio there, which meant the page had to
-   know which orientation a legend was and the pair could never move between
-   cards without carrying its rules along.
-
-   The ORIENTATION decides the axis, because the two constrain different things.
-   A legend BELOW runs the full width and needs only height; one BESIDE has to fit
-   its longest label into its own column, so it gets a share of the width. */
+/* ── The legend ────────────────────────────────────────────────────────── */
 ::slotted([slot="legend"]) {
   flex: 0 0 auto;
   min-inline-size: 0;
-  /* The host is a CENTRED column (`align-items: center`), which makes every child
-     hug its own content — so a horizontal legend measured 145px inside a 600px
-     chart and its items bunched in the middle instead of spreading across.
-
-     `align-self: stretch` opts this one child back out, so the legend spans the
-     chart's width the way it does in the bar and line charts. The gauge's own
-     ring stays centred, because it is a different child. */
+  /* Opts out of the host's centring so the legend spans the chart's width. */
   align-self: stretch;
 }
 
-/* Legend BESIDE — two columns.
-   `align-items` and `justify-items` are reset from the host's flex centring:
-   as a grid the host must let each cell fill, and the centring is the cell's own
-   business (.chart-body already centres its column). */
-/* The chart reads the SPLIT from its own `data-legend`, not from the legend's
-   `data-orientation`. CSS cannot see it there: `:host(:has(…))` does not PARSE
-   (`:has()` is not a valid argument to `:host()`, and the rule is dropped
-   silently) and the chained `:host:has(…)` parses but matches every host,
-   ignoring the `:has()` — the same shadow-DOM trap the chained `:host:not()`
-   form has. So the split is declared on the chart:
-
-     (absent, or "horizontal") → the host's flex COLUMN, legend under the plot
-     "vertical"                → a 70/30 GRID, legend beside the plot
-
-   The legend still carries its own data-orientation for its own layout; this
-   attribute says what the CHART does about it. */
+/* Legend BESIDE. The split reads the chart's own `data-legend`, not the legend's
+   `data-orientation`: `:host(:has(…))` does not PARSE and is dropped silently,
+   and chained `:host:has(…)` matches every host. */
 :host([data-legend="vertical"]) {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
@@ -137,8 +72,6 @@
   align-items: center;
   justify-items: center;
 }
-/* `display: contents` on .chart-figure means the header, body and legend are the
-   grid's real items, so they are placed directly. */
 :host([data-legend="vertical"]) .chart-header {
   grid-column: 1 / -1;
   grid-row: 1;
@@ -146,9 +79,7 @@
 :host([data-legend="vertical"]) .chart-body {
   grid-column: 1;
   grid-row: 2;
-  /* In the grid the body is a CELL, not a flex item — `flex` means nothing here
-     and the cell already has its track. Filling it is what makes the ring size
-     against the card rather than against itself. */
+  /* A CELL, not a flex item: filling it sizes the ring against the card. */
   inline-size: 100%;
   block-size: 100%;
 }
@@ -165,48 +96,15 @@
   &:empty { display: none; }
 }
 
-/* ── Gauge: half a donut, drawn as closed SVG ring segments ───────── */
-/* The positioning context for the tooltip layer. It wraps .gauge so a tip can
-   escape the ring's own box. No overflow of its own. */
-/* The gauge SCALES UNIFORMLY to whichever axis runs out first, rather than
-   filling its cell: a semicircle stretched to a cell's own proportions is an
-   ellipse, and the ring's even thickness is the whole read.
-
-   `aspect-ratio: 2` (the gauge is 2:1) plus a cap on BOTH axes is what does it.
-   `inline-size` takes the lesser of the cell's width and the width implied by
-   the available height, so the ratio is never broken and the gauge never grows
-   past the Figma 200. `--_gauge-h` is the height budget: the cell's height less
-   the caption row, which the host's own flex centring then splits around it.
-
-   It is a MAX, not a fixed size: the old `inline-size: var(--_size)` pinned the
-   gauge at 200×100 in the middle of a 290px cell. */
+/* ── Gauge ─────────────────────────────────────────────────────────────
+   Both axes capped and aspect-ratio derives the other, so the semicircle never
+   becomes an ellipse. `min-inline-size: 0` is what lets it shrink at all. */
 .gauge-wrap {
   position: relative;
   aspect-ratio: 2;
-  /* A SIZE container, so the hotspot layer can express the ring's radius as
-     `cqh` — one length that means the same thing on BOTH axes. A percentage
-     cannot: `inset-inline-start` resolves against the width and
-     `inset-block-start` against the height, and on a 2:1 box those differ by a
-     factor of two, so a dot's two offsets described different radii and the dots
-     scattered off the ring. */
+  /* SIZE container so the hotspots can use `cqh` — one length meaning the same on
+     both axes. Percentages differ per axis, scattering the dots off a 2:1 ring. */
   container: sherpa-gauge / size;
-  /* Cap BOTH axes and let the ratio pick the binding one — no measuring, and no
-     custom property a parent has to remember to set.
-
-     `max-inline-size` caps the width at the cell's width and at Figma's 200.
-     `max-block-size` caps the height at the flex line's remaining space (which
-     is what `flex: 0 1 auto` on a ratio box resolves against) and at 100.
-     Whichever cap bites first, `aspect-ratio: 2` derives the other axis from it,
-     so the semicircle can never become an ellipse.
-
-     `min-inline-size: 0` is what lets it shrink below 200 at all — a flex item
-     floors at min-content otherwise. */
-  /* GROWS to fill, capped by the cell AND by --_max-size. Figma's 200 is the
-     size it draws at unconstrained, not a ceiling: a gauge pinned at 200 in a
-     363x290 cell left the card looking half-empty.
-
-     Both axes are capped and aspect-ratio ties them, so whichever limit bites
-     first wins and the arc can never become an ellipse. */
   inline-size: 100%;
   min-inline-size: 0;
   min-block-size: 0;
@@ -218,17 +116,12 @@
 .gauge {
   position: absolute;
   inset: 0;
-  /* NO `overflow: hidden`. The old ring was a full circle that had to be clipped
-     in half, and that clip also cut off the tooltips — which is why the hover
-     layer had to live outside the gauge. The viewBox now shows the top half, so
-     there is nothing to clip and tips are free to overflow. */
+  /* NO `overflow: hidden` — the viewBox already shows only the top half, and a
+     clip here cuts off the tooltips. */
 }
 
-/* The SVG fills the gauge box. The viewBox (0 0 100 50) is the TOP half of a
-   100×100 space and the circle is centred at (50,50), so only its upper half
-   falls inside and a 2:1 box shows a clean semicircle with no clipping.
-   SVG's y grows DOWNWARD, so the top half is y 0..50 — "0 50 100 50" would
-   have shown the hidden bottom half instead. */
+/* viewBox (0 0 100 50) = the TOP half of a 100×100 space, circle centred (50,50).
+   SVG y grows DOWNWARD, so "0 50 100 50" would show the hidden bottom half. */
 .ring {
   position: absolute;
   inset: 0;
@@ -237,82 +130,42 @@
   overflow: visible;
 }
 
-/* NO ROTATION and NO DASH OFFSET on the bands.
-   Two early attempts rotated a full circle to move a dash's starting point to 9
-   o'clock (the gauge's zero). Both drew the bands in the wrong place, because
-   `transform-box: fill-box` measures `transform-origin: 50% 50%` against the
-   circle's own fill box, which is NOT its centre in viewBox coordinates — the
-   rotation happened about an off-centre point and swung the whole ring. The dash
-   offset expressed the same half-turn instead.
+/* NO ROTATION and NO DASH OFFSET on the bands: `transform-box: fill-box` measures
+   the origin against the fill box, not the viewBox centre, so rotation swings the
+   whole ring. Each band is a path drawn where it belongs. */
 
-   Neither is needed now: each band is a PATH, drawn where it belongs (see
-   #renderArcs). A transform would also skew the rounded corners. */
-
-/* NO FULL-LENGTH TRACK.
-   A separate half-circle track underneath every band was redundant — the bands
-   already cover everything up to the value, so the only part that ever showed
-   was the remainder. It also had to duplicate the half-circle geometry, which is
-   exactly where it kept going wrong. Instead #renderArcs appends ONE grey band
-   covering the leftover span, drawn by the same code path (and so with the same
-   geometry) as every coloured band.
-
-   Its colour is theme-border-default-2 — a neutral rule, not a data hue. (Figma
-   had a separate `track` ellipse bound to a legacy _old_border/base token; it was
-   deleted once the remainder band replaced it, and this was the nearest live
-   token matching its value.) */
+/* NO FULL-LENGTH TRACK — #renderArcs appends the grey remainder as a band through
+   the same code path, so it cannot drift from the coloured ones' geometry. */
 .zone[data-rest] {
   fill: var(--sherpa-theme-border-default-2, #b3b3c3);
   fill-opacity: 1;
   stroke: none;
-  /* The remainder is not data — nothing to hover, nothing to explain. */
+  /* The remainder is not data — nothing to hover. */
   pointer-events: none;
   cursor: default;
 }
 
-/* One band — a CLOSED PATH, a ring segment with four rounded corners, built by
-   ringSegmentPath() in the TS. The band is the hover target, which is the whole
-   point of the rebuild and why there is no wedge element any more.
-
-   It was a stroked circle whose dash exposed its own span, and that could carry
-   neither of the two things the donut slice carries: a stroke is a thick LINE,
-   with two caps and no corners, so the border could only run along the two long
-   edges (as a second arc on top) and the corners could not be rounded at all.
-
-   One path carries both paints at once, the same model as a donut slice:
-     fill   — the band's hue at 60%
-     stroke — the same hue, solid, 1px on a 200px chart, right round the outline
-
-   Figma aligns that stroke INSIDE. SVG has no inside stroke — it always straddles
-   the path — so the TS draws the path half a stroke in from the true band edges,
-   which lands the stroke inside. Width comes from the TS too: it is viewBox-unit
-   geometry, and an SVG stroke-width attribute cannot read a custom property. */
+/* One band — a CLOSED PATH from ringSegmentPath(), and the hover target. SVG has
+   no inside stroke, so the TS insets the path and sets stroke-width there: the
+   attribute cannot read a custom property. */
 .zone {
   fill: var(--_hue, var(--_fill));
-  /* NO fill-opacity. The series token already carries its 50%, and a
-     fill-opacity here MULTIPLIES it — marks painted at 30%. */
-  /* The OUTLINE has its own token and does NOT track the fill — see the same
-     rule on sherpa-donut-chart's .slice. */
+  /* NO fill-opacity: the series token carries its 50% and this would MULTIPLY it. */
+  /* The OUTLINE has its own token and does NOT track the fill. */
   stroke: var(--_border, var(--_hue, var(--_fill)));
-  /* ROUND joins. The corner arcs already carry the rounding, but a join sits
-     where two path commands meet, and a mitre there pushes a spike out past the
-     corner on a narrow band. */
+  /* ROUND joins: a mitre spikes past the corner on a narrow band. */
   stroke-linejoin: round;
   cursor: pointer;
   transition: fill-opacity 100ms ease;
 }
 
-/* Hover lifts the band to the FULL hue — the same information a thicker outline
-   would give, without changing the geometry under the pointer. */
 .zone:hover {
   fill-opacity: 1;
 }
 
-/* ── Needle ──────────────────────────────────────────────────────── */
-/* The needle's PIVOT. It spans the gauge box rather than collapsing to a point,
-   so the needle can size itself as a percentage of the gauge: a percentage
-   resolves against the containing block, and a zero-size hub would make every
-   percentage zero. Centred on the gauge's bottom edge, which is the ring's
-   centre, so `transform-origin: bottom center` on the needle turns about it. */
+/* ── Needle ──────────────────────────────────────────────────────────
+   The PIVOT spans the gauge box: a zero-size hub makes the needle's percentage
+   height zero. */
 .hub {
   position: absolute;
   inset: 0;
@@ -321,24 +174,18 @@
 .needle {
   position: absolute;
   inset-block-end: 0;
-  /* Centred on the hub's width, which is the gauge's — the ring's centre. */
   inset-inline-start: 50%;
   /* Figma needle: a 1px content/body/+2 stroke. */
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
-  /* Reaches from the hub to the MIDDLE of the band, so its tip sits ON the value
-     rather than short of it or out past the rim.
-
-     `100%` of the hub's HEIGHT is the gauge's radius (the box is 2:1 and the hub
-     spans it), so the needle is the radius less half the band. `--_ring` is a
-     unitless ratio of that radius, which is why it can be multiplied here
-     without picking up a percentage basis of its own. */
+  /* Reaches the MIDDLE of the band so the tip sits ON the value: 100% of the hub's
+     height is the radius, and --_ring is a unitless ratio of it. */
   block-size: calc(100% - 100% * var(--_ring) / 2);
   background: var(--sherpa-theme-content-body-2, #b3b3c3);
   transform-origin: bottom center;
   transform: rotate(var(--_angle));
   transition: transform 300ms ease;
 }
-/* Hub cap sits at the needle pivot, matching Figma (dark disc + light core). */
+/* Hub cap: dark disc + light core. */
 .hub-cap {
   position: absolute;
   inset-block-end: -4px;
@@ -357,25 +204,17 @@
   background: var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* ── Centre value ────────────────────────────────────────────────── */
-/* The value label — the body column's FIRST row, above the arc.
-
-   NOT absolutely positioned inside .gauge. Figma stacks label → arc → scale and
-   insets the arc from the top by exactly the label's height, so the label has
-   its own space. Over the ring it either sat on the crown (`inset-block-start`)
-   or on the needle's hub (`inset-block-end`), and both collided with something. */
+/* ── Centre value ──────────────────────────────────────────────────────
+   The body column's FIRST row, NOT absolute inside .gauge: over the ring it
+   collided with the crown or the needle hub. */
 .centre {
   inline-size: 100%;
   text-align: center;
-  /* Never shrinks: it is one line of small type, and a flex column would
-     otherwise squeeze it before the arc when the card is short. */
+  /* Never shrinks: a flex column would squeeze this line before the arc. */
   flex: 0 0 auto;
 }
-/* Figma value-label: content/size/xs 10 on 16, regular, content/body/+1 — the gauge
-   reads its value as a small label, not display type. */
 .value {
-  /* MONOSPACED — the gauge's readings are NUMBERS, on the same scale as a 2D
-     chart's axis, so they take the same face. */
+  /* MONOSPACED — readings are NUMBERS, so they take an axis face. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -387,18 +226,13 @@
 /* ── Scale — min/max 10/16 regular ─────────────────────────────────── */
 .scale {
   display: flex;
-  /* min · caption · max on ONE line, the bounds pinned to the ends and the
-     caption centred between them — Figma's single row at y 124. */
+  /* min · caption · max on ONE line, bounds pinned to the ends. */
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  /* FULL WIDTH, so min and max sit under the arc's own ends however large the
-     gauge draws. It was `var(--_size)` — a fixed 200px mirroring the old fixed
-     chart size — so on a 320px gauge both labels sat 60px inside the arc. */
+  /* FULL WIDTH, so min and max sit under the arc's ends at any gauge size. */
   inline-size: 100%;
   flex: 0 0 auto;
-  /* MONOSPACED — the gauge's readings are NUMBERS, on the same scale as a 2D
-     chart's axis, so they take the same face. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-font-size-body-xs, 10px);
@@ -406,12 +240,10 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── Caption — 12/16 regular ─────────────────────────────────────────
- * Hidden by default; shown when data-caption is set OR the caption slot is filled
- * (SherpaElement mirrors slot presence to data-has-caption on the host). */
-/* The caption sits BETWEEN min and max on the scale row, centred. It takes the
-   middle track so the two bounds stay pinned to the arc's ends whatever the
-   caption says — `space-between` alone would let a long caption shove them. */
+/* ── Caption ─────────────────────────────────────────────────────────
+ * Shown by data-caption or by the filled caption slot (SherpaElement mirrors slot
+ * presence to data-has-caption). Takes the scale row's middle track so a long
+ * caption cannot shove the bounds off the arc's ends. */
 .caption {
   display: none;
   flex: 1 1 auto;
@@ -425,65 +257,29 @@
 :host([data-caption]) .caption,
 :host([data-has-caption]) .caption { display: block; }
 
-/* ── Tooltip hit areas + anchors ────────────────────────────────────────────
- * NO VISIBLE MARKERS. The reader hovers the coloured BAND and its tooltip
- * appears — pointing at the data itself.
- *
- * The fill is one conic-gradient, so there is no per-band element to hover. Each
- * zone gets an invisible WEDGE instead: a transparent box clipped to that band's
- * pie slice. Nothing is drawn; it exists purely as a hit target.
- *
- * A separate zero-size ANCHOR POINT carries the tip's anchor. Anchoring to the
- * wedge would centre the tip on the wedge's bounding RECT (most of the gauge)
- * rather than on the band, so the two are kept apart.
- *
- * The JS supplies three numbers per zone — the band's start, end and mid angles —
- * and CSS trig does the rest, so everything rides the ring at any size with
- * nothing measured.
- *
- * The hub is the BOTTOM-CENTRE of the gauge box: a gauge is a half circle, so the
- * full circle's centre sits on its lower edge. That is why the block-axis offsets
- * come from `100%` rather than `50%`.
- *
- * The wedges live OUTSIDE .gauge, whose `overflow: hidden` (which hides the ring's
- * bottom half) would otherwise clip both them and the tooltips. */
+/* ── Tooltip anchors ─────────────────────────────────────────────────
+ * NO VISIBLE MARKERS: the reader hovers the BAND itself. JS supplies each zone's
+ * angles and CSS trig does the rest, so nothing is measured. The hub is the
+ * BOTTOM-CENTRE of the box — hence block offsets from `100%`, not `50%`. */
 .hotspots {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* The OUTER radius. A tip pushed outward from here clears the ring.
-
-     `100cqh` — the full HEIGHT of the 2:1 wrapper, which is the ring's radius.
-     Not a percentage: `inset-inline-start` resolves a percentage against the
-     width and `inset-block-start` against the height, so on a 2:1 box one dot's
-     two offsets would describe radii a factor of two apart and the dots would
-     scatter off the ring. A container unit is the same length whichever axis
-     consumes it.
-
-     It was `calc(var(--_size) / 2)` — a fixed 100px from the old fixed chart
-     size — so on a 320px gauge every dot sat well inside the ring and its
-     tooltip pointed at empty space. */
+  /* OUTER radius = the wrapper's full height. `cqh`, not a percentage: inline and
+     block percentages resolve against different axes on a 2:1 box. */
   --_ring-r: 100cqh;
 }
 
 .hotspot {
-  /* Polar → cartesian from the hub. --_dot-angle is measured from 12 o'clock to
-     match the fill's `from 270deg` sweep, so cos drives the vertical offset.
-     NOT --_angle: that name belongs to the NEEDLE, is set on the host, and
-     INHERITS — a zone missing its own value would silently sit at the needle's
-     angle. */
+  /* Polar → cartesian from the hub; --_dot-angle runs from 12 o'clock. NOT
+     --_angle: that belongs to the NEEDLE, is set on the host and INHERITS, so a
+     zone missing its own value would silently sit at the needle's angle. */
   inset-inline-start: calc(50% + sin(var(--_dot-angle, 0deg)) * var(--_ring-r));
   inset-block-start: calc(100% - cos(var(--_dot-angle, 0deg)) * var(--_ring-r));
 }
 
-/* The invisible hit wedge. A full-gauge box clipped to this band's slice, hinged
-   on the hub at its bottom centre. `--_from` / `--_to` are the band's edge angles
-   from 12 o'clock; the polygon walks the arc between them in 8 steps, which is
-   smooth enough for a hit area and cheap to compute in CSS. */
-/* Hovering a BAND reveals its tip.
-   `:has()` on the whole gauge wrapper, because the band lives inside <svg> and
-   the tip does not — no sibling selector can reach across that boundary. The
-   index pairs them: band N lights tip N. */
+/* `:has()` on the wrapper, because the band lives inside <svg> and the tip does
+   not — no sibling selector crosses that boundary; the index pairs them. */
 .gauge-wrap:has(.zone[data-index="0"]:hover) .chart-tip[data-index="0"],
 .gauge-wrap:has(.zone[data-index="1"]:hover) .chart-tip[data-index="1"],
 .gauge-wrap:has(.zone[data-index="2"]:hover) .chart-tip[data-index="2"],

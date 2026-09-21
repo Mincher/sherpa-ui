@@ -1,32 +1,15 @@
 <!--
-  sherpa-nav-item — a single navigation row.
+  sherpa-nav-item — a single navigation row. Figma "Navigation Item" (32:43138).
 
-  Matches the Figma "Navigation Item" (32:43138). That component is ONE 24-tall
-  box, and the tag and chevron live INSIDE it, inside a `content` group — they are
-  not siblings hanging off the end of the row:
+  THE HOST IS THE BOX — padding, height, radius, background and hover live on
+  :host, so the tag and chevron paint inside the row.
 
-    Navigation Item        H · pad 0/8/0/8 · gap/md 8 · h 24 · radius 4
-    ├─ Icon                16×16                              hasIcon
-    ├─ content             H · gap 8 · FILL + grow 1           ← bound to isVisible
-    │   ├─ Item Name       14/20 weight/LIGHT 300 · grow 1     hasLabel
-    │   ├─ Tag             16-tall pill (rounding/xl 16)       hasTag
-    │   └─ Icon            16×16 chevron-down                  hasChildren
-    └─ Indicator (atom)    8×8 dot                             hasIndicator
+  `.nav` and `.expand` are SIBLINGS, not nested: an expandable row has two
+  controls, and nesting interactive elements is invalid HTML. CSS lays them out
+  as one row.
 
-  THE HOST IS THE BOX. The padding, the height, the radius, the background and the
-  hover all live on :host, because the Figma row box has to contain the tag and the
-  chevron. Previously the inner <button> was the box and the tag was its sibling, so
-  the tag painted OUTSIDE the row's background and radius — the reported bug.
-
-  The activation target stays a native control, and an expandable row has TWO
-  controls (navigate + expand). Nesting one interactive element inside another is
-  invalid HTML and wrecks keyboard order, so they are SIBLINGS in the markup and
-  CSS lays them out as the single Figma row. `.nav` is the navigate target and
-  stretches; `.expand` is the chevron and hugs its 16px square at the end.
-
-  `content` is the node Figma binds to Navigation::isVisible, so the label, the tag
-  AND the chevron collapse together with the rail. The leading icon and the
-  indicator dot sit OUTSIDE `content`, so they survive the collapsed rail.
+  `content` is Figma's Navigation::isVisible node — label, tag and chevron
+  collapse with the rail. The icon and dot sit outside it and survive collapse.
 
   Public API:
     data-icon        leading icon — a Font Awesome class list ("fa-solid fa-house");
@@ -64,8 +47,8 @@
     </span>
   </a>
 
-  <!-- Figma's trailing chevron-down Icon, last child of `content`. A sibling here
-       because an expandable row needs its own control; CSS puts it in place. -->
+  <!-- Figma's trailing chevron, last child of `content`; a sibling here so it
+       can be its own control. -->
   <button class="expand" part="expand" type="button" aria-label="Expand" aria-expanded="false">
     <i class="expand-chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
   </button>

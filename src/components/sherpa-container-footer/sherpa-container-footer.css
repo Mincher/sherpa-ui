@@ -1,15 +1,6 @@
 /**
  * sherpa-container-footer.css — all container-footer presentation.
- *
- * A single actions row. It collapses when empty and appears when the slot has
- * content (data-has-content, reflected by the base class). data-align controls
- * the horizontal distribution of the slotted controls. Pure data-*.
- *
- * Colour model (Figma): the footer row fills its status surface via the
- * [data-status] cascade — background: var(--_status-surface, transparent). With
- * no ancestor status it is transparent over the container surface. Geometry
- * binds the container-space vars. A top divider separates the action bar from
- * the container body (Figma action-bar: strokeTop border/width/sm, style-border/base).
+ * A single actions row: hidden until the slot has content, aligned by data-align.
  */
 
 :host {
@@ -23,53 +14,28 @@
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
   gap: var(--sherpa-theme-gap-sm, 4px);
-  /* 8 BLOCK, 0 INLINE — read from the Container Footer node (51:66438), which
-     binds padding/md top and bottom and padding/NONE on both sides.
-
-     The sides went 16 → 8 → 0 as Will tightened them. Zero is the one that
-     makes the footer's buttons line up with the edge of whatever holds it (a
-     menu card already has its own 8px padding), rather than being indented
-     inside it by a second gutter. */
+  /* 8 block / 0 inline, per the Container Footer node (51:66438). Zero inline is
+     deliberate: the host supplies the gutter, so buttons sit flush with its edge. */
   padding-block: var(--sherpa-theme-padding-md, 8px);
-  /* The DEFAULT is 0. A host that places this instance somewhere with no gutter
-     of its own pins `--_pad-inline` instead of reaching into the shadow root —
-     `sherpa-dialog` does, because Figma's Dialog pins `padding/sm` on both
-     sides of its Container Footer instance.
-     TRAP T-an-instance-pin-is-the-hosts-to-apply. */
+  /* A host with no gutter of its own pins `--_pad-inline` rather than reaching
+     into the shadow root. TRAP T-an-instance-pin-is-the-hosts-to-apply. */
   padding-inline: var(--_pad-inline, var(--sherpa-theme-padding-none, 0px));
-  /* Top divider — read from the Container Footer node (51:66438): strokeTop is
-     `border/width/sm` (0.5) with the colour `style-border/base +1`, which
-     resolves through Theme `border/default/+2` to #b3b3c3.
-
-     It reached for `--sherpa-style-border-base-1`, whose GENERATED chain in
-     tokens.css goes to `border/default/+3` — one step darker — and painted a
-     near-black rule under every dialog and menu, against the pale one the
-     header draws. The comment above it claimed both resolved to #e8e8f6, and
-     its own fallback said #35353d; neither was the colour Figma binds.
-     Resolve the chain in Figma and bind the Theme token it lands on.
-     TRAP T-style-border-base-is-default-1. */
+  /* Top divider. This exact Theme token — `--sherpa-style-border-base-1` resolves
+     one step darker. TRAP T-style-border-base-is-default-1. */
   border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* A slotted control keeps its OWN width. A flex item shrinks below its content
-   by default, and a Remove button whose natural width is 125px was
-   being squeezed to 93 in a 240px menu — the label truncated and the row still
-   claimed to fit. The footer is an actions row: the actions are the content, so
-   the row grows and the container around it grows with it.
-
-   `stretch` overrides this below, which is the one case where a control is meant
-   to take the space rather than state it. */
+/* Slotted controls keep their natural width; a flex item would otherwise shrink
+   below its content and truncate a button label. `stretch` overrides this. */
 .row ::slotted(*) { flex: 0 0 auto; }
 
 /* ── Alignment ────────────────────────────────────────────────────────── */
 :host([data-align="start"]) .row { justify-content: flex-start; }
 :host([data-align="end"]) .row { justify-content: flex-end; }
 :host([data-align="between"]) .row { justify-content: space-between; }
-/* `stretch` is for a footer holding ONE wide control rather than a button row —
-   a chat composer, a search field. The control takes the whole width instead of
-   hugging its content at one end. `min-inline-size: 0` lets it shrink below its
-   own content, which is what stops a long placeholder widening the card. */
+/* `stretch` — ONE wide control fills the row. `min-inline-size: 0` stops a long
+   placeholder widening the card. */
 :host([data-align="stretch"]) ::slotted(*) {
   flex: 1 1 auto;
   min-inline-size: 0;

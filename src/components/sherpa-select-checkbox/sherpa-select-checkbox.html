@@ -1,27 +1,17 @@
 <!--
-  sherpa-select-checkbox — a labelled checkbox.
+  sherpa-select-checkbox — a labelled checkbox. Native <input type="checkbox">;
+  the visible box is drawn in CSS off :checked / :indeterminate / :disabled.
 
-  A native <input type="checkbox"> wrapped for accessibility + form semantics;
-  the visible box is drawn in CSS off the input's :checked / :indeterminate /
-  :disabled states. JS never toggles the visual.
-
-  ADVANCED (Figma `Checkbox - Advanced`, 1334:8173). `data-advanced` adds a caret
-  button beside the box, opening a menu of selection scenarios. The Figma node
-  composes the same two things this does: the Checkbox atom, and a Button with
-  Type=icon. Nothing new is drawn.
-
-  A host slots the menu rows, because only the host knows what "all" means:
+  `data-advanced` adds a caret opening a slotted menu of selection scenarios.
+  The host slots the rows, because only the host knows what "all" means:
 
     <sherpa-select-checkbox data-advanced>
       <sherpa-menu slot="menu">
         <button value="page">Select all on page</button>
-        <button value="all">Select all rows</button>
-        <button value="none">Clear selection</button>
       </sherpa-menu>
     </sherpa-select-checkbox>
 
-  Choosing one emits `selection-scenario` with the button's value. The component
-  REPORTS; applying the scenario is the host's job — it owns the rows.
+  Choosing one emits `selection-scenario`. The component REPORTS; the host applies.
 
   Public API:
     data-label        label text to the right of the box (or default slot)
@@ -38,15 +28,10 @@
     selection-scenario — a menu row was chosen. detail { value }
 -->
 <template id="default">
-  <!-- The GROUP, not the label, is the host's child: `data-advanced` puts a
-       button beside the label, and a <button> inside a <label> would toggle the
-       checkbox on every click. CSS collapses this to the label alone when the
-       variant is off, so a plain checkbox is unchanged. -->
+  <!-- The GROUP, not the label, is the host's child: a <button> inside a
+       <label> would toggle the checkbox on every click. -->
   <div class="group sherpa-snap-group" part="group">
-    <!-- Figma's `Wrapper - Checkbox`: the box gets its OWN bordered box so the
-         pair reads as one object. Rounded on the outer edge, square where it
-         meets the button, and `data-snap="start"` is the honest description of
-         what it is — `.sherpa-snap-group` on the parent does the joining by
+    <!-- `data-snap` describes this child; `.sherpa-snap-group` joins by
          POSITION, so a re-order survives. -->
     <span class="box sherpa-border-edges" part="box" data-snap="start">
       <label class="field" part="field">
@@ -59,17 +44,14 @@
       </label>
     </span>
 
-    <!-- Figma's Button, Type=icon with a triangle-down. A real sherpa-button,
-         not a hand-drawn one — T-compose-never-reimplement. -->
+    <!-- A real sherpa-button, not a hand-drawn one — T-compose-never-reimplement. -->
     <sherpa-button class="caret" part="caret" data-type="icon" data-size="sm"
                    data-snap="end"
                    data-icon-start="fa-solid fa-caret-down"
                    aria-haspopup="menu" aria-expanded="false"
                    aria-label="Selection options"></sherpa-button>
   </div>
-  <!-- OUTSIDE the snap group. `.sherpa-snap-group > :last-child` rounds the
-       last child, and a <slot> inside it took that role — leaving the caret
-       square on both edges. The menu is a popover in the top layer, so it has
-       no business in a layout group either way. -->
+  <!-- OUTSIDE the snap group: `:last-child` would round this slot instead of
+       the caret. -->
   <slot name="menu"></slot>
 </template>

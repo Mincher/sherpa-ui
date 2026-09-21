@@ -13,28 +13,13 @@
 }
 /* == end sherpa:tokens == */
 
-/**
- * sherpa-input-text.css — all field presentation.
- *
- * Label + control row + validation bar. The control row is a bordered box that
- * holds a leading icon glyph, the native control, a trailing icon glyph, and an
- * `actions` slot (steppers etc). Icons/actions are CSS-gated on data-icon-start /
- * data-icon-end / the auto-set data-has-actions. Geometry binds the control-scoped
- * tokens (control-space/-border) and the input rounding var.
- *
- * Validation (default / multiline) is Figma's FILLED critical bar: `:user-invalid`
- * on the control (or an explicit data-error) reveals a full-width red bar with
- * light text under the control, styled through the STATUS CASCADE. Label/
- * description/message collapse when empty via :empty. Focus, disabled, error CSS-only.
- */
+/* sherpa-input-text.css — label, control row, validation bar. */
 
 :host {
   display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
   --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  /* Error look routes through the status cascade; critical fallback resolves the ink.
-     Fallback = the Figma error atom's bar fill (critical-color-4 #b72200), not a
-     hand-value #bf2c09 — a stale fallback surfaces whenever no data-status cascades. */
+  /* Fallback = the Figma error atom's bar fill; it surfaces when no data-status cascades. */
   --_border-error: var(--_status-border, #b72200);
   --_surface-error: var(--_status-surface-strong, #b72200);
   --_text-on-error: var(--_status-text-on-color, #ffffff);
@@ -45,15 +30,10 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
-/* Figma State=error (645:69690): the field and the validation bar are ONE snapped
-   stack — itemSpacing space/none, the field pinned snap-bottom-edge and the bar
-   snap-top-edge. So the bar must sit FLUSH against the field, with no 4px row gap.
-   The .message rule below removes its own corner radius on that shared edge. */
+/* Field and bar are one snapped stack — the bar sits flush, so no row gap. */
 .field:has(.message:not(:empty)) { gap: 0; }
 .field:has(.message:not(:empty)) > :is(.label, .description) { margin-block-end: var(--sherpa-theme-gap-sm, 4px); }
 
-/* Figma Input Text: label content/body/base 12/16 medium · description content/body/+2
-   12/16 regular · uniform gap/sm (4) between every row — no extra margins. */
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -71,7 +51,7 @@
   display: none;
 }
 
-/* ── Control row — a bordered box: leading icon, control, trailing icon, actions ── */
+/* ── Control row ──────────────────────────────────────────────────────── */
 .control-row {
   display: flex;
   align-items: center;
@@ -88,11 +68,10 @@
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
-/* Figma field: padding-right = padding/none — the 32×32 snapped action buttons sit
-   flush against the box edge. */
+/* Snapped 32x32 action buttons sit flush against the box edge. */
 :host([data-has-actions]) .control-row { padding-inline-end: 0; }
 
-/* The native control is borderless inside the row — the row owns the box. */
+/* The native control is borderless — the row owns the box. */
 .control {
   flex: 1 1 auto;
   inline-size: auto;
@@ -119,28 +98,22 @@ textarea.control {
   align-self: stretch;
 }
 
-/* ── Icon glyphs — CSS-gated on the glyph attributes ─────────────────── */
+/* ── Icon glyphs ──────────────────────────────────────────────────────── */
 .icon {
   display: none;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  /* Figma icon-leading / icon-trailing measure 14 x 14 (Input Field atom
-     935:38549), which is what size/icon/xs resolves to — the old comment here
-     claimed 16 and was never true.
-
-     THE GLYPH IS A FONT CHARACTER, so font-size is what scales it; the two size
-     properties only size its BOX. Without it the glyph inherited the FIELD's
-     text size and painted at 16 inside a 14 box — a magnifying glass that
-     overhung its own square. One variable now drives all three. */
+  /* The glyph is a font character, so font-size scales it; the size properties
+     only size its box. Without it the glyph inherits the field's text size and
+     overhangs its square. One variable drives all three. */
   inline-size: var(--sherpa-theme-size-icon-xs, 14px);
   block-size: var(--sherpa-theme-size-icon-xs, 14px);
   font-size: var(--sherpa-theme-size-icon-xs, 14px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-/* A RAW GLYPH character only. A Font Awesome class list draws through the
-   webfont's own ::before rule instead, so this must not fight it — without the
-   [data-glyph] guard the empty attr() emptied the FA glyph. */
+/* Raw glyph only. A Font Awesome class draws via the webfont's own ::before;
+   without the [data-glyph] guard the empty attr() empties the FA glyph. */
 .icon[data-glyph]::before {
   content: attr(data-glyph);
   font-family: inherit;
@@ -149,7 +122,7 @@ textarea.control {
 :host([data-icon-start]) .icon-start { display: inline-flex; }
 :host([data-icon-end]) .icon-end { display: inline-flex; }
 
-/* ── Actions slot — CSS-gated on SherpaElement's auto-set data-has-actions ── */
+/* ── Actions slot — gated on SherpaElement's auto-set data-has-actions ─── */
 .actions {
   display: none;
   flex: 0 0 auto;
@@ -158,26 +131,20 @@ textarea.control {
 }
 :host([data-has-actions]) .actions { display: inline-flex; }
 
-/* ── Validation — Figma's FILLED critical bar (Input Field (atom) State=error) ──
-   Native :user-invalid, or an explicit data-error, reveals a full-width bar under
-   the control: Style:Saturated=critical surface (#b72200) with style-content/base
-   (#ffffff) 14/20 text, padding/xs 2 · padding/sm 4, snapped to the field (field
-   bottom corners 0 / bar top corners 0). The FIELD border stays neutral — Figma's
-   base Style critical mode keeps style-border/base at #b3b3c3; only the bar is red.
-   The colours borrow the status cascade so a data-status="critical" host and the
-   browser's own invalid state paint the same critical ink. */
+/* ── Validation — a filled critical bar under the control ──────────────
+   Only the bar goes red; the field border stays neutral, per Figma. Colours
+   borrow the status cascade so :user-invalid and data-status="critical" match. */
 .control-row:has(.control:user-invalid):focus-within,
 :host([data-error]) .control-row:focus-within {
   box-shadow: inset 0 0 0 2px var(--_border-error);
 }
-/* Snap the field to the bar when the bar is showing (Figma snap-bottom-edge pin). */
+/* Snap the field to the bar when the bar is showing. */
 .control-row:has(.control:user-invalid):has(~ .message:not(:empty)),
 :host([data-error]) .control-row:has(~ .message:not(:empty)) {
   border-end-start-radius: 0;
   border-end-end-radius: 0;
 }
 
-/* The filled bar: hidden by default, shown when invalid / data-error and it holds text. */
 .message {
   display: none;
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
@@ -200,8 +167,8 @@ textarea.control {
 }
 :host([disabled]) .control {
   cursor: not-allowed;
-  /* The disabled row is surface/default/+2 (#b3b3c3); content-body-2 is the SAME
-     grey → the value/placeholder would vanish. Use the darker inactive ink. */
+  /* content-body-2 is the same grey as the disabled row — the text would
+     vanish. Use the darker inactive ink. */
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 :host([disabled]) .control::placeholder {
@@ -209,10 +176,9 @@ textarea.control {
 }
 :host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
-/* ── Minimal style — a bare inline field (label beside the control) ──── */
-/* Layout only: label + control on one row. The label and control keep the
-   SAME text styles as the default variant — minimal changes the arrangement,
-   not the typography. The minimal control keeps its own border (no row wrapper). */
+/* ── Minimal style — label beside the control ─────────────────────────
+   Layout only: the typography matches the default variant. The minimal
+   control keeps its own border (there is no row wrapper). */
 .field-minimal {
   flex-direction: row;
   align-items: center;
@@ -244,7 +210,7 @@ textarea.control {
 .field-minimal .control:user-invalid:focus-visible {
   box-shadow: inset 0 0 0 2px var(--_border-error);
 }
-/* Borderless — the control is a bare field (e.g. a grid column filter). */
+/* Borderless — a bare field, e.g. a grid column filter. */
 :host([data-borderless]) .field-minimal .control {
   border-color: transparent;
   background: transparent;

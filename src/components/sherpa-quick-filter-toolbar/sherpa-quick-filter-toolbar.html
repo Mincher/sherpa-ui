@@ -1,46 +1,20 @@
 <!--
   sherpa-quick-filter-toolbar — a strip of quick-filter chips above a grid/list.
 
-  populate([{ id, label, type?, active?, count? }]) stamps sherpa-quick-filter
-  chips from a cloning prototype. Toggling a chip emits quick-filter-change with
-  the full set of active filter ids. A trailing actions slot holds add / clear
-  controls; an optional leading view slot (data-type="view") holds a view chip.
+  populate([{ id, label, type?, active?, count? }]) stamps chips from a cloning
+  prototype; toggling one emits quick-filter-change.
 
-  Two per-filter flags decide what a chip IS rather than how it looks:
+  Per-filter flags:
+    data-reset-on-populate  populate() REPLACES chips; live picks do not survive.
+    data-bounds  CSS selector the chip's menu must stay inside (else viewport).
+    kind         values (default) | number | date — number/date lead with a
+                 Range switch.
+    removable    opt-in; the row DELETES the chip.
+    persistent   always on, never removable, defaults to its FIRST option.
+    commit       opt-in Apply/Cancel footer; chips auto-apply by default.
 
-    data-reset-on-populate
-                populate() REPLACES the chips rather than amending them: a chip's
-                live picks do NOT survive it. For a bar whose filter set is owned
-                by something else — a saved view, a preset — where carrying the
-                last view's choices into the next one would filter it by the
-                wrong thing. Without it, live state survives a re-populate, which
-                is what stops adding one filter resetting every other.
-    data-bounds a CSS selector for the region a chip's MENU must stay inside —
-                the app's content area, say. Passed to every menu this bar
-                stamps; without one they fall back to the viewport.
-    kind        values (default) | number | date — what the chip's menu holds.
-                A NUMBER chip's menu leads with a Range switch: off, one field
-                filters by a single value; on, a two-ended slider filters between
-                two. A DATE chip gets the same switch over its calendar.
-    removable   offer "Remove" in its menu. OPT-IN, because the row
-                DELETES the chip — the safe default when a host says nothing is
-                to keep it. addFilter() grants it to anything the user added.
-    persistent  a SELECTOR, not a toggle: always on, never removable, and never
-                "empty". Given no pick, it defaults to its FIRST option, so it
-                always holds exactly one value. The view chip is the case.
-    commit      DEFER this chip's picks behind an Apply/Cancel footer instead of
-                applying each tick as it is made. OPT-IN. Chips auto-apply by
-                default — a tick changes the filter there and then, which is what
-                a filter chip should feel like. Turn it on for a field whose
-                query is genuinely expensive (a server-side scan, a wide date
-                range), where applying per tick would fire several requests for
-                one unfinished selection.
-
-  CLEAR (data-clearable) and REMOVE (data-removable) are icon buttons in the
-  menu's HEADER, beside the heading — not footer buttons. The FOOTER holds the
-  decision pair (Cancel/Apply) plus Today on a calendar, and any one of those
-  raises it. So an auto-applying date chip keeps Today in the footer and both
-  header buttons, and drops only Cancel/Apply.
+  Clear and Remove are icon buttons in the menu HEADER; the FOOTER holds
+  Cancel/Apply plus Today.
 
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
@@ -67,18 +41,9 @@
     view-menu-open       — the Save group's ▾ (view type)
     filter-overflow      — the ⋮ button
 
-  ── THE ACTION CLUSTER (Figma "Filter Toolbar" 150:3688) ────────────────────
-  The trailing cluster is BUILT IN and follows Figma's `Type` axis. It used to be
-  an empty `actions` slot with the cluster "delegated to the host" — reversed on
-  Will's call, because Figma models this as ONE component and every host that
-  mounted a toolbar had to rebuild the same seven buttons.
-
-  Both types, in order:   Add chip · AI · undo · configure · │ · refresh · ⋮
-  Type=view ALSO inserts, after the divider:  [★│Save│▾]  (one snapped group)
-
-  Every control exists in the template from the start; `data-type` reveals the
-  view-only group through CSS. The `actions` slot survives for host extras and
-  renders BEFORE the built-in cluster.
+  The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
+  follows Figma's `Type` axis. Every control exists in the template from the
+  start; `data-type="view"` reveals the view-only group through CSS.
 -->
 <template id="default">
   <div class="bar" part="bar" role="toolbar" aria-label="Quick filters">
@@ -86,77 +51,41 @@
       <slot name="view"></slot>
     </div>
 
-    <!--
-      ORGANISE ZONE — the Group and Sort chips, at the START of the bar.
-
-      Figma's Filter Toolbar (Type=data) opens its content slot with TWO menu
-      chips, then a 1x16 Divider, then the filter chips. These are those two: they
-      change how the grid is ARRANGED, not which rows survive, so they are kept in
-      their own zone with its own divider rather than mixed into the filter run.
-      Same Filter Chip (atom) component either way — only the placement differs.
-    -->
+    <!-- ORGANISE ZONE — Group and Sort chips. They change how the grid is
+         ARRANGED, not which rows survive, so they keep their own zone and
+         divider rather than mixing into the filter run. -->
     <div class="organise-zone" part="organise"></div>
 
     <div class="chips" part="chips"></div>
 
     <!--
-      THE OVERFLOW CHIP — where filter chips go when even a collapsed action
-      cluster leaves no room for them.
+      THE OVERFLOW CHIP — where filter chips go when there is no room.
 
-      Chips fold in from the END of the run, so the ones a user put there first
-      stay visible and the fold order is the reverse of the unfold order. The
-      badge counts what is inside.
-
-      It is a real <sherpa-quick-filter> so it reads as one of the run rather
-      than as chrome beside it — same height, same rounding, same caret. CSS
-      reveals it; #reflow() sets the count.
-
-      Its menu lists the folded chips by FIELD NAME, each with its own value
-      count, and each opens a submenu carrying that chip's real menu — so a
-      filter is still changeable from in here rather than only countable.
+      Chips fold in from the END of the run, so the fold order is the reverse of
+      the unfold order. CSS reveals it; #reflow() sets the count. It is a real
+      <sherpa-quick-filter> so it reads as one of the run; its menu lists the
+      folded chips, each opening a submenu carrying that chip's real menu.
     -->
     <sherpa-quick-filter class="overflow-chip" part="overflow-chip"
                          data-label="More" data-icon-start="fa-solid fa-filter"
                          data-current data-persistent data-no-value
                          data-locked></sherpa-quick-filter>
     <!--
-      ACTION CLUSTER — Figma's `right-actions` slot, built in.
-
-      Every button exists here from the start; CSS reveals the view-only group
-      off :host([data-type="view"]). Nothing is created at runtime.
-
-      The buttons are icon-only sherpa-buttons at the DEFAULT look — white face,
-      0.5px #B3B3C3 ring. Read from the node's own pins: every Button instance in
-      `right-actions` is pinned `Style: default`, with fill #FFFFFF and stroke
-      #B3B3C3. They were built on the assumption that a
-      run of icon buttons must be tertiary; the pins say otherwise, and a bordered
-      cluster is what separates these ACTIONS from the filter chips beside them.
-
-      Each carries an aria-label, because an icon button has no text to name it.
+      ACTION CLUSTER — Figma's `right-actions` slot. Nothing is created at
+      runtime. Icon-only buttons at the DEFAULT look (white face, 0.5px #B3B3C3
+      ring) — read from the node's own pins, not tertiary. Each carries an
+      aria-label because an icon button has no text to name it.
     -->
     <div class="actions-zone" part="actions">
-      <!-- Host extras first, so a slotted control reads as part of the host's
-           own toolbar rather than interrupting the standard cluster. -->
+      <!-- Host extras first, before the standard cluster. -->
       <slot name="actions"></slot>
 
       <!--
-        ADD — a single Button, read from the updated node (150:3688
-        right-actions[0]): Type=label, 99 x 24, pinned Structure=sm and
-        Style=default, so a white face and 0.5px #B3B3C3 ring like the rest of
-        the cluster.
+        ADD — one button, label plus an END caret (Figma 150:3688
+        right-actions[0]); the instance's icon-start is `visible: false`.
 
-        Label "Add filter", and ONE icon: `triangle-down` at the END. The
-        instance's icon-start is present but `visible: false`, so the design
-        shows no leading glyph — 99 = 8 padding + 61 label + 8 gap + 14 icon + 8
-        padding, which only adds up without one.
-
-        The caret is now an END ICON on one button rather than a second snapped
-        control. That is the change: adding a filter always meant "show me the
-        list", so a body/caret split was two controls doing one job.
-
-        The <sherpa-menu> goes in the button's `menu` SLOT, not its default one —
-        a popover in the default slot lands inside the label, joining its text
-        and widening the box.
+        A <sherpa-menu> here must go in the button's `menu` SLOT — in the
+        default slot it lands inside the label and widens the box.
       -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
                      data-icon-end="fa-solid fa-caret-down"
@@ -168,24 +97,17 @@
       <sherpa-button class="act" data-size="sm" data-act="clear" data-type="icon"
                      data-icon-start="fa-solid fa-arrow-rotate-left"
                      aria-label="Reset filters"></sherpa-button>
-      <!-- Figma's glyph is `sliders-up`, which is Font Awesome PRO — and a Pro
-           class in the free webfont renders NOTHING at all (content: none, zero
-           glyph). `fa-sliders` is the same control-sliders picture in Free.
-           Verified by rendering both inside a real shadow root. -->
+      <!-- Figma's glyph is `sliders-up`, which is Font Awesome PRO — a Pro class
+           in the free webfont renders NOTHING (content: none, zero glyph).
+           `fa-sliders` is the Free equivalent. -->
       <sherpa-button class="act" data-size="sm" data-act="configure" data-type="icon"
                      data-icon-start="fa-solid fa-sliders"
                      aria-label="Configure filters"></sherpa-button>
 
       <span class="act-divider" aria-hidden="true"></span>
 
-      <!--
-        THE VIEW GROUP — Figma's "Frame 1": three controls SNAPPED into one box
-        (gap -0.5, i.e. their borders overlap). data-snap squares the joined
-        edges so they read as a single control, which is what makes ★ and ▾ read
-        as parts of Save rather than three loose buttons.
-
-        Shown only for data-type="view".
-      -->
+      <!-- THE VIEW GROUP — Figma's "Frame 1": three controls snapped into one
+           box. Shown only for data-type="view". -->
       <span class="view-group sherpa-snap-group">
         <sherpa-button class="act" data-size="sm" data-act="favourite" data-type="icon"
                        data-snap="right" data-icon-start="fa-regular fa-star"
@@ -210,36 +132,22 @@
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>
   </template>
 
-  <!-- A chip's value menu, cloned when its definition carries `options`. Rows are
-       real form controls, so keyboard + screen-reader behaviour comes free. -->
+  <!-- A chip's value menu, cloned when its definition carries `options`. -->
   <template class="qf-menu-tpl">
     <sherpa-menu slot="menu"></sherpa-menu>
   </template>
-  <!-- The input carries its margin INLINE, not in a stylesheet.
-
-       A row is cloned into the CHIP's light DOM and slotted into the menu, so it
-       lives in neither component's shadow tree: the toolbar's sheet does not
-       reach it once moved, and the menu's `::slotted(label)` styles the label but
-       cannot reach the label's CHILDREN. That leaves the browser's own control
-       margin — `3px 3px 0 5px`, asymmetric top-to-bottom — which pushed the box
-       1.5px below the label text on a centred row. An inline style is the only
-       thing that crosses both boundaries. -->
+  <!-- The input's margin is INLINE by necessity: the row is cloned into the
+       CHIP's light DOM and slotted into the menu, so neither shadow tree's
+       stylesheet reaches it and the browser's asymmetric control margin
+       (3px 3px 0 5px) would push the box below the label text. -->
   <template class="qf-row-tpl">
     <label><input type="checkbox" style="margin: 0; flex: 0 0 auto;" /><span class="qf-row-label"></span></label>
   </template>
 
-  <!--
-    SELECT ALL — the first row of a MULTI-select menu.
-
-    It is the same label+checkbox shape as a value row, so it reads as part of
-    the list rather than as chrome above it, and its box shows the set's own
-    state: ticked when every value is on, INDETERMINATE when only some are.
-    Clicking it turns everything on, or everything off when all are already on —
-    which is why one row serves as both "Select all" and "Clear all" and the
-    label says which it will do.
-
-    A SINGLE-select menu never gets one: you cannot pick all of a set of radios.
-  -->
+  <!-- SELECT ALL — first row of a MULTI-select menu. Same label+checkbox shape
+       as a value row; INDETERMINATE when only some values are on. Clicking it
+       turns everything on, or off when all are already on. Single-select menus
+       never get one. -->
   <template class="qf-all-tpl">
     <label class="qf-all">
       <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
@@ -247,45 +155,21 @@
     </label>
   </template>
 
-  <!--
-    The rule between the values a filter can currently reach and the ones it
-    cannot. A <hr> rather than a styled div: it IS a thematic break between two
-    groups of rows, so the semantics are free and a screen reader announces the
-    split without an ARIA attribute.
-  -->
+  <!-- The rule between reachable and unreachable values. A <hr> because it IS a
+       thematic break — a screen reader announces it without ARIA. -->
   <template class="qf-divider-tpl">
     <hr class="qf-divider" />
   </template>
 
-  <!--
-    One row of the OVERFLOW chip's menu: a folded filter, named by its field,
-    with a badge counting the values applied to it.
-
-    A composed <sherpa-list-item>, not a hand-rolled <button>. The component
-    already owns the row's box, its hover and its keyboard activation, and
-    `data-interactive` is what makes it a real button rather than a div with a
-    listener. The badge is a <sherpa-tag> in its `trailing` slot — the same pill
-    the rest of the system counts with.
-
-    It is a DOOR, not a value to tick: clicking it replaces the menu's list with
-    that filter's own rows rather than toggling anything.
-  -->
+  <!-- One row of the OVERFLOW chip's menu: a folded filter with a count badge.
+       It is a DOOR — clicking it swaps the menu's list for that filter's rows.
+       `data-expandable` is the wrong thing here: its toggle sits on the LEADING
+       side and fires item-expand. -->
   <template class="qf-folded-tpl">
     <sherpa-list-item class="qf-folded" data-interactive>
       <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
-      <!--
-        The drill affordance. A composed transparent icon <sherpa-button>, which
-        is what every other chevron in the system is — a bare <i> would be a
-        glyph this file then had to size and colour itself.
-
-        `data-expandable` on the list item is the wrong thing: its toggle sits
-        on the LEADING side and fires item-expand, and this row navigates rather
-        than expanding in place.
-
-        It is decorative — the whole ROW is the click target, and the list item
-        already exposes a real button for that — so it takes no tab stop of its
-        own and no label to announce twice.
-      -->
+      <!-- Decorative: the whole ROW is the click target, so no tab stop and no
+           label to announce twice. -->
       <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
                      data-size="xs" data-look="transparent" tabindex="-1"
                      aria-hidden="true"
@@ -294,28 +178,19 @@
   </template>
 
   <!--
-    A DATE filter's menu content: the calendar itself, in place of value rows.
+    A DATE filter's menu content: the calendar in place of value rows.
 
     `data-embedded` drops the calendar's own Apply/Cancel — the MENU owns the
-    action row, exactly as Figma's Calendar composes a Container Footer rather
-    than drawing one. So a date chip commits through the same single Apply as
-    every other filter chip, and the toolbar needs no date-specific path.
-
-    The same prototype serves the range and time variants that are coming: those
-    are `data-type="range"` and `data-has-time` on this element, which the chip
-    definition sets — not a second template.
+    action row, so a date chip commits through the same Apply as every other
+    chip. Range and time variants set `data-type="range"` / `data-has-time` on
+    this same element, not a second template.
   -->
   <!--
     A FOLDED TOGGLE — a boolean chip's row in the overflow menu.
 
-    A chip with no `options` has nothing to drill into: it is on or off. It used
-    to get the same drill row every other folded filter does, so it wore a
-    chevron, looked like a parent, and did NOTHING when clicked — the drill
-    handler needs the chip's own menu and a boolean chip has none.
-
-    It is the SAME label+checkbox shape as a value row, because that is exactly
-    what it is: one value you can tick. The tick mirrors the chip's own on/off
-    state, so the menu and the bar can never disagree.
+    A chip with no `options` has nothing to drill into, so it gets the value-row
+    shape rather than a drill row (whose handler needs a menu it has not got).
+    The tick mirrors the chip's own on/off state.
   -->
   <template class="qf-toggle-tpl">
     <label class="qf-toggle">
@@ -328,19 +203,9 @@
     <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
   </template>
 
-  <!--
-    THE RANGE SWITCH — the first row of a number or date menu.
-
-    A number filter is "equals this" or "between these two", and a date filter is
-    "on this day" or "between these two days". That is ONE menu with a mode, not
-    two chips a user has to know to choose between: the switch flips what the
-    rows below it are, and the chip keeps its place on the bar either way.
-
-    Shaped as a row rather than as chrome so it reads as part of the list: the
-    switch LEADS and the label follows, which is where a value row puts its
-    checkbox and its text. That keeps every control in the menu on one left edge
-    rather than the mode row alone reaching for the far side.
-  -->
+  <!-- THE RANGE SWITCH — first row of a number or date menu; flips what the
+       rows below it are. Switch LEADS, label follows, so every control in the
+       menu shares one left edge. -->
   <template class="qf-range-tpl">
     <div class="qf-range-row" data-row>
       <sherpa-switch class="qf-range-switch" data-type="simple"></sherpa-switch>
@@ -350,14 +215,11 @@
 
   <!--
     A NUMBER filter's content: one field when Range is off, a two-ended slider
-    when it is on. BOTH exist from the start and CSS reveals one, so flipping the
-    switch is an attribute write rather than a rebuild — and whatever the user
-    typed on the other side is still there when they flip back.
+    when on. BOTH exist from the start and CSS reveals one, so a flip keeps
+    whatever was typed on the other side.
 
-    The single field is a bare number input rather than a sherpa-input-text: it
-    has to sit in the CHIP's light DOM to be slotted into the menu, where neither
-    component's stylesheet reaches it, and a composed component there would carry
-    its own shadow tree for a box this file cannot style anyway.
+    A bare number input, not a sherpa-input-text: it sits in the CHIP's light
+    DOM to be slotted, where no stylesheet reaches it anyway.
   -->
   <template class="qf-number-tpl">
     <div class="qf-number">

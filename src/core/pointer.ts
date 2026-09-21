@@ -1,28 +1,17 @@
 /**
  * pointer.ts — JSON Pointer (RFC 6901) reads, writes and overlap.
  *
- * `/theme/mode` addresses a value inside a plain object, and a subscriber can
- * watch a BRANCH — TRAP T-pointer-overlap-is-both-directions.
- *
- * TRAP T-pointer-stays-out-of-session — DOM-free by lint rule, so it must not be
- * folded into the browser-only `session.ts` an audit will point at.
+ * TRAP T-pointer-overlap-is-both-directions
+ * TRAP T-pointer-stays-out-of-session — DOM-free by lint rule; never fold into
+ * the browser-only `session.ts`.
  */
 
-/**
- * Decode an escaped token. RFC 6901: `~1` is `/` and `~0` is `~`.
- *
- * TRAP T-pointer-escape-decode-order — `~1` first, then `~0`.
- */
+/** Decode an escaped token. TRAP T-pointer-escape-decode-order — `~1` before `~0`. */
 function decodeToken(t: string): string {
   return t.replace(/~1/g, '/').replace(/~0/g, '~');
 }
 
-/**
- * Read the value at `pointer`, or `undefined`.
- *
- * The empty pointer means the WHOLE document, per the standard. Anything not
- * starting with `/` is not a pointer and reads as undefined.
- */
+/** Read the value at `pointer`, or `undefined`. The empty pointer is the whole document. */
 export function getPointer(root: unknown, pointer: string): unknown {
   if (pointer === '') return root;
   if (pointer[0] !== '/') return undefined;
@@ -37,8 +26,7 @@ export function getPointer(root: unknown, pointer: string): unknown {
 /**
  * Write `value` at `pointer`, creating the objects on the way.
  *
- * A missing or non-object step is REPLACED with an object — refusing because the
- * branch does not exist yet would make every write order-dependent.
+ * A missing or non-object step is REPLACED — otherwise writes are order-dependent.
  */
 export function setPointer(
   root: Record<string, unknown>,
@@ -61,8 +49,7 @@ export function setPointer(
 /**
  * Does a change at one pointer concern a subscriber at the other?
  *
- * TRAP T-pointer-overlap-is-both-directions — one direction only leaves half the
- * subscribers stale.
+ * TRAP T-pointer-overlap-is-both-directions — one direction leaves half stale.
  */
 export function pointersOverlap(a: string, b: string): boolean {
   return a === b || a.startsWith(b + '/') || b.startsWith(a + '/');

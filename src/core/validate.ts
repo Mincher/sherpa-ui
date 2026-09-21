@@ -1,33 +1,24 @@
 /**
  * validate.ts — is this value allowed?
  *
- * One answer shape for every caller: a field that checks itself as you type, a
- * store that refuses a bad `insert`, a form that reports on submit. They have
- * different timing and different consequences, but "what is wrong with this"
- * should not be three different questions.
+ * One answer shape for a field checking as you type, a store refusing an
+ * `insert`, and a form reporting on submit.
  *
- * TRAP T-standard-schema-is-duck-typed — the contract is Standard Schema's, and
- * accepting Zod / Valibot / ArkType costs no dependency.
+ * TRAP T-standard-schema-is-duck-typed
  */
 
 /* ── The answer ─────────────────────────────────────────────────────── */
 
-/**
- * One thing that is wrong.
- *
- * `path` is Standard Schema's — an array, because a value can be nested. A
- * top-level value has no path at all.
- */
+/** One thing that is wrong. `path` is an array; a top-level value has none. */
 export interface Issue {
   message: string;
   path?: ReadonlyArray<PropertyKey>;
 }
 
 /**
- * What a validation says.
+ * What a validation says. `issues` ABSENT means valid.
  *
- * Standard Schema's own shape: `issues` ABSENT means valid, and the parsed
- * `value` is then present — TRAP T-standard-schema-is-duck-typed.
+ * TRAP T-standard-schema-is-duck-typed
  */
 export type Result<T = unknown> =
   | { value: T; issues?: undefined }
@@ -41,10 +32,10 @@ export function isValid<T>(result: Result<T>): result is { value: T; issues?: un
 /* ── The Standard Schema interface ──────────────────────────────────── */
 
 /**
- * The duck type. Declared, never imported — that is what keeps this
- * zero-dependency while still accepting Zod, Valibot and ArkType.
+ * The duck type. Declared, never imported — that is what accepts Zod, Valibot
+ * and ArkType at zero dependency cost.
  *
- * TRAP T-standard-schema-is-duck-typed.
+ * TRAP T-standard-schema-is-duck-typed
  */
 export interface StandardSchema<Input = unknown, Output = Input> {
   readonly '~standard': {
@@ -63,12 +54,7 @@ export function isSchema(value: unknown): value is StandardSchema {
   );
 }
 
-/**
- * Run a schema and always hand back a promise.
- *
- * A caller that awaits works with a synchronous schema too, so nothing branches
- * on which kind it was given.
- */
+/** Run a schema, always as a promise — so nothing branches on sync vs async. */
 export async function validate<T>(
   schema: StandardSchema<unknown, T>,
   value: unknown,
@@ -78,29 +64,22 @@ export async function validate<T>(
 
 /* ── Rules ──────────────────────────────────────────────────────────── */
 
-/**
- * One check on one value.
- *
- * Returns a message when the value is WRONG and nothing when it is fine. It may
- * be async, so "is this username taken?" needs no second mechanism.
- */
+/** One check on one value: a message when WRONG, nothing when fine. May be async. */
 export type Rule = (value: unknown) => string | undefined | Promise<string | undefined>;
 
 /**
- * Is this value absent?
+ * Is this value absent? `''` counts, zero and `false` do not.
  *
- * TRAP T-every-rule-but-required-passes-absent — `''` counts, zero and `false`
- * do not.
+ * TRAP T-every-rule-but-required-passes-absent
  */
 function absent(value: unknown): boolean {
   return value == null || value === '' || (Array.isArray(value) && value.length === 0);
 }
 
 /**
- * There has to be something here.
+ * There has to be something here — the only rule that objects to emptiness.
  *
- * TRAP T-every-rule-but-required-passes-absent — only this rule objects to
- * emptiness, which is what makes an optional-but-constrained field possible.
+ * TRAP T-every-rule-but-required-passes-absent
  */
 export function required(message = 'Required'): Rule {
   return (value) => (absent(value) ? message : undefined);
@@ -136,11 +115,9 @@ export function max(limit: number, message?: string): Rule {
 }
 
 /**
- * What `min`/`max` compare.
+ * What `min`/`max` compare. Anything unmeasurable returns null, so the rule passes.
  *
- * A NUMBER is its own size; a string or an array is its length. Anything else
- * returns null so the rule passes —
- * TRAP T-every-rule-but-required-passes-absent.
+ * TRAP T-every-rule-but-required-passes-absent
  */
 function sizeOf(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
@@ -162,10 +139,9 @@ export function pattern(re: RegExp, message = 'Wrong format'): Rule {
 }
 
 /**
- * Looks like an email address.
+ * Looks like an email address. Loose on purpose — a stricter regex rejects real ones.
  *
- * TRAP T-email-check-is-deliberately-loose — a stricter regex rejects real
- * addresses, and only sending to one proves it works.
+ * TRAP T-email-check-is-deliberately-loose
  */
 export function email(message = 'Enter a valid email address'): Rule {
   return pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, message);
@@ -190,11 +166,7 @@ export function oneOf(allowed: readonly unknown[], message?: string): Rule {
   };
 }
 
-/**
- * Anything else.
- *
- * The escape hatch, and why the rule set stays small.
- */
+/** Anything else. The escape hatch, and why the rule set stays small. */
 export function custom(check: Rule): Rule {
   return check;
 }
@@ -208,14 +180,13 @@ export type FieldRules = Rule | readonly Rule[];
 export type RuleMap = Readonly<Record<string, FieldRules>>;
 
 /**
- * Turn rules into a Standard Schema.
- *
- * So the built-in and a third-party schema are the SAME kind of thing to every
- * caller — TRAP T-standard-schema-is-duck-typed. Rules on one field run IN ORDER
- * and stop at the first failure
- * (TRAP T-every-rule-but-required-passes-absent).
+ * Turn rules into a Standard Schema, so built-in and third-party are one kind of
+ * thing to every caller. A field's rules run IN ORDER, stopping at the first fail.
  *
  *   rules({ email: [required(), email()], seats: number() })
+ *
+ * TRAP T-standard-schema-is-duck-typed
+ * TRAP T-every-rule-but-required-passes-absent
  */
 export function rules<T extends Record<string, unknown> = Record<string, unknown>>(
   map: RuleMap,
@@ -248,10 +219,9 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
 }
 
 /**
- * Run one field's rules on its own.
+ * Run one field's rules on its own, for a field validating as it is typed.
  *
- * For a field validating itself as it is typed. Same rules, same messages —
- * TRAP T-every-rule-but-required-passes-absent.
+ * TRAP T-every-rule-but-required-passes-absent
  */
 export async function validateField(
   fieldRules: FieldRules,
@@ -265,11 +235,7 @@ export async function validateField(
   return undefined;
 }
 
-/**
- * Every issue for one field, as a message list.
- *
- * Flattens the path so a form-level summary compares plain strings.
- */
+/** Every issue for one field, path flattened, as a message list. */
 export function issuesFor(result: Result, field: string): string[] {
   return (result.issues ?? [])
     .filter((issue) => String(issue.path?.[0] ?? '') === field)
@@ -279,19 +245,12 @@ export function issuesFor(result: Result, field: string): string[] {
 /* ── The refusal ───────────────────────────────────────────────────────── */
 
 /**
- * A write the schema refused.
+ * A write the schema refused. Carries the ISSUES, not just a message.
  *
- * Carries the ISSUES, not just a message — a UI reads them per field; the
- * message is for a log or an unhandled throw.
+ * Declared here, not beside a store, so every store throws the ONE class a
+ * caller can `instanceof`.
  *
- * DECLARED HERE, not beside a store, because EVERY store throws it and there
- * must be exactly one class to catch. `idb-store.ts` had its own
- * `IdbValidationError`: same fields, same message, and `this.name` set to the
- * very same `'ValidationError'` — but a DIFFERENT class, so
- * `catch (e) { if (e instanceof ValidationError) … }` was false for an
- * IndexedDB failure while claiming to be one in every log line.
- *
- * TRAP T-one-class-to-catch.
+ * TRAP T-one-class-to-catch
  */
 export class ValidationError extends Error {
   readonly issues: ReadonlyArray<Issue>;

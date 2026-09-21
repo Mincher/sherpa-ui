@@ -1,22 +1,17 @@
 /**
- * sherpa-element.ts — the one base class, rebuilt from first principles.
- *
- * TRAP T-base-class-does-four-things — the four things it does, and the
- * subclass contract (`css`/`html`/`props`/`observed` + the five hooks).
+ * sherpa-element.ts — the one base class every `sherpa-*` component extends.
+ * TRAP T-base-class-does-four-things
  */
 
-/** A parsed template map: id → innerHTML. `null` when the file is a single flat template. */
+/** id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
 
-/* ── Class-level caches (keyed by resolved URL string, shared across instances) ── */
+/* Class-level caches, keyed by resolved URL, shared across instances. */
 const htmlCache = new Map<string, Promise<string>>();
 const templateCache = new Map<string, TemplateMap>();
 const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
 
-/**
- * Fetch a stylesheet URL once and return a constructable CSSStyleSheet. Shared
- * across every element that adopts the same URL — one network hit, one sheet object.
- */
+/** Fetch a stylesheet URL once; every element adopting it shares one sheet object. */
 function loadSheet(url: string): Promise<CSSStyleSheet> {
   let pending = sheetCache.get(url);
   if (!pending) {
@@ -43,11 +38,8 @@ function loadHtml(url: string): Promise<string> {
 }
 
 /**
- * Parse an HTML string into a map of `<template id="...">` → innerHTML. Returns
- * null when there are no id'd templates (a single flat template).
- *
- * TRAP T-cloning-prototypes-have-no-id — a `<template class>` item prototype is
- * ignored here, which is why it must not carry an `id`.
+ * Parse `<template id="...">` → innerHTML. Null when there are no id'd templates.
+ * TRAP T-cloning-prototypes-have-no-id — an item prototype must carry no `id`.
  */
 export function parseTemplates(html: string): TemplateMap {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -60,9 +52,7 @@ export function parseTemplates(html: string): TemplateMap {
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
-  /** Clamp the result to at least this. */
   min?: number;
-  /** Clamp the result to at most this. */
   max?: number;
   /** Truncate toward zero, so `"3.7"` reads as 3. */
   int?: boolean;
@@ -70,10 +60,7 @@ export interface NumOptions {
 
 /**
  * Coerce a raw attribute string to a number, or return `fallback`.
- *
- * TRAP T-coerce-and-clamp-are-shared — exported so the data layer parses by the
- * same rule; ABSENT is null/undefined/empty/whitespace/unparseable, a real 0
- * survives, and the clamp runs only on a value that parsed.
+ * TRAP T-coerce-and-clamp-are-shared
  */
 export function coerceNum(raw: string | null | undefined, fallback: number, opts?: NumOptions): number {
   // Trim first: ' ' is not absent to Number() — it coerces to 0.
@@ -86,10 +73,7 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
 
 /**
  * Rebuild `el` as before + `<mark class="match">` + after, around one hit.
- *
- * TRAP T-mark-match-is-one-shape — ONE shape for a search highlight: text
- * nodes not innerHTML, the HAYSTACK's casing, and the `<mark>` returned for
- * nav-item's `Range`.
+ * TRAP T-mark-match-is-one-shape
  */
 export function markMatch(el: Element, text: string, at: number, length: number): HTMLElement {
   const mark = document.createElement('mark');
@@ -105,9 +89,7 @@ export function markMatch(el: Element, text: string, at: number, length: number)
 
 /**
  * Apply the min/max bounds from `opts`, if any.
- *
- * TRAP T-coerce-and-clamp-are-shared — exported for the same reason
- * `coerceNum` is.
+ * TRAP T-coerce-and-clamp-are-shared
  */
 export function clampNum(value: number, opts?: NumOptions): number {
   let out = value;
@@ -119,9 +101,7 @@ export function clampNum(value: number, opts?: NumOptions): number {
 /* ── Declarative attributes: `static props` ──────────────────────────────── */
 
 /**
- * How a declared attribute is REALISED — the same three-way split the generated
- * `<name>.component.yaml` already uses, so the code and the contract agree.
- *
+ * How a declared attribute is REALISED. Matches the generated `.component.yaml`.
  * TRAP T-declared-only-means-css-owns-it — only `content` does any work.
  */
 export type PropKind = 'content' | 'style' | 'visibility';
@@ -133,28 +113,23 @@ export type PropType = 'string' | 'number' | 'boolean' | 'enum';
 export interface PropDef {
   type: PropType;
   kind: PropKind;
-  /**
-   * Shadow-DOM selector this attribute's text is written into. `content` only.
-   * Without it a `content` prop is observed but not auto-written.
-   */
+  /** Selector the text is written into. `content` only; without it, no auto-write. */
   to?: string;
-  /** Write EVERY match rather than the first. A few templates repeat a node per layout. */
+  /** Write EVERY match rather than the first. */
   all?: boolean;
   /**
-   * Skip the write when this selector matches INSIDE the target. Guards content the
-   * component put there for its own reasons — TRAP T-slot-guards-only-when-filled.
+   * Skip the write when this selector matches inside the target.
+   * TRAP T-slot-guards-only-when-filled
    */
   skipWhen?: string;
   /** Read this attribute when the first is absent (e.g. data-label → data-heading). */
   fallbackAttr?: string;
   /**
    * How the value is RENDERED. Default is plain text.
-   *
-   * TRAP T-icon-value-takes-two-forms — `'icon'` takes an FA class list OR one
-   * raw glyph; without it an FA list prints as literal text.
+   * TRAP T-icon-value-takes-two-forms — `'icon'` or an FA class list prints literally.
    */
   as?: 'text' | 'icon';
-  /** Allowed values for an `enum`. Documentation + spec parity; not enforced at runtime. */
+  /** Allowed values for an `enum`. Spec parity only; not enforced at runtime. */
   values?: readonly string[];
   /** Used when the attribute is absent. Numbers go through coerceNum. */
   default?: string | number | boolean;
@@ -164,25 +139,17 @@ export interface PropDef {
 export type PropMap = Readonly<Record<string, PropDef>>;
 
 /* ── Declarative items: the item-template attributes ─────────────────────── */
-/*
- * NOT "rows". Twelve components stamp from a prototype — a barchart's bars, a
- * tab strip's tabs, a breadcrumb trail's crumbs, a legend's swatches — and only
- * one of them has rows. A base-class name that implies a presentation is a name
- * eleven components have to read past.
- * TRAP T-the-base-class-names-nothing-visual.
- */
+/* "items", not "rows" — only one of the twelve stamping components has rows.
+ * TRAP T-the-base-class-names-nothing-visual */
 
 /**
- * `renderItems()` fills a cloned prototype from the item's own fields, driven by
- * attributes in the template rather than a `fill` callback. An ITEM is whatever
- * the component repeats: a bar, a tab, a crumb, a legend swatch, a grid row.
- *
- * TRAP T-item-template-cannot-compute — the five attributes, the `??` field
- * fallback, and why there is no maths or formatting in a template.
+ * The vocabulary `renderItems()` reads off a cloned prototype. An ITEM is
+ * whatever the component repeats: a bar, a tab, a crumb, a swatch, a row.
+ * TRAP T-item-template-cannot-compute
  */
 export type ItemTemplate = 'declarative';
 
-/** Prefix→meaning for the row-template attributes, in the order they are applied. */
+/* The item-template attributes, in the order they are applied. */
 const ITEM_TEXT = 'data-text';
 const ITEM_ICON = 'data-icon';
 const ITEM_INDEX = 'data-index';
@@ -202,56 +169,36 @@ function fieldValue(item: unknown, expr: string): unknown {
 
 /** Base class for every `sherpa-*` component. */
 export abstract class SherpaElement extends HTMLElement {
-  /**
-   * URL of this component's CSS. Subclasses override. The projected component-scoped
-   * token block is inlined at the TOP of that file (written by
-   * scripts/project-tokens.mjs) — there is no separate <comp>.tokens.css.
-   */
+  /** URL of this component's CSS, scoped-token block inlined at its top. */
   static css?: URL;
   /** URL of this component's HTML template. Subclasses override. */
   static html?: URL;
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
-  /**
-   * Component tier (naming standard, ratified 2026-09-02): `standalone` = a shipped
-   * product component; `sub-component` = a design-only building block used only
-   * inside a parent — excluded from the public catalog / sandbox picker, still
-   * registered so it renders inside its parent, and carrying `@tier sub-component`.
-   */
+  /** `sub-component` = registered but hidden from the catalog / sandbox picker. */
   static tier: 'standalone' | 'sub-component' = 'standalone';
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
   static sharedStyles: URL[] = [];
 
   /**
-   * Declared attributes — the component's public surface, as data rather than code.
-   *
-   * Every key is observed automatically; a `content` entry with a `to` selector
-   * is written into the shadow DOM here.
+   * Declared attributes — the public surface as data. Every key is observed.
    * TRAP T-declared-only-means-css-owns-it — `style`/`visibility` do no work.
    */
   static props: PropMap = {};
 
   /**
-   * The attributes `templateId` reads — so changing one RE-STAMPS the tree.
-   *
-   * TRAP T-variant-attrs-or-one-way-door — a multi-template component MUST list
-   * them; left empty the variant is whatever the element was born with.
+   * The attributes `templateId` reads — changing one RE-STAMPS the tree.
+   * TRAP T-variant-attrs-or-one-way-door — a multi-template component MUST list them.
    */
   static variantAttrs: readonly string[] = [];
 
-  /**
-   * Observed = the declared props PLUS `variantAttrs` PLUS anything in `observed`.
-   *
-   * `observed` stays for native attributes and for attributes a component reacts
-   * to in its own `onChange`. Deduped, so declaring in both is harmless.
-   */
+  /** Declared props + `variantAttrs` + `observed`, deduped. */
   static get observedAttributes(): string[] {
     const defs = Object.values(this.props);
     return [
       ...new Set([
         ...Object.keys(this.props),
-        // A fallback source is observed too, or a data-heading change would not
-        // re-sync a data-label that falls back to it.
+        // A fallback source is observed too, or the change would not re-sync.
         ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
         ...this.variantAttrs,
         ...this.observed,
@@ -259,7 +206,7 @@ export abstract class SherpaElement extends HTMLElement {
     ];
   }
 
-  /** Open shadow root — queried via $ / $$, never touched directly by subclasses. */
+  /** Open shadow root — queried via $ / $$, never touched directly. */
   protected readonly root: ShadowRoot;
 
   /** Resolves once the first render (template + styles + onRender) has completed. */
@@ -270,19 +217,14 @@ export abstract class SherpaElement extends HTMLElement {
   #connected = false;
 
   /**
-   * The template id currently STAMPED, so a later attribute change can tell
-   * whether the component now wants a different tree.
-   *
-   * TRAP T-template-id-read-once-was-permanent — read once, a component kept
-   * its FIRST tree for life.
+   * The template id currently STAMPED, so a change can tell it wants another tree.
+   * TRAP T-template-id-read-once-was-permanent
    */
   #stampedTemplate: string | null = null;
 
   /**
-   * Aborted on disconnect, and REPLACED on every connect.
-   *
-   * TRAP T-abort-controller-per-connect — FRESH PER CONNECT, and never cached
-   * in a field.
+   * Aborted on disconnect, REPLACED on every connect.
+   * TRAP T-abort-controller-per-connect — never cache the signal in a field.
    */
   #ac = new AbortController();
 
@@ -293,13 +235,11 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /* ── Native lifecycle ─────────────────────────────────────────────── */
-
   connectedCallback(): void {
-    // BEFORE anything reads state — a shadowed property is state that never
-    // arrived. TRAP T-a-property-set-before-upgrade-shadows-its-accessor.
+    // BEFORE anything reads state.
+    // TRAP T-a-property-set-before-upgrade-shadows-its-accessor
     this.#upgradeProperties();
-    // A RE-CONNECT needs a live signal: the last one was aborted on the way
-    // out, and anything wired to it would be wired to nothing.
+    // A re-connect needs a live signal; the last one was aborted on the way out.
     if (this.#ac.signal.aborted) this.#ac = new AbortController();
     if (!this.#hasRendered) {
       void this.#bootstrap();
@@ -310,28 +250,17 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Hand back any property a caller set BEFORE the element was upgraded.
-   *
-   * A value assigned to a not-yet-upgraded element lands as a plain own
-   * property, and an own property beats the prototype accessor for the rest of
-   * that element's life — so the setter never runs again, and the getter is
-   * never asked. Deleting it and re-assigning routes the same value through
-   * the accessor, which is where the real work is.
-   *
-   * TRAP T-a-property-set-before-upgrade-shadows-its-accessor.
+   * Re-route any property set BEFORE upgrade through its accessor.
+   * TRAP T-a-property-set-before-upgrade-shadows-its-accessor
    */
   #upgradeProperties(): void {
     const self = this as unknown as Record<string, unknown>;
-    // The element's OWN keys only — the prototype's accessors are what we are
-    // restoring access to, so walking further would find them and do nothing.
+    // OWN keys only: the prototype accessors are what we are restoring access to.
     for (const key of Object.keys(self)) {
-      // `root` and `rendered` are this class's own fields, assigned in the
-      // constructor. They are not accessors and must not be touched.
+      // Skips `root` / `rendered` — constructor fields, not accessors.
       if (!this.#isAccessor(key)) continue;
       const value = self[key];
-      // `Reflect.deleteProperty`, not `delete` — deleting a computed key is
-      // exactly what this pattern is, and the lint rule that forbids it is
-      // right about every other case.
+      // `Reflect.deleteProperty`: the lint rule against `delete` is right everywhere else.
       Reflect.deleteProperty(self, key);
       self[key] = value;
     }
@@ -350,24 +279,21 @@ export abstract class SherpaElement extends HTMLElement {
 
   disconnectedCallback(): void {
     this.#connected = false;
-    // BEFORE onDisconnect, so a component's own teardown still runs after the
-    // automatic one and can rely on the listeners already being gone.
+    // BEFORE onDisconnect, so a component's teardown finds the listeners gone.
     this.#ac.abort();
     this.onDisconnect();
   }
 
   /**
-   * A signal that aborts when this element leaves the DOM — see `#ac`.
-   *
-   * READ IT WHERE YOU USE IT — TRAP T-abort-controller-per-connect.
+   * A signal that aborts when this element leaves the DOM. Read it where you use it.
+   * TRAP T-abort-controller-per-connect
    */
   protected get signal(): AbortSignal {
     return this.#ac.signal;
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
-    // No-op writes and anything before the first render: onRender reads the
-    // initial attribute state itself.
+    // Before the first render onRender reads the attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
     // A declared prop re-syncs itself; onChange still fires afterwards.
     const Ctor = this.constructor as typeof SherpaElement;
@@ -382,9 +308,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Re-stamp when the wanted template is no longer the stamped one.
-   *
-   * TRAP T-restamp-runs-after-on-change — cheap on the common path, and the
-   * template map is already parsed and cached.
+   * TRAP T-restamp-runs-after-on-change
    */
   #restampIfVariantChanged(): void {
     const Ctor = this.constructor as typeof SherpaElement;
@@ -392,7 +316,7 @@ export abstract class SherpaElement extends HTMLElement {
     // A component with one template never opts in; only a CHANGE re-stamps.
     if (wanted === null || wanted === this.#stampedTemplate) return;
 
-    // Parsed at first render and cached per URL — a re-stamp costs no fetch.
+    // Cached per URL at first render — a re-stamp costs no fetch.
     const map = templateCache.get(Ctor.html?.href ?? '');
     if (!map?.has(wanted)) return;
 
@@ -400,18 +324,15 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Write a template body into the shadow root and run the setup that belongs to
-   * THAT tree — shared by the first render and by a variant re-stamp.
-   *
-   * TRAP T-restamp-does-not-abort — this does NOT abort `#ac`, and why
-   * `onRender` is re-run.
+   * Write a template body into the shadow root and run that tree's setup. Shared
+   * by the first render and by a variant re-stamp.
+   * TRAP T-restamp-does-not-abort
    */
   #stamp(body: string, id: string | null): void {
     this.root.innerHTML = body;
     this.#stampedTemplate = id;
     this.#hasRendered = true;
-    // Declared props are written BEFORE onRender, so a component's own setup
-    // reads a populated shadow tree.
+    // Props BEFORE onRender, so a component's setup reads a populated tree.
     this.#syncAllProps();
     this.onRender();
     this.#wireSlots();
@@ -437,12 +358,12 @@ export abstract class SherpaElement extends HTMLElement {
     }
   }
 
-  /** Build the adopted-stylesheet list: shared sheets first, then this component's CSS. */
+  /** Adopted sheets: shared first, then this component's CSS. */
   async #adoptStyles(Ctor: typeof SherpaElement): Promise<void> {
     // TRAP T-shared-sheets-settle-independently
     await Promise.resolve();
     const urls = [...Ctor.sharedStyles.map((u) => u.href)];
-    if (Ctor.css) urls.push(Ctor.css.href); // includes the inlined scoped-token region
+    if (Ctor.css) urls.push(Ctor.css.href);
     // TRAP T-shared-sheets-settle-independently — settle each, keep what loaded.
     const results = await Promise.allSettled(urls.map(loadSheet));
     const sheets = results
@@ -453,9 +374,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Pick the template body: the id from `templateId`, else the first, else raw html.
-   *
-   * It returns the id ALONGSIDE the body — TRAP
-   * T-template-id-read-once-was-permanent.
+   * Returns the id alongside the body. TRAP T-template-id-read-once-was-permanent
    */
   #resolveTemplate(Ctor: typeof SherpaElement, html: string): [string, string | null] {
     const key = Ctor.html?.href;
@@ -468,15 +387,12 @@ export abstract class SherpaElement extends HTMLElement {
     if (!map) return [html, null]; // single flat template
     const wanted = this.templateId;
     if (wanted && map.has(wanted)) return [map.get(wanted)!, wanted];
-    // The FIRST template's REAL id — TRAP T-template-id-read-once-was-permanent.
+    // The FIRST template's REAL id — TRAP T-template-id-read-once-was-permanent
     const [id, body] = map.entries().next().value ?? [null, html];
     return [body, id];
   }
 
-  /**
-   * Which template id to stamp. Default is the first template; subclasses with
-   * multiple `<template id>` blocks override (e.g. `return this.dataset.mode`).
-   */
+  /** Which template id to stamp. Null means the first; multi-template subclasses override. */
   protected get templateId(): string | null {
     return null;
   }
@@ -492,8 +408,8 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   #reflectSlot(slot: HTMLSlotElement): void {
-    // TRAP T-slot-guards-only-when-filled — assignedNodes() WITHOUT flatten, so
-    // a slot's own fallback content is never counted as "present".
+    // TRAP T-slot-guards-only-when-filled — no flatten, so a slot's own
+    // fallback never counts as "present".
     const has = slot.assignedNodes().some((n) => {
       if (n.nodeType === Node.TEXT_NODE) return (n.textContent ?? '').trim().length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
@@ -505,21 +421,16 @@ export abstract class SherpaElement extends HTMLElement {
   /* ── Data path: populate() → renderData() ────────────────────────── */
 
   /**
-   * The single entry point for data. Waits for the first render, then hands the
-   * payload to renderData(). Idempotent to call before render — it defers.
-   *
-   * TRAP T-populate-settles-after-render-data — await THIS, not `rendered`, to
-   * read back what you just populated.
+   * The single entry point for data. Defers to after the first render.
+   * TRAP T-populate-settles-after-render-data — await THIS, not `rendered`.
    */
   populate(data: unknown): Promise<void> {
     return this.rendered.then(() => this.renderData(data));
   }
 
   /**
-   * Override to render a data payload. Default is a no-op (attribute-only).
-   *
-   * MAY RETURN A PROMISE, which `populate()` chains onto — TRAP
-   * T-populate-settles-after-render-data.
+   * Override to render a data payload. May return a promise, which `populate()` chains.
+   * TRAP T-populate-settles-after-render-data
    */
   protected renderData(_data: unknown): Promise<void> | void {
     /* no-op by default */
@@ -529,10 +440,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Read a NUMBER from an attribute, with a fallback and an optional clamp.
-   *
-   * TRAP T-number-coercion — the ONE numeric parse; by hand it went wrong four
-   * ways. Anything not a finite number is ABSENT; a real 0 survives. Takes
-   * either form (`data-max` or `max`).
+   * TRAP T-number-coercion — the ONE numeric parse; a real 0 survives.
    */
   protected num(attr: string, fallback: number, opts?: NumOptions): number {
     return coerceNum(this.getAttribute(attr), fallback, opts);
@@ -540,9 +448,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Write an attribute from JS, so CSS can react to a data change.
-   *
-   * TRAP T-set-removes-on-falsy — `null`/`undefined`/`false` REMOVE it; `true`
-   * sets it empty.
+   * TRAP T-set-removes-on-falsy — `null`/`undefined`/`false` REMOVE it.
    */
   protected set(attr: string, value: string | number | boolean | null | undefined): void {
     if (value == null || value === false) this.removeAttribute(attr);
@@ -553,9 +459,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Write one declared `content` prop into the shadow DOM.
-   *
-   * TRAP T-empty-write-lets-css-collapse — absent, empty and a missing target
-   * all write `''`; CSS owns the collapsing.
+   * TRAP T-empty-write-lets-css-collapse — CSS owns the collapsing.
    */
   #syncProp(name: string, def: PropDef): void {
     if (def.kind !== 'content' || !def.to) return;
@@ -576,11 +480,8 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * The first element on a composed event's path that matches — the reliable
-   * way to ask "what was actually clicked".
-   *
-   * TRAP T-composed-path-not-target — `target` RETARGETS at a shadow boundary;
-   * written out 26 times across 9 components before this existed.
+   * The first element on a composed event's path that matches.
+   * TRAP T-composed-path-not-target — `target` RETARGETS at a shadow boundary.
    */
   protected pathFind<T extends Element = HTMLElement>(event: Event, selector: string): T | null {
     for (const node of event.composedPath()) {
@@ -596,10 +497,8 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Render an icon value — a Font Awesome class list OR a single raw glyph.
-   *
-   * ONE policy, because there were three — TRAP T-icon-value-takes-two-forms.
-   * TRAP T-write-icon-is-protected-not-private — why it is protected, and why
-   * nothing may build an `<i>`.
+   * TRAP T-icon-value-takes-two-forms
+   * TRAP T-write-icon-is-protected-not-private
    */
   protected writeIcon(el: Element, value: string): void {
     for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
@@ -613,9 +512,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Is this target guarded against a write?
-   *
-   * TRAP T-slot-guards-only-when-filled — a plain element guards by existing, a
-   * `<slot>` only once a consumer has FILLED it.
+   * TRAP T-slot-guards-only-when-filled — a `<slot>` guards only once FILLED.
    */
   #guarded(el: Element, def: PropDef): boolean {
     if (!def.skipWhen) return false;
@@ -645,25 +542,19 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Clone a `<template class="…">` prototype's first element.
-   *
-   * TRAP T-clone-returns-null-never-asserts — returns `null` when the template
-   * is missing or empty; the `firstElementChild!` assertion three call sites
-   * shared is the hazard.
+   * TRAP T-clone-returns-null-never-asserts — `null` when missing or empty.
    */
   protected clone<T extends Element = HTMLElement>(sel: string): T | null {
     const tpl = this.$<HTMLTemplateElement>(sel);
-    // `content` is missing on a non-<template> element — a selector that matched
-    // the wrong node fails here rather than throwing somewhere downstream.
+    // `content` is absent on a non-<template>, so a wrong selector fails here.
     const first = tpl?.content?.firstElementChild;
     return first ? (first.cloneNode(true) as T) : null;
   }
 
   /**
    * Stamp a list: clear the container, clone the prototype per item, fill, append.
-   *
-   * TRAP T-render-list-keeps-fill-in-the-caller — only the plumbing is shared;
-   * `clear: 'own-children'` exists for items that sit beside a `<slot>`, and the
-   * index is the LOOP position.
+   * `clear: 'own-children'` is for items that sit beside a `<slot>`.
+   * TRAP T-render-list-keeps-fill-in-the-caller
    */
   protected renderList<T>(
     containerSel: string,
@@ -691,14 +582,10 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Stamp a list DECLARATIVELY: the prototype's own attributes say what each
-   * field fills, so there is no `fill` callback.
-   *
-   * See `ItemTemplate` for the vocabulary; `clear: 'own-children'` behaves as in
-   * `renderList`.
+   * Stamp a list DECLARATIVELY — the prototype's attributes say what fills what,
+   * so there is no `fill` callback. See `ItemTemplate` for the vocabulary.
    * TRAP T-custom-element-upgrade — writes are ATTRIBUTES, never properties.
-   * TRAP T-row-fragment-cloned-whole — the whole fragment is cloned; `after` is
-   * the escape hatch.
+   * TRAP T-row-fragment-cloned-whole — `after` is the escape hatch.
    */
   protected renderItems<T>(
     containerSel: string,
@@ -720,16 +607,14 @@ export abstract class SherpaElement extends HTMLElement {
       container.replaceChildren();
     }
 
-    // The whole FRAGMENT is cloned, not its firstElementChild: a semantic pair
-    // like <dt>+<dd> is two sibling roots, and stamping only the first would
-    // silently drop the value half of every item.
+    // The whole FRAGMENT: a <dt>+<dd> pair is two roots, and the first alone
+    // drops half of every item.
     items.forEach((item, index) => {
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
       for (const root of [...frag.children]) {
         this.#fillItem(root as HTMLElement, item, index);
       }
-      // `after` gets the first root — the item element for a single-root
-      // prototype, which is every case that needs it.
+      // `after` gets the first root — every case that needs it is single-root.
       const first = frag.firstElementChild as HTMLElement | null;
       if (first) opts?.after?.(first, item, index);
       container.appendChild(frag);
@@ -737,10 +622,8 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Clone ONE item from a prototype and fill it declaratively — `renderItems`
-   * for a component that cannot use a single container.
-   *
-   * TRAP T-clone-item-is-for-two-destinations — the one case, and the boundary.
+   * `renderItems` for one item, when a component has no single container.
+   * TRAP T-clone-item-is-for-two-destinations
    */
   protected cloneItem<T extends Element = HTMLElement>(
     tplSel: string,
@@ -752,12 +635,12 @@ export abstract class SherpaElement extends HTMLElement {
     return node;
   }
 
-  /** Apply every row-template attribute on a cloned row and its descendants. */
+  /** Apply every item-template attribute on a cloned item and its descendants. */
   #fillItem(node: HTMLElement, item: unknown, index: number): void {
-    // The row root can carry the attributes too, so it is part of its own sweep.
+    // The root can carry the attributes too, so it is part of its own sweep.
     for (const el of [node, ...node.querySelectorAll<HTMLElement>('*')]) {
-      // Snapshot — the loop removes each directive, and a live NamedNodeMap
-      // would skip entries. TRAP T-row-fragment-cloned-whole.
+      // Snapshot — the loop removes each directive and a live map would skip
+      // entries. TRAP T-row-fragment-cloned-whole
       for (const { name, value } of [...el.attributes]) {
         if (name === ITEM_TEXT) {
           el.textContent = this.#itemText(item, value);
@@ -777,7 +660,7 @@ export abstract class SherpaElement extends HTMLElement {
         } else if (name.startsWith(ITEM_WHEN)) {
           const target = name.slice(ITEM_WHEN.length);
           el.removeAttribute(name);
-          // Truthy field → the BARE attribute (five hand-written sites, declared).
+          // Truthy field → the BARE attribute.
           if (fieldValue(item, value)) el.setAttribute(`data-${target}`, '');
         }
       }
@@ -790,14 +673,14 @@ export abstract class SherpaElement extends HTMLElement {
     return value == null ? '' : String(value);
   }
 
-  /** Dispatch a bubbling, composed CustomEvent (crosses the shadow boundary). */
+  /** Dispatch a bubbling, composed CustomEvent. */
   protected emit<T = unknown>(name: string, detail?: T): void {
     this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
   }
 
   /* ── Lifecycle hooks (override as needed) ────────────────────────── */
 
-  /** Shadow DOM is ready. Cache refs, set defaults, wire host listeners. Fires once. */
+  /** Shadow DOM is ready. Cache refs, set defaults, wire host listeners. */
   protected onRender(): void {}
   /** Fires once after the first render, when the element is connected. */
   protected onConnect(): void {}

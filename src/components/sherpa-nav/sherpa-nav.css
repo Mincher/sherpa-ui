@@ -98,26 +98,15 @@
 /**
  * sherpa-nav.css — the primary application navigation rail.
  *
- * Mirrors the Figma "Primary Navigation" (32:43161). The rail is a FIVE-MODE state
- * machine — the modes of the Figma Navigation collection, projected into the region
- * above as `:host([data-nav-state=...])`. Everything below reads those tokens; there
- * is no per-mode colour or size duplicated here.
- *
- *   collapsed  width 40   labels/search/section rules hidden (--_is-visible: none)
- *   hover      width 320  + the Elevation lift (nav-shadow/* → elevation/*)
- *   default    width 320  flat
- *   pinned     width 320  flat, pin button active
- *   settings   width 320  tinted surface (surface/default/+1), label "Settings"
- *
- * Visibility of the label / search / section rule is the projected `--_is-visible`
- * flag (Figma's isVisible boolean), so CSS never re-implements the mode logic.
- * The Figma rail carries NO border on any edge — only the hover elevation.
+ * Five modes (collapsed / hover / default / pinned / settings) are projected above
+ * as `:host([data-nav-state=...])`; everything below just reads those tokens.
+ * `--_is-visible` (Figma's isVisible boolean) hides the label / search / section
+ * text when collapsed, so CSS never re-implements the mode logic.
  */
 
 :host {
   display: block;
   block-size: 100%;
-  /* The rail width IS the Figma token (40 collapsed / 320 open). */
   inline-size: var(--sherpa-navigation-nav-layout-width, 320px);
   transition: inline-size 160ms ease;
 }
@@ -130,7 +119,7 @@
   overflow: hidden;
   background: var(--sherpa-navigation-nav-surface-default, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
-  /* nav-shadow/* is 0 in every mode except hover, where it aliases Elevation. */
+  /* nav-shadow/* is 0 in every mode except hover. */
   box-shadow:
     var(--sherpa-navigation-nav-shadow-offset-x, 0px)
     var(--sherpa-navigation-nav-shadow-offset-y, 0px)
@@ -140,24 +129,17 @@
   transition: box-shadow 160ms ease, background-color 160ms ease;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────
-   Figma Header frame: padding 0, 8px below, gap 8, NO stroke. The Navigation
-   Header row bleeds to the edges so the branding tile sits flush in the corner. */
+/* ── Header ────────────────────────────────────────────────────────────── */
 .header {
   display: flex;
   flex-direction: column;
-  /* NO gap between the brand row and the quick-nav zone. Re-read from Figma
-     (Primary Navigation 32:43161): the Header frame's itemSpacing is 0, and the
-     quick zone supplies its own 8px top padding. The extra 8 here pushed every
-     quick row down by one step, so the first of them sat 8px below where the app
-     header's view toolbar ends — the misalignment Will spotted between Home and
-     that bar. */
+  /* NO gap: the quick zone supplies its own 8px top padding, so a gap here
+     pushes every quick row one step below the app header's view toolbar. */
   gap: var(--sherpa-display-mode-space-none, 0);
   padding-block-end: var(--sherpa-display-mode-space-xs, 8px);
   flex: 0 0 auto;
 }
 
-/* Navigation Header row: 40 tall, gap 12, padding-right 8. */
 .brand {
   display: flex;
   align-items: center;
@@ -166,8 +148,7 @@
   min-block-size: var(--sherpa-display-mode-size-3xl, 40px);
 }
 
-/* Branding tile: 40×40 on surface/active/+3 (#8300b6), bottom-right rounding/lg 8,
-   with a 24px white product mark. Always visible — it IS the collapsed rail. */
+/* Branding tile — always visible: it IS the collapsed rail. */
 .brand-icon {
   display: inline-flex;
   align-items: center;
@@ -182,8 +163,6 @@
   line-height: 1;
 }
 
-/* Product name: content/body/+1 at content/size/large 16 on line-height/large 24,
-   medium. Hidden by the projected isVisible flag when collapsed. */
 .product {
   display: var(--_is-visible, block);
   flex: 1 1 auto;
@@ -197,20 +176,15 @@
   text-overflow: ellipsis;
 }
 
-/* Pin + settings — Figma: Button/Type=icon at Structure sm (24×24, radius 4) in the
-   Transparent look. The ACTIVE look is the Style active tint: a #c046ff4d face with a
-   #c046ff ring and brand ink. Which one is active comes from the projected
-   nav-container-{pin,setting}-button switch, applied by JS as data-pin/data-settings
-   (a CSS custom property cannot drive a selector). */
-/* Figma pins these two Buttons to Structure=sm, so their box and glyph are the SM
-   mode's tokens: `height` → space/xl 24 and `icon-size` → content/size/small 12.
-   Reading `--sherpa-structure-*` bare gives the DEFAULT mode instead (32 and 14) —
-   that is what made these render at 32 — because a mode pin is a SELECTOR and the
-   projected `[data-size="sm"]` block lives in the light DOM, where it cannot match
-   an element inside this shadow root.
-   So the pin is applied here by re-pointing the two vars at the SAME primitives the
-   projected sm block uses. Keep this in step with the `[data-size="sm"]` block in
-   @layer structure of tokens.css if the sm mode is ever re-pointed in Figma. */
+/* Pin + settings. Which one is active comes from the projected
+   nav-container-{pin,setting}-button switch, applied by JS as data-pin /
+   data-settings — a custom property cannot drive a selector.
+
+   Figma pins these to Structure=sm, but a mode pin is a SELECTOR and the
+   projected `[data-size="sm"]` block lives in the light DOM, so it cannot match
+   in here — reading `--sherpa-structure-*` bare gives the DEFAULT mode (32/14).
+   The two vars below re-point at the same primitives the sm block uses; keep
+   them in step with `[data-size="sm"]` in @layer structure of tokens.css. */
 .hdr-btn {
   --_btn-box: var(--sherpa-display-mode-space-xl, 24px);
   --_btn-glyph: var(--sherpa-theme-content-size-small, 12px);
@@ -243,16 +217,15 @@
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
-/* Active (latched) header button — Style active. */
 .hdr-btn[aria-pressed="true"] {
   background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
   border-color: var(--sherpa-theme-border-active-2, #c046ff);
   color: var(--sherpa-theme-content-active-1, #8300b6);
 }
 
-/* ── Quick zone — Figma "Slot - Quick Nav Items": padding 8, gap 8 ─────────
-   `align-items: stretch` keeps the search field and the quick rows at the rail's
-   full width; a column flex container otherwise shrink-wraps them to their content. */
+/* ── Quick zone ────────────────────────────────────────────────────────── */
+/* `align-items: stretch` — a column flex container otherwise shrink-wraps the
+   search field and quick rows to their content. */
 .quick-zone {
   display: flex;
   flex-direction: column;
@@ -261,8 +234,6 @@
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Search — the Input Field atom: 32 tall, padding-left 8, gap 8, 0.5 style-border
-   ring, structure rounding. Collapses with the labels. */
 .search {
   display: var(--_is-visible, flex);
   align-items: center;
@@ -279,21 +250,13 @@
 }
 :host(:not([data-searchable])) .search { display: none; }
 
-/* COLLAPSED: the search survives as an ICON ROW, it does not vanish.
-   Figma's Primary Navigation keeps a search in the quick-nav slot above the
-   content items in every state, and the rail's whole job when collapsed is to be
-   a column of reachable icons — dropping search left a gap above Home and took a
-   destination away. The field becomes a 24-tall square like every other row: its
-   own border, padding and input go, leaving just the glyph, and clicking it is
-   what opens the rail. */
+/* COLLAPSED: the search survives as an icon row — clicking it opens the rail. */
 :host([data-nav-state="collapsed"]) .search {
   display: flex;
   justify-content: center;
   padding-inline: 0;
-  /* 32, the SAME height the expanded field has — not 24 like a nav row.
-     Hovering the rail swaps collapsed → hover, and a row that changed height
-     between the two shifted everything below it as the panel opened. Matching
-     the expanded height means only the WIDTH animates. */
+  /* 32, the SAME height as the expanded field. Hover swaps collapsed → hover,
+     and a row that changes height shifts everything below it as it opens. */
   block-size: var(--sherpa-display-mode-size-2xl, 32px);
   border: none;
   background: none;
@@ -322,14 +285,11 @@
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 
   &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
-  /* The native search clear affordance is replaced by .search-clear, which can be
-     styled and sized to the field (the native one cannot). */
+  /* .search-clear replaces the native affordance, which cannot be styled. */
   &::-webkit-search-cancel-button { appearance: none; }
 }
 
-/* Clear button — an icon-only Transparent button at the trailing edge of the field,
-   shown only while the field has text. Figma's field is 32 tall with an 8px inset,
-   so the button matches the field height and keeps the glyph on the 14px icon step. */
+/* Clear button — shown only while the field has text. */
 .search-clear {
   display: none;
   align-items: center;
@@ -357,9 +317,8 @@
 }
 :host([data-has-query]) .search-clear { display: inline-flex; }
 
-/* Quick items (Home · Recent · Favorites) — gap 8, no extra padding (the zone owns
-   it). `align-items: stretch` matters: without it the <li> rows shrink-wrap their
-   label and the rows stop short of the rail's width, unlike the section rows. */
+/* Quick items (Home · Recent · Favorites). `align-items: stretch` matters:
+   without it the <li> rows shrink-wrap their label and stop short of the rail. */
 .quick {
   list-style: none;
   margin: 0;
@@ -372,7 +331,7 @@
   &:not(:has(*)) { display: none; }
 }
 
-/* ── Content (scrolling sections) — Figma content slot: padding 0 × 8, gap 8 ── */
+/* ── Content (scrolling sections) ──────────────────────────────────────── */
 .content {
   flex: 1 1 auto;
   min-block-size: 0;
@@ -390,20 +349,14 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Section label = the Figma Navigation Section row: padding 4 × 8, content/size/xs 10
-   on 16, regular, content/body/+1, upper-case, followed by a 0.5px rule that fills the
-   remaining width. Both collapse with the labels. */
+/* Section label. ALWAYS shown in every state — the divider is its ::after, so
+   hiding the row takes the section rule with it. What collapses is the TEXT. */
 .section-label {
-  /* ALWAYS shown, in every state. The divider is this element's ::after, so
-     hiding the label took the section rule with it — the collapsed rail lost its
-     grouping entirely. What collapses is the TEXT, not the row. */
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   margin: 0;
-  /* A FIXED 24 across every state. It was 24 when open and 0 when collapsed, so
-     everything below it jumped as the rail opened on hover. `box-sizing` is
-     border-box here, so the padding sits inside that 24. */
+  /* FIXED 24 in every state, or everything below jumps as the rail opens. */
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   box-sizing: border-box;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
@@ -416,33 +369,21 @@
 
   &:empty { display: none; }
 }
-/* Collapsed: the NAME goes, the rule stays. A section is still a grouping when
-   the rail is 40px wide — the divider is the only thing left saying where one
-   group ends and the next begins. Hiding the text rather than the row is also
-   what keeps the height stable through the hover transition.
-
-   `font-size: 0` as well as the transparent ink. Transparent alone left the word
-   still occupying its full width: the label row is 24px inside the 40px rail
-   once its 8px side padding is taken, "Views" filled all 24, and the rule — a
-   `flex: 1 1 auto` ::after — was handed nothing. The divider was 0px wide and
-   read as missing. At `font-size: 0` the text measures nothing and the whole 24
-   goes to the rule. The row's own `block-size` holds the height, so nothing
-   moves. */
+/* Collapsed: the name goes, the rule stays.
+   `font-size: 0` as well as transparent ink — transparent alone leaves the word
+   occupying its full width, so the `flex: 1 1 auto` ::after rule gets 0px and
+   reads as missing. */
 :host([data-nav-state="collapsed"]) .section-label {
   color: transparent;
   font-size: 0;
   gap: 0;
-  /* HALF the inline padding. Figma's Navigation Section is padded 8 on each side
-     (32:43134) and there is no collapsed variant designed, so the 8 is the open
-     rail's figure: on a 40px rail whose content box is already 24, a second 8px
-     gutter each side leaves the rule 8px of the 24 and it reads as a hairline
-     rather than a divider. 4 leaves 16 — a rule that is clearly a rule, still
-     inset from the rail's edge. The block padding is untouched, so the row keeps
-     its fixed 24 height through the hover transition. */
+  /* HALF the open rail's inline padding: on a 40px rail 8 each side leaves the
+     rule 8px and it reads as a hairline. Block padding is untouched, so the row
+     keeps its fixed 24 height through the hover transition. */
   padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* The rule after the label (Figma: a 0.5px border/default/+2 rectangle). */
+/* The rule after the label. */
 .section-label::after {
   content: "";
   flex: 1 1 auto;
@@ -465,35 +406,24 @@
 .nav-row { margin: 0; align-self: stretch; }
 .nav-row sherpa-nav-item { display: flex; }
 
-/* ── Child rows ──────────────────────────────────────────────────────────
-   Children are FLAT SIBLINGS of their parent: the rail is one column of 24-tall
-   rows and indentation alone conveys depth, so there is no nested container for
-   `display: none` to catch. A child row instead carries data-parent (whose subtree
-   it belongs to) and data-hidden (whether it should currently show).
-
-   data-hidden is written by the rail, not derived by a selector. A pure selector
-   cannot express "my own parent, several siblings up this flat list, is shut" —
-   :has() can only find that SOME sibling is shut, which would hide unrelated
-   branches. One boolean per row keeps the rule here trivially correct. */
+/* ── Child rows ────────────────────────────────────────────────────────── */
+/* Children are FLAT SIBLINGS of their parent, so there is no nested container
+   to hide. data-hidden is written by the rail, not derived: :has() can only see
+   that SOME sibling is shut, which would hide unrelated branches. */
 .nav-row[data-hidden] { display: none; }
 
-/* A child is ALWAYS hidden in the 40px rail. Every label is gone there, so an
-   indented row would be a blank 24px strip with no icon (children have none) and
-   no label; the parent's chevron is hidden too, so nothing could even reach it. */
+/* A child is always hidden in the 40px rail: children have no icon, and the
+   parent's chevron is hidden too, so nothing could reach it. */
 :host([data-nav-state="collapsed"]) .nav-row[data-parent] { display: none; }
 
-/* ── Search filtering ────────────────────────────────────────────────────
-   Typing in the search box narrows the rail: JS marks non-matching rows (and
-   sections that lost every row) with data-filtered-out; CSS does the hiding. The
-   matched text itself is highlighted with the CSS Custom Highlight API — see
-   ::highlight(sherpa-nav-match) in sherpa-base.css, which the document and every
-   shadow root share. */
+/* ── Search filtering ──────────────────────────────────────────────────── */
+/* JS marks non-matching rows with data-filtered-out; CSS does the hiding.
+   Match highlighting is ::highlight(sherpa-nav-match) in sherpa-base.css. */
 .nav-row[data-filtered-out],
 .section[data-filtered-out] {
   display: none;
 }
 
-/* While searching, an empty result reads as an empty rail rather than a broken one. */
 .content:not(:has(.nav-row:not([data-filtered-out])))::after {
   content: "No matches";
   padding: var(--sherpa-display-mode-space-xs, 8px);
@@ -503,7 +433,7 @@
 }
 :host(:not([data-searching])) .content::after { content: none; }
 
-/* ── Footer (pinned) — no rule in Figma; collapses when empty ───────────── */
+/* ── Footer (pinned) — collapses when empty ────────────────────────────── */
 .footer {
   flex: 0 0 auto;
   margin-block-start: auto;
@@ -512,30 +442,16 @@
   &:not(:has(*)) { display: none; }
 }
 
-/* ── Collapsed rail ──────────────────────────────────────────────────────
-   The label-bearing parts are already hidden by --_is-visible, so only the
-   horizontal rhythm needs work — and it does not fall out of the tokens on its own.
-
-   The arithmetic: the rail is 40 (nav-layout/width in the collapsed mode) and the
-   zone padding is space/xs 8 each side, leaving a 24-wide row. The row's own inset
-   is indent-tier-1, which the collapsed mode tightens to space/2xs 4, plus a
-   padding-right of space/xs 8 that is NOT mode-switched. So 4 + 16 icon + 8 = 28
-   in a 24 box: the icon overflowed and sat left of centre.
-
-   A row showing only its icon is a SQUARE, so its inset must be symmetric. Rather
-   than pick a new number, the row drops both insets and centres — the zone's 8px
-   padding is then the only inset, and 8 + 24 + 8 = 40 exactly. That also keeps a
-   24px icon-only row on the same 24px grid as an open row. */
+/* ── Collapsed rail ────────────────────────────────────────────────────── */
 :host([data-nav-state="collapsed"]) .footer {
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* The row is icon-only, so it centres its icon instead of insetting it.
-   `justify-content` has to reach the INNER control, not just the host: the host is
-   a flex row whose only visible child is `.nav`, and `.nav` is itself the flex row
-   holding the icon. Centring only the host left the icon flush to the start of a
-   full-width `.nav` — 4px off centre in the 40px rail. `part()` crosses the shadow
-   boundary to reach it without the rail needing to know the row's internals. */
+/* An icon-only row is a SQUARE, so it drops both insets and centres: the zone's
+   8px padding is then the only inset and 8 + 24 + 8 = 40 exactly.
+   `justify-content` must reach the INNER control via part(): the host's only
+   visible child is `.nav`, which is itself the flex row holding the icon, so
+   centring the host alone leaves the icon 4px off centre. */
 :host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item {
   --_indent: var(--sherpa-display-mode-space-none, 0px);
   --_pad-end: var(--sherpa-display-mode-space-none, 0px);
@@ -544,14 +460,9 @@
 :host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(row) {
   justify-content: center;
 }
-/* …and the indicator dot goes with the label. Figma keeps it OUTSIDE the row's
-   `content` group, so it does not take the isVisible flag — but Figma has no
-   collapsed-rail-with-indicator frame either, and a 24-wide icon-only row has
-   nowhere to put an 8px disc: pinned to the row's trailing edge it lands on top
-   of the icon. Hiding it is the honest reading; overlaying it as a corner badge
-   would be inventing geometry the design does not specify.
-   FLAG FOR WILL: if the collapsed rail should keep an attention signal, that needs
-   a Figma frame to build against. */
+/* The indicator dot goes with the label: a 24-wide icon-only row has nowhere to
+   put an 8px disc without overlaying the icon, and Figma has no frame for it.
+   FLAG FOR WILL: an attention signal on the collapsed rail needs a Figma frame. */
 :host([data-nav-state="collapsed"]) .nav-row sherpa-nav-item::part(dot) {
   display: none;
 }

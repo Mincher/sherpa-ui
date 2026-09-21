@@ -61,16 +61,9 @@
 
 /**
  * sherpa-button — presentation.
- *
- * APPEARANCE MODES (matches Figma — the Button has NO primary/secondary/tertiary
- * variant; emphasis is the shared look-tier system, driven by `data-look`):
- *   (no data-look)      → DEFAULT   = "secondary": white surface, grey border, dark ink.
- *   data-look=saturated → PRIMARY   : the Saturated look tier (strong fill, light ink).
- *   data-look=transparent → TERTIARY: the Transparent look tier (ghost, no fill/border).
- * Colour flows through the Style look-tier cascade (--_status-*, emitted by
- * [data-look]/[data-status] on the host or an ancestor). Add data-status to tint the
- * emphasis to a status colour. Sizing comes from the projected --sherpa-button-* vars
- * (generated region above, re-pointed per [data-size]). JS only mirrors label/icon.
+ * No primary/secondary/tertiary variant: emphasis is the shared look-tier
+ * system (`data-look` → saturated = primary, transparent = tertiary, none =
+ * secondary), coloured through the --_status-* cascade.
  */
 
 :host {
@@ -78,24 +71,17 @@
   vertical-align: middle;
   inline-size: fit-content;
 
-  /* Per-corner radius so [data-snap] can join buttons into a seamless group. */
+  /* Per-corner so [data-snap] can join buttons into a seamless group. */
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 
-  /* DEFAULT appearance ("secondary"): neutral Style surface + a visible grey border
-     + dark ink. When a look tier is active the cascade re-points --_status-* and the
-     refinements below adjust the border. */
-  /* Bound at the STYLE tier, exactly as Figma binds the Button (style-surface/base,
-     style-content/base, style-border/base) — status/look modes cascade at this tier. */
+  /* Bound at the STYLE tier, as Figma binds it — status/look modes cascade here. */
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Border WIDTH comes per-edge from the Grouping collection, so a [data-group]
-     position can drop just the edge it shares with a neighbour. The tertiary look
-     zeroes all four (below) rather than painting a transparent colour, so the
-     Transparent Style tier can keep the default Style border colour. */
+  /* Per-edge widths, so a [data-group] position can drop just the shared edge. */
   --_border-top: var(--sherpa-border-top, 0.5px);
   --_border-bottom: var(--sherpa-border-bottom, 0.5px);
   --_border-left: var(--sherpa-border-left, 0.5px);
@@ -120,7 +106,6 @@
   margin: 0;
   font-family: inherit;
   font-size: var(--sherpa-button-font-size, 14px);
-  /* Figma label: structure-font/weight → 400 Regular; structure-font/line-height → 20px. */
   font-weight: var(--sherpa-structure-font-weight, 400);
   line-height: var(--sherpa-button-font-line-height, 20px);
   color: var(--_content);
@@ -131,7 +116,7 @@
     border-color 120ms ease,
     color 120ms ease;
 
-  /* Interactive states — derived from the seed, mode-safe via currentColor. */
+  /* States derived from the seed — mode-safe via currentColor. */
   @supports (color: color-mix(in oklab, red, blue)) {
     &:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
     &:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
@@ -139,23 +124,15 @@
 
   &:focus-visible {
     outline: none;
-    /* A 2px gap ring in the SURFACE colour, then the accent ring — so the accent
-       reads against the button's own fill rather than touching it.
-       The gap used to name `--sherpa-app-base`, which has never existed in
-       tokens.css, so it always fell through to a literal #ffffff and drew a
-       white halo in dark mode. style-surface/base is the real page/card face and
-       re-points with the display mode. */
+    /* Gap ring in style-surface/base, then the accent ring. The token must be a
+       REAL one — a missing token silently draws the fallback, a white halo in dark. */
     box-shadow:
       0 0 0 2px var(--sherpa-style-surface-base, #ffffff),
       0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd);
   }
 }
 
-/* ── Appearance-mode refinements ────────────────────────────────────────────
-   The look-tier cascade already re-points --_surface/-content/-border via
-   --_status-*; these rules only fix the BORDER treatment per appearance:
-   - saturated (primary): border matches the fill (fallbacks for no-cascade engines).
-   - transparent (tertiary): no border, no fill (ghost). */
+/* ── Appearance-mode refinements ─────────────────────────────────────────── */
 
 :host([data-look="saturated"]) {
   --_surface: var(--_status-surface, #3b4ccd);
@@ -166,9 +143,7 @@
 :host([data-look="transparent"]) {
   --_surface: var(--_status-surface, transparent);
   --_content: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  /* Tertiary = NO border. The Transparent Style tier carries the DEFAULT Style
-     border colour, so the border is removed by WIDTH (→ none/0px) on all four
-     edges, not by painting the stroke transparent. */
+  /* Removed by WIDTH: the Transparent tier still carries the default border colour. */
   --_border-top: var(--sherpa-display-mode-border-width-none, 0px);
   --_border-bottom: var(--sherpa-display-mode-border-width-none, 0px);
   --_border-left: var(--sherpa-display-mode-border-width-none, 0px);
@@ -187,26 +162,16 @@
 
 /* ── Icons: CSS owns visibility; JS only sets the glyph value ────────────── */
 
-/* The box is a fixed square so every icon button is the same size whatever glyph
-   it carries — but the GLYPH inside it is a font character of its own width, and
-   a narrow one (the vertical ellipsis, a caret) sat against the box's leading
-   edge and read as off-centre. `place-content: center` centres the glyph in both
-   axes; `text-align: center` covers the case where the glyph is laid out as text
-   rather than as a flex item. */
+/* Fixed square box; a narrow glyph needs centring in both axes. `text-align`
+   covers the case where the glyph lays out as text rather than a flex item. */
 .icon {
   display: none;
   place-content: center;
   inline-size: var(--sherpa-button-size-icon, 14px);
   block-size: var(--sherpa-button-size-icon, 14px);
-  /* THE GLYPH IS A FONT CHARACTER, so `font-size` is what scales it — the two
-     size properties above only size its BOX. Without this the glyph inherited
-     the LABEL's size and matched its box only by coincidence: measured at
-     data-size="2xs" an 8px glyph rattled inside a 10px box, and at "xl" a 20px
-     glyph overflowed a 16px one. The other four modes happened to agree, which
-     is why it looked fine until someone used the two ends of the scale.
-
-     Figma binds the icon's width AND height to the same `Structure / icon-size`
-     (Button set 11:2463 > icon-start), so one variable drives all three here. */
+  /* The glyph is a font character: the sizes above only size its BOX, so
+     `font-size` must repeat the same var or the glyph inherits the LABEL's size
+     and only agrees with its box at the middle of the scale. */
   font-size: var(--sherpa-button-size-icon, 14px);
   font-style: normal;
   line-height: 1;
@@ -235,22 +200,14 @@
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  /* Figma 'inactive' mode: dark readable ink (#35353d) on the grey inactive
-     surface (#b3b3c3) — NOT the same grey as the surface (that hid the label). */
+  /* Dark ink on the grey inactive surface — never the same grey as the surface. */
   color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* …EXCEPT a TRANSPARENT button, which stays transparent.
-   Its look tier sets --_surface to transparent (Figma's Style: Transparent
-   extension resolves style-surface/base to #ffffff at 0% alpha), and filling it
-   on disable made a borderless control suddenly grow a grey box — the disabled
-   pagination arrows painted a slab where there had been nothing. A tertiary
-   button says "off" by dimming its INK, which is all it has.
-
-   The ink still dims: --_content is untouched above, and the icon rule below
-   covers the glyph. */
+/* …except a TRANSPARENT button: filling it on disable grows a grey box where
+   there was nothing. It says "off" by dimming its ink, which is all it has. */
 :host([data-look="transparent"][disabled]) .trigger {
   background: transparent;
   border-width: var(--sherpa-display-mode-border-width-none, 0px);
@@ -262,8 +219,6 @@
 :host([disabled]) .icon { color: var(--sherpa-theme-content-body-1, #35353d); }
 
 
-/* The MENU slot holds a popover, which paints in the browser's top layer — so
-   this span must never take part in the button's own layout or it would widen
-   the box by the menu's width. `display: contents` removes it from layout
-   entirely while leaving the slotted menu addressable. */
+/* The menu popover paints in the top layer; `display: contents` keeps this span
+   out of layout so the menu's width cannot widen the button. */
 .menu-slot { display: contents; }

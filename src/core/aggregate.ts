@@ -1,32 +1,13 @@
 /**
  * aggregate.ts — turn ROWS into the shape a chart draws.
  *
- *   countBy(rows, 'category')                  → one bar per category
- *   aggregateBy(rows, 'region', 'sum', 'spend') → spend per region
- *   bandBy(rows, 'storage', [0, 20, 40, 60, 80, 100])  → a histogram
- *   seriesBy(rows, 'day', DAYS, 'Sessions')    → one named line series
- *   reduceRows(rows, 'mean', 'health')         → the ONE number a gauge reads
+ * Runs on rows a store has already filtered and sorted; `applyOptions` still
+ * owns the query. DOM-free, so a server or the MCP can aggregate too.
  *
- * WHY THIS IS IN THE DATA LAYER. Every chart's aggregation was hand-written in
- * the example, so the SHAPE was shared (`ChartDatum`) and the arithmetic was
- * not. That cost four things:
+ * Nothing here rounds or formats.
  *
- *   1. every new view re-implemented the same four functions;
- *   2. a SERVER could not pre-aggregate, though the DOM-free half exists
- *      precisely so it can;
- *   3. the MCP `run_query` tool could filter and sort but never answer
- *      "count by category";
- *   4. presentation decisions leaked into the arithmetic — `meanOf` rounded,
- *      which is why a gauge's tooltip lost its decimals.
- *
- * NOT A NEW PIPELINE. These run on rows a store has already filtered, sorted
- * and searched. Aggregation is what happens to the answer, not another way of
- * asking the question — `applyOptions` still owns the query.
- *
- * NUMBERS ARE RETURNED WHOLE. Nothing here rounds or formats; that is a
- * presentation decision and belongs to whatever draws the label.
- * TRAP T-an-aggregate-returns-the-number.
- * TRAP T-aggregation-is-data — why this is here and not in a view.
+ * TRAP T-an-aggregate-returns-the-number
+ * TRAP T-aggregation-is-data
  */
 import { readField, groupRows, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
@@ -36,22 +17,14 @@ import type { ChartDatum } from './chart-datum.js';
 /** How a set of rows becomes one number. */
 export type Aggregate = 'count' | 'sum' | 'mean' | 'min' | 'max';
 
-/**
- * Every finite number in `field`, across `rows`.
- *
- * Rows whose value is absent or unparseable are SKIPPED rather than counted as
- * zero: a missing health score is not a health score of nought, and averaging
- * it in drags the mean toward zero in proportion to how much data is missing.
- */
+/** Every finite number in `field`. Missing values are SKIPPED, never zero. */
 function numbers(rows: readonly Row[], field: string): number[] {
   const out: number[] = [];
   for (const row of rows) {
     const raw = readField(row, field);
-    /* `null` and `''` COERCE TO ZERO, and a zero is finite — so
-       `Number.isFinite(Number(raw))` alone quietly counts every missing value
-       as a real nought. It passes the sum (nought adds nothing) and fails the
-       MEAN, by dividing by a bigger set than it measured.
-       TRAP T-number-of-null-is-zero. */
+    /* `null` and `''` coerce to a finite 0, so the isFinite test alone counts
+       every missing value as a real nought and skews the mean.
+       TRAP T-number-of-null-is-zero */
     if (raw == null || raw === '') continue;
     const n = Number(raw);
     if (Number.isFinite(n)) out.push(n);
@@ -61,12 +34,8 @@ function numbers(rows: readonly Row[], field: string): number[] {
 
 /**
  * Reduce rows to ONE number — what a gauge or a metric tile reads.
- *
- * `count` needs no field and ignores one. Every other kind needs a numeric
- * field, and returns 0 for an empty set — a chart with no data draws nothing,
- * which is what 0 means here, and is why this does not return null.
- *
- * NOT ROUNDED. TRAP T-an-aggregate-returns-the-number.
+ * `count` ignores `field`. An empty set is 0, never null.
+ * TRAP T-an-aggregate-returns-the-number
  */
 export function reduceRows(
   rows: readonly Row[],
@@ -89,43 +58,23 @@ export function reduceRows(
 
 export interface AggregateOptions {
   /**
-   * The categories, in the order they must appear.
-   *
-   * A FIXED ORDER IS NOT COSMETIC. Without one, categories fall out in
-   * count order — so a category changes colour and position when only its rank
-   * moved, and a filter that drops two rows appears to recolour the chart. Two
-   * charts of the same field also disagree about which colour a category is.
-   *
-   * Given, a category keeps its slot and its `colorIndex` whatever the data
-   * does. Omitted, the order is first-seen in the rows, which is stable for a
-   * sorted query and is the right answer when the order on screen IS the order
-   * in the data.
-   *
-   * TRAP T-a-category-keeps-its-colour.
+   * The categories, in order. Given, a category keeps its slot and its
+   * `colorIndex` whatever the data does; omitted, the order is first-seen.
+   * TRAP T-a-category-keeps-its-colour
    */
   order?: readonly string[];
-  /**
-   * Keep categories the rows never mention, at zero.
-   *
-   * Off by default: an empty bar for a category nothing matched is noise. On
-   * when the categories are a fixed scale — severity levels, storage bands —
-   * where a missing one is itself the finding. Needs `order`.
-   */
+  /** Keep unmentioned categories at zero. Needs `order`. For a fixed scale,
+   *  where a missing category is itself the finding. */
   includeEmpty?: boolean;
 }
 
 /**
  * Group rows by a field and reduce each group to a number.
  *
- * ```ts
- * aggregateBy(rows, 'category')                       // how many per category
- * aggregateBy(rows, 'region', 'sum', 'spend')         // spend per region
- * aggregateBy(rows, 'os', 'count', undefined, { order: OS_ORDER })
- * ```
+ * `aggregateBy(rows, 'region', 'sum', 'spend')` — spend per region.
  *
- * Returns `ChartDatum[]` — the one shape a bar, a slice and a legend row all
- * take. `colorIndex` is 1-based and follows `order` when one is given, so the
- * same category is the same colour in every chart that shares that order.
+ * `colorIndex` is 1-based and follows `order`, so the same category is the same
+ * colour in every chart sharing that order.
  */
 export function aggregateBy(
   rows: readonly Row[],
@@ -144,15 +93,12 @@ export function aggregateBy(
   return labels.map((label, i) => ({
     label,
     value: reduceRows(groups.get(label) ?? [], kind, valueField),
-    // 1-BASED, and from the declared order when there is one — so a category
-    // keeps its colour even when a filter removes the category above it.
+    // 1-based, from the declared order when there is one.
     colorIndex: (order ? order.indexOf(label) : i) + 1,
   }));
 }
 
-/**
- * Count rows per category — `aggregateBy`'s commonest call, said plainly.
- */
+/** Count rows per category — `aggregateBy`'s commonest call, said plainly. */
 export function countBy(
   rows: readonly Row[],
   field: string,
@@ -166,17 +112,11 @@ export function countBy(
 /**
  * Cut a CONTINUOUS field into bands — a histogram, not a pie.
  *
- * `edges` are the boundaries, ascending: `[0, 20, 40, 60, 80, 100]` gives five
- * bands. Each band holds values from its lower edge up to but NOT including the
- * upper one, except the last, which includes its top — so 100 lands in `81-100`
- * rather than falling off the end. That is the rule every histogram needs and
- * the one an off-by-one gets wrong.
+ * `edges` are ascending boundaries: `[0, 20, 40, 60, 80, 100]` gives five
+ * bands. Bands are half-open except the last, which includes its top. Values
+ * outside the first and last edge are dropped, not folded into the end bands.
  *
- * Values below the first edge or above the last are dropped: they are outside
- * the scale the caller declared, and silently folding them into the end bands
- * would misreport both.
- *
- * TRAP T-the-last-band-includes-its-top.
+ * TRAP T-the-last-band-includes-its-top
  */
 export function bandBy(
   rows: readonly Row[],
@@ -197,8 +137,8 @@ export function bandBy(
   }
 
   return counts.map((value, i) => ({
-    // "0-20", "21-40" — the printed label starts one above the previous edge,
-    // because the bands are half-open and "20-40" would read as overlapping.
+    // "0-20", "21-40" — one above the previous edge, since "20-40" would read
+    // as overlapping.
     label: options.labels?.[i] ?? `${i === 0 ? edges[0] : edges[i]! + 1}-${edges[i + 1]}`,
     value,
     colorIndex: i + 1,
@@ -215,13 +155,9 @@ export interface Series {
 }
 
 /**
- * One series: a value per point, in the caller's own point order.
- *
- * `points` is the x-axis — the days, the buckets, the steps. Every point gets
- * a number even where no row matched, because a line with a hole in it is a
- * line that lies about the shape: a quiet Tuesday is zero, not absent.
- *
- * TRAP T-a-series-has-a-value-at-every-point.
+ * One series: a value per point, in the caller's own point order. Every point
+ * gets a number even where no row matched — a quiet Tuesday is zero, not absent.
+ * TRAP T-a-series-has-a-value-at-every-point
  */
 export function seriesBy(
   rows: readonly Row[],

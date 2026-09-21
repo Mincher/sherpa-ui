@@ -1,29 +1,10 @@
 <!--
-  sherpa-quick-filter — a filter chip used in toolbars.
+  sherpa-quick-filter — a filter chip used in toolbars. Figma "Filter Chip (atom)"
+  (154:3904), State axis simple | menu.
 
-  Matches the Figma "Filter Chip (atom)" (154:3904), whose `State` axis is
-  simple | menu. Both states are a FIXED 24 tall.
-
-      State=simple   [ count ][ icon ] Label
-      State=menu     [ count ][ icon ] Label │ ▾
-
-  In State=menu the chip and the caret button are two separately-bordered boxes
-  SNAPPED together: a `structure-space/snapped` gap (0) butts their 0.5px rings
-  flush, and the Structure snap extensions flatten the corners that
-  meet (chip = snap-right-edge, button = snap-left-edge at the sm size). The caret
-  button is Style=default, so it keeps its own white face and ring — it is not a
-  transparent affordance floating inside the chip.
-
-  The count INDICATOR leads (it is the first child of Figma's "Left" group, before
-  the icon — not a trailing badge) and it is pinned Style=DEFAULT, so it is a neutral
-  chip: white face, 0.5 grey ring, dark ink.
-
-  The menu is a real <sherpa-menu> in the light DOM, slotted into [slot=menu]. It uses
-  the native popover API, so the browser owns the top layer, Escape and the
-  outside-click dismiss. Placement is measured off the caret, because the caret and
-  the popover sit in different shadow roots and a CSS anchor name cannot cross that
-  boundary. Give it checkbox rows for a multi-select field or radio rows for a
-  single-select one:
+  The menu is a real <sherpa-menu> slotted into [slot=menu], using the native
+  popover API. Placement is measured off the caret: a CSS anchor name cannot
+  cross the shadow boundary between them.
 
       <sherpa-quick-filter data-label="Region" data-menu>
         <sherpa-menu slot="menu" data-heading="Region" data-select="multiple">
@@ -69,28 +50,14 @@
 -->
 <template id="default">
   <div class="chip" part="chip">
-    <!--
-      THE VALUE TOOLTIP — a composed <sherpa-tooltip>, not a hand-rolled bubble.
-
-      It sits INSIDE the chip as a sibling of the two buttons, with nothing
-      slotted into it: `data-anchor` points it at the chip, so hovering ANY part
-      of the chip shows the tip centred above the whole thing rather than over a
-      16px badge. Wrapping the chip instead would put this element between the
-      host and `.chip`, and every `:host(…) .body` rule in this file stops
-      matching.
-
-      `data-floating` puts the bubble in the TOP LAYER. The bar's chip run clips
-      (it must, so a chip half out of view is never drawn mid-reflow), and a
-      tooltip stands outside the box it belongs to by definition — an
-      absolutely-positioned one was cut off entirely, however high the chip was
-      raised, because a clip is not a stacking question.
-    -->
+    <!-- Sibling of the buttons, not a wrapper: wrapping would break every
+         :host(…) .body rule. data-anchor points it at the whole chip;
+         data-floating puts it in the top layer, since the toolbar's chip run
+         clips and an absolutely-positioned bubble was cut off. -->
     <sherpa-tooltip class="count-wrap" data-floating data-anchor=".chip"></sherpa-tooltip>
     <button class="body" part="body" type="button">
       <span class="indicator" part="indicator" aria-hidden="true"></span>
-      <!-- role=img so the aria-label is announced: a bare <span> with an
-           aria-label is ignored by AT (no role = no accessible name). The
-           tooltip carries the same list visually. -->
+      <!-- role=img so the aria-label is announced: no role = no accessible name. -->
       <span class="count" part="count" role="img"></span>
       <span class="icon" part="icon" aria-hidden="true"></span>
       <span class="label" part="label"><slot></slot></span>
@@ -98,25 +65,13 @@
 
     <button class="caret" part="caret" type="button" aria-haspopup="menu" aria-expanded="false"
             aria-label="Choose values">
-      <!-- The SELECTED value, not the field. Figma State=menu makes this caret a
-           Button instance with a `label` text property, so the field name stays on
-           the chip and the value reads here. Empty when nothing is picked — the
-           button hugs its content, so it collapses back to the bare caret. -->
+      <!-- The SELECTED value, not the field. Empty when nothing is picked. -->
       <span class="caret-label" part="caret-label"></span>
-      <!--
-        The caret glyph. It keeps its own fa-caret-down class, so a plain chip
-        is unchanged; an ICON-ONLY chip overrides the glyph in CSS instead
-        (`:host([data-icon-only]) .caret-glyph::before`), which is why the
-        class hook is here. Swapping it in JS would mean a component writing a
-        Font Awesome class name at runtime for a purely presentational change.
-      -->
+      <!-- Class hook: an icon-only chip overrides the glyph in CSS
+           (:host([data-icon-only]) .caret-glyph::before), not in JS. -->
       <i class="caret-glyph fa-solid fa-caret-down" aria-hidden="true"></i>
-      <!--
-        An ICON-ONLY chip given `data-icon-start` shows that glyph here instead
-        of the funnel — a sort control cycles through three of them, and which
-        one it wears is data. JS writes the Font Awesome class (see #syncText);
-        CSS picks which of the two <i>s is visible.
-      -->
+      <!-- An icon-only chip with data-icon-start shows that glyph here instead.
+           JS writes the FA class (#syncText); CSS picks which <i> is visible. -->
       <span class="caret-icon" part="caret-icon" aria-hidden="true"></span>
     </button>
 

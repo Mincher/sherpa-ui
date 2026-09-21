@@ -1,27 +1,19 @@
 /**
  * sherpa-line-chart.css — a line/area chart.
- *
- * The plot is an inline SVG (viewBox 0 0 100 100, stretched via
- * preserveAspectRatio=none) whose lines/areas the JS fills with computed points.
- * Each series carries a --_hue (categorical) that colours its stroke + area. Grid
- * lines are drawn in the SVG grid group. Line weight is kept constant via
- * non-scaling-stroke so the stretch doesn't distort it.
+ * Plot is an inline SVG (viewBox 0 0 100 100, preserveAspectRatio=none) filled by
+ * the JS; each series carries a --_hue. non-scaling-stroke keeps weights honest.
  */
 
 :host {
-  /* `flex`, not `inline-flex`. An inline box sizes to its content and cannot
-     shrink, so adding the fixed-width y-axis column pushed the plot past the
-     panel's edge instead of narrowing it. */
+  /* `flex`, not `inline-flex`: an inline box cannot shrink, so the fixed y-axis
+     column pushed the plot past the panel edge. */
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* The plot's MINIMUM height, not its fixed one. A chart in a sized cell should
-     fill it — the plot row grows and the axis row keeps its natural height (see
-     .chart-body). Left as a fixed track, a chart in a 290px cell drew 180px of
-     bars and left 110px of white under them. */
+  /* MINIMUM plot height, not fixed — see .chart-body. */
   --_plot-height: 180px;
-  /* Fill a sized parent; a chart in an unsized one keeps its natural height. */
+  /* Fill a sized parent; keep natural height in an unsized one. */
   min-block-size: 0;
 }
 
@@ -31,55 +23,23 @@
   margin: 0;
 }
 
-/* ── The legend ──────────────────────────────────────────────────────────
-   The chart owns the split with its own legend, exactly as sherpa-donut-chart
-   does. The card around it used to: every panel wrapped the chart and the legend
-   in a `.chart-area` div and wrote the ratio there, which meant the page had to
-   know which orientation a legend was and the pair could never move between
-   cards without carrying its rules along.
-
-   The ORIENTATION decides the axis, because the two constrain different things.
-   A legend BELOW runs the full width and needs only height; one BESIDE has to fit
-   its longest label into its own column, so it gets a share of the width.
-
-     horizontal (default) → the host's flex COLUMN, legend under the plot
-     vertical             → a 70/30 GRID, legend beside the plot
-
-   `minmax(0, Nfr)`, not a bare `fr`: a bare fr floors at the item's min-content
-   width, so a long label would push its track past its share and break the ratio.
-   At the floor of 0 it truncates instead, and the plot keeps its 70%. */
+/* ── The legend ────────────────────────────────────────────────────────── */
 ::slotted([slot="legend"]) {
-  /* The plot takes the spare height (.chart-body is `flex: 1 1 auto`); the legend
-     keeps its natural size in both orientations. */
   flex: 0 0 auto;
   min-inline-size: 0;
 }
 
-/* Legend BESIDE — two columns.
-   `:has()` on :host reaches the host's LIGHT-DOM children, so the chart reads the
-   legend's own data-orientation directly. No JS mirrors it onto the host — the
-   legend already declares what it is, and a second copy of that fact is a second
-   thing to keep in step. */
-/* The chart reads the SPLIT from its own `data-legend`, not from the legend's
-   `data-orientation`. CSS cannot see it there: `:host(:has(…))` does not PARSE
-   (`:has()` is not a valid argument to `:host()`, and the rule is dropped
-   silently) and the chained `:host:has(…)` parses but matches every host,
-   ignoring the `:has()` — the same shadow-DOM trap the chained `:host:not()`
-   form has. So the split is declared on the chart:
-
-     (absent, or "horizontal") → the host's flex COLUMN, legend under the plot
-     "vertical"                → a 70/30 GRID, legend beside the plot
-
-   The legend still carries its own data-orientation for its own layout; this
-   attribute says what the CHART does about it. */
+/* Legend BESIDE — two columns, driven by the chart's own `data-legend`, not the
+   legend's `data-orientation`: `:host(:has(…))` does not parse and the chained
+   `:host:has(…)` matches every host. `minmax(0, Nfr)`, not a bare `fr`, or a long
+   label floors its track and breaks the 70/30 ratio. */
 :host([data-legend="vertical"]) {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
   grid-template-rows: auto minmax(0, 1fr);
   align-items: center;
 }
-/* `display: contents` on .chart-figure means the title, body and legend are the
-   grid's real items, so they are placed directly. */
+/* `display: contents` on .chart-figure makes these the grid's real items. */
 :host([data-legend="vertical"]) .chart-header {
   grid-column: 1 / -1;
   grid-row: 1;
@@ -105,14 +65,10 @@
 .plot {
   position: relative;
   min-inline-size: 0;
-  /* Purely the drawing area now — the x labels moved OUT into their own grid row,
-     which is what stops them shortening the canvas relative to the y-axis. */
+  /* Drawing area only — the x labels live in their own grid row. */
   display: block;
-  /* THE HORIZONTAL AXIS LINE. A 2D chart has TWO axes, and this one was missing:
-     the y-axis got its rule from `.y-axis { border-inline-end }` but nothing drew
-     the baseline, so the x labels sat under empty space. It is the plot's own
-     bottom border — the same idiom the bar chart's `.bars` uses — so it spans
-     exactly the drawing area and meets the y-axis rule at the origin. */
+  /* The horizontal axis line: the plot's own bottom border, so it spans exactly
+     the drawing area and meets the y-axis rule at the origin. */
   border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid
     var(--sherpa-style-border-base, #b3b3c3);
   box-sizing: border-box;
@@ -125,14 +81,9 @@
   overflow: visible;
 }
 
-/* Gridlines take the SAME 0.5px stroke token every other hairline in the system
-   uses — the barchart's gridlines, the grid's cell rules, a container's frame.
-   It was a raw `1`, which drew twice as heavy as its neighbours.
-
-   `vector-effect: non-scaling-stroke` is what makes the token mean what it says:
-   the viewBox is 0 0 100 100 with preserveAspectRatio="none", so a plain
-   stroke-width would be scaled by the box and land at an arbitrary screen width.
-   With it, the stroke is drawn in real pixels and 0.5px IS 0.5px. */
+/* `vector-effect: non-scaling-stroke` is required: the viewBox is 0 0 100 100 with
+   preserveAspectRatio="none", so a plain stroke-width lands at an arbitrary screen
+   width. With it, 0.5px IS 0.5px — the same hairline every other rule uses. */
 .grid line {
   stroke: var(--sherpa-style-border-base, #b3b3c3);
   stroke-width: var(--sherpa-display-mode-border-width-sm, 0.5px);
@@ -140,9 +91,8 @@
 }
 
 .line {
-  /* A LINE is the mark itself, not a filled shape with an outline — so it takes
-     the series' BORDER token at full strength. `--_hue` would give it the fill's
-     50% and the line would read as a ghost. */
+  /* The BORDER token at full strength — `--_hue` is the fill's 50% and would
+     render the line as a ghost. */
   stroke: var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
   stroke-width: 2;
   stroke-linejoin: round;
@@ -161,18 +111,13 @@
   display: flex;
   justify-content: space-between;
   margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
-  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
-     the digits jittering between gridlines as a value changes. Figma's Chart Axis
-     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
-     nodes; it bound content/font/body until this pass and was re-pointed there
-     first, so the two sides agree. */
+  /* MONOSPACED: tabular figures stop the digits jittering as values change.
+     Matches Figma's Chart Axis (451:46196). */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
   font-size: var(--sherpa-font-size-body-small, 12px);
-  /* STATED, not `normal`. An unset line-height is resolved by the FONT, and
-     JetBrains Mono resolves it taller than Inter — so the mono switch left the
-     labels' descenders on the chart's bottom edge. Figma binds
-     content/line-height/small 16 here. */
+  /* STATED, not `normal`: JetBrains Mono resolves taller than Inter and the
+     descenders fell off the chart's bottom edge. */
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
@@ -185,46 +130,20 @@
 }
 
 /* ── Axes ────────────────────────────────────────────────────────────────
-   Figma composes a chart as ONE GRID (documented on its Chart 2D page: "a Chart
-   Axis (value axis) + a row of Data Fields + a Chart Legend"), and the axis and
-   the gridlines are the SAME equal divisions of one height.
-
-   ONE SOURCE OF TRUTH for that: every tick label is positioned at the SAME
-   percentage its gridline is drawn at, by the same formula, on the same box.
-   The label is absolutely placed at `bottom: <pct>%` inside a box the exact
-   height of the plot, and translated up by half its own line so its centre — not
-   its top — sits on the line.
-
-   My earlier attempts stacked the labels in flex and hoped the two heights would
-   agree. `space-between` places N+1 BOUNDARIES against the plot's N−1 interior
-   gridlines, so they could never line up; and a flex sibling's height had to be
-   kept in step with the plot's by hand. Positioning both off one percentage
-   removes the chance of disagreement entirely. */
-/* THE CHART GRID — Figma's own structure, and the reason the axis lines up.
-   Column 1 the rotated caption, column 2 the value labels, column 3 the plot.
-   Row 1 is the drawing area; row 2 is the x labels, which start at the PLOT
-   column so they cannot shift the y-axis.
-
-   The y-axis and the <svg> are cells of the SAME ROW, so CSS makes them the same
-   height — there is nothing to keep in step by hand. Every previous attempt gave
-   the axis its own height (`--_plot-height`) and then discovered the svg was
-   shorter, because the x labels were eating into it. */
+   Column 1 the rotated caption, column 2 the value labels, column 3 the plot;
+   row 1 the drawing area, row 2 the x labels (plot column only, so they cannot
+   shift the y-axis). The y-axis and the <svg> are cells of the SAME ROW, so their
+   heights agree with nothing kept in step by hand. */
 .chart-body {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
-  /* The plot row GROWS to fill a sized host and floors at --_plot-height; the
-     x-axis row keeps its natural height. `minmax(min, 1fr)` rather than a fixed
-     track, so a chart in a 290px cell draws 290px of plot instead of 180px of
-     plot and 110px of white. In an UNSIZED host there is nothing to fill, so
-     1fr resolves to the minimum and the chart keeps its natural 180px. */
+  /* Plot row grows to fill a sized host, floors at --_plot-height; unsized, 1fr
+     resolves to that minimum. */
   grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
-  /* The body is the part that takes the host's spare height. */
   flex: 1 1 auto;
   min-block-size: 0;
-  /* NO column gap. The axis LINE is the y-axis box's trailing border, so it marks
-     the plot's own left edge — a gap there floated the line away from the data it
-     bounds. The breathing room belongs on the other side of that line, between
-     the labels and the rule, which is .y-axis's padding-inline-end. */
+  /* NO column gap: the axis line is the y-axis box's trailing border and marks the
+     plot's left edge. Breathing room goes in .y-axis's padding-inline-end. */
   column-gap: 0;
   min-inline-size: 0;
 }
@@ -239,38 +158,20 @@
   display: none;
   position: relative;
   flex: 0 0 auto;
-  /* The labels are a percentage of THIS box, so it must be exactly as tall as the
-     drawing area — the <svg>, NOT the whole plot. The plot is a column holding the
-     svg over the x labels, so `--_plot-height` was 19px taller than the canvas and
-     every label sat proportionally low (14px out at the bottom line).
-     `align-self: start` + the same flex basis as the svg keeps them equal without
-     either one hard-coding the other's height. */
   /* No block-size: the grid ROW gives it the plot's exact height. */
-  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing to
-     this box — the `auto` grid track collapsed to 0 and every number hung outside
-     the chart's left edge. Sizing it from the data instead (the longest label's
-     length) fixed the overflow but made the axis WIGGLE: the plot got wider or
-     narrower whenever a value crossed a digit boundary. One fixed width, and a
-     label too long for it truncates. HALVED from 4xl 48 to lg 24 — 48 ate too
-     much of the plot and pushed every bar label into an ellipsis. */
+  /* A FIXED width. The labels inside are ABSOLUTE, so they contribute nothing and
+     an `auto` track collapses to 0; sizing from the data instead makes the plot
+     wiggle at each digit boundary. Too long a label truncates. */
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   box-sizing: content-box;
-  /* Room between the LABELS and the axis rule (Figma's 8-wide Marker). `sm` 12,
-     not `xs` 8: at 8 the numbers still crowded the line. This is the gap that
-     matters — the one on the far side of the rule was removed, because it pushed
-     the line away from the plot it bounds. */
+  /* Room between the labels and the axis rule; at `xs` 8 the numbers crowded it. */
   padding-inline-end: var(--sherpa-display-mode-space-sm, 12px);
   border-inline-end: var(--sherpa-border-right, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
-  /* MONOSPACED — an axis is a column of NUMBERS, and mono's tabular figures stop
-     the digits jittering between gridlines as a value changes. Figma's Chart Axis
-     (451:46196) now binds content/font/MONOSPACED on every one of its 10 text
-     nodes; it bound content/font/body until this pass and was re-pointed there
-     first, so the two sides agree. */
+  /* MONOSPACED — see .x-axis. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
-  /* Axis text: SMALL 12/16, the same size the horizontal axis labels use — the
-     two axes are one scale, and 14 against 12 read as a mistake. */
+  /* SMALL 12/16, matching the x labels — the two axes are one scale. */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -280,19 +181,16 @@
    "default 4" and data-ticks="0" means none, which no selector can tell apart. */
 :host([data-has-y-axis]) .y-axis { display: block; }
 
-/* Each label sits at its own --_at percentage, centred on that line.
-   Stretched across the axis box (start AND end pinned) and right-aligned, so a
-   short label like "0" still ends flush against the axis rule and a long one
-   cannot escape the reserved width. */
+/* Each label sits at its own --_at percentage, centred on that line — the same
+   percentage its gridline is drawn at. Pinned both edges and right-aligned so a
+   short label still ends flush against the rule. */
 .y-tick {
   position: absolute;
   inset-inline: 0 0;
   inset-block-end: var(--_at, 0%);
   translate: 0 50%;
   text-align: end;
-  /* Truncate rather than widen: the axis width is fixed so the plot cannot move
-     as the values change. An ellipsis is the honest signal that a number is too
-     long for the axis. */
+  /* Truncate rather than widen: a fixed axis width keeps the plot still. */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,7 +200,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The caption, rotated to run up the axis (Figma's vertical Axis label). */
+/* The caption, rotated to run up the axis. */
 .axis-label {
   display: none;
   align-self: center;
@@ -326,29 +224,19 @@
 :host([data-x-axis-label]) .axis-label-x { display: block; }
 
 /* ── Hover dots + tooltip anchors ────────────────────────────────────────────
- * One dot per data point, per visible series. They are real HTML buttons, NOT the
- * polyline's own vertices: an SVG element cannot be a CSS anchor in Chromium
- * (anchor-name is accepted and silently never resolves — the tip lands in the
- * viewport corner).
- *
- * Position comes straight from the TWO numbers the TS already computed for the
- * polyline: each point's x and y as a PERCENTAGE of the plot. So the dots and the
- * line cannot disagree about where a point is, and they follow the plot at any
- * size with nothing measured and no resize handler.
- *
- * The layer covers the plot and is transparent to the pointer; only the dots take
- * the hover. */
+ * Real HTML buttons, NOT the polyline's vertices: an SVG element cannot be a CSS
+ * anchor in Chromium (anchor-name is accepted and silently never resolves).
+ * Position reuses the x/y percentages the TS already computed for the polyline.
+ * The layer is transparent to the pointer; only the dots take the hover. */
 .hotspots {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-/* The dot is ABSOLUTE, placed on its own mark. Its TIP is a SIBLING in the static
-   .hotspots layer, not a descendant: an absolutely-positioned ancestor breaks
-   anchor positioning for a `position: fixed` tip (proved in isolation — a tip in a
-   static layer places above its mark, the same tip inside an absolute box drops to
-   that box's corner). They find each other by anchor NAME. */
+/* The tip is a SIBLING in the static .hotspots layer, not a descendant: an
+   absolutely-positioned ancestor breaks anchor positioning for a fixed tip, which
+   then drops to that box's corner. They find each other by anchor NAME. */
 .hotspot {
   position: absolute;
   inset-inline-start: var(--_x, 0%);
@@ -356,8 +244,8 @@
   /* Centre the dot ON the point rather than hanging off it. */
   translate: -50% -50%;
 
-  /* Twice the visible dot: an easy target without pushing the tooltip away from
-     the mark it points at (the box is also the anchor). */
+  /* Twice the visible dot: an easy target without pushing the tooltip off the
+     mark (the box is also the anchor). */
   inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding: 0;
@@ -366,7 +254,7 @@
   cursor: pointer;
   pointer-events: auto;
 
-  /* The visible dot, in its SERIES' hue so it reads as part of that line. */
+  /* The visible dot, in its series' hue. */
   &::after {
     content: "";
     position: absolute;
@@ -389,10 +277,7 @@
   }
 }
 
-/* HOVERING THE CHART REVEALS EVERY MARKER — the sparkline's rule, applied here.
-   A marker you can only find by already being on it is no help: the reader has to
-   sweep the chart hunting for hit areas. Hovering anywhere on the visuals shows
-   them all at once, so the reader can SEE where the data points are and then aim
-   at the one they want. Hovering a marker still reveals only ITS tooltip. */
+/* Hovering the chart reveals EVERY marker, so the reader can see where the points
+   are before aiming. Hovering one marker still shows only its tooltip. */
 :host(:hover) .hotspot::after,
 :host(:focus-within) .hotspot::after { opacity: 1; }

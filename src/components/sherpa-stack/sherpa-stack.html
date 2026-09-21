@@ -1,20 +1,7 @@
 <!--
   sherpa-stack — a run of controls in one direction, with a token gap.
-
-  The system already had the HORIZONTAL strip (sherpa-toolbar: two zones, a
-  primary action leading and a trailing cluster). It had no plain run, so every
-  app hand-wrote `display: flex; flex-direction: column; gap: …` in its own
-  stylesheet — a form's fields, a settings page's sections, a dialog's footer
-  buttons, a row of cards. That is this component.
-
-  It is a LAYOUT surface, like sherpa-toolbar: no chrome, no fill, no border, no
-  padding. It only places what it is given. For a bordered box use
-  sherpa-container; for a two-zone action strip use sherpa-toolbar.
-
-  data-wrap is what makes the horizontal direction useful for CARDS rather than
-  buttons: items wrap onto the next line and each one grows to share the row,
-  floored at data-min-item. So a row of three option cards becomes a column of
-  three on a phone with no media query and no grid definition.
+  A layout surface: no chrome, fill, border or padding. Bordered box =
+  sherpa-container; two-zone action strip = sherpa-toolbar.
 
   Public API:
     data-direction  block (default, a column) | inline (a row)
@@ -34,14 +21,11 @@
 
   On a CHILD (not on the stack):
     data-grow       with data-fill on the stack, this item takes the spare space
-                    and the others keep their natural size. For a stack inside a
-                    fixed-height card — the grid grows, the toolbar above and the
-                    pager below stay put.
+                    and the others keep their natural size.
 
-                    TWO attributes rather than one because a stack cannot see its
-                    own children from CSS: `:host(:has(…))` does not parse, and
-                    the chained `:host:has(…)` matches every host regardless. So
-                    the height is declared on the stack, not detected from it.
+                    Two attributes, not one: a stack cannot see its own children
+                    from CSS — `:host(:has(…))` does not parse, and `:host:has(…)`
+                    matches every host.
 
   Slots:
     (default) — the items (data-accepts: any)

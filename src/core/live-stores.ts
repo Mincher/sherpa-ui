@@ -1,21 +1,10 @@
 /**
- * live-stores.ts — records the SERVER pushes.
+ * live-stores.ts — records the SERVER pushes. Every other store PULLS.
  *
- * TRAP T-sse-over-websocket-for-a-feed — the two transports and why SSE wins for
- * a feed that only ever arrives.
+ * A message is either the whole set, `[{…}]`, or one `StoreChangeDetail`:
+ * `{type:'insert'|'update'|'remove', …}` — the same shape every store announces.
  *
- * ## What a message may say
- *
- * Either shape, and the message itself decides:
- *
- *   [{…}, {…}]                      these are now the rows
- *   { type: 'insert', row: {…} }    add one
- *   { type: 'update', row: {…} }    merge one, matched on the key
- *   { type: 'remove', key: 3 }      drop one
- *
- * The second is the SAME `StoreChangeDetail` shape every other store already
- * announces, so a server that speaks it is speaking the layer's own language —
- * and a 500-row push for one new notification is avoided.
+ * TRAP T-sse-over-websocket-for-a-feed
  */
 import { ArrayStore } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type Store } from './store.js';
@@ -33,39 +22,23 @@ export interface LiveStoreOptions extends StoreOptions {
   url: string;
   /** Rows to show before the first message lands. */
   rows?: readonly Row[];
-  /**
-   * Read the payload before the store does.
-   *
-   * Returning `undefined` DROPS the message —
-   * TRAP T-push-handler-never-throws.
-   */
+  /** Read the payload first. Returning `undefined` DROPS the message. */
   parse?: (data: unknown) => PushMessage | undefined;
-  /**
-   * Feed an EXISTING store rather than making a new one.
-   *
-   * TRAP T-live-store-into-shares-one-feed — three sockets, one list; the store
-   * passed here is NOT owned.
-   */
+  /** Feed an EXISTING store, not owned. TRAP T-live-store-into-shares-one-feed */
   into?: ArrayStore;
 }
 
-/**
- * Shared plumbing for a store fed by a connection.
- *
- * Only about the wire — TRAP T-sse-over-websocket-for-a-feed.
- */
+/** Shared plumbing for a store fed by a connection — only about the wire. */
 abstract class LiveStore extends EventTarget implements Store {
   readonly key: string;
   protected readonly inner: ArrayStore;
   protected readonly options: LiveStoreOptions;
-  /** Whether the connection is currently up — see `connected`. */
   #connected = false;
 
   constructor(options: LiveStoreOptions) {
     super();
     this.options = options;
     this.key = options.key ?? 'id';
-    // A SHARED store when one is given — TRAP T-live-store-into-shares-one-feed.
     this.inner = options.into ?? new ArrayStore(options.rows ?? [], options);
     // The inner store's changes are THIS store's changes, so a DataSource
     // listens to one thing and never learns there are two.
@@ -80,10 +53,9 @@ abstract class LiveStore extends EventTarget implements Store {
   }
 
   /**
-   * Open the connection. Safe to call twice — the second is a no-op.
-   *
-   * NOT called by the constructor: that would open a socket for a view built and
-   * never shown, and leave no moment to attach a listener before message one.
+   * Open the connection. Safe to call twice. NOT called by the constructor: that
+   * opens a socket for a view never shown, and leaves no moment to attach a
+   * listener before message one.
    */
   abstract connect(): void;
 
@@ -93,16 +65,11 @@ abstract class LiveStore extends EventTarget implements Store {
   protected setConnected(value: boolean): void {
     if (this.#connected === value) return;
     this.#connected = value;
-    // So a UI can show "reconnecting…" — TRAP T-push-handler-never-throws.
+    // So a UI can show "reconnecting…".
     this.dispatchEvent(new CustomEvent('connection', { detail: { connected: value } }));
   }
 
-  /**
-   * A message arrived — apply it.
-   *
-   * TRAP T-push-handler-never-throws — a throw in a socket handler kills the
-   * handler and the page goes quiet.
-   */
+  /** Apply a message. TRAP T-push-handler-never-throws — a throw kills the handler. */
   protected receive(raw: unknown): void {
     let message: PushMessage | undefined;
     try {
@@ -130,8 +97,7 @@ abstract class LiveStore extends EventTarget implements Store {
           await this.inner.insert(message.row);
           return;
         case 'update': {
-          // The key may travel separately, or be inside the row — a server that
-          // sends the whole record should not also have to name its id.
+          // The key may travel separately, or sit inside the row.
           const key = message.key ?? readField(message.row, this.key);
           await this.inner.update(key, message.row);
           return;
@@ -141,7 +107,7 @@ abstract class LiveStore extends EventTarget implements Store {
           return;
       }
     } catch (error) {
-      // A push the SCHEMA refused lands here — TRAP T-push-handler-never-throws.
+      // A push the SCHEMA refused lands here.
       this.#fail('apply', error);
     }
   }
@@ -166,12 +132,7 @@ abstract class LiveStore extends EventTarget implements Store {
     return this.inner.totalCount(options);
   }
 
-  /**
-   * A LOCAL write.
-   *
-   * TRAP T-socket-send-refuses-rather-than-queues — it does not travel to the
-   * server; this store has no route back to it.
-   */
+  /** A LOCAL write — TRAP T-socket-send-refuses-rather-than-queues. */
   insert(values: Row): Promise<Row> {
     return this.inner.insert(values);
   }
@@ -186,32 +147,20 @@ abstract class LiveStore extends EventTarget implements Store {
 /* ── EventStore — Server-Sent Events ───────────────────────────────── */
 
 export interface EventStoreOptions extends LiveStoreOptions {
-  /**
-   * Listen for a NAMED event rather than the default unnamed one.
-   *
-   * SSE messages can carry an `event:` line, which is how one endpoint serves
-   * several feeds. Named here, the store hears only its own.
-   */
+  /** Listen for a NAMED `event:` line — one endpoint, several feeds. */
   eventName?: string;
   /** Send cookies with the request — for a feed behind a session. */
   withCredentials?: boolean;
 }
 
 /**
- * Records pushed over Server-Sent Events.
- *
- *   const notifications = new EventStore({ url: '/events/notifications' });
- *   const source = new DataSource({ store: notifications });
- *   source.bind(menu, { as: (rows) => rows });
- *   notifications.connect();
- *
- * TRAP T-sse-over-websocket-for-a-feed — three reasons it beats a WebSocket here.
+ * Records pushed over Server-Sent Events — `new EventStore({ url })`, then
+ * `.connect()`. TRAP T-sse-over-websocket-for-a-feed
  */
 export class EventStore extends LiveStore {
   #source: EventSource | null = null;
 
-  /* TRAP T-narrowing-constructor-is-not-useless — this narrows the options type;
-     without it a bare LiveStoreOptions would be accepted. */
+  /* TRAP T-narrowing-constructor-is-not-useless — narrows the options type. */
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- narrows the options type; see above
   constructor(options: EventStoreOptions) {
     super(options);
@@ -257,21 +206,13 @@ export class EventStore extends LiveStore {
 export interface SocketStoreOptions extends LiveStoreOptions {
   /** Sub-protocols, passed straight to the WebSocket constructor. */
   protocols?: string | string[];
-  /**
-   * Try again after a drop, backing off. Default true.
-   *
-   * TRAP T-eventsource-error-is-not-fatal — WebSocket, unlike EventSource, does
-   * not reconnect by itself.
-   */
+  /** Retry after a drop, backing off. Default true. TRAP T-eventsource-error-is-not-fatal */
   reconnect?: boolean;
 }
 
 /**
- * Records over a WebSocket — two-way.
- *
- * Use it when the client also SENDS: a cursor position, a collaborative edit, an
- * acknowledgement. For a feed that only ever arrives, prefer EventStore, which
- * reconnects and replays for free.
+ * Records over a WebSocket — two-way. Use it when the client also SENDS; for a
+ * feed that only arrives, prefer EventStore, which reconnects and replays free.
  */
 export class SocketStore extends LiveStore {
   #socket: WebSocket | null = null;
@@ -282,12 +223,7 @@ export class SocketStore extends LiveStore {
   /** How long to wait before retry N, capped. */
   static readonly BACKOFF_MS = [500, 1000, 2000, 5000, 10000] as const;
 
-  /* NOT a useless constructor, though it looks like one. Without it this class
-     inherits `LiveStore`'s signature and would accept a bare
-     `LiveStoreOptions` — so a caller could construct a SocketStore with none of the
-     fields that make it one, and TypeScript would allow it. The body is
-     `super(options)` precisely because the only job here is NARROWING the
-     parameter type. */
+  /* TRAP T-narrowing-constructor-is-not-useless — narrows the options type. */
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor -- narrows the options type; see above
   constructor(options: SocketStoreOptions) {
     super(options);
@@ -303,7 +239,6 @@ export class SocketStore extends LiveStore {
     this.#socket = socket;
 
     socket.addEventListener('open', () => {
-      // Resets the backoff — TRAP T-eventsource-error-is-not-fatal.
       this.#retry = 0;
       this.setConnected(true);
     });
@@ -346,12 +281,7 @@ export class SocketStore extends LiveStore {
     this.setConnected(false);
   }
 
-  /**
-   * Send something up the same connection.
-   *
-   * TRAP T-socket-send-refuses-rather-than-queues — false when the socket is
-   * shut; a queue that drains on reconnect delivers stale messages.
-   */
+  /** Send up the same connection; false when shut. TRAP T-socket-send-refuses-rather-than-queues */
   send(data: unknown): boolean {
     if (this.#socket?.readyState !== WebSocket.OPEN) return false;
     this.#socket.send(typeof data === 'string' ? data : JSON.stringify(data));

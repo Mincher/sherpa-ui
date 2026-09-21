@@ -1,98 +1,54 @@
 /**
  * sherpa-select-checkbox.css — all checkbox presentation.
- *
- * Bindings mirror the Figma "Select Checkbox" + "Checkbox (Atom)" (data-extracted):
- *   box      16×16 · fill style-surface/base · stroke style-border/base 1px (border/width/base)
- *            radius rounding/* (4)
- *   checked  the box KEEPS its white face + neutral ring; a 10×10 accent indicator
- *            (checkmark instance, radius 1, fill style-indicator/accent) sits inset 2px
- *            (space/3xs) with a white tick (style-content/inverse) inside it.
- *   label    content/body/+1 · size/base 14 · weight/medium 500 · line-height/base 20
- *   descr    12/16 regular · #b3b3c3 (Figma binds a dangling `style-content/light`)
- *   gaps     control↔text space/xs 8 · label↔description space/2xs 4
- *   inactive box + indicator → #b3b3c3; text keeps content/body/+1 (#35353d)
- * The visible box is a native <input type="checkbox"> with appearance:none; its
- * look is driven entirely by native CSS state (:checked / :indeterminate /
- * :disabled / :focus-visible) — JS never toggles a class or style. The checkmark
- * and indeterminate dash are ::after pseudo-elements on the input. Disabled uses
- * inactive tokens, never opacity. Focus is a box-shadow ring.
+ * The box is a native <input type="checkbox"> with appearance:none, drawn
+ * entirely from native state (:checked / :indeterminate / :disabled /
+ * :focus-visible) — JS never sets a class or style.
  */
 
 :host {
   display: inline-flex;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  /* 20 SQUARE. Figma's `Checkbox (Atom)` (49:66148) is 20 with 2px padding and
-     a 14 checkmark; this drew 16, which left the mark cramped and the box a
-     size smaller than every control beside it. `size-md` is the 20 — the same
-     token the atom's own rounding and padding bind through. */
+  /* 20 square, per Figma's Checkbox (Atom) — not 16. */
   --_size: var(--sherpa-display-mode-size-md, 20px);
-  /* Figma binds the box stroke to `style-border/base +1`, which lands on Theme
-     `border/default/+2` — the grey #b3b3c3. The RADIO binds one step in, to
-     `style-border/base` / `border/default/+1` (#e8e8f6), so the two controls
-     do NOT share a border colour. TRAP T-style-border-base-is-default-1. */
+  /* Checkbox and radio do NOT share a border colour. TRAP T-style-border-base-is-default-1. */
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
-  /* Checked indicator fill: the Saturated accent (style-indicator/accent) via the
-     look-tier cascade. A status context re-tints it; default is the accent action. */
+  /* Checked indicator fill; a status context re-tints it. */
   --_fill: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
   --_focus: var(--sherpa-style-border-base, #b3b3c3);
 }
 
-/* ── The ADVANCED group ─────────────────────────────────────────────────
- * Figma `Checkbox - Advanced` (1334:8173): the Checkbox atom and a Button with
- * Type=icon, side by side. Both already exist, so this adds layout and nothing
- * else — T-compose-never-reimplement.
- *
- * `display: contents` when the variant is OFF: the wrapper stops generating a
- * box entirely, so a plain checkbox lays out exactly as it did before the
- * variant existed. That is what keeps this a variant rather than a rewrite.
+/* ── The ADVANCED group (Figma `Checkbox - Advanced`) ────────────────────
+ * Checkbox atom + icon Button: layout only — T-compose-never-reimplement.
  */
 .group { display: contents; }
 :host([data-advanced]) .group {
   display: inline-flex;
   align-items: center;
-  /* 0, and FLUSH — `--sherpa-structure-space-snapped` is an alias for
-     space/none. The seam is thinned by the two 0.25 edge weights below, never
-     by a negative gap or an overlap. */
+  /* 0, and FLUSH. The seam is the two 0.25 edge weights below — never a negative gap. */
   gap: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* A plain checkbox has no wrapper box at all — `display: contents` means the
-   span generates nothing, so the box lays out exactly as it did before. */
+/* Plain checkbox: the span generates no box at all. */
 .box { display: contents; }
 
 /* ── The WRAPPER (Figma `Wrapper - Checkbox`) ────────────────────────────
- * The box gets its own bordered box so the pair reads as ONE object: rounded
- * on the outer edge, square where it meets the button.
- *
- * `.sherpa-snap-group` on the parent writes the four corner variables BY
- * POSITION — `[data-snap]` is a plain selector in tokens.css, which reaches
- * the document and never a shadow root, so the attribute stays as the honest
- * description and the class does the joining. Same reason sherpa-pagination
- * spells it out on its own `.pair`.
- *
- * The SEAM is two 0.25px weights meeting, exactly as Figma binds them
- * (border/left 0.5, border/right 0.25 on the wrapper; the mirror on the
- * button) — two halves of one hairline rather than two full strokes.
+ * Rounded outer edge, square against the button, so the pair reads as one
+ * object. `.sherpa-snap-group` does the joining because `[data-snap]` in
+ * tokens.css never reaches a shadow root.
  * TRAP T-advanced-checkbox-is-a-snapped-pair.
  */
 :host([data-advanced]) .box {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* 24 SQUARE, matching Figma's wrapper and the `sm` button beside it. A
-     labelled checkbox still grows, because the label sits inside this box. */
+  /* 24 square, matching the `sm` button beside it; a label still grows it. */
   block-size: var(--sherpa-display-mode-space-xl, 24px);
   min-inline-size: var(--sherpa-display-mode-space-xl, 24px);
-  /* NO inline padding: the checkbox is 20 and the wrapper is 24, so its own
-     1px borders and the 1px of slack each side are the whole difference. 2px
-     padding drew the box at 26 against the caret's 24 — a pair that stopped
-     reading as one object again, one size down. */
+  /* NO inline padding: 20 + borders + slack already fills the 24. */
   padding-inline: 0;
-  /* The label's gap is only wanted when there IS a label. Without this the
-     empty text span still claimed its 8px and the box drew 30 against the
-     caret's 24 — a pair that no longer reads as one object. */
+  /* An empty text span would otherwise still claim the 8px gap. */
   --_field-gap: 0px;
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
@@ -100,30 +56,23 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 0px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 0px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
-  /* HALF a stroke on the shared edge. The button carries the other half. */
+  /* Half a stroke; the button carries the other half. */
   --sherpa-border-right: 0.25px;
 }
 :host([data-advanced]) .caret {
   --sherpa-border-left: 0.25px;
 }
 
-/* The box inside the wrapper used to need its four corner variables RESET
- * here: `.sherpa-snap-group` writes them on its children, custom properties
- * inherit, and they reached the checkbox's own drawn box and squared two of
- * its corners. The control now takes a flat `border/rounding/sm`, which reads
- * no inherited variable — so there is nothing left to reset.
+/* No corner reset needed here: the control takes a flat `border/rounding/sm`,
+ * so the snap group's inherited corner variables never reach it.
  * TRAP T-advanced-checkbox-is-a-snapped-pair. */
 
 
 
-/* The caret and the menu exist in the template always; CSS reveals them. */
+/* Caret and menu are always in the template; CSS reveals them. */
 .caret { display: none; }
 :host([data-advanced]) .caret { display: inline-flex; }
-/* `display: none` on the slot would take the MENU with it — and a popover
-   inside a `display: none` subtree renders at zero size even when open, which
-   is exactly how this failed: the card reported `open: true` and 0 by 0.
-   `display: contents` instead: the slot generates no box of its own, the menu
-   is projected, and the browser's top layer does the rest. */
+/* NOT `display: none`: a popover inside a none subtree opens at 0 by 0. */
 slot[name="menu"] { display: contents; }
 
 .field {
@@ -135,8 +84,7 @@ slot[name="menu"] { display: contents; }
   inline-size: 100%;
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
-/* In the group the label hugs its box rather than filling the row, or the caret
-   is pushed to the far edge of whatever contains it. */
+/* In the group the label hugs, else the caret is pushed to the far edge. */
 :host([data-advanced]) .field { inline-size: auto; }
 
 /* ── The control (native input, custom-drawn box) ─────────────────── */
@@ -152,50 +100,36 @@ slot[name="menu"] { display: contents; }
   margin: 0;
   padding: 0;
   position: relative;
-  /* 0.5, not 1: Figma binds all four edges to `border/width/sm`
-     (Primitives border/stroke/200 = 0.5). TRAP T-checkbox-stroke-is-sm. */
+  /* 0.5, not 1. TRAP T-checkbox-stroke-is-sm. */
   border: var(--sherpa-display-mode-border-width-sm, 0.5px) solid var(--_border);
-  /* ONE flat token on all four corners. Figma binds `border/rounding/sm` (2),
-     not the per-corner `rounding/*` Grouping chain this used to read — and
-     that chain is what let the snap group's rounding inherit into the box.
-     A flat value removes the cause, so the reset rule below is gone with it.
-     TRAP T-checkbox-rounding-is-flat-sm. */
+  /* ONE flat token, not the per-corner chain — that chain let the snap group's
+     rounding inherit in. TRAP T-checkbox-rounding-is-flat-sm. */
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 
-  /* ── Checked / indeterminate — inset accent indicator (Figma checkmark instance).
-     The box keeps its face + ring; ::before is the 10×10 accent square inset 2px. ── */
+  /* ── Checked / indeterminate — inset accent indicator ──────────────── */
   &:checked::before,
   &:indeterminate::before {
     content: "";
     position: absolute;
-    /* Figma's mark is 14 inside a 20 box: 2px padding either side, measured
-       from the PADDING box. `inset` is measured from the padding box too, so
-       the border width never enters it — which matters, because that border is
-       0.5 and a 2px inset from the content box would draw 15. */
+    /* `inset` measures from the padding box, so the 0.5 border never enters it. */
     inset: var(--sherpa-display-mode-space-3xs, 2px);
     border-radius: 1px; /* off-grid-ok: Figma's checkmark instance corner */
     background: var(--_fill);
   }
 
-  /* Checkmark — SVG mask, white on the indicator. Positioned so it paints above ::before. */
+  /* Checkmark — SVG mask, painted above ::before. */
   &:checked::after {
     content: "";
     display: block;
     position: relative;
-    /* Figma's tick vector is 11x10 on the 14 indicator — it FILLS the mark.
-       8x8 left a small tick adrift in a blue square. Held as a ratio of the
-       box so the 16 and 24 sizes stay in proportion. */
+    /* A ratio of the box, so every size stays in proportion. */
     width: calc(var(--_size) * 0.55);
     height: calc(var(--_size) * 0.5);
-    /* The FIXED ramp. `content-body-4` is `neutral-color-1`, which is #FFFFFF
-       in light and #0C0B11 in dark — so the tick went BLACK on the blue
-       indicator in dark mode. Figma's `style-content/inverse` now aliases
-       Theme `content/body/inverse-fixed`, which lands on the fixed ramp; nine
-       components already spell that as `content-body-base-fixed`, for exactly
-       this job. TRAP T-the-tick-needs-the-fixed-ramp. */
+    /* The FIXED ramp, or the mark goes black on the indicator in dark mode.
+       TRAP T-the-tick-needs-the-fixed-ramp. */
     background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
     mask-size: contain;
@@ -207,7 +141,7 @@ slot[name="menu"] { display: contents; }
     -webkit-mask-position: center;
   }
 
-  /* Indeterminate dash — takes precedence over the checkmark. */
+  /* Indeterminate dash — beats the checkmark. */
   &:indeterminate::after {
     content: "";
     display: block;
@@ -215,12 +149,8 @@ slot[name="menu"] { display: contents; }
     width: 6px; /* off-grid-ok */
     height: 2px; /* off-grid-ok */
     border-radius: 1px; /* off-grid-ok */
-    /* The FIXED ramp. `content-body-4` is `neutral-color-1`, which is #FFFFFF
-       in light and #0C0B11 in dark — so the tick went BLACK on the blue
-       indicator in dark mode. Figma's `style-content/inverse` now aliases
-       Theme `content/body/inverse-fixed`, which lands on the fixed ramp; nine
-       components already spell that as `content-body-base-fixed`, for exactly
-       this job. TRAP T-the-tick-needs-the-fixed-ramp. */
+    /* The FIXED ramp, or the mark goes black on the indicator in dark mode.
+       TRAP T-the-tick-needs-the-fixed-ramp. */
     background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
     mask-image: none;
     -webkit-mask-image: none;
@@ -240,7 +170,7 @@ slot[name="menu"] { display: contents; }
     transform: scale(0.92);
   }
 
-  /* ── Focus — box-shadow ring, never a bare outline (WCAG 2.4.11) ──── */
+  /* ── Focus — inset ring, never a bare outline (WCAG 2.4.11) ───────── */
   &:focus-visible {
     outline: none;
     box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
@@ -267,9 +197,8 @@ slot[name="menu"] { display: contents; }
 }
 .label:empty,
 .description:empty { display: none; }
-/* An EMPTY text column still claimed the field's 8px gap, so an unlabelled
-   checkbox measured 28 wide for a 20 box — 8px of nothing, in every grid cell.
-   `:has()` is safe HERE because the subject is a plain class, not `:host`. */
+/* An empty text column would still claim the field's 8px gap. `:has()` is safe
+   HERE because the subject is a plain class, not `:host`. */
 .text:not(:has(*:not(:empty))) { display: none; }
 
 /* ── Disabled — inactive tokens, never opacity ────────────────────── */
@@ -282,8 +211,7 @@ slot[name="menu"] { display: contents; }
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
-/* Disabled + checked/indeterminate: Figma inactive paints box AND indicator #b3b3c3
-   (grey-on-grey); the tick/dash uses the dark inactive ink so the state still reads. */
+/* Box and indicator both go grey; the tick takes dark ink so the state still reads. */
 :host([disabled]) .control:checked::before,
 :host([disabled]) .control:indeterminate::before {
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
@@ -292,7 +220,7 @@ slot[name="menu"] { display: contents; }
 :host([disabled]) .control:indeterminate::after {
   background-color: var(--sherpa-theme-content-body-1, #35353d);
 }
-/* Text binds Theme content (not Style) in Figma → inactive keeps the dark ink. */
+/* Text binds Theme content, so inactive keeps the dark ink. */
 :host([disabled]) .label,
 :host([disabled]) .description {
   color: var(--sherpa-theme-content-body-1, #35353d);
@@ -303,9 +231,7 @@ slot[name="menu"] { display: contents; }
   border-color: var(--sherpa-theme-border-critical-3, #b72200);
 }
 
-/* ── Status cascade — status context re-inks the description ───────
-   The checked fill already routes through --_status-surface (--_fill), so a
-   status context tints it automatically — no extra rule needed here. */
+/* ── Status cascade — the fill already routes through --_fill ──────── */
 :host([data-status]) .description {
   color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
 }

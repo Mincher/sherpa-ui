@@ -1,20 +1,11 @@
 /**
- * sherpa-data-grid.css — a sortable table.
- *
- * A clean bordered table: sticky header, hover rows, right-aligned numeric cells
- * (mono), and a sort caret on the active column. The empty-state shows when there
- * are no rows. All state is data-* / attribute selectors; JS only stamps rows and
- * reflects the sort attributes.
+ * sherpa-data-grid.css — a sortable table: sticky header, hover rows,
+ * right-aligned numeric cells, optional selection / filter / actions columns.
  */
 
-/* Figma Grid Cell (926:34253) builds the grid from SQUARE cells with a 0.5px
-   style-border/base stroke — there is no rounded card around the table, so the grid
-   has square corners and a hairline frame. */
 :host {
-  /* A FLEX COLUMN, not a block. The grid must be able to take a height from its
-     container and SCROLL inside it, rather than growing with the row count and
-     pushing the pager off the page. A block host cannot pass a height down to
-     the scroll box. */
+  /* A FLEX COLUMN so the grid can take a height from its container and scroll
+     inside it; a block host cannot pass a height down to the scroll box. */
   display: flex;
   flex-direction: column;
   min-block-size: 0;
@@ -28,122 +19,67 @@
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: 0;
-  /* The table scrolls, so the host must not clip it away. `auto` here would give
-     a second scrollbar; the table's own box owns the scrolling. */
+  /* `auto` here would give a second scrollbar; the table's box owns scrolling. */
   overflow: hidden;
 }
 
-/* The scroll box — a wrapper DIV, not the <table>. Giving a table `display: block`
-   to make it scrollable takes it out of table layout and its columns stop lining
-   up. `min-block-size: 0` is what lets a flex child shrink below its content;
-   without it the table wins and the host grows to fit every row, which is exactly
-   what the fixed-height container is meant to stop. */
+/* The scroll box is a wrapper DIV, not the <table>: `display: block` on a table
+   takes it out of table layout and its columns stop lining up. */
 .scroller {
-  /* GROWS to fill the host. The host is a flex column; without `flex: 1 1 auto`
-     the scroller sized to its CONTENT, so in a fixed-height panel the rows
-     stopped 83px short of the grid's own bottom edge and left a white band
-     under them — and a short page never scrolled at all, because the box had
-     already grown to fit.
-
-     `min-block-size: 0` is the other half: a flex child floors at its content
-     size otherwise, so the box would refuse to shrink below the full row list
-     and the scroll would never engage. */
+  /* `flex: 1 1 auto` to fill the host (sized to content, rows stopped short of
+     the bottom edge and a short page never scrolled); `min-block-size: 0` is
+     what lets the box shrink below the full row list so scrolling engages. */
   flex: 1 1 auto;
   min-block-size: 0;
   overflow: auto;
 }
 
 .grid {
-  /* MAX-CONTENT, so the table is exactly the sum of the widths the <colgroup>
-     names and the scroller handles the overflow.
-
-     Not `auto`, and not `min-inline-size: 100%`: under either, a table narrower
-     than its box has slack, and `table-layout: fixed` shares that slack out
-     across EVERY column. A drag then wrote 289px into a <col> and the column
-     still measured 213, because the browser had re-divided the row.
-
-     Not `min-content` either, which is the same trap from the other side: in a
-     container with no width of its own the table collapsed to its smallest
-     possible size and a 160px column drew 18px wide.
-
-     `0` is what actually holds. A fixed table whose own width is smaller than
-     its columns lays each column out at exactly the width its <col> names and
-     grows to their sum — there is no slack to share and no floor to collapse
-     to, in a sized container or an unsized one. `max-content` read as auto here
-     and a 160px column drew 381px. */
+  /* `0`, not auto / min-content / max-content. A fixed table narrower than its
+     columns lays each out at exactly its <col> width and grows to their sum —
+     no slack to re-divide, no floor to collapse to. The alternatives each
+     mis-sized columns (a 160px column drew 18px, or 381px). */
   inline-size: 0;
-  /* FIXED, so a column's width is what the <colgroup> says and NOT the width of
-     its widest cell. Under `auto` the longest label in a column set that
-     column's size, so one long customer name pushed every other column out and
-     the grid scrolled sideways for a single row. Fixed means the label
-     truncates inside the column instead. */
+  /* FIXED, so a column is its <col> width and not its widest cell — one long
+     label otherwise pushed every other column out. */
   table-layout: fixed;
-  /* SEPARATE, not collapse — and this is a correctness fix, not a preference.
-     In the COLLAPSED border model the browser paints cell backgrounds and borders
-     in a fixed table order that IGNORES z-index on cells, so scrolling rows drew
-     straight over the sticky header no matter how it was stacked. Proved it: the
-     same markup with `separate` paints correctly with nothing else changed.
-     `border-spacing: 0` keeps the cells flush, so the grid looks identical. */
+  /* SEPARATE is a correctness fix: the collapsed border model paints cells in a
+     table order that IGNORES z-index, so rows drew over the sticky header. */
   border-collapse: separate;
   border-spacing: 0;
 }
 
-/* The header floats above the scrolling rows.
-   The WHOLE <thead> sticks as one block, not each row's cells separately.
-
-   Per-cell was the portable form, but it needs a SECOND offset for the filter row
-   (the label row's height) — and a sticky offset is measured from the scrollport,
-   so that offset applied at scroll 0 too. The filter cells were pushed 37px down
-   from the moment the grid rendered, leaving a phantom empty band between the two
-   header rows. Sticking the <thead> keeps its two rows in normal flow relative to
-   each other, so they cannot separate, and Chromium honours it. */
+/* The WHOLE <thead> sticks as one block. Per-cell sticking needs a second
+   offset for the filter row, and a sticky offset is measured from the
+   scrollport — so it applied at scroll 0 too and left a phantom band. */
 .head {
   position: sticky;
   inset-block-start: 0;
-  /* Higher than the rows below, so they scroll UNDER the header. */
   z-index: 3;
-  /* An OPAQUE fill on the section itself, not only on the cells.
-     The two header rows meet at a fractional boundary (37.0 and 39.0 tall inside
-     a 76.0 section, on a fractional device pixel), and a sub-pixel seam between
-     two flush cell boxes let the scrolling row show through as a thin band of its
-     own text. Painting the section behind them means any seam still shows header
-     colour. */
+  /* An OPAQUE fill on the SECTION as well as the cells: the two header rows
+     meet at a fractional boundary and a sub-pixel seam let a scrolling row
+     show through. */
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
-/* …and on the ROWS too. A `background` on a <thead> is not painted in every
-   engine's table model, so the rows repeat it as the reliable layer. */
+/* A `background` on a <thead> is not painted in every engine's table model, so
+   the rows repeat it as the reliable layer. */
 .head-row,
 .filter-row {
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
-/* Each header CELL sticks too, at the same offset, and carries its own opaque
-   fill.
-   Both halves are needed. A `background` on a sticky <thead> or <tr> is not
-   painted for a table section, so without a fill on the cells the rows showed
-   through. And a z-index on the <thead> does not lift its CELLS out of the
-   table's own stacking order — so the cells must be positioned in their own
-   right to sit above the rows. */
+/* Each header CELL sticks too. A z-index on the <thead> does not lift its cells
+   out of the table's stacking order, so they must be positioned themselves. */
 .head-row > *,
 .filter-row > * {
   position: sticky;
   z-index: 3;
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
 }
-/* NO per-row offset. Both rows pin at the <thead>'s own sticky position, so they
-   stay in normal flow relative to each other.
-   Giving the filter row its own `inset-block-start` (the label row's measured
-   height) was the earlier bug: a sticky offset is measured from the SCROLLPORT,
-   so it applied at scroll 0 too and pushed the filter cells 37px down, leaving a
-   phantom empty band between the two header rows. */
+/* NO per-row offset — both rows pin at the <thead>'s own sticky position. */
 :host([data-empty]) .grid { display: none; }
 
-/* Neutralise the UA's <th> defaults ONCE, at the source.
-   A `<th>` ships `font-weight: bold` and `text-align: center` from the UA
-   stylesheet. Figma's Grid Cell binds every label — group, header, cell and filter
-   — to content/weight/REGULAR 400, start-aligned. Left alone, that bold leaked into
-   the header button AND into the filter input (whose `font: inherit` faithfully
-   inherited it), which is why the secondary header rendered heavy. Killing it here
-   means a descendant never has to fight the cascade to look normal. */
+/* Neutralise the UA's bold, centred <th> defaults once at the source: it leaked
+   into the header button and the filter input (via `font: inherit`). */
 .grid th {
   font-weight: var(--sherpa-font-weight-regular, 400);
   font-style: normal;
@@ -151,42 +87,27 @@
 }
 
 /* ── Selection column (opt-in) ─────────────────────────────────────── */
-/* The checkbox <th>/<td> exist in the template always; CSS reveals them. */
 .select-cell { display: none; }
 :host([data-selectable]) .select-cell { display: table-cell; }
 
-/* The selection column's <col>, which is what `table-layout: fixed` actually
-   reads — the 32px on `.select-cell` below sizes the CELL, and a fixed table
-   ignores a cell's own width.
-
-   It must also come and go WITH its cells. Hiding only the cells left a third
-   <col> against two columns of content, so the browser matched the first <col>
-   to the first drawn column: `select-col` carried no width, took every spare
-   pixel, and the grid drew 381 + 172 instead of 160 + 160. `display: none` on a
-   <col> removes the column from the table's sizing, so the <col>s and the
-   columns stay one-to-one either way. */
-/* THE ADVANCED HEADER IS WIDER THAN THE BOX. `Checkbox - Advanced` is 48 in
-   Figma — a 24 box plus a 24 caret — so a 32px column clips the caret behind
-   the first data column. The column follows the control, not the other way
-   round; the body's plain checkboxes simply centre in the wider cell.
-   TRAP T-advanced-checkbox-widens-the-select-column. */
-/* Keyed off an attribute the GRID sets, not `:host(:has(…))` — that does not
-   PARSE, as sherpa-container, sherpa-barchart and sherpa-gauge-chart each
-   record. `#render` writes `data-advanced-select` beside the checkbox's own. */
+/* THE ADVANCED HEADER IS WIDER THAN THE BOX: `Checkbox - Advanced` is 48 (box +
+   caret), so a 32px column clips the caret.
+   TRAP T-advanced-checkbox-widens-the-select-column.
+   Keyed off an attribute the GRID sets: `:host(:has(…))` does not PARSE. */
 :host {
   --_select-w: var(--sherpa-display-mode-space-2xl, 32px);
 }
 :host([data-advanced-select]) {
-  /* The pair is 48 — two 24 halves, flush — plus the cell's own 4px padding on
-     each side. Written as the sum rather than a single token, because no token
-     is 56 and inventing one to fit a layout is how a scale stops meaning
-     anything. */
+  /* 48 + the cell's 4px padding each side. Written as a sum because no token is
+     56, and inventing one to fit a layout breaks the scale. */
   --_select-w: calc(
     var(--sherpa-display-mode-size-4xl, 48px) +
     2 * var(--sherpa-display-mode-space-2xs, 4px)
   );
 }
 
+/* The <col> must come and go WITH its cells: hiding only the cells left the
+   <col>s and the drawn columns out of step and the widths went wrong. */
 .select-col {
   display: none;
   /* `width`, not `inline-size`: a fixed table reads the <col>'s used WIDTH and
@@ -200,21 +121,14 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   text-align: center;
   vertical-align: middle;
-  /* NO rule here — see `.row:not(:last-child) > .select-cell` below. A pinned
-     cell paints its own background, so the row's own rule cannot reach it and
-     the column read as floating with no bottom edge. But restating it
-     unconditionally drew one on the LAST row, where the ordinary cells
-     correctly draw none: the grid's host draws the table's own bottom frame,
-     so a last-row rule doubles it. The result was a border stub that stopped
-     dead where the data cells began.
+  /* NO rule here — see `.row:not(:last-child) > .select-cell` below.
      TRAP T-the-last-row-draws-no-rule. */
 }
 .row:not(:last-child) > .select-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-/* The FILTER row has no rule of its own. (The header does — `.select-head`
-   restates it just below, and being later it wins.) */
+/* The FILTER row has no rule of its own; `.select-head` restates the header's. */
 .filter-row > .select-cell {
   border-block-end: none;
 }
@@ -222,11 +136,8 @@
   background: var(--sherpa-theme-surface-default-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
 }
-/* TRAP T-compose-never-reimplement.
-   All three selection boxes are components now. `accent-color` used
-   to paint the browser's OWN checkbox here, which is why the grid's ticks never
-   matched the design — the component draws its own box and needs none of it.
-   Focus is the component's job too; it already draws the inset ring. */
+/* TRAP T-compose-never-reimplement. All three boxes are components; they draw
+   their own box and their own focus ring, so no `accent-color` here. */
 .select-all,
 .group-select,
 .row-select {
@@ -234,19 +145,16 @@
   vertical-align: middle;
 }
 
-/* MULTI shows the checkbox, SINGLE shows the radio. Both are in the template;
-   CSS picks, so JS never mutates a control's type. */
+/* MULTI shows the checkbox, SINGLE the radio. Both are in the template. */
 .row-one { display: none; }
 :host([data-select="single"]) .row-multi { display: none; }
 :host([data-select="single"]) .row-one { display: inline-flex; }
 
 /* ── Filter row (opt-in) ───────────────────────────────────────────── */
-/* The secondary header row exists always; CSS reveals it when filterable. */
 .filter-row { display: none; }
 :host([data-filterable]) .filter-row { display: table-row; }
 
-/* Figma Grid Cell `Type=filter`: same as the header — fill base +1, padding 4
-   BLOCK / 0 INLINE, and side dividers instead of left/right borders. */
+/* Figma Grid Cell `Type=filter`: fill base +1, padding 4 block / 0 inline. */
 .filter-cell {
   position: relative;
   padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
@@ -261,17 +169,8 @@
 }
 
 /* ── Header / filter side dividers ──────────────────────────────────────────
- * Will replaced the header cell's left and right BORDERS with a short divider on
- * each side: 12 tall rather than the full cell height, so the columns are marked
- * without drawing a full grid of boxes. A border cannot be shortened, so these are
- * pseudo-elements, centred vertically.
- *
- * A REGULAR cell has none — that is the whole point of the change, and it is why
- * this rule names the two header types rather than every cell.
- *
- * ONE divider, on the LEADING edge only. A pair put two hairlines back to back at
- * every column boundary, which read as one thick smudge; a single leading rule
- * marks the same boundary once. */
+ * 12px dividers, not full borders — a border cannot be shortened, so these are
+ * pseudo-elements. LEADING edge only: a pair doubled every boundary. */
 :is(.head-cell, .filter-cell)::before {
   content: "";
   position: absolute;
@@ -282,26 +181,14 @@
   block-size: var(--sherpa-display-mode-size-xs, 12px);
   background: var(--sherpa-style-border-base, #b3b3c3);
 }
-/* No divider on the first drawn column: it would sit on the grid's own outer
-   frame, or right beside the selection column's edge. A divider marks a boundary
-   BETWEEN columns, and the first column's leading edge is the frame. */
+/* No divider on the first drawn column: it marks a boundary BETWEEN columns,
+   and the first column's leading edge is the grid's own frame. */
 .head-row > :first-child::before,
 .filter-row > :first-child::before,
 :host([data-selectable]) .head-row > :nth-child(2)::before,
 :host([data-selectable]) .filter-row > :nth-child(2)::before { content: none; }
-/* Figma Grid Cell/Type=filter holds an Input Field (atom) pinned Style: TRANSPARENT
-   — no fill and no ring, so the field reads as bare text on the header band until it
-   is focused. Its `value` text is content/size/base 14 on line-height/base 20 at
-   weight/REGULAR 400, not italic.
-   `font: inherit` was wrong here: the input is a <th> child, and the UA's <th>
-   default is BOLD + centred, so the filter text rendered at weight 700. The shorthand
-   inherited that instead of overriding it. Every part is now stated explicitly. */
-/* THE FIELD IS THE INPUT'S BOX.
-   The border, padding, radius and focus ring live here, NOT on the <input>, so the
-   clear button sits inside that box rather than beside it. With the box on the
-   <input> the button was a sibling of it and therefore outside its border — which
-   read as "next to the input", not "in it". The <input> itself becomes a bare text
-   layer that fills the remaining space. */
+/* THE FIELD IS THE INPUT'S BOX — border, padding, radius and ring live here,
+   not on the <input>, so the clear button sits inside the box. */
 .filter-field {
   display: flex;
   align-items: center;
@@ -320,10 +207,12 @@
 .filter-input {
   flex: 1 1 auto;
   min-inline-size: 0;
-  /* No padding, border or radius: the field owns them now. */
+  /* No padding, border or radius: the field owns them. */
   padding: 0;
   border: 0;
   background: transparent;
+  /* Every font part stated explicitly: `font: inherit` picks up the UA's bold
+     <th> default, which rendered the filter text at weight 700. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-style: normal;
@@ -335,19 +224,15 @@
   /* The ring is drawn on the field, so the input must not draw its own. */
   &:focus-visible { outline: none; }
 }
-/* Figma's placeholder `value` is content/body/+2 (#b3b3c3) — a grey hint, and still
-   regular weight, so the inherited <th> bold must be beaten here too. */
+/* Placeholder: grey hint, regular weight — the inherited <th> bold must be
+   beaten here too. */
 .filter-input::placeholder {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
   font-weight: var(--sherpa-font-weight-regular, 400);
   font-style: normal;
 }
 
-/* ── Clear button ────────────────────────────────────────────────────────
-   An icon-only Transparent button at the trailing edge of the field, shown only
-   once the field has text (the cell's data-has-value flag, written by JS). Same
-   shape as the nav search's clear button, at the filter row's smaller scale: a
-   16px square carrying a 14px glyph, on the unified icon/text scale. */
+/* Clear button — shown once the cell carries data-has-value (written by JS). */
 .filter-clear {
   display: none;
   align-items: center;
@@ -380,10 +265,8 @@
 }
 .filter-cell[data-has-value] .filter-clear { display: inline-flex; }
 
-/* ── No matches ──────────────────────────────────────────────────────────
-   A filter that hides every row keeps the header AND the filter row up — the user
-   is mid-keystroke in one of those inputs, so hiding the table (data-empty) would
-   pull the field out from under them. The message goes below instead. */
+/* A filter that hides every row keeps the header and filter row up — the user
+   is mid-keystroke in one of those inputs. The message goes below instead. */
 .no-matches {
   display: none;
   padding: var(--sherpa-display-mode-space-xs, 8px);
@@ -392,153 +275,75 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 :host([data-no-matches]) .no-matches { display: block; }
-/* Focus lights the whole FIELD, because the field is the visible box now. Keyed on
-   :focus-within so it also fires for the clear button inside it, and so the ring
-   wraps both rather than drawing a second one around the button alone. */
+/* Focus lights the whole FIELD. `:focus-within` so it also fires for the clear
+   button inside it, rather than drawing a second ring around it. */
 .filter-field:focus-within {
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
   box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */
-/* Figma Grid Cell `Type=header` (926:34253, re-read after Will's tweaks):
-   fill style-surface/base +1, padding 4 BLOCK and 0 INLINE, gap 4, and strokes on
-   the top and bottom edges ONLY — the left/right borders are gone, replaced by a
-   12px-tall DIVIDER on each side (see .head-cell::before / ::after).
-
-   FIGMA-SIDE FLAG: those Divider rectangles have width bound to `scale/0` and NO
-   fill, so they are invisible on the canvas. Drawn here at border-width/sm in
-   style-border/base, which is what every other hairline in the grid uses. */
+/* Figma Grid Cell `Type=header` (926:34253): fill base +1, padding 4 block / 0
+   inline, gap 4, side dividers instead of left/right borders. */
 .head-cell {
   position: relative;
-  /* 0 INLINE: the dividers mark the column edges now, so the label runs to the
-     cell's own boundary and the gap between columns is the divider, not padding. */
+  /* 0 INLINE: the dividers mark the column edges, so the label runs to the
+     cell's own boundary. */
   padding: var(--sherpa-display-mode-space-2xs, 4px) 0;
   text-align: start;
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
-  /* BOTTOM edge only, not `border-block`.
-     Figma's Grid Cell Type=header does stroke both edges — but in Figma the grid
-     has no outer card around it, so that top stroke IS the table's top boundary.
-     Here the host already draws the grid's frame, so a top stroke on the header
-     landed a second hairline directly on it: two 1px lines at the same y read as
-     one thick grey band above the column labels. Worse, .select-head never had
-     one, so the doubled line started at the second column and looked ragged.
-     The bottom edge is a real internal rule (header vs first row) and stays. */
+  /* BOTTOM edge only. Figma strokes both, but there the header's top stroke IS
+     the table's top boundary; here the host already draws the frame and a top
+     stroke doubled it into a thick grey band. */
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 
   &[data-sortable="false"] .head-btn { cursor: default; }
 
 }
-/* ── A SORTED or FILTERED column's header — Style mode `active` ──────
- * A sort orders what the grid shows and a filter narrows it. Both are the
- * column ACTING on the view, and the column says so through its CHIPS: the
- * filter chip and the sort chip each paint their own on-state, in the heading,
- * where the user is already looking.
- *
- * THE HEADING ITSELF IS NOT TINTED. It was, once — a filled, brand-tinted cell
- * meant to survive a glance at row 40. With the chips carrying an on-state of
- * their own that fill became the SECOND thing saying the same word, and two
- * highlights competing down a header row read as noise, not emphasis. The
- * quieter of the two goes.
- *
- * The attribute STAYS. `data-status="active"` is still written on every acting
- * column — it is the system-wide door, so a host that wants its own column
- * highlight styles the same attribute it would on any other component, and the
- * grid's own tests and view state read it unchanged. This file simply declines
- * to paint it.
- *
- * Nothing is declared here on purpose: no rule means the heading keeps the
- * plain header surface, ink and rule it has when nothing is acting on it. The
- * --_status-* resets on the chips below stay, because a HOST may still feed
- * this cell a mode. */
+/* An ACTING column's heading is deliberately UNPAINTED — the chips carry the
+   on-state. `data-status="active"` is still written, for a host to style. */
 
-/* ── The column FILTER button ────────────────────────────────────────
- * An icon-only <sherpa-quick-filter>, sitting LEFT of the sort control in the
- * heading. It is in the header template always; these rules decide whether it
- * shows.
- *
- * HIDDEN BY DEFAULT. A grid that has not been told it offers column filters
- * must look exactly as it did — the button appears only for
- * data-column-filters, and never for a column whose type has no menu yet.
- */
-/* BOTH header chips are the same control at the same size — the filter one and
-   the sort one. They differ only in what their glyph says and what a click
-   does. */
+/* The column FILTER button — an icon-only <sherpa-quick-filter>, always in the
+   template, shown only for data-column-filters and a type that has a menu. */
 .head-filter { display: none; }
 
 :host([data-column-filters]) .head-filter:not([data-unsupported]),
 .head-sort:not([data-unsupported]) {
   display: inline-flex;
   flex: 0 0 auto;
-  /* The chip is a fixed 24 tall and the heading's own padding is 4 block, so a
-     24 button would push the row taller than the 32 the rest of the grid uses.
-     The chip scales off this one token, so overriding it here shrinks the whole
-     control rather than clipping it. */
+  /* The chip scales off this token, so overriding it shrinks the whole control
+     rather than clipping it — a 24 chip would push the row past 32. */
   --sherpa-display-mode-size-lg: 20px;
 }
 
-/* The heading is a ROW: filter button, then the sort button, which takes the
-   rest of the width.
-
-   THE ROW IS AN INNER WRAPPER, never the <th> itself. `display: flex` on a
-   table cell takes it OUT of table layout — it stops being a column, and the
-   whole header row stacks vertically down the page instead of running across
-   it. The wrapper flexes; the cell stays a cell.
-
-   It is a <span>, so its default `display: inline` puts the two controls on
-   separate LINES until this rule lands — the filter button above the label
-   rather than beside it. */
+/* The heading row: filter button, sort button, label taking the rest.
+   AN INNER WRAPPER, never the <th>: `display: flex` on a table cell takes it
+   out of table layout and the header row stacks vertically. It is a <span>, so
+   without this rule the two controls sit on separate lines. */
 .head-row-inner {
   display: flex;
   align-items: center;
-  /* One step up from the 2xs the label button uses inside itself. The two chips
-     are round and sit shoulder to shoulder; at 4 their edges nearly touched and
-     the pair read as one smudged control rather than two buttons. */
+  /* 8, not 4 — at 4 the two round chips read as one smudged control. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
 
-  /* THE TRAILING CLEARANCE LIVES HERE, ON THE ROW — one owner for it.
-     `.head-cell` is padding 0 inline by design: the dividers mark the column
-     edges, not padding. The label button used to buy the trailing 8px back with
-     its own inline padding, which worked only while the label was the last
-     thing in the row. It is not — the two chips are its SIBLINGS, so they got
-     nothing, and the sort chip ran flush to the cell boundary and sat under the
-     8px resize grip. Tight to look at, and it stole clicks aimed at the grip.
-
-     On the ROW rather than a margin on the chip, so it holds for whichever
-     child is last: the sort chip normally, the filter chip on a column that
-     cannot sort, the label itself on a column with neither. `.head-btn` keeps
-     only its LEADING padding now (see that rule) — the trailing half moved
-     here, so the two never stack into 16. */
+  /* THE TRAILING CLEARANCE LIVES HERE, ON THE ROW — one owner. `.head-cell` is
+     padding 0 inline by design; on the row it holds for whichever child ends
+     the row (sort chip, filter chip, or the label). `.head-btn` keeps only its
+     LEADING padding, so the two never stack into 16. */
   padding-inline-end: var(--sherpa-display-mode-space-xs, 8px);
 
-  /* LABEL, FILTER, SORT.
-
-     The NAME takes whatever the two controls leave, which is what pushes them
-     to the column's trailing edge — so the funnels and the sort glyphs line up
-     down the header row instead of stepping in and out with each label's
-     length. It was `space-between` inside the button when the glyph lived
-     there; with three items in one row, growing the first does the same job
-     and keeps the pair together. */
+  /* The NAME takes what the two controls leave, so the chips line up down the
+     header row instead of stepping in and out with each label's length. */
   .head-btn { flex: 1 1 auto; min-inline-size: 0; }
   .head-filter,
   .head-sort { flex: 0 0 auto; }
 }
 
-/* ── The column filter BUTTON ────────────────────────────────────────
- * The heading's ACTIVE TINT must not continue into the menu the button opens.
- * `--_status-*` are custom properties, so they inherit — and the menu is a
- * light-DOM child of the chip. A lit column painted its own menu purple.
- *
- * Reset on the chip, and the menu inherits the reset instead. @scope does NOT
- * help here: it controls which elements a rule MATCHES, not how far a value
- * that rule sets then inherits. A `to (sherpa-menu)` boundary stops the menu
- * being matched and does nothing about the value arriving from its parent.
- *
- * The chip re-declares whatever it needs from `data-current` — its on-state is
- * its own — so resetting here costs it nothing.
- */
+/* `--_status-*` INHERIT into the menu (a light-DOM child of the chip), so a lit
+   column painted its own menu purple. @scope does not help — it limits what a
+   rule MATCHES, not how far a value inherits. */
 .head-filter,
 .head-sort {
   --_status-surface: initial;
@@ -552,20 +357,12 @@
   --_status-shadow: initial;
 }
 
-/* The filter button must not start a column DRAG. The grip is the trailing 8px
-   strip and the chip sits at the leading edge, so they never overlap — but the
-   pointerdown handler is delegated from the whole header row, and a chip click
-   that reached it would read as the start of a resize. */
+/* The chip must not start a column DRAG: the pointerdown handler is delegated
+   from the whole header row. */
 .head-filter { touch-action: auto; }
 
-/* The part of a cell a TEXT column's filter matched.
-
-   A filtered column says WHICH rows survived; the mark says why THIS one did,
-   so the reader does not scan a column of long names for the four letters that
-   matched. Same treatment as sherpa-nav-item's search hit, so one highlight
-   means one thing across the system.
-
-   Number and date cells never carry one — see #fillCell. */
+/* The part of a cell a TEXT column's filter matched — same treatment as
+   sherpa-nav-item's search hit. Number and date cells never carry one. */
 .cell mark.match {
   background: color-mix(in srgb,
     var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
@@ -573,15 +370,9 @@
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
-/* ── Inside a column filter MENU ─────────────────────────────────────
- * These rows are cloned into the CHIP's light DOM and slotted into its menu, so
- * they sit in neither the chip's shadow tree nor the menu's — which is exactly
- * why a plain descendant selector from HERE reaches them, and why the menu's
- * own `::slotted()` cannot.
- *
- * The shapes mirror the quick-filter toolbar's number and date menus on
- * purpose: a reader who has met the toolbar's chips already knows this control.
- */
+/* Inside a column filter MENU. These rows are cloned into the CHIP's light DOM,
+   so they sit in neither shadow tree — a plain descendant selector from HERE
+   reaches them and the menu's own `::slotted()` cannot. */
 .head-filter-body {
   display: flex;
   flex-direction: column;
@@ -590,9 +381,8 @@
     var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* The RANGE switch row. The control LEADS and the label follows — where a value
-   row puts its checkbox and its text — so every control in the menu shares one
-   left edge instead of the mode row alone reaching for the far side. */
+/* The RANGE switch row. Control LEADS, label follows, so every control in the
+   menu shares one left edge. */
 .head-filter-range {
   display: flex;
   align-items: center;
@@ -607,10 +397,8 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* The two shared controls: a condition picker and a value box. Both are bare
-   form controls rather than composed components — they live where no
-   stylesheet but this one reaches, so a sherpa-input-text there would carry a
-   shadow tree for a box this file could not style anyway. */
+/* Bare form controls rather than composed components: they live where no
+   stylesheet but this one reaches. */
 .head-filter-op,
 .head-filter-body input {
   inline-size: 100%;
@@ -627,30 +415,21 @@
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   /* A <select> and an <input> do NOT inherit the page font — browsers
-     substitute their own UI face — so without this the menu's two controls
-     rendered in a different typeface from the heading above them. */
+     substitute their own UI face. */
   font-family: inherit;
   font-size: var(--sherpa-theme-content-size-base, 14px);
   box-sizing: border-box;
 }
 
-/* Numeric values are mono and right-aligned, per the system's convention —
-   the same rule the grid's own number cells follow. */
+/* Numeric values are mono and right-aligned, per the system's convention. */
 .head-filter-num {
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   text-align: right;
 }
 
-/* A <select> DRAWS ITS CARET INSIDE ITS OWN PADDING.
-
-   With the same 8px on both sides the browser puts the glyph about 2px off the
-   border and runs the label straight up against it — no gap on the right at
-   all, while the left has its full 8. The control reads lopsided and the
-   longest option touches the arrow.
-
-   So the trailing side gets room for the caret AND the gap: 8 for the glyph,
-   8 to breathe, on top of the 8 every field already has. It is `padding-inline-
-   end` alone, so the shared rule above still owns every other edge. */
+/* A <select> DRAWS ITS CARET INSIDE ITS OWN PADDING, so the trailing side needs
+   room for the glyph and the gap on top of the shared 8px. Trailing edge only,
+   so the shared rule above still owns the rest. */
 .head-filter-op {
   padding-inline-end: calc(
     var(--sherpa-display-mode-space-xs, 8px) * 3
@@ -664,24 +443,18 @@
   box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
 
-/* ONE of the two number shapes shows. BOTH are in the DOM from the start, so
-   flipping the Range switch is an attribute write rather than a rebuild — and
-   whatever was typed on the other side is still there on the way back. */
+/* ONE of the two number shapes shows. Both stay in the DOM, so flipping Range
+   is an attribute write and whatever was typed survives the round trip. */
 .head-filter-slider { display: none; }
 
 sherpa-menu[data-range] .head-filter-value { display: none; }
 sherpa-menu[data-range] .head-filter-slider { display: block; }
 
-/* A RANGE has no single condition to pick: it IS `between`, which the slider's
-   two thumbs say more plainly than a list could. */
+/* A RANGE has no condition to pick: it IS `between`. */
 sherpa-menu[data-range] .head-filter-op { display: none; }
 
-/* ── Column widths + the resize grip ─────────────────────────────────
- * A column is drawn at the width its <col> carries, so its content has to fold
- * back into that box. Both the header label and the body cells clip with an
- * ellipsis; `min-inline-size: 0` is what lets a flex/table child shrink below
- * its content at all.
- */
+/* Column widths + the resize grip. `min-inline-size: 0` is what lets a
+   flex/table child shrink below its content. */
 .head-label {
   min-inline-size: 0;
   overflow: hidden;
@@ -689,18 +462,15 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   text-overflow: ellipsis;
 }
 
-/* The grip straddles the header's trailing edge, so it is grabbable from either
-   side of the divider — 8px total, centred on the boundary. It spans the full
-   header height and sits above the sort button so a drag that starts on it is
-   never read as a sort click. */
+/* The grip spans the full header height and sits above the sort button, so a
+   drag starting on it is never read as a sort click. */
 .resize-grip {
   position: absolute;
   z-index: 1;
   inset-block: 0;
-  /* FLUSH with the edge, not straddling it. A negative inset put half the strip
-     past the cell's boundary, and the browser hit-tests the neighbouring cell
-     there — a pointerdown on the visual centre of the grip reported `.head-cell`
-     and the drag never started. Wholly inside, every pixel of it is grabbable. */
+  /* FLUSH with the edge, not straddling it: a negative inset put half the strip
+     past the boundary, where the browser hit-tests the neighbouring cell, and
+     the drag never started. */
   inset-inline-end: 0;
   inline-size: var(--sherpa-display-mode-space-xs, 8px);
   cursor: col-resize;
@@ -708,7 +478,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 
 /* While a drag is live the whole grid takes the resize cursor, so the pointer
-   does not flicker back to a text caret the moment it leaves the 8px strip. */
+   does not flicker back to a text caret outside the 8px strip. */
 :host([data-resizing]) {
   cursor: col-resize;
   user-select: none;
@@ -718,27 +488,19 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 .head-btn {
   display: flex;
   align-items: center;
-  /* The glyph is no longer in here — the row is LABEL, FILTER, SORT, and this
-     button holds only the label now. It still grows (see .head-row-inner), so
-     the two controls after it stay pinned to the column's trailing edge. */
+  /* The glyph is not in here — this button holds only the label. */
   justify-content: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   inline-size: 100%;
-  /* LEADING inline padding only. The trailing 8px used to live here too, to
-     hold the label clear of the resize grip — but the label is no longer the
-     last thing in the header row, so that clearance belongs to the ROW, which
-     owns it for whichever child actually ends the row. Keeping it here as well
-     would stack to 16 on the label's own side. See `.head-row-inner`. */
+  /* LEADING inline padding only — the trailing clearance belongs to the ROW.
+     See `.head-row-inner`. */
   padding-block: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline-start: var(--sherpa-display-mode-space-xs, 8px);
   padding-inline-end: 0;
   border: none;
   background: none;
-  /* Figma binds the label on EVERY Grid Cell type (group / header / cell / filter)
-     to content/weight/REGULAR 400 on content/size/base 14 and line-height/base 20 —
-     the header is set apart by its darker surface band, not by a heavier weight.
-     This was semibold 600 by hand. Stated in full because `font: inherit` picks up
-     the UA's bold <th> default. */
+  /* Figma binds every Grid Cell label to weight REGULAR 400 / size 14 / line
+     20. Stated in full because `font: inherit` picks up the UA's bold <th>. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-style: normal;
@@ -754,74 +516,35 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* A NUMERIC column aligns its header with its digits.
-   The cells are right-aligned (see .cell[data-type="number"]), so a left-aligned
-   heading over them read as belonging to a different column. The sort caret
-   travels with the label, so the two stay together at whichever edge. */
+/* A NUMERIC column aligns its header with its right-aligned digits. */
 .head-cell[data-type="number"] .head-btn {
   justify-content: flex-end;
   text-align: end;
 }
-/* …and so does its filter input, for the same reason. */
+/* …and so does its filter input. */
 .filter-cell[data-type="number"] .filter-input {
   text-align: end;
 }
 
 
 /* ── Pinned (frozen) columns ────────────────────────────────────────
- * The leading columns stay put while the rest scroll UNDER them.
- *
- * WHICH columns: the selection cell (when data-selectable reveals it) plus the
- * first drawn data column. JS marks both with `data-pinned` rather than CSS
- * naming nth-child, because the offset shifts by one when data-selectable is
- * absent — and #shownColumns() can drop the grouped column, so "the first data
- * column" is not a fixed field either.
- *
- * WHY a variable for the second offset: the data column auto-sizes to its
- * content, so its inline-start offset (the width of everything pinned before it)
- * is not knowable in CSS. JS measures it once per render and writes
- * `--_pin-offset` on the host. That is state, not presentation — CSS still owns
- * every paint.
- *
- * STACKING: a pinned BODY cell must sit above the unpinned cells it overlaps
- * (z-index 2) but BELOW the header (z-index 3), or the frozen column would draw
- * over the sticky head when both are pinned at once. A pinned HEADER cell is the
- * corner where both stick, so it takes 4 — above everything.
- *
- * OPACITY: a pinned cell needs its own opaque fill, exactly like the sticky
- * header does. `position: sticky` only moves the box; the scrolling content still
- * paints in its own layer, so a transparent pinned cell shows the columns sliding
- * beneath it. The row's state tints (hover / focused / selected) are transparent
- * on purpose, so a pinned cell paints the base surface and then INHERITS the tint
- * on top via the row rules below — otherwise a selected row's pinned cells would
- * be the only part of it left unpainted.
- */
+ * JS marks them with `data-pinned`; nth-child cannot say it, since the offset
+ * shifts without data-selectable. Body cell 2, header 3, pinned header 4 (the
+ * corner where both stick). Sticky only moves the box, so a pinned cell needs
+ * its own opaque fill and takes the row's transparent tint on top. */
 :is(.head-cell, .filter-cell, .cell, .select-cell)[data-pinned] {
   position: sticky;
   inset-inline-start: 0;
   z-index: 2;
 }
 
-/* ── The ACTIONS column — the trailing twin of the selection column ──────────
- *
- * Same shape, opposite edge: a fixed-width <col> that comes and goes with its
- * cells (for the reason spelled out on `.select-col` above: hiding only the
- * cells leaves the <col>s and the columns out of step), and a sticky pin at
- * `inset-inline-end` rather than `-start`.
- *
- * It needs NO measured offset. The leading block can be two columns deep — a
- * selection cell then the first data column — so the second must clear the
- * first's MEASURED width. Only one column ever pins to the trailing edge, so
- * `0` is the whole answer.
- *
- * TRAP T-grid-actions-pin-to-the-trailing-edge.
- */
+/* The ACTIONS column: the selection column's trailing twin. No measured offset
+   is needed — only one column ever pins to that edge.
+   TRAP T-grid-actions-pin-to-the-trailing-edge. */
 .actions-col {
   display: none;
-  /* Sized to the HEADER WORD, which is the widest thing in the column — the
-     trigger beneath it is a 32px square. `width`, not `inline-size`: see
-     `.select-col`, a fixed table reads the <col>'s used WIDTH and Chromium
-     ignores the logical property here. */
+  /* Sized to the HEADER WORD, the widest thing in the column. `width`, not
+     `inline-size` — see `.select-col`. */
   width: 76px;   /* off-grid-ok: the measured width of "Actions" + its padding */
 }
 :host([data-actions]) .actions-col { display: table-column; }
@@ -837,30 +560,23 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   position: sticky;
   inset-inline-end: 0;
   z-index: 2;
-  /* NO rule here, for the same reason as `.select-cell` — restated below so it
-     follows the LAST-ROW exception every other body cell follows.
-     TRAP T-the-last-row-draws-no-rule. */
+  /* NO rule here, as on `.select-cell` — restated below so it follows the
+     last-row exception. TRAP T-the-last-row-draws-no-rule. */
 }
 :host([data-actions]) .row:not(:last-child) > .actions-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
     var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* THE HEAD CELLS STACK ABOVE THE BODY. The head row is itself sticky, so a
-   pinned head cell has to clear both its own row's scrolling siblings AND the
-   pinned body cells beneath it — the same `z-index: 4` the leading pinned
-   headers take on line 941 above, and for the same reason. Without it the
-   "Actions" label scrolled away under the data columns. */
+/* A pinned head cell must clear its row's scrolling siblings AND the pinned
+   body cells beneath it — same `z-index: 4` as the leading pinned headers.
+   Without it the "Actions" label scrolled away under the data columns. */
 :host([data-actions]) :is(.actions-head, .filter-row > .actions-cell) {
   z-index: 4;
 }
 
-/* The header keeps the head row's own surface, not the body's — and the head
-   row's own rule with it. A pinned cell paints its own background, so it has to
-   restate that border; `.select-head` does the same thing a few rules up.
-   It used to arrive by accident, from a blanket `.actions-cell` rule that also
-   drew one on the last BODY row — scoping that to `:not(:last-child)` fixed the
-   body and took the header's with it. TRAP T-the-last-row-draws-no-rule. */
+/* A pinned cell paints its own background, so it restates the head row's
+   surface and rule. TRAP T-the-last-row-draws-no-rule. */
 :host([data-actions]) .actions-head {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
@@ -870,8 +586,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   background: var(--sherpa-theme-surface-default-base, #ffffff);
 }
 
-/* The head label, matching `.head-label` on every other column — the column is
-   sized to fit this word, not the other way round. */
+/* The head label, matching `.head-label` on every other column. */
 .actions-head {
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   text-align: start;
@@ -883,11 +598,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   text-overflow: ellipsis;
 }
 
-/* THE SCROLL EDGE, mirrored. The leading pin draws its border on
-   `scrollable: inline-start`; this one is its opposite twin, so the rule
-   appears when there is content still to the RIGHT and vanishes at the end of
-   the scroll — the column stops looking detached the moment nothing is under
-   it. Transparent at rest, for the same reason it is there.
+/* THE SCROLL EDGE, mirrored: the rule appears while there is content still to
+   the trailing side and vanishes at the end of the scroll.
    TRAP T-grid-actions-pin-to-the-trailing-edge. */
 .actions-cell {
   border-inline-start: var(--sherpa-border-left, 0.5px) solid transparent;
@@ -899,9 +611,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* An opaque base, then the row's own state tint on top — the same two-layer
-   treatment the leading pinned cells get, and for the same reason: a sticky
-   cell paints its own background, so the row's cannot reach it. */
+/* An opaque base, then the row's state tint on top: a sticky cell paints its
+   own background, so the row's cannot reach it. */
 .row > .actions-cell {
   background: var(--sherpa-style-surface-base, #ffffff);
 }
@@ -921,8 +632,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
     var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* The trigger. An icon-only button, so it is square and the glyph is the whole
-   content — sized from the same token the grid's other icons use. */
+/* The trigger: icon-only, so square, sized from the grid's icon token. */
 .actions-trigger {
   display: inline-flex;
   align-items: center;
@@ -966,8 +676,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   outline: none;
   box-shadow: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 }
-/* A DESTRUCTIVE action reads as one before it is clicked. Status colour, not a
-   component token — the same critical the rest of the system uses. */
+/* A DESTRUCTIVE action reads as one before it is clicked — status colour, not a
+   component token. */
 .action-item[data-danger] {
   color: var(--sherpa-style-content-critical-base, #b3261e);
 }
@@ -976,9 +686,9 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   text-align: center;
   flex: none;
 }
-/* The SECOND pinned cell clears the first. `--_pin-offset` is the measured width
-   of everything pinned before it; 0 when the selection column is hidden, so the
-   same rule is correct either way. */
+/* The SECOND pinned cell clears the first. `--_pin-offset` is the measured
+   width of everything pinned before it; 0 when the selection column is hidden,
+   so the same rule is correct either way. */
 :is(.head-cell, .filter-cell, .cell)[data-pinned] {
   inset-inline-start: var(--_pin-offset, 0px);
 }
@@ -988,9 +698,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 .row > .select-cell[data-pinned] {
   background: var(--sherpa-style-surface-base, #ffffff);
 }
-/* …then the row's own state tint, layered on top of that opaque base. The row
-   background cannot reach a sticky cell (the cell paints its own), so each state
-   is restated here against the pinned cells. */
+/* …then the row's state tint on top, restated because the row background
+   cannot reach a sticky cell. */
 .row:hover > [data-pinned] {
   background:
     linear-gradient(color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent) 0 100%),
@@ -1013,27 +722,13 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
     var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* The header corner: sticks in BOTH axes, so it outranks the header row it sits
-   in as well as the body column it heads. */
+/* The header corner: sticks in BOTH axes, so it outranks its own row and the
+   body column it heads. */
 :is(.head-cell, .filter-cell, .select-head, .filter-spacer)[data-pinned] { z-index: 4; }
 
-/* ── The pinned edge ────────────────────────────────────────────────
- * A rule where the pinned columns end, drawn only while content is ACTUALLY
- * scrolled under them — an edge that is always there reads as a permanent
- * divider rather than as "something is hidden behind this".
- *
- * `scroll-state(scrollable: inline-start)` asks the scroll container whether it
- * can still scroll TOWARD its inline-start edge, which is true exactly when the
- * user has scrolled away from it. That is a container query on scroll position,
- * so no scroll listener and no JS-written attribute is involved. Chromium 133+.
- *
- * NO DROP SHADOW. A gradient pseudo-element used to fade out over 12px beside
- * the border; Will's call to drop it — the border alone says where the pinned
- * run stops, and the shadow was a second answer to the same question.
- *
- * No fallback is written for engines without scroll-state: the columns still pin
- * correctly there, they simply do not gain the edge. A scroll listener was the
- * alternative and it buys one border for a per-frame JS cost. */
+/* The pinned edge, drawn only while content is actually scrolled under it.
+   `scroll-state()` is a container query on scroll position — no listener, no JS
+   attribute. Chromium 133+; elsewhere the columns pin but gain no edge. */
 .scroller {
   container-type: scroll-state;
   container-name: grid-scroll;
@@ -1041,8 +736,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 
 [data-pinned][data-pin-last] {
   position: sticky;
-  /* Transparent at rest, so the edge appears with the scroll rather than sitting
-     there permanently. */
+  /* Transparent at rest, so the edge appears with the scroll. */
   border-inline-end: var(--sherpa-border-right, 0.5px) solid transparent;
   transition: border-inline-end-color 120ms ease;
 }
@@ -1053,48 +747,23 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* ── Group rows under horizontal scroll ─────────────────────────────
- * A group row spans every column, so it is as wide as the whole table and its
- * content would slide out of view with the scroll. The ROW cannot be pinned (it
- * is the full width — there is nothing to pin it against), so the inner flex box
- * is pinned instead: it sticks to the scrollport's inline-start edge while its
- * <td> keeps its full colspan width.
- *
- * `position: sticky` needs a width to stick within, and the inner span is a flex
- * box inside a full-width cell — so it is given `max-inline-size: max-content`,
- * which keeps it only as wide as the checkbox + chevron + label and lets that
- * narrow box travel along the cell.
- */
+/* A group row spans every column, so the ROW cannot be pinned — the inner box
+   is, and `max-content` keeps it narrow enough to travel along the <td>. */
 .group-inner {
   position: sticky;
   inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
   max-inline-size: max-content;
 }
 
-/* ── Body ──────────────────────────────────────────────────────────── */
-/* ── Row states ─────────────────────────────────────────────────────────────
- * THREE states, in this order of precedence:
- *
- *   Unselected  the default surface (the cell's own fill)
- *   Focused     the LAST row clicked — a TRANSPARENT base +1 tint
- *   Selected    its checkbox is on — the ACTIVE surface
- *
- * Selected beats focused: clicking the box is a deliberate act on that record,
- * where focus is just "where I last was".
- *
- * The tints are TRANSPARENT on purpose, so a row keeps the zebra/hover context
- * underneath instead of being repainted opaque — which is also why `.cell` must
- * not carry its own opaque fill (see the note there).
- *
- * FIGMA-SIDE FLAG: there is no `--sherpa-theme-*` alias for the neutral
- * TRANSPARENT +1 step, so the focused tint reaches for the display-mode var
- * directly. That var is mode-aware (it re-points in dark), so the behaviour is
- * right; the missing semantic alias is the gap. */
+/* ── Body: row states ───────────────────────────────────────────────
+ * Unselected < focused < selected. The tints are TRANSPARENT on purpose, so a
+ * row keeps the context under it — which is why `.cell` carries no opaque fill.
+ * FIGMA-SIDE FLAG: no theme alias exists for the neutral transparent +1, so the
+ * focused tint reaches for the (mode-aware) display-mode var directly. */
 .row {
   cursor: pointer;
   transition: background-color 80ms ease;
-  /* The UNSELECTED state: Figma Grid Cell Type=cell's own fill. On the row rather
-     than the cell so the state tints below can layer over it. */
+  /* On the row rather than the cell, so the state tints can layer over it. */
   background: var(--sherpa-style-surface-base, #ffffff);
 
   &:not(:last-child) .cell {
@@ -1102,31 +771,24 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
       var(--sherpa-style-border-base, #b3b3c3);
   }
 
-  /* Hover — the transparent +1 tint: a light preview of what clicking will mark,
-     deliberately one step lighter than the focused state it previews. */
+  /* Hover — one step lighter than the focused state it previews. */
   &:hover {
     background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent);
   }
 
-  /* FOCUSED: the last row clicked. The transparent +2 step — +1 was 20% alpha and
-     read as almost nothing against white, so the last-clicked row was invisible. */
+  /* FOCUSED: the +2 step — +1 at 20% alpha was invisible against white. */
   &[data-focused] {
     background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent);
   }
 
-  /* SELECTED: the checkbox is on. The ACTIVE surface — the brand tint the design
-     system uses for "chosen", not the accent one this had before. Transparent so
-     the row's own dividers stay visible through it. */
+  /* SELECTED: the brand tint the system uses for "chosen". */
   &:has(.row-select:checked) {
     background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
   }
 }
 
-/* SELECTED **AND** FOCUSED — the last-clicked row that is also ticked.
-   Both states are true, so both must show: the focus grey is LAYERED over the
-   active tint with color-mix rather than one replacing the other. Picking a
-   winner lost real information — a user could not tell the ticked row they were
-   working in from the other ticked rows. */
+/* SELECTED **AND** FOCUSED: both are true, so both show — the focus grey is
+   LAYERED over the active tint. Picking a winner lost real information. */
 @supports (color: color-mix(in srgb, red, blue)) {
   .row[data-focused]:has(.row-select:checked) {
     background: color-mix(
@@ -1137,30 +799,19 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* Figma Grid Cell `Type=cell`: fill style-surface/BASE (white, unlike the header's
-   +1), padding 4 all round, gap 4, strokes top and bottom only. A regular cell has
-   NO side dividers — only header and filter cells do.
-   The fill is on the ROW, not here: an opaque cell fill painted OVER the row's
-   focused / selected tint, so neither state showed. */
+/* Figma Grid Cell `Type=cell`: padding 4 all round, strokes top and bottom
+   only, NO side dividers. The fill is on the ROW, not here — an opaque cell
+   fill painted over the row's focused / selected tint. */
 .cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   white-space: nowrap;
-  /* The column is a fixed width now, so a long value has to clip rather than
-     widen it. `nowrap` above keeps the value on one line; these two cut it off
-     with an ellipsis at the column's edge.
-
-     `overflow: clip` rather than `hidden`. A cell can be the LAST PINNED one,
-     and that cell paints the scroll shadow as an ::after standing 12px outside
-     its own trailing edge — `hidden` clipped it away and the depth cue was
-     lost. `clip` takes an axis: `overflow-clip-margin` is honoured, so the
-     inline overflow is still cut at the column edge while the pseudo-element
-     is free to paint past it. */
+  /* `overflow: clip` rather than `hidden`: the last pinned cell paints a scroll
+     shadow standing 12px outside its trailing edge, and `hidden` clipped it
+     away. `clip` honours `overflow-clip-margin`. */
   overflow: clip;
   overflow-clip-margin: content-box;
   text-overflow: ellipsis;
-  /* Figma binds every Grid Cell label to line-height/base 20 — a 32-tall row with
-     4px padding needs exactly that. Unset, it fell back to `normal`, which the font
-     resolves near 17 and left the text sitting high in the row. */
+  /* Unset, this fell back to `normal` (~17) and the text sat high in the row. */
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 
   /* Numeric columns: right-aligned + mono (the Sherpa numeric convention). */
@@ -1171,17 +822,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* ── Group rows ─────────────────────────────────────────────────────
-   Figma Grid Cell `Type=group` (in the template at 926:35309): the cell spans
-   every column, is 32 tall with padding 4 and gap 8, and holds a selection
-   checkbox, a chevron toggle, then the group's value as its label.
-
-   The cell binds `Style::style-surface/dark`, which is not one of the four
-   style-surface vars projected into tokens.css (base / +1 / +2 / shadow) — it
-   lives outside the base Style collection. Probed what it actually PAINTS on the
-   design (#e8e8f6) and it is exactly `style-surface/base +1`, so that is the
-   token. (`base +2` is #b3b3c3 — visibly darker than the design, which is what
-   the first attempt used.) */
+/* Group rows. Figma binds `style-surface/dark`, which is not projected; probed
+   what it PAINTS (#e8e8f6) and it is base +1 (base +2 is visibly darker). */
 .group-row {
   cursor: pointer;
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
@@ -1190,15 +832,14 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 
 /* Two group rows in a row happen when the first is COLLAPSED, and with the same
-   fill they read as one tall band. A leading rule separates them. */
+   fill they read as one tall band. */
 .group-row + .group-row .group-cell {
   border-block-start: var(--sherpa-border-top, 0.5px) solid
     var(--sherpa-style-border-base, #b3b3c3);
 }
 
-/* Stays a real table cell — its colspan is what keeps the group row as wide as the
-   rows below. Flexing the <td> itself drops it out of table layout and the colspan
-   stops reserving the columns. */
+/* Stays a real table cell: flexing the <td> drops it out of table layout and
+   its colspan stops reserving the columns. */
 .group-cell {
   padding: var(--sherpa-display-mode-space-2xs, 4px);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
@@ -1211,18 +852,16 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   display: flex;
   align-items: center;
   gap: var(--sherpa-theme-gap-md, 8px);
-  /* Figma's group cell is 32 tall; 4px padding + a 20 line-height + the box gets
-     there, but a short label must not shrink the row below its neighbours. */
+  /* A short label must not shrink the row below its neighbours. */
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
 
-/* The group's own selection box follows data-selectable, exactly as a row's does —
-   a grid without a selection column must not sprout one on its group rows. */
+/* The group's selection box follows data-selectable, exactly as a row's does. */
 .group-select { display: none; }
 :host([data-selectable]) .group-select { display: inline-flex; }
 
-/* The chevron. A real <button>, so it is focusable and Enter/Space-activatable on
-   its own; CSS owns the rotation. Figma's toggle is a 16px icon button. */
+/* The chevron. A real <button>, so it is focusable and Enter/Space-activatable;
+   CSS owns the rotation. */
 .group-toggle {
   display: inline-flex;
   align-items: center;
@@ -1268,8 +907,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   text-align: center;
 }
 
-/* A row in a folded group. JS writes the flag; CSS owns the hiding — the row is
-   never touched with a `display` write. */
+/* A row in a folded group. JS writes the flag; CSS owns the hiding. */
 .row[data-hidden] { display: none; }
 
 /* ── Empty state ───────────────────────────────────────────────────── */
@@ -1281,12 +919,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 :host([data-empty]) .empty { display: block; }
 
-/* ── Single select ───────────────────────────────────────────────────
- * The head cell shows NO control. "Select all" is meaningless where only one
- * row can be chosen, and a lone checkbox there would offer something the grid
- * cannot do. The CELL stays — it holds the column open so the rows' radios line
- * up under it.
- */
+/* No "select all" where only one row can be chosen. The CELL stays, holding the
+   column open so the rows' radios line up under it. */
 :host([data-select="single"]) .select-all { display: none; }
 
 /* A GROUP's box is a select-all for its rows, so it goes for the same reason. */

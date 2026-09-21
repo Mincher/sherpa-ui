@@ -1,88 +1,49 @@
 /**
  * sherpa-menu.css — a floating list of choices or actions.
+ * Card is a native `popover`, so the browser owns the top layer, Escape,
+ * outside-click dismiss and focus. Data-matched to Figma "Menu" (1156:29240).
  *
- * Data-matched to the Figma "Menu" set (1156:29240):
- *   card     240 wide · padding 8/8/4/8 (md × 3, padding/sm at the bottom)
- *            · gap space/xs 8 · structure rounding 4
- *            · style-surface/base fill · Elevation md (offset 2,2 blur 16 spread −8)
- *   heading  content/body/+1 at content/size/xs 10 on line-height/xs 16, upper-case
- *   row      36 tall (Menu List Item: padding space/xs 8 × padding/md 8, gap/md 8,
- *            radius 4) in the Transparent look — no fill until hovered
- *   label    content/body/base 14/20 medium · description content/body/+1 12/16
- *
- * The card is a native `popover`: the browser owns the top layer, Escape, the
- * outside-click dismiss and focus.
- *
- * POSITIONING — why this is NOT CSS anchor positioning.
- * `anchor-name` is resolved inside ONE tree. The trigger (a chip's caret button)
- * lives in the chip's shadow root while this card lives in the menu's own shadow
- * root, so `position-anchor` can never see the name and the card collapses to the
- * viewport corner. Proven in Chromium: same-tree anchors land on the trigger,
- * cross-tree anchors land at the bottom-right. So the placement comes from the
- * trigger's measured rect, written by JS into --_x / --_y as viewport
- * coordinates, which is exactly what `position: fixed` wants.
+ * POSITIONING — NOT CSS anchor positioning. `anchor-name` resolves inside ONE
+ * tree; the trigger lives in another shadow root, so an anchor rule silently
+ * collapses the card into the viewport corner. Placement comes from the
+ * trigger's measured rect, written by JS into --_x / --_y as viewport coords.
  */
 
 :host {
-  /* The host is a zero-box anchor — the real surface is the popover. */
+  /* Zero-box anchor — the real surface is the popover. */
   display: contents;
 }
 
 .menu {
-  /* THE CARD SETS ITS OWN TEXT DIRECTION.
-     `text-align` inherits, and this popover is slotted into whatever triggers it
-     — a chip, a button, a toolbar. A sherpa-button centres its own content, so a
-     menu mounted in one inherited `center` and its heading sat 46px right of
-     every row beneath it. A floating card's contents must not depend on where
-     its trigger happens to live, so the card states it rather than inheriting.
-
-     The individual parts that DO centre (the no-matches message) say so
-     themselves. */
+  /* Stated, not inherited: `text-align` inherits from whatever triggers this
+     card (a sherpa-button centres, which shifted the heading 46px). */
   text-align: start;
 
-  /* Fixed, not absolute: --_x / --_y are viewport coordinates from the trigger's
-     own bounding rect, so no containing block or scroll offset can shift them. */
+  /* Fixed, not absolute: --_x / --_y are viewport coordinates. */
   position: fixed;
   inset: auto;
   inset-block-start: var(--_y, 0px);
   inset-inline-start: var(--_x, 0px);
   margin: 0;
-  /* 240 is the Menu node's width, and the FLOOR rather than the fixed size: the
-     footer is an actions row whose buttons keep their own widths, so a menu that
-     shows Remove + Cancel + Apply needs more than 240 and must take it. Fixed at
-     240, the row overflowed and the Remove button was squeezed from 125px to
-     93 with its label truncated. (It reads just "Remove" now, so it asks for
-     less — but Cancel and Apply beside it still add up past 240.)
-
-     `max-content` is the width the content actually asks for; `min-inline-size`
-     holds the node's 240 for every ordinary menu, so nothing narrower than the
-     design appears. The cap is the viewport, less the 8px gutter the popover
-     needs at either edge. */
+  /* 240 is a FLOOR, not a fixed width — a footer of Remove + Cancel + Apply
+     needs more and must take it. Cap is the viewport less an 8px gutter. */
   inline-size: max-content;
   min-inline-size: 240px;
   max-inline-size: calc(100vw - 16px);
-  /* --_max-h is the room actually left between the trigger and the viewport edge,
-     measured by #place(). A flat 60vh let a long list (a Sort menu offers two rows
-     per column) run off the bottom of the screen, taking the Apply/Cancel footer
-     with it. The fallback keeps a sane cap where the JS has not run. */
+  /* --_max-h is the room left between trigger and viewport edge, measured by
+     #place(). The fallback caps it where the JS has not run. */
   max-block-size: var(--_max-h, 60vh);
-  /* The CARD no longer scrolls — `.rows` does. Scrolling the card scrolled its
-     footer away, so Apply and Cancel became unreachable on a long menu. */
+  /* The CARD must not scroll — `.rows` does, or the footer scrolls away. */
   overflow: hidden;
 
-  /* A closed popover is hidden by the UA with `display: none`. Because this rule
-     sets `display` for the open layout, it must NOT clobber that — so the card is
-     laid out only when the popover is actually open. */
+  /* A closed popover is hidden by the UA with `display: none`, so the open
+     layout is set on :popover-open below rather than clobbering it here. */
   display: none;
   flex-direction: column;
-  /* Re-read from the Menu SET (1156:29240) after Will's tweak: gap space/xs 8
-     and padding 8/8/SM 4/8 — the bottom step is padding/sm, half the other three,
-     so the footer's own 8 does not read as a double gap at the card's edge. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-md, 8px);
+  /* Half step at the bottom so the footer's own 8 is not a double gap. */
   padding-block-end: var(--sherpa-theme-padding-sm, 4px);
-  /* The default 0.5px ring — the card is a surface on a surface, so it needs the
-     border to separate itself from what it floats over. */
   border-style: solid;
   border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
@@ -92,7 +53,7 @@
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* Elevation=md (Figma pins it on the Menu). */
+  /* Elevation=md. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
@@ -101,41 +62,17 @@
     var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
-/* Open — the browser adds :popover-open when showPopover() runs. */
 .menu:popover-open {
   display: flex;
 }
 
-/* No `@supports (anchor-name)` block. See the positioning note at the top of this
-   file: a cross-shadow-tree anchor name is unreachable, so an anchor rule here
-   would silently win over the working --_x / --_y placement and put every menu in
-   the viewport corner. That was the bug. */
+/* No `@supports (anchor-name)` block — see the positioning note at the top. */
 
-/* Heading — 10/16 regular, upper-case, content/body/+1. */
-/* ── Header slot ─────────────────────────────────────────────────────────
- * Controls above the heading — a calendar's month stepper is the case this
- * exists for. CSS-gated on SherpaElement's own slot-presence flag, so a menu
- * with nothing slotted here is completely unchanged.
- *
- * Figma's Calendar header is a HORIZONTAL row: prev · label · next, where the
- * label stretches and the two steppers hug. */
-/* The header HOLDS the heading now (Will moved it inside), so it is shown when
-   either the heading has text OR something is slotted — not on the slot alone. */
-/* ── THE HEADER IS TWO ROWS, ON EVERY MENU ───────────────────────────────
- *
- *   row 1   heading …………………………… Clear  Remove
- *   row 2   the control that drives the card, full width
- *
- * Row 2 is a LIST's search field or a CALENDAR's month stepper — the same
- * position for the same job. The search used to be a SIBLING of the header, so
- * a list's header was one row with a field floating below it while a calendar's
- * stepper sat inside the header beside the heading; two headers, two shapes,
- * for one component.
- *
- * A grid, not a flex column: a column puts each of the four children on its own
- * line, while two named areas keep the heading and the icon pair together on
- * row 1 and give row 2 to whichever control is present. No wrapper element, so
- * the template and its generated def stay one flat header. */
+/* ── Header ──────────────────────────────────────────────────────────────
+ * Two rows on every menu: [heading | Clear·Remove] then the control that
+ * drives the card (a list's search field, a calendar's month stepper).
+ * A grid, not a flex column, so the heading and the icon pair share row 1
+ * with no extra wrapper element. */
 .header { display: none; }
 :host([data-heading]) .header,
 :host([data-has-header]) .header,
@@ -148,10 +85,8 @@
     "heading actions"
     "control control";
   align-items: center;
-  /* A BIGGER ROW GAP than column gap. The two rows are different things — what
-     the card is, then the control that drives it — and at one 4px gap they read
-     as a single crowded block. The column gap stays 4px: the heading and the
-     icon pair beside it ARE one row. */
+  /* Bigger row gap than column gap: the two rows are different things, while
+     the heading and the icon pair beside it ARE one row. */
   column-gap: var(--sherpa-display-mode-space-2xs, 4px);
   row-gap: var(--sherpa-display-mode-space-sm, 12px);
   flex: 0 0 auto;
@@ -160,13 +95,8 @@
 .header-actions { grid-area: actions; }
 .header .search { grid-area: control; }
 .header ::slotted(*) { grid-area: control; }
-/* ── Drill: the back arrow and the breadcrumb ────────────────────────
- * Both belong to data-drill only. An ordinary menu's header is the single
- * heading it always was.
- */
-/* The back button + breadcrumbs pair, exactly as sherpa-app-header composes it.
-   Shown only in a drilled menu; the ordinary heading takes its place otherwise,
-   so an undrilled header is unchanged. */
+
+/* ── Drill ── back arrow + breadcrumbs, data-drill only. */
 .drill-trail { display: none; }
 :host([data-drill]) .drill-trail {
   display: flex;
@@ -176,82 +106,39 @@
   min-inline-size: 0;
 }
 
-/* The trail REPLACES the heading rather than sitting beside it — the last crumb
-   IS the heading, so showing both would say the same word twice. */
+/* The trail REPLACES the heading — the last crumb IS the heading. */
 :host([data-drill]) .heading { display: none; }
 
-/* The trail takes the HEADING's place in the grid — it replaces the heading, so
-   it takes the heading's area and the action pair still sits beside it. The
-   control row below is unaffected: the trail is about the menu (where you are
-   and how to get out), the control is about the content, and stacking them is
-   also the order they are read in. */
 .drill-trail { grid-area: heading; }
 
 
-/* ── A CALENDAR HEADS ITS OWN CARD ───────────────────────────────────────
- * Figma's set (1156:29240) gives the two variants different headers:
- *
- *   Type=List      header FRAME → one TEXT node, "ACTIONS"
- *   Type=Calendar  header SLOT  → prev · month · next, and nothing else
- *
- * A calendar used to HIDE its heading on the reasoning that the month button
- * already names the view. It does not: the month names the MONTH, while the
- * heading names the FIELD ("Created"), and with the Clear/Remove pair now in
- * the header there was a row of unlabelled chrome floating above the grid.
- *
- * The two-row shape itself is the SHARED header grid above — a calendar's
- * stepper lands in the same `control` row a list's search field does. */
-
-/* ── A SLOTTED STEPPER IS A SNAPPED GROUP, AND ONLY THIS FILE CAN SAY SO ──
- *
- * Figma's Calendar header (1156:29240 > Type=Calendar > header) is three Button
- * instances whose borders MEET: prev at snap-right-edge, month at
- * snap-all-edges, next at snap-left-edge.
- *
- * The buttons are slotted, so they sit in the MENU's light DOM — which puts
- * them outside sherpa-calendar's shadow root, where the calendar's own
- * `.cal-header` rules cannot reach them. Measured: the calendar's row read back
- * `display: block`, `gap: normal`, margin 0, and the three buttons sat 4px
- * apart because this slot's own `gap` was the only rule that applied. So the
- * menu, which HOSTS them, is the only place the group can be joined.
- *
- * `::slotted()` cannot match a slotted element's CHILDREN, so the row itself is
- * laid out here and the corner variables INHERIT down to the buttons — custom
- * properties cross a shadow boundary where a selector does not. */
+/* ── A slotted stepper is a SNAPPED group, and only this file can say so ──
+ * The buttons are slotted, so they sit in the MENU's light DOM — outside
+ * sherpa-calendar's shadow root, where its own `.cal-header` rules cannot
+ * reach them. ::slotted() cannot match a slotted element's CHILDREN, so the
+ * row is laid out here and the corner variables INHERIT down to the buttons;
+ * a custom property crosses a shadow boundary where a selector does not. */
 .header ::slotted(.cal-header) {
   display: flex;
   align-items: center;
-  /* SPANS THE CARD. The group is row 2 of the calendar header and owns the full
-     width, so the month button (the flexible middle) stretches between the two
-     hugging arrows rather than the trio bunching at the start of the line. The
-     stretch itself is on the month clone in sherpa-calendar.html — ::slotted()
-     cannot reach a slotted element's children. */
+  /* Spans the card so the flexible month button stretches between the arrows.
+     The stretch itself is on the month clone in sherpa-calendar.html. */
   justify-content: stretch;
-  /* NO gap. The borders OVERLAP so the seam reads as one stroke rather than
-     two, and CSS `gap` cannot be negative — the overlap is a negative margin,
-     which has to sit on the buttons. `::slotted()` cannot reach them, so it is
-     written inline on the clone in sherpa-calendar.html beside the corners. */
+  /* NO gap: the borders OVERLAP so the seam reads as one stroke, and `gap`
+     cannot be negative — the negative margin is inline on the clone. */
   gap: 0;
 
-  /* Squared all round; the two ends take their outer corners back below. The
-     values mirror the [data-snap] block in tokens.css, which is a bare selector
-     in a DOCUMENT sheet and so never reaches a shadow root. */
+  /* Squared all round; the ends take their outer corners back on the clone.
+     The [data-snap] block in tokens.css is a bare document-sheet selector and
+     never reaches a shadow root, so the values are mirrored here. */
   --sherpa-border-rounding-top-left: 0px;
   --sherpa-border-rounding-top-right: 0px;
   --sherpa-border-rounding-bottom-left: 0px;
   --sherpa-border-rounding-bottom-right: 0px;
 }
 
-/* Re-read from the Menu heading node (1144:28554, shared by both Type=List and
-   Type=Calendar): content/size/SMALL 12 on line-height/small 16, regular,
-   content/body/+1, textAlignHorizontal LEFT, textCase TITLE, and its parent frame
-   carries NO horizontal padding.
-
-   All three were wrong here, and the comment that stood in this place was the
-   reason: it cited the old node and recorded size XS 10 with textCase ORIGINAL,
-   concluding that "ACTIONS" was merely written in caps rather than transformed
-   into them. Figma says TITLE, so the transform IS the design — and the 8px
-   inline padding pushed the heading off the alignment its own header keeps. */
+/* Heading node 1144:28554: size small 12 / line-height 16, regular, TITLE case,
+   and NO inline padding on its parent frame. */
 .heading {
   margin: 0;
   padding-inline: var(--sherpa-theme-padding-none, 0);
@@ -266,36 +153,22 @@
   &:empty { display: none; }
 }
 
-/* ── Search ──────────────────────────────────────────────────────────────
- * A composed <sherpa-input-text> — the Input Field (atom) the Menu node
- * instances at 224 x 32. The component owns its own box, ring, focus state and
- * icon, so there is nothing to restyle here.
- *
- * `flex: 0 0 auto` keeps it OUT of the scroll: the rows scroll beneath it, and a
- * search that scrolled away with its own results would be useless. */
+/* ── Search ── a composed <sherpa-input-text> that owns its own box, ring,
+   focus state and icon, so there is nothing to restyle here. */
 .search { display: none; }
 :host([data-search]) .search { display: block; }
 
-/* A row hidden by the search. CSS owns the hiding; JS only writes the flag — and
-   `display: none` rather than a filter class so a hidden row is also out of the
-   tab order and out of the accessibility tree. */
+/* `display: none`, not a filter class, so a hidden row also leaves the tab
+   order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
 
-/* ── Clear, Remove, Today ────────────────────────────────────────────────
- * CLEAR and REMOVE are the HEADER's now — icon-only, at its trailing edge.
- * The footer is left holding the DECISION pair (Cancel · Apply) and, for a
- * calendar, "Today" in Figma's `left` slot. Each of the three is opt-in and
- * hidden by default, so a plain menu is the two buttons it always was. */
+/* Clear, Remove, Today — each opt-in, so a plain menu is unchanged. */
 .clear { display: none; }
 .today { display: none; }
 .remove { display: none; }
 .footer-spacer { display: none; }
 
-/* ── THE HEADER ACTIONS ──────────────────────────────────────────────────
- * Clear and Remove live in the HEADER now, icon-only, at the trailing edge.
- * The group hugs (the heading takes the free space) and is hidden entirely
- * unless one of the two is opted into, so a plain menu's header is the single
- * heading it always was. */
+/* ── Header actions ── Clear and Remove, icon-only, at the trailing edge. */
 .header-actions { display: none; }
 :host([data-clearable]) .header-actions,
 :host([data-removable]) .header-actions {
@@ -305,34 +178,26 @@
   flex: 0 0 auto;
 }
 
-/* Opt-in, each on its own attribute: only a chip that can be taken off the bar
-   has anything to remove, and only a menu holding a value has anything to
-   clear. */
+/* Separate attributes: only a removable chip has anything to remove, only a
+   menu holding a value has anything to clear. */
 :host([data-clearable]) .clear { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
 
-/* The CRITICAL ink, set here rather than left to the status cascade.
-   `data-status="critical"` on the button emits --_status-* from a bare
-   `[data-status]` rule in tokens.css, and a bare attribute rule in the token
-   sheet reaches the DOCUMENT only — it never applies inside a shadow root. The
-   button read the default near-black instead of the destructive red. Setting
-   the custom properties on the element itself is the sanctioned way across that
-   boundary: the button's own fallback chain picks them up unchanged.
-
-   Only the ink and the border. Removing a filter is destructive but it is not an
-   alarm, so the button keeps the header's own surface rather than filling red. */
+/* CRITICAL ink set here, not left to the status cascade: `[data-status]` in
+   tokens.css is a bare document-sheet rule and never applies inside a shadow
+   root, so the button read the default near-black. Ink and border only —
+   removing a filter is destructive but it is not an alarm. */
 .remove {
   --_status-text: var(--sherpa-theme-content-critical-1, #b72200);
   --_status-border: var(--sherpa-theme-border-critical-2, #dd2c01);
   --_status-icon: var(--sherpa-theme-content-critical-1, #b72200);
 }
 
-/* A DRILLED header stacks its slotted control to full width, but the action
-   pair is the menu's own chrome, not content — it stays a hugging row. */
+/* A drilled header stacks its slotted control full width; the action pair is
+   chrome, not content, so it stays a hugging row. */
 :host([data-drill]) .header-actions { inline-size: auto; }
 
-/* A CALENDAR keeps Today in the footer's left slot, as the node has it. Its
-   Clear is now the header's, same as every other menu. */
+/* A calendar keeps Today in the footer's left slot, as the node has it. */
 :host([data-type="calendar"]) .today { display: inline-flex; }
 
 :host([data-type="calendar"]) .footer-spacer {
@@ -340,9 +205,8 @@
   flex: 1 1 auto;
 }
 
-/* Shown only when a search is active AND nothing matched, so an empty menu with
-   no search (a caller passed no rows) still reads as empty rather than as a
-   failed search. */
+/* Only when a search is active AND nothing matched — an empty menu with no
+   search still reads as empty rather than as a failed search. */
 .no-matches { display: none; }
 :host([data-no-matches]) .no-matches {
   display: block;
@@ -354,24 +218,19 @@
   text-align: center;
 }
 
-/* The ROWS scroll, not the card — so the heading stays put at the top and the
-   Apply/Cancel footer stays put at the bottom however long the list is. `min-h: 0`
-   is what lets a flex child actually shrink below its content and scroll. */
+/* The ROWS scroll, not the card, so heading and footer stay put. `min-block-
+   size: 0` is what lets a flex child shrink below its content and scroll. */
 .rows {
   display: flex;
   flex-direction: column;
-  /* Figma's `list` frame gaps at space/2xs 4 — the CARD gaps at space/3xs 2,
-     which is what this used to copy. Two different numbers for two different
-     frames. */
+  /* Figma's `list` frame gaps at 2xs 4 — the CARD gaps at 3xs 2. */
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-block-size: 0;
   overflow-y: auto;
 }
 
-/* ── Rows ────────────────────────────────────────────────────────────────
-   Rows are slotted light-DOM controls (a <label> wrapping an input, or a
-   <button>), so ::slotted styles them. Figma Menu List Item in the Transparent
-   look: 36 tall, padding 8 × 8, gap 8, radius 4, no fill until hovered. */
+/* ── Rows ── slotted light-DOM controls (a <label> wrapping an input, or a
+   <button>), so ::slotted styles them. Transparent look: no fill until hover. */
 ::slotted(:is(label, button)) {
   display: flex;
   align-items: center;
@@ -411,38 +270,19 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ── The footer ──────────────────────────────────────────────────────────
- * A composed <sherpa-container-footer> — Figma's `Container Footer`
- * (Type=action-bar), which BOTH Menu variants hold in their `footer` slot. That
- * component owns the row's padding (8 block, 0 inline), gap and top stroke, so
- * nothing here restyles it; this only says WHEN it appears.
+/* ── The footer ── a composed <sherpa-container-footer> that owns its own
+ * padding, gap and top stroke; this only says WHEN it appears. `display: none`
+ * beats the component's own [data-has-content] rule.
  *
- * `display: none` beats the component's own `[data-has-content]` rule, so a menu
- * with nothing to put there has no footer even though buttons are slotted in.
- *
- * It is NOT the Apply/Cancel footer alone. Four things can live in this row and
- * any ONE of them earns it:
- *
- *   data-commit     Cancel · Apply   (the deferred-selection pair)
- *   data-removable  Remove           (a date chip's only way off the bar)
- *   data-clearable  Clear
- *   Type=calendar   Today
- *
- * Tying the row to data-commit ALONE was wrong once auto-apply became the
- * default: an auto-applying date chip lost Today and Remove with the
- * Apply button, and a calendar has no list for an action ROW to sit in instead,
- * so the chip became one a reader could add and never take away. Each control
- * hides itself on its own flag (see the rules above), so listing every case here
- * shows the row exactly when something is in it. */
+ * Four things can raise the row and any ONE of them earns it: data-commit
+ * (Cancel·Apply), data-removable, data-clearable, Type=calendar (Today). Each
+ * control hides itself on its own flag, below. */
 .footer { display: none; }
 :host([data-commit]) .footer,
 :host([data-type="calendar"]) .footer { display: block; }
 
-/* Cancel and Apply are the COMMIT pair, so they hide with it. They used to need
-   no rule of their own — the footer was only ever shown for data-commit, so
-   gating the row gated them. Now that Today and Remove can raise the row on
-   their own, an auto-applying menu would otherwise offer an Apply button for a
-   selection that has already applied. */
+/* Cancel and Apply are the COMMIT pair, gated separately now that Today and
+   Remove can raise the row on their own. */
 .cancel, .apply { display: none; }
 :host([data-commit]) :is(.cancel, .apply) { display: inline-flex; }
 
@@ -455,41 +295,18 @@
 }
 
 
-/* ── Type = Calendar ─────────────────────────────────────────────────────
- * Read from the Menu set (1156:29240), which Will split into
- * `Type = List | Calendar`. Both variants share the card — gap 8, padding
- * 8/8/4/8, three slots — and differ in exactly two things:
- *
- *   the WIDTH      List 240, Calendar 527 (it holds a 7-column grid, and
- *                  optionally a time picker beside it)
- *   the LIST AXIS  List stacks its rows; Calendar lays its regions out
- *                  HORIZONTALLY — [ day grid | time ] side by side
- *
- * So this is a variant of the menu, not a component of its own. Everything
- * else — the header slot, the footer slot, the commit behaviour — is the
- * menu's and is inherited unchanged. */
+/* ── Type = Calendar ── a variant of the menu, not its own component. It
+ * differs in two things only: the width, and a HORIZONTAL list axis
+ * ([ day grid | time ]). Header, footer and commit behaviour are inherited. */
 :host([data-type="calendar"]) .menu {
-  /* HUGS its content rather than taking a fixed width. Figma's Calendar variant
-     measures 562, but that is the RESULT of a 7-column grid beside a time
-     picker inside 8px padding — not a designed step, and it is off the 8px
-     grid, which is the tell. A calendar with no time picker should be narrower
-     rather than half empty, so the card is sized by what it holds.
-
-     The base card is already `max-content` with a 240 floor, so the card grows
-     to whichever region is wider — the grid, or the footer's buttons. What a
-     calendar drops is the FLOOR: 240 is the List node's width and a calendar
-     with no time picker should be narrower rather than half empty, which is
-     what an auto-layout frame that hugs does in Figma. */
+  /* Drops the 240 FLOOR and hugs: a calendar with no time picker should be
+     narrower rather than half empty. Figma's 562 is a result, not a step. */
   min-inline-size: min-content;
 }
 
-/* The list region runs ACROSS for a calendar — Figma's `list` frame is
-   HORIZONTAL there (gap 4), holding the Grid and the Time picker as siblings.
-
-   `wrap` plus a full-width first row is what lets a MODE row sit above them: a
-   Range switch is a setting FOR the calendar, not a panel beside it, and in a
-   plain row it became a narrow column squeezed against the day grid. Anything
-   marked `data-row` takes the whole line and pushes the grids onto the next. */
+/* Horizontal (Figma's `list` frame there, gap 4), holding Grid and Time as
+   siblings. `wrap` plus a full-width first row lets a MODE row (a Range
+   switch) sit ABOVE them instead of being squeezed into a narrow column. */
 :host([data-type="calendar"]) .rows {
   flex-direction: row;
   flex-wrap: wrap;
@@ -497,16 +314,14 @@
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* A full-width row inside the horizontal list region — see above. */
+/* The full-width row — see above. */
 :host([data-type="calendar"]) .rows > ::slotted([data-row]) {
   flex: 0 0 100%;
   inline-size: 100%;
 }
 
-/* The calendar itself GROWS to fill the line. A flex item does not by default,
-   so the grid drew at its own 224 floor and left the rest of a wider card empty
-   beside it. Growing is what makes each of its seven columns a real 1fr of the
-   menu's content width. */
+/* A flex item does not grow by default, so the grid drew at its 224 floor and
+   left a wider card empty beside it. */
 :host([data-type="calendar"]) .rows > ::slotted(sherpa-calendar) {
   flex: 1 1 auto;
   min-inline-size: 0;

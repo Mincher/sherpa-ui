@@ -1,15 +1,9 @@
 <!--
   sherpa-pagination — results-size + page navigation control.
 
-  Two zones on one row:
-    results  — a "Rows per page" label + a native <select> for the page size.
-    controls — first («) + prev (‹) buttons · a native number <input> for the
-               current page · "of N" total text · next (›) + last (») buttons.
-
-  Both native controls are composed directly (progressive enhancement): the
-  <select> and <input type="number"> work without JS; JS only reflects state,
-  clamps, and emits events. The rows <select> options are stamped from a cloning
-  prototype (<template class="rows-opt-tpl">, no id → the base parser ignores it).
+  The native <select> and <input type="number"> work without JS; JS only
+  reflects state, clamps, and emits. Rows options stamp from
+  <template class="rows-opt-tpl"> — no id, so the base parser ignores it.
 
   Public API:
     data-page          — current 1-based page (default 1)
@@ -28,17 +22,7 @@
       <select class="rows" id="rows" part="rows"></select>
     </div>
 
-    <!--
-      Read from the Figma node (Pagination 48:65826). The four controls are
-      Button instances at Structure=DEFAULT (32×32) pinned Style=Transparent,
-      and they sit in TWO SNAPPED PAIRS with the page field between them:
-
-          [ « | ‹ ]   [48px field]  of 10   [ › | » ]
-
-      They were hand-rolled <button>s with pure-CSS chevron glyphs, which is the
-      same re-implementation the app header carried: a component that exists,
-      written again by hand, free to drift from it.
-    -->
+    <!-- Figma Pagination 48:65826: two snapped Button pairs around the page field. -->
     <nav class="controls" part="controls" aria-label="Pagination">
       <span class="pair pair-back sherpa-snap-group">
         <sherpa-button class="btn first" data-action="first" data-type="icon"

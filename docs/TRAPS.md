@@ -4118,6 +4118,7 @@ without bound.
 
 - Site: `src/core/stores.ts`
 - Site: `src/core/base-store.ts`
+- Site: `src/core/idb-store.ts`
 
 ### T-read-check-drops-where-a-write-throws
 

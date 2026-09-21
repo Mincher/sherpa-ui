@@ -1,6 +1,6 @@
 <!--
-  sherpa-container — the base surface: a card with header / content / footer slots
-  and built-in loading / empty / error states.
+  sherpa-container — base surface card: header / content / footer slots,
+  plus loading / empty / error states.
 
   Public API:
     data-elevation  none (default) | sm | md | lg
@@ -16,10 +16,8 @@
                     GRID, then the pager — the grid grows, the pager stays put.
                     Not needed for the common one-child card.
 
-  The empty and error overlays are SLOT-DRIVEN (ratified D6): slot content into
-  the empty / error slot and the matching overlay shows automatically. There is
-  no data-state attribute — the base class reflects named-slot presence as
-  data-has-{slot} on the host and CSS keys the overlay off it.
+  No data-state attribute: slotting empty / error shows that overlay, via the
+  base class reflecting data-has-{slot}.
 
   Slots:
     (default) — the card body

@@ -1,29 +1,18 @@
 <!--
-  sherpa-menu — a floating list of choices or actions.
+  sherpa-menu — a floating list of choices or actions. Figma "Menu" SET
+  (1156:29240), Type axis List | Calendar.
 
-  Matches the Figma "Menu" SET (1156:29240), whose `Type` axis is List | Calendar
-  and whose three slots are header, list and footer. Both variants share one card:
-  240 wide (Calendar hugs its grid), padding 8/8/4/8, gap 8, radius 4, Elevation md,
-  a 10/16 heading over 36-tall rows, and a composed `Container Footer` action bar.
+  The card IS a `popover`, so the browser owns the top layer, Escape and
+  outside-click dismissal.
 
-  Native-first: the card IS a `popover`, so the browser puts it in the top layer,
-  closes it on Escape and on an outside click, and manages focus — no scroll-lock
-  hacks and no dismiss listeners.
+  Placement is NOT native: CSS anchor positioning cannot cross a shadow root, so
+  `position-anchor` found nothing and every menu rendered at the viewport corner.
+  show(trigger) measures the trigger and writes viewport coordinates instead.
 
-  Placement is the one part the browser cannot do here. CSS anchor positioning only
-  resolves an `anchor-name` inside ONE tree, and a trigger is always in a different
-  shadow root from this card, so `position-anchor` found nothing and every menu
-  rendered at the viewport corner. Instead show(trigger) measures the trigger and
-  writes viewport coordinates the `position: fixed` card consumes, flipping above or
-  clamping inward when an edge is in the way.
-
-  Rows are whatever you slot in, and they stay real form controls:
+  Rows are slotted, and stay real form controls:
 
     values  — <label><input type="checkbox|radio" value="…" /> Label</label>
     actions — <button type="button" value="…">Label</button>
-
-  So a multi-select field is checkbox rows, a single-select field is radio rows, and
-  an action menu is buttons. Keyboard and screen-reader behaviour come free.
 
   Public API:
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
@@ -48,14 +37,9 @@
     open          native-ish boolean: reflects/controls the popover
 
   Slots:
-    header    — controls ABOVE the heading (a calendar's month stepper). The
-                Calendar variant's header is three Button instances SNAPPED into
-                one control: prev (icon, snap-right-edge), month (label,
-                snap-all-edges), next (icon, snap-left-edge).
-
-                Those buttons land in the MENU's light DOM, outside the
-                calendar's shadow root — so this file styles the group; see the
-                `::slotted(.cal-header)` block in sherpa-menu.css.
+    header    — controls ABOVE the heading (a calendar's month stepper). Slotted
+                content lands in the MENU's light DOM, so this component styles
+                it — see the `::slotted(.cal-header)` block in sherpa-menu.css.
     (default) — the rows (labels with inputs, or buttons)
 
   Fires:
@@ -69,30 +53,9 @@
 -->
 <template id="default">
   <div class="menu sherpa-border-edges" part="menu" popover="auto" role="menu">
-    <!--
-      HEADER — a slot, not just the text heading below it.
-
-      Read from the Calendar node (268:14601), which is a card of exactly three
-      regions: a `header` SLOT holding ‹ · "August 2026" · ›, the content grid,
-      and a Container Footer. A calendar IS a menu in this system, so its month
-      stepper belongs in the menu's own header rather than inside a nested
-      component that draws a second one.
-
-      CSS-gated on SherpaElement's slot-presence flag, so a menu with nothing
-      slotted here is unchanged.
-    -->
+    <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
     <div class="header" part="header">
-      <!--
-        THE DRILL TRAIL — a back button beside real breadcrumbs, exactly the pair
-        sherpa-app-header composes (a 16px transparent icon button, then the
-        trail). Shown only inside a DRILLED menu, where the list has been
-        replaced by a sub-list and there is somewhere to go back to.
-
-        <sherpa-breadcrumbs>, not hand-rolled text: the trail IS that component,
-        and a second one written here would drift from it and would not draw the
-        separators, the current-crumb treatment or the link behaviour it already
-        owns.
-      -->
+      <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->
       <span class="drill-trail" part="drill-trail">
         <sherpa-button class="drill-back" part="drill-back" data-type="icon" data-size="xs"
                        data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
@@ -102,26 +65,11 @@
       <p class="heading" part="heading"></p>
       <slot name="header"></slot>
       <!--
-        THE HEADER ACTIONS — Clear and Remove, icon-only, at the trailing edge.
-
-        These were footer buttons. The footer is where you DECIDE (Cancel ·
-        Apply); these two act on the filter itself, not on the draft, so they
-        read as part of the thing the header names rather than as a third and
-        fourth verb beside Apply. Moving them also stops the footer growing to
-        four buttons on a chip menu, which was the widest the card ever got.
-
-        Icon-only (`data-type="icon"`, empty body, aria-label): the pair is two
-        glyphs in the corner, not a second row of labelled controls competing
-        with the heading. Cross-in-a-circle = empty the picks; bin = take the
-        chip off the bar. The cross was a counterclockwise arrow first, which
-        reads as UNDO — "put back what I just changed" — and that is not what
-        Clear does: it empties the selection outright, whatever it was. Both are
-        free-tier Font Awesome glyphs; a Pro glyph renders NOTHING at all in
-        this webfont, with no warning.
-
-        Remove carries `data-status="critical"` because it DELETES the chip,
-        and the critical ink is re-stated in CSS: a bare [data-status] rule in
-        tokens.css reaches the document only, never a shadow root.
+        Clear and Remove act on the filter, not on the draft, so they sit here
+        rather than beside Apply. Both glyphs are free-tier Font Awesome — a Pro
+        glyph renders NOTHING in this webfont, with no warning. Remove's critical
+        ink is re-stated in CSS: a bare [data-status] rule in tokens.css reaches
+        the document only, never a shadow root.
       -->
       <span class="header-actions" part="header-actions">
         <sherpa-button class="clear" part="clear" data-type="icon" data-size="sm"
@@ -133,25 +81,9 @@
                        aria-label="Remove"></sherpa-button>
       </span>
       <!--
-        SEARCH — the Input Field (atom), composed, not hand-rolled.
-
-        Read from the Menu node (49:66174): an `Input Field (atom)` instance at
-        224 x 32. sherpa-input-text IS that component, so it owns the field's
-        box, ring, focus state and icon — there is nothing here to restyle.
-
-        It sits in the HEADER'S SECOND ROW, the position a calendar gives its
-        month stepper: every menu header is then the same two rows — what the
-        card is, then the control that drives it — instead of a list's search
-        floating between the header and the rows while a calendar's stepper sat
-        inside the header. It was a sibling of the header until then.
-
-        No label and no description: the placeholder and its position under the
-        heading say what it is, and a 240px card cannot spare a line to repeat
-        it. `aria-label` carries the name for a screen reader instead.
-
-        It filters the ROWS the menu already has, so it never re-queries and
-        never disturbs what is ticked — a row hidden by a search keeps its state
-        and comes back with it.
+        SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
+        is nothing here to restyle. It filters the rows the menu already has, so a
+        row hidden by a search keeps its ticked state and comes back with it.
       -->
       <sherpa-input-text class="search" part="search"
                          data-icon-start="fa-solid fa-magnifying-glass"
@@ -159,8 +91,7 @@
                          aria-label="Search this menu"></sherpa-input-text>
     </div>
 
-    <!-- Shown when a search matches no row. Without it the card collapses to an
-         empty box and reads as broken rather than as "nothing found". -->
+    <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
 
     <div class="rows" part="rows">
@@ -168,52 +99,17 @@
     </div>
 
     <!--
-      FOOTER — the composed <sherpa-container-footer>, not a hand-drawn row.
+      FOOTER — the composed <sherpa-container-footer>, which owns the action-bar
+      geometry and hides itself when empty. All three buttons are the button's
+      DEFAULT size, as Figma pins them.
 
-      Read from the Menu set (1156:29240): BOTH variants' `footer` slot holds a
-      `Container Footer` instance at Type=action-bar — padding 8 block / 0 inline, gap 4,
-      and a top stroke of style-border/base +1. That component already is that
-      row, owns those values and hides itself when empty, so the menu composes
-      it instead of copying its geometry.
-
-      A committing menu holds its row changes as DRAFT until Apply, so the chart
-      or table behind it does not re-query on every tick; Cancel restores the
-      values the menu opened with.
-
-      Read off the footer instances themselves (1156:29251 / 1144:28602), which
-      is what settles their size and look:
-
-        Clear   left  slot · Type=label · DEFAULT size · Style=default
-        Cancel  right slot · Type=label · DEFAULT size · Style=default
-        Apply   right slot · Type=label · DEFAULT size · Style: SATURATED
-
-      So all three are the button's DEFAULT size — 32 tall, matching the header
-      stepper and the Container Footer's own 32-tall slots. They carried
-      data-size="sm" and Clear a transparent look, neither of which Figma pins.
-
-      CLEAR sits on the LEFT, alone, where Figma puts "Today" — a destructive-ish
-      action belongs away from the one a thumb reaches for. The spacer is what
-      pushes the pair apart; both are shown only with data-clearable.
+      A committing menu holds row changes as DRAFT until Apply, so what is behind
+      the card does not re-query on every tick; Cancel restores the opening values.
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
-      <!--
-        THE LEFT SLOT. Figma's two footers differ in exactly this position:
-
-          Calendar   left = "Today"      right = Cancel · Apply
-          List       left = (empty)      right = Cancel · Apply
-
-        Today is the calendar's, and it REPLACES Clear rather than joining it —
-        one control on the left, as the node has. Clear stays for a list menu
-        that asks for it (data-clearable), where Figma leaves the slot empty and
-        the code has always offered one.
-      -->
+      <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
-      <!--
-        CLEAR and REMOVE used to sit here, after Today. They are now icon-only
-        buttons in the HEADER — see the header-actions block above. The footer
-        is left with the DECISION pair (Cancel · Apply) plus the calendar's
-        Today, which is the shape Figma's two footer variants actually have.
-      -->
+      <!-- Clear and Remove moved out of here into header-actions. -->
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>
       <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>

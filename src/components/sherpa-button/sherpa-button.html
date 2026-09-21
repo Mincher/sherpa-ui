@@ -1,9 +1,6 @@
 <!--
   sherpa-button — the primary interactive trigger.
-
-  Two templates, selected by data-type:
-    default — icon(s) + label
-    icon    — icon only (square)
+  Two templates, selected by data-type: default (icon(s) + label), icon (square).
 
   Public API (data-* + native):
     data-look      saturated (primary) | transparent (tertiary)
@@ -28,14 +25,7 @@
     <span class="label"><slot></slot></span>
     <i class="icon icon-end" aria-hidden="true"></i>
     <span class="badge"><slot name="badge" data-accepts="badge"></slot></span>
-    <!--
-      A MENU this button triggers. Named, not the default slot: a popover placed
-      in the default slot lands inside the LABEL, so its rows' text joins the
-      label's textContent ("Add filter" became "Add filterSeatsHealthOpen
-      tickets") and their width pushed the button 22px past the design's 99.
-
-      The popover paints in the top layer, so this span never affects layout.
-    -->
+    <!-- Named, not default: a popover in the default slot joins the label's textContent and widens the button. -->
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
   </button>
 </template>

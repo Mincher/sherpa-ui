@@ -1,42 +1,26 @@
 /**
  * sherpa-dialog.css — a modal card surface on native <dialog>.
- *
- * The card look mirrors sherpa-container: one --_surface / --_border pair that
- * the status cascade (--_status-*) re-points. The <dialog> is centred in the
- * top layer by the UA; we give it the card border, radius and an elevation
- * shadow, and tint the ::backdrop. Header / footer collapse when empty (the
- * base class reflects data-has-header/footer); the header also appears when a
- * data-heading is set. Visibility is CSS-only — JS never toggles display.
+ * Card look mirrors sherpa-container; --_status-* re-points surface/border.
  */
 
 :host {
-  /* The host is a zero-box anchor; the real surface is the <dialog> in the top layer. */
+  /* Zero-box anchor; the real surface is the <dialog> in the top layer. */
   display: contents;
 
   --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
   --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
-  /* Internal divider is a lighter neutral than the outer border, matching the
-     container (Figma: divider = border/default/+1 #e8e8f6, box = border/default/+2). */
+  /* Divider is a lighter neutral than the outer border (Figma: +1 vs +2). */
   --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
   --_pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
 .root {
-  /* A closed <dialog> is hidden by the UA with `display: none`. Setting `display`
-     unconditionally CLOBBERS that, so the dialog rendered in the page flow whether
-     it was open or not — visible before the button was clicked and still visible
-     after closing. The open layout has to be scoped to [open], exactly as the
-     popover menu's `:popover-open` rule is. */
+  /* An unconditional `display` clobbers the UA's `display: none` on a CLOSED
+     <dialog>, so the open layout must stay scoped to [open]. */
   display: none;
   flex-direction: column;
-  /* A dialog has BOTH bounds. It had only the max, so it hugged its content: a
-     two-field form drew a 176px-wide card and the example propped it up from the
-     outside with `min-width: 380px` on its own form div — which meant every app
-     had to know to do that.
-
-     `min(24rem, 92vw)` is the floor and `min(32rem, 92vw)` the cap, so the card
-     is a comfortable reading width on a desktop and still fits a phone: at any
-     viewport under ~26rem both collapse to 92vw and the two agree. */
+  /* Both bounds: with only the max the card hugs its content. Under ~26rem
+     both collapse to 92vw and agree. */
   inline-size: max-content;
   min-inline-size: min(24rem, 92vw);
   max-inline-size: min(92vw, 32rem);
@@ -52,7 +36,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
-  /* Figma pins Elevation=lg on the Dialog (Theme elevation "large" tokens). */
+  /* Figma pins Elevation=lg on the Dialog. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
@@ -65,16 +49,14 @@
   }
 }
 
-/* Open — the UA sets [open] when showModal()/show() runs. */
+/* The UA sets [open] when showModal()/show() runs. */
 .root[open] {
   display: flex;
 }
 
 /* ── Regions ─────────────────────────────────────────────────────────
-   Figma Dialog = Container Header (pad 8, own 0.5 divider) + content (pad 16) +
-   Container Footer (pad 8×16, own divider). Regions are bare wrappers; a composed
-   <sherpa-container-header>/<sherpa-container-footer> brings its own chrome, and
-   plain slotted content / the data-heading label get it here. */
+   Bare wrappers: a composed <sherpa-container-header>/<sherpa-container-footer>
+   brings its own chrome; plain slotted content gets it here. */
 .header,
 .footer {
   display: none;
@@ -106,21 +88,10 @@
   border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }
 
-/* A COMPOSED <sherpa-container-footer> brings its own chrome, so the rule above
-   skips it — but its own inline padding is ZERO, which is right for a menu card
-   (that card has its own 8px) and wrong here. The buttons sat flush against the
-   dialog's edge while the body was inset 16.
-
-   Figma's Dialog (1003:33675) pins `padding/sm` on both sides of its Container
-   Footer INSTANCE, against the component's own `padding/none`. A pin belongs to
-   whoever places the instance, so it lands here.
-
-   Passed as the footer's OWN custom property, not a selector:
-   `::slotted(x)::part(y)` does not work — `::part` cannot follow `::slotted`,
-   and the rule is dropped in silence. A custom property inherits straight
-   through both shadow boundaries, which is the one thing that does cross them.
-   `--_pad-inline` and not `--sherpa-theme-padding-none`: that token means zero
-   everywhere, and redefining it here would be a lie told to every descendant.
+/* Figma pins padding/sm on this footer INSTANCE, so the pin lands here.
+   Passed as the footer's own custom property: `::slotted(x)::part(y)` is
+   dropped in silence, while a custom property crosses both boundaries. Not
+   --sherpa-theme-padding-none — redefining that would lie to every descendant.
    TRAP T-an-instance-pin-is-the-hosts-to-apply. */
 .footer ::slotted(sherpa-container-footer) {
   --_pad-inline: var(--sherpa-theme-padding-sm, 4px);

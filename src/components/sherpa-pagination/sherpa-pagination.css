@@ -1,43 +1,22 @@
 /**
- * sherpa-pagination.css — all pager presentation.
+ * sherpa-pagination.css — pager presentation.
  *
- * Two zones on one row: a "Rows per page" label + native <select>, and a set of
- * nav buttons (first/prev, a native number <input>, "of N", next/last). Geometry
- * binds the shared structure tokens (height, gap, padding, rounding) so control
- * sizes re-point from the token layer rather than per-size blocks here.
- *
- * Both native controls (select, number input) carry the field look — border,
- * rounding, focus ring. Prev/next/first/last disable at the boundaries via the
- * native `disabled` attribute (inactive tokens per property, never opacity). JS
- * only stamps <option>s, clamps values, and reflects state; CSS owns every visual.
+ * One row: "Rows per page" label + native <select>, then the nav buttons with a
+ * native number <input>. CSS owns every visual; JS only stamps <option>s and
+ * reflects state.
  */
 
-/* Figma Pagination (48:65826) FILLS its parent (primaryAxisSizingMode FIXED at the
-   container width) with SPACE_BETWEEN, so the rows-per-page group sits hard left
-   and every page control hard right.
-
-   The host is a plain full-width block; the ROW is `.pagination` inside it. The
-   flex rules used to be on :host only, so they applied to a box whose single child
-   was an unstyled `display: block` wrapper that hugged its content — the host
-   measured the full 1206px while everything inside bunched into 445px on the left.
-   That is why "make the pagination fill the grid width" kept measuring as fixed
-   while still looking wrong. */
+/* The flex row is `.pagination`, NOT :host — the host is a plain block. Flex on
+   :host applied to a box whose single child hugged its content. */
 :host {
   display: block;
   inline-size: 100%;
-  /* The PADDING lives on .pagination, not here — putting it in both places double-
-     insets the row. */
+  /* Padding lives on .pagination only — in both places it double-insets. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
-  /* TWO widths, not one. Re-read from the Figma node (Pagination 48:65826): the
-     rows-per-page field is 72 × 32 and the page field is 48 × 32. They were both
-     88px here, from an earlier reading of a HUGGING frame whose width drifted
-     with its content — which is why the row looked so wide.
-
-     The sizes are what each field HOLDS: "10"/"25"/"50"/"100" plus a chevron in
-     72, and 1–3 digits in 48. Both on the 8px grid. */
+  /* Two widths, from Figma Pagination 48:65826: rows field 72, page field 48. */
   --_field-rows: 72px;
   --_field-page: 48px;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
@@ -58,8 +37,7 @@
   white-space: nowrap;
 }
 
-/* ── Controls zone — Figma: [first|prev] snapped (gap 0) · 8 · input · 8 · "of N"
-   · 8 · [next|last] snapped. The pairs touch; the 8px gaps sit around the field. ── */
+/* ── Controls zone — snapped pairs touch; the 8px gaps sit around the field. ── */
 .controls {
   display: inline-flex;
   align-items: center;
@@ -82,7 +60,6 @@
   justify-content: space-between;
   gap: var(--sherpa-display-mode-space-base, 16px);
   inline-size: 100%;
-  /* Figma Pagination: padding space/xs 8 × space/sm 12. */
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   box-sizing: border-box;
 }
@@ -105,13 +82,8 @@
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-/* A <select> DRAWS ITS CARET INSIDE ITS OWN PADDING, so the shared 8px above
-   leaves the glyph about 2px off the border with the label running straight
-   into it. The trailing side needs room for the caret AND a gap: 8 for the
-   glyph, 8 to breathe, on top of the 8 every field already has.
-
-   `padding-inline-end` alone, so the field rule above still owns every other
-   edge — and .page-input, which has no caret, keeps its symmetry. */
+/* A <select> draws its caret INSIDE its own padding, so the shared 8px leaves the
+   label running into the glyph. Trailing side only, so .page-input keeps symmetry. */
 .rows {
   padding-inline-end: calc(var(--sherpa-structure-space-padding, 8px) * 3);
 }
@@ -123,9 +95,7 @@
   box-shadow: inset 0 0 0 2px var(--_border-focus);
 }
 
-/* Both are the Figma "Input Field (atom)" box at 32 tall, sized to what each
-   one holds. A FIXED width (rather than ch or auto) is what stops the row
-   reflowing as the page number gains a digit. */
+/* Fixed widths (not ch or auto) stop the row reflowing as the page number gains a digit. */
 .page-input {
   inline-size: var(--_field-page);
   text-align: center;
@@ -134,37 +104,20 @@
   inline-size: var(--_field-rows);
 }
 
-/* ── Nav buttons ──────────────────────────────────────────────────────────
- * Composed <sherpa-button>s (Figma Pagination 48:65826 instances them at
- * Structure=default 32×32, pinned Style=Transparent), so the component owns its
- * own size, fill, hover, active, disabled and focus ring. ~90 lines of that —
- * plus four hand-drawn pure-CSS chevrons — used to live here.
- *
- * Figma SNAPS them into pairs: first+prev and next+last, so each pair keeps only
- * its OUTER corners and the two share one hairline where they meet.
- */
+/* ── Nav buttons — composed <sherpa-button>s; they own their own size, states
+ * and focus ring. Figma snaps them into pairs: first+prev, next+last. ── */
 .pair {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
-/* The negative snapped gap laps the two rings into one hairline. CSS `gap`
-   cannot go negative, so it has to be a margin. */
+/* CSS `gap` cannot go negative, so the snapped lap has to be a margin. */
 .pair > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* The snapped CORNERS, set here rather than left to `data-snap`.
-   `[data-snap]` is a plain selector in tokens.css, which is loaded into the
-   DOCUMENT and deliberately NOT in SherpaElement.sharedStyles — so it reaches a
-   button in the light DOM but never one inside this shadow root. The attribute
-   stays on each button as the honest description of what it is; the same four
-   corner variables are written directly so the pair actually joins.
-
-   By POSITION, not by `[data-snap="…"]`, so the rule survives a re-order. */
-/* The snapped-group corner rules used to be written out here. They are now
-   `.sherpa-snap-group` in core/sherpa-base.css — the same twelve lines lived
-   in three components under three wrapper names. `.pair` carries the class. */
+/* Corners come from `.sherpa-snap-group` in core/sherpa-base.css, by POSITION.
+   `[data-snap]` in tokens.css is document-scoped and never reaches this shadow root. */
 
 /* ── Disabled fields ──────────────────────────────────────────────────── */
 :host([disabled]) .rows,

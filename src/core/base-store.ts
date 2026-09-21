@@ -1,17 +1,7 @@
 /**
- * base-store.ts — the half every Store implementation shares.
- *
- * `StoreOptions` and `BaseStore`: the key field, the schema guard on the way in
- * and on the way out, `totalCount`, and announcing a change.
- *
- * ITS OWN MODULE so `IdbStore` can extend it. It lived inside `stores.ts` and
- * was not exported, so IndexedDB could not reach it and re-implemented all four
- * — including a private copy of the validation error that was a DIFFERENT
- * CLASS with the same name, so `instanceof ValidationError` was false for every
- * IndexedDB refusal. TRAP T-one-class-to-catch.
- *
- * Extends EventTarget so `change` is a real DOM event — no emitter to write,
- * and a DataSource subscribes with its usual addEventListener.
+ * base-store.ts — what every Store shares: the key field, the schema guard in
+ * and out, `totalCount`, and announcing a change. Its own module so `IdbStore`
+ * can extend it rather than re-implement it. TRAP T-one-class-to-catch
  */
 import type { LoadOptions, LoadResult, Row, Store, StoreChangeDetail } from './store.js';
 import { validate, ValidationError, type Issue, type StandardSchema } from './validate.js';
@@ -20,40 +10,20 @@ import { validate, ValidationError, type Issue, type StandardSchema } from './va
 export interface StoreOptions {
   /** The field holding each row's identity. Default `'id'`. */
   key?: string;
-  /**
-   * Check every row the store WRITES, and refuse the ones that fail.
-   *
-   * TRAP T-schema-guard-belongs-at-the-store — a rule enforced in one screen is
-   * not a rule.
-   */
+  /** Refuse rows the store WRITES that fail. TRAP T-schema-guard-belongs-at-the-store */
   schema?: StandardSchema;
-  /**
-   * Keep at most this many rows, dropping the OLDEST first.
-   *
-   * TRAP T-max-rows-is-oldest-out-by-insertion — insertion order, not a field,
-   * and every write honours it.
-   */
+  /** Cap rows, dropping OLDEST first. TRAP T-max-rows-is-oldest-out-by-insertion */
   maxRows?: number;
-  /**
-   * On a READ, check only the first N rows rather than every one.
-   *
-   * TRAP T-schema-sample-cost — what a sample is for, and when it must NOT be
-   * used. Writes are always checked in full.
-   */
+  /** On a READ, check only the first N rows; writes check in full. TRAP T-schema-sample-cost */
   sample?: number;
 }
 
-/**
- * Shared plumbing: the key field, and announcing a change.
- *
- * Extends EventTarget so `change` is a real DOM event — no emitter to write, and
- * a DataSource subscribes with its usual addEventListener.
- */
+/** Shared plumbing. EventTarget so `change` is a real event a DataSource can subscribe to. */
 export abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
-  /** The write guard, if the caller gave one — see StoreOptions.schema. */
+  /** The write guard, if the caller gave one. */
   protected readonly schema: StandardSchema | undefined;
-  /** How many rows a READ checks. 0 or absent = all of them — see StoreOptions.sample. */
+  /** How many rows a READ checks. 0 = all of them. */
   protected readonly sampleSize: number;
 
   constructor(options: StoreOptions = {}) {
@@ -71,18 +41,13 @@ export abstract class BaseStore extends EventTarget implements Store {
 
   /** Matching rows before paging — what a pager counts pages from. */
   async totalCount(options?: LoadOptions): Promise<number> {
-    // skip/take are dropped: a COUNT is of the matches, not of one page.
+    // skip/take dropped: a COUNT is of the matches, not of one page.
     const { skip: _skip, take: _take, ...rest } = options ?? {};
     const result = await this.load(rest);
     return result.total;
   }
 
-  /**
-   * Check a row against the schema, THROWING if it fails.
-   *
-   * TRAP T-schema-guard-belongs-at-the-store — a throw not a `false`, the PARSED
-   * value back, and no schema means no check.
-   */
+  /** Check a row, THROWING if it fails; returns the PARSED value. TRAP T-schema-guard-belongs-at-the-store */
   protected async check(values: Row): Promise<Row> {
     if (!this.schema) return values;
     const result = await validate(this.schema, values);
@@ -91,22 +56,19 @@ export abstract class BaseStore extends EventTarget implements Store {
   }
 
   /**
-   * Check ROWS ARRIVING, dropping the ones the schema refuses.
-   *
-   * TRAP T-read-check-drops-where-a-write-throws — one bad row in a thousand
-   * must not empty a grid, so it is dropped and counted. No schema, no check.
+   * Drop arriving rows the schema refuses — one bad row must not empty a grid.
+   * TRAP T-read-check-drops-where-a-write-throws
    */
   protected async checkRows(result: LoadResult): Promise<LoadResult> {
     if (!this.schema) return result;
 
-    /* THE SAMPLE. `undefined` or 0 means check everything, which stays the
-       default: a guard you have to opt out of is a guard people keep. */
+    // 0 checks everything: the guard is opt-OUT.
     const limit = this.sampleSize && this.sampleSize > 0
       ? Math.min(this.sampleSize, result.rows.length)
       : result.rows.length;
 
     const rows: Row[] = [];
-    // The first few issues only — TRAP T-read-check-drops-where-a-write-throws.
+    // TRAP T-read-check-drops-where-a-write-throws
     const issues: Issue[] = [];
     for (let i = 0; i < limit; i++) {
       const row = result.rows[i]!;
@@ -114,7 +76,7 @@ export abstract class BaseStore extends EventTarget implements Store {
       if (checked.issues) issues.push(...checked.issues);
       else rows.push((checked.value ?? row) as Row);
     }
-    // The tail, UNCHECKED and unchanged — TRAP T-schema-sample-cost.
+    // The tail, UNCHECKED and unchanged. TRAP T-schema-sample-cost
     for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
 
     const dropped = result.rows.length - rows.length;
@@ -123,11 +85,10 @@ export abstract class BaseStore extends EventTarget implements Store {
     return {
       ...result,
       rows,
-      // TRAP T-dropped-rows-must-be-countable — the total drops with the rows,
-      // and only the first few issues travel.
+      // The total drops with the rows. TRAP T-dropped-rows-must-be-countable
       total: Math.max(0, result.total - dropped),
       dropped,
-      issues: issues.slice(0, 5),
+      issues: issues.slice(0, 5), // the first few only
     };
   }
 

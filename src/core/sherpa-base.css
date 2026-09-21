@@ -1,10 +1,6 @@
 /**
  * sherpa-base.css — adopted into EVERY component's shadow root.
- *
- * The minimal reset + inheritable defaults each shadow root needs. Design tokens
- * are NOT here: custom properties inherit across the shadow boundary, so the
- * `--sherpa-*` / `--core-*` layer lives in the light DOM (tokens.css) and reaches
- * in for free. This file only sets what each shadow root must establish locally.
+ * Reset + inheritable defaults only; design tokens inherit in from tokens.css.
  */
 
 *,
@@ -14,15 +10,10 @@
 }
 
 :host {
-  /* The `*` rule above does NOT match :host — a shadow root's host is outside the
-     tree that `*` selects. So without this line every component box was
-     content-box while all of its internals were border-box, and any host with
-     padding overflowed its own declared width. sherpa-pagination did exactly
-     that: `inline-size: 100%` plus its 12px side padding rendered 24px wider
-     than the grid above it. */
+  /* The `*` rule above does NOT match :host, so without this a padded host
+     overflows its own declared width. */
   box-sizing: border-box;
 
-  /* Inheritable typographic ground — tokens resolve from the light DOM. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-display-mode-fonts-scale-lg, 16px);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
@@ -34,18 +25,15 @@
 }
 
 /* ── Forced colours (Windows High Contrast) ──────────────────────────────────
- * Components draw focus rings with box-shadow (see each component's :focus-visible).
- * box-shadow is STRIPPED in forced-colors mode, so those rings would vanish — a
- * WCAG 2.4.7 failure. Restore a real outline (which forced-colors honours) for any
- * focused element, host or inner. `Highlight` is the OS's system focus colour.
- * One block here covers every shadow root (this sheet is adopted into all of them). */
+ * box-shadow is STRIPPED here, so the box-shadow focus rings vanish — restore a
+ * real outline. One block covers every shadow root. */
 @media (forced-colors: active) {
   :host(:focus-visible),
   :focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
-  /* Selected / active surfaces lose their tint in forced-colors; keep a border cue. */
+  /* Selected surfaces lose their tint here; keep a border cue. */
   :host([data-selected]),
   :host([aria-selected="true"]) {
     outline: 1px solid Highlight;
@@ -53,116 +41,60 @@
 }
 
 /* ── Chart mark tooltips ─────────────────────────────────────────────────────
- * A hover tooltip for a chart MARK — a bar, a donut segment, a sparkline or line
- * dot, a gauge band. Every 2D and radial chart uses these rules so the five behave
- * identically; this sheet is adopted into every shadow root, so a chart only has
- * to stamp the markup.
- *
- * NO JAVASCRIPT POSITIONING. Modern CSS does the whole job:
- *
- *   anchor-name / position-anchor  tie the tip to its own mark
- *   position-area                  put it on a preferred side
- *   position-try-fallbacks         let the browser FLIP it to another side when
- *                                  the preferred one would fall off screen
- *   popover                        the browser's top layer, so the tip is never
- *                                  clipped by the chart's own overflow
- *
- * Anchor positioning cannot cross a SHADOW BOUNDARY — that is why the menu had to
- * be measured in JS. Here the mark and its tip are in the SAME shadow root, which
- * is exactly the case anchors do handle, so the declarative form works.
- *
- * Each mark writes `--_anchor: --chart-mark-<n>` and its tip the same name; that is
- * the only value the JS supplies, because an anchor name cannot be derived in CSS.
- */
+ * Shared by all five charts. No JS positioning: anchor positioning + popover.
+ * Anchors cannot cross a shadow boundary, but mark and tip share one root.
+ * JS supplies only `--_anchor` (an anchor name cannot be derived in CSS). */
 .chart-tip {
   position: fixed;
   position-anchor: var(--_anchor);
-  /* ABOVE the mark, centred on it. A tooltip FAVOURS above: that is where a
-     reader looks, and it never covers the rest of the series below.
-     A RADIAL chart overrides --_area per tip, pushing each one OUTWARD along its
-     own marker's radius — see radialArea() in core/format-tick.ts. Markers on a
-     ring fan out, so outward tips diverge and can never overlap, which beats
-     measuring boxes and nudging the collisions. */
+  /* Radial charts override --_area to push each tip outward — see radialArea()
+     in core/format-tick.ts. */
   position-area: var(--_area, block-start);
-  /* Fallbacks, tried in order, ONLY when the preferred area does not fit.
-     `--tip-shift-*` keeps the tip ABOVE and slides it sideways to stay on screen,
-     which is what a mark near a left or right edge needs — a tip that is merely
-     off-centre still reads as "above this mark". Only when there is no room above
-     at all does it go beside, then below as the last resort.
-
-     NOT `block-start span-inline-end` and friends: those are position-AREAS, and
-     the browser preferred one of them over the plain centred area on every dot
-     chart, so nothing ever rendered above. A span area is a different box, not a
-     nudge; @position-try with a margin shift is the nudge. */
+  /* NOT span areas (`block-start span-inline-end` etc.): the browser preferred
+     those over the centred area, so nothing ever rendered above. @position-try
+     with a margin shift is the nudge. */
   position-try-fallbacks:
     --tip-shift-end, --tip-shift-start,
     inline-end, inline-start,
     block-end;
-  /* Whitespace between the tip and its mark, on whichever side it lands. */
   margin: var(--sherpa-display-mode-space-2xs, 4px);
 
   inline-size: max-content;
   max-inline-size: 16rem;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  /* Flex, so the label and value are separated by a real gap token rather than by
-     whitespace in the template (which the DOM would collapse away). */
   gap: var(--sherpa-theme-gap-md, 8px);
   align-items: baseline;
   border: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  /* Same fill/ink/type as sherpa-tooltip's bubble — one tooltip look system-wide. */
   background: var(--sherpa-style-content-base, #0c0b11);
   color: var(--sherpa-theme-content-body-4, #ffffff);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  /* Elevation=md, the tooltip atom's pin. Spelled out from Display Mode primitives
-     rather than read from `--sherpa-elevation-*`: those resolve to the `passthrough`
-     step (0) at :root, and the [data-elevation="md"] block that re-points them is a
-     bare attribute selector in tokens.css, which reaches the DOCUMENT only — never
-     inside a shadow root. Values mirror [data-elevation="md"] exactly (8/8/16/-4).
-     Same idiom as sherpa-menu. */
+  /* Elevation=md spelled out from primitives: `[data-elevation="md"]` is a bare
+     attribute selector in tokens.css and never reaches inside a shadow root. */
   box-shadow:
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-2xs, 8px)
     var(--sherpa-display-mode-size-sm, 16px)
     -4px
     var(--sherpa-style-surface-shadow, #15151e80);
-  /* The tip must never eat the hover it depends on. */
   pointer-events: none;
 
-  /* Hidden until its mark is hovered. `display: none` (not opacity) so it takes no
-     layout and is unreadable to assistive tech while shut — and because a popover
-     the UA has not opened is display:none anyway, this is the same state. */
+  /* display:none, not opacity — no layout, and hidden from assistive tech. */
   display: none;
   opacity: 0;
   transition: opacity 120ms ease;
 }
 
-/* Shown while the mark is hovered or keyboard-focused. Keyboard too: a chart mark
-   is a real <button>, so tabbing to it must reveal the same value a pointer does. */
 .chart-mark:is(:hover, :focus-visible) + .chart-tip,
 .chart-mark:is(:hover, :focus-visible) .chart-tip {
   display: flex;
   opacity: 1;
 }
 
-/* HOVER THE CHART'S OWN VISUAL, GET ITS TOOLTIP.
-   A donut segment, a bar, a gauge band — the thing the reader is already pointing
-   at IS the target. There is no visible marker to find and no marker to aim at.
-
-   `:has()` on a wrapper, because an SVG segment is inside <svg> and therefore not
-   the tip's sibling — a `+` or `~` selector cannot reach across that. The chart
-   supplies the wrapper class; see each chart's own CSS.
-
-   Showing EVERY tip at once was tried and is worse: the donut's five tips covered
-   its own legend and the neighbouring panel, and a line chart showed sixteen with
-   twelve overlapping. One tip, on demand. */
-
-/* An invisible ANCHOR POINT. It exists only so the tip has something to anchor to
-   — an SVG element cannot be a CSS anchor in Chromium, so a zero-size HTML span is
-   placed at the visual's centre instead. Not a marker: nothing is drawn. */
+/* Zero-size anchor point: an SVG element cannot be a CSS anchor in Chromium. */
 .chart-anchor-point {
   position: absolute;
   inline-size: 0;
@@ -171,23 +103,16 @@
   pointer-events: none;
 }
 
-/* A mark that scrolled out of view must take its tip with it, rather than leave it
-   floating over whatever is now in that place. */
 @supports (position-visibility: anchors-visible) {
   .chart-tip { position-visibility: anchors-visible; }
 }
 
-/* The tip's value, set apart from its label. */
 .chart-tip-value {
   font-weight: var(--sherpa-font-weight-semibold, 600);
   font-variant-numeric: tabular-nums;
 }
 
-/* Stay ABOVE, slide sideways. Used as the first two fallbacks above: a mark near
-   a left or right edge gets a tip that is still over it, just no longer centred,
-   rather than one thrown to the side or underneath.
-   `align-self: end` keeps it in the block-start area; the inline self-alignment
-   is what shifts it. */
+/* Stay ABOVE, slide sideways; `align-self: end` holds the block-start area. */
 @position-try --tip-shift-end {
   position-area: block-start;
   align-self: end;
@@ -199,34 +124,15 @@
   justify-self: end;
 }
 
-/* The mark declares the anchor name and is the hover target.
-   A chart may name a CHILD as the anchor instead (`.chart-anchor`), when the
-   hover target is deliberately bigger than the thing being described — a bar
-   chart's column is the full plot height, so anchoring the tip to the column put
-   it far above a short bar. The hover still comes from .chart-mark either way. */
+/* A chart may name a CHILD (`.chart-anchor`) when the hover target is bigger
+   than the thing described — a bar column is the full plot height. */
 .chart-mark { anchor-name: var(--_anchor); }
 .chart-mark:has(> .chart-anchor) { anchor-name: none; }
 .chart-anchor { anchor-name: var(--_anchor); }
 
 /* ══ A SNAPPED control group ════════════════════════════════════════════════
- *
- * Square every inner corner so a row of controls reads as one object, and keep
- * the outer corners round. Put `.sherpa-snap-group` on the WRAPPER; its
- * children need nothing.
- *
- * Written out three times before this — `.cal-header > *` in the calendar,
- * `.pair > *` in pagination, `.view-group > *` in the quick-filter toolbar —
- * twelve byte-identical lines under three different wrapper names, which is
- * how the same idea ends up with three spellings and then three behaviours.
- *
- * BY POSITION, not by `[data-snap="…"]`, so the rule survives a re-order: a
- * child that becomes first starts rounding its left edge without anyone
- * re-labelling it. Each child keeps its own `data-snap` as the honest
- * description of what it is; this writes the four corner variables directly so
- * the group actually joins.
- *
- * The VALUES come from the token layer (`display-mode-border-rounding-base`) —
- * this only decides which corners get them. */
+ * `.sherpa-snap-group` on the WRAPPER squares inner corners; children need
+ * nothing. BY POSITION, not `[data-snap]`, so a re-order survives. */
 .sherpa-snap-group > * {
   --sherpa-border-rounding-top-left: 0px;
   --sherpa-border-rounding-top-right: 0px;
@@ -243,33 +149,14 @@
 }
 
 /* ── Per-edge border widths ──────────────────────────────────────────────
-   The four Figma Border-collection weights, applied. `border-width` alone
-   cannot express them: each edge has its own variable so a component can carry
-   a different weight per side, and the Grouping collection re-points them by
-   position (a snapped control pair, a table cell, a stacked accordion).
-
-   Written out TWENTY-SIX times across twenty stylesheets before this — four
-   byte-identical lines each, which `fallow` reported as a duplicated block and
-   was right about. Same shape as `.sherpa-snap-group` above: one definition,
-   many users.
-
-   THE COLOUR IS NOT HERE, deliberately. All 26 sites set `border-color` to
-   something different — `--_border`, a Style token, a Theme token,
-   `transparent`, a `--_status-border` fallback chain — so folding it in would
-   mean one wrong default plus 26 overrides. The WIDTHS are the part that never
-   varied. `border-style: solid` is here because a width with no style draws
-   nothing and all 26 paired them.
-
-   SEVEN SITES STILL WRITE THE WIDTHS INLINE, and must: a bare `:host` cannot
-   wear a class named in its own stylesheet (accordion, container, data-grid), a
-   rule gated on a host attribute has no element to tag (`sherpa-list`'s
-   `.body`, `sherpa-quick-filter`'s `.count`), and two target a bare tag inside
-   a cloned prototype. Adding the class to only some of the 26 is how the first
-   attempt at this silently un-bordered eight rules. */
+   Widths only: all 26 call sites set a different `border-color`, so folding
+   colour in would mean one wrong default plus 26 overrides. `border-style` is
+   here because a width with no style draws nothing. Seven sites still write
+   these inline and must (a bare `:host` cannot wear a class from its own
+   sheet); adding the class to only some of them silently un-borders the rest. */
 /* TRAP T-a-sub-pixel-border-reads-back-as-1px — these edges are deliberately
-   sub-pixel (0.5 for a hairline, 0.25 each side of a snapped seam), and
-   `getComputedStyle` rounds every one of them up to "1px". Read the custom
-   property to check a value, never the border. */
+   sub-pixel and `getComputedStyle` rounds every one up to "1px". Read the
+   custom property, never the border. */
 .sherpa-border-edges {
   border-style: solid;
   border-block-start-width: var(--sherpa-border-top, 0.5px);

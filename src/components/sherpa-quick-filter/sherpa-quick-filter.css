@@ -1,45 +1,15 @@
 /**
  * sherpa-quick-filter — presentation.
- *
- * Data-matched to the Figma "Filter Chip (atom)" (154:3904), which now has an
- * explicit `State` variant axis of `simple` | `menu`.
- *
- * State=simple — ONE box, 63×24 hug/fill:
- *   padding 0 × space/2xs 4 · gap space/2xs 4 · all four corners bound to
- *   Snapping `rounding/*` in the DEFAULT mode → 4 · 0.5
- *   `border/width/sm` style-border/base ring · style-surface/base face
- *   children: [count][icon] Label
- *
- * State=menu — TWO boxes SNAPPED into one 87×24 unit:
- *   the wrapper has NO fill and NO ring of its own; it only sets the gap to
- *   `structure-space/snapped` (0) so the two rings meet as one flush joint.
- *   "Left"  = the simple chip, pinned Structure ext `snap-right-edge` / default
- *             → rounding 4/0/0/4. Its own 0.5 ring and white face.
- *   "Button"= a Button/Type=icon, pinned Structure ext `snap-left-edge` / SM and
- *             Style=default → rounding 0/4/4/0, height 24, padding 8, icon 14,
- *             its own 0.5 ring and white face. NOT transparent — it is a
- *             bordered button snapped to the chip.
- *
- *   count    Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT — neutral
- *            (white face, grey ring, dark ink), and it LEADS the row
- *   icon     a 14px Icon instance (content/size/base)
- *   label    style-content/base at content/size/base 14 on line-height/base 20
- *
- * The ai type carries the brand-purple accent even when inactive. The active look
- * is the Style active mode: a brand-tint face, brand ring, deeper brand ink.
+ * Figma "Filter Chip (atom)" (154:3904), State=simple (one box) | menu (chip +
+ * snapped icon Button, both bordered, no fill on the wrapper).
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
   inline-size: fit-content;
-  /* The value tooltip stands ABOVE the chip and out of the bar, so the chip has
-     to outrank whatever is painted after it — the toolbar above this one, which
-     comes later in the document and won every tie. A z-index needs a position
-     to act on, and `relative` changes no layout.
-
-     Raised only while the tip is UP: a permanently lifted chip would paint over
-     a menu opened from the chip beside it. */
+  /* Raised only while the tip is UP, so the value tooltip outranks the toolbar
+     above it without painting over a neighbouring chip's open menu. */
   position: relative;
 
   /* The strong brand accent (ramp step 2 = #C046FF), not the light surface. */
@@ -47,10 +17,7 @@
   --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
 }
 
-/* The chip shell is a SNAP WRAPPER, not a box. In Figma State=menu the wrapper
-   carries no fill and no stroke — only the `structure-space/snapped` gap that
-   butts the two children's rings together. In State=simple there is only one
-   child, so the gap never applies and the wrapper stays invisible either way. */
+/* The chip shell is a SNAP WRAPPER, not a box — no fill, no stroke. */
 .chip {
   display: inline-flex;
   align-items: stretch;
@@ -58,19 +25,14 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
 
-/* The snap itself. Figma's `structure-space/snapped` is the single source for
-   every snapped pair in the system; it aliases space/none, so the two halves sit
-   FLUSH rather than overlapping. It is an inline margin rather than a `gap`
-   because the token is free to go negative later and CSS `gap` cannot —
-   Chromium silently computes a negative gap back to `normal`. */
+/* An inline margin rather than `gap` because the snapped token may go negative
+   later and Chromium silently computes a negative gap back to `normal`. */
 :host([data-menu]) .caret {
   display: inline-flex;
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* ── The chip body — Figma "Left", the whole box in State=simple ──────────
-   Its own face, ring and rounding. In State=menu the right corners snap flat
-   (Structure ext snap-right-edge), which is the [data-menu] rule below. */
+/* ── The chip body — Figma "Left", the whole box in State=simple ────────── */
 .body {
   display: inline-flex;
   align-items: center;
@@ -107,13 +69,8 @@
 }
 
 /* ── Menu open ───────────────────────────────────────────────────────
- * The chip whose menu is showing wears the FOCUS RING, so the bar says which
- * chip the open card belongs to. Real focus has moved into the menu by then, so
- * `:focus-visible` on the chip is false and nothing here marked it.
- *
- * Both halves take it: they are snapped into one control, and a ring on only the
- * caret would read as two. Same inset ring the focus state uses — an outer one
- * on a snapped pair overlaps its neighbour.
+ * Real focus is inside the menu, so `:focus-visible` is false here — both
+ * snapped halves wear the ring, inset so it cannot overlap a neighbour.
  */
 :host([data-open]) :is(.body, .caret) {
   position: relative;
@@ -141,11 +98,8 @@
   border-color: var(--_accent);
 }
 
-/* Active/selected → brand-tint fill + brand border, darker-purple ink.
-   Figma Style: active binds the label to content-active-1 (#8300b6, a darker
-   brand step than the #c046ff border) — the text is deeper than the border. The
-   weight binds Theme content/weight/regular and does NOT change with the mode.
-   Both halves recolour, because Style is pinned on the whole chip. */
+/* Active → brand-tint face, brand ring, and deeper brand ink than the ring
+   (Figma Style: active binds the label to content-active-1). */
 :host([data-current]) :is(.body, .caret) {
   background: var(--_active-surface);
   border-color: var(--_accent);
@@ -153,25 +107,17 @@
 }
 
 /* ── ON but holding no values → the WARNING look, not the active one ─────────
-   A value chip that is on with nothing picked filters by nothing, so it excludes
-   nothing — the purple "this is applied" tint would be a lie. JS flags the state
-   with data-empty (it needs the menu's checked rows to know); the colour choice
-   is entirely here.
+   Explicit warning tokens rather than the --_status-* cascade, which would need
+   a [data-status] ANCESTOR that cannot know the chip is empty.
 
-   These are the Style collection's own `warning` mode values: style-surface/base
-   +1 → surface-warning-base, style-border/base +1 → border-warning-2. Written as
-   explicit warning tokens rather than the --_status-* cascade because that needs
-   a [data-status] ANCESTOR, and nothing outside the chip knows it is empty.
-
-   It must come after the data-current rule to win — same specificity, so order
-   is what decides. */
+   Must stay AFTER the data-current rule — same specificity, order decides. */
 :host([data-current][data-empty]) :is(.body, .caret) {
   background: var(--sherpa-theme-surface-warning-base, #fff4e1);
   border-color: var(--sherpa-theme-border-warning-2, #ffc44c);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
-/* Leading status dot — shown only with data-indicator (Figma "Indicator (atom)"). */
+/* Leading status dot — Figma "Indicator (atom)". */
 .indicator { display: none; }
 :host([data-indicator]) .indicator {
   display: inline-block;
@@ -181,22 +127,12 @@
   background: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #003246));
 }
 
-/* Count chip — Figma "Indicator (atom)/Type=count" pinned Style=DEFAULT: a neutral
-   16-tall chip (white face, 0.5 grey ring, dark ink, radius sm), LEADING the label.
-   It is deliberately NOT the active tint — that was the bug.
-
-   .count-wrap is the <sherpa-tooltip>. It holds NO trigger of its own — it sits
-   beside the chip's buttons and anchors to the whole chip, so hovering any part
-   shows the value list. It draws nothing itself; only its bubble, in the top
-   layer, is ever visible. */
+/* Count chip — Figma "Indicator (atom)/Type=count" at Style=DEFAULT: neutral,
+   deliberately NOT the active tint. */
 .count-wrap {
-  /* ALWAYS laid out, and zero-sized: it draws nothing itself and only its
-     bubble, in the top layer, is ever seen. `display: none` would take its
-     anchor's listeners out with it, and they are wired once at render — a chip
-     that gained a count later would never show a tip again.
-
-     What comes and goes is the TIP TEXT: the tooltip has nothing to show until
-     a count exists, and an empty bubble is suppressed below. */
+  /* ALWAYS laid out and zero-sized. `display: none` would take its anchor's
+     listeners with it, and they are wired once at render — a chip that gained a
+     count later would never show a tip again. Only the TIP TEXT comes and goes. */
   position: absolute;
   inline-size: 0;
   block-size: 0;
@@ -225,13 +161,11 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 
-/* The value tooltip is a composed <sherpa-tooltip> in FLOATING mode — its
-   bubble lives in the top layer, past the toolbar's clipping chip run. There is
-   no bubble to style here and no lift for the chip to take: a hand-rolled
-   absolute one was cut off by `.chips { overflow: clip }` however high the chip
-   was raised, because a clip is not a stacking question.
+/* The value tooltip is a composed <sherpa-tooltip> in FLOATING mode: nothing to
+   style here. An absolute bubble was clipped by `.chips { overflow: clip }` at
+   any z-index — a clip is not a stacking question. */
 
-/* Leading icon — shown only with data-icon-start (Figma "Icon", a funnel default). */
+/* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
 .icon { display: none; }
 :host([data-icon-start]) .icon {
   display: inline-flex;
@@ -245,19 +179,14 @@
 }
 
 /* ── Menu caret — Figma "Button/Type=icon" snapped to the chip's right ────────
-   Structure ext `snap-left-edge` at the SM mode: 24 square (Structure height=sm
-   → space/xl 24), padding 8, radius 0/4/4/0, icon-size 14. Style=default, so it
-   is a BORDERED white button, NOT a transparent one — it reads as the other half
-   of the same control. It only exists in State=menu. */
+   Style=default, so it is a BORDERED white button, not a transparent one. */
 .caret {
   display: none;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  /* HUGS its content, as Figma's Button instance does (layoutSizingHorizontal =
-     HUG). With no picked value the label is empty and the button collapses back to
-     the bare 24-square caret; with one it grows to hold the value. A fixed width
-     would either clip the label or leave a gap when there is none. */
+  /* HUGS its content, as Figma's Button instance does: bare it is a 24 square,
+     with a value it grows. A fixed width would clip the label or leave a gap. */
   min-inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: 100%;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
@@ -270,14 +199,10 @@
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
-  /* A <button> does NOT inherit the page font — browsers substitute their own UI
-     face — so the caret's label rendered in Arial while the chip's rendered in
-     Inter. Same size, same line-height, different typeface: the two texts sat
-     visibly off from each other. `.body` above already carries this line for the
-     same reason; the caret was simply never given it. */
+  /* A <button> does NOT inherit the page font — without this the caret label
+     renders in the browser UI face and sits off the chip's Inter label. */
   font-family: inherit;
-  /* Structure `icon-size` in the SM mode → content/size/base 14 (it was
-     content/size/small 12 until the Structure sm mode was re-pointed in Figma). */
+  /* Structure `icon-size` in the SM mode → content/size/base 14. */
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
@@ -295,39 +220,29 @@
   }
 }
 
-/* The picked VALUE, inside the caret button (Figma State=menu makes the caret a
-   Button instance with a `label` text property). Empty means nothing is picked, and
-   `:empty` collapses it so the button returns to a bare caret — no JS visibility
-   write, and no stray padding around a zero-width span. */
+/* The picked VALUE, inside the caret button. */
 .caret-label {
   font-size: var(--sherpa-theme-content-size-base, 14px);
-  /* The SAME line-height as the chip's own label (Figma 150:3408: both labels are
-     14 on 20). `line-height: 1` looked centred — the two boxes shared a midpoint —
-     but a 14px line box and a 20px one put their baselines in different places, so
-     the two texts sat visibly off from each other. */
+  /* The SAME line-height as the chip's own label (both 14 on 20). `line-height:
+     1` shares the midpoint but not the baseline, so the texts sit off. */
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: nowrap;
-  /* A long value truncates rather than stretching the bar — the full list is on
-     the badge's hover tip and in its aria-label. */
+  /* A long value truncates; the full list is on the hover tip and aria-label. */
   overflow: hidden;
   text-overflow: ellipsis;
   max-inline-size: 12ch;
 }
 
-/* A chip whose value must read IN FULL. A date range says "03 Sep - 18 Oct,
-   2026", and every part of that carries meaning — truncated to "03 Sep - 18…"
-   it names a span whose end the reader cannot see, and unlike a value list
-   there is no count that would stand in for it. */
+/* A chip whose value must read IN FULL — e.g. a date range, where a truncated
+   end names a span the reader cannot see and no count stands in for it. */
 :host([data-full-value]) .caret-label {
   overflow: visible;
   text-overflow: clip;
   max-inline-size: none;
 }
 
-/* A chip that carries no VALUE to name. The More chip is the case this exists
-   for: its caret opens a list of other filters, not a set of values, so a value
-   label there would either be blank or would name whichever filter happened to
-   be first. Its badge already says how many are inside. */
+/* A chip with no VALUE to name — the More chip opens a list of filters, not
+   values; its badge says how many are inside. */
 :host([data-no-value]) .caret-label { display: none; }
 
 .caret-label:empty {
@@ -340,53 +255,29 @@
 }
 
 /* ── ICON-ONLY — the chip reduced to its menu button ─────────────────
- * The data grid's column headers need a filter affordance, and a filter
- * affordance is exactly this component minus its chrome: a button that opens a
- * value menu. Rebuilding that inside the grid would mean a second popover, a
- * second placement measurement and a second Apply footer, all drifting from
- * this one.
- *
- * So the chip loses its body, its count badge, its indicator and its value
- * label, and keeps ONE square button with a funnel in it. What stays is the
- * part that was hard: the menu, its placement across the shadow boundary, and
- * the events it reports.
- *
- * Every hidden piece is hidden in CSS, off one host attribute — the component
- * builds exactly the same shadow DOM either way, so a chip can become
- * icon-only and back without a rebuild. */
+ * For a grid column header: keeps the menu, its cross-shadow placement and its
+ * events; drops body, count, indicator and value label. Every piece is hidden
+ * in CSS off one host attribute, so the shadow DOM never changes.
+ */
 :host([data-icon-only]) .body { display: none; }
 
-/* No body to snap against, so the caret is the WHOLE chip again: all four
-   corners round, not just the trailing pair. The [data-menu] margin above is a
-   snapped gap between two boxes; with one box there is nothing to snap to. */
+/* No body to snap against, so the caret is the WHOLE chip again. */
 :host([data-icon-only]) .caret {
   display: inline-flex;
   margin-inline-start: 0;
-  /* SQUARE. The 24-wide min plus a 24 block-size is already the icon-button
-     footprint the rest of the system uses; fixing the inline size stops a
-     stray caret-label from ever stretching it. */
+  /* SQUARE — fixing the inline size stops a stray caret-label stretching it. */
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   padding-inline: 0;
   border-radius: var(--sherpa-border-rounding-top-left, 4px);
 }
 
-/* The value label has nowhere to go in a 24 square, and the whole point of the
-   variant is that the COLUMN names the field. Hidden rather than left to
-   `:empty`, because an active filter does set a value. */
+/* Hidden rather than left to `:empty`, because an active filter does set a value. */
 :host([data-icon-only]) .caret-label { display: none; }
 
-/* A funnel, not a caret: this button filters, it does not merely expand. The
-   glyph is swapped in CSS so JS never writes a Font Awesome class at runtime.
-   `f0b0` is fa-filter.
-
-   That is the DEFAULT. A chip given `data-icon-start` shows THAT glyph in the
-   caret instead — a sort control needs three (ascending, descending, none) and
-   which one it wears is data, not presentation, so the class comes from JS the
-   way every other Font Awesome glyph in the system does.
-
-   `.caret-icon` in the template is where JS writes it; the hardcoded funnel
-   steps aside. Both exist from the start, so which shows is a CSS choice and
-   the component never rebuilds. */
+/* A funnel (`f0b0` = fa-filter), not a caret, in CSS so JS never writes a Font
+   Awesome class at runtime. `data-icon-start` overrides it with the JS-written
+   `.caret-icon` — a sort control needs three glyphs, which is data. Both exist
+   from the start, so the choice is CSS and the component never rebuilds. */
 :host([data-icon-only]) .caret-glyph::before {
   content: "\f0b0";
 }
@@ -401,45 +292,31 @@
   justify-content: center;
 }
 
-/* An icon-only chip can be asked to carry NO CHROME — just the glyph.
-
-   `data-plain` is a real property on the CARET, not a re-point of
-   --sherpa-style-surface-base. Re-pointing the token looked equivalent and was
-   not: a custom property set on the host INHERITS, and the chip's menu is a
-   light-DOM child of the host, so the menu's own card went transparent too.
-   Inheritance ignores @scope — scoping changes what a rule MATCHES, never how
-   far a value it sets travels — so the boundary could not save it either.
-
-   Only the RESTING state. A chip that is ON keeps its full accent face, which
-   is the point of reusing the component. */
+/* No chrome — a property on the CARET, never a re-point of
+   --sherpa-style-surface-base: a custom property on the host INHERITS into the
+   menu (a light-DOM child), and @scope limits matching, not inheritance.
+   Resting state only; an ON chip keeps its accent face. */
 :host([data-plain]:not([data-current])) .caret {
   background: transparent;
   border-color: transparent;
 }
 
-/* A chip with NO MENU to open. The grid sets it on a column whose type has no
-   filter menu yet, and a button that opens an empty card reads as broken. It
-   is on the chip rather than left to the host, so the chip is never drawn in a
-   state it cannot honour. */
+/* A chip with NO MENU to open — a button opening an empty card reads as broken.
+   On the chip, so it is never drawn in a state it cannot honour. */
 :host([data-unsupported]) { display: none; }
 
-/* An ACTIVE column filter needs no rule of its own: `data-current` already
-   paints the caret in the accent, and that is the whole on-state. Reusing it
-   is the reason this is a variant and not a new button. */
+/* An active column filter needs no rule: `data-current` is the whole on-state. */
 
 .menu-slot {
   display: contents;
 }
 
-/* The slotted menu is a popover in the top layer — the wrapper is a positioning
-   anchor only and must not affect the chip's own layout. */
-
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
-  /* Figma inactive keeps the label dark ink (#35353d); only the surface greys.
-     content-body-2 (#b3b3c3) matched the grey surface exactly → invisible text. */
+  /* Figma inactive keeps the label dark ink; content-body-2 (#b3b3c3) matched
+     the grey surface exactly → invisible text. */
   color: var(--sherpa-theme-content-body-1, #35353d);
   background: var(--sherpa-theme-surface-default-2, #b3b3c3);
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);

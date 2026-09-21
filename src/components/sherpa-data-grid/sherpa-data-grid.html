@@ -1,48 +1,17 @@
 <!--
-  sherpa-data-grid — a sortable data table.
+  sherpa-data-grid — a sortable, filterable, groupable data table.
 
-  populate({ columns, rows }) where columns is [{ field, header?, type?, sortable? }]
-  and rows is an array of records. Header cells and body rows are stamped from
-  cloning prototypes. Clicking a sortable header sorts by that field (asc → desc →
-  asc) and reflects data-sort-field / data-sort-direction on the host. Clicking a
-  row emits row-click.
+  populate({ columns, rows, actions?, key? }) stamps header cells and body rows
+  from cloning prototypes. Selection, filter row, actions column and group rows
+  all exist in the template always; CSS reveals them off host attributes.
 
-  Composes the Grid Cell model (Figma 926:34253): a leading selection checkbox
-  column (data-selectable) and a secondary filter-input header row (data-filterable)
-  are both opt-in and CSS-gated — the columns/rows exist in the template always and
-  CSS reveals them off the host attribute.
+  Filtering is done HERE, over the held rows, so a keystroke does not cost the
+  caller a re-populate (and their sort/selection). filter-change still fires for
+  a server-side query.
 
-  Typing in a filter input narrows the visible rows to those whose value in THAT
-  column contains the typed text, case-insensitively. Several columns filter
-  together (every active filter must match). The grid does this itself — it holds
-  the row records, so making the caller re-populate on every keystroke would be
-  slower and would lose the caller's own sort/selection state. filter-change still
-  fires for callers that want to drive a server-side query instead.
-
-  A populated filter shows a trailing clear button. CSS reveals it off the cell's
-  data-has-value flag, so JS only writes state.
-
-  ROW ACTIONS. `populate({ actions: [...] })` reveals a pinned trailing column of
-  icon-only buttons, each opening the grid's one shared menu. An action is
-  `{ id, label, icon?, multi?, danger? }`; choosing one emits `row-action` and the
-  grid does nothing else — acting on the record is the host's decision.
-  `actionsFor(count)` is the same list, narrowed to what survives a multi-row
-  selection, for a bulk toolbar.
-
-  data-group-field names a column to GROUP by. Its rows are bunched by their value
-  in that column and each bunch gets a collapsible group row on top (Figma Grid Cell
-  Type=group) carrying that value as its label. The grouped column itself drops out
-  of the header and the rows — its value is the heading now.
-
-  A GROUPED grid pages itself, by SCREEN LINES. A shut group is one line however
-  many rows it holds, so it costs ONE slot of data-page-size; an open group costs
-  its heading plus a slot per row. A store cannot do this — its skip/take counts
-  RECORDS, and it cannot know which groups the reader has folded — so while
-  data-group-field is set the grid takes every matching row and cuts the page
-  itself, reporting the count it arrives at as grid-pages-change. Folding
-  re-cuts the page, so shutting a group pulls the next rows up onto it rather
-  than leaving a hole. UNGROUPED the grid draws whatever it is given, and paging
-  is the store's as before.
+  While data-group-field is set the grid pages itself, by SCREEN LINES — a shut
+  group is one line whatever it holds. A store's skip/take counts RECORDS and
+  cannot know what is folded. Ungrouped, paging is the store's.
 
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
@@ -83,10 +52,8 @@
                     toolbar reads this so it cannot disagree with the row menu
     selectedKeys / selectedRecords read it back
 
-  Column widths: each column is drawn at a fixed width so long labels TRUNCATE
-  rather than stretch the column. A column takes `width` from its config, else the
-  default; dragging the grip on a header's trailing edge resizes it, clamped
-  between SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
+  Column widths are fixed so long labels truncate; the header grip drags between
+  SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
 
   Fires:
     column-resize    — detail: { field, width }
@@ -106,38 +73,22 @@
                        host owns data-page, and folding changes the count under it
 -->
 <template id="default">
-  <!--
-    The scroll box. A <table> cannot be the scroll container itself — giving it
-    `display: block` to make it scrollable takes it out of table layout and its
-    columns stop lining up. So the table keeps `display: table` and this wrapper
-    owns the overflow, which is also what lets `position: sticky` on the <thead>
-    pin against a real scrolling ancestor.
-  -->
+  <!-- The wrapper owns the overflow: `display: block` on a <table> drops it out
+       of table layout. Sticky <thead> also needs a real scrolling ancestor. -->
   <div class="scroller" part="scroller">
   <table class="grid" part="grid">
-    <!--
-      The <colgroup> is what makes a column's width a SETTING rather than a
-      measurement. With `table-layout: fixed` the browser reads each column's
-      size from its <col> and stops sizing to the widest cell, so a long label
-      truncates inside its column instead of stretching it.
-
-      The leading <col> matches the fixed select column; JS stamps one more per
-      drawn column from the prototype below.
-    -->
+    <!-- With `table-layout: fixed` a column's width comes from its <col>, so a
+         long label truncates. JS stamps one <col> per drawn column. -->
     <colgroup class="cols">
       <col class="select-col" />
-      <!-- The ACTIONS column is the trailing twin of the select column: fixed
-           width, pinned, and present in the template whether or not
-           `data-actions` reveals it. CSS hides it; JS never creates it. -->
+      <!-- Always present; CSS hides it. JS never creates it. -->
       <col class="actions-col" />
     </colgroup>
     <thead class="head" part="head">
       <tr class="head-row">
         <th class="select-cell select-head" scope="col">
-          <!-- The ADVANCED checkbox (Figma `Checkbox - Advanced`, 1334:8173): the
-               same box, plus a caret whose menu offers the selection scenarios
-               only the GRID can carry out. `data-advanced` is set by JS when the
-               grid has rows, so a grid with none shows a plain box. -->
+          <!-- Figma `Checkbox - Advanced` (1334:8173). `data-advanced` is set by
+               JS when the grid has rows, so an empty grid shows a plain box. -->
           <sherpa-select-checkbox class="select-all" aria-label="Select all rows">
             <sherpa-menu slot="menu" data-align="start">
               <button value="page" type="button">Select all on page</button>
@@ -146,9 +97,8 @@
             </sherpa-menu>
           </sherpa-select-checkbox>
         </th>
-        <!-- LAST in the row, so it needs no re-ordering when columns change.
-             `Actions` is a real heading for a screen reader; CSS hides the text
-             because the column is 44px of icon buttons. -->
+        <!-- LAST in the row, so columns can change without re-ordering it. The
+             text is a real heading for a screen reader; CSS hides it. -->
         <th class="actions-cell actions-head" scope="col">
           <span class="actions-label">Actions</span>
         </th>
@@ -165,154 +115,60 @@
     <slot name="empty">No rows to display.</slot>
   </div>
 
-  <!-- Shown when a column filter matches nothing. Distinct from `empty`, which is
-       for a grid with no data at all and which hides the whole table. -->
+  <!-- Shown when a column filter matches nothing. Distinct from `empty`, which
+       hides the whole table. -->
   <div class="no-matches" part="no-matches" role="status">
     <slot name="no-matches">No rows match the current filters.</slot>
   </div>
 
   <template class="head-cell-tpl">
     <th class="head-cell" scope="col">
-      <!--
-        THE COLUMN FILTER — an icon-only <sherpa-quick-filter>, not a button of
-        our own.
-
-        A column filter is a button that opens a value menu, which is exactly
-        what the chip already is. Rebuilding it here would mean a second
-        popover, a second cross-shadow placement measurement and a second
-        Apply footer, each free to drift from the toolbar's. `data-icon-only`
-        strips the chip to its menu button and swaps the caret for a funnel;
-        the column heading beside it names the field, so nothing is lost.
-
-        A chip lives in the light DOM of whoever holds it, so its menu is a
-        real popover in the top layer and escapes the grid's own scroller clip.
-
-        The menu itself is stamped in by JS per column TYPE — text gets a
-        condition + value pair, a number gets the range menu, a date gets a
-        calendar — because only JS knows the column's type. The chip is in the
-        template from the start either way; CSS hides it when the grid is not
-        filterable.
-
-        `data-plain` drops the button's face and ring while it is resting.
-        Thirteen boxed buttons down a header row read as thirteen controls
-        competing with the column names, and the names are what the reader
-        came for. A chip that is ON keeps its full accent face.
-
-        `data-locked` is required, not decoration. A chip derives its own
-        on-state from its menu's CHECKED ROWS, and this menu has none — it
-        holds a condition and a value. Unlocked, the chip read "no rows ticked"
-        as "nothing filtered" and switched itself straight back off the instant
-        Apply closed the menu. Locked, the on-state is the grid's to set, which
-        is right: the grid is what knows whether a clause was kept.
-      -->
-      <!--
-        The flex ROW. It has to be an inner wrapper rather than the <th>:
-        `display: flex` on a table cell takes it out of table layout, the cell
-        stops being a column, and the whole header row stacks down the page.
-      -->
+      <!-- The flex row must be an inner wrapper: `display: flex` on a <th> takes
+           the cell out of table layout and the header row stacks. -->
       <span class="head-row-inner">
-        <!--
-          LABEL, FILTER, SORT — in that order.
-
-          The NAME leads, because the name is what the reader is looking for;
-          the two controls follow it. The label keeps its <button>, so clicking
-          the column name still sorts — the glyph beside it is an indicator,
-          not a second control, and both are inside the one delegated click
-          handler either way.
-        -->
         <button class="head-btn" type="button">
           <span class="head-label"></span>
         </button>
+        <!-- A chip, not a button of our own — it already owns the popover, and
+             in the light DOM its menu escapes the scroller clip. JS stamps the
+             menu body per column TYPE. `data-locked` is required: a chip derives
+             its on-state from CHECKED ROWS, and this menu has none, so unlocked
+             it switches itself off the instant Apply closes. -->
         <sherpa-quick-filter class="head-filter" data-icon-only data-menu
                              data-no-value data-locked
                              data-plain></sherpa-quick-filter>
-        <!--
-          THE SORT CONTROL — a second icon-only chip, matching the filter one
-          beside it.
-
-          It carries NO MENU: a sort has nothing to pick, only a direction to
-          cycle. So `data-menu` is absent and the caret opens nothing; the
-          click cycles ascending → descending → off, exactly as the
-          quick-filter toolbar's Sort chip does, and the glyph says which of
-          the three it is in.
-
-          `data-locked`, because the grid owns the on-state: a chip works its
-          own out from ticked menu rows, and this one has no menu. The glyph
-          itself is a Font Awesome class written by JS from the shared icon map
-          — the one place Will's four Figma icons (group, sort-none,
-          sort-ascending, sort-descending) are mapped.
-        -->
+        <!-- Sort: no `data-menu` — a sort has nothing to pick, the click cycles
+             asc → desc → off. `data-locked` for the reason above. -->
         <sherpa-quick-filter class="head-sort" data-icon-only data-plain
                              data-no-value data-locked></sherpa-quick-filter>
       </span>
-      <!--
-        The resize grip. It sits on the header's TRAILING edge and drags that
-        column wider or narrower. A <th> cannot take `resize` (that property only
-        works on a scroll container), so the grip is its own box and JS does the
-        arithmetic on pointer move.
-
-        It is a plain <span>, not a <button>: it has no keyboard action and
-        announcing "button" on every column would add one useless stop per column
-        to the tab order. Keyboard users resize nothing here; the column already
-        truncates rather than hides.
-      -->
+      <!-- A <th> cannot take `resize` (scroll containers only), so JS does the
+           arithmetic on pointer move. A <span>, not a <button>: no keyboard
+           action, and one useless tab stop per column. -->
       <span class="resize-grip" part="resize-grip" aria-hidden="true"></span>
     </th>
   </template>
 
-  <!--
-    A COLUMN FILTER MENU. Cloned into a header's chip, one per filterable
-    column. `data-commit` gives it the Apply / Cancel footer: a condition and a
-    value are two decisions, and filtering on the half-built pair would query
-    for "contains ''" on the first keystroke.
-  -->
+  <!-- Cloned into a header's chip, one per filterable column. `data-commit`
+       gives it Apply / Cancel, so a half-built pair is not queried. -->
   <template class="head-menu-tpl">
     <sherpa-menu slot="menu" data-commit></sherpa-menu>
   </template>
 
-  <!--
-    A TEXT column's filter body: pick a condition, type a value.
-
-    Both are real form controls, so the keyboard and screen-reader behaviour
-    comes free and the menu's own Apply reads their values without the grid
-    wiring a change listener per control.
-
-    The <select> is EMPTY here and filled by JS from `OPS_FOR_TYPE` and
-    `OP_LABELS` in src/core/store.ts — the one operator vocabulary every
-    query-building surface reads.
-
-    It used to be six hardcoded <option>s, with the numeric menu below holding
-    six more. That is two copies of a list that also exists as `FilterOp` in
-    the store, and a Filter Panel would have made a third. The keys ARE the
-    operators, so what the control reports is already what the filter needs and
-    no translation table can drift.
-
-    The margins are INLINE for the reason the toolbar's rows carry theirs
-    inline: this fragment is cloned into the CHIP's light DOM and slotted into
-    the menu, so it sits in neither shadow tree and neither sheet reaches it.
-  -->
+  <!-- A TEXT column's filter body. The <select> is filled by JS from
+       `OPS_FOR_TYPE` / `OP_LABELS` in src/core/store.ts. Margins are INLINE:
+       cloned into the CHIP's light DOM, so neither shadow sheet reaches it. -->
   <template class="head-text-filter-tpl">
     <div class="head-filter-body">
-      <!-- One <option> as a CLONING PROTOTYPE, the shape sherpa-pagination's
-           rows <select> uses. JS clones it per operator; no createElement, and
-           no structural innerHTML. -->
+      <!-- One <option> as a CLONING PROTOTYPE; JS clones it per operator. -->
       <select class="head-filter-op" aria-label="Condition"><option></option></select>
       <input class="head-filter-value" type="text" aria-label="Value"
              placeholder="Value" />
     </div>
   </template>
 
-  <!--
-    THE RANGE SWITCH — the first row of a number or date filter menu.
-
-    A number filter is "equals this" or "between these two"; a date filter is
-    "on this day" or "between these two days". One menu with a mode, not two
-    buttons the reader must choose between before they know which they want.
-    The switch flips what the rows below it are.
-
-    The same shape the quick-filter toolbar uses, deliberately: a reader who
-    has met the toolbar's number chip already knows this control.
-  -->
+  <!-- The Range switch: the first row of a number or date filter menu. It flips
+       what the rows below it are. -->
   <template class="head-range-tpl">
     <div class="head-filter-range" data-row>
       <sherpa-switch class="head-filter-range-switch" data-type="simple"></sherpa-switch>
@@ -320,57 +176,23 @@
     </div>
   </template>
 
-  <!--
-    A NUMBER column's filter body: one field when Range is off, two when it is
-    on. BOTH pairs exist from the start and CSS reveals one, so flipping the
-    switch is an attribute write rather than a rebuild — whatever was typed on
-    the other side survives a flip back.
-
-    A condition picker comes FIRST, as it does for text — filled by JS from the
-    same shared vocabulary, with the NUMBER list this time. "between" is the
-    RANGE mode rather than a seventh option, because a span needs two inputs
-    and a single condition list cannot grow one.
-
-    The inputs are bare number fields rather than sherpa-input-text: they sit in
-    the chip's light DOM where neither component's sheet reaches them, so a
-    composed component there would carry a shadow tree for a box this file
-    could not style anyway.
-  -->
+  <!-- A NUMBER column's filter body. Both shapes exist from the start and CSS
+       reveals one, so flipping Range keeps what was typed on the other side.
+       "between" is the RANGE mode, not a seventh operator. -->
   <template class="head-number-filter-tpl">
     <div class="head-filter-body">
-      <!-- The cloning prototype again — see the text body above. -->
       <select class="head-filter-op" aria-label="Condition"><option></option></select>
       <input class="head-filter-value head-filter-num" type="number"
              inputmode="decimal" aria-label="Value" placeholder="Value" />
-      <!--
-        The RANGE shape: a two-ended slider, the same control the quick-filter
-        toolbar's number chip uses. A pair of boxes would ask the reader to
-        type two numbers before seeing anything; the slider shows the column's
-        whole span and lets them close in on part of it.
-
-        Its ends are the column's real min and max, computed from the rows —
-        see #addColumnFilter. A slider with no bounds is a slider over 0..100,
-        which for a spend column is every row on the far left.
-      -->
+      <!-- Its ends are the column's real min and max, computed from the rows —
+           see #addColumnFilter. Unbounded it would be a slider over 0..100. -->
       <sherpa-slider class="head-filter-slider" data-type="range"
                      data-show-value></sherpa-slider>
     </div>
   </template>
 
-  <!--
-    A DATE column's filter body: the CALENDAR, the same component the toolbar's
-    date chip holds. `data-embedded` is what makes it sit inside a menu card
-    rather than float as its own popover.
-
-    `data-type="range"` is written by JS when the Range switch is on — the
-    calendar already owns both shapes (one day, or a two-click start→end with
-    the days between banded), so the switch re-points the calendar rather than
-    swapping in a second one.
-
-    No condition picker. A calendar answers "which day" by being clicked; a
-    "greater than" over a date grid would be a second way of saying "after",
-    with no place to show it.
-  -->
+  <!-- `data-embedded` makes the calendar sit in the menu card rather than float
+       as its own popover; JS writes `data-type="range"` when Range is on. -->
   <template class="head-date-filter-tpl">
     <div class="head-filter-body">
       <sherpa-calendar class="head-filter-calendar" data-embedded></sherpa-calendar>
@@ -382,11 +204,8 @@
     <col class="col" />
   </template>
 
-  <!--
-    A filter cell wraps its input so a trailing clear button can sit inside the
-    field's box. The button exists in the template from the start; CSS reveals it
-    off the cell's data-has-value flag, which the input handler writes.
-  -->
+  <!-- The clear button exists from the start; CSS reveals it off the cell's
+       data-has-value flag, which the input handler writes. -->
   <template class="filter-cell-tpl">
     <th class="filter-cell" scope="col">
       <span class="filter-field sherpa-border-edges">
@@ -401,14 +220,9 @@
   <template class="row-tpl">
     <tr class="row">
       <td class="select-cell">
-        <!-- REAL controls, not bare <input>s. The raw input drew the browser's
-             OWN box with an `accent-color` on it, so the grid's ticks never
-             matched the checkbox Figma specifies — a whole control
-             re-implemented by omission. TRAP T-compose-never-reimplement.
-             Both exist here always and CSS reveals one, because SINGLE mode
-             wants a radio and a checkbox cannot become one. JS used to write
-             `box.type = 'radio'`, which a custom element has no such property
-             for — and would have been a structural mutation anyway.
+        <!-- REAL controls, not bare <input>s — a raw input draws the browser's
+             own box. TRAP T-compose-never-reimplement. Both exist always and CSS
+             reveals one: SINGLE wants a radio, and a checkbox cannot become one.
              TRAP T-every-element-in-the-template. -->
         <sherpa-select-checkbox class="row-select row-multi"
                                 aria-label="Select row"></sherpa-select-checkbox>
@@ -428,24 +242,14 @@
     </tr>
   </template>
 
-  <!--
-    ONE MENU FOR THE WHOLE GRID, not one per row.
-
-    A hundred rows would otherwise stamp a hundred popovers into the top layer,
-    each with its own listeners, for a menu only one of which can ever be open.
-    The trigger that opened it is remembered, so `menu-select` knows the row.
-
-    TRAP T-one-actions-menu-for-every-row.
-  -->
+  <!-- ONE MENU FOR THE WHOLE GRID, not one per row. The trigger that opened it
+       is remembered, so `menu-select` knows the row.
+       TRAP T-one-actions-menu-for-every-row. -->
   <sherpa-menu class="actions-menu" data-align="end"></sherpa-menu>
 
-  <!-- One action row, cloned per action. A real <button value="…">, which is
-       what sherpa-menu slots and what gives Enter and Space for free.
-
-       NO `slot` ATTRIBUTE. The menu's rows go in its DEFAULT slot — there is no
-       named `actions` slot, and a row carrying one is never projected: the card
-       opened, placed correctly, and measured 14px tall with the buttons sitting
-       unrendered in the light DOM. -->
+  <!-- Cloned per action. NO `slot` ATTRIBUTE: the menu's rows go in its DEFAULT
+       slot, and a row carrying one is never projected — the card opens 14px tall
+       with the buttons unrendered. -->
   <template class="action-item-tpl">
     <button class="action-item" type="button">
       <i class="action-icon" aria-hidden="true"></i>
@@ -453,26 +257,12 @@
     </button>
   </template>
 
-  <!--
-    A GROUP row — Figma Grid Cell `Type=group` (in the template at 926:35309). It
-    spans every column, is 32 tall with padding 4 and gap 8, and holds a selection
-    checkbox, a chevron toggle, then the group's value as its label.
-
-    The grouped column's own cells are DROPPED from the rows below (the value is
-    already the group's heading, so repeating it in every row is noise) and its
-    header goes with them.
-
-    The chevron is a real <button> with aria-expanded, so it is focusable and
-    Enter/Space-activatable for free; CSS rotates it and hides the group's rows
-    off the row's data-collapsed flag.
-  -->
+  <!-- A GROUP row — Figma Grid Cell `Type=group` (926:35309). The grouped
+       column's own cells and header are DROPPED from the rows below. -->
   <template class="group-row-tpl">
     <tr class="group-row">
-      <!--
-        The <td> stays a real table cell so its colspan keeps reserving every
-        column; the flex row lives in an inner wrapper. Flexing the <td> itself
-        takes it out of table layout, and the colspan stops holding the width.
-      -->
+      <!-- The <td> stays a real cell so its colspan keeps reserving every
+           column; flexing it would drop it out of table layout. -->
       <td class="group-cell">
         <span class="group-inner">
           <sherpa-select-checkbox class="group-select" aria-label="Select group"></sherpa-select-checkbox>
