@@ -85,33 +85,44 @@ export function required(message = 'Required'): Rule {
   return (value) => (absent(value) ? message : undefined);
 }
 
+/**
+ * A rule that only speaks when there IS a value.
+ *
+ * EVERY rule but `required` passes an absent value: "must be a number" has
+ * nothing to say about a field nobody filled in, and saying it would make every
+ * optional field fail. Six rules opened with the same guard, which is six
+ * chances for a seventh to forget it and reject an empty optional field.
+ *
+ * TRAP T-every-rule-but-required-passes-absent
+ */
+function whenPresent(check: (value: unknown) => string | undefined): Rule {
+  return (value) => (absent(value) ? undefined : check(value));
+}
+
 /** A number, and a real one — NaN and Infinity are not values a field can hold. */
 export function number(message = 'Must be a number'): Rule {
-  return (value) => {
-    if (absent(value)) return undefined;
+  return whenPresent((value) => {
     const n = typeof value === 'number' ? value : Number(value);
     return Number.isFinite(n) ? undefined : message;
-  };
+  });
 }
 
 /** At least this much. Numbers compare; strings and arrays measure their length. */
 export function min(limit: number, message?: string): Rule {
-  return (value) => {
-    if (absent(value)) return undefined;
+  return whenPresent((value) => {
     const size = sizeOf(value);
     if (size == null) return undefined;
     return size < limit ? (message ?? defaultLimitMessage(value, 'at least', limit)) : undefined;
-  };
+  });
 }
 
 /** At most this much. The mirror of `min`. */
 export function max(limit: number, message?: string): Rule {
-  return (value) => {
-    if (absent(value)) return undefined;
+  return whenPresent((value) => {
     const size = sizeOf(value);
     if (size == null) return undefined;
     return size > limit ? (message ?? defaultLimitMessage(value, 'at most', limit)) : undefined;
-  };
+  });
 }
 
 /**
@@ -132,10 +143,7 @@ function defaultLimitMessage(value: unknown, direction: string, limit: number): 
 
 /** Matches this pattern. The message should say what the shape IS, not restate it. */
 export function pattern(re: RegExp, message = 'Wrong format'): Rule {
-  return (value) => {
-    if (absent(value)) return undefined;
-    return re.test(String(value)) ? undefined : message;
-  };
+  return whenPresent((value) => (re.test(String(value)) ? undefined : message));
 }
 
 /**
@@ -149,21 +157,15 @@ export function email(message = 'Enter a valid email address'): Rule {
 
 /** A URL the platform's own parser accepts — no regex to get wrong. */
 export function url(message = 'Enter a valid URL'): Rule {
-  return (value) => {
-    if (absent(value)) return undefined;
-    return URL.canParse(String(value)) ? undefined : message;
-  };
+  return whenPresent((value) => (URL.canParse(String(value)) ? undefined : message));
 }
 
 /** One of these. The allowed set is compared as STRINGS, as an attribute would. */
 export function oneOf(allowed: readonly unknown[], message?: string): Rule {
   const set = new Set(allowed.map((v) => String(v)));
-  return (value) => {
-    if (absent(value)) return undefined;
-    return set.has(String(value))
-      ? undefined
-      : (message ?? `Must be one of: ${allowed.join(', ')}`);
-  };
+  return whenPresent((value) => (set.has(String(value))
+    ? undefined
+    : (message ?? `Must be one of: ${allowed.join(', ')}`)));
 }
 
 /** Anything else. The escape hatch, and why the rule set stays small. */

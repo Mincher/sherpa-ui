@@ -182,11 +182,30 @@ source.bind(chart, { readonly: true, as: byCategory });  // reads only
 - **`as`** — an adapter from rows to that component's payload shape.
 - **`into`** — this bind owns ONE named part of the payload, so two sources can
   feed one component without the last writer winning.
+- **`scope: 'all'`** — this bind wants the WHOLE matching set, not the page. A
+  grid shows page one of four; a total, a chart or a legend counting the same
+  query must count all of it, or a donut redraws itself every time the reader
+  turns a page.
 - **`signal`** — an `AbortSignal`; the binding ends when it aborts.
 
 **Which lives where:** a **store** is app-level, because records outlive any one
 screen and are shared by every screen showing them. A **source** is view-level,
 because a query is exactly as long-lived as the view asking it.
+
+### A failed load is a STATE, not a throw
+
+Every load emits `loading` first, then `change` — or `error`. A backend being
+down is not a programming error at the call site that typed into a box, so a
+setter never throws:
+
+```js
+source.addEventListener('error', (e) => showBanner(e.detail.error));
+source.setSearch('ada');   // never throws, whatever the store does
+```
+
+A failed load leaves the LAST GOOD ROWS on screen rather than blanking the
+view, and `source.error` holds what went wrong. A bound `sherpa-container`
+shows its own overlay off `loading` without being told to.
 
 ### The filter is NAMED PARTS, not one value
 
@@ -266,7 +285,12 @@ stays free of components.
 1. A row is a plain object with one identity field.
 2. A query is data — `[field, op, value]` — so it can be sent somewhere.
 3. `total` is the count **before** paging.
-4. A store announces every change, and copies on both edges.
-5. Validation lives on the store, and runs on reads too.
-6. Stores are app-level; sources are view-level.
-7. None of it needs a browser.
+4. A store holds records and NOTHING about how they are viewed.
+5. A store announces every change, and copies on both edges.
+6. Validation lives on the store, and runs on reads too.
+7. A failed load is a STATE, not a throw — the last good rows stay up.
+8. Several controls narrow one query through NAMED PARTS, so none of them
+   overwrites the others.
+9. A component EXTENDS a view's filter; it never alters it.
+10. Stores are app-level; sources are view-level.
+11. None of it needs a browser.

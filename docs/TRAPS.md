@@ -666,9 +666,8 @@ remove, not "hide and remember".
 
 ### T-one-comparator-one-source
 
-A DataSource is the STATEFUL half of the data layer: it holds the filter, sort,
-group, search and page, applies them on every load, and tells everyone bound to
-it when the result changes. A Store holds records and remembers nothing.
+The STATEFUL/stateless split is section 4 of `docs/DATA-SOURCE-RULES.md`. This
+is what happens without it.
 
 The same sort was written three times — grid, toolbar, and the app wiring them —
 and the compares were NOT identical, so "item 2" and "item 10" ordered
@@ -954,14 +953,10 @@ matching.
 
 ### T-error-is-a-state-not-a-throw
 
-`load()` emits `loading` first so a bound `sherpa-container` can show its
-overlay, then `change` — or `error`, which is a **STATE, not a throw**: a failed
-load must not take down the caller that merely changed a filter. A setter is a
-statement of intent, and a backend being down is not a programming error at the
-call site that typed into a box.
+**The rule is in `docs/DATA-SOURCE-RULES.md`, section 6:** a failed load is a
+state, and a setter never throws.
 
-So the catch dispatches `error` and returns the PREVIOUS result, leaving the last
-good rows on screen rather than blanking the view. Both the catch and the finally
+What belongs here is the ordering nobody would guess. Both the catch and the finally
 re-check the in-flight ticket (`T-in-flight-ticket-discards-stale`), so a stale
 failure cannot raise an `error` for a load that has already been superseded, and
 cannot clear a newer load's loading flag.
