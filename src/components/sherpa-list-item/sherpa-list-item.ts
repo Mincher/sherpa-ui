@@ -21,7 +21,11 @@ export class SherpaListItem extends SherpaElement {
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
   static override props = {
-    'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    /* No `data-heading` entry: `data-label` below declares it as its
+       `fallbackAttr`, which is the back-compat alias. A second entry writing
+       the same `.title` would fight it — and without `all: true` it would
+       write only the first of the two, leaving the pair disagreeing.
+       TRAP T-an-alias-is-declared-by-its-owner */
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-interactive': { type: 'boolean', kind: 'style' },

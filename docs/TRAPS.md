@@ -7630,3 +7630,30 @@ to fit only 8 of 28 stamp sites, and removed again.
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+
+### T-an-alias-is-declared-by-its-owner
+
+A back-compat alias belongs to the entry that reads it, not to an entry of its
+own. `sherpa-list-item` takes `data-label` and accepts `data-heading` as the
+older spelling:
+
+```ts
+'data-label': { type: 'string', kind: 'content', to: '.title', all: true,
+                fallbackAttr: 'data-heading' },
+```
+
+The 2026-09-22 declaration sweep added a SECOND entry for `data-heading`
+writing the same `.title` — and without `all: true`, so it wrote only the first
+of the two nodes that exist in that template, leaving the pair disagreeing
+whenever the alias was used.
+
+`scripts/check-props.mjs` now counts a `fallbackAttr` as a declaration, which
+is what it is: the attribute is named in the same file and handled by the entry
+that owns the target.
+
+This is the shape of the sweep's one real risk — a gate that asks "is this
+name declared?" invites an answer that satisfies the gate rather than the
+contract.
+
+- Site: `src/components/sherpa-list-item/sherpa-list-item.ts`
+- Site: `scripts/check-props.mjs`

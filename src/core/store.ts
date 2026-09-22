@@ -224,6 +224,8 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
  * matches a row holding `'Free'`. Three components compared EXACTLY, so a
  * value round-tripping back from the query never ticked its own menu row: the
  * filter worked and the control that set it looked untouched.
+ * Exported alongside `valueSet`, which is what a control usually wants: this
+ * is the single-value form of the same rule.
  * TRAP T-one-comparison-rule-for-query-and-ui
  */
 export function looseEqual(a: unknown, b: unknown): boolean {

@@ -67,7 +67,13 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
 
   const declared = new Set();
   const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
-  if (props) for (const m of props[1].matchAll(/'(data-[\w-]+)':/g)) declared.add(m[1]);
+  if (props) {
+    for (const m of props[1].matchAll(/'(data-[\w-]+)':/g)) declared.add(m[1]);
+    /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
+       the owning entry reads it and writes the same target. A second entry for
+       the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
+    for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
+  }
   for (const key of ['observed', 'variantAttrs']) {
     const list = new RegExp(`static override ${key} = \\[([\\s\\S]*?)\\]`).exec(ts);
     if (list) for (const m of list[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
