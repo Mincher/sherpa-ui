@@ -16,8 +16,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { ArrayStore, DataSource, fieldState, stateClause, valueKey, valueSet, sortRows } =
-  await import(new URL('../../dist/data.js', import.meta.url));
+const {
+  ArrayStore, DataSource, fieldState, stateClause, valueKey, valueSet, sortRows,
+  rules, oneOf, validate,
+} = await import(new URL('../../dist/data.js', import.meta.url));
 
 const RAVI = { id: 'r', name: 'Ravi' };
 const DANA = { id: 'd', name: 'Dana' };
@@ -159,4 +161,62 @@ test('a NUMBER field selects by key and filters as a number', async () => {
   await s.load();
   assert.deepEqual(s.rows.map((r) => r.id), [3]);
   assert.deepEqual(s.selection('seats').values.map((v) => v.raw), [9, 10, 100]);
+});
+
+/* ── A KEY can be an object too ─────────────────────────────────────── */
+
+test('a COMPOUND KEY finds its own row', async () => {
+  const rows = [
+    { ref: { org: 'acme', no: 1 }, name: 'First' },
+    { ref: { org: 'acme', no: 2 }, name: 'Second' },
+  ];
+  const store = new ArrayStore(rows, { key: 'ref' });
+  const hit = await store.byKey({ org: 'acme', no: 2 });
+  assert.equal(hit?.name, 'Second',
+    'it used to return "First" — both keys stringified to "[object Object]"');
+});
+
+test('a NUMERIC key still compares as a string, deliberately', async () => {
+  /* A key arrives as a string far more often than not — from an attribute, a
+     URL, a `data-id` — and `'7' === 7` is false.
+     TRAP T-numeric-keys-compare-as-strings */
+  const store = new ArrayStore([{ id: 7, name: 'Seven' }, { id: 70, name: 'Seventy' }], { key: 'id' });
+  assert.equal((await store.byKey('7'))?.name, 'Seven');
+  assert.equal((await store.byKey(70))?.name, 'Seventy');
+});
+
+test('sorting BY an object field is at least deterministic', () => {
+  const rows = [
+    { id: 1, owner: { name: 'Ravi' } },
+    { id: 2, owner: { name: 'Dana' } },
+    { id: 3, owner: { name: 'Bea' } },
+  ];
+  /* It used to leave the order untouched: every row compared equal. A dotted
+     path is still what a caller usually wants — this only stops the silence. */
+  assert.deepEqual(
+    sortRows(rows, [{ field: 'owner', direction: 'asc' }]).map((r) => r.owner.name),
+    ['Bea', 'Dana', 'Ravi'],
+  );
+});
+
+/* ── The schema agrees with the query ───────────────────────────────── */
+
+test('oneOf REFUSES an object that is not in the list', async () => {
+  const ok = async (schema, v) => !(await validate(schema, v)).issues?.length;
+  const ravi = { id: 'r' };
+  const schema = rules({ owner: oneOf([ravi, { id: 'd' }]) });
+
+  assert.equal(await ok(schema, { owner: ravi }), true);
+  assert.equal(await ok(schema, { owner: { id: 'r' } }), true, 'by VALUE, not by reference');
+  assert.equal(await ok(schema, { owner: { id: 'm', evil: true } }), false,
+    'it used to accept ANY object — every one was "[object Object]"');
+});
+
+test('oneOf still compares a NUMBER as an attribute would', async () => {
+  const ok = async (schema, v) => !(await validate(schema, v)).issues?.length;
+  const schema = rules({ n: oneOf([1, 2, 3]) });
+
+  assert.equal(await ok(schema, { n: 2 }), true);
+  assert.equal(await ok(schema, { n: '2' }), true, "'2' passes — that is the point");
+  assert.equal(await ok(schema, { n: 9 }), false);
 });

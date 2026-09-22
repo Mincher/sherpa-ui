@@ -4560,9 +4560,10 @@ keyed `Ada` and `ada` are two rows, while values compare case-insensitively
 (`T-one-comparison-rule-for-query-and-ui`). Two rules, side by side, neither
 calling the other.
 
+- Site: `src/core/browser/idb-store.ts`
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
-- Site: `src/core/browser/idb-store.ts`
+- Site: `test/unit/value-types.test.mjs`
 
 ### T-fetch-does-not-reject-on-404
 
@@ -8129,14 +8130,33 @@ shared collator, and both a number and a dotted path (`owner.name`) have always
 worked. Two probes of mine reported otherwise and both were the probe's fault:
 `setSort` takes a FIELD NAME, not an array of specs.
 
+**A KEY can be an object too.** `sameKey` compared `String(a) === String(b)`,
+so a compound key (`{org:'acme', no:2}`) matched the FIRST row asked for and
+`byKey` returned the wrong record silently. It routes through `valueKey` now.
+A NUMERIC key still compares as a string on purpose — a key arrives from an
+attribute or a URL far more often than not, and `'7' === 7` is false.
+See `T-numeric-keys-compare-as-strings`.
+
+**`oneOf` ACCEPTED ANYTHING.** A schema rule built from objects compared them
+as `String(v)` too, so `oneOf([RAVI, DANA])` passed an entirely unrelated
+object — a validation rule that lets everything through is worse than none. It
+routes through `valueKey` now, and `'2'` still passes `oneOf([1, 2, 3])`,
+which is the point of comparing as an attribute would.
+
+**Sorting BY an object field** left the order untouched, because every row
+compared equal. `compareValues` routes through `valueKey`, so it is at least
+deterministic — though a dotted path (`owner.name`) is what a caller usually
+wants, and that always worked.
+
 **A number keeps its type through the query** and loses it in `fieldState`,
 which maps every value through `String`. That is deliberate for a menu row,
 whose value has to be a string to live in an attribute — but a control wanting
 to right-align or sort numerically must read the row, not the state.
 
-- Site: `src/core/data/store.ts`
-- Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/validate.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/value-types.test.mjs`
 

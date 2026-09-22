@@ -6,6 +6,9 @@
  *
  * TRAP T-standard-schema-is-duck-typed
  */
+// The ONE rule for "what is this value, as a string" — `oneOf` compares with
+// it, so a schema and a query agree about what two values being the same means.
+import { valueKey } from './store.js';
 
 /* ── The answer ─────────────────────────────────────────────────────── */
 
@@ -160,12 +163,20 @@ export function url(message = 'Enter a valid URL'): Rule {
   return whenPresent((value) => (URL.canParse(String(value)) ? undefined : message));
 }
 
-/** One of these. The allowed set is compared as STRINGS, as an attribute would. */
+/**
+ * One of these. Compared as STRINGS, as an attribute would — so `'2'` passes
+ * `oneOf([1, 2, 3])`, which is the point.
+ *
+ * `valueKey`, not `String`: an object is its own fields and values. With
+ * `String` every object was "[object Object]", so `oneOf([RAVI, DANA])`
+ * accepted ANY object — a rule that lets everything through.
+ * TRAP T-a-value-can-be-an-object
+ */
 export function oneOf(allowed: readonly unknown[], message?: string): Rule {
-  const set = new Set(allowed.map((v) => String(v)));
-  return whenPresent((value) => (set.has(String(value))
+  const set = new Set(allowed.map(valueKey));
+  return whenPresent((value) => (set.has(valueKey(value))
     ? undefined
-    : (message ?? `Must be one of: ${allowed.join(', ')}`)));
+    : (message ?? `Must be one of: ${allowed.map(valueKey).join(', ')}`)));
 }
 
 /** Anything else. The escape hatch, and why the rule set stays small. */

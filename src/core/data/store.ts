@@ -188,7 +188,12 @@ export function compareValues(a: unknown, b: unknown): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b;
   if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
   if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
-  return collator.compare(String(a), String(b));
+  /* `String(anObject)` is "[object Object]", so sorting BY an object field
+     compared every row equal and left the order untouched. Its own fields, in
+     a stable order, at least sort deterministically — though a caller usually
+     wants a dotted path (`owner.name`) to pick the field that reads.
+     TRAP T-a-value-can-be-an-object */
+  return collator.compare(valueKey(a), valueKey(b));
 }
 
 /** Sort by specs, first wins and later ones break ties. `toSorted`, never `sort`. */
@@ -349,7 +354,11 @@ function looseEqual(a: unknown, b: unknown): boolean {
 export function sameKey(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
-  return String(a) === String(b);
+  /* A COMPOUND KEY is an object, and `String(anObject)` is "[object Object]" —
+     so every row matched the first one asked for, and `byKey` returned the
+     wrong record with nothing to show for it.
+     TRAP T-a-value-can-be-an-object */
+  return valueKey(a) === valueKey(b);
 }
 
 /** A value as lower-case text, for the substring and equality operators. */
