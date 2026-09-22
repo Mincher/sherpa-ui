@@ -1509,7 +1509,8 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 `T-a-chip-body-cycles-its-states` are the same rule for the toolbar's chips.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-
+- Site: `src/core/filter-state.ts`
+- Site: `test/unit/filter-state.test.mjs`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -2807,6 +2808,49 @@ starts inside this shadow root and would never reach the component that filled
 the menu. The handler stops propagation for the same reason.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-one-state-per-filtered-field
+
+A field is drawn in six places at once: a chip, its menu, a column heading,
+that heading's menu, the chip's caret and its badge. Each one used to WORK OUT
+what it showed, so the same field could read six ways.
+
+Measured before this module existed: **39 places wrote field state** and **31
+wrote value state**. Every filter bug in this session was one symptom of that —
+a chip ON while its menu held nothing, a column menu offering three values
+where the chip offered four, a value spelled `gold` in one and `Gold` in the
+other, a legend row that came back holding zero.
+
+`fieldState(facts, reading)` is the one answer, and it is DOM-free:
+
+| | |
+|---|---|
+| `field` | which column |
+| `fieldState` | `off` / `active` / `suspended` |
+| `values` | EVERY value the field has |
+| `valueStates` | `picked` / `unpicked` / `unavailable` |
+
+The rules it settles, once:
+
+- EVERYTHING picked is `off` — the same rows as no filter, and only one of
+  them should look like a filter (`T-everything-on-is-no-filter`)
+- a TYPED condition is `active` with nothing ticked
+- a value no remaining row carries is `unavailable`, never dropped
+  (`T-unavailable-value-sorts-below-a-divider`)
+- comparison is the QUERY's, so casing cannot break a pick
+  (`T-one-comparison-rule-for-query-and-ui`)
+- `suspended` keeps the values and applies nothing
+  (`T-grid-suspend-is-not-clear`)
+
+`stateClause()` turns one state into a `FilterClause` — one pick is `eq`,
+several become `in`, because `eq` against a list can never match.
+`filterFace()` turns it into what a control DRAWS: the on/off, the badge sign,
+the caret value, the count and the tooltip. A control that computes any of
+these itself is a second answer, and the two drift.
+
+- Site: `src/core/filter-state.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/filter-state.test.mjs`
 
 ### T-one-field-one-filter-menu
 
@@ -4949,6 +4993,7 @@ and the grid splits it into reachable and unreachable exactly as a chip does.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `test/unit/filter-state.test.mjs`
 ### T-number-and-date-lead-with-a-range-switch
 
 `QuickFilterDef.kind` picks what a chip's menu holds:
@@ -7787,7 +7832,8 @@ outbound path works, which is what makes it hard to see.
 - Site: `src/core/legend-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-
+- Site: `src/core/filter-state.ts`
+- Site: `test/unit/filter-state.test.mjs`
 ### T-one-field-does-not-own-the-whole-map
 
 `sherpa-quick-filter-toolbar`'s `values` setter takes the WHOLE map, and a chip
@@ -7824,7 +7870,8 @@ that follows is what makes it read as unset.
 - Site: `src/core/legend-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/legend-filter.test.mjs`
-
+- Site: `src/core/filter-state.ts`
+- Site: `test/unit/filter-state.test.mjs`
 ### T-a-legend-keeps-one-row-on
 
 Will, same message: *"at least 1 must be active at all times so we need to
