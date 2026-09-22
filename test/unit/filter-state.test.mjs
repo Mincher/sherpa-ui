@@ -1,10 +1,13 @@
 /**
- * ONE STATE PER FILTERED FIELD.
+ * ONE STATE PER FIELD, FOR EVERY CONTROL THAT DRAWS IT.
  *
- * A field is drawn in several places at once — a chip, its menu, a column
- * heading, that heading's menu, the chip's label and badge. Each used to work
- * out what it showed, so the same field could read four ways. This is the one
- * answer they all read.
+ * A field is drawn in several places at once, and each control used to work
+ * out what it showed, so the same field could read several ways. This is the
+ * one answer they all read.
+ *
+ * NOT ONLY FILTERS — the last four tests are a tab strip, a chart legend, a
+ * transfer list and an empty control. The same four facts describe any
+ * selection over a set of values.
  *
  * TRAP T-one-state-per-filtered-field
  *
@@ -147,4 +150,53 @@ test('an OFF field draws nothing', () => {
     { current: face.current, badge: face.badge, value: face.value, tip: face.tip },
     { current: false, badge: '', value: '', tip: '' },
   );
+});
+
+/* ── NOT only filters ───────────────────────────────────────────────── */
+
+test('a TAB STRIP is the same four facts', () => {
+  // One chosen of several, and no filter anywhere in sight.
+  const tabs = fieldState(
+    { field: 'tab', label: 'Section', values: ['Overview', 'Activity', 'Settings'] },
+    { picked: ['Activity'] },
+  );
+  assert.equal(tabs.fieldState, 'active');
+  assert.deepEqual(tabs.values.map((v) => v.state), ['unpicked', 'picked', 'unpicked']);
+  assert.equal(filterFace(tabs).value, 'Activity');
+});
+
+test('a CHART LEGEND reads rows the same way', () => {
+  /* A legend row a filter emptied is `unavailable`: still listed, still
+     clickable, drawn inactive — the legend IS the way back.
+     TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
+  const legend = fieldState(
+    { field: 'plan', values: ['Free', 'Starter', 'Pro'] },
+    { present: ['Free', 'Pro'] },
+  );
+  assert.deepEqual(legend.values.map((v) => `${v.value}:${v.state}`),
+    ['Free:unpicked', 'Starter:unavailable', 'Pro:unpicked']);
+  // Nothing is CHOSEN, so the legend narrows nothing — the filter elsewhere did.
+  assert.equal(legend.fieldState, 'off');
+});
+
+test('a TRANSFER LIST is two readings of one field', () => {
+  const values = ['Read', 'Write', 'Admin'];
+  const facts2 = { field: 'perm', values };
+  const chosen = fieldState(facts2, { picked: ['Read', 'Admin'] });
+
+  // The RIGHT pane is what is picked; the LEFT is what is not.
+  assert.deepEqual(chosen.values.filter((v) => v.state === 'picked').map((v) => v.value),
+    ['Read', 'Admin']);
+  assert.deepEqual(chosen.values.filter((v) => v.state === 'unpicked').map((v) => v.value),
+    ['Write']);
+  // Only `stateClause` speaks filters; the rest is plain selection.
+  assert.deepEqual(stateClause(chosen), ['perm', 'in', ['Read', 'Admin']]);
+});
+
+test('a control with NO values is off, never broken', () => {
+  const empty = fieldState({ field: 'nothing' });
+  assert.equal(empty.fieldState, 'off');
+  assert.deepEqual(empty.values, []);
+  assert.equal(stateClause(empty), undefined);
+  assert.equal(filterFace(empty).tip, '');
 });

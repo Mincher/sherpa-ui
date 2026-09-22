@@ -1,19 +1,22 @@
 /**
- * filter-state.ts — ONE state per filtered field.
+ * filter-state.ts — ONE state per field, for every control that draws it.
  *
- * A field is filtered in several places at once: a chip, its menu, a column
- * heading, that heading's menu, the chip's label and badge. Each used to
- * DERIVE what it showed, so the same field could read four ways — a chip on
- * while its menu was empty, a column menu offering three values where the
- * chip offered four, a picked value spelled `gold` in one and `Gold` in the
- * other.
+ * A field is drawn in several places at once, and each control used to WORK
+ * OUT what it showed, so the same field could read several ways at once.
  *
  * This is the one answer they all read:
  *
- *     field        which column
- *     fieldState   is the field filtering, and how
+ *     field        which field
+ *     fieldState   is it narrowing anything, and how
  *     values       every value the field HAS
  *     valueStates  what each value is doing
+ *
+ * NOT ONLY FILTERS. The same four facts describe any control over a set of
+ * values: a tab strip, a nav, a chart legend, a select group, a transfer
+ * list, a calendar's days. Nineteen components hold selection state, and the
+ * question is the same in all of them — which values exist, which are chosen,
+ * and which cannot be chosen right now. `stateClause()` is the only part that
+ * speaks filters; the rest is selection.
  *
  * Nothing here touches the DOM. It is the rule, not the wiring.
  *
@@ -24,22 +27,23 @@ import {
   type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
-/** What a field's filter is doing. */
+/** What a field's selection is doing. */
 export type FieldState =
-  /** No filter: every value passes. */
+  /** Nothing chosen, or everything — either way it narrows nothing. */
   | 'off'
-  /** Filtering, and the reader can see by what. */
+  /** Narrowing, and the reader can see by what. */
   | 'active'
   /** Remembered but not applied — off is not gone. TRAP T-grid-suspend-is-not-clear */
   | 'suspended';
 
 /** What one value is doing inside its field. */
 export type ValueState =
-  /** Picked: this value is part of the filter. */
+  /** Chosen — ticked, selected, active, whichever word the control uses. */
   | 'picked'
-  /** Present in the data, not picked. */
+  /** Choosable, and not chosen. */
   | 'unpicked'
-  /** No row carries it under the OTHER filters — still selectable, dimmed. */
+  /** Nothing would come back: out of reach right now, but still selectable
+   *  and still SHOWN. TRAP T-unavailable-value-sorts-below-a-divider */
   | 'unavailable';
 
 /** One value, and what it is doing. */
@@ -50,7 +54,7 @@ export interface ValueEntry {
   state: ValueState;
 }
 
-/** Everything every control needs to draw one field's filter. */
+/** Everything every control needs to draw one field. */
 export interface FilterState {
   field: string;
   /** What a reader calls the field. */
@@ -64,7 +68,7 @@ export interface FilterState {
   values: ValueEntry[];
 }
 
-/** What a caller knows about a field before any filtering. */
+/** What a caller knows about a field before anything is chosen. */
 export interface FieldFacts {
   field: string;
   label?: string;
@@ -161,28 +165,33 @@ export function statesFilter(states: readonly FilterState[]): Filter | undefined
   return clauses.length === 1 ? clauses[0] : (['and', ...clauses] as Filter);
 }
 
-/** What a control shows for a field, in one shape. */
+/**
+ * What a control SHOWS for a field — the same six facts whatever draws them.
+ *
+ * A chip puts `badge` in its count and `value` in its caret; a tab strip might
+ * use `value` alone; a legend uses `current` per row. None of them works any
+ * of it out.
+ */
 export interface FilterFace {
-  /** The chip's own on/off. */
+  /** Is this control ON — narrowing, selected, active. */
   current: boolean;
-  /** The condition's SIGN, for a badge. Empty for the default. */
+  /** The condition's SIGN, where a control has room for one. '' for the default. */
   badge: string;
   /** The same condition in WORDS, for a tooltip or an accessible name. */
   condition: string;
-  /** What the caret reads: the value, or what was typed. */
+  /** The chosen value, short: the first pick with an ellipsis, or what was typed. */
   value: string;
-  /** How many values are picked, for a count badge. */
+  /** How many values are chosen. */
   count: number;
-  /** A tooltip: the condition and the values, spelled out. */
+  /** The whole truth, spelled out: the condition and every value. */
   tip: string;
 }
 
 /**
- * How one field's state READS — the chip's face, in one place.
+ * How one field's state READS, in one place, for any control that draws it.
  *
  * `eq` never shows a badge: it is the default, and a mark on every ordinary
- * chip is noise. A count wins over a sign when several values are picked,
- * because the caret already names the first.
+ * control is noise.
  *
  * TRAP T-one-state-per-filtered-field
  */

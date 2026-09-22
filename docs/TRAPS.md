@@ -2811,9 +2811,10 @@ the menu. The handler stops propagation for the same reason.
 
 ### T-one-state-per-filtered-field
 
-A field is drawn in six places at once: a chip, its menu, a column heading,
-that heading's menu, the chip's caret and its badge. Each one used to WORK OUT
-what it showed, so the same field could read six ways.
+A field is drawn in several places at once, and each control used to WORK OUT
+what it showed — so the same field could read several ways. A chip, its menu, a
+column heading, that heading's menu, the chip's caret and its badge were six
+answers to one question.
 
 Measured before this module existed: **39 places wrote field state** and **31
 wrote value state**. Every filter bug in this session was one symptom of that —
@@ -2845,8 +2846,16 @@ The rules it settles, once:
 `stateClause()` turns one state into a `FilterClause` — one pick is `eq`,
 several become `in`, because `eq` against a list can never match.
 `filterFace()` turns it into what a control DRAWS: the on/off, the badge sign,
-the caret value, the count and the tooltip. A control that computes any of
-these itself is a second answer, and the two drift.
+the value, the count and the tooltip. A control that computes any of these
+itself is a second answer, and the two drift.
+
+**IT IS NOT A FILTER MODULE.** The same four facts describe any control over a
+set of values — a tab strip, a nav, a chart legend, a select group, a transfer
+list, a calendar's days. Nineteen components hold selection state, and the
+question is identical in all of them: which values exist, which are chosen, and
+which cannot be chosen right now. `stateClause()` is the only part that speaks
+filters; the rest is selection. A transfer list is one state read twice — its
+picked values on the right, its unpicked on the left.
 
 - Site: `src/core/filter-state.ts`
 - Site: `src/data.ts`
@@ -4994,6 +5003,7 @@ and the grid splits it into reachable and unreachable exactly as a chip does.
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `src/core/filter-state.ts`
 ### T-number-and-date-lead-with-a-range-switch
 
 `QuickFilterDef.kind` picks what a chip's menu holds:
@@ -7579,7 +7589,7 @@ See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
-
+- Site: `test/unit/filter-state.test.mjs`
 ### T-a-legend-toggle-is-a-filter
 
 Turning a legend row off used to call `setSliceHidden(i)` — a DRAWING trick on
