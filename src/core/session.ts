@@ -17,16 +17,9 @@ export interface PersistOptions {
   key?: string;
 }
 
-const PREFIX = 'sherpa:session:';
+import { readText, removeKey, writeJson } from './web-storage.js';
 
-/** TRAP T-storage-access-throws — a failure only means the value is not kept. */
-function storage(shared: boolean): Storage | null {
-  try {
-    return shared ? localStorage : sessionStorage;
-  } catch {
-    return null;
-  }
-}
+const PREFIX = 'sherpa:session:';
 
 /** What an app knows about itself, addressed by pointer.
  *  TRAP T-session-store-is-the-third-tier */
@@ -76,13 +69,7 @@ export class SessionStore {
     const key = options.key ?? PREFIX + pointer;
     this.#persisted.set(pointer, { key, shared });
 
-    const raw = (() => {
-      try {
-        return storage(shared)?.getItem(key) ?? null;
-      } catch {
-        return null;
-      }
-    })();
+    const raw = readText(shared ? 'local' : 'session', key);
     if (raw == null) return false;
 
     try {
@@ -100,20 +87,14 @@ export class SessionStore {
     const where = this.#persisted.get(pointer);
     this.#persisted.delete(pointer);
     if (!where) return;
-    try {
-      storage(where.shared)?.removeItem(where.key);
-    } catch {
-      /* storage unavailable */
-    }
+    removeKey(where.shared ? 'local' : 'session', where.key);
   }
 
   #write(pointer: string, where: { key: string; shared: boolean }): void {
+    const kind = where.shared ? 'local' : 'session';
     const value = this.get(pointer);
-    try {
-      if (value === undefined) storage(where.shared)?.removeItem(where.key);
-      else storage(where.shared)?.setItem(where.key, JSON.stringify(value));
-    } catch {
-      /* full, blocked, or a private window — TRAP T-storage-access-throws */
-    }
+    // Neither call can throw — TRAP T-storage-access-throws.
+    if (value === undefined) removeKey(kind, where.key);
+    else writeJson(kind, where.key, value);
   }
 }

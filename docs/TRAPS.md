@@ -1017,31 +1017,42 @@ I" state should not.
 
 ### T-storage-access-throws
 
-Web Storage **throws** in a private window, with site data blocked, and during
-preview or thumbnail capture — so every single access here is wrapped, not just
-the reads.
+Web Storage **throws on ACCESS** — not on read, on touching the global — in a
+private window, with site data blocked, and during preview or thumbnail
+capture.
 
-A failure means the state is not kept, never that the page breaks. The four
-places it matters:
+A failure means the state is not KEPT. It never means the page breaks.
 
-- `storage()` — returns `null`, and `persistView` then hands back a no-op.
-- the restore read — unreadable, not JSON, or a shape this code no longer
-  understands. The key is removed (in its OWN try, because that can throw too)
-  and the user starts without a view, exactly where they were before this
-  existed.
-- `setItem` — quota, or storage revoked mid-session. Not keeping the view is a
-  smaller problem than throwing inside an event handler.
-- `loadSavedViews` — returns `{}`, so a reader whose saved views cannot be
-  loaded gets the presets.
+`src/core/web-storage.ts` is the only place that knows this. Before it,
+`persist-view.ts` and `session.ts` carried a **byte-identical** `storage()`
+function plus their own try/catch at every call site: **nineteen catch blocks
+across three files** guarding one quirk. Three remain, and none of them is
+about storage.
 
-A stored object is only trustworthy in SHAPE, never in content: it outlives the
-code that wrote it, and a hand-edited one is a plain string. Hence the
-`typeof parsed === 'object'` guard.
+| | |
+|---|---|
+| `readText` / `writeText` | raw strings; a blocked store reads `null` and writes nothing |
+| `readJson(kind, key, fallback, guard?)` | parses, and **FORGETS the key** when it cannot be understood |
+| `writeJson` | drops a value that will not serialise rather than throwing |
+| `removeKey` | its own try — removing can throw too |
+| `isPlainObject` | the shape guard, because that is all a stored value can be trusted to be |
 
+**A stored object is trustworthy in SHAPE, never in content.** It outlives the
+code that wrote it, and a hand-edited one is a plain string. `readJson` takes a
+guard for that reason; without one, any parsed value passes, which is right for
+a caller taking `unknown` and wrong for one that is not.
+
+Verified in the browser by redefining `localStorage` to throw on every get:
+all five functions returned their fallback and none threw. A value stored as
+`not json at all` returned the fallback AND left the key removed; a value the
+guard rejected did the same; a value the guard accepted was kept.
+
+- Site: `src/core/web-storage.ts`
 - Site: `src/core/persist-view.ts`
 - Site: `src/core/session.ts`
-- Site: `src/core/stores.ts`
 - Site: `src/core/idb-store.ts`
+- Site: `src/core/stores.ts`
+- Site: `test/e2e/reforged-web-storage.spec.ts`
 
 ### T-one-snapshot-not-a-key-per-concern
 
