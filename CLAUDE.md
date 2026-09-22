@@ -6,12 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Read these first
 
-This file holds the RULES. The handover docs hold the *why* — the traps, the
-rulings, and the reasons behind decisions that look odd. Several are silent
-failures that have each cost hours.
+**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is the rules, stated once.** Sixteen
+of them, twelve enforced by a gate. Start there; it is two pages.
+
+This file is the detail behind them — the commands, the architecture, and the
+worked examples. The handover docs hold the *why*: the traps, the rulings, and
+the reasons behind decisions that look odd. Several are silent failures that
+have each cost hours.
+
+Where a rule appears in more than one place, PRINCIPLES.md is the statement and
+its gate is the arbiter. A rule that was re-stated in seven documents is what
+made that necessary.
 
 | Doc | Read it when |
 |---|---|
+| [docs/PRINCIPLES.md](docs/PRINCIPLES.md) | **First, always.** The rules and which gate enforces each |
 | [docs/HANDOVER.md](docs/HANDOVER.md) | **Always, before your first change.** Traps (anchor positioning, tables, shadow DOM, SVG), the working method, where the interesting code is |
 | [docs/HANDOVER-BACKLOG.md](docs/HANDOVER-BACKLOG.md) | Picking up work — what is queued and what "done" means |
 | [docs/DATA-SOURCE-RULES.md](docs/DATA-SOURCE-RULES.md) | **Pointing Sherpa at a backend, or writing a schema.** The row shape, the `[field, op, value]` filter grammar, the Store contract, where validation belongs. Served to agents as `sherpa://data-rules` |

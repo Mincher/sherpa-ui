@@ -3,11 +3,13 @@
 **Read this before touching anything.** It is the knowledge that is *not* in the
 code: the traps, the rulings, and the reasons behind decisions that look odd.
 
-`CLAUDE.md` has the rules. This file has the *why*, and the list of things that
+`PRINCIPLES.md` has the rules and names the gate that enforces each. `CLAUDE.md`
+has the detail behind them. This file has the *why*, and the list of things that
 have bitten repeatedly.
 
 | Doc | What it holds |
 |---|---|
+| [PRINCIPLES.md](PRINCIPLES.md) | **The rules, stated once** — 16 of them, 12 gated |
 | [HANDOVER.md](HANDOVER.md) | This file — orientation, traps, working method |
 | [HANDOVER-BACKLOG.md](HANDOVER-BACKLOG.md) | What is queued and what "done" means for each |
 | [HANDOVER-FIGMA.md](HANDOVER-FIGMA.md) | Figma-side model, probe recipes, open flags |

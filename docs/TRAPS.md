@@ -2109,7 +2109,8 @@ measure the PATH: the wrapper is its full size either way.
 
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/core/render-icon.ts`
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/render-icon.ts`
+- Site: `src/core/sherpa-icon.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
 

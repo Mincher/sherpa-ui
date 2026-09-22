@@ -429,9 +429,10 @@ empty object rather than failing.
 Verified before deleting: the spec generator produces a **byte-identical**
 spec without it, all 58 specs validate, and the MCP still imports.
 
-`scripts/build-ontology.mjs` and `audit-ontology.mjs` were KEPT even though
-nothing calls them — they are the only way to rebuild this from Figma, and the
-rewrite will want them. Point them at a fresh `variable-graph.json` first.
+`scripts/build-ontology.mjs` was deleted, and so was `audit-ontology.mjs`.
+Neither exists on this branch: they were kept at the time this note was
+written, and went in a later sweep. Rebuilding the ontology from Figma would
+mean writing them again.
 
 ## MCP server — a full rewrite, agreed 2026-09-16
 
@@ -449,8 +450,7 @@ What is known wrong, from the 2026-09-16 sweep:
 - the three `*_def` tools target the dead format
 - `mcp-server/README.md` (26KB) documents ~19 tools; **10** are registered, and
   only ONE name overlaps
-- `mcp-server/tools/generate.js` still points at `scripts/merge-figma.mjs`,
-  retired 2026-09-02
+- `mcp-server/tools/generate.js` still points at `scripts/merge-figma.mjs`, deleted 2026-09-02
 - `mcp-server/lib/validation.js` hand-rolls a second notion of "valid
   component", independent of `schemas/component.v1.json` — two definitions that
   can drift

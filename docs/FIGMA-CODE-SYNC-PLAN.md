@@ -39,8 +39,8 @@ Build:
 1. **Code→Figma leg for token edits.** When a token value changes in code, update
    `figma.tokens.json` (the DTCG canonical), then `figma_import_tokens` pushes just
    that delta to Figma (diff-aware merge already supported).
-2. **A reconcile command.** `npm run tokens:pull` (Figma→code, re-project) and
-   `npm run tokens:push` (code→Figma). Conflict policy = `ask`.
+2. **A reconcile command.** Proposed, not built: `tokens:pull` (Figma→code,
+   re-project) and `tokens:push` (code→Figma). Conflict policy = `ask`.
 3. The projected CSS stops saying "edit in Figma only" — it becomes "edit the DTCG
    or Figma; both reconcile."
 

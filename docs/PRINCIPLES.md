@@ -1,0 +1,145 @@
+# Principles
+
+The rules, stated once. Sixteen of them, and **twelve are enforced by a gate**
+— those are facts about the codebase, not aspirations. The other four are
+conventions a reviewer has to hold.
+
+This file exists because every one of these rules was previously stated in
+three to seven documents. "Never use opacity for a disabled state" appeared in
+**seven**. A rule with seven copies is seven chances to rot, and this repo has
+the receipts: a focus-ring token named in `CLAUDE.md` for months **did not
+exist**, so anyone who followed the doc shipped the wrong colour.
+
+**One statement, one gate.** Where those disagree, the gate wins — it runs.
+
+---
+
+## The two layers
+
+Everything below serves one separation:
+
+| | |
+|---|---|
+| **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
+| **Presentation layer** | `SherpaElement` + the 58 components. Shows what it is given; asks for what it wants; decides nothing about the data |
+
+The join is `DataSource.bind(el, options)` and nothing else. A component never
+reaches past the source to a store, and two components never speak directly.
+
+**Where does new code go?**
+
+- Getting, setting or transforming data → the **data layer**.
+- Reusable by more than one component → **`SherpaElement`**.
+- Only this component could want it → the **component**.
+
+---
+
+## 1–12: the gated rules
+
+Each one runs in the pre-commit hook. The gate is the statement; the words here
+are a reminder of why.
+
+### CSS
+
+| # | Rule | Gate |
+|---|---|---|
+| 1 | `:host(:not(…))` functional form — chained form is silently broken in shadow DOM | `lint:css` `chained-host` |
+| 2 | No `&` nesting inside `:host {}` — it desugars to the broken chained form | `lint:css` `host-nesting` |
+| 3 | Never `opacity` for a disabled state — it compounds in dark mode. Inactive tokens per property | `lint:css` `disabled-opacity` |
+| 4 | An inset focus ring, `var(--sherpa-focus-ring)` — an outer ring bleeds over a snapped neighbour | `lint:css` `focus-ring` |
+| 5 | `@container`, never a viewport `@media`, inside a component | `lint:css` `viewport-media` |
+| 6 | The 8px grid, with a 4px text sub-grid. `/* off-grid-ok */` opts a drawn glyph out | `lint:css` `off-grid` |
+| 7 | No `light-dark()` in component CSS — the display-mode layer owns mode | `lint:css` `light-dark` |
+
+### Contracts
+
+| # | Rule | Gate |
+|---|---|---|
+| 8 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props` | `check:props` |
+| 9 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
+| 10 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
+| 11 | A `.component.yaml` regenerates the source it describes | `spec:check` |
+| 12 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
+
+---
+
+## 13–16: the ungated conventions
+
+No gate, so a reviewer holds these. All four were checked on 2026-09-22 and the
+codebase obeys them.
+
+**13. `data-*` is the public API.** Native attributes (`disabled`, `name`,
+`value`) stay unprefixed. Component-private state is `--_*`, never a public
+`data-*`.
+
+**14. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
+never touches `.hidden`, `display` or `visibility` on a shadow node.
+
+**15. Every element the component will ever show is in the template.** No
+`createElement()` for structure, no structural `innerHTML`. Repeating items use
+a cloning prototype. The four `createElement` calls that exist are a component
+creating *itself* (`sherpa-toast`) or a typed child by tag name.
+
+**16. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
+a `sherpa-` prefix. A re-dispatched native event keeps its native name, which
+is why `sherpa-accordion` emits `toggle`.
+
+---
+
+## The three method doors on `SherpaElement`
+
+Reach for these before writing the same thing again. Each replaced a pattern
+found in three or more components.
+
+| | |
+|---|---|
+| `this.$(sel)` / `this.$$(sel)` | Shadow queries. Never `this.shadowRoot.querySelector` |
+| `this.set(attr, value)` | The JS→CSS write. `null`/`false` REMOVE the attribute |
+| `this.num(attr, fallback, opts)` | The one numeric parse; a real `0` survives |
+| `this.on(target, type, handler)` | Listen on something this element does not own. Carries the disconnect signal, so nothing needs removing. `while:` names a shorter lifetime |
+| `this.onFrame(…)` | The same, coalesced to one call per frame. For a handler that READS LAYOUT — measured, an unthrottled scroll handler did 100 `getBoundingClientRect()` calls for 50 events |
+| `this.mirrorAttrs(control, attrs)` | Copy native attributes onto a wrapped `<input>`. `value` is skipped — it is a property on a live control |
+| `this.renderItems(container, tpl, items)` | Stamp a LIST declaratively. The prototype names its own fields |
+| `renderData(payload)` | Override to draw a payload. The DEFAULT writes a payload's keys onto the attributes the component declares, so a component with no override still shows data |
+
+---
+
+## Three silent failures worth knowing before you start
+
+Each cost hours, and none produce an error.
+
+**A component sheet is ADOPTED, and three things do not work in one.**
+`@import` is dropped. A document class rule cannot reach in. `@property` does
+not register — it parses, lists in `cssRules`, and `CSS.supports()` even
+returns **true**, none of which is registration.
+
+**`src/styles/` is what the APP links; `src/core/` is what a COMPONENT adopts.**
+A token belongs in the first, a class in the second.
+
+**Off is not gone.** Switching a filter off keeps its value; deleting it throws
+the value away. Collapsing the two has cost a reader's typed filter, a sort
+column and a legend row.
+
+---
+
+## The working method
+
+**Measure in the running app. Never infer.**
+
+Every bug in this repo's history was found by reading a value back in a browser,
+and several "obvious" fixes were rejected after measuring them. Two examples:
+the parser silently drops `:host(:has())`, and an index seek on a string in
+IndexedDB skipped every row whose case differed — which made one chip value
+return zero results while two returned the right answer.
+
+A green test suite is not proof on its own. Ask what the change SHOULD have
+broken, and check that it did.
+
+---
+
+## Where the depth lives
+
+This file is the rules. The reasons live in `docs/TRAPS.md`, which is gated
+both ways: a `TRAP T-…` citation in the code must resolve to an entry, and that
+entry's `Site:` list must match who cites it. That is the trade — the citation
+stays beside the code, the essay moves out.

@@ -2,7 +2,7 @@
 
 > **Canonical structure for every component CSS file in this repo.**
 > Files that deviate are refactored on touch. The lint script
-> `scripts/lint-component-css.mjs` enforces the structural rules below.
+> `npm run lint:css` (`scripts/lint-css.mjs`) enforces the structural rules below.
 
 This document is the single source of truth for **file shape**, **nesting
 policy**, and **shared sheet usage**. For *what* each layer owns (HTML vs CSS

@@ -107,4 +107,18 @@ if [ $PROPS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# A doc that names a script or command must name one that EXISTS. Found four
+# dangling pointers the moment it was written, two of which read as live
+# instructions — including a note saying two scripts "were KEPT" that had since
+# been deleted.
+echo "📚 Checking docs name real scripts and commands..."
+DOCS_OUT=$(npm run check:docs --silent 2>&1)
+DOCS_RESULT=$?
+
+if [ $DOCS_RESULT -ne 0 ]; then
+  echo "$DOCS_OUT"
+  echo "❌ A doc points at something that does not exist. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"
