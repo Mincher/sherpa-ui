@@ -5,6 +5,7 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { valueSet } from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -98,7 +99,12 @@ export class SherpaQuickFilter extends SherpaElement {
   set values(next: readonly string[]) {
     const menu = this.menu;
     if (!menu) return;
-    const want = new Set(next.map(String));
+    /* The QUERY's comparison, not an exact one. A menu row's value may be
+       spelled differently from the data it filters — the Records example
+       lower-cases them — and the query has always matched loosely, so an exact
+       test here made a value set from elsewhere tick nothing.
+       TRAP T-one-comparison-rule-for-query-and-ui */
+    const want = valueSet(next);
     for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
       // The "All" row is a control, not a value; it derives from the rest.
       if (!input.closest(NON_VALUE_ROWS)) input.checked = want.has(input.value);

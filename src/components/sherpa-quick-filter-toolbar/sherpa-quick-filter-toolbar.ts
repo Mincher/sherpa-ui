@@ -438,6 +438,33 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
+  /**
+   * Set ONE chip's picks, leaving every other chip alone.
+   *
+   * `values` is a WHOLE-MAP setter: a chip the map does not name is switched
+   * off. That is right for a view restoring its entire filter state, and wrong
+   * for anything that owns one field — a legend bound to `plan` wrote
+   * `{ plan: [...] }` and silently switched off the Status chip beside it.
+   *
+   * An empty list CLEARS this chip — unticked and off, because "every value
+   * selected" and "no filter" are the same state and only one of them should
+   * look like a filter. `undefined` leaves it untouched.
+   * TRAP T-one-field-does-not-own-the-whole-map
+   * TRAP T-everything-on-is-no-filter
+   */
+  setChipValues(id: string, picks: readonly string[] | undefined): void {
+    if (picks === undefined) return;
+    for (const chip of this.#chips()) {
+      if (chip.dataset['id'] !== id || !chip.hasAttribute('data-menu')) continue;
+      /* `values = []` unticks every row and re-derives the face — the badge
+         and the value label go with it. `current = false` alone would leave a
+         chip reading "3 Plan Enterprise…" while claiming to be off. */
+      chip.values = picks;
+      if (!picks.length) chip.current = false;
+      return;
+    }
+  }
+
   /** Every menu chip's picks, on or OFF. The counterpart to `values`. */
   get pickedValues(): Record<string, string[]> {
     const out: Record<string, string[]> = {};

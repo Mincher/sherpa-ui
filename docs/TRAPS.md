@@ -7395,3 +7395,87 @@ and a legend row.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-one-comparison-rule-for-query-and-ui
+
+The data layer compares LOOSELY: `looseEqual` lower-cases both sides, so
+`['plan', 'in', ['free']]` matches a row holding `'Free'`. That is deliberate,
+and it is why the Records example can lower-case its chip option values and
+still filter correctly.
+
+Three components compared EXACTLY — `sherpa-quick-filter`, `sherpa-menu`, and
+the legend binding. So a value travelling BACK from the query never matched its
+own control:
+
+- The Plan chip's menu rows are `free`, `starter`, `pro`.
+- A legend toggle handed the chip `['Free', 'Starter', 'Enterprise']`.
+- `new Set(next).has('free')` is false, so nothing ticked. The chip stayed off
+  and empty while the filter it described was running.
+
+The inverse was worse. Chip picks (`'free'`) tested against legend values
+(`'Free'`) matched nothing, so the binding hid EVERY row: 100 records became 0.
+
+`looseEqual` and `valueSet` are now exported from `store.ts` and used by all
+three. One rule, in the layer that owns the question.
+
+The shape to remember: a comparison duplicated between the query and the UI is
+a contract with no gate on it, and it only breaks on the return journey — the
+outbound path works, which is what makes it hard to see.
+
+- Site: `src/core/store.ts`
+- Site: `src/core/legend-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-one-field-does-not-own-the-whole-map
+
+`sherpa-quick-filter-toolbar`'s `values` setter takes the WHOLE map, and a chip
+the map does not name is switched off. Right for a view restoring its entire
+filter state; wrong for anything owning one field.
+
+A legend bound to `plan` wrote `{ plan: [...] }`, which switched off the Status
+chip beside it. Measured: the Status chip went ON, then off again the moment an
+unrelated legend moved, with its own values untouched.
+
+`setChipValues(id, picks)` sets one chip and leaves the rest alone. `undefined`
+leaves it untouched; an empty list clears it — see
+T-everything-on-is-no-filter.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/legend-filter.ts`
+- Site: `test/unit/legend-filter.test.mjs`
+
+### T-everything-on-is-no-filter
+
+Will, 2026-09-22: *"when all legend items are active then we can clear the
+filter chip selection and turn the filter chip off. Same outcome but a
+different visual representation."*
+
+Every value selected and no filter at all return the same rows, so only one of
+them should LOOK like a filter. The binding used to tick all four values, which
+left a chip reading "3 Plan Enterprise…" while nothing was being excluded.
+
+Clearing takes two steps, and `current = false` alone is not enough: the chip
+keeps its badge and value label, so it reads as set while claiming to be off.
+`values = []` unticks every row and re-derives the face; the `current = false`
+that follows is what makes it read as unset.
+
+- Site: `src/core/legend-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/legend-filter.test.mjs`
+
+### T-a-legend-keeps-one-row-on
+
+Will, same message: *"at least 1 must be active at all times so we need to
+prevent toggling of the last active legend item."*
+
+Hiding the last row leaves an empty chart beside an empty grid and no obvious
+way back — and it is not a question anyone asks. The click is REFUSED and the
+legend is put back as it was, rather than left dimmed over an unchanged filter.
+
+The floor is applied in three places, because all three can reach the same
+state: the legend click, a chip pick that unticks everything, and the
+programmatic `set()`.
+
+- Site: `src/core/legend-filter.ts`
+- Site: `test/unit/legend-filter.test.mjs`

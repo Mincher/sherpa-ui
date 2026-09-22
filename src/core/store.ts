@@ -217,7 +217,16 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
 }
 
 /** Compare for filtering, not sorting. TRAP T-loose-equal-is-case-insensitive */
-function looseEqual(a: unknown, b: unknown): boolean {
+/**
+ * ONE comparison rule for the whole system — the query and the UI must agree.
+ *
+ * The data layer has always compared loosely, so `['plan','in',['free']]`
+ * matches a row holding `'Free'`. Three components compared EXACTLY, so a
+ * value round-tripping back from the query never ticked its own menu row: the
+ * filter worked and the control that set it looked untouched.
+ * TRAP T-one-comparison-rule-for-query-and-ui
+ */
+export function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (typeof a === 'number' && typeof b === 'number') return a === b;
@@ -227,6 +236,19 @@ function looseEqual(a: unknown, b: unknown): boolean {
 /** A value as lower-case text, for the substring and equality operators. */
 function text(v: unknown): string {
   return v == null ? '' : String(v).toLowerCase();
+}
+
+/**
+ * A set of values to test against, using the query's own comparison.
+ *
+ * `valueSet(['Free']).has('free')` is true, which a plain `Set` would refuse.
+ * For a control asking "is my row one of these?" — the question the query
+ * answers the same way. TRAP T-one-comparison-rule-for-query-and-ui
+ */
+export function valueSet(values: Iterable<unknown>): { has: (v: unknown) => boolean } {
+  const keys = new Set<string>();
+  for (const v of values) keys.add(text(v));
+  return { has: (v: unknown) => keys.has(text(v)) };
 }
 
 /** Rows matching a filter. */

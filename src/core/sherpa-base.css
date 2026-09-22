@@ -34,13 +34,6 @@
      files wrote this by hand. */
   --sherpa-focus-ring: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 
-  /* TRAP T-icon-box-is-not-the-glyph — a box and its glyph are two sizes.
-     Icon glyph scale — the glyph's size WITHIN its box, never the box itself.
-     A Figma icon is a content/size/* frame (clipsContent) holding a vector that
-     varies; the frame never moves. Font Awesome at font-size == box paints ~101%
-     of it, so setting both from one var drew every glyph ~1.3x over its Figma
-     vector and ate the surrounding air. Figma's median extent is 87.5%. */
-  --sherpa-icon-glyph-scale: 0.875;
 }
 
 :host([hidden]) {
@@ -70,28 +63,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* ── Icon box ────────────────────────────────────────────────────────────
-   The Figma icon WRAPPER: a square of `--_icon-size` that clips, holding a
-   glyph sized independently. 12 components sized box and glyph from ONE var,
-   so the glyph could never vary without moving the bounds.
-   The component sets `--_icon-size`; the glyph follows on its own scale. */
-.sherpa-icon-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--_icon-size, var(--sherpa-theme-content-size-base, 14px));
-  block-size: var(--_icon-size, var(--sherpa-theme-content-size-base, 14px));
-  /* The bounds are the contract: never squeezed by a flex parent, never grown
-     by an oversized glyph. Figma's frames set clipsContent for the same reason. */
-  flex-shrink: 0;
-  overflow: clip;
-  font-size: calc(
-    var(--_icon-size, var(--sherpa-theme-content-size-base, 14px)) *
-      var(--sherpa-icon-glyph-scale, 0.875)
-  );
-  line-height: 1;
 }
 
 /* ── Disabled ────────────────────────────────────────────────────────────

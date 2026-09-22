@@ -11,6 +11,7 @@
  * @see TRAP T-footer-row-raises-on-any-flag
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { valueSet } from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -164,7 +165,8 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set values(next: string[]) {
-    const wanted = new Set(next);
+    // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
+    const wanted = valueSet(next);
     for (const input of this.#inputs()) input.checked = wanted.has(input.value);
   }
 

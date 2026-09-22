@@ -31,6 +31,11 @@ const legendStub = () => {
 const chipStub = () => {
   const el = new EventTarget();
   el.values = {};
+  /* ONE chip at a time — the toolbar's `values` setter is a WHOLE MAP, and a
+     binding that owns one field must not clobber the others.
+     TRAP T-one-field-does-not-own-the-whole-map */
+  el.setChipValues = (id, picks) => { if (picks !== undefined) el.values[id] = picks; };
+  el.off = (id) => !el.values[id]?.length;
   el.pick = (id, picks) => {
     el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { values: { [id]: picks } } }));
   };
@@ -80,6 +85,63 @@ test('two legends over different fields do not overwrite each other', () => {
 });
 
 /* ── Legend ⇄ chip ──────────────────────────────────────────────────── */
+
+/**
+ * EVERYTHING ON is no constraint, so the chip CLEARS rather than showing every
+ * value ticked. Same outcome, different claim: a chip reading "3 Plan" looks
+ * like a filter is running when none is.
+ * TRAP T-everything-on-is-no-filter
+ */
+test('all rows on clears the chip, rather than ticking every value', () => {
+  const parts = new Map();
+  const source = { contribute: (k, f) => (f ? parts.set(k, f) : parts.delete(k)) };
+  const legend = legendStub(); const chip = chipStub();
+  bindLegendFilter(legend, source, {
+    field: 'status', values: STATES, chip: { el: chip, id: 'status' },
+  });
+
+  legend.click('churned', false);
+  assert.deepEqual(chip.values['status'], ['active', 'trial', 'suspended']);
+
+  legend.click('churned', true);
+  assert.deepEqual(chip.values['status'], [], 'cleared, not all four ticked');
+  assert.equal(parts.has('legend:status'), false, 'and no filter part either');
+});
+
+/**
+ * At least one row stays on. Hiding the last leaves an empty chart beside an
+ * empty grid and no obvious way back.
+ * TRAP T-a-legend-keeps-one-row-on
+ */
+test('the LAST active row cannot be switched off', () => {
+  const parts = new Map();
+  const source = { contribute: (k, f) => (f ? parts.set(k, f) : parts.delete(k)) };
+  const legend = legendStub();
+  bindLegendFilter(legend, source, { field: 'status', values: STATES });
+
+  for (const s of ['active', 'trial', 'suspended']) legend.click(s, false);
+  assert.deepEqual(parts.get('legend:status'),
+    ['status', 'notin', ['active', 'trial', 'suspended']]);
+
+  // The fourth is REFUSED, and the legend is put back as it was.
+  legend.click('churned', false);
+  assert.deepEqual(parts.get('legend:status'),
+    ['status', 'notin', ['active', 'trial', 'suspended']], 'unchanged');
+  assert.deepEqual([...legend.off].sort(), ['active', 'suspended', 'trial'],
+    'churned is back ON in the legend, not left dimmed');
+});
+
+test('an empty menu pick cannot hide everything either', () => {
+  const parts = new Map();
+  const source = { contribute: (k, f) => (f ? parts.set(k, f) : parts.delete(k)) };
+  const legend = legendStub(); const chip = chipStub();
+  bindLegendFilter(legend, source, {
+    field: 'status', values: STATES, chip: { el: chip, id: 'status' },
+  });
+  chip.pick('status', []);
+  assert.equal(parts.has('legend:status'), false);
+  assert.deepEqual(legend.off, []);
+});
 
 test('the chip shows what is still ON — a filter names what it KEEPS', () => {
   const source = { contribute: () => {} };
@@ -158,4 +220,33 @@ test('a legend filter ANDs with the rest, and survives their changes', async () 
   source.contribute('chips', undefined);
   await source.load({ force: true });
   assert.equal(source.total, 6, 'the legend part is still there');
+});
+
+/**
+ * A binding owns ONE field, so it must write one chip.
+ *
+ * The toolbar's `values` setter is a WHOLE MAP: a chip it does not name is
+ * switched off. Writing `{ plan: [...] }` from the plan legend therefore
+ * switched off the Status chip beside it — measured in the app as a chip going
+ * ON, then off again the moment an unrelated legend moved.
+ * TRAP T-one-field-does-not-own-the-whole-map
+ */
+test('one legend does not switch off another field\'s chip', () => {
+  const source = { contribute: () => {} };
+  const chip = chipStub();
+  const status = legendStub(); const plan = legendStub();
+  bindLegendFilter(status, source, {
+    field: 'status', values: STATES, chip: { el: chip, id: 'status' },
+  });
+  bindLegendFilter(plan, source, {
+    field: 'plan', values: ['Free', 'Pro'], chip: { el: chip, id: 'plan' },
+  });
+
+  plan.click('Pro', false);
+  assert.deepEqual(chip.values['plan'], ['Free']);
+
+  // Now move the OTHER legend. The plan chip must keep what it holds.
+  status.click('churned', false);
+  assert.deepEqual(chip.values['plan'], ['Free'], 'plan survived a status change');
+  assert.deepEqual(chip.values['status'], ['active', 'trial', 'suspended']);
 });

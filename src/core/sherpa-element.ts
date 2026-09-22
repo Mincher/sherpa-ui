@@ -3,6 +3,8 @@
  * TRAP T-base-class-does-four-things
  */
 
+import { upgradeIcons } from './render-icon.js';
+
 /** id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
 
@@ -332,8 +334,10 @@ export abstract class SherpaElement extends HTMLElement {
     this.root.innerHTML = body;
     this.#stampedTemplate = id;
     this.#hasRendered = true;
-    // Props BEFORE onRender, so a component's setup reads a populated tree.
+    // Props and icons BEFORE onRender, so a component's setup reads a
+    // populated tree. A template `data-icon` draws nothing until upgraded.
     this.#syncAllProps();
+    upgradeIcons(this.root);
     this.onRender();
     this.#wireSlots();
   }

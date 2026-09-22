@@ -11,7 +11,7 @@
  *
  * TRAP T-a-legend-toggle-is-a-filter
  */
-import type { Filter } from './store.js';
+import { valueSet, type Filter } from './store.js';
 
 /** A legend: it reports clicks and remembers which labels are off. */
 interface LegendEl extends EventTarget {
@@ -23,9 +23,10 @@ interface Contributor {
   contribute: (key: string, filter: Filter | undefined) => void;
 }
 
-/** A quick-filter toolbar, seen through the one property this needs. */
+/** A quick-filter toolbar, seen through the one method this needs. */
 interface ChipHost extends EventTarget {
-  values: Record<string, readonly string[]>;
+  /** ONE chip, never the whole map — TRAP T-one-field-does-not-own-the-whole-map. */
+  setChipValues: (id: string, picks: readonly string[] | undefined) => void;
 }
 
 export interface LegendFilterOptions {
@@ -86,15 +87,32 @@ export function bindLegendFilter(
   /** Write the filter, and show the same set on the chip. */
   const apply = (): void => {
     source.contribute(key, hiddenFilter(field, hidden));
-    // The chip lists what is still ON: a filter names what it KEEPS.
-    if (chip) chip.el.values = { [chip.id]: values.filter((v) => !hidden.has(v)) };
+    if (!chip) return;
+    /* EVERYTHING ON is no constraint, so the chip reads as OFF with nothing
+       picked — not as every value ticked, which says the same thing in a way
+       that looks like a filter. An empty list switches it off and keeps its
+       picks. TRAP T-everything-on-is-no-filter */
+    const on = hidden.size ? values.filter((v) => !hidden.has(v)) : [];
+    /* ONE chip — writing the whole `values` map switches off every chip it
+       does not name, and this binding only owns its own field.
+       TRAP T-one-field-does-not-own-the-whole-map */
+    chip.el.setChipValues(chip.id, on);
   };
 
   const onLegendClick = (): void => {
     /* Read the LEGEND, not the event. `detail` carries one row, but a roll-up
        row stands for several and its label ("Other") is a value of nothing.
        The legend already resolved both into its own off-set. */
-    hidden = new Set(legend.off.filter((label) => known.has(label)));
+    const next = new Set(legend.off.filter((label) => known.has(label)));
+    /* AT LEAST ONE stays on. Hiding the last leaves an empty chart beside an
+       empty grid and no obvious way back — and it is not a question anyone
+       asks. The click is REFUSED, and the legend is put back as it was.
+       TRAP T-a-legend-keeps-one-row-on */
+    if (next.size >= values.length) {
+      legend.off = [...hidden];
+      return;
+    }
+    hidden = next;
     apply();
   };
 
@@ -105,8 +123,14 @@ export function bindLegendFilter(
     const picks = detail.values?.[chip!.id];
     /* NOTHING ticked means "no constraint", not "hide everything" — the same
        reading the rest of the toolbar uses. */
-    const on = picks?.length ? new Set(picks) : known;
-    hidden = new Set(values.filter((v) => !on.has(v)));
+    /* The QUERY's comparison. A chip's option values may be spelled
+       differently from the data — the Records example lower-cases them — and
+       an exact test here hid EVERY row instead of the unticked ones.
+       TRAP T-one-comparison-rule-for-query-and-ui */
+    const on = picks?.length ? valueSet(picks) : valueSet(values);
+    const next = new Set(values.filter((v) => !on.has(v)));
+    // The same floor as a legend click — TRAP T-a-legend-keeps-one-row-on.
+    hidden = next.size >= values.length ? new Set() : next;
     source.contribute(key, hiddenFilter(field, hidden));
     legend.off = [...hidden];
   };
@@ -125,7 +149,9 @@ export function bindLegendFilter(
       return [...hidden];
     },
     set(next: Iterable<string>): void {
-      hidden = new Set([...next].filter((v) => known.has(v)));
+      const want = new Set([...next].filter((v) => known.has(v)));
+      // The same floor — TRAP T-a-legend-keeps-one-row-on.
+      hidden = want.size >= values.length ? new Set() : want;
       legend.off = [...hidden];
       apply();
     },

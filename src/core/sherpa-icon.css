@@ -1,0 +1,58 @@
+/**
+ * sherpa-icon.css — the icon wrapper, adopted into every shadow root.
+ *
+ * A Figma icon is a `content/size/*` SQUARE holding art that varies. The square
+ * is the layout contract; the art fits inside it.
+ * TRAP T-icon-box-is-not-the-glyph — the box and the glyph are two sizes.
+ */
+
+.sherpa-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Figma binds an icon's width and height to ONE variable, so the box is
+     always square. `size/icon/xs` aliases `content/size/base` — an icon is the
+     size of the text beside it. */
+  inline-size: var(--_icon-size, var(--sherpa-theme-size-icon-xs, 14px));
+  block-size: var(--_icon-size, var(--sherpa-theme-size-icon-xs, 14px));
+  /* The bounds are the contract — never squeezed by a flex parent. */
+  flex-shrink: 0;
+  /* Colour is INHERITED, never set here: an icon takes the ink of whatever it
+     sits in, which is how the status cascade reaches it. */
+  color: inherit;
+}
+
+/* The art. `preserveAspectRatio="xMidYMid meet"` on a viewBox fitted to the
+   path's own ink puts the LONGEST axis at exactly 100% of the square, keeps the
+   art 1:1, and makes overflow impossible at any wrapper size. */
+.sherpa-icon-box > svg {
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+  fill: currentcolor;
+}
+
+/* A drawn icon is ink, not a hairline — it must survive Windows High Contrast,
+   where `fill: currentcolor` on an SVG is not forced like text is. */
+@media (forced-colors: active) {
+  .sherpa-icon-box > svg {
+    fill: CanvasText;
+  }
+}
+
+/* ── Status icons ────────────────────────────────────────────────────────
+   A drawing cannot be chosen by a CSS `content:` the way a webfont glyph was,
+   so all five are stamped and CSS reveals ONE. The status stays CSS-owned and
+   no JS branches on it. `data-icon-status` marks the set; the host's own
+   `[data-status]` picks the member. */
+.sherpa-icon-box[data-icon-status] { display: none; }
+
+:host([data-status="info"]) .sherpa-icon-box[data-icon-status="info"],
+:host([data-status="success"]) .sherpa-icon-box[data-icon-status="success"],
+:host([data-status="warning"]) .sherpa-icon-box[data-icon-status="warning"],
+:host([data-status="critical"]) .sherpa-icon-box[data-icon-status="critical"],
+:host([data-status="urgent"]) .sherpa-icon-box[data-icon-status="urgent"],
+/* No status at all reads as info, which is what the glyph chain already did. */
+:host(:not([data-status])) .sherpa-icon-box[data-icon-status="info"] {
+  display: inline-flex;
+}
