@@ -6736,6 +6736,7 @@ any filter applied on top of it also showed zero and read as a broken filter.
 - Site: `examples/views/records.js`
 - Site: `examples/views/records-data.js`
 - Site: `examples/views/records-views.js`
+- Site: `examples/templates/records.html`
 - Site: `examples/views/dashboard.js`
 - Site: `examples/views/dashboard-data.js`
 - Site: `examples/views/dashboard-views.js`
@@ -8478,6 +8479,8 @@ nothing rather than `0`.
 
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
 - Site: `test/e2e/reforged-donut-chart.spec.ts`
+- Site: `examples/templates/records.html`
+- Site: `examples/templates/dashboard.html`
 
 ### T-a-toggle-is-a-clause-not-a-value
 

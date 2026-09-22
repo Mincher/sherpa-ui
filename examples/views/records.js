@@ -106,6 +106,7 @@ export async function init(root) {
   const pager     = root.querySelector('#pager');
   const dialog    = root.querySelector('#dialog');
   const planGroup = root.querySelector('#f-plan');
+  const custField = root.querySelector('#f-customer');
   const confirm     = root.querySelector('#confirm');
   const confirmText = root.querySelector('#confirm-text');
 
@@ -213,6 +214,11 @@ export async function init(root) {
 
   /* Plan radio group in the dialog. */
   planGroup.populate(plans.map((p) => ({ value: p.toLowerCase(), label: p })));
+
+  /* The SAME organisations the Customer chip offers, so a record can never be
+     saved against one the filter does not know.
+     TRAP T-a-chip-filters-the-values-the-data-has */
+  custField.populate(customerOrgs.map((v) => ({ value: v, label: v })));
 
   /* Three components, ONE source: each READS (rows plus view state as data-*)
      and WRITES (its noun-verb events steer the source). */
@@ -509,6 +515,8 @@ export async function init(root) {
     dialog.dataset.heading = record ? 'Edit customer' : 'Add customer';
     root.querySelector('#f-name').value = record?.name ?? '';
     root.querySelector('#f-email').value = record?.email ?? '';
+    // Always written, so a second open never inherits the last record's org.
+    custField.value = record?.customer ?? customerOrgs[0];
     // show(), not the native showModal() — the component owns modality and the
     // `open` attribute.
     dialog.show();
@@ -636,6 +644,9 @@ export async function init(root) {
     const name = root.querySelector('#f-name').value || 'New customer';
     const email = root.querySelector('#f-email').value;
     const plan = root.querySelector('#f-plan').value;
+    // Never blank: a record with no `customer` is invisible to the Customer
+    // filter, which offers only the values the data carries.
+    const customer = custField.value || customerOrgs[0];
 
     /* The store is the whole fix: writing announces a change, the source
        reloads, every bound component re-populates. Where the new row lands
@@ -644,7 +655,7 @@ export async function init(root) {
     /* EDIT or ADD through one button. `editing` holds the key from the row's
        Edit action; update MERGES, so the rest of the record survives. */
     if (editing) {
-      const saved = await store.update(editing, { name, email: email || editing });
+      const saved = await store.update(editing, { name, email: email || editing, customer });
       editing = null;
       dialog.close();
       SherpaToast.success(`${saved.name} updated`, { value: 'The record was saved.' });
@@ -656,6 +667,7 @@ export async function init(root) {
       name,
       // The key is the email, so a blank one would collide with the next blank.
       email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      customer,
       status: 'trial',
       plan: plan ? plan[0].toUpperCase() + plan.slice(1) : 'Free',
       region: 'EMEA',

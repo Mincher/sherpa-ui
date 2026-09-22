@@ -27,6 +27,9 @@ const SOURCES = [
   'test/unit/*.mjs',
   'scripts/*.mjs',
   'examples/views/*.js',
+  // The example TEMPLATES too. A citation in the Add-customer dialog was
+  // unchecked, which is how a missing form field went unnoticed.
+  'examples/templates/*.html',
 ];
 
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;

@@ -215,18 +215,32 @@ test('the records store refuses a record its schema rejects', async ({ page }) =
     } catch (e) { refused = String(e); }
     const afterBad = (await customerStore.load()).total;
 
-    // A GOOD row still goes in, so the guard is a rule and not a wall.
+    /* A GOOD row still goes in, so the guard is a rule and not a wall.
+       `customer` is REQUIRED — every record belongs to an organisation, or the
+       Customer chip can never find it.
+       TRAP T-a-chip-filters-the-values-the-data-has */
     await customerStore.insert({
-      name: 'Fine Person', email: `ok-${Date.now()}@example.com`, seats: 2, health: 50,
+      name: 'Fine Person', email: `ok-${Date.now()}@example.com`,
+      customer: 'Northwind', seats: 2, health: 50,
     });
     const afterGood = (await customerStore.load()).total;
 
-    return { before, afterBad, afterGood, refused };
+    // NO CUSTOMER. The Add dialog had no such field until 2026-09-22, so a
+    // record saved with none was invisible to the Customer chip for ever.
+    let noOrg: string | null = null;
+    try {
+      await customerStore.insert({ name: 'No Org', email: `org-${Date.now()}@example.com` });
+    } catch (e) { noOrg = String(e); }
+    const afterNoOrg = (await customerStore.load()).total;
+
+    return { before, afterBad, afterGood, refused, noOrg, afterNoOrg };
   });
 
   expect(r.afterBad, 'the bad row never landed').toBe(r.before);
   expect(r.refused, 'and it said which field and why').toContain('email');
   expect(r.afterGood).toBe(r.before! + 1);
+  expect(r.noOrg, 'a record with no organisation is refused').toContain('customer');
+  expect(r.afterNoOrg, 'and it never landed').toBe(r.afterGood);
 });
 
 /**

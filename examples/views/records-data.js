@@ -103,6 +103,12 @@ export const customerSchema = rules({
   name: required(),
   // The KEY. A blank one collides with the next blank one.
   email: [required(), email()],
+  /* EVERY record belongs to an organisation. Not required here until
+     2026-09-22, so the Add dialog — which had no Customer field — saved
+     records with none, and the Customer chip could never find them: a chip
+     offers only the values the data carries.
+     TRAP T-a-chip-filters-the-values-the-data-has */
+  customer: required(),
   seats: number(),
   health: number(),
 });
