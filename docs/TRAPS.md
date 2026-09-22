@@ -2846,7 +2846,11 @@ The rules it settles, once:
 
 **ADOPTED, not merely available.** `sherpa-quick-filter` reads its badge,
 caret, count and tooltip from `filterFace()`; `sherpa-quick-filter-toolbar`
-exposes `states` and derives `clauses` from it. A module nobody calls is a
+exposes `states` and derives `clauses` from it; `bindLegendFilter` reports a
+`state` too — a legend's "hidden" is the INVERSE of "picked", the same fact
+stored the other way round, so a legend and a chip over one field report the
+same value states. Their CLAUSES differ in shape and agree in meaning: the
+legend writes the NOT form, which is shorter for one hidden value out of four. A module nobody calls is a
 second answer waiting to happen, which is what these were for four commits.
 
 `stateClause()` turns one state into a `FilterClause` — one pick is `eq`,
@@ -2870,6 +2874,8 @@ picked values on the right, its unpicked on the left.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `src/core/legend-filter.ts`
+- Site: `test/unit/legend-filter.test.mjs`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so

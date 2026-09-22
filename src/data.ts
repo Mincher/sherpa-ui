@@ -196,7 +196,6 @@ export {
 export {
   fieldState,
   stateClause,
-  statesFilter,
   filterFace,
   type FieldState,
   type ValueState,

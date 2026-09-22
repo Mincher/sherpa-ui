@@ -284,3 +284,36 @@ test('the binding REPORTS after it writes the chip', () => {
   assert.equal(parts.get('legend:plan'), undefined, 'and its own part is gone');
   assert.equal(chip.reported, 2, 'the CLEARING was announced too');
 });
+
+/* ── One field, one state ───────────────────────────────────────────── */
+
+test('the legend reports the SAME state a chip would', async () => {
+  const { fieldState, stateClause } = await import(
+    new URL('../../dist/data.js', import.meta.url));
+
+  const parts = new Map();
+  const source = { contribute: (k, f) => (f ? parts.set(k, f) : parts.delete(k)) };
+  const legend = legendStub();
+  const binding = bindLegendFilter(legend, source, { field: 'status', values: STATES });
+
+  // Nothing hidden: every value shown, so the field narrows nothing.
+  assert.equal(binding.state.fieldState, 'off',
+    'everything shown is the same rows as no filter');
+
+  legend.click('churned', false);
+  /* A legend's `hidden` is the INVERSE of `picked`, so its state is what a
+     CHIP over the same field would report with the other three ticked.
+     TRAP T-one-state-per-filtered-field */
+  const viaChip = fieldState(
+    { field: 'status', values: STATES },
+    { picked: ['active', 'trial', 'suspended'] },
+  );
+  assert.deepEqual(binding.state.values, viaChip.values, 'the same value states');
+  assert.equal(binding.state.fieldState, viaChip.fieldState);
+
+  /* The CLAUSES differ in shape and agree in meaning: the legend writes the
+     NOT form, which is shorter for one hidden value out of four. */
+  assert.deepEqual(parts.get('legend:status'), ['status', 'ne', 'churned']);
+  assert.deepEqual(stateClause(viaChip),
+    ['status', 'in', ['active', 'trial', 'suspended']]);
+});

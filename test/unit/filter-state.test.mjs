@@ -16,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { fieldState, stateClause, statesFilter, filterFace } =
+const { fieldState, stateClause, filterFace } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const OWNERS = ['Ravi Menon', 'Dana Whitlock', 'Unassigned'];
@@ -102,19 +102,6 @@ test('a typed condition carries what was typed', () => {
     stateClause(fieldState(facts, { op: 'startswith', text: 'Rav' })),
     ['owner', 'startswith', 'Rav'],
   );
-});
-
-test('several fields AND, and an off field contributes nothing', () => {
-  const owner = fieldState(facts, { picked: ['Ravi Menon'] });
-  const tier = fieldState({ field: 'tier', values: ['Gold', 'Silver'] }, { picked: ['Gold'] });
-  const empty = fieldState({ field: 'plan', values: ['Free'] });
-
-  assert.deepEqual(statesFilter([owner, tier, empty]), [
-    'and', ['owner', 'eq', 'Ravi Menon'], ['tier', 'eq', 'Gold'],
-  ]);
-  // One clause needs no `and` wrapper.
-  assert.deepEqual(statesFilter([owner, empty]), ['owner', 'eq', 'Ravi Menon']);
-  assert.equal(statesFilter([empty]), undefined);
 });
 
 /* ── filterFace ─────────────────────────────────────────────────────── */

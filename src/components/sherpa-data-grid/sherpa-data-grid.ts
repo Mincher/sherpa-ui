@@ -16,7 +16,7 @@ import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/store.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
 } from '../../core/store.js';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -632,7 +632,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !field) return;
 
     const cleared = event.type === 'menu-clear';
-    const held = cleared ? null : this.#readColumnFilter(chip);
+    const held = cleared ? null : this.#readColumnFilter(chip, field);
 
     if (held) {
       this.#columnFilters.set(field, held);
@@ -686,7 +686,7 @@ export class SherpaDataGrid extends SherpaElement {
    * Read one column's menu into a clause. TRAP T-grid-empty-clause-is-null — an
    * empty value says nothing, and a range needs both ends.
    */
-  #readColumnFilter(chip: HTMLElement): ColumnFilter | null {
+  #readColumnFilter(chip: HTMLElement, field = ''): ColumnFilter | null {
     const menu = chip.querySelector('sherpa-menu');
     const range = menu?.hasAttribute('data-range') ?? false;
     /* The condition lives in the MENU for a TEXT column — it is the shared
@@ -724,11 +724,14 @@ export class SherpaDataGrid extends SherpaElement {
       /* ASK THE MENU. It owns its rows, so reading them here would be a
          second answer to "what is ticked". TRAP T-one-field-one-filter-menu */
       const picks = [...((menu as HTMLElement & { values?: string[] }).values ?? [])];
-      if (!picks.length) return null;
-      // SEVERAL picks is `in` — `eq` against a list can never match.
-      return picks.length === 1
-        ? { op, value: picks[0]! }
-        : { op: op === 'ne' ? 'notin' : 'in', value: '', picks };
+      /* ONE rule for picks → a clause: one is `eq`, several are `in`, because
+         `eq` against a list can never match. In store.ts, beside the grammar. */
+      const clause = picksClause(field, picks, op as FilterOp);
+      if (!clause) return null;
+      const [, clauseOp, value] = clause;
+      return Array.isArray(value)
+        ? { op: clauseOp, value: '', picks: value.map(String) }
+        : { op: clauseOp, value: String(value) };
     }
 
     // A DATE column has no condition picker, so the operator is equality.

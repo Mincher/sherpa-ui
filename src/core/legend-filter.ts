@@ -11,7 +11,8 @@
  *
  * TRAP T-a-legend-toggle-is-a-filter
  */
-import { valueSet, type Filter } from './store.js';
+import { picksClause, valueSet, type Filter } from './store.js';
+import { fieldState, type FilterState } from './filter-state.js';
 
 /** A legend: it reports clicks and remembers which labels are off. */
 interface LegendEl extends EventTarget {
@@ -52,16 +53,25 @@ export interface LegendFilterOptions {
  * REMOVES the part rather than adding a clause nothing fails.
  */
 export function hiddenFilter(field: string, hidden: ReadonlySet<string>): Filter | undefined {
-  if (!hidden.size) return undefined;
-  const out = [...hidden];
-  // One value reads better as `ne`; the grammar treats the two the same.
-  return out.length === 1 ? [field, 'ne', out[0]!] : [field, 'notin', out];
+  /* The SAME rule every other filter uses, inverted: one value is `ne`,
+     several are `notin`. It was written out here as well, which is a second
+     answer to a question store.ts had already settled.
+     TRAP T-one-state-per-filtered-field */
+  return picksClause(field, [...hidden], 'ne');
 }
 
 /** What `bindLegendFilter` hands back. */
 export interface LegendFilterBinding {
   /** The labels currently hidden. */
   readonly hidden: string[];
+  /**
+   * This field as every other control reports it.
+   *
+   * A legend's "hidden" is the inverse of "picked" — the same fact stored the
+   * other way round — so it answers the same question as a chip, a column
+   * heading or a tab strip. TRAP T-one-state-per-filtered-field
+   */
+  readonly state: FilterState;
   /** Drive the same state from elsewhere — a saved view, a preset. */
   set: (hidden: Iterable<string>) => void;
   destroy: () => void;
@@ -155,6 +165,13 @@ export function bindLegendFilter(
   return {
     get hidden(): string[] {
       return [...hidden];
+    },
+    get state(): FilterState {
+      // PICKED is what is shown; `hidden` is the same fact inverted.
+      return fieldState(
+        { field, values },
+        { picked: values.filter((v) => !hidden.has(v)) },
+      );
     },
     set(next: Iterable<string>): void {
       const want = new Set([...next].filter((v) => known.has(v)));

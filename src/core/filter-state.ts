@@ -24,8 +24,8 @@
  */
 import {
   DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES,
-  andFilter, picksClause, valueSet,
-  type Filter, type FilterClause, type FilterOp,
+  picksClause, valueSet,
+  type FilterClause, type FilterOp,
 } from './store.js';
 
 /** What a field's selection is doing. */
@@ -159,11 +159,6 @@ export function stateClause(state: FilterState): FilterClause | undefined {
     state.values.filter((v) => v.state === 'picked').map((v) => v.value),
     state.op,
   );
-}
-
-/** Several fields, ANDed — the shape a DataSource part takes. */
-export function statesFilter(states: readonly FilterState[]): Filter | undefined {
-  return andFilter(states.map(stateClause).filter((c): c is FilterClause => !!c));
 }
 
 /**
