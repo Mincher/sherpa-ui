@@ -42,7 +42,7 @@ anatomy:
               attrs:
                 aria-hidden: "true"
             - el: span
-              class: label
+              class: label sherpa-truncate
               part: label
             - el: span
               class: value
@@ -66,6 +66,10 @@ states:
   - $type: state
     name: focus-visible
     selector: .item:focus-visible
+capabilities:
+  - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (off). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: legend-item-click
@@ -94,6 +98,10 @@ tokens:
   item.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   item.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   item.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
+  swatch.border-start-start-radius: "{sherpa.border-rounding-top-left}"
+  swatch.border-start-end-radius: "{sherpa.border-rounding-top-right}"
+  swatch.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
+  swatch.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   item.color: "{sherpa.theme-content-body-1}"
   item.font-family: "{sherpa.font-family-mono}"
   item.font-size: "{sherpa.theme-content-size-small}"
@@ -101,10 +109,6 @@ tokens:
   item.line-height: "{sherpa.theme-content-line-height-xs}"
   swatch.inline-size: "{sherpa.display-mode-size-xs}"
   swatch.block-size: "{sherpa.display-mode-size-xs}"
-  swatch.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  swatch.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  swatch.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  swatch.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   swatch.border-width: "{sherpa.display-mode-border-width-base}"
   swatch.border-color: "{sherpa.data-viz-series-1}"
   swatch.background: "{sherpa.data-viz-series-1}"
@@ -132,3 +136,7 @@ $extensions:
         (394 vs 153) — both lay their slot out the same way. The code has no data-orientation: the
         legend is a CSS grid that wraps to its container, so one element covers both, and a
         container query does what the variant switch does in Figma.
+    jsProps:
+      - name: "off"
+        type: string
+        access: read-write
