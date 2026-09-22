@@ -734,6 +734,7 @@ tears down every binding, listener and persister a view made.
 
 - Site: `src/core/data-source.ts`
 - Site: `src/core/persist-view.ts`
+- Site: `src/core/legend-filter.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -7175,3 +7176,64 @@ source declares no `pageSize`, so nothing was ever sliced.
 - Site: `src/core/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `examples/views/records.js`
+
+### T-a-legend-toggle-is-a-filter
+
+Turning a legend row off used to call `setSliceHidden(i)` — a DRAWING trick on
+one chart. That bar vanished and nothing else on the page knew: the other
+charts, the metric tiles, the grid and its pager all carried on counting the
+rows the reader had just said to exclude.
+
+A legend toggle is a **filter**, scoped to the view. `bindLegendFilter` writes
+it as a named part:
+
+```js
+bindLegendFilter(legend, source, {
+  field: 'status', values: states, chip: { el: qft, id: 'status' }, signal,
+});
+```
+
+One click then writes `['status', 'ne', 'churned']` (or `notin` for several)
+into `source.contribute('legend:status', …)`, and every bound component
+re-reads. Measured on Records: clicking "churned" took the metric from 100 to
+75, recounted the DONUT legend to 18/20/18/19 and dropped the grid from four
+pages to three.
+
+Four things the rule gets right, each with a test:
+
+- **An empty set removes the part**, rather than adding a clause nothing fails.
+- **The key is `legend:<field>`**, so two legends over different fields never
+  overwrite each other, and neither disturbs the chips' own part.
+- **A chip over the same field is the SAME state wearing a menu.** The menu
+  lists what is still ON, because a filter names what it keeps; picking in it
+  dims the legend in kind.
+- **Nothing ticked means no constraint**, not "hide everything" — the reading
+  the rest of the toolbar already uses.
+
+`examples/views/dashboard.js` still uses the old per-chart calls. That is not
+wrong for a page whose charts are separate summaries of separate questions;
+it is wrong when the legend labels a field the rest of the view also shows.
+
+- Site: `src/core/legend-filter.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/legend-filter.test.mjs`
+- Site: `examples/views/records.js`
+
+### T-a-legend-remembers-its-off-set-by-label
+
+`sherpa-chart-legend` had no memory and no public door. `#render()` never wrote
+`aria-pressed`, so **every re-populate silently cleared the toggles** — which a
+source push does on any filter change. And nothing outside could set them, so a
+chip over the same field had no way to push back.
+
+It now keeps an off-set and exposes it as `legend.off`.
+
+**By LABEL, not by index.** A re-populate re-orders and re-counts: a filter that
+removes a category shifts every index below it, so an index-keyed set would
+dim the wrong row. `countBy` puts the field VALUE in `label`, which is also
+exactly what the filter needs — no lookup table.
+
+The getter is the read-back door the ownership rule asks for: a host that SET
+something needs to ask what the component now holds.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`

@@ -163,3 +163,12 @@ export {
   type AggregateOptions,
   type Series,
 } from './core/aggregate.js';
+
+/* A legend toggle is a FILTER — the rule, with no DOM.
+   TRAP T-a-legend-toggle-is-a-filter */
+export {
+  hiddenFilter,
+  bindLegendFilter,
+  type LegendFilterOptions,
+  type LegendFilterBinding,
+} from './core/legend-filter.js';

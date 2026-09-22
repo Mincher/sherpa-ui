@@ -5,7 +5,7 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
-  countBy, reduceRows,
+  countBy, reduceRows, bindLegendFilter,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -129,6 +129,13 @@ export async function init(root) {
     { id: 'trial',     label: 'Trial',     type: 'data' },
     { id: 'suspended', label: 'Suspended', type: 'data' },
     { id: 'churned',   label: 'Churned',   type: 'data' },
+    /* The STATUS legend's menu. A multi-select over the same field the bar
+       chart splits on, so unticking a value and dimming its legend row are the
+       same gesture. Not the four toggles above: those are one-tap presets, and
+       this is the legend's own face.
+       TRAP T-a-legend-toggle-is-a-filter */
+    { id: 'status', label: 'Status', type: 'data', icon: 'fa-solid fa-chart-simple',
+      select: 'multiple', removable: true, options: asOptions('status') },
     // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
       select: 'multiple', removable: true, options: asOptions('plan') },
@@ -233,6 +240,22 @@ export async function init(root) {
   summary('#r-bar-legend', byStatus);
   summary('#r-donut', byPlan);
   summary('#r-donut-legend', byPlan);
+
+  /* TURNING A LEGEND ROW OFF IS A FILTER, not a drawing trick. The old wiring
+     called setBarHidden() and the bar vanished from that ONE chart; here the
+     click writes `notin` into the source, so the other charts, the tiles, the
+     grid and its pager all narrow with it.
+
+     Each legend also drives a multi-select chip over the same field: the menu
+     unticks what the legend dimmed, and picking in the menu dims the legend in
+     kind. One state, two faces.
+     TRAP T-a-legend-toggle-is-a-filter */
+  bindLegendFilter(root.querySelector('#r-bar-legend'), source, {
+    field: 'status', values: states, chip: { el: qft, id: 'status' }, signal,
+  });
+  bindLegendFilter(root.querySelector('#r-donut-legend'), source, {
+    field: 'plan', values: plans, chip: { el: qft, id: 'plan' }, signal,
+  });
 
   /* The gauge reads ONE number, unrounded — rounding is presentation.
      TRAP T-an-aggregate-returns-the-number */

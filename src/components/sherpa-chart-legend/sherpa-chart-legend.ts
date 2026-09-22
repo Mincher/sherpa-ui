@@ -28,6 +28,13 @@ export class SherpaChartLegend extends SherpaElement {
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 
   #items: LegendItem[] = [];
+  /**
+   * The rows toggled OFF, by LABEL. By label and not by index because a
+   * re-populate re-orders and re-counts: a filter that removed a category
+   * would otherwise shift every index and turn off the wrong row.
+   * TRAP T-a-legend-remembers-its-off-set-by-label
+   */
+  #off = new Set<string>();
   #rolledUp = false;
   /** Folded categories and the on-set, both keyed by SOURCE index. */
   #rolled: Array<{ index: number; item: LegendItem }> = [];
@@ -38,9 +45,23 @@ export class SherpaChartLegend extends SherpaElement {
     if (this.#items.length) this.#render();
   }
 
-  /** populate([{ label, value?, colorIndex }]). */
+  /** populate([{ label, value?, colorIndex }]). Keeps the off-set. */
   protected override renderData(data: unknown): void {
     this.#items = this.#cap(Array.isArray(data) ? (data as LegendItem[]) : []);
+    this.#render();
+  }
+
+  /**
+   * The labels currently toggled OFF. A host that SET them needs to ask what
+   * the legend now holds. TRAP T-a-legend-remembers-its-off-set-by-label
+   */
+  get off(): string[] {
+    return [...this.#off];
+  }
+
+  /** Set them from outside — a chip over the same field, or a saved view. */
+  set off(next: readonly string[]) {
+    this.#off = new Set(next);
     this.#render();
   }
 
@@ -102,6 +123,8 @@ export class SherpaChartLegend extends SherpaElement {
         swatch.style.setProperty('--_border', seriesBorderVar(i, item.colorIndex));
       }
       entry.querySelector('.label')!.textContent = item.label;
+      // Remembered across a re-populate, so a source push does not clear it.
+      if (!readonly) entry.setAttribute('aria-pressed', String(!this.#off.has(item.label)));
       entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
       // Strip the button semantics; `disabled` would say the wrong thing.
       if (readonly) {
@@ -163,6 +186,11 @@ export class SherpaChartLegend extends SherpaElement {
     // aria-pressed is both the accessible state and the CSS hook for dimming.
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
+    const label = this.#items[Number(raw)]?.label;
+    if (label != null) {
+      if (active) this.#off.delete(label);
+      else this.#off.add(label);
+    }
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
