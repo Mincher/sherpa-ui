@@ -613,7 +613,11 @@ export async function init(root) {
     bulkActions.replaceChildren();
     for (const action of grid.actionsFor(records.length)) {
       const button = document.createElement('sherpa-button');
-      button.dataset.look = action.danger ? 'ghost' : 'ghost';
+      /* TRANSPARENT: a bulk bar sits ON a surface, so a bordered button draws
+         a box inside a box. `ghost` is not a look this system has — both
+         branches of a dead ternary said it, so every bulk action fell back to
+         the default and wore a grey border. */
+      button.dataset.look = 'transparent';
       if (action.danger) button.dataset.status = 'critical';
       if (action.icon) button.dataset.iconStart = action.icon;
       button.textContent = action.label;

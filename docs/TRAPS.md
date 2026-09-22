@@ -54,6 +54,7 @@ attributes only, written before append.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-app-header.spec.ts`
 ### T-tokens-css-never-reaches-shadow
 
 A bare `[data-status]` rule in `tokens.css` is loaded into the **document** and
@@ -7356,6 +7357,33 @@ delete" is stated once for both.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
+
+### T-a-trigger-shows-what-it-opened
+
+A button that opens something and goes on looking closed reads as broken.
+
+`sherpa-button` already draws `data-open` — the accent ring — for a menu it
+OWNS as a slotted child. The header's notifications panel is not that: it lives
+in the HOST, beside the header, so nothing inside the component could know it
+had opened. The bell opened a panel four times a day and never once said so.
+
+The fix is the system's own convention, not a new mechanism: `data-*` carries
+state IN, an event carries intent OUT. The header emits `notifications-open`;
+the host owns the panel, so the HOST sets `data-notifications-open` back, and
+the header mirrors it onto the button it owns.
+
+```js
+appHeader.addEventListener('notifications-open', () => panel.toggle(bell));
+panel.addEventListener('menu-open',  () => appHeader.toggleAttribute('data-notifications-open', true));
+panel.addEventListener('menu-close', () => appHeader.toggleAttribute('data-notifications-open', false));
+```
+
+**Look for this wherever a trigger and its surface are separated.** The state
+belongs to whoever owns the surface, and the trigger has to be told.
+
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.html`
+- Site: `test/e2e/reforged-app-header.spec.ts`
 
 ### T-a-css-function-needs-its-longhand-first
 

@@ -297,3 +297,50 @@ test('every action icon actually renders (an unknown name draws NOTHING)', async
     expect(Math.max(g.inkW, g.inkH), `${g.name}: painted nothing`).toBeGreaterThan(0);
   }
 });
+
+/**
+ * A TRIGGER SHOWS WHAT IT OPENED.
+ *
+ * `sherpa-button` draws `data-open` for a menu it OWNS. The notifications
+ * panel lives in the HOST, so the header had no way to know — the bell opened
+ * a panel and went on looking closed.
+ *
+ * TRAP T-a-trigger-shows-what-it-opened
+ */
+test('the bell reports the panel state the host gives it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-header');
+    el.setAttribute('data-notifications', '4');
+    document.getElementById('root')!.replaceChildren(el);
+    await customElements.whenDefined('sherpa-app-header');
+    await (el as HTMLElement & { rendered?: Promise<void> }).rendered;
+
+    const bell = el.shadowRoot!.querySelector('.notif-btn') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    // A COMPOSED child renders on its own clock. TRAP T-custom-element-upgrade
+    await customElements.whenDefined('sherpa-button');
+    await bell.rendered;
+
+    const read = (): Record<string, unknown> => ({
+      open: bell.hasAttribute('data-open'),
+      // `data-open` is what sherpa-button already draws its ring from.
+      ring: getComputedStyle(bell.shadowRoot!.querySelector('.trigger')!).boxShadow,
+    });
+
+    const closed = read();
+    el.setAttribute('data-notifications-open', '');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const opened = read();
+    el.removeAttribute('data-notifications-open');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return { closed, opened, shut: read() };
+  });
+
+  expect(r.closed).toMatchObject({ open: false, ring: 'none' });
+  expect(r.opened).toMatchObject({ open: true });
+  // The ring is the accent one sherpa-button already owns — not a new colour.
+  expect(r.opened['ring']).toContain('rgb(59, 76, 205)');
+  // …and it goes away again. Off is not gone, but closed IS closed.
+  expect(r.shut).toMatchObject({ open: false, ring: 'none' });
+});

@@ -46,11 +46,17 @@ export class SherpaAppHeader extends SherpaElement {
     'data-theme-toggle': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
     'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
+    /* The notifications panel is OPEN. The header emits the intent and the
+       host owns the panel, so the host says when it opened — a button that
+       opens something and does not look open reads as broken.
+       TRAP T-a-trigger-shows-what-it-opened */
+    'data-notifications-open': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = [
     'data-icon',
     'data-notifications',
+    'data-notifications-open',
   ];
 
   override onRender(): void {
@@ -64,6 +70,20 @@ export class SherpaAppHeader extends SherpaElement {
 
   override onChange(): void {
     this.#sync();
+  }
+
+  /**
+   * Tell the bell what the host did with the panel.
+   *
+   * `sherpa-button` draws `data-open` for a menu it OWNS; the notifications
+   * panel lives in the host, so the host reports it back. A button that opens
+   * something and does not look open reads as broken.
+   * TRAP T-a-trigger-shows-what-it-opened
+   */
+  #syncOpen(): void {
+    this.$('.notif-btn')?.toggleAttribute(
+      'data-open', this.hasAttribute('data-notifications-open'),
+    );
   }
 
   /** populate({ breadcrumb, filters, available }) — feed the composed children. */
@@ -132,6 +152,7 @@ export class SherpaAppHeader extends SherpaElement {
   }
 
   #sync(): void {
+    this.#syncOpen();
     const icon = this.$('.view-icon');
     if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
 

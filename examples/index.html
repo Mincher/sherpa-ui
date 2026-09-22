@@ -337,10 +337,17 @@
     };
     notificationSource.addEventListener('change', syncBadge);
 
-    // The bell opens the list, anchored to itself.
+    /* The bell opens the list, anchored to itself — and the HOST owns the
+       panel, so the host tells the bell it is open.
+       TRAP T-a-trigger-shows-what-it-opened */
     appHeader.addEventListener('notifications-open', () => {
       notifications.toggle(appHeader.shadowRoot?.querySelector('.notif-btn') ?? appHeader);
     });
+    for (const [event, open] of [['menu-open', true], ['menu-close', false]]) {
+      notifications.addEventListener(event, () => {
+        appHeader.toggleAttribute('data-notifications-open', open);
+      });
+    }
 
     // "Mark all read" persists through the STORE, which is what makes the badge
     // follow — the list has already marked itself.

@@ -150,6 +150,7 @@
 }
 :host([data-notifications]) .notif-badge { display: block; }
 
+
 /* ── Row 2: view details ────────────────────────────────────────────── */
 .row-view {
   display: flex;
