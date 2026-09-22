@@ -7496,3 +7496,38 @@ programmatic `set()`.
 
 - Site: `src/core/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
+
+### T-a-date-chip-names-its-field
+
+Two faults in the Records example's header date chip, both of which made it
+look broken when the machinery underneath was fine.
+
+**It was labelled "Date range".** A chip names the FIELD it filters — "Created
+date" — because a reader cannot act on one that does not say which date.
+`Region` and `Customer` beside it both name their field; this one named its
+shape.
+
+**Its calendar offered days the data does not have.** `globalFilters` defaulted
+`availableDates` to the last 90 days, while every `created` date in Records
+falls in 2024. So only days no record could match were pickable, and the chip
+could not narrow anything — the definition of meaningless.
+
+`globalFilters(views, regions, customers, dates)` now takes the dates, and
+Records passes `[...new Set(customers.map((c) => c.created))].sort()` — the
+days its own records actually carry. Verified: 2024-01-01 to 2024-06-30 gives
+52 of 100.
+
+Two things checked while chasing this, both FINE and worth recording so the
+next reader does not chase them again:
+
+- **The Customer chip is not broken; it COMMITS.** A multi-select menu defers
+  behind Apply by default (T-commit-follows-select-mode), so ticking a row and
+  walking away does nothing. Picking Northwind then pressing Apply gives 10 of
+  100.
+- **A date chip does not report through `chip.values`.** Its picks live on the
+  nested `sherpa-calendar` as `data-value-start` / `data-value-end`, which
+  `#chipPicks` reads. Setting `chip.values` on one looks like it worked and
+  reports nothing.
+
+- Site: `examples/views/global-filters.js`
+- Site: `examples/views/records.js`

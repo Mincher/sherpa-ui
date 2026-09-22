@@ -111,7 +111,10 @@ export async function init(root) {
        See global-filters.js. Options are DERIVED from the view definitions and
        the records, so neither can name something the data does not have.
        TRAP T-a-chip-filters-the-values-the-data-has. */
-    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs),
+    /* The dates the RECORDS carry — not the default last-90-days, which no
+       record in this set falls inside. TRAP T-a-date-chip-names-its-field */
+    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs,
+      [...new Set(customers.map((c) => c.created))].sort()),
   });
 
   /* Quick-filter chips. A chip with `options` opens a menu; one without is a

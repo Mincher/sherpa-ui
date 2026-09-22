@@ -35,7 +35,7 @@ function demoDays(back = 90) {
  * options differ from the records filters to nothing, silently.
  * TRAP T-a-chip-filters-the-values-the-data-has.
  */
-export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS) {
+export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, dates = demoDays()) {
   return [
     {
       id: 'view',
@@ -70,14 +70,20 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS) {
     },
     {
       id: 'dateRange',
-      label: 'Date range',
+      /* "Created date", not "Date range": a chip names the FIELD it filters,
+         and a reader cannot act on a chip that does not say which date.
+         TRAP T-a-date-chip-names-its-field */
+      label: 'Created date',
       icon: 'fa-solid fa-calendar',
       kind: 'date',
       // Opens in RANGE mode — a global date filter is nearly always a span.
       range: true,
       removable: true,
-      // Only days the data covers are pickable.
-      availableDates: demoDays(),
+      /* Only days the DATA covers are pickable, so the caller passes its own.
+         The default is the last 90 days, which matched nothing in Records:
+         every `created` date there is in 2024, so the calendar offered a span
+         no record could ever fall in. TRAP T-a-date-chip-names-its-field */
+      availableDates: dates,
     },
     // A chip with NO options is dropped, not shown empty.
   ].filter((chip) => chip.id !== 'customer' || customers.length > 0);
