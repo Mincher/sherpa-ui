@@ -21,6 +21,7 @@ export class SherpaListItem extends SherpaElement {
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
   static override props = {
+    'data-heading': { type: 'string', kind: 'content', to: '.title' },
     'data-draggable': { type: 'boolean', kind: 'style' },
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-interactive': { type: 'boolean', kind: 'style' },

@@ -3,7 +3,7 @@
  *
  * TRAP T-actions-were-a-slot
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
 import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -82,6 +82,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-bounds': SHARED_PROPS['data-bounds'],
     'data-no-actions': { type: 'boolean', kind: 'style' },
   } as const;
 

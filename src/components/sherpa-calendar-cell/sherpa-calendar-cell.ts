@@ -14,6 +14,7 @@ export class SherpaCalendarCell extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-value': { type: 'string', kind: 'style' },
     'data-outside': { type: 'boolean', kind: 'style' },
     'data-state': { type: 'enum', kind: 'style', values: ['range-end', 'range-mid', 'range-start', 'selected', 'today'] },
   } as const;

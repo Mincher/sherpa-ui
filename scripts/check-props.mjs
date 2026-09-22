@@ -13,6 +13,9 @@
  *                   sets these and any component may read them, so declaring
  *                   one would claim ownership it does not have
  *
+ * Also: a component that READS its own `data-*` must declare it. That read is
+ * the other half of the same contract — TRAP T-a-host-attribute-is-declared-once.
+ *
  *   node scripts/check-props.mjs
  */
 import { readFileSync, globSync } from 'node:fs';
@@ -50,6 +53,32 @@ for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
     if (attr.startsWith('data-has-') || CASCADES.has(attr)) continue;
     if (ts.includes(`'${attr}'`)) continue;
     problems.push(`${relative(ROOT, file)}  :host([${attr}]) is not declared by ${comp}`);
+  }
+}
+
+/* The READ half. `this.dataset['x']` is a public attribute arriving, and an
+   undeclared one is invisible to the spec and to anything reading it. Only
+   `this.dataset` — a local `cal.dataset[...]` is another element's business.
+   `observed` and `variantAttrs` count as declarations: both name the attribute
+   in the same file. */
+for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
+  const comp = file.split('/')[2];
+  const ts = readFileSync(join(ROOT, file), 'utf8');
+
+  const declared = new Set();
+  const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
+  if (props) for (const m of props[1].matchAll(/'(data-[\w-]+)':/g)) declared.add(m[1]);
+  for (const key of ['observed', 'variantAttrs']) {
+    const list = new RegExp(`static override ${key} = \\[([\\s\\S]*?)\\]`).exec(ts);
+    if (list) for (const m of list[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
+  }
+
+  const seen = new Set();
+  for (const m of ts.matchAll(/\bthis\.dataset\['(\w+)'\]/g)) {
+    const attr = `data-${m[1].replace(/([A-Z])/g, (c) => `-${c.toLowerCase()}`)}`;
+    if (declared.has(attr) || seen.has(attr)) continue;
+    seen.add(attr);
+    problems.push(`${relative(ROOT, file)}  reads this.dataset for ${attr}, which it does not declare`);
   }
 }
 

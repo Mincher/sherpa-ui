@@ -7313,7 +7313,30 @@ because each is already named somewhere true:
 That last row is why `sherpa-select-checkbox` and `sherpa-select-radio` still
 carry an undeclared `:host([data-status])` and are right to.
 
+**The READ half, added 2026-09-22.** `this.dataset['x']` is the same public
+attribute arriving, so it carries the same obligation. Measured across the 58:
+**392 sites reach a component's own attributes six different ways** — 183
+`dataset` reads, 101 `hasAttribute`, 52 `toggleAttribute`, 36 `setAttribute`,
+18 `getAttribute`, and `this.set()` exactly twice.
+
+169 of the 183 reads named an attribute the component already declared, which
+is the declaration pass holding. Nine did not, and are now declared:
+
+| | |
+|---|---|
+| `data-bounds` ×3 | a selector for the box a popover must stay inside, passed DOWN by the host. One meaning in three components, so it went to `SHARED_PROPS` |
+| `data-total-pages` | already in `DATA_PROPS`; the grid now reads from there rather than growing a copy |
+| `data-select`, `data-anchor`, `data-value`, `data-heading`, `data-has-caption` | one component each |
+
+`observed` and `variantAttrs` count as declarations — both name the attribute
+in the same file, and three `data-type` reads that first looked like gaps were
+already declared as variant attributes.
+
+The gate checks only `this.dataset`. A local `cal.dataset['value']` is another
+element's business, and counting it reported five phantom gaps.
+
 - Site: `scripts/check-props.mjs`
+- Site: `src/core/sherpa-element.ts`
 
 ### T-a-bare-name-must-be-used-not-mentioned
 

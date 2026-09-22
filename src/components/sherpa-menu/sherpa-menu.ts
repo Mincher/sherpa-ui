@@ -10,7 +10,7 @@
  *
  * @see TRAP T-footer-row-raises-on-any-flag
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { valueSet } from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -23,6 +23,8 @@ export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
   static override props = {
+    'data-bounds': SHARED_PROPS['data-bounds'],
+    'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
     'data-drill': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
   } as const;

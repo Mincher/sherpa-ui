@@ -7,7 +7,9 @@
  *
  * @see TRAP T-grid-reports-never-combines
  */
-import { SherpaElement, coerceNum, clampNum, markMatch } from '../../core/sherpa-element.js';
+import {
+  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markMatch,
+} from '../../core/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/icons.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle.js';
 import {
@@ -89,6 +91,8 @@ export class SherpaDataGrid extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
+    'data-bounds': SHARED_PROPS['data-bounds'],
+    'data-total-pages': DATA_PROPS['data-total-pages'],
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },
   } as const;

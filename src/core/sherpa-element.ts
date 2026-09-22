@@ -723,10 +723,19 @@ export const DATA_PROPS = {
   'data-locked': { type: 'boolean', kind: 'style' },
 } as const satisfies PropMap;
 
-/** Shared style attributes whose shape is identical wherever they appear. */
+/**
+ * Shared style attributes whose shape is identical wherever they appear.
+ * TRAP T-a-host-attribute-is-declared-once
+ */
 export const SHARED_PROPS = {
   'data-size': { type: 'enum', kind: 'style', values: ['sm', 'lg'] },
   'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
   /** Where a chart puts its legend. */
   'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+  /**
+   * A CSS selector for the box a popover must stay inside, passed DOWN from
+   * the host. Absent, the card falls back to the viewport — which is wrong
+   * inside a scroller. Three components take it and mean the same thing.
+   */
+  'data-bounds': { type: 'string', kind: 'style' },
 } as const satisfies PropMap;

@@ -11,6 +11,8 @@ export class SherpaTooltip extends SherpaElement {
   static override css = new URL('./sherpa-tooltip.css', import.meta.url);
   static override html = new URL('./sherpa-tooltip.html', import.meta.url);
   static override props = {
+    'data-anchor': { type: 'string', kind: 'style' },
+    
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
   } as const;
 

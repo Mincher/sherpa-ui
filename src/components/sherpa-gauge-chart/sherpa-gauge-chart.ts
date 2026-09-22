@@ -48,6 +48,7 @@ export class SherpaGaugeChart extends SherpaElement {
   // ONE LINE, deliberately: the spec generator reads only the first line.
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override props = {
+    'data-has-caption': { type: 'boolean', kind: 'visibility' },
     'data-legend': SHARED_PROPS['data-legend'],
   } as const;
 

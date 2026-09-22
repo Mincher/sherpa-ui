@@ -222,8 +222,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (available, addCustomFilter, clearAll,
-      organise). See $extensions.sherpa.methods.
+      callable from a view definition's state block (setChipValues, available, addCustomFilter,
+      clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -311,6 +311,10 @@ $extensions:
   sherpa:
     figmaName: Filter Toolbar
     methods:
+      - $type: method
+        name: setChipValues
+        args: "id: string, picks: readonly string[] | undefined"
+        description: Set ONE chip's picks, leaving every other chip alone.
       - $type: method
         name: available
         args: "defs: QuickFilterDef[]"
