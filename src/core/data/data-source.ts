@@ -224,8 +224,7 @@ export class DataSource extends EventTarget {
       if (live) this.#state.sortSuspended = live;
       this.#state.sort = [];
     }
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
   /** Resume the suspended sort. No-op when there is none. */
@@ -239,8 +238,7 @@ export class DataSource extends EventTarget {
   clearSort(): void {
     this.#state.sort = [];
     delete this.#state.sortSuspended;
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
   setGroup(field: string | null): void {
@@ -248,8 +246,7 @@ export class DataSource extends EventTarget {
     // The old count was measured against the OLD grouping. Drop it and wait for
     // the next draw. TRAP T-grouped-paging-belongs-to-the-view
     this.#viewPages = null;
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
   /** Replace the WHOLE filter, clearing every contribution. TRAP T-contribute-beats-last-writer */
@@ -274,14 +271,12 @@ export class DataSource extends EventTarget {
   #setFilterValue(filter: Filter | undefined): void {
     if (filter) this.#state.filter = filter;
     else delete this.#state.filter;
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
   setSearch(term: string): void {
     this.#state.search = term;
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
   setPage(page: number): void {
@@ -299,12 +294,19 @@ export class DataSource extends EventTarget {
 
   setPageSize(size: number): void {
     this.#state.pageSize = Math.max(1, Math.trunc(size) || 1);
-    this.#resetPage();
-    this.#schedule();
+    this.#requery();
   }
 
-  #resetPage(): void {
+  /**
+   * The query CHANGED, so start over: back to page one, then load.
+   *
+   * Six setters wrote these two calls in this order, which is six chances for
+   * a seventh to write one and forget the other — a filter that narrows while
+   * the pager still points at page four.
+   */
+  #requery(): void {
     this.#state.page = 1;
+    this.#schedule();
   }
 
   /** COALESCE one tick's writes into a single load. TRAP T-coalesce-microtask-not-debounce */

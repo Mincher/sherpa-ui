@@ -326,11 +326,30 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
  * is the single-value form of the same rule.
  * TRAP T-one-comparison-rule-for-query-and-ui
  */
-export function looseEqual(a: unknown, b: unknown): boolean {
+function looseEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
   if (typeof a === 'number' && typeof b === 'number') return a === b;
   return text(a) === text(b);
+}
+
+/**
+ * Do two KEYS name the same row?
+ *
+ * A key arrives as a string far more often than not — from an attribute, a
+ * URL, a `data-id` — and `'7' === 7` is false, which would report a row as
+ * MISSING. So numbers and numeric strings compare equal by stringifying both.
+ *
+ * NOT `looseEqual`: a key is case-SENSITIVE, because two rows keyed `Ada` and
+ * `ada` are two rows. Values are the other way round, which is why the two
+ * helpers live side by side rather than one calling the other.
+ *
+ * TRAP T-numeric-keys-compare-as-strings
+ */
+export function sameKey(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  return String(a) === String(b);
 }
 
 /** A value as lower-case text, for the substring and equality operators. */

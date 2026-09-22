@@ -4500,9 +4500,17 @@ A key arrives as a string far more often than not — from an attribute, a URL, 
 compares numbers and numeric strings as equal by stringifying both. Everything else
 is strict, and `null`/`undefined` never match anything.
 
-Every `findIndex`/`find` over the key field in this module goes through it, so
-`ArrayStore` and `LocalStore` cannot disagree about whether a row exists.
+Every `findIndex`/`find` over the key field goes through it, so no two stores
+can disagree about whether a row exists. That was a claim before it was a fact:
+`stores.ts` and `idb-store.ts` each carried a byte-identical private copy. It
+lives in `store.ts` now, beside `looseEqual` and `valueSet`.
 
+It is NOT `looseEqual`, deliberately: a key is case-SENSITIVE, because two rows
+keyed `Ada` and `ada` are two rows, while values compare case-insensitively
+(`T-one-comparison-rule-for-query-and-ui`). Two rules, side by side, neither
+calling the other.
+
+- Site: `src/core/data/store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `src/core/browser/idb-store.ts`
 

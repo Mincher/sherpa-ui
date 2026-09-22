@@ -175,7 +175,7 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
  *
  * TRAP T-series-count-is-ten-not-eleven
  */
-export const SERIES_COUNT = 10;
+const SERIES_COUNT = 10;
 
 /**
  * The custom property a mark paints with. `index` is 0-based; an explicit

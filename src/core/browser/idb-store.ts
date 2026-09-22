@@ -10,6 +10,7 @@
 import {
   applyOptions,
   readField,
+  sameKey,
   type Filter,
   type FilterClause,
   type LoadOptions,
@@ -332,11 +333,4 @@ function promised<T>(request: IDBRequest): Promise<T> {
     request.onsuccess = () => resolve(request.result as T);
     request.onerror = () => reject(request.error ?? new Error('IdbStore: request failed'));
   });
-}
-
-/** Key comparison. TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false. */
-function sameKey(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  return String(a) === String(b);
 }

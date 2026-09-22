@@ -7,6 +7,7 @@
 import {
   applyOptions,
   readField,
+  sameKey,
   type LoadOptions,
   type LoadResult,
   type Row,
@@ -55,6 +56,7 @@ export class ArrayStore extends BaseStore {
   }
 
   byKey(key: unknown): Promise<Row | undefined> {
+    // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.
     const row = this.#rows.find((r) => sameKey(readField(r, this.key), key));
     return Promise.resolve(row ? { ...row } : undefined);
   }
@@ -86,13 +88,6 @@ export class ArrayStore extends BaseStore {
     this.announce({ type: 'remove', key });
     return Promise.resolve();
   }
-}
-
-/** Key comparison. TRAP T-numeric-keys-compare-as-strings */
-function sameKey(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (a == null || b == null) return false;
-  return String(a) === String(b);
 }
 
 /* ── JsonStore ─────────────────────────────────────────────────────────── */
