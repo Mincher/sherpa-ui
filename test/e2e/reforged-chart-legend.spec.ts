@@ -580,3 +580,59 @@ test('an emptied category keeps its row, dimmed and still clickable', async ({ p
   // Drawn inactive, so a reader can see it is contributing nothing.
   expect(r.after[1]!['ink']).not.toBe(r.after[0]!['ink']);
 });
+
+/**
+ * AT LEAST ONE ROW STAYS ON — and the LEGEND refuses it.
+ *
+ * Will, 2026-09-22: "legend filtering is just filtering. visibility & state is
+ * a component concern." The floor used to live in a `legend-filter` module in
+ * the data layer, which is gone: what is VISIBLE is this component's own state.
+ *
+ * TRAP T-a-legend-keeps-one-row-on
+ */
+test('the LAST active row cannot be switched off', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off?: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
+    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    await settled();
+
+    const clicks: string[] = [];
+    el.addEventListener('legend-item-click', (e) =>
+      clicks.push((e as CustomEvent).detail.label as string));
+
+    const items = (): HTMLElement[] =>
+      [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+
+    // Switch off two of three — allowed.
+    items()[0]!.click(); await settled();
+    items()[1]!.click(); await settled();
+    const two = { off: [...el.off!], pressed: items().map((i) => i.getAttribute('aria-pressed')) };
+
+    // The THIRD is the last one on. Refused, and nothing reported.
+    items()[2]!.click(); await settled();
+    const three = { off: [...el.off!], pressed: items().map((i) => i.getAttribute('aria-pressed')) };
+
+    // And a caller cannot empty it either.
+    el.off = ['A', 'B', 'C'];
+    await settled();
+    const set = [...el.off!];
+
+    return { two, three, set, clicks };
+  });
+
+  expect(r.two.off).toEqual(['A', 'B']);
+  expect(r.two.pressed).toEqual(['false', 'false', 'true']);
+
+  // The refused click changes NOTHING — not the set, not the dimming.
+  expect(r.three.off, 'the last row stays on').toEqual(['A', 'B']);
+  expect(r.three.pressed, 'and it is not dimmed').toEqual(['false', 'false', 'true']);
+  expect(r.clicks, 'a refused click is not reported either').toEqual(['A', 'B']);
+
+  // The same floor for a host write — both reach the same state.
+  expect(r.set).toEqual(['A', 'B']);
+});

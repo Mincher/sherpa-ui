@@ -6,7 +6,7 @@ import {
   ArrayStore, DataSource, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindLegendFilter,
+  countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindSelection,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
@@ -180,12 +180,21 @@ export async function init(root) {
      Each legend writes the SELECTION of the field its labels are values of,
      so every bound component re-reads together.
      TRAP T-a-legend-toggle-is-a-filter */
-  bindLegendFilter($('#bar-legend'), source, {
-    field: 'category', values: CATEGORY_ORDER, signal: page.signal,
+  /* `bindSelection` is the SAME loop a chip or a column heading uses — legend
+     filtering is just filtering, and a legend's visible state is its own. */
+  const bindLegend = (el, field, values) => el && bindSelection(el, source, {
+    field,
+    values,
+    // Read the LEGEND, not the event: a roll-up row stands for several values.
+    read: (l) => values.filter((v) => !l.off.includes(v)),
+    draw: (l, picked) => {
+      l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
+    },
+    event: 'legend-item-click',
+    signal: page.signal,
   });
-  bindLegendFilter($('#donut-legend'), source, {
-    field: 'os', values: OS_ORDER, signal: page.signal,
-  });
+  bindLegend($('#bar-legend'), 'category', CATEGORY_ORDER);
+  bindLegend($('#donut-legend'), 'os', OS_ORDER);
   /* The LINE legend names two SERIES, not values of one field — "Sessions" is
      every non-critical row. So it stays a per-chart hide: there is no single
      field whose values those labels are, and inventing one would be a lie.

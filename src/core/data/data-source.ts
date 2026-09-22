@@ -4,7 +4,7 @@
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  */
-import { andFilter, filterFields, filterNeedles, picksClause } from './store.js';
+import { andFilter, filterFields, filterNeedles, picksClause, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FilterState } from './filter-state.js';
@@ -139,7 +139,7 @@ export class DataSource extends EventTarget {
    */
   #readings = new Map<string, FieldReading>();
   /** Every value a field can take, for the controls that draw its rows. */
-  #domains = new Map<string, string[]>();
+  #domains = new Map<string, unknown[]>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -287,12 +287,25 @@ export class DataSource extends EventTarget {
    * lets two controls share one selection.
    */
   declareValues(field: string, values: readonly unknown[]): void {
-    this.#domains.set(field, [...new Set(values.map(String))]);
+    /* KEPT AS THE DATA HOLDS THEM. `values.map(String)` turned every number
+       into text and every object into "[object Object]" — so two owners became
+       one value. De-duplicated by KEY, which is the string form.
+       TRAP T-a-value-can-be-an-object */
+    const seen = new Map<string, unknown>();
+    for (const v of values) if (!seen.has(valueKey(v))) seen.set(valueKey(v), v);
+    this.#domains.set(field, [...seen.values()]);
   }
 
-  /** What `declareValues` was told, for a control stamping its own rows. */
-  valuesFor(field: string): string[] {
+  /** What `declareValues` was told, as the data holds it. */
+  valuesFor(field: string): unknown[] {
     return [...(this.#domains.get(field) ?? [])];
+  }
+
+  /** That field's declared values, by their string key. */
+  #domainByKey(field: string): Map<string, unknown> {
+    const out = new Map<string, unknown>();
+    for (const v of this.#domains.get(field) ?? []) out.set(valueKey(v), v);
+    return out;
   }
 
   /**
@@ -303,8 +316,15 @@ export class DataSource extends EventTarget {
    * `reading` carries the rest of the question — the condition and its typed
    * text — for the controls that offer one.
    */
-  select(field: string, picked: readonly string[], reading: FieldReading = {}): void {
-    const next: FieldReading = { ...reading, picked: [...picked] };
+  select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
+    /* A CONTROL HANDS BACK THE KEY IT WAS GIVEN. `ValueEntry.value` is the
+       string form, because that is what fits in an attribute — so a key is
+       mapped back to the value the row actually holds before it reaches the
+       query. A caller passing the raw value is left alone.
+       TRAP T-a-value-can-be-an-object */
+    const declared = this.#domainByKey(field);
+    const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
+    const next: FieldReading = { ...reading, picked: raws };
     const answered = picked.length > 0 || (next.text ?? '').trim() !== '';
     if (answered) this.#readings.set(field, next);
     else this.#readings.delete(field);

@@ -734,9 +734,9 @@ the binding is what makes the source push rows.
 The same token is reused by `persistView` and `onViewPicked`, so one controller
 tears down every binding, listener and persister a view made.
 
-- Site: `src/core/data/data-source.ts`
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/data/legend-filter.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -2866,7 +2866,6 @@ picked values on the right, its unpicked on the left.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/legend-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
@@ -2927,12 +2926,13 @@ binding went from 194 lines to 152.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/legend-filter.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/data.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
+- Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
-- Site: `test/unit/legend-filter.test.mjs`
 ### T-an-operator-decides-pick-or-type
 
 A filter menu's CONDITION dropdown leads the card, above the search box, and is
@@ -7884,31 +7884,39 @@ one chart. That bar vanished and nothing else on the page knew: the other
 charts, the metric tiles, the grid and its pager all carried on counting the
 rows the reader had just said to exclude.
 
-A legend toggle is a **filter**, scoped to the view. `bindLegendFilter` writes
-it as a named part:
+A legend toggle is a **filter**, scoped to the view. One click writes the
+FIELD's selection, and every bound component re-reads. Measured on Records:
+clicking "churned" took the metric from 100 to 75, recounted the DONUT legend
+to 18/20/18/19 and dropped the grid from four pages to three.
+
+**There is no legend module.** Will, 2026-09-22: *"legend filtering is just
+filtering. visibility & state is a component concern."* `legend-filter.ts`
+held the read/draw/write loop every control over a field needs, plus one
+legend rule, in a data-layer file named after one component. It is deleted.
+The loop is `bindSelection` in `filter-state.ts`; a caller supplies the
+control's own `read` and `draw`:
 
 ```js
-bindLegendFilter(legend, source, {
-  field: 'status', values: states, chip: { el: qft, id: 'status' }, signal,
+bindSelection(legend, source, {
+  field: 'status',
+  values: states,
+  read: (l) => states.filter((v) => !l.off.includes(v)),
+  draw: (l, picked) => { l.off = picked.length ? states.filter((v) => !picked.includes(v)) : []; },
+  event: 'legend-item-click',
+  signal,
 });
 ```
 
-One click then writes `['status', 'ne', 'churned']` (or `notin` for several)
-into `source.contribute('legend:status', …)`, and every bound component
-re-reads. Measured on Records: clicking "churned" took the metric from 100 to
-75, recounted the DONUT legend to 18/20/18/19 and dropped the grid from four
-pages to three.
+Three things the rule gets right, each with a test:
 
-Four things the rule gets right, each with a test:
-
-- **An empty set removes the part**, rather than adding a clause nothing fails.
-- **The key is `legend:<field>`**, so two legends over different fields never
-  overwrite each other, and neither disturbs the chips' own part.
-- **A chip over the same field is the SAME state wearing a menu.** The menu
-  lists what is still ON, because a filter names what it keeps; picking in it
-  dims the legend in kind.
-- **Nothing ticked means no constraint**, not "hide everything" — the reading
-  the rest of the toolbar already uses.
+- **A chip over the same field needs no wiring at all.** Both read
+  `source.selection(field)`; the mirroring path (`chip:`, `report()`, and a
+  `legend:<field>` named part) is gone with the module. A separate part per
+  writer is what let `plan ne Free` and `plan eq Free` sit in one query.
+- **Nothing picked means no constraint**, not "hide everything".
+- **What is VISIBLE is the component's own state.** `sherpa-chart-legend`
+  keeps its `off` set, its roll-up rows and its floor — see
+  `T-a-legend-keeps-one-row-on`.
 
 `examples/views/dashboard.js` is converted too — clicking "Disk" takes its
 Alerts tile from 1284 to 881 and recounts the donut legend to sum to 881. Its
@@ -7916,11 +7924,8 @@ LINE legend is the one that stays a per-chart hide: those labels name two
 SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
-- Site: `src/core/data/legend-filter.ts`
-- Site: `src/data.ts`
-- Site: `test/unit/legend-filter.test.mjs`
-- Site: `examples/views/records.js`
 - Site: `examples/views/dashboard.js`
+- Site: `examples/views/records.js`
 
 ### T-a-legend-remembers-its-off-set-by-label
 
@@ -8099,6 +8104,42 @@ and a legend row.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
+### T-a-value-can-be-an-object
+
+Will's rule, 2026-09-22: **"A value can be a string, number, or object (which
+is also a set of fields and values)."**
+
+`text()` — the one function the whole comparison layer routes through — was
+`String(v).toLowerCase()`. For an object that is `"[object object]"`, so:
+
+- **any two objects compared EQUAL.** `['owner','eq',{id:'r'}]` matched every
+  row that had an owner at all, not the ones with that owner.
+- **picking one marked them all.** `fieldState` over object values returned
+  every row `picked` after one was chosen.
+
+Neither said anything. The filter ran, the menu ticked, and both were wrong.
+
+`stableText` is the fix: an object is its own fields and values, sorted by key
+so two equal objects always produce the same text, and applied recursively
+because a value inside an object is a value too. An array is its items in
+order. A `Date` is a VALUE, not a bag of fields, so it is its timestamp.
+
+**Sorting was never affected** — `sortRows` compares with `readField` and the
+shared collator, and both a number and a dotted path (`owner.name`) have always
+worked. Two probes of mine reported otherwise and both were the probe's fault:
+`setSort` takes a FIELD NAME, not an array of specs.
+
+**A number keeps its type through the query** and loses it in `fieldState`,
+which maps every value through `String`. That is deliberate for a menu row,
+whose value has to be a string to live in an attribute — but a control wanting
+to right-align or sort numerically must read the row, not the state.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/value-types.test.mjs`
+
 ### T-one-comparison-rule-for-query-and-ui
 
 The data layer compares LOOSELY: `looseEqual` lower-cases both sides, so
@@ -8165,10 +8206,9 @@ that follows is what makes it read as unset.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/core/data/legend-filter.ts`
+- Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `test/unit/legend-filter.test.mjs`
 ### T-a-legend-keeps-one-row-on
 
 Will, same message: *"at least 1 must be active at all times so we need to
@@ -8178,12 +8218,23 @@ Hiding the last row leaves an empty chart beside an empty grid and no obvious
 way back — and it is not a question anyone asks. The click is REFUSED and the
 legend is put back as it was, rather than left dimmed over an unchanged filter.
 
-The floor is applied in three places, because all three can reach the same
-state: the legend click, a chip pick that unticks everything, and the
-programmatic `set()`.
+**THE LEGEND REFUSES IT, not the caller.** Until 2026-09-22 the floor lived in
+a `legend-filter` module in the data layer, which meant a filter rule guarded a
+VISIBILITY question. Will: *"legend filtering is just filtering. visibility &
+state is a component concern."* It is now in `sherpa-chart-legend`, beside the
+off-set and the roll-up rows it has to count — so any caller gets it, not only
+one that used the right binding.
 
-- Site: `src/core/data/legend-filter.ts`
-- Site: `test/unit/legend-filter.test.mjs`
+Two doors reach the same state and both are guarded: the click, and a host
+writing `legend.off`. A refused click reports NOTHING — no `legend-item-click`,
+no `aria-pressed` change — because a dimmed row over an unchanged filter is the
+lie the rule exists to prevent.
+
+A roll-up row counts as the categories it FOLDED, never as its own "Other"
+label, which is a value of nothing.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-a-date-chip-names-its-field
 

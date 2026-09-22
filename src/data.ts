@@ -40,6 +40,12 @@ export {
   readField,
   searchRows,
   sortRows,
+  /* A value can be a string, a number or an object. `valueKey` is the one
+     string form a control can put in an attribute, and `valueSet` is the
+     query's own comparison as a set.
+     TRAP T-a-value-can-be-an-object */
+  valueKey,
+  valueSet,
   type Filter,
   type FilterClause,
   type FilterGroup,
@@ -168,15 +174,6 @@ export {
   type Series,
 } from './core/data/aggregate.js';
 
-/* A legend toggle is a FILTER — the rule, with no DOM.
-   TRAP T-a-legend-toggle-is-a-filter */
-export {
-  hiddenFilter,
-  bindLegendFilter,
-  type LegendFilterOptions,
-  type LegendFilterBinding,
-} from './core/data/legend-filter.js';
-
 /* ONE state per filtered field — what a chip, its menu, a column heading and
    that heading's menu all read, so none of them derives its own answer.
    TRAP T-one-state-per-filtered-field */
@@ -184,6 +181,10 @@ export {
   fieldState,
   stateClause,
   filterFace,
+  /* The read/draw/write loop ANY control over a field needs — a chip, a
+     column heading, a chart legend, a tab strip. None of them hears about
+     another: they read the same answer. TRAP T-one-field-one-filter-menu */
+  bindSelection,
   type FieldState,
   type ValueState,
   type ValueEntry,
@@ -191,4 +192,7 @@ export {
   type FieldFacts,
   type FieldReading,
   type FilterFace,
+  type Selector,
+  type SelectionBinding,
+  type BoundSelection,
 } from './core/data/filter-state.js';

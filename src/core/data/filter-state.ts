@@ -24,7 +24,7 @@
  */
 import {
   DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES,
-  picksClause, valueSet,
+  picksClause, valueSet, valueKey,
   type FilterClause, type FilterOp,
 } from './store.js';
 
@@ -49,7 +49,16 @@ export type ValueState =
 
 /** One value, and what it is doing. */
 export interface ValueEntry {
+  /**
+   * The value as a STRING, because a control puts it in an attribute.
+   *
+   * A value can be a string, a number or an object, and only this form fits
+   * in `input.value`. `raw` is the one the row actually holds.
+   * TRAP T-a-value-can-be-an-object
+   */
   value: string;
+  /** The value as the data holds it — a number stays a number, an object an object. */
+  raw: unknown;
   /** What a reader sees. Defaults to `value`. */
   label: string;
   state: ValueState;
@@ -73,18 +82,21 @@ export interface FilterState {
 export interface FieldFacts {
   field: string;
   label?: string;
-  /** Every value the field has, over the WHOLE data — not the drawn page. */
-  values?: readonly string[];
+  /** Every value the field has, over the WHOLE data — not the drawn page.
+   *  A value can be a string, a number or an object.
+   *  TRAP T-a-value-can-be-an-object */
+  values?: readonly unknown[];
   /** A reader-facing name per value, where it differs. */
   labels?: Readonly<Record<string, string>>;
 }
 
 /** What is true right now, which decides the STATES. */
 export interface FieldReading {
-  /** The values a reader has picked. */
-  picked?: readonly string[];
+  /** The values a reader has picked — a string, a number or an object.
+   *  TRAP T-a-value-can-be-an-object */
+  picked?: readonly unknown[];
   /** The values some row still carries, under every OTHER filter. */
-  present?: readonly string[];
+  present?: readonly unknown[];
   op?: FilterOp;
   text?: string;
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
@@ -101,7 +113,12 @@ export interface FieldReading {
  * TRAP T-one-state-per-filtered-field
  */
 export function fieldState(facts: FieldFacts, reading: FieldReading = {}): FilterState {
-  const all = [...(facts.values ?? [])].map(String);
+  /* KEEP THE RAW VALUE. A value can be a string, a number or an object, and
+     `String(anObject)` is "[object Object]" — which made every object the same
+     value. The string form is what a control puts in an attribute; `raw` is
+     what the row holds. TRAP T-a-value-can-be-an-object */
+  const raws = [...(facts.values ?? [])];
+  const all = raws.map(valueKey);
   /* The QUERY's comparison, not an exact one — a chip's option values may be
      spelled differently from the data. `valueSet` is that rule, and writing a
      third copy here is how the two drift.
@@ -112,12 +129,14 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const op = reading.op ?? DEFAULT_OP;
   const text = (reading.text ?? '').trim();
 
-  const values: ValueEntry[] = all.map((value) => ({
+  const values: ValueEntry[] = all.map((value, i) => ({
     value,
+    // The value as the ROW holds it — a number stays a number, an object an object.
+    raw: raws[i],
     label: facts.labels?.[value] ?? value,
-    state: picked.has(value)
+    state: picked.has(raws[i])
       ? 'picked'
-      : present && !present.has(value)
+      : present && !present.has(raws[i])
         ? 'unavailable'
         : 'unpicked',
   }));
@@ -153,10 +172,13 @@ export function stateClause(state: FilterState): FilterClause | undefined {
     return state.text ? [state.field, state.op, state.text] : undefined;
   }
 
-  // ONE rule for picks → a clause, in store.ts beside the grammar it speaks.
+  /* ONE rule for picks → a clause, in store.ts beside the grammar it speaks.
+     `raw`, not `value`: the clause is tested against real rows, and a row holds
+     a number or an object, not the string a control put in an attribute.
+     TRAP T-a-value-can-be-an-object */
   return picksClause(
     state.field,
-    state.values.filter((v) => v.state === 'picked').map((v) => v.value),
+    state.values.filter((v) => v.state === 'picked').map((v) => v.raw),
     state.op,
   );
 }
@@ -211,5 +233,102 @@ export function filterFace(state: FilterState): FilterFace {
     value,
     count: picks.length,
     tip: condition && spelled ? `${condition}: ${spelled}` : (spelled || condition),
+  };
+}
+
+/* ── Binding a control to a field ──────────────────────────────────────── */
+
+/**
+ * Enough of a DataSource to own a FIELD's selection.
+ *
+ * Not `contribute`: a control keyed by WRITER can hold a different answer from
+ * the next one over the same field, and both reach the query.
+ * TRAP T-one-field-one-filter-menu
+ */
+export interface Selector extends EventTarget {
+  select: (field: string, picked: readonly unknown[]) => void;
+  selection: (field: string) => FilterState;
+  declareValues: (field: string, values: readonly unknown[]) => void;
+}
+
+/** How one control reads and draws a field. */
+export interface SelectionBinding<T> {
+  /** The field the control is over. */
+  field: string;
+  /** Every value it offers, in the order it draws them. */
+  values: readonly string[];
+  /** What the CONTROL currently says is picked. Read it, never the event —
+   *  a roll-up row stands for several values and its label is a value of none. */
+  read: (control: T) => readonly string[];
+  /** Put the source's answer on the control. */
+  draw: (control: T, picked: readonly string[]) => void;
+  /** The control's own event, when it wants a change. */
+  event: string;
+  /** Drop the wiring when this aborts. TRAP T-signal-not-a-teardown-list */
+  signal?: AbortSignal;
+}
+
+/** What a binding hands back. */
+export interface BoundSelection {
+  /** This field, as every other control reports it. */
+  readonly state: FilterState;
+  /** Drive it from elsewhere — a saved view, a preset. */
+  set: (picked: Iterable<string>) => void;
+  destroy: () => void;
+}
+
+/**
+ * Join a control to a FIELD on a source.
+ *
+ * The loop every control over a field needs, once: declare the values, draw
+ * what the source says, write what the reader does, and re-draw when anyone
+ * else changes the same field. No control hears about another — they read the
+ * same answer. TRAP T-one-field-one-filter-menu
+ */
+export function bindSelection<T extends EventTarget>(
+  control: T,
+  source: Selector,
+  options: SelectionBinding<T>,
+): BoundSelection {
+  const { field, values, read, draw, event, signal } = options;
+  const known = new Set(values);
+  source.declareValues(field, values);
+
+  /** What the SOURCE says is picked. Nothing picked is NO CONSTRAINT. */
+  const picked = (): string[] =>
+    source.selection(field).values.filter((v) => v.state === 'picked').map((v) => v.value);
+
+  const redraw = (): void => { draw(control, picked()); };
+
+  /** Write what the control now says. A control that REFUSES a change never
+   *  reports it — visibility and its own floors are the component's concern. */
+  const write = (next: readonly string[]): void => {
+    const want = next.filter((v) => known.has(v));
+    /* EVERYTHING picked is no constraint, so an EMPTY selection — not every
+       value, which says the same thing in a way that looks like a filter.
+       TRAP T-everything-on-is-no-filter */
+    source.select(field, want.length === values.length ? [] : want);
+  };
+
+  const onControlChange = (): void => { write(read(control)); };
+  const onSelectionChange = (e: Event): void => {
+    if ((e as CustomEvent<{ field: string }>).detail?.field !== field) return;
+    redraw();
+  };
+
+  control.addEventListener(event, onControlChange);
+  source.addEventListener('selection-change', onSelectionChange);
+  redraw();
+
+  const destroy = (): void => {
+    control.removeEventListener(event, onControlChange);
+    source.removeEventListener('selection-change', onSelectionChange);
+  };
+  signal?.addEventListener('abort', destroy, { once: true });
+
+  return {
+    get state(): FilterState { return source.selection(field); },
+    set(next: Iterable<string>): void { write([...next]); },
+    destroy,
   };
 }

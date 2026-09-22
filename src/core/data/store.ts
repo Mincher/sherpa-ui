@@ -354,7 +354,29 @@ export function sameKey(a: unknown, b: unknown): boolean {
 
 /** A value as lower-case text, for the substring and equality operators. */
 function text(v: unknown): string {
-  return v == null ? '' : String(v).toLowerCase();
+  return valueKey(v).toLowerCase();
+}
+
+/**
+ * A value as the string a CONTROL can put in an attribute.
+ *
+ * A string or number is itself. AN OBJECT IS ITS OWN FIELDS AND VALUES — not
+ * "[object Object]", which is what every object used to collapse to, so any
+ * two of them compared EQUAL and picking one marked them all. Keys are sorted
+ * so two equal objects always give one key, and it recurses because a value
+ * inside an object is a value too. An array is its items in order; a Date is a
+ * VALUE rather than a bag of fields, so it is its timestamp.
+ * TRAP T-a-value-can-be-an-object
+ */
+export function valueKey(v: unknown): string {
+  if (v == null) return '';
+  if (typeof v !== 'object') return String(v);
+  if (v instanceof Date) return String(v.getTime());
+  if (Array.isArray(v)) return `[${v.map(valueKey).join(',')}]`;
+  const entries = Object.entries(v as Record<string, unknown>)
+    .filter(([, val]) => val !== undefined)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return `{${entries.map(([k, val]) => `${k}:${valueKey(val)}`).join(',')}}`;
 }
 
 /**
@@ -424,10 +446,11 @@ export interface RowGroup {
 
 /** Group by a field, keeping arrival order. Grouped AFTER sorting. */
 export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
-  const grouped = Map.groupBy(rows, (row) => {
-    const v = readField(row, field);
-    return v == null ? '' : String(v);
-  });
+  /* `String(v)` is "[object Object]" for EVERY object, so grouping by an
+     object field put every row in ONE group and a chart drew one meaningless
+     bar. `valueKey` is the same key the rest of the layer uses.
+     TRAP T-a-value-can-be-an-object */
+  const grouped = Map.groupBy(rows, (row) => valueKey(readField(row, field)));
   return [...grouped].map(([key, groupRowsIn]) => ({ key, rows: groupRowsIn }));
 }
 

@@ -5,7 +5,7 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
-  countBy, reduceRows, bindLegendFilter, andFilter, picksClause,
+  countBy, reduceRows, bindSelection, andFilter, picksClause,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -311,16 +311,25 @@ export async function init(root) {
      click writes the FIELD's selection, so the other charts, the tiles, the
      grid and its pager all narrow with it.
 
-     NO `chip:` — the source owns the field, so a legend and the chip over it
-     read the same answer and there is nothing to keep in step.
+     `bindSelection` is the SAME loop a chip or a column heading uses — there
+     is no legend-specific module, because legend filtering is just filtering.
+     A legend's `off` is the inverse of picked, and keeping at least one row on
+     is the component's own business.
      TRAP T-a-legend-toggle-is-a-filter
      TRAP T-one-field-one-filter-menu */
-  bindLegendFilter(root.querySelector('#r-bar-legend'), source, {
-    field: 'status', values: states, signal,
+  const bindLegend = (el, field, values) => el && bindSelection(el, source, {
+    field,
+    values,
+    // Read the LEGEND, not the event: a roll-up row stands for several values.
+    read: (l) => values.filter((v) => !l.off.includes(v)),
+    draw: (l, picked) => {
+      l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
+    },
+    event: 'legend-item-click',
+    signal,
   });
-  bindLegendFilter(root.querySelector('#r-donut-legend'), source, {
-    field: 'plan', values: plans, signal,
-  });
+  bindLegend(root.querySelector('#r-bar-legend'), 'status', states);
+  bindLegend(root.querySelector('#r-donut-legend'), 'plan', plans);
 
   /* The gauge reads ONE number, unrounded — rounding is presentation.
      TRAP T-an-aggregate-returns-the-number */

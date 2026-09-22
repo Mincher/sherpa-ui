@@ -87,6 +87,17 @@ export class SherpaChartLegend extends SherpaElement {
   }
 
   /**
+   * Every REAL value label this legend stands for — a roll-up row's own
+   * "Other" is a value of nothing, so its folded categories count instead.
+   */
+  #everyLabel(): string[] {
+    const out = this.#items
+      .filter((_, i) => !(this.#rolledUp && i === this.#items.length - 1))
+      .map((i) => i.label);
+    return [...out, ...this.#rolled.map((r) => r.item.label)];
+  }
+
+  /**
    * The labels currently toggled OFF. A host that SET them needs to ask what
    * the legend now holds. TRAP T-a-legend-remembers-its-off-set-by-label
    */
@@ -96,7 +107,13 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** Set them from outside — a chip over the same field, or a saved view. */
   set off(next: readonly string[]) {
-    this.#off = new Set(next);
+    const every = this.#everyLabel();
+    const want = new Set(next);
+    /* The same floor as a click, because a caller can reach the same state.
+       Every row off is refused; the legend keeps what it had.
+       TRAP T-a-legend-keeps-one-row-on */
+    if (every.length && every.every((l) => want.has(l))) return;
+    this.#off = want;
     this.#render();
   }
 
@@ -230,9 +247,7 @@ export class SherpaChartLegend extends SherpaElement {
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
     if (raw == null || !item) return;
-    // aria-pressed is both the accessible state and the CSS hook for dimming.
     const active = item.getAttribute('aria-pressed') !== 'true';
-    item.setAttribute('aria-pressed', String(active));
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
@@ -243,6 +258,19 @@ export class SherpaChartLegend extends SherpaElement {
     const labels = isRollup
       ? this.#rolled.map((r) => r.item.label)
       : [this.#items[index]?.label];
+
+    /* AT LEAST ONE ROW STAYS ON, and the LEGEND refuses it — visibility is
+       this component's own state, not the caller's. Switching off the last
+       leaves an empty chart beside an empty grid and no obvious way back.
+       TRAP T-a-legend-keeps-one-row-on */
+    if (!active) {
+      const going = new Set(labels.filter((l): l is string => l != null));
+      const left = this.#everyLabel().filter((l) => !this.#off.has(l) && !going.has(l));
+      if (!left.length) return;
+    }
+
+    // aria-pressed is both the accessible state and the CSS hook for dimming.
+    item.setAttribute('aria-pressed', String(active));
     for (const label of labels) {
       if (label == null) continue;
       if (active) this.#off.delete(label);
