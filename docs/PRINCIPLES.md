@@ -86,7 +86,7 @@ is why `sherpa-accordion` emits `toggle`.
 
 ---
 
-## The three method doors on `SherpaElement`
+## The doors on `SherpaElement`
 
 Reach for these before writing the same thing again. Each replaced a pattern
 found in three or more components.
@@ -137,9 +137,42 @@ broken, and check that it did.
 
 ---
 
-## Where the depth lives
+## Open work
 
-This file is the rules. The reasons live in `docs/TRAPS.md`, which is gated
-both ways: a `TRAP T-…` citation in the code must resolve to an entry, and that
-entry's `Site:` list must match who cites it. That is the trade — the citation
-stays beside the code, the essay moves out.
+Carried over when 16 documents were retired into this one, 2026-09-22.
+Each is a real, reported item; none is a plan.
+
+| | |
+|---|---|
+| **B4** | Data-viz tooltips lose their decimals — the tooltip should use the same unit magnitudes as the main value label |
+| **B7** | A group checkbox stays indeterminate-looking after being clicked; clicking an indeterminate box selects all, and the icon should follow |
+| **B8** | Contextual toolbar actions need 8px spacing, from the token |
+| **B9** | Numeric filter chips should default to range in their menu |
+| **D6** | Per-component `-doc.md` files, so the data-grid's comments can be trimmed |
+| **0** | No chart is keyboard-reachable |
+| **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
+| **2** | Pinned columns — an app-header filter change unpins the selection column |
+| **3** | Sparkline sub-pixel gaps |
+| **4** | App header — another design-review pass |
+| **5** | Data grid: Add Customer does not add data |
+
+---
+
+## Where the docs are
+
+**Four markdown files, and three of them are read by code.** Everything else was
+deleted on 2026-09-22: 16 files and ~8,300 lines, in which every rule in this
+one appeared three to seven times over.
+
+| File | Who reads it |
+|---|---|
+| `PRINCIPLES.md` | People. This file — the rules, the doors, the open work |
+| `TRAPS.md` | `check-traps` — a `TRAP T-…` citation must resolve to an entry, and that entry's `Site:` list must match who cites it |
+| `DEF-TO-FIGMA-BUILD-RULES.md` | The MCP server, as `sherpa://rules` |
+| `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
+
+`TRAPS.md` is where the depth went, and it is gated both ways. That is the
+trade: the citation stays beside the code, the essay moves out. 326 citations
+point at it.
+
+If a rule here and a gate disagree, **the gate wins** — it runs.

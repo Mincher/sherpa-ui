@@ -3707,7 +3707,7 @@ The audit settled which one was real:
 
 The one `renderView` call sat in `persist-view.ts`, reached only when
 `SavedView.content` was an OBJECT. Every `content:` in the repo is markup, so
-nothing reached it. `docs/DATA-LAYER-PLAN.md` had already said so out loud:
+nothing reached it. the data-layer plan (retired) had already said so out loud:
 *"`DataSource` is that idea applied to records rather than to a view blob, and
 the two should share the mechanism."*
 

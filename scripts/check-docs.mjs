@@ -3,9 +3,9 @@
  * check-docs.mjs — a doc that names a script or an npm command must name one
  * that EXISTS.
  *
- * `docs/CSS-FILE-TEMPLATE.md` pointed at `scripts/lint-component-css.mjs` for
- * weeks after it became `lint-css.mjs`. A reader following it runs nothing and
- * concludes the rule is unenforced.
+ * A retired doc pointed at `scripts/lint-component-css.mjs` for weeks after it
+ * became `lint-css.mjs`. A reader following that runs nothing and concludes the
+ * rule is unenforced.
  *
  * A reference inside a line that marks it dead — RETIRED, deleted, was —
  * is allowed: naming what went is how a doc explains a change.
