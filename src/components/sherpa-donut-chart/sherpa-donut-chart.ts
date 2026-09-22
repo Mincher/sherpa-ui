@@ -5,7 +5,7 @@
  * stroked circle can express neither the full border nor the rounded corners.
  * TRAP T-hiding-a-series-rescales-the-axis — the rest re-share the full circle.
  */
-import type { ChartDatum } from '../../core/data/chart-datum.js';
+import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
 
@@ -85,7 +85,8 @@ export class SherpaDonutChart extends SherpaElement {
 
     // Only the visible slices share the circle, so the ring always closes.
     const visible = this.#slices.filter((_, i) => !this.#hidden.has(i));
-    const total = visible.reduce((sum, s) => sum + Math.max(0, s.value), 0);
+    // CLAMPED: a negative arc is not a shape. TRAP T-one-total-for-the-ring-and-the-label
+    const total = datumTotal(visible, { clamp: true });
     if (total <= 0) return;
 
     let acc = 0;
@@ -169,7 +170,10 @@ export class SherpaDonutChart extends SherpaElement {
   #total(): string {
     const shown = this.#slices.filter((_, i) => !this.#hidden.has(i));
     if (!shown.length) return '';
-    const sum = shown.reduce((n, s) => n + (Number.isFinite(s.value) ? s.value : 0), 0);
+    /* NOT clamped: −5 is what the data says, and a printed total that quietly
+       drops it disagrees with the rows behind it.
+       TRAP T-one-total-for-the-ring-and-the-label */
+    const sum = datumTotal(shown, { clamp: false });
     return sum.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 

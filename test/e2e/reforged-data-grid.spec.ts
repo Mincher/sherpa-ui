@@ -2568,3 +2568,41 @@ test('data-filter-fields lights the column CHIP, and survives a re-render', asyn
   // Gone when the filter is.
   expect(r.cleared).toEqual({ regionChip: false, nameChip: false, regionTh: null });
 });
+
+/**
+ * A COLUMN'S BOUNDS SKIP THE BLANKS.
+ *
+ * `null` and `''` coerce to a FINITE 0, so a hand-rolled `Number()` sweep
+ * counts every missing value as a real nought: a Spend column of 120..340 with
+ * one blank row gave a slider starting at 0, crushing every real value against
+ * the left edge. The data layer's own `reduceRows` already skips them.
+ *
+ * TRAP T-number-of-null-is-zero
+ */
+test('a number column with BLANKS bounds its slider on the real values', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'spend', header: 'Spend', type: 'number' }],
+      rows: [
+        { spend: 120 },
+        { spend: null },     // absent, NOT a nought
+        { spend: 340 },
+        { spend: '' },       // the same, from an empty cell
+      ],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const slider = el.shadowRoot!
+      .querySelector('.head-cell[data-field="spend"] .head-filter-slider')!;
+    return { min: slider.getAttribute('min'), max: slider.getAttribute('max') };
+  });
+
+  expect(r.min).toBe('120');
+  expect(r.max).toBe('340');
+});

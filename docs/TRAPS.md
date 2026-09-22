@@ -4312,6 +4312,32 @@ surface.
 
 - Site: `src/core/data/format-tick.ts`
 
+### T-one-total-for-the-ring-and-the-label
+
+THREE sums lived across two components and disagreed about what counts.
+
+A donut's RING clamped negatives to zero; its own CENTRE LABEL did not. Three
+slices of 10, −5 and 20 drew a total of 30 under a label reading 25. A chart
+legend's roll-up had a third rule again.
+
+`datumTotal(data, { clamp })` is the one answer, in `chart-datum.ts` beside the
+shape it sums. `clamp` has NO DEFAULT, because the two questions are genuinely
+different and both are right:
+
+| caller | clamp | why |
+|---|---|---|
+| a ring, a bar height | `true` | a negative arc is not a shape |
+| a printed total | `false` | −5 is what the data says |
+
+`datumValue` is the coercion underneath: a legend widens `value` to
+`string | number`, so a numeric string counts and anything else is 0 rather
+than a NaN that poisons the sum.
+
+- Site: `src/core/data/chart-datum.ts`
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/unit/chart-datum.test.mjs`
+
 ### T-one-datum-shape-for-chart-and-legend
 
 `BarDatum`, `DonutSlice` and `LegendItem` were three names for the same three
@@ -7118,7 +7144,8 @@ A missing health score is not a health score of nought, and averaging it in
 drags the mean toward zero in proportion to how much data is absent.
 
 - Site: `src/core/data/aggregate.ts`
-
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 ### T-a-category-keeps-its-colour
 
 Without a declared order, categories come out of an aggregation in first-seen

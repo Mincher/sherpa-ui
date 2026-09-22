@@ -9,7 +9,7 @@
  * TRAP T-legend-caps-at-six-and-rolls-up
  * TRAP T-rollup-row-has-its-own-prototype
  */
-import type { LegendDatum } from '../../core/data/chart-datum.js';
+import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { seriesBorderVar, seriesVar } from '../../core/data/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
@@ -113,12 +113,13 @@ export class SherpaChartLegend extends SherpaElement {
     const rest = items.slice(MAX_ITEMS - 1);
     this.#rolled = rest.map((item, k) => ({ index: MAX_ITEMS - 1 + k, item }));
     this.#rolledActive = new Set(this.#rolled.map((r) => r.index));
-    const numeric = rest
-      .map((i) => (typeof i.value === 'number' ? i.value : Number(i.value)))
-      .filter((n) => Number.isFinite(n));
-    const total = numeric.length === rest.length
-      ? numeric.reduce((sum, n) => sum + n, 0)
-      : undefined;
+    /* A roll-up counts only when EVERY folded row is a number: "Other 12" over
+       a row reading "n/a" is a lie. Not clamped — a printed total says what the
+       data says. TRAP T-one-total-for-the-ring-and-the-label */
+    const countable = rest.every((i) => Number.isFinite(
+      typeof i.value === 'number' ? i.value : Number(i.value),
+    ));
+    const total = countable ? datumTotal(rest, { clamp: false }) : undefined;
 
     return [
       ...kept,

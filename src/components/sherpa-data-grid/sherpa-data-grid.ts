@@ -12,6 +12,7 @@ import {
 } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/icons.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
+import { reduceRows } from '../../core/data/aggregate.js';
 import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
@@ -416,12 +417,17 @@ export class SherpaDataGrid extends SherpaElement {
     // spend column at the far left.
     if (kind === 'number' && body) {
       const slider = body.querySelector('.head-filter-slider');
-      const nums = this.#rows
-        .map((row) => Number(row[col.field]))
-        .filter((n) => Number.isFinite(n));
-      if (slider && nums.length) {
-        const min = Math.floor(Math.min(...nums));
-        const max = Math.ceil(Math.max(...nums));
+      /* `reduceRows`, not a hand-rolled Number() sweep: `null` and `''` coerce
+         to a FINITE 0, so counting them gave a Spend column of 120..340 a
+         slider starting at 0 — the very crush the comment above warns about.
+         TRAP T-number-of-null-is-zero */
+      const hasNumbers = this.#rows.some((row) => {
+        const raw = row[col.field];
+        return raw != null && raw !== '' && Number.isFinite(Number(raw));
+      });
+      if (slider && hasNumbers) {
+        const min = Math.floor(reduceRows(this.#rows, 'min', col.field));
+        const max = Math.ceil(reduceRows(this.#rows, 'max', col.field));
         slider.setAttribute('min', String(min));
         slider.setAttribute('max', String(max));
         // A fresh range spans the WHOLE column — 0..0 empties the view first.
