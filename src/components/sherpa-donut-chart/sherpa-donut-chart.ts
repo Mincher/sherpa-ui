@@ -112,6 +112,13 @@ export class SherpaDonutChart extends SherpaElement {
       arc.style.setProperty('--_hue', seriesVar(i, slice.colorIndex));
       // The border is fixed — it does not move along the ramp with the fill.
       arc.style.setProperty('--_border', seriesBorderVar(i, slice.colorIndex));
+      /* KEYBOARD-REACHABLE. An SVG <path> takes focus from `tabindex`, and the
+         CSS below lights its tip on :focus-visible as well as :hover — so a
+         reader with no pointer can read every slice. `role="img"` because the
+         path IS the datum, not a control.
+         TRAP T-a-chart-datum-is-reachable-without-a-pointer */
+      arc.setAttribute('tabindex', '0');
+      arc.setAttribute('role', 'img');
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
 

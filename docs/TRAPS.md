@@ -7751,8 +7751,8 @@ rather than infinite.
 
 **And round it.** The component interpolated the raw number, which never showed
 because every earlier caller passed a tidy literal like `3.1`. A derived delta
-arrived and the tile read `-0.6211180124223602%`. One decimal, in the
-component, because a percentage is a presentation value.
+arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
+2026-09-22), in the component, because a percentage is a presentation value.
 
 - Site: `src/core/aggregate.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
@@ -7774,3 +7774,36 @@ values they just decided.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-chart-datum-is-reachable-without-a-pointer
+
+A chart's tooltip carries the NUMBER. If only `:hover` reveals it, the number
+is pointer-only — the chart draws data a keyboard reader cannot get at.
+
+`sherpa-barchart` and `sherpa-line-chart` already made each mark a `<button>`,
+so both were fine. `sherpa-donut-chart` and `sherpa-gauge-chart` lit their tips
+from `:hover` on an SVG arc with no `tabindex`, so **zero** of their data was
+reachable. Measured before the fix:
+
+```
+#bar   8 focusable   #line  16 focusable
+#donut 0             #gauge  0
+```
+
+The gauge's own comment said the accessible name went "on the ARC, which is
+what a reader reaches" — the name was there and nothing could reach it.
+
+Both now set `tabindex="0"` alongside the `role="img"` and `aria-label` the arc
+already carried, and their `:has()` chains match `:is(:hover, :focus-visible)`.
+An SVG `<path>` takes focus from `tabindex` perfectly well; it is only as a CSS
+ANCHOR that it fails (T-anchoring-is-generic), which is what the separate
+zero-size hotspot exists for.
+
+`role="img"`, not `button`: the path IS the datum, not a control that does
+something.
+
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.css`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
+- Site: `test/e2e/reforged-chart-keyboard.spec.ts`

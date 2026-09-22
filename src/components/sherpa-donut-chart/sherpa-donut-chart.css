@@ -130,18 +130,21 @@
 }
 
 /* `:has()` on the wrapper: the slice is inside <svg>, so `+`/`~` cannot reach
-   the tip. Index N lights tip N. */
-.ring-wrap:has(.slice[data-index="0"]:hover) .chart-tip[data-index="0"],
-.ring-wrap:has(.slice[data-index="1"]:hover) .chart-tip[data-index="1"],
-.ring-wrap:has(.slice[data-index="2"]:hover) .chart-tip[data-index="2"],
-.ring-wrap:has(.slice[data-index="3"]:hover) .chart-tip[data-index="3"],
-.ring-wrap:has(.slice[data-index="4"]:hover) .chart-tip[data-index="4"],
-.ring-wrap:has(.slice[data-index="5"]:hover) .chart-tip[data-index="5"],
-.ring-wrap:has(.slice[data-index="6"]:hover) .chart-tip[data-index="6"],
-.ring-wrap:has(.slice[data-index="7"]:hover) .chart-tip[data-index="7"],
-.ring-wrap:has(.slice[data-index="8"]:hover) .chart-tip[data-index="8"],
-.ring-wrap:has(.slice[data-index="9"]:hover) .chart-tip[data-index="9"],
-.ring-wrap:has(.slice[data-index="10"]:hover) .chart-tip[data-index="10"] {
+   the tip. Index N lights tip N.
+   `:focus-visible` as well as `:hover` — the slice carries `tabindex`, so a
+   reader with no pointer tabs the ring and reads every tip.
+   TRAP T-a-chart-datum-is-reachable-without-a-pointer */
+.ring-wrap:has(.slice[data-index="0"]:is(:hover, :focus-visible)) .chart-tip[data-index="0"],
+.ring-wrap:has(.slice[data-index="1"]:is(:hover, :focus-visible)) .chart-tip[data-index="1"],
+.ring-wrap:has(.slice[data-index="2"]:is(:hover, :focus-visible)) .chart-tip[data-index="2"],
+.ring-wrap:has(.slice[data-index="3"]:is(:hover, :focus-visible)) .chart-tip[data-index="3"],
+.ring-wrap:has(.slice[data-index="4"]:is(:hover, :focus-visible)) .chart-tip[data-index="4"],
+.ring-wrap:has(.slice[data-index="5"]:is(:hover, :focus-visible)) .chart-tip[data-index="5"],
+.ring-wrap:has(.slice[data-index="6"]:is(:hover, :focus-visible)) .chart-tip[data-index="6"],
+.ring-wrap:has(.slice[data-index="7"]:is(:hover, :focus-visible)) .chart-tip[data-index="7"],
+.ring-wrap:has(.slice[data-index="8"]:is(:hover, :focus-visible)) .chart-tip[data-index="8"],
+.ring-wrap:has(.slice[data-index="9"]:is(:hover, :focus-visible)) .chart-tip[data-index="9"],
+.ring-wrap:has(.slice[data-index="10"]:is(:hover, :focus-visible)) .chart-tip[data-index="10"] {
   display: flex;
   opacity: 1;
 }

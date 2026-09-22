@@ -192,9 +192,13 @@ export class SherpaGaugeChart extends SherpaElement {
       const label = isStatus ? this.#zoneLabel(zone.name) : '';
       tip.querySelector('.chart-tip-label')!.textContent = label;
       tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
-      // The accessible name goes on the ARC, which is what a reader reaches.
+      /* The accessible name goes on the ARC, and so does `tabindex` — without
+         it the name was there and nothing could reach it. The CSS lights this
+         zone's tip on :focus-visible as well as :hover.
+         TRAP T-a-chart-datum-is-reachable-without-a-pointer */
       const arc = this.$(`.zone[data-index="${i}"]`);
       if (arc) {
+        arc.setAttribute('tabindex', '0');
         arc.setAttribute('role', 'img');
         arc.setAttribute('aria-label', `${label} ${zone.rawFrom} to ${zone.rawTo}`.trim());
       }

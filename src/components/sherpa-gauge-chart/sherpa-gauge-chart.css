@@ -274,12 +274,15 @@
 
 /* `:has()` on the wrapper, because the band lives inside <svg> and the tip does
    not — no sibling selector crosses that boundary; the index pairs them. */
-.gauge-wrap:has(.zone[data-index="0"]:hover) .chart-tip[data-index="0"],
-.gauge-wrap:has(.zone[data-index="1"]:hover) .chart-tip[data-index="1"],
-.gauge-wrap:has(.zone[data-index="2"]:hover) .chart-tip[data-index="2"],
-.gauge-wrap:has(.zone[data-index="3"]:hover) .chart-tip[data-index="3"],
-.gauge-wrap:has(.zone[data-index="4"]:hover) .chart-tip[data-index="4"],
-.gauge-wrap:has(.zone[data-index="5"]:hover) .chart-tip[data-index="5"] {
+/* Index N lights tip N. `:focus-visible` as well as `:hover` — the zone
+   carries `tabindex`, so a reader with no pointer tabs the bands.
+   TRAP T-a-chart-datum-is-reachable-without-a-pointer */
+.gauge-wrap:has(.zone[data-index="0"]:is(:hover, :focus-visible)) .chart-tip[data-index="0"],
+.gauge-wrap:has(.zone[data-index="1"]:is(:hover, :focus-visible)) .chart-tip[data-index="1"],
+.gauge-wrap:has(.zone[data-index="2"]:is(:hover, :focus-visible)) .chart-tip[data-index="2"],
+.gauge-wrap:has(.zone[data-index="3"]:is(:hover, :focus-visible)) .chart-tip[data-index="3"],
+.gauge-wrap:has(.zone[data-index="4"]:is(:hover, :focus-visible)) .chart-tip[data-index="4"],
+.gauge-wrap:has(.zone[data-index="5"]:is(:hover, :focus-visible)) .chart-tip[data-index="5"] {
   display: flex;
   opacity: 1;
 }

@@ -59,12 +59,12 @@ export class SherpaMetric extends SherpaElement {
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
-      /* ONE decimal. Every caller used to pass a tidy literal like 3.1, so the
-         raw interpolation never showed — until a DERIVED delta arrived and the
-         tile read "-0.6211180124223602%". A percentage is a presentation
-         value, and this is the presentation.
+      /* TWO decimals (Will, 2026-09-22). Every caller used to pass a tidy
+         literal like 3.1, so the raw interpolation never showed — until a
+         DERIVED delta arrived and the tile read "-0.6211180124223602%".
+         A percentage is a presentation value, and this is the presentation.
          TRAP T-a-delta-is-derived-not-declared */
-      const rounded = Number(data.deltaPercent.toFixed(1));
+      const rounded = Number(data.deltaPercent.toFixed(2));
       const sign = rounded > 0 ? '+' : '';
       this.dataset['delta'] = `${sign}${rounded}%`;
     }

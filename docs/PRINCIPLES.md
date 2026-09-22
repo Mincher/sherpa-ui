@@ -152,7 +152,6 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 
 | | |
 |---|---|
-| **D6** | Per-component `-doc.md` files, so the data-grid's comments can be trimmed |
 | **0** | No chart is keyboard-reachable |
 | **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
 | **2** | Pinned columns — an app-header filter change unpins the selection column |
