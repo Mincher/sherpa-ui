@@ -1241,8 +1241,11 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
   expect(r.sideBySide.rowDisplay).toBe('flex');
   expect(r.sideBySide.sameLine).toBe(true);
   expect(r.sideBySide.inOrder).toBe(true);
+  /* `eq` LEADS, so it is the default the menu opens on — the same default the
+     filter CHIP menu opens on, because one field has one condition wherever a
+     reader meets it. TRAP T-an-operator-decides-pick-or-type */
   expect(r.conditions).toEqual([
-    'contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne',
+    'eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith',
   ]);
   expect(r.commits).toBe(true);
   expect(r.heading).toBe('Filter Name');

@@ -15,7 +15,7 @@ import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle
 import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/store.js';
-import { OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
+import { DEFAULT_OP, OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -551,7 +551,7 @@ export class SherpaDataGrid extends SherpaElement {
   #readColumnFilter(chip: HTMLElement): ColumnFilter | null {
     const menu = chip.querySelector('sherpa-menu');
     const range = menu?.hasAttribute('data-range') ?? false;
-    const op = chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? 'contains';
+    const op = chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? DEFAULT_OP;
     const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
 
     if (range) {

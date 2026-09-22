@@ -41,13 +41,48 @@ export const OP_LABELS: Record<FilterOp, string> = {
   between: 'Between',
 };
 
-/** The operators each COLUMN TYPE can answer. TRAP T-ops-follow-the-column-type */
+/**
+ * The operators each COLUMN TYPE can answer.
+ *
+ * `eq` LEADS, because it is the default and a reader picking a value from a
+ * list is the common case. TRAP T-ops-follow-the-column-type
+ */
 export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
-  text: ['contains', 'notcontains', 'startswith', 'endswith', 'eq', 'ne'],
+  text: ['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith'],
   number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
   // A date is answered by clicking a calendar — no operator list.
   date: [],
 };
+
+/**
+ * WHAT a reader gives an operator: a value they PICK, or one they TYPE.
+ *
+ * `eq`/`ne` over a field with known values is a list — the reader picks Gold,
+ * not types it, and a typo cannot match nothing silently. `contains` and its
+ * relatives are a typed fragment: no list can hold every substring.
+ *
+ * This is the rule both filter menus follow, so the condition dropdown swaps
+ * the body beneath it rather than each menu deciding for itself.
+ * TRAP T-an-operator-decides-pick-or-type
+ */
+export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
+  eq: 'list',
+  ne: 'list',
+  in: 'list',
+  notin: 'list',
+  contains: 'text',
+  notcontains: 'text',
+  startswith: 'text',
+  endswith: 'text',
+  lt: 'text',
+  lte: 'text',
+  gt: 'text',
+  gte: 'text',
+  between: 'range',
+};
+
+/** The condition a filter menu opens on. A reader picks a value far more often than typing one. */
+export const DEFAULT_OP: FilterOp = 'eq';
 
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];

@@ -1,0 +1,9 @@
+<!doctype html><html data-theme="sherpa" data-mode="light"><head><meta charset="utf-8">
+<link rel="stylesheet" href="/dist/styles/tokens/tokens.css"></head><body>
+<!-- a 14px icon nested INSIDE a component that sets --_icon-size: 40px on :host -->
+<sherpa-empty-state id="es" data-heading="None">
+  <sherpa-button slot="action" data-icon-start="fa-solid fa-plus">Add</sherpa-button>
+</sherpa-empty-state>
+<!-- a button nested inside the chip's .caret (which sets --_icon-size) -->
+<sherpa-quick-filter id="qf" data-label="R" data-icon-start="fa-solid fa-filter" data-menu></sherpa-quick-filter>
+<script type="module">import '/dist/index.js';</script></body></html>

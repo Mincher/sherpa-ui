@@ -1,0 +1,16 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+  /* registered in the DOCUMENT, as tokens.css does */
+  @property --probe-size { syntax: "<length>"; inherits: false; initial-value: 14px; }
+</style></head><body>
+<div id="host"></div>
+<script>
+const host=document.getElementById('host').attachShadow({mode:'open'});
+host.innerHTML=`<style>
+  .parent { --probe-size: 40px; }
+  .child  { inline-size: var(--probe-size); block-size: var(--probe-size); }
+</style>
+<div class="parent"><span class="child" id="c"></span></div>`;
+window.__r=()=>{const c=host.getElementById('c');const r=c.getBoundingClientRect();
+  return { childW:r.width, declared:getComputedStyle(c).getPropertyValue('--probe-size').trim() };};
+</script></body></html>

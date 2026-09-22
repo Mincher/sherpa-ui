@@ -512,7 +512,7 @@ template.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 ### T-group-chip-body-toggles-grouping
 
 **An organise chip needs its own branch in `#onChipClick`, and Group did not
@@ -2726,6 +2726,45 @@ starts inside this shadow root and would never reach the component that filled
 the menu. The handler stops propagation for the same reason.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-an-operator-decides-pick-or-type
+
+A filter menu's CONDITION dropdown leads the card, above the search box, and is
+what decides the body beneath it.
+
+`eq` and `ne` over a field with known values are a LIST: the reader picks Gold
+rather than typing it, and a typo cannot silently match nothing. `contains`,
+`startswith` and the rest are a typed fragment — no list can hold every
+substring. `OP_TAKES` in `store.ts` is that rule, beside `OP_LABELS` and
+`OPS_FOR_TYPE`, because a second copy is a second vocabulary.
+
+`eq` LEADS `OPS_FOR_TYPE.text` and is `DEFAULT_OP`, so it is what both menus
+open on. The column heading's menu defaulted to `contains` before this, which
+made one field answer differently depending on which menu the reader reached
+for.
+
+**Both bodies are stamped, and CSS reveals one** off the menu's `data-takes`.
+Rebuilding on each flip would throw away whichever half was not showing, so a
+reader who ticks Gold, looks at Contains and flips back would find the tick
+gone. Measured: the ticks and the typed text both survive a round trip.
+
+The `<select>`'s native `change` is the other half of the trap. It BUBBLES but
+is not COMPOSED, so it stops at the toolbar's shadow boundary and a listener on
+the host never fires — the range-switch handlers beside it work only because
+`sherpa-switch` re-dispatches composed. The listener goes on the SHADOW ROOT.
+See `T-native-change-stops-at-the-host`.
+
+The event carries `clauses`: each condition chip as a ready `FilterClause`, the
+same shape `column-filter-change` reports, so one field filtered from either
+menu reaches the data layer identically. One pick is `eq`; several become `in`,
+because `eq` against a list can never match.
+
+- Site: `src/core/store.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-native-change-stops-at-the-host
 
@@ -5159,7 +5198,7 @@ such guard.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
-
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 ### T-grid-collapsed-group-is-one-slot
 
 **A SHUT group is ONE line on screen, so it costs ONE slot of the page.**
@@ -6126,6 +6165,27 @@ sit in the row template and CSS reveals one —
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+### T-every-element-in-the-template
+
+Every element a component will EVER show exists in its `.html` from the start.
+CSS reveals and hides; JS never calls `createElement()` and never writes
+structural `innerHTML`.
+
+Two shapes that swap — the plain checkbox and the advanced one, a number
+filter's single value and its range, a condition menu's value rows and its text
+box — are BOTH stamped, and one selector decides which is seen. Rebuilding the
+body on each flip throws away whatever the reader put into the half that was
+not showing: a ticked row, a typed fragment, a half-entered range.
+
+It is also why `data-advanced` and friends can be flipped at any time with no
+re-render: there is nothing to build, only a rule to match.
+
+The exception is REPEATING data, which cannot be known in advance. That is a
+cloning prototype — `<template class="row-tpl">` with no `id`, so
+SherpaElement's multi-template parser leaves it alone.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 
 ### T-a-property-set-before-upgrade-shadows-its-accessor
 

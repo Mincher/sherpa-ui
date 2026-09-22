@@ -15,6 +15,9 @@ const SOURCES = [
   'src/components/*/*.ts',
   'src/core/*.ts',
   'src/components/*/*.css',
+  // A citation in a TEMPLATE was invisible: the comment is the only place some
+  // structural rules are written down, and one went undefined for months.
+  'src/components/*/*.html',
   'src/core/*.css',
   'test/reforged/harness.html',
   'playwright.config.ts',

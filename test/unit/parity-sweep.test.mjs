@@ -61,6 +61,9 @@ const KNOWN = {
   // The read-back for `supersede([...ids])` — a host that suspended chips has
   // to be able to ask which ones the bar now holds suspended.
   'sherpa-quick-filter-toolbar.superseded': 'ok: supersede([...ids]) method',
+  // setClause(id, clause) takes the SAME shape `column-filter-change` reports,
+  // so a saved view — or a column heading — can restore a condition chip.
+  'sherpa-quick-filter-toolbar.clauses': 'ok: setClause(id, clause) method',
 };
 
 /** Public getters (two-space indent = class body) and their setters. */

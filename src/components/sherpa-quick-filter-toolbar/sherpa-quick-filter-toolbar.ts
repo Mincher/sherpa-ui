@@ -6,6 +6,9 @@
 import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
 import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
+import {
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp,
+} from '../../core/store.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -51,6 +54,19 @@ export interface QuickFilterDef {
   removable?: boolean;
   /** Defer picks behind Apply. TRAP T-commit-follows-select-mode — else the select mode decides. */
   commit?: boolean;
+  /**
+   * Offer a CONDITION dropdown above the rows: Equals, Contains, Starts with…
+   *
+   * The same conditions the column heading's filter menu offers, from the one
+   * vocabulary in store.ts. `eq` is the default, and shows the value rows; a
+   * typing condition shows a text box instead.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  conditions?: boolean;
+  /** Which condition this chip is on. Defaults to `eq`. */
+  op?: FilterOp;
+  /** What the reader TYPED, for a condition that takes text rather than a pick. */
+  text?: string;
 }
 
 interface ChipEl extends HTMLElement {
@@ -370,6 +386,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('range-select', this.#onDatePicked);
     // sherpa-switch re-dispatches its native change COMPOSED; a bare checkbox does not.
     this.addEventListener('change', this.#onRangeToggle);
+    /* On the SHADOW ROOT, not the host. A native `change` from a bare <select>
+       or <input> BUBBLES but is not COMPOSED, so it stops at this component's
+       shadow boundary and never reaches `this`. The switch handlers above work
+       only because sherpa-switch re-dispatches its change composed.
+       TRAP T-native-change-stops-at-the-host */
+    this.shadowRoot?.addEventListener('change', this.#onConditionPicked);
+    this.shadowRoot?.addEventListener('input', this.#onConditionText);
     // The Add menu hangs off a sherpa-BUTTON, which never relays quick-filter-change.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
     if (this.#filters.length) this.#render();
@@ -746,6 +769,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
+    /* THE CONDITION ROW leads the value menu, above the search box. What it
+       is set to decides whether the rows below it, or a text box, is what the
+       reader answers with. TRAP T-an-operator-decides-pick-or-type */
+    if (def.conditions) this.#addConditionRow(menu, def);
+
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
     // FIRST option, or the chip paints as an empty warning.
     const options = def.options ?? [];
@@ -789,6 +817,46 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     chip.appendChild(menu);
   }
 
+  /**
+   * The condition dropdown, plus the text box its typing conditions use.
+   *
+   * BOTH bodies are stamped: CSS reveals one off the menu's `data-takes`, so a
+   * reader flipping between Equals and Contains keeps their ticks AND their
+   * typing. Rebuilding would throw one of them away every flip.
+   * TRAP T-an-operator-decides-pick-or-type
+   * TRAP T-range-switch-swaps-not-rebuilds
+   */
+  #addConditionRow(menu: HTMLElement, def: QuickFilterDef): void {
+    const row = this.clone('template.qf-op-tpl');
+    const select = row?.querySelector('select');
+    const proto = select?.querySelector('option');
+    if (!row || !select || !proto) return;
+
+    // The ops a TEXT field can answer — the one vocabulary, in store.ts.
+    const ops = OPS_FOR_TYPE[def.kind === 'number' ? 'number' : 'text'] ?? [];
+    select.replaceChildren(
+      ...ops.map((op) => {
+        const option = proto.cloneNode(false) as HTMLOptionElement;
+        option.value = op;
+        option.textContent = OP_LABELS[op];
+        return option;
+      }),
+    );
+
+    const op = def.op ?? DEFAULT_OP;
+    select.value = ops.includes(op) ? op : (ops[0] ?? DEFAULT_OP);
+    menu.setAttribute('data-takes', OP_TAKES[select.value as FilterOp] ?? 'list');
+    menu.appendChild(row);
+
+    // The typed half, stamped whether or not it shows. CSS decides.
+    const box = this.clone('template.qf-text-tpl');
+    const input = box?.querySelector('input');
+    if (box && input) {
+      input.value = def.text ?? '';
+      menu.appendChild(box);
+    }
+  }
+
   /** Was this chip's commit mode PINNED by its definition? The Range switch must not move it. */
   #chipDefers(sw: HTMLElement): boolean {
     const id = sw.closest<HTMLElement>('.chip')?.dataset['id'];
@@ -824,6 +892,43 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Any previous single pick is left alone — re-picking starts a range anyway.
     menu.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
     // The filter's shape changed, so its meaning did.
+    this.#emitChange();
+  };
+
+  /**
+   * A CONDITION was picked — swap the menu between its two bodies.
+   *
+   * Nothing is rebuilt: `data-takes` is what CSS reads, so the ticked rows and
+   * the typed box both survive the flip.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  #onConditionPicked = (event: Event): void => {
+    const select = this.pathFind(event, '.qf-op') as HTMLSelectElement | null;
+    if (!select) return;
+    const menu = select.closest('sherpa-menu');
+    const chip = select.closest<HTMLElement>('.chip');
+    const id = chip?.dataset['id'];
+    if (!menu || !id) return;
+
+    const op = select.value as FilterOp;
+    menu.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+
+    // The DEFINITION is where the chip's state lives, so a re-render keeps it.
+    const def = this.#filters.find((f) => f.id === id);
+    if (def) def.op = op;
+
+    // The filter's shape changed, so its meaning did.
+    this.#emitChange();
+  };
+
+  /** The reader typed into a condition that takes text. Kept on the definition. */
+  #onConditionText = (event: Event): void => {
+    const input = this.pathFind(event, '.qf-text') as HTMLInputElement | null;
+    if (!input) return;
+    const id = input.closest<HTMLElement>('.chip')?.dataset['id'];
+    if (!id) return;
+    const def = this.#filters.find((f) => f.id === id);
+    if (def) def.text = input.value;
     this.#emitChange();
   };
 
@@ -974,7 +1079,107 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       values: this.values,
       picked: this.pickedValues,
       custom: this.customFilters,
+      // Ready for a DataSource, for the chips that carry a CONDITION. A view
+      // that offers no conditions never sees this and reads `values` as before.
+      clauses: this.clauses,
     });
+  }
+
+  /**
+   * Every condition chip as a ready FilterClause, by chip id.
+   *
+   * A chip WITHOUT `conditions: true` is absent: its meaning is `values`, and
+   * a second shape for the same fact is a second answer. A chip on a typing
+   * condition with nothing typed is absent too — an empty value says nothing.
+   *
+   * This is the shape the column heading's filter menu already reports, so one
+   * field filtered from either place reaches the data layer identically.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  get clauses(): Record<string, [string, FilterOp, unknown]> {
+    const out: Record<string, [string, FilterOp, unknown]> = {};
+    for (const def of this.#filters) {
+      if (!def.conditions) continue;
+      const op = def.op ?? DEFAULT_OP;
+      const field = def.id;
+
+      if ((OP_TAKES[op] ?? 'list') === 'text') {
+        const typed = (def.text ?? '').trim();
+        if (typed) out[field] = [field, op, typed];
+        continue;
+      }
+
+      const picks = this.#chipPicksById(field);
+      if (!picks.length) continue;
+      /* ONE pick is `eq`; SEVERAL is `in`, because `eq` against a list can
+         never match. `ne` inverts the same way. */
+      if (picks.length === 1) out[field] = [field, op, picks[0]];
+      else out[field] = [field, op === 'ne' ? 'notin' : 'in', picks];
+    }
+    return out;
+  }
+
+  /**
+   * setClause(id, clause) — set ONE condition chip from a ready FilterClause.
+   *
+   * The write path for `clauses`, and the door a COLUMN heading's filter menu
+   * comes through: `column-filter-change` reports exactly this shape, so one
+   * field filtered from the heading shows the same condition and value on its
+   * chip. `null` clears the chip back to no condition.
+   *
+   * SILENT — echoing a change back to whoever set it filters twice.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  setClause(id: string, clause: readonly [string, FilterOp, unknown] | null): void {
+    const def = this.#filters.find((f) => f.id === id);
+    if (!def?.conditions) return;
+
+    if (!clause) {
+      def.op = DEFAULT_OP;
+      def.text = '';
+      this.setChipValues(id, []);
+      this.#syncCondition(id, def);
+      return;
+    }
+
+    const [, op, value] = clause;
+    /* `in`/`notin` are how SEVERAL picks read; the chip's own condition stays
+       `eq`/`ne`, because the dropdown offers no "is one of" — the list IS the
+       "one of". TRAP T-an-operator-decides-pick-or-type */
+    def.op = op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op;
+
+    if ((OP_TAKES[def.op] ?? 'list') === 'text') {
+      def.text = value == null ? '' : String(value);
+    } else {
+      const picks = (Array.isArray(value) ? value : [value])
+        .filter((v) => v != null)
+        .map((v) => String(v));
+      this.setChipValues(id, picks);
+    }
+    this.#syncCondition(id, def);
+  }
+
+  /** Write a chip's condition back into its live menu. */
+  #syncCondition(id: string, def: QuickFilterDef): void {
+    for (const chip of this.#chips()) {
+      if (chip.dataset['id'] !== id) continue;
+      const menu = chip.querySelector('sherpa-menu');
+      const select = chip.querySelector<HTMLSelectElement>('.qf-op');
+      const box = chip.querySelector<HTMLInputElement>('.qf-text');
+      const op = def.op ?? DEFAULT_OP;
+      if (select) select.value = op;
+      if (box) box.value = def.text ?? '';
+      menu?.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+      return;
+    }
+  }
+
+  /** One chip's ticked values, by id. */
+  #chipPicksById(id: string): string[] {
+    for (const chip of this.#chips()) {
+      if (chip.dataset['id'] === id) return this.#chipPicks(chip);
+    }
+    return [];
   }
 
   /**
