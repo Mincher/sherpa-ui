@@ -5,7 +5,9 @@
  * TRAP T-view-state-lives-in-one-object
  */
 import { andFilter, filterFields, filterNeedles, picksClause } from './store.js';
+import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
+import type { FieldReading, FilterState } from './filter-state.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */
@@ -127,6 +129,17 @@ export class DataSource extends EventTarget {
   #scheduled = false;
   /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
+  /**
+   * WHAT IS SELECTED, BY FIELD — not by which control did the selecting.
+   *
+   * A field is drawn in several places at once: a filter chip, a column
+   * heading, a chart legend. Each used to keep its own copy, so two controls
+   * over one field could show two answers. This is the one reading they all
+   * read and write. TRAP T-one-field-one-filter-menu
+   */
+  #readings = new Map<string, FieldReading>();
+  /** Every value a field can take, for the controls that draw its rows. */
+  #domains = new Map<string, string[]>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -157,6 +170,9 @@ export class DataSource extends EventTarget {
   setState(next: Partial<ViewState>): void {
     if ('filter' in next) {
       this.#parts.clear();
+      // A whole filter REPLACES every field selection too, or a restored view
+      // keeps ticks the query no longer carries.
+      this.#readings.clear();
       if (next.filter) this.#state.filter = next.filter;
       else delete this.#state.filter;
     }
@@ -252,6 +268,7 @@ export class DataSource extends EventTarget {
   /** Replace the WHOLE filter, clearing every contribution. TRAP T-contribute-beats-last-writer */
   setFilter(filter: Filter | undefined): void {
     this.#parts.clear();
+    this.#readings.clear();
     this.#setFilterValue(filter);
   }
 
@@ -262,9 +279,70 @@ export class DataSource extends EventTarget {
     this.#setFilterValue(this.#composed());
   }
 
-  /** Every named part, ANDed — or undefined when there are none. */
+  /* ── Selection, by FIELD ───────────────────────────────────────────── */
+
+  /**
+   * Declare every value a field can take, so a control drawing its rows offers
+   * the same list wherever it appears — and the same STRINGS, which is what
+   * lets two controls share one selection.
+   */
+  declareValues(field: string, values: readonly unknown[]): void {
+    this.#domains.set(field, [...new Set(values.map(String))]);
+  }
+
+  /** What `declareValues` was told, for a control stamping its own rows. */
+  valuesFor(field: string): string[] {
+    return [...(this.#domains.get(field) ?? [])];
+  }
+
+  /**
+   * Select values for a FIELD. Every control over that field reads the same
+   * answer back from `selection()`, so none of them has to hear about the
+   * others. An empty list clears it.
+   *
+   * `reading` carries the rest of the question — the condition and its typed
+   * text — for the controls that offer one.
+   */
+  select(field: string, picked: readonly string[], reading: FieldReading = {}): void {
+    const next: FieldReading = { ...reading, picked: [...picked] };
+    const answered = picked.length > 0 || (next.text ?? '').trim() !== '';
+    if (answered) this.#readings.set(field, next);
+    else this.#readings.delete(field);
+    this.#setFilterValue(this.#composed());
+    /* AFTER the requery, so a listener reading `selection()` sees the state
+       the rows were fetched for. */
+    this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+  }
+
+  /** Stop applying a field without forgetting it. TRAP T-grid-suspend-is-not-clear */
+  suspendSelection(field: string, suspended = true): void {
+    const held = this.#readings.get(field);
+    if (!held) return;
+    this.select(field, held.picked ?? [], { ...held, suspended });
+  }
+
+  /**
+   * One field's whole state — picked, unpicked, the condition — ready for a
+   * chip, a column menu, a legend row or anything else that draws it.
+   */
+  selection(field: string, label?: string): FilterState {
+    return fieldState(
+      { field, values: this.#domains.get(field) ?? [], ...(label ? { label } : {}) },
+      this.#readings.get(field) ?? {},
+    );
+  }
+
+  /** Every field currently selected. */
+  get selectedFields(): string[] {
+    return [...this.#readings.keys()];
+  }
+
+  /** Every named part AND every field's own clause. */
   #composed(): Filter | undefined {
-    return andFilter([...this.#parts.values()]);
+    const fields = [...this.#readings.keys()]
+      .map((field) => stateClause(this.selection(field)))
+      .filter((c): c is NonNullable<typeof c> => !!c);
+    return andFilter([...this.#parts.values(), ...fields]);
   }
 
   /** The shared tail of `setFilter` and `contribute`. */

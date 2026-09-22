@@ -1498,9 +1498,11 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 `T-a-chip-body-cycles-its-states` are the same rule for the toolbar's chips.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/data/filter-state.ts`
-- Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/unit/field-selection.test.mjs`
+- Site: `test/unit/filter-state.test.mjs`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -1724,12 +1726,18 @@ so.
 counterpart. Each is a place a host can write state that nothing downstream
 will ever hear about.
 
+**`DataSource.select()` is the answer for a FIELD**, and the reason the legend
+no longer mirrors a chip at all. It writes the field's selection, re-queries,
+and then emits `selection-change` — one write, one announcement, and every
+control over that field re-reads `selection(field)` instead of being pushed to.
+The silent setters above are what those controls are DRAWN with, downstream of
+the announcement, which is exactly where silence belongs.
+TRAP T-one-field-one-filter-menu
+
 See `T-grid-read-without-write-is-half-an-api` for the other half of the same
 idea — a value you can read and not write.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/legend-filter.ts`
-- Site: `test/unit/legend-filter.test.mjs`
 
 ### T-grid-read-without-write-is-half-an-api
 
@@ -2855,15 +2863,14 @@ which cannot be chosen right now. `stateClause()` is the only part that speaks
 filters; the rest is selection. A transfer list is one state read twice — its
 picked values on the right, its unpicked on the left.
 
-- Site: `src/core/data/filter-state.ts`
-- Site: `src/data.ts`
-- Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `test/e2e/reforged-filter-conditions.spec.ts`
-- Site: `test/unit/parity-sweep.test.mjs`
+- Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/legend-filter.ts`
-- Site: `test/unit/legend-filter.test.mjs`
+- Site: `src/data.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `test/unit/filter-state.test.mjs`
+- Site: `test/unit/parity-sweep.test.mjs`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so
@@ -2888,15 +2895,44 @@ Two consequences worth knowing:
 - a NUMBER column keeps its own body: its answer is a slider or a range, not a
   list of values, and `between` is a mode rather than a seventh condition.
 
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+**THE SAME MENU IS NOT THE SAME ANSWER.** Both controls drew the right rows and
+each kept its OWN ticks, so picking `Pro` on the chip left the heading blank —
+and the two writers put two clauses over one field into the query. With a
+legend over the same field that made three: `plan notin [...]` AND `plan eq
+Pro` AND `plan eq Free`, which matches nothing. Every control looked right and
+the grid showed zero rows.
+
+The fix is that the SOURCE owns the field, not any control:
+
+| | |
+|---|---|
+| `declareValues(field, values)` | every value, so each control offers the same rows — and the same STRINGS |
+| `select(field, picked)` | the one write; re-queries, then emits `selection-change` |
+| `selection(field)` | a `FilterState`, the one answer each control draws from |
+
+The filter is composed from the FIELDS plus the named `contribute` parts, so a
+field can only ever contribute one clause. A control that also contributes by
+hand must exclude what the source owns — a chip reports both its picks AND a
+ready clause, and stripping only the picks let the clause ride in anyway.
+
+`bindLegendFilter` lost its `chip:` option to this: a legend and a chip over
+one field have nothing to keep in step once both read `selection(field)`. The
+binding went from 194 lines to 152.
+
+- Site: `examples/views/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/field-selection.test.mjs`
+- Site: `test/unit/legend-filter.test.mjs`
 ### T-an-operator-decides-pick-or-type
 
 A filter menu's CONDITION dropdown leads the card, above the search box, and is
@@ -6737,6 +6773,7 @@ any filter applied on top of it also showed zero and read as a broken filter.
 - Site: `examples/views/records-data.js`
 - Site: `examples/views/records-views.js`
 - Site: `examples/templates/records.html`
+- Site: `test/e2e/reforged-view-chips.spec.ts`
 - Site: `examples/views/dashboard.js`
 - Site: `examples/views/dashboard-data.js`
 - Site: `examples/views/dashboard-views.js`
@@ -8088,11 +8125,12 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `src/core/data/store.ts`
-- Site: `src/core/data/legend-filter.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `examples/views/global-filters.js`
+- Site: `examples/views/records.js`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/store.ts`
 - Site: `test/unit/filter-state.test.mjs`
 ### T-one-field-does-not-own-the-whole-map
 
@@ -8109,8 +8147,6 @@ leaves it untouched; an empty list clears it — see
 T-everything-on-is-no-filter.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/legend-filter.ts`
-- Site: `test/unit/legend-filter.test.mjs`
 
 ### T-everything-on-is-no-filter
 
@@ -8127,11 +8163,12 @@ keeps its badge and value label, so it reads as set while claiming to be off.
 `values = []` unticks every row and re-derives the face; the `current = false`
 that follows is what makes it read as unset.
 
-- Site: `src/core/data/legend-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/unit/legend-filter.test.mjs`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/legend-filter.ts`
+- Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `test/unit/legend-filter.test.mjs`
 ### T-a-legend-keeps-one-row-on
 
 Will, same message: *"at least 1 must be active at all times so we need to

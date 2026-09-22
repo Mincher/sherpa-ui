@@ -158,8 +158,13 @@ export async function init(root) {
      plain on/off toggle. No `count` on the toggles — the badge means "how many
      VALUES are picked", which each menu chip sets itself. */
   const valuesOf = (field) => [...new Set(customers.map((c) => c[field]))].sort();
+  /* THE VALUE THE ROW HOLDS, not a lower-cased copy. The query compares
+     loosely either way, but a column heading's menu offers the raw value — so
+     a lower-cased chip option meant two menus over one field held two
+     different strings and could never share a selection.
+     TRAP T-one-comparison-rule-for-query-and-ui */
   const asOptions = (field) =>
-    valuesOf(field).map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
+    valuesOf(field).map((v) => ({ value: String(v), label: String(v) }));
   /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
      chip offers "Remove filter". `commit: true` on Owner and Created only:
      chips AUTO-APPLY by default, and committing is the opt-out for a field
@@ -303,18 +308,18 @@ export async function init(root) {
 
   /* TURNING A LEGEND ROW OFF IS A FILTER, not a drawing trick. The old wiring
      called setBarHidden() and the bar vanished from that ONE chart; here the
-     click writes `notin` into the source, so the other charts, the tiles, the
+     click writes the FIELD's selection, so the other charts, the tiles, the
      grid and its pager all narrow with it.
 
-     Each legend also drives a multi-select chip over the same field: the menu
-     unticks what the legend dimmed, and picking in the menu dims the legend in
-     kind. One state, two faces.
-     TRAP T-a-legend-toggle-is-a-filter */
+     NO `chip:` — the source owns the field, so a legend and the chip over it
+     read the same answer and there is nothing to keep in step.
+     TRAP T-a-legend-toggle-is-a-filter
+     TRAP T-one-field-one-filter-menu */
   bindLegendFilter(root.querySelector('#r-bar-legend'), source, {
-    field: 'status', values: states, chip: { el: qft, id: 'status' }, signal,
+    field: 'status', values: states, signal,
   });
   bindLegendFilter(root.querySelector('#r-donut-legend'), source, {
-    field: 'plan', values: plans, chip: { el: qft, id: 'plan' }, signal,
+    field: 'plan', values: plans, signal,
   });
 
   /* The gauge reads ONE number, unrounded — rounding is presentation.
@@ -334,10 +339,56 @@ export async function init(root) {
      chip and the grid's header arrow two views of one value. `ignore` on the
      FILTER event only, because translating chips is view knowledge; sort and
      group the source handles itself. */
+  /* ONE FIELD, ONE SELECTION. The SOURCE holds what is picked for a field, so
+     a chip, a column heading and a legend read the same answer instead of each
+     keeping a copy. Declaring the values is what lets them offer the same rows
+     — and the same STRINGS, which is what made two menus shareable at all.
+     TRAP T-one-field-one-filter-menu */
+  const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
+  for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
+
+  /* Every control over a field re-reads when ANY of them changes it. The grid's
+     column menu is the one that had no way to hear before. */
+  source.addEventListener('selection-change', (e) => {
+    const { field } = e.detail;
+    const state = source.selection(field);
+    const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
+    // Both are SILENT writes, so neither echoes back as another change.
+    qft.setChipValues(field, picked);
+    grid.setColumnFilter(field, picked.length ? picksClause(field, picked) : null);
+  }, { signal });
+
+  /* THE BAR'S CONTRIBUTION, MINUS WHAT THE SOURCE OWNS. A field in
+     `FIELD_CHIPS` is held by `select()`, so letting it ride here too ANDed two
+     clauses over one field — and `eq Pro` AND `eq Free` matches nothing.
+     Every writer of the `chips` key goes through this. */
+  const pushChips = () => {
+    const rest = {};
+    for (const [id, picked] of Object.entries(qft.values ?? {})) {
+      if (!FIELD_CHIPS.has(id)) rest[id] = picked;
+    }
+    /* THE READY CLAUSES TOO. A chip reports its own finished clause as well as
+       its picks, so stripping only `values` still let `plan eq Pro` ride in
+       beside the selection's `plan eq Free` — and `eq` twice over one field
+       matches nothing. */
+    const ready = {};
+    for (const [id, clause] of Object.entries(qft.clauses ?? {})) {
+      if (!FIELD_CHIPS.has(id)) ready[id] = clause;
+    }
+    source.contribute('chips', filterFromChips(rest, qft.active, ready));
+  };
+
   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
-    source.contribute('chips',
-      filterFromChips(e.detail.values, e.detail.active, e.detail.clauses));
+    /* A FIELD chip writes the field's selection; the source owns it from
+       there and every other control over that field re-reads. Everything else
+       on this bar — the toggles, the typed conditions, a `col:` chip — has no
+       single field behind it, so it still contributes as one part. */
+    for (const field of FIELD_CHIPS) {
+      // Absent means OFF — a chip reports no entry at all when it is not on.
+      source.select(field, e.detail.values?.[field] ?? []);
+    }
+    pushChips();
     /* A custom chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
        clause and never touches the chip. A custom chip shows in neither
@@ -374,6 +425,22 @@ export async function init(root) {
      sideways scroll still shows the view is narrowed and by what. */
   grid.addEventListener('column-filter-change', (e) => {
     const { field, header, clause, label } = e.detail;
+
+    /* A FIELD THE SOURCE OWNS. The heading writes the same selection a chip
+       writes, so the two can never say different things — and no second
+       `col:` chip appears beside the one already on the bar. Only a LIST
+       condition maps onto a selection; "Contains ana" has no ticks, so it
+       still becomes its own chip below. TRAP T-one-field-one-filter-menu */
+    if (FIELD_CHIPS.has(field)) {
+      const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
+        : clause?.[1] === 'eq' ? [String(clause[2])]
+        : null;
+      if (picks || !clause) {
+        source.select(field, picks ?? []);
+        return;
+      }
+    }
+
     if (clause) columnClauses.set(field, clause);
     else columnClauses.delete(field);
     /* CHIP FIRST, then the filter. Adding the chip makes the toolbar emit
@@ -446,8 +513,7 @@ export async function init(root) {
   const syncScopes = () => {
     qft.supersede(viewFields());
     // The bar's own filters changed shape, so re-read them.
-    // `active` is a list of chip IDS, exactly as `quick-filter-change` reports.
-    source.contribute('chips', filterFromChips(qft.values, qft.active, qft.clauses));
+    pushChips();
   };
 
   header?.addEventListener('quick-filter-change', (e) => {

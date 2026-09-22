@@ -101,8 +101,10 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
  */
 export function globalAvailable(fields = {}, held = []) {
   const taken = new Set(held);
+  /* The RAW value, so a chip and a column heading over one field hold the same
+     strings. TRAP T-one-comparison-rule-for-query-and-ui */
   const asOptions = (values) =>
-    values.map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
+    values.map((v) => ({ value: String(v), label: String(v) }));
 
   return [
     { id: 'status', label: 'Status', select: 'multiple', removable: true,

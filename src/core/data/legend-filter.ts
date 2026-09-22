@@ -2,34 +2,35 @@
  * legend-filter.ts — turning a legend row OFF is a FILTER, not a drawing trick.
  *
  * A legend used to call `setSliceHidden()` on one chart: that bar vanished and
- * nothing else on the page knew. Here the same click writes `notin` into the
- * DataSource, so every bound component re-reads — the other charts, the tiles,
- * the grid and its pager.
+ * nothing else on the page knew. Here the same click writes the FIELD's
+ * selection on the DataSource, so every bound component re-reads — the other
+ * charts, the tiles, the grid and its pager.
  *
- * A chip over the same field is the SAME state wearing a menu, so the two
- * follow each other.
+ * A chip over the same field is the SAME state wearing a menu, so there is
+ * nothing to keep in step: both read `source.selection(field)`.
  *
  * TRAP T-a-legend-toggle-is-a-filter
  */
-import { picksClause, valueSet, type Filter } from './store.js';
-import { fieldState, type FilterState } from './filter-state.js';
+import { picksClause, type Filter } from './store.js';
+import { type FilterState } from './filter-state.js';
 
 /** A legend: it reports clicks and remembers which labels are off. */
 interface LegendEl extends EventTarget {
   off: string[];
 }
 
-/** Enough of a DataSource to own one named part of the filter. */
-interface Contributor {
-  contribute: (key: string, filter: Filter | undefined) => void;
-}
-
-/** A quick-filter toolbar, seen through the one method this needs. */
-interface ChipHost extends EventTarget {
-  /** ONE chip, never the whole map — TRAP T-one-field-does-not-own-the-whole-map. */
-  setChipValues: (id: string, picks: readonly string[] | undefined) => void;
-  /** Re-announce the whole bar, because `setChipValues` is silent. */
-  report?: () => void;
+/**
+ * Enough of a DataSource to own a FIELD's selection.
+ *
+ * Not `contribute` any more: a legend row and a filter chip over one field are
+ * the same fact stored two ways, and a separate `legend:<field>` part meant
+ * both could be in the filter at once — `plan ne Free` AND `plan eq Free`,
+ * which matches nothing. TRAP T-one-field-one-filter-menu
+ */
+interface Selector extends EventTarget {
+  select: (field: string, picked: readonly string[]) => void;
+  selection: (field: string) => FilterState;
+  declareValues: (field: string, values: readonly unknown[]) => void;
 }
 
 export interface LegendFilterOptions {
@@ -37,13 +38,6 @@ export interface LegendFilterOptions {
   field: string;
   /** Every value, in order. A label outside this list is ignored. */
   values: readonly string[];
-  /**
-   * The named filter part. Defaults to `legend:<field>`, so two legends over
-   * different fields never overwrite one another.
-   */
-  key?: string;
-  /** Mirror the set into this chip, and follow it back. */
-  chip?: { el: ChipHost; id: string };
   /** Drop the wiring when this aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
 }
@@ -88,97 +82,70 @@ export interface LegendFilterBinding {
  */
 export function bindLegendFilter(
   legend: LegendEl,
-  source: Contributor,
+  source: Selector,
   options: LegendFilterOptions,
 ): LegendFilterBinding {
-  const { field, values, chip, signal } = options;
-  const key = options.key ?? `legend:${field}`;
+  const { field, values, signal } = options;
   const known = new Set(values);
-  let hidden = new Set<string>();
+  source.declareValues(field, values);
 
-  /** Write the filter, and show the same set on the chip. */
-  const apply = (): void => {
-    source.contribute(key, hiddenFilter(field, hidden));
-    if (!chip) return;
-    /* EVERYTHING ON is no constraint, so the chip reads as OFF with nothing
-       picked — not as every value ticked, which says the same thing in a way
-       that looks like a filter. An empty list switches it off and keeps its
-       picks. TRAP T-everything-on-is-no-filter */
-    const on = hidden.size ? values.filter((v) => !hidden.has(v)) : [];
-    /* ONE chip — writing the whole `values` map switches off every chip it
-       does not name, and this binding only owns its own field.
-       TRAP T-one-field-does-not-own-the-whole-map */
-    chip.el.setChipValues(chip.id, on);
-    /* …and SAY SO. `setChipValues` is silent, which stops an echo but also
-       left the view holding the chip's OLD clause: switching a row back on
-       cleared `legend:plan` while `chips` still said "plan in (the other
-       three)", so the row came back at zero.
-       TRAP T-a-silent-write-still-needs-a-way-to-report */
-    chip.el.report?.();
+  /** What the SOURCE says is shown. `hidden` is the same fact inverted. */
+  const shown = (): Set<string> => {
+    const state = source.selection(field);
+    const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
+    // Nothing picked is NO CONSTRAINT — every row is shown, none hidden.
+    return picked.length ? new Set(picked) : new Set(values);
   };
+  const hiddenNow = (): string[] => values.filter((v) => !shown().has(v));
+
+  /** Draw the legend from the source. Every control over this field re-reads
+   *  the same way, so a chip and a legend cannot disagree. */
+  const redraw = (): void => { legend.off = hiddenNow(); };
 
   const onLegendClick = (): void => {
     /* Read the LEGEND, not the event. `detail` carries one row, but a roll-up
-       row stands for several and its label ("Other") is a value of nothing.
-       The legend already resolved both into its own off-set. */
-    const next = new Set(legend.off.filter((label) => known.has(label)));
+       row stands for several and its label ("Other") is a value of nothing. */
+    const off = new Set(legend.off.filter((label) => known.has(label)));
     /* AT LEAST ONE stays on. Hiding the last leaves an empty chart beside an
-       empty grid and no obvious way back — and it is not a question anyone
-       asks. The click is REFUSED, and the legend is put back as it was.
+       empty grid and no obvious way back. The click is REFUSED.
        TRAP T-a-legend-keeps-one-row-on */
-    if (next.size >= values.length) {
-      legend.off = [...hidden];
+    if (off.size >= values.length) {
+      redraw();
       return;
     }
-    hidden = next;
-    apply();
+    /* EVERYTHING ON is no constraint, so an empty selection — not every value
+       ticked, which says the same thing in a way that looks like a filter.
+       TRAP T-everything-on-is-no-filter */
+    source.select(field, off.size ? values.filter((v) => !off.has(v)) : []);
   };
 
-  const onChipChange = (event: Event): void => {
-    const detail = (event as CustomEvent).detail as {
-      values?: Record<string, readonly string[]>;
-    };
-    const picks = detail.values?.[chip!.id];
-    /* NOTHING ticked means "no constraint", not "hide everything" — the same
-       reading the rest of the toolbar uses. */
-    /* The QUERY's comparison. A chip's option values may be spelled
-       differently from the data — the Records example lower-cases them — and
-       an exact test here hid EVERY row instead of the unticked ones.
-       TRAP T-one-comparison-rule-for-query-and-ui */
-    const on = picks?.length ? valueSet(picks) : valueSet(values);
-    const next = new Set(values.filter((v) => !on.has(v)));
-    // The same floor as a legend click — TRAP T-a-legend-keeps-one-row-on.
-    hidden = next.size >= values.length ? new Set() : next;
-    source.contribute(key, hiddenFilter(field, hidden));
-    legend.off = [...hidden];
+  const onSelectionChange = (event: Event): void => {
+    if ((event as CustomEvent<{ field: string }>).detail?.field !== field) return;
+    redraw();
   };
 
   legend.addEventListener('legend-item-click', onLegendClick);
-  if (chip) chip.el.addEventListener('quick-filter-change', onChipChange);
+  source.addEventListener('selection-change', onSelectionChange);
+  redraw();
 
   const destroy = (): void => {
     legend.removeEventListener('legend-item-click', onLegendClick);
-    if (chip) chip.el.removeEventListener('quick-filter-change', onChipChange);
+    source.removeEventListener('selection-change', onSelectionChange);
   };
   signal?.addEventListener('abort', destroy, { once: true });
 
   return {
     get hidden(): string[] {
-      return [...hidden];
+      return hiddenNow();
     },
     get state(): FilterState {
-      // PICKED is what is shown; `hidden` is the same fact inverted.
-      return fieldState(
-        { field, values },
-        { picked: values.filter((v) => !hidden.has(v)) },
-      );
+      return source.selection(field);
     },
     set(next: Iterable<string>): void {
-      const want = new Set([...next].filter((v) => known.has(v)));
+      const off = new Set([...next].filter((v) => known.has(v)));
       // The same floor — TRAP T-a-legend-keeps-one-row-on.
-      hidden = want.size >= values.length ? new Set() : want;
-      legend.off = [...hidden];
-      apply();
+      if (off.size >= values.length) { redraw(); return; }
+      source.select(field, off.size ? values.filter((v) => !off.has(v)) : []);
     },
     destroy,
   };

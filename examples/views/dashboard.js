@@ -177,8 +177,8 @@ export async function init(root) {
      from that ONE chart and nothing else on the page knew, so the tiles and
      the other charts kept counting rows the reader had just excluded.
 
-     Each legend now contributes `notin` on the field its labels are values
-     of, so every bound component re-reads together.
+     Each legend writes the SELECTION of the field its labels are values of,
+     so every bound component re-reads together.
      TRAP T-a-legend-toggle-is-a-filter */
   bindLegendFilter($('#bar-legend'), source, {
     field: 'category', values: CATEGORY_ORDER, signal: page.signal,
