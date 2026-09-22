@@ -324,13 +324,15 @@ export async function init(root) {
 
   /* The gauge reads ONE number, unrounded — rounding is presentation.
      TRAP T-an-aggregate-returns-the-number */
-  summary('#r-gauge', (rows) => reduceRows(rows, 'mean', 'health'));
+  /* RISK, not health — so low reads green on the left, as every other gauge
+     does. Same column, inverted once here rather than in the data. */
+  summary('#r-gauge', (rows) => 100 - reduceRows(rows, 'mean', 'health'));
   /* The gauge legend names THRESHOLD ZONES, not a series, so no colour
      indices: a zone's colour is a status. Static, so it is populated once. */
   root.querySelector('#r-gauge-legend')?.populate([
-    { label: 'At risk (0–60)', status: 'critical' },
-    { label: 'Watch (60–80)', status: 'warning' },
-    { label: 'Healthy (80–100)', status: 'success' },
+    { label: 'Low (0–20)', status: 'success' },
+    { label: 'Watch (20–40)', status: 'warning' },
+    { label: 'At risk (40–100)', status: 'critical' },
   ]);
 
   /* STEER-ONLY: the toolbar's populate() means "here are your CHIPS", so a
