@@ -151,7 +151,6 @@ export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
    one value cannot disagree about what their shared third state keeps. */
 export {
   nextSort,
-  nextToggle,
   sortDirectionAttr,
   sortDirectionFrom,
   type SortState,

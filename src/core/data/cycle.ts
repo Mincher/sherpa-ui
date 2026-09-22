@@ -51,8 +51,3 @@ export function sortDirectionFrom(attr: string | null | undefined): SortDirectio
   if (attr === 'asc') return 'asc';
   return null;
 }
-
-/** The next state of an on/off control — so both cases read the same way. */
-export function nextToggle(current: boolean): boolean {
-  return !current;
-}

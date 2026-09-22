@@ -14,7 +14,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { nextSort, nextToggle, sortDirectionAttr, sortDirectionFrom } =
+const { nextSort, sortDirectionAttr, sortDirectionFrom } =
   await import(new URL('cycle.js', core));
 
 test('the full sort cycle: asc → desc → SUSPENDED → asc', () => {
@@ -83,7 +83,4 @@ test('a full round trip through the attribute', () => {
   }
 });
 
-test('nextToggle: two states, and off is one of them', () => {
-  assert.equal(nextToggle(true), false);
-  assert.equal(nextToggle(false), true);
-});
+

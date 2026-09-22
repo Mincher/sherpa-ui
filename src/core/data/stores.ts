@@ -233,8 +233,14 @@ export class RestStore extends BaseStore {
     return this.checkRows({ rows, total });
   }
 
+  /** One record's URL. Three methods built this, which is three chances to
+   *  forget the encoding on a key holding a slash. */
+  #keyUrl(key: unknown): string {
+    return `${this.#options.url}/${encodeURIComponent(String(key))}`;
+  }
+
   async byKey(key: unknown): Promise<Row | undefined> {
-    const url = `${this.#options.url}/${encodeURIComponent(String(key))}`;
+    const url = this.#keyUrl(key);
     try {
       return await this.#request<Row>(url, { method: 'GET' });
     } catch (error) {
@@ -260,7 +266,7 @@ export class RestStore extends BaseStore {
   }
 
   async update(key: unknown, values: Row): Promise<Row> {
-    const url = `${this.#options.url}/${encodeURIComponent(String(key))}`;
+    const url = this.#keyUrl(key);
     const row = await this.#request<Row>(url, {
       // TRAP T-rest-update-is-patch-not-put — PUT blanks what it is not sent.
       method: 'PATCH',
@@ -275,7 +281,7 @@ export class RestStore extends BaseStore {
   }
 
   async remove(key: unknown): Promise<void> {
-    const url = `${this.#options.url}/${encodeURIComponent(String(key))}`;
+    const url = this.#keyUrl(key);
     await this.#request<unknown>(url, { method: 'DELETE' });
     this.announce({ type: 'remove', key });
   }
