@@ -10,7 +10,7 @@
  * TRAP T-rollup-row-has-its-own-prototype
  */
 import type { LegendDatum } from '../../core/chart-datum.js';
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
@@ -30,7 +30,7 @@ export class SherpaChartLegend extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
-    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal'] },
+    'data-orientation': SHARED_PROPS['data-orientation'],
   } as const;
 
   #items: LegendItem[] = [];

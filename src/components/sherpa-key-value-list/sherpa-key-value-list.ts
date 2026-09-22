@@ -10,7 +10,7 @@
  *
  * No events — this is a display-only component.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 
 export interface KeyValuePair {
   key: string;
@@ -24,7 +24,7 @@ export class SherpaKeyValueList extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
-    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+    'data-orientation': SHARED_PROPS['data-orientation'],
   } as const;
 
   #pairs: KeyValuePair[] = [];

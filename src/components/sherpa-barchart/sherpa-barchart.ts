@@ -5,7 +5,7 @@
  * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 /** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
@@ -18,7 +18,7 @@ export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
   static override props = {
-    'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+    'data-legend': SHARED_PROPS['data-legend'],
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
   } as const;
 

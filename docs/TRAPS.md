@@ -6784,6 +6784,7 @@ or resuming would jump to a column the reader had moved on from.
 - Site: `src/core/cycle.ts`
 - Site: `test/unit/suspended-sort.test.mjs`
 - Site: `test/unit/cycle.test.mjs`
+- Site: `src/core/sherpa-element.ts`
 
 ### T-bind-locks-what-it-owns
 
@@ -6826,6 +6827,7 @@ filtering were already clean: every component use of `data-group-field` and
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 - Site: `scripts/check-ownership.mjs`
+- Site: `src/core/sherpa-element.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -7319,3 +7321,41 @@ Worth remembering as a shape: a guard that reads the source for evidence gets
 weaker every time the source gains a new place to spell something.
 
 - Site: `scripts/generate-component-spec.mjs`
+
+### T-the-shared-vocabulary-is-declared-once
+
+An attribute more than one component declares is a SHARED contract, and it was
+being spelled once per component. Measured across the 58: `data-heading` in 9,
+`data-type` in 8, `data-size` and `data-legend` in 3 each.
+
+Two of those groups are fine as they are. A `kind: 'content'` entry differs
+only in its `to:` selector — `.title` vs `.heading-text` vs `.heading` — and
+that selector IS the component's own DOM, so nine copies of
+`type: 'string', kind: 'content'` are repetition, not duplication. Moving them
+would mean the base class guessing at a class name.
+
+The `kind: 'style'` ones are not fine, because a copy can be WRONG and nothing
+says so. `sherpa-grid-cell` declared `data-sort-direction` with values
+`['asc']` — missing `desc`, and missing the empty string that means SUSPENDED
+(T-a-suspended-sort-is-one-owners-job). Its generated spec said so too, which
+is what an agent reads.
+
+`src/core/sherpa-element.ts` now exports two objects:
+
+| | |
+|---|---|
+| `DATA_PROPS` | the seven attributes `DataSource.#push` writes on every bound component, plus `data-locked`. A component declares one to say it READS it |
+| `SHARED_PROPS` | style attributes whose shape is identical wherever they appear — `data-size`, `data-orientation`, `data-legend` |
+
+`scripts/check-ownership.mjs` reads `DATA_PROPS` out of that file rather than
+keeping its own list, which was a fifth copy of the same seven names. Verified
+live: adding an eighth entry made the gate report eight.
+
+Three `data-orientation` declarations WIDENED as a result, from one value to
+both. That is a fix: each CSS selects on one value and treats the other as the
+default expressed by the attribute's absence, so declaring only the selected
+one under-described the API.
+
+- Site: `src/core/sherpa-element.ts`
+- Site: `scripts/check-ownership.mjs`
+- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`

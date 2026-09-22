@@ -15,16 +15,21 @@ import { dirname, join, relative } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Mirrors `DataSource.#push` — add one here when you add one there. */
-const OWNED = [
-  'data-sort-field',
-  'data-sort-direction',
-  'data-group-field',
-  'data-filter-fields',
-  'data-page',
-  'data-total-pages',
-  'data-page-size',
-];
+/**
+ * The attributes `DataSource.#push` owns, READ FROM the one declaration in
+ * `src/core/sherpa-element.ts`. A hand-kept copy here was a fifth spelling of
+ * one contract. `data-locked` is excluded: it is the guard, not a value.
+ * TRAP T-the-shared-vocabulary-is-declared-once
+ */
+const ELEMENT_TS = readFileSync(join(ROOT, 'src/core/sherpa-element.ts'), 'utf8');
+const DATA_PROPS_BLOCK = /export const DATA_PROPS = \{([\s\S]*?)\n\} as const/.exec(ELEMENT_TS);
+if (!DATA_PROPS_BLOCK) {
+  console.error('check-ownership: DATA_PROPS not found in src/core/sherpa-element.ts');
+  process.exit(1);
+}
+const OWNED = [...DATA_PROPS_BLOCK[1].matchAll(/'(data-[\w-]+)':/g)]
+  .map((m) => m[1])
+  .filter((a) => a !== 'data-locked');
 
 const camel = (attr) =>
   attr.replace(/^data-/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());

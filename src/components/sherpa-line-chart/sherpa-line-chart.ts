@@ -2,7 +2,7 @@
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  * CSS owns colour, fill and width.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -23,7 +23,7 @@ export class SherpaLineChart extends SherpaElement {
   static override css = new URL('./sherpa-line-chart.css', import.meta.url);
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
   static override props = {
-    'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+    'data-legend': SHARED_PROPS['data-legend'],
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
     'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },
   } as const;

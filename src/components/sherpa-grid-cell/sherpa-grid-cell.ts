@@ -3,16 +3,17 @@
  *
  * CSS owns the look and all per-type visibility; JS only wires the buttons.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { DATA_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 
 export class SherpaGridCell extends SherpaElement {
   static override css = new URL('./sherpa-grid-cell.css', import.meta.url);
   static override html = new URL('./sherpa-grid-cell.html', import.meta.url);
 
-  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
-     rule is a public API and belongs in one place. */
+  /* `data-sort-direction` comes from DATA_PROPS — the source writes it, and a
+     local copy had values ['asc'], missing both `desc` and the empty string
+     that means SUSPENDED. TRAP T-the-shared-vocabulary-is-declared-once */
   static override props = {
-    'data-sort-direction': { type: 'enum', kind: 'style', values: ['asc'] },
+    'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-type': { type: 'enum', kind: 'style', values: ['filter', 'group', 'header'] },
   } as const;
 

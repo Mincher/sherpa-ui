@@ -689,3 +689,40 @@ export abstract class SherpaElement extends HTMLElement {
   /** An observed attribute changed (after the first render). */
   protected onChange(_name: string, _oldVal: string | null, _newVal: string | null): void {}
 }
+
+/* ── The SHARED vocabulary ────────────────────────────────────────────────
+ * Attributes more than one component declares, stated once. Not a convenience:
+ * `sherpa-grid-cell` had `data-sort-direction` with values ['asc'], missing
+ * both `desc` and the empty string that means SUSPENDED — four components
+ * spelled one contract four ways, and `check-ownership.mjs` held a fifth copy.
+ * TRAP T-the-shared-vocabulary-is-declared-once
+ */
+
+/**
+ * The seven attributes `DataSource.#push` writes onto every component it binds,
+ * plus the guard. A component DECLARES these to say it READS them; writing one
+ * without a `data-locked` guard is the ownership bug.
+ * TRAP T-bind-locks-what-it-owns
+ */
+export const DATA_PROPS = {
+  /** The field sorted on. Empty string SUSPENDS; absent means no sort. */
+  'data-sort-field': { type: 'string', kind: 'style' },
+  /** asc | desc | '' suspended. TRAP T-a-suspended-sort-is-one-owners-job */
+  'data-sort-direction': { type: 'enum', kind: 'style', values: ['asc', 'desc', ''] },
+  'data-group-field': { type: 'string', kind: 'style' },
+  /** Space-separated field names — which columns a filter touches. */
+  'data-filter-fields': { type: 'string', kind: 'style' },
+  'data-page': { type: 'number', kind: 'style' },
+  'data-total-pages': { type: 'number', kind: 'style' },
+  'data-page-size': { type: 'number', kind: 'style' },
+  /** The host owns this component's state; report, never write. */
+  'data-locked': { type: 'boolean', kind: 'style' },
+} as const satisfies PropMap;
+
+/** Shared style attributes whose shape is identical wherever they appear. */
+export const SHARED_PROPS = {
+  'data-size': { type: 'enum', kind: 'style', values: ['sm', 'lg'] },
+  'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+  /** Where a chart puts its legend. */
+  'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+} as const satisfies PropMap;

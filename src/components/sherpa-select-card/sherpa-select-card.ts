@@ -5,7 +5,7 @@
  * and stay in sync; radio grouping is by hand, as native grouping cannot cross
  * shadow roots.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 
@@ -20,7 +20,7 @@ export class SherpaSelectCard extends SherpaElement {
   static override html = new URL('./sherpa-select-card.html', import.meta.url);
   static override props = {
     'data-footer': { type: 'enum', kind: 'style', values: ['none'] },
-    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal'] },
+    'data-orientation': SHARED_PROPS['data-orientation'],
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
   } as const;
