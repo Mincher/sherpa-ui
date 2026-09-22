@@ -191,6 +191,15 @@
   :host(:hover) {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
+  :host(:active) {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor);
+  }
+}
+
+/* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
+@supports (background: --shade(red, 8%)) {
+  :host(:hover) { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
+  :host(:active) { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
 }
 /* The controls are transparent, so the ring goes on the box; :focus-within so
    either control lights the same row. */

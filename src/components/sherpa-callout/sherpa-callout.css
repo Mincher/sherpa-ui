@@ -110,7 +110,16 @@
     color 100ms ease;
 
   @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, currentColor 14%, transparent); }
+    &:hover { background: color-mix(in oklab, currentColor 16%, transparent); }
+    &:active { background: color-mix(in oklab, currentColor 24%, transparent); }
+  }
+
+  /* The same two steps, NAMED. Second, so it wins where `@function` is real
+     and leaves the longhand standing where it is not.
+     TRAP T-a-css-function-needs-its-longhand-first */
+  @supports (background: --tint(16%)) {
+    &:hover { background: --tint(16%); }
+    &:active { background: --tint(24%); }
   }
 
   &:focus-visible {

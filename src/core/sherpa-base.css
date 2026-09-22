@@ -28,6 +28,19 @@
   result: color-mix(in oklab, var(--surface) calc(100% - var(--amount)), currentColor);
 }
 
+/**
+ * A TINT of the current ink over whatever is behind — for a control that sits
+ * ON a coloured surface and must not hide it. A close button in a toast, a
+ * tag, a chip, a callout: four of them, at 22%, 18%, 22% and 14%, which is
+ * drift rather than four decisions.
+ *
+ * The scale is 16% hover, 24% pressed. `--shade` is for a control with a
+ * surface of its own; this is for one borrowing the surface beneath it.
+ */
+@function --tint(--amount) {
+  result: color-mix(in oklab, currentColor var(--amount), transparent);
+}
+
 *,
 *::before,
 *::after {

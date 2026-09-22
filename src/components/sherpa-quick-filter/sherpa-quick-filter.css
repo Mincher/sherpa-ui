@@ -83,8 +83,17 @@
 
 @supports (color: color-mix(in oklab, red, blue)) {
   :is(.body, .caret):hover {
-    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 94%, currentColor);
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
+  :is(.body, .caret):active {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor);
+  }
+}
+
+/* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
+@supports (background: --shade(red, 8%)) {
+  :is(.body, .caret):hover { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
+  :is(.body, .caret):active { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
 }
 
 /* AI type carries the brand accent even when inactive. */

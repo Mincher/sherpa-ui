@@ -300,6 +300,15 @@
   ::slotted(:is(label, button):hover) {
     background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
   }
+  ::slotted(:is(label, button):active) {
+    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor);
+  }
+}
+
+/* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
+@supports (background: --shade(red, 8%)) {
+  ::slotted(:is(label, button):hover) { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
+  ::slotted(:is(label, button):active) { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
 }
 ::slotted(:is(label, button):focus-visible),
 ::slotted(label:focus-within) {

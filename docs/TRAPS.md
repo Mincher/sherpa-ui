@@ -7418,9 +7418,17 @@ is the demanding case because `@import` dies there:
 Firefox discarding the rule is what makes this safe: there is nothing left to
 half-apply. All three land on the same colour to five decimal places.
 
-**What a function is FOR here.** `--shade(--surface, --amount)` names a step —
-8% hover, 16% pressed — where thirteen components each wrote a raw percentage
-and drifted to five different ones. The function is not shorter; it is NAMED,
+**What a function is FOR here.** Two of them name a step where components had
+drifted:
+
+| function | for | scale |
+|---|---|---|
+| `--shade(--surface, --amount)` | a control with a surface of its OWN | 8% hover, 16% pressed |
+| `--tint(--amount)` | one BORROWING the surface beneath it | 16% hover, 24% pressed |
+
+`--shade` replaced raw percentages that had drifted to 92%, 94% and 84%.
+`--tint` replaced four IDENTICAL close buttons — tag, chip, toast, callout —
+hovering at 22%, 18%, 22% and 14%. The function is not shorter; it is NAMED,
 which is the same reason `--sherpa-focus-ring` is a custom property rather than
 48 copies of one value (`T-one-value-one-declaration`).
 
@@ -7432,7 +7440,15 @@ property cannot express.
 - Site: `src/components/sherpa-button/sherpa-button.css`
 - Site: `playwright.config.ts`
 - Site: `test/e2e/reforged-css-functions.spec.ts`
-
+- Site: `src/components/sherpa-toast/sherpa-toast.css`
+- Site: `src/components/sherpa-tag/sherpa-tag.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-file-upload/sherpa-file-upload.css`
+- Site: `src/components/sherpa-chip/sherpa-chip.css`
+- Site: `src/components/sherpa-callout/sherpa-callout.css`
 ### T-one-value-one-declaration
 
 The focus indicator was written by hand at **48 sites across 29 files** —

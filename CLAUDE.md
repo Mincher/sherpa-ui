@@ -389,10 +389,16 @@ Measured in all three engines, including inside an adopted shadow sheet:
 Firefox drops the `@function` rule entirely and keeps the longhand, and the
 three render the same colour to five decimal places.
 
-`--shade(--surface, --amount)` is the first and so far only function, in
-`sherpa-base.css`. Add another only with the same guard and the same
-three-engine proof — a function without its longhand is a rule that vanishes
-for a third of the web. TRAP `T-a-css-function-needs-its-longhand-first`.
+Two functions exist, both in `sherpa-base.css`:
+
+| function | for | scale |
+|---|---|---|
+| `--shade(--surface, --amount)` | a control with a surface of its OWN | 8% hover, 16% pressed |
+| `--tint(--amount)` | one BORROWING the surface beneath it | 16% hover, 24% pressed |
+
+Add another only with the same guard and the same three-engine proof — a
+function without its longhand is a rule that vanishes for a third of the web.
+TRAP `T-a-css-function-needs-its-longhand-first`.
 
 For focus rings, always use the explicit fallback pattern — and an INSET ring, so
 the stroke is drawn INSIDE the component's own box rather than bleeding over its

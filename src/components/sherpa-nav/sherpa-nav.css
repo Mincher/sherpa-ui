@@ -204,6 +204,13 @@
 
   @supports (color: color-mix(in oklab, red, blue)) {
     &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
+    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
+  }
+
+  /* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
+  @supports (background: --shade(red, 8%)) {
+    &:hover { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
+    &:active { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
   }
   &:focus-visible {
     outline: none;
@@ -298,6 +305,13 @@
 
   @supports (color: color-mix(in oklab, red, blue)) {
     &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
+    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
+  }
+
+  /* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
+  @supports (background: --shade(red, 8%)) {
+    &:hover { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
+    &:active { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
   }
   &:focus-visible {
     outline: none;
