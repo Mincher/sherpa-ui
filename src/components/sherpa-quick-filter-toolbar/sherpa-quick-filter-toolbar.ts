@@ -774,6 +774,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        reader answers with. TRAP T-an-operator-decides-pick-or-type */
     if (def.conditions) this.#addConditionRow(menu, def);
 
+    /* A VALUE menu is a FILTER menu: the condition row above the search says
+       what its rows mean. A PERSISTENT chip is a selector, not a field
+       question — "which saved view" has no Contains.
+       TRAP T-an-operator-decides-pick-or-type */
+    if (!def.persistent) {
+      menu.setAttribute('data-type', 'filter');
+      if (def.op) menu.setAttribute('data-op', def.op);
+    }
+
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
     // FIRST option, or the chip paints as an empty warning.
     const options = def.options ?? [];

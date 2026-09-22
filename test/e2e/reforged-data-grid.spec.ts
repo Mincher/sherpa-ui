@@ -1220,7 +1220,12 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
       sideBySide,
       // DevExtreme's binary operations, narrowed to the ones a text column can
       // answer. The <, <=, > and >= family is numeric and deliberately absent.
-      conditions: Array.from(text.querySelectorAll('option')).map((o) => o.value),
+      /* A TEXT column IS the shared sherpa-menu FILTER variant, so its
+         condition dropdown lives in THAT component's shadow root.
+         TRAP T-one-field-one-filter-menu */
+      conditions: Array.from(
+        text.querySelector('sherpa-menu')!.shadowRoot!.querySelectorAll('.condition option'),
+      ).map((o) => (o as HTMLOptionElement).value),
       // The menu defers behind Apply: a condition and a value are two decisions,
       // and querying on the half-built pair is a query for "contains ''".
       commits: !!text.querySelector('sherpa-menu')?.hasAttribute('data-commit'),
@@ -1286,8 +1291,14 @@ test('applying a column filter flags the column and reports a ready clause', asy
       await settle();
     };
     const fill = (op: string, value: string): void => {
-      chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
-      chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+      /* A TEXT column IS the shared filter menu now, so its condition and
+         typed value are the MENU's, not a body cloned into the chip.
+         TRAP T-one-field-one-filter-menu */
+      const menu = chip().querySelector('sherpa-menu') as HTMLElement & {
+        op: string; conditionValue: string;
+      };
+      menu.op = op;
+      menu.conditionValue = value;
     };
 
     fill('startswith', 'Ad');
@@ -1313,7 +1324,8 @@ test('applying a column filter flags the column and reports a ready clause', asy
       // menu has no tickable rows, so "nothing ticked" says nothing about
       // whether it is filtering. data-locked is what tells it so.
       empty: chip().hasAttribute('data-empty'),
-      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
+        .conditionValue,
     };
 
     // A SORT rebuilds the whole header row, so the menu is stamped fresh — the
@@ -1321,8 +1333,9 @@ test('applying a column filter flags the column and reports a ready clause', asy
     el.dataset['sortField'] = 'team';
     await settle();
     const afterSort = {
-      op: chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value,
-      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      op: (chip().querySelector('sherpa-menu') as HTMLElement & { op: string }).op,
+      value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
+        .conditionValue,
       chipOn: chip().hasAttribute('data-current'),
       status: head().dataset['status'] ?? null,
     };
@@ -1336,16 +1349,19 @@ test('applying a column filter flags the column and reports a ready clause', asy
       chipOn: chip().hasAttribute('data-current'),
     };
 
-    // Set one again, then clear it from OUTSIDE — what removing its toolbar
-    // chip has to reach back and do.
-    fill('eq', 'Ada');
+    /* Set one again, then clear it from OUTSIDE — what removing its toolbar
+       chip has to reach back and do. A TYPING condition, because `eq` is
+       answered by the ticked rows now, not by the box.
+       TRAP T-an-operator-decides-pick-or-type */
+    fill('contains', 'Ada');
     await footer('apply');
     const beforeExternal = head().dataset['status'] ?? null;
     el.clearColumnFilter('name');
     await settle();
     const external = {
       status: head().dataset['status'] ?? null,
-      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
+        .conditionValue,
       // The external clear must NOT echo an event back at the caller.
       eventCount: events.length,
     };
@@ -1652,8 +1668,17 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
     const chip = (field: string): HTMLElement =>
       sr.querySelector(`.head-cell[data-field="${field}"] .head-filter`) as HTMLElement;
     const apply = async (field: string, op: string, value: string): Promise<void> => {
-      chip(field).querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
-      chip(field).querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+      const m = chip(field).querySelector('sherpa-menu') as HTMLElement & {
+        op: string; conditionValue: string;
+      };
+      // A NUMBER column keeps its own body; a TEXT one is the filter menu.
+      if (m.getAttribute('data-type') === 'filter') {
+        m.op = op;
+        m.conditionValue = value;
+      } else {
+        chip(field).querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
+        chip(field).querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+      }
       chip(field).querySelector('sherpa-menu')!.shadowRoot!
         .querySelector<HTMLElement>('.apply')!.click();
       await new Promise((res) => setTimeout(res, 40));
@@ -1733,8 +1758,13 @@ test('REMOVE FILTER ends a column filter outright; the menu never inherits a col
 
     const removable = menu().hasAttribute('data-removable');
 
-    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'contains';
-    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = 'Ad';
+    {
+      const m = chip().querySelector('sherpa-menu') as HTMLElement & {
+        op: string; conditionValue: string;
+      };
+      m.op = 'contains';
+      m.conditionValue = 'Ad';
+    }
     menu().shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
     await new Promise((res) => setTimeout(res, 40));
     await settle();
@@ -1773,7 +1803,8 @@ test('REMOVE FILTER ends a column filter outright; the menu never inherits a col
       afterRemove: {
         status: head().dataset['status'] ?? null,
         chipOn: chip().hasAttribute('data-current'),
-        value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+        value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
+        .conditionValue,
       },
       events,
     };
@@ -1831,11 +1862,17 @@ test('a column filter can be SUSPENDED and resumed without losing it', async ({ 
       marks: sr.querySelectorAll('.cell mark.match').length,
       clause: el.columnClause('name'),
       // The menu still holds what was typed, either way.
-      value: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      value: (chip().querySelector('sherpa-menu') as HTMLElement & { conditionValue: string })
+        .conditionValue,
     });
 
-    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'contains';
-    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = 'ar';
+    {
+      const m = chip().querySelector('sherpa-menu') as HTMLElement & {
+        op: string; conditionValue: string;
+      };
+      m.op = 'contains';
+      m.conditionValue = 'ar';
+    }
     chip().querySelector('sherpa-menu')!.shadowRoot!
       .querySelector<HTMLElement>('.apply')!.click();
     await new Promise((res) => setTimeout(res, 40));
@@ -1914,8 +1951,11 @@ test('setColumnFilter restores a column from outside — the round trip a saved 
       const chip = th.querySelector('.head-filter') as HTMLElement;
       return {
         lit: th.dataset['status'] ?? null,
-        op: chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? null,
-        value: chip.querySelector<HTMLInputElement>('.head-filter-value')?.value ?? null,
+        op: (chip.querySelector('sherpa-menu') as (HTMLElement & { op?: string }) | null)?.op
+          ?? chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? null,
+        value: (chip.querySelector('sherpa-menu') as
+          (HTMLElement & { conditionValue?: string }) | null)?.conditionValue
+          ?? chip.querySelector<HTMLInputElement>('.head-filter-value')?.value ?? null,
         clause: el.columnClause(field),
         marks: sr.querySelectorAll('.cell mark.match').length,
       };

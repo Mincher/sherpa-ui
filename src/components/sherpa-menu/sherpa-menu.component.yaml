@@ -20,83 +20,182 @@ element:
   provides: []
 templates:
   - default
+  - filter
 anatomy:
-  root:
-    el: div
-    class: menu sherpa-border-edges
-    part: menu
-    attrs:
-      popover: auto
-      role: menu
-    children:
+  byTemplate:
+    default:
       - el: div
-        class: header
-        part: header
+        class: menu sherpa-border-edges
+        part: menu
+        attrs:
+          popover: auto
+          role: menu
         children:
-          - el: span
-            class: drill-trail
-            part: drill-trail
+          - el: div
+            class: header
+            part: header
+            children:
+              - el: span
+                class: drill-trail
+                part: drill-trail
+                children:
+                  - el: sherpa-button
+                    class: drill-back
+                    part: drill-back
+                    attrs:
+                      data-type: icon
+                      data-size: xs
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-arrow-left
+                      aria-label: Back
+                  - el: sherpa-breadcrumbs
+                    class: drill-crumbs
+                    part: drill-crumbs
+              - el: p
+                class: heading
+                part: heading
+              - slot: header
+              - el: sherpa-input-text
+                class: search
+                part: search
+                attrs:
+                  data-icon-start: fa-solid fa-magnifying-glass
+                  placeholder: Search
+                  autocomplete: "off"
+                  aria-label: Search this menu
+          - el: p
+            class: no-matches
+            part: no-matches
+            attrs:
+              role: status
+          - el: div
+            class: rows
+            part: rows
+            slot: ""
+          - el: sherpa-container-footer
+            class: footer
+            part: footer
+            attrs:
+              data-align: end
             children:
               - el: sherpa-button
-                class: drill-back
-                part: drill-back
+                class: today
+                part: today
+              - el: sherpa-button
+                class: clear
+                part: clear
+              - el: sherpa-button
+                class: remove
+                part: remove
                 attrs:
-                  data-type: icon
-                  data-size: xs
-                  data-look: transparent
-                  data-icon-start: fa-solid fa-arrow-left
-                  aria-label: Back
-              - el: sherpa-breadcrumbs
-                class: drill-crumbs
-                part: drill-crumbs
-          - el: p
-            class: heading
-            part: heading
-          - slot: header
-          - el: sherpa-input-text
-            class: search
-            part: search
-            attrs:
-              data-icon-start: fa-solid fa-magnifying-glass
-              placeholder: Search
-              autocomplete: "off"
-              aria-label: Search this menu
-      - el: p
-        class: no-matches
-        part: no-matches
-        attrs:
-          role: status
+                  data-status: critical
+              - el: span
+                class: footer-spacer
+              - el: sherpa-button
+                class: cancel
+                part: cancel
+              - el: sherpa-button
+                class: apply
+                part: apply
+                attrs:
+                  data-look: saturated
+    filter:
       - el: div
-        class: rows
-        part: rows
-        slot: ""
-      - el: sherpa-container-footer
-        class: footer
-        part: footer
+        class: menu sherpa-border-edges
+        part: menu
         attrs:
-          data-align: end
+          popover: auto
+          role: menu
         children:
-          - el: sherpa-button
-            class: today
-            part: today
-          - el: sherpa-button
-            class: clear
-            part: clear
-          - el: sherpa-button
-            class: remove
-            part: remove
+          - el: div
+            class: header
+            part: header
+            children:
+              - el: span
+                class: drill-trail
+                part: drill-trail
+                children:
+                  - el: sherpa-button
+                    class: drill-back
+                    part: drill-back
+                    attrs:
+                      data-type: icon
+                      data-size: xs
+                      data-look: transparent
+                      data-icon-start: fa-solid fa-arrow-left
+                      aria-label: Back
+                  - el: sherpa-breadcrumbs
+                    class: drill-crumbs
+                    part: drill-crumbs
+              - el: p
+                class: heading
+                part: heading
+              - slot: header
+              - el: div
+                class: filter-row
+                part: filter-row
+                children:
+                  - el: span
+                    class: condition-box
+                    children:
+                      - el: select
+                        class: condition
+                        part: condition
+                        attrs:
+                          aria-label: Condition
+                        children:
+                          - el: option
+                  - el: input
+                    class: condition-value
+                    part: condition-value
+                    attrs:
+                      type: text
+                      aria-label: Value
+                      placeholder: Value
+              - el: sherpa-input-text
+                class: search
+                part: search
+                attrs:
+                  data-icon-start: fa-solid fa-magnifying-glass
+                  placeholder: Search
+                  autocomplete: "off"
+                  aria-label: Search this menu
+          - el: p
+            class: no-matches
+            part: no-matches
             attrs:
-              data-status: critical
-          - el: span
-            class: footer-spacer
-          - el: sherpa-button
-            class: cancel
-            part: cancel
-          - el: sherpa-button
-            class: apply
-            part: apply
+              role: status
+          - el: div
+            class: rows
+            part: rows
+            slot: ""
+          - el: sherpa-container-footer
+            class: footer
+            part: footer
             attrs:
-              data-look: saturated
+              data-align: end
+            children:
+              - el: sherpa-button
+                class: today
+                part: today
+              - el: sherpa-button
+                class: clear
+                part: clear
+              - el: sherpa-button
+                class: remove
+                part: remove
+                attrs:
+                  data-status: critical
+              - el: span
+                class: footer-spacer
+              - el: sherpa-button
+                class: cancel
+                part: cancel
+              - el: sherpa-button
+                class: apply
+                part: apply
+                attrs:
+                  data-look: saturated
 props:
   - $type: prop
     name: data-align
@@ -119,6 +218,13 @@ props:
     kind: style
     description: show the Apply / Cancel footer and DEFER changes until Apply
   - $type: prop
+    name: data-conditions
+    type: string
+    kind: style
+    description: >-
+      FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text
+      set.
+  - $type: prop
     name: data-drill
     type: string
     kind: style
@@ -136,6 +242,11 @@ props:
     type: string
     kind: content
     description: optional heading (rendered upper-case at 10/16)
+  - $type: prop
+    name: data-op
+    type: string
+    kind: content
+    description: "FILTER type only: which condition is picked. Defaults to `eq`."
   - $type: prop
     name: data-removable
     type: string
@@ -155,16 +266,34 @@ props:
       - single
     description: multiple  | single (radio rows)
   - $type: prop
+    name: data-takes
+    type: string
+    kind: style
+    description: >-
+      written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text
+      box.
+  - $type: prop
     name: data-type
     type: enum
     kind: content
     values:
       - list
       - calendar
+      - filter
     description: >-
-      list  | calendar — the Menu set's own `Type` axis. `calendar` widens the card and lays the
-      LIST region out horizontally, so a day grid and a time picker sit side by side. Everything
-      else is the same menu.
+      list  | calendar | filter — the Menu set's `Type` axis. `filter` is the FILTER MENU: a
+      condition dropdown above the search, and the text box its typing conditions use. One field
+      gets one menu whether a chip or a column heading opens it. TRAP T-one-field-one-filter-menu
+      TRAP T-an-operator-decides-pick-or-type `calendar` widens the card and lays the LIST region
+      out horizontally, so a day grid and a time picker sit side by side. Everything else is the
+      same menu.
+  - $type: prop
+    name: data-value
+    type: string
+    kind: content
+    description: >-
+      FILTER type only: what was TYPED under a typing condition. An ATTRIBUTE because a variant
+      re-stamp replaces the whole shadow tree, and a value living only in the box is lost.
   - $type: prop
     name: open
     type: boolean
@@ -183,8 +312,14 @@ states:
     name: search
     selector: ":host([data-search])"
   - $type: state
+    name: filter
+    selector: ":host([data-type=\"filter\"])"
+  - $type: state
     name: drill
     selector: ":host([data-drill])"
+  - $type: state
+    name: text
+    selector: ":host([data-takes=\"text\"])"
   - $type: state
     name: clearable
     selector: ":host([data-clearable])"
@@ -201,12 +336,17 @@ states:
     name: commit
     selector: ":host([data-commit])"
   - $type: state
+    name: not-text
+    selector: ":host(:not([data-takes=\"text\"]))"
+  - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .condition:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (values, open). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (values, templateId, op, conditionValue, open). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -241,6 +381,13 @@ events:
       label: string
       value: unknown
   - $type: event
+    name: condition-change
+    bubbles: true
+    composed: true
+    detail:
+      op: unknown
+      value: unknown
+  - $type: event
     name: menu-back
     bubbles: true
     composed: true
@@ -263,6 +410,29 @@ tokens:
   heading.font-weight: "{sherpa.font-weight-regular}"
   heading.line-height: "{sherpa.theme-content-line-height-small}"
   heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
+  condition.min-block-size: "{sherpa.display-mode-size-2xl}"
+  condition.padding: "{sherpa.display-mode-space-2xs}"
+  condition.font-size: "{sherpa.theme-content-size-base}"
+  condition.color: "{sherpa.theme-content-body-1}"
+  condition.background: "{sherpa.theme-surface-default-base}"
+  condition.border-color: "{sherpa.theme-border-default-2}"
+  condition.border-block-start-width: "{sherpa.border-top}"
+  condition.border-block-end-width: "{sherpa.border-bottom}"
+  condition.border-inline-start-width: "{sherpa.border-left}"
+  condition.border-inline-end-width: "{sherpa.border-right}"
+  condition.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  condition-value.min-block-size: "{sherpa.display-mode-size-2xl}"
+  condition-value.padding: "{sherpa.display-mode-space-2xs}"
+  condition-value.font-size: "{sherpa.theme-content-size-base}"
+  condition-value.color: "{sherpa.theme-content-body-1}"
+  condition-value.background: "{sherpa.theme-surface-default-base}"
+  condition-value.border-color: "{sherpa.theme-border-default-2}"
+  condition-value.border-block-start-width: "{sherpa.border-top}"
+  condition-value.border-block-end-width: "{sherpa.border-bottom}"
+  condition-value.border-inline-start-width: "{sherpa.border-left}"
+  condition-value.border-inline-end-width: "{sherpa.border-right}"
+  condition-value.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  condition.padding-inline-end: "{sherpa.display-mode-space-xs}"
   remove.--_status-text: "{sherpa.theme-content-critical-1}"
   remove.--_status-border: "{sherpa.theme-border-critical-2}"
   remove.--_status-icon: "{sherpa.theme-content-critical-1}"
@@ -311,6 +481,15 @@ $extensions:
       - name: values
         type: string[]
         description: the checked row values (read/write)
+        access: read-write
+      - name: templateId
+        type: string
+        access: read
+      - name: op
+        type: string
+        access: read-write
+      - name: conditionValue
+        type: string
         access: read-write
       - name: open
         type: string

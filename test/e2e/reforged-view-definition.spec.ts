@@ -57,7 +57,10 @@ test('applyState configures an element through its OWN API, not its attributes',
     return {
       clause: el.columnClause('name'),
       lit: (sr.querySelector('.head-cell[data-field="name"]') as HTMLElement).dataset['status'] ?? null,
-      typed: sr.querySelector<HTMLInputElement>('.head-filter-value')?.value,
+      /* A TEXT column IS the shared filter menu now, so what the reader typed
+         is the MENU's. TRAP T-one-field-one-filter-menu */
+      typed: (sr.querySelector('.head-filter sherpa-menu') as
+        (HTMLElement & { conditionValue?: string }) | null)?.conditionValue,
       marks: sr.querySelectorAll('.cell mark.match').length,
       keys: el.selectedKeys,
       skipped,

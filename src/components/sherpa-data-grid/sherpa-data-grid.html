@@ -155,16 +155,16 @@
     <sherpa-menu slot="menu" data-commit></sherpa-menu>
   </template>
 
-  <!-- A TEXT column's filter body. The <select> is filled by JS from
-       `OPS_FOR_TYPE` / `OP_LABELS` in src/core/store.ts. Margins are INLINE:
-       cloned into the CHIP's light DOM, so neither shadow sheet reaches it. -->
-  <template class="head-text-filter-tpl">
-    <div class="head-filter-body">
-      <!-- One <option> as a CLONING PROTOTYPE; JS clones it per operator. -->
-      <select class="head-filter-op" aria-label="Condition"><option></option></select>
-      <input class="head-filter-value" type="text" aria-label="Value"
-             placeholder="Value" />
-    </div>
+  <!-- A TEXT column has NO body of its own: it is the sherpa-menu FILTER
+       variant, the same menu a filter chip opens for the same field. The
+       condition dropdown and its text box live in that menu's template; the
+       rows below are this column's own values.
+       TRAP T-one-field-one-filter-menu -->
+  <template class="head-value-row-tpl">
+    <label class="head-value-row" style="display: flex; align-items: center; gap: 8px;">
+      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
+      <span class="head-value-label"></span>
+    </label>
   </template>
 
   <!-- The Range switch: the first row of a number or date filter menu. It flips

@@ -28,10 +28,23 @@
     data-drill-from  names the list that was replaced — the breadcrumb's text
     data-clearable  show a Clear button in the footer that empties the selection
                     (a CALENDAR menu shows Today there instead — see the footer)
-    data-type     list (default) | calendar — the Menu set's own `Type` axis.
+    data-type     list (default) | calendar | filter — the Menu set's `Type` axis.
+                  `filter` is the FILTER MENU: a condition dropdown above the
+                  search, and the text box its typing conditions use. One field
+                  gets one menu whether a chip or a column heading opens it.
+                  TRAP T-one-field-one-filter-menu
+                  TRAP T-an-operator-decides-pick-or-type
                   `calendar` widens the card and lays the LIST region out
                   horizontally, so a day grid and a time picker sit side by
                   side. Everything else is the same menu.
+    data-op       FILTER type only: which condition is picked. Defaults to `eq`.
+    data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
+                  in place of the default text set.
+    data-value    FILTER type only: what was TYPED under a typing condition.
+                  An ATTRIBUTE because a variant re-stamp replaces the whole
+                  shadow tree, and a value living only in the box is lost.
+    data-takes    written BY the menu from data-op: list | text. CSS reads it to
+                  reveal the rows or the text box.
     data-select   multiple (default, checkbox rows) | single (radio rows)
     data-align    start (default) | end   which trigger edge the card lines up with
     open          native-ish boolean: reflects/controls the popover
@@ -50,6 +63,8 @@
     menu-clear  — Clear was clicked; the selection is already empty. detail: {}
     menu-select — an action row was clicked. detail: { value, label }
     menu-open / menu-close — detail: {}
+    condition-change — the condition or its typed value changed.
+                  detail: { op, value }
 -->
 <template id="default">
   <div class="menu sherpa-border-edges" part="menu" popover="auto" role="menu">
@@ -64,6 +79,80 @@
       </span>
       <p class="heading" part="heading"></p>
       <slot name="header"></slot>
+      <!--
+        SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
+        is nothing here to restyle. It filters the rows the menu already has, so a
+        row hidden by a search keeps its ticked state and comes back with it.
+      -->
+      <sherpa-input-text class="search" part="search"
+                         data-icon-start="fa-solid fa-magnifying-glass"
+                         placeholder="Search" autocomplete="off"
+                         aria-label="Search this menu"></sherpa-input-text>
+    </div>
+
+    <!-- Without this the card collapses to an empty box and reads as broken. -->
+    <p class="no-matches" part="no-matches" role="status">No matches</p>
+
+    <div class="rows" part="rows">
+      <slot></slot>
+    </div>
+
+    <!--
+      FOOTER — the composed <sherpa-container-footer>, which owns the action-bar
+      geometry and hides itself when empty. All three buttons are the button's
+      DEFAULT size, as Figma pins them.
+
+      A committing menu holds row changes as DRAFT until Apply, so what is behind
+      the card does not re-query on every tick; Cancel restores the opening values.
+    -->
+    <sherpa-container-footer class="footer" part="footer" data-align="end">
+      <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
+      <sherpa-button class="today" part="today">Today</sherpa-button>
+      <!--
+        Clear and Remove act on the filter, not on the draft, so they lead the
+        row, separated from Cancel·Apply by the spacer. Default look — NOT
+        transparent — as Figma pins them. Remove's critical ink is re-stated in
+        CSS: a bare [data-status] rule in tokens.css reaches the document only,
+        never a shadow root.
+      -->
+      <sherpa-button class="clear" part="clear">Clear</sherpa-button>
+      <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
+      <span class="footer-spacer"></span>
+      <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>
+      <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>
+    </sherpa-container-footer>
+  </div>
+</template>
+
+<template id="filter">
+  <div class="menu sherpa-border-edges" part="menu" popover="auto" role="menu">
+    <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
+    <div class="header" part="header">
+      <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->
+      <span class="drill-trail" part="drill-trail">
+        <sherpa-button class="drill-back" part="drill-back" data-type="icon" data-size="xs"
+                       data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
+                       aria-label="Back"></sherpa-button>
+        <sherpa-breadcrumbs class="drill-crumbs" part="drill-crumbs"></sherpa-breadcrumbs>
+      </span>
+      <p class="heading" part="heading"></p>
+      <slot name="header"></slot>
+      <!--
+        CONDITION — what the rows below MEAN. `Equals` picks from the values;
+        `Contains` and its relatives take the text box under it. One <option>
+        is a cloning prototype. TRAP T-an-operator-decides-pick-or-type
+      -->
+      <div class="filter-row" part="filter-row">
+        <!-- The wrapper draws the caret: a <select> paints nothing over its
+             own box, and the native glyph ignores padding. -->
+        <span class="condition-box">
+          <select class="condition" part="condition" aria-label="Condition">
+            <option></option>
+          </select>
+        </span>
+        <input class="condition-value" part="condition-value" type="text"
+               aria-label="Value" placeholder="Value" />
+      </div>
       <!--
         SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
         is nothing here to restyle. It filters the rows the menu already has, so a

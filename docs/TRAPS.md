@@ -52,7 +52,7 @@ attributes only, written before append.
 
 - Site: `src/core/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 ### T-tokens-css-never-reaches-shadow
 
 A bare `[data-status]` rule in `tokens.css` is loaded into the **document** and
@@ -164,11 +164,12 @@ component wired in `onConnect`, which does not run again.
 A component that needs `this.signal` should wire in `onRender`, never `onConnect`.
 
 - Site: `src/core/sherpa-element.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
 
 ## Numbers, measurement and timing
-
 ### T-number-coercion
 
 Parsing a numeric attribute by hand went wrong four ways:
@@ -1305,7 +1306,6 @@ query-building surface shares it — the data grid's column menu today, a Filter
 Panel later. **A second copy anywhere is a second vocabulary.**
 
 - Site: `src/core/store.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-ops-follow-the-column-type
 
@@ -2219,7 +2219,7 @@ was BORN with. That is what `data-multiline` did on `sherpa-input-text`: the
 textarea template existed and was unreachable after first render.
 
 - Site: `src/core/sherpa-element.ts`
-
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 ### T-template-id-read-once-was-permanent
 
 `#stampedTemplate` records the template id currently STAMPED, so a later
@@ -2727,6 +2727,39 @@ the menu. The handler stops propagation for the same reason.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
+### T-one-field-one-filter-menu
+
+A filter CHIP and a COLUMN HEADING ask the same question of the same field, so
+they open the same menu — `sherpa-menu`'s `filter` template.
+
+They did not. The chip's menu was a list of values with no conditions at all;
+the heading's was a hand-built body with a condition and a text box and no
+list. One field, two answers, and no way to say "Tier contains go" from the
+toolbar or to pick a value from the heading.
+
+The menu is a TEMPLATE, not something either caller builds. `data-type="filter"`
+is a third value on the Menu set's own Type axis, beside `list` and `calendar`,
+so a plain menu stamps no condition markup whatsoever — nothing to hide, nothing
+to reason about. The grid's own 161-line text body is gone; it sets the type and
+appends the column's distinct values as rows.
+
+Two consequences worth knowing:
+
+- `data-type` is a VARIANT attribute, so setting it RE-STAMPS the shadow tree.
+  Anything the menu holds in its DOM is lost across that, which is why the typed
+  value lives in `data-value`. See `T-variant-attrs-or-one-way-door`.
+- a NUMBER column keeps its own body: its answer is a slider or a range, not a
+  list of values, and `between` is a mode rather than a seventh condition.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `test/e2e/reforged-view-definition.spec.ts`
+
 ### T-an-operator-decides-pick-or-type
 
 A filter menu's CONDITION dropdown leads the card, above the search box, and is
@@ -2765,7 +2798,10 @@ because `eq` against a list can never match.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 ### T-native-change-stops-at-the-host
 
 A native `change` is **NOT COMPOSED**: it stops at `sherpa-menu`, the shadow

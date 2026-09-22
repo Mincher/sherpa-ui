@@ -15,7 +15,9 @@ import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle
 import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
 } from '../../core/store.js';
-import { DEFAULT_OP, OP_LABELS, OPS_FOR_TYPE } from '../../core/store.js';
+import {
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp,
+} from '../../core/store.js';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -74,11 +76,14 @@ interface ColumnFilter {
   to?: string;
   /** TRAP T-grid-suspend-is-not-clear — kept, but the heading goes dark. */
   suspended?: boolean;
+  /** SEVERAL ticked values, for an `in` / `notin` clause. */
+  picks?: string[];
 }
 
-/** Which body template each column type's filter menu holds. */
-const COLUMN_FILTER_BODIES: Record<string, string> = {
-  text: 'template.head-text-filter-tpl',
+/** Which body template each column type's filter menu holds — TEXT has none:
+    it is the sherpa-menu FILTER variant. TRAP T-one-field-one-filter-menu */
+const COLUMN_FILTER_BODIES: Record<string, string | null> = {
+  text: null,
   number: 'template.head-number-filter-tpl',
   date: 'template.head-date-filter-tpl',
 };
@@ -352,25 +357,26 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip) return;
 
     const kind = col.type ?? 'text';
-    const bodyTpl = COLUMN_FILTER_BODIES[kind];
-    if (!bodyTpl) {
+    if (!(kind in COLUMN_FILTER_BODIES)) {
       // The chip's own flag, so CSS hides it without reaching into its shadow.
       chip.setAttribute('data-unsupported', '');
       return;
     }
+    const bodyTpl = COLUMN_FILTER_BODIES[kind];
 
     const menu = this.clone('template.head-menu-tpl');
-    const body = this.clone(bodyTpl);
-    if (!menu || !body) return;
+    if (!menu) return;
+    const body = bodyTpl ? this.clone(bodyTpl) : null;
+    if (bodyTpl && !body) return;
 
-    // TRAP T-filter-is-data-not-a-predicate — the keys ARE store FilterOps.
-    // TRAP T-ops-follow-the-column-type.
-    const picker = body.querySelector<HTMLSelectElement>('.head-filter-op');
+    /* A NUMBER column keeps its own body, so its condition <select> is filled
+       here — from the ONE vocabulary in store.ts, the same one the shared
+       filter menu reads. TRAP T-ops-follow-the-column-type */
+    const picker = body?.querySelector<HTMLSelectElement>('.head-filter-op');
     const proto = picker?.querySelector('option');
     if (picker && proto) {
-      const ops = OPS_FOR_TYPE[kind] ?? [];
       picker.replaceChildren(
-        ...ops.map((op) => {
+        ...(OPS_FOR_TYPE[kind] ?? []).map((op) => {
           const option = proto.cloneNode(false) as HTMLOptionElement;
           option.value = op;
           option.textContent = OP_LABELS[op];
@@ -392,7 +398,7 @@ export class SherpaDataGrid extends SherpaElement {
 
     // TRAP T-grid-slider-spans-real-values — the 0..100 default crushes a
     // spend column at the far left.
-    if (kind === 'number') {
+    if (kind === 'number' && body) {
       const slider = body.querySelector('.head-filter-slider');
       const nums = this.#rows
         .map((row) => Number(row[col.field]))
@@ -423,37 +429,93 @@ export class SherpaDataGrid extends SherpaElement {
       if (asRange) menu.setAttribute('data-range', '');
     }
 
+    /* A TEXT column IS the shared filter menu: the condition row comes from
+       sherpa-menu's own `filter` template, and the rows below are this
+       column's distinct values — the same question a filter chip asks.
+       TRAP T-one-field-one-filter-menu */
+    if (kind === 'text') {
+      menu.setAttribute('data-type', 'filter');
+      menu.setAttribute('data-search', '');
+      /* `in` / `notin` are how SEVERAL picks read; the menu's own condition
+         stays `eq` / `ne`, because its dropdown offers no "is one of" — the
+         ticked list IS the "one of". */
+      const op = held?.op ?? DEFAULT_OP;
+      menu.setAttribute('data-op', op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op);
+      /* The header is rebuilt on every sort and keystroke, so what the reader
+         TYPED has to be written back or it is lost. A PROPERTY, replayed after
+         upgrade. TRAP T-custom-element-upgrade */
+      // An ATTRIBUTE, so the menu's own re-stamp cannot lose it.
+      if (held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text') {
+        menu.setAttribute('data-value', held.value);
+      }
+      this.#addColumnValues(menu, col.field, held);
+    }
+
     // Restore the held clause — the header is rebuilt per sort and keystroke,
     // so the menu would otherwise forget itself.
     if (held) {
-      const op = body.querySelector<HTMLSelectElement>('.head-filter-op');
-      if (op) op.value = held.op;
-      if (held.range) {
-        // Empty on purpose: a number range's ends went onto the slider above.
-      } else {
-        const value = body.querySelector<HTMLInputElement>('.head-filter-value');
-        if (value) value.value = held.value;
-      }
-      const cal = body.querySelector('.head-filter-calendar');
-      if (cal) {
-        if (held.range) {
-          cal.setAttribute('data-type', 'range');
-          cal.setAttribute('data-value-start', held.from ?? '');
-          cal.setAttribute('data-value-end', held.to ?? '');
-        } else {
-          cal.setAttribute('data-value', held.value);
+      if (body) {
+        const op = body.querySelector<HTMLSelectElement>('.head-filter-op');
+        if (op) op.value = held.op;
+        if (!held.range) {
+          const value = body.querySelector<HTMLInputElement>('.head-filter-value');
+          if (value) value.value = held.value;
+        }
+        const cal = body.querySelector('.head-filter-calendar');
+        if (cal) {
+          if (held.range) {
+            cal.setAttribute('data-type', 'range');
+            cal.setAttribute('data-value-start', held.from ?? '');
+            cal.setAttribute('data-value-end', held.to ?? '');
+          } else {
+            cal.setAttribute('data-value', held.value);
+          }
         }
       }
       chip.setAttribute('data-current', '');
-    } else if (kind === 'date') {
+    } else if (kind === 'date' && body) {
       // A fresh RANGE calendar still needs its two-click mode set.
       const cal = body.querySelector('.head-filter-calendar');
       if (cal && menu.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
     }
 
-    menu.appendChild(body);
+    if (body) menu.appendChild(body);
     chip.appendChild(menu);
     chip.setAttribute('aria-label', `Filter ${label}`);
+  }
+
+  /**
+   * A text column's distinct values, as the filter menu's rows.
+   *
+   * The filter CHIP over the same field offers exactly this list, so a reader
+   * is asked the same question whichever they open.
+   * TRAP T-one-field-one-filter-menu
+   */
+  #addColumnValues(menu: HTMLElement, field: string, held?: ColumnFilter): void {
+    const tpl = this.$<HTMLTemplateElement>('template.head-value-row-tpl');
+    if (!tpl) return;
+
+    const on = new Set(
+      held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'list'
+        ? (held.picks ?? (held.value ? [held.value] : []))
+        : [],
+    );
+
+    const values = [...new Set(
+      this.#rows
+        .map((row) => row[field])
+        .filter((v) => v != null && v !== '')
+        .map((v) => String(v)),
+    )].sort();
+
+    for (const value of values) {
+      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const box = row.querySelector('input')!;
+      box.value = value;
+      box.checked = on.has(value);
+      row.querySelector('.head-value-label')!.textContent = value;
+      menu.appendChild(row);
+    }
   }
 
   /**
@@ -514,6 +576,16 @@ export class SherpaDataGrid extends SherpaElement {
       // Only an explicit CLEAR empties the controls: Apply lands here on a
       // half-built range, which is unfinished, not wrong.
       if (cleared) {
+        /* The shared filter menu keeps its typed value in an ATTRIBUTE, which
+           is the whole reason it survives a re-stamp — so clearing has to
+           reach that, not only the boxes. TRAP T-one-field-one-filter-menu */
+        const fm = chip.querySelector('sherpa-menu');
+        if (fm?.getAttribute('data-type') === 'filter') {
+          fm.setAttribute('data-value', '');
+          for (const box of fm.querySelectorAll<HTMLInputElement>('.head-value-row input')) {
+            box.checked = false;
+          }
+        }
         for (const box of chip.querySelectorAll<HTMLInputElement>('input[type="text"], input[type="number"]')) {
           box.value = '';
         }
@@ -551,7 +623,15 @@ export class SherpaDataGrid extends SherpaElement {
   #readColumnFilter(chip: HTMLElement): ColumnFilter | null {
     const menu = chip.querySelector('sherpa-menu');
     const range = menu?.hasAttribute('data-range') ?? false;
-    const op = chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? DEFAULT_OP;
+    /* The condition lives in the MENU for a TEXT column — it is the shared
+       filter menu now — and in the cloned body for number and date. `menu.op`
+       answers `eq` for any menu, so only a FILTER menu may be asked.
+       TRAP T-one-field-one-filter-menu */
+    const isFilterMenu = menu?.getAttribute('data-type') === 'filter';
+    const op = (isFilterMenu
+      ? (menu as HTMLElement & { op?: string }).op
+      : chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value)
+      ?? DEFAULT_OP;
     const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
 
     if (range) {
@@ -565,6 +645,24 @@ export class SherpaDataGrid extends SherpaElement {
         : slider?.getAttribute('value-end')) ?? '';
       if (!from.trim() || !to.trim()) return null;
       return { op: 'between', value: '', range: true, from: from.trim(), to: to.trim() };
+    }
+
+    /* A LIST condition is answered by the TICKED ROWS, a typing one by the
+       menu's own box. TRAP T-an-operator-decides-pick-or-type */
+    if (!cal && isFilterMenu) {
+      if ((OP_TAKES[op as FilterOp] ?? 'list') === 'text') {
+        const typed = (menu as HTMLElement & { conditionValue?: string })
+          .conditionValue ?? '';
+        return typed.trim() ? { op, value: typed.trim() } : null;
+      }
+      const picks = [...menu.querySelectorAll<HTMLInputElement>('.head-value-row input')]
+        .filter((box) => box.checked)
+        .map((box) => box.value);
+      if (!picks.length) return null;
+      // SEVERAL picks is `in` — `eq` against a list can never match.
+      return picks.length === 1
+        ? { op, value: picks[0]! }
+        : { op: op === 'ne' ? 'notin' : 'in', value: '', picks };
     }
 
     // A DATE column has no condition picker, so the operator is equality.
@@ -583,15 +681,23 @@ export class SherpaDataGrid extends SherpaElement {
       const n = Number(raw);
       return raw !== '' && Number.isFinite(n) ? n : raw;
     };
-    return held.range
-      ? [field, 'between', [cast(held.from ?? ''), cast(held.to ?? '')]]
-      : [field, held.op, cast(held.value)];
+    if (held.range) return [field, 'between', [cast(held.from ?? ''), cast(held.to ?? '')]];
+    // SEVERAL ticked values ride as a list, which is what `in` / `notin` take.
+    if (held.picks) return [field, held.op, held.picks.map(cast)];
+    return [field, held.op, cast(held.value)];
   }
 
   /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
   #columnFilterLabel(held: ColumnFilter): string {
     const name = OP_LABELS[held.op as keyof typeof OP_LABELS] ?? held.op;
-    return held.range ? `${name}: ${held.from} - ${held.to}` : `${name}: ${held.value}`;
+    if (held.range) return `${name}: ${held.from} - ${held.to}`;
+    // A COUNT, not a list: "Is one of: 4" beats a chip that runs off the bar.
+    if (held.picks) {
+      return held.picks.length === 1
+        ? `${name}: ${held.picks[0]}`
+        : `${name}: ${held.picks.length}`;
+    }
+    return `${name}: ${held.value}`;
   }
 
   /**
@@ -606,13 +712,20 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     const [, op, value] = clause as [string, string, unknown];
-    const held: ColumnFilter =
-      op === 'between' && Array.isArray(value)
-        ? { op, value: '', range: true, from: String(value[0] ?? ''), to: String(value[1] ?? '') }
-        : { op, value: String(value ?? '') };
+    let held: ColumnFilter;
+    if (op === 'between' && Array.isArray(value)) {
+      held = { op, value: '', range: true, from: String(value[0] ?? ''), to: String(value[1] ?? '') };
+    } else if (Array.isArray(value)) {
+      // SEVERAL values: the ticked rows of a list condition.
+      held = { op, value: '', picks: value.map((v) => String(v)) };
+    } else {
+      held = { op, value: String(value ?? '') };
+    }
 
     // Nothing to filter by is not a filter — as the menu's own commit says.
-    const empty = held.range ? !held.from || !held.to : !held.value;
+    const empty = held.range
+      ? !held.from || !held.to
+      : held.picks ? !held.picks.length : !held.value;
     if (empty) {
       this.clearColumnFilter(field);
       return;

@@ -11,7 +11,9 @@
  * @see TRAP T-footer-row-raises-on-any-flag
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { valueSet } from '../../core/store.js';
+import {
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueSet,
+} from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -26,6 +28,10 @@ export class SherpaMenu extends SherpaElement {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
     'data-drill': { type: 'boolean', kind: 'style' },
+    /* FILTER type only — which ops its condition dropdown offers, and which
+       body answers it. TRAP T-an-operator-decides-pick-or-type */
+    'data-conditions': { type: 'string', kind: 'style' },
+    'data-takes': { type: 'enum', kind: 'style', values: ['list', 'text'] },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
   } as const;
 
@@ -38,8 +44,24 @@ export class SherpaMenu extends SherpaElement {
     'data-type',
     // The crumb text is written from this, so a change must reach #syncCrumb.
     'data-drill-from',
+    // Which condition is picked — a host may set it, and #sync follows.
+    'data-op',
+    // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
+    'data-value',
     'open',
   ];
+
+  /* `data-type` picks the TEMPLATE, so a change must re-stamp the shadow DOM.
+     Without this the attribute is read once, at birth, and a menu that becomes
+     a filter never grows its condition row. TRAP T-variant-attrs-or-one-way-door */
+  static override variantAttrs = ['data-type'];
+
+  /** The FILTER menu is its own tree: only it carries the condition row.
+   *  One field gets ONE menu, whether a chip or a column heading opens it.
+   *  TRAP T-one-field-one-filter-menu */
+  protected override get templateId(): string {
+    return this.dataset['type'] === 'filter' ? 'filter' : 'default';
+  }
 
   /** Gap between trigger and card. */
   static readonly OFFSET = 4;
@@ -72,6 +94,95 @@ export class SherpaMenu extends SherpaElement {
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
     this.$('.search')?.addEventListener('input', this.#onSearch);
+    this.$('.condition')?.addEventListener('change', this.#onCondition);
+    this.$('.condition-value')?.addEventListener('input', this.#onCondition);
+  }
+
+  /**
+   * The condition, or what was typed under it, changed.
+   *
+   * Nothing is rebuilt — `data-takes` is what CSS reads, so the ticked rows and
+   * the typed box both survive a flip.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  #onCondition = (event?: Event): void => {
+    const select = this.$<HTMLSelectElement>('.condition');
+    const op = (select?.value ?? DEFAULT_OP) as FilterOp;
+    if (this.dataset['op'] !== op) this.dataset['op'] = op;
+    this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+    // Typing writes through to the attribute, so a re-stamp cannot lose it.
+    if (event?.target === this.$('.condition-value')) {
+      this.dataset['value'] = this.$<HTMLInputElement>('.condition-value')?.value ?? '';
+    }
+    this.emit('condition-change', { op, value: this.conditionValue });
+  };
+
+  /**
+   * The picked condition. `eq` unless a host says otherwise.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  get op(): FilterOp {
+    return (this.dataset['op'] as FilterOp | undefined) ?? DEFAULT_OP;
+  }
+
+  set op(next: FilterOp) {
+    this.dataset['op'] = next;
+  }
+
+  /**
+   * What was TYPED, for a condition that takes text rather than a pick.
+   *
+   * Mirrored to `data-value`, because a variant RE-STAMP replaces the whole
+   * shadow tree and the box with it — a value living only in the input is lost
+   * the moment `data-type` changes. TRAP T-restamp-does-not-abort
+   */
+  get conditionValue(): string {
+    return this.$<HTMLInputElement>('.condition-value')?.value
+      ?? this.dataset['value'] ?? '';
+  }
+
+  set conditionValue(next: string) {
+    if (this.dataset['value'] !== next) this.dataset['value'] = next;
+    const box = this.$<HTMLInputElement>('.condition-value');
+    if (box) box.value = next;
+  }
+
+  /** Stamp the condition <option>s and keep `data-takes` in step. */
+  #syncConditions(): void {
+    const select = this.$<HTMLSelectElement>('.condition');
+    const proto = select?.querySelector('option');
+    if (!select || !proto) return;
+
+    /* A comma list names the ops; the default is the text set, which is what
+       a field question asks. One vocabulary, in store.ts. */
+    const declared = this.dataset['conditions'] ?? '';
+    const wanted = declared.trim()
+      ? declared.split(',').map((op) => op.trim()).filter(Boolean)
+      : [...(OPS_FOR_TYPE['text'] ?? [])];
+    const ops = wanted.filter((op): op is FilterOp => op in OP_LABELS);
+    if (!ops.length) return;
+
+    const current = [...select.options].map((o) => o.value);
+    if (current.join() !== ops.join()) {
+      select.replaceChildren(
+        ...ops.map((op) => {
+          const option = proto.cloneNode(false) as HTMLOptionElement;
+          option.value = op;
+          option.textContent = OP_LABELS[op];
+          return option;
+        }),
+      );
+    }
+
+    const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
+    select.value = op;
+    if (this.dataset['op'] !== op) this.dataset['op'] = op;
+    this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+
+    // Put back what was typed — a re-stamp blanked the box, not the state.
+    const box = this.$<HTMLInputElement>('.condition-value');
+    const held = this.dataset['value'] ?? '';
+    if (box && box.value !== held) box.value = held;
   }
 
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
@@ -197,6 +308,7 @@ export class SherpaMenu extends SherpaElement {
 
   #sync(): void {
     this.#syncCrumb();
+    this.#syncConditions();
     // The name must reach a screen reader even when no heading is drawn.
     // TRAP T-calendar-header-has-no-heading
     const card = this.#card();
