@@ -21,7 +21,9 @@
 
   <sherpa-container data-span="4" data-rows="6">
     <sherpa-container-header slot="header" data-heading="By plan"></sherpa-container-header>
-    <sherpa-donut-chart id="r-donut">
+    <!-- No data-label: the centre TOTALS what the ring draws, so it follows
+         every filter. TRAP T-the-centre-totals-what-the-ring-draws -->
+    <sherpa-donut-chart id="r-donut" data-sublabel="customers">
       <sherpa-chart-legend slot="legend" id="r-donut-legend"
                            data-orientation="vertical"></sherpa-chart-legend>
     </sherpa-donut-chart>

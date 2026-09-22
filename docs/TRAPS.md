@@ -7844,3 +7844,42 @@ The scale now carries the same `max-inline-size`. After: both labels sit
 exactly at the ring's edges, overhang zero.
 
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
+
+### T-the-centre-totals-what-the-ring-draws
+
+A donut's centre reads the TOTAL of the slices it draws, unless the host named
+its own `data-label`.
+
+It used to be a plain attribute, so the dashboard carried `data-label="1,284"`
+— a string that stayed put while the ring beneath it redrew on every filter.
+The Records donut, added later, simply had none and showed nothing.
+
+Deriving it means the number and the ring can never disagree. A HIDDEN slice
+leaves the total, because the ring no longer counts it either: three slices of
+40, 35 and 25 read `100`, and hiding the first reads `60`.
+
+`data-label` still wins when a host names the centre, and an empty ring claims
+nothing rather than `0`.
+
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `test/e2e/reforged-donut-chart.spec.ts`
+
+### T-a-toggle-is-a-clause-not-a-value
+
+A TOGGLE chip is a whole clause the reader flips on or off — a question the
+data answers yes or no. A MENU chip picks values of a field.
+
+The Records example had four toggles named `Active`, `Trial`, `Suspended` and
+`Churned` sitting beside a `Status` menu chip: one field with two controls on
+one bar, and no way to tell which was in force.
+
+They are now three toggles over fields no menu covers — `openTickets > 0`,
+`health < 60`, `owner = Unassigned` — reading "Open tickets", "At risk" and
+"Unassigned". Measured: 90, 27 and 27 of 100.
+
+Each ON toggle contributes its own clause, ANDed with the rest, so two toggles
+NARROW. The old status set ORed instead, because four values of one field
+cannot all be true at once — which is another sign they were a menu wearing
+toggles.
+
+- Site: `examples/views/records.js`

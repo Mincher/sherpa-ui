@@ -65,8 +65,9 @@
     const viewRoot = document.getElementById('view-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
 
-    // Shared nav config. Icons are Font Awesome class lists, never unicode
-    // glyphs — those render at the wrong size and weight.
+    // Shared nav config. An icon is a NAME from the Figma set; an `fa-*` class
+    // list still resolves through the alias table. A name the set does not hold
+    // prints as its own text, so it must be one that exists.
     // Home opens the dashboard, so no separate Dashboard row is needed. Every
     // row links to a REAL page; the nav's own tests cover nesting and badges.
     const navConfig = {
@@ -80,7 +81,7 @@
       ],
       sections: [
         { label: 'Views', items: [
-          { id: 'view-records',   label: 'Records',  href: '?view=records' },
+          { id: 'view-records',   label: 'Records',   icon: 'table-columns',  href: '?view=records' },
         ] },
       ],
       // The settings BUTTON in the nav header swaps the rail to these pages.

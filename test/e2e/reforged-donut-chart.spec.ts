@@ -270,3 +270,64 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
   expect(r.restored.hues).toEqual(r.before.hues);
   expect(r.restored.list).toEqual([]);
 });
+
+/**
+ * THE CENTRE TOTALS WHAT THE RING DRAWS.
+ *
+ * A hardcoded centre goes stale the moment a filter moves: the dashboard's
+ * read "1,284" while the ring beneath it drew 881. Deriving it means the
+ * number and the ring can never disagree.
+ *
+ * TRAP T-the-centre-totals-what-the-ring-draws
+ */
+test('the centre derives the total, follows a hidden slice, and yields to data-label', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const mk = async (label?: string) => {
+      const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate?: (d: unknown) => void;
+        setSliceHidden?: (i: number, h?: boolean) => void;
+      };
+      if (label != null) el.setAttribute('data-label', label);
+      document.getElementById('root')!.appendChild(el);
+      await customElements.whenDefined('sherpa-donut-chart');
+      await el.rendered;
+      return el;
+    };
+    const centre = (el: HTMLElement) =>
+      (el.shadowRoot!.querySelector('.value')?.textContent ?? '').trim();
+
+    const data = [
+      { label: 'A', value: 40, colorIndex: 1 },
+      { label: 'B', value: 35, colorIndex: 2 },
+      { label: 'C', value: 25, colorIndex: 3 },
+    ];
+
+    const derived = await mk();
+    derived.populate!(data);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const total = centre(derived);
+
+    // A hidden slice leaves the total, because the RING no longer counts it.
+    derived.setSliceHidden!(0, true);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const afterHide = centre(derived);
+
+    // A host that named its own centre keeps it.
+    const named = await mk('Fleet');
+    named.populate!(data);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    // Nothing drawn, nothing claimed.
+    const empty = await mk();
+    empty.populate!([]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return { total, afterHide, named: centre(named), empty: centre(empty) };
+  });
+
+  expect(r.total).toBe('100');
+  expect(r.afterHide).toBe('60');
+  expect(r.named).toBe('Fleet');
+  expect(r.empty).toBe('');
+});

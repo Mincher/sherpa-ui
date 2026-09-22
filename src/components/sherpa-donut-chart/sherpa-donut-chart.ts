@@ -45,6 +45,8 @@ export class SherpaDonutChart extends SherpaElement {
     // Stale indices would hide the wrong slice.
     this.#hidden.clear();
     this.#renderRing();
+    // The total moved, so the centre did too.
+    this.#syncCentre();
   }
 
   get slices(): DonutSlice[] {
@@ -56,6 +58,7 @@ export class SherpaDonutChart extends SherpaElement {
     if (hidden) this.#hidden.add(index);
     else this.#hidden.delete(index);
     this.#renderRing();
+    this.#syncCentre();
   }
 
   /** The indices currently hidden. */
@@ -145,11 +148,29 @@ export class SherpaDonutChart extends SherpaElement {
     });
   }
 
+  /**
+   * The centre reads the TOTAL of what is drawn, unless the host named its own
+   * `data-label`.
+   *
+   * A hardcoded centre goes stale the moment a filter moves: the dashboard's
+   * said "1,284" while the ring beneath it drew 881. Deriving it means the
+   * number and the ring can never disagree — and a hidden slice leaves the
+   * total, because the ring no longer counts it either.
+   * TRAP T-the-centre-totals-what-the-ring-draws
+   */
   #syncCentre(): void {
     const value = this.$('.value');
-    if (value) value.textContent = this.dataset['label'] ?? '';
+    if (value) value.textContent = this.dataset['label'] ?? this.#total();
     const sub = this.$('.sub');
     if (sub) sub.textContent = this.dataset['sublabel'] ?? '';
+  }
+
+  /** The visible slices, summed and grouped. Empty when there is nothing drawn. */
+  #total(): string {
+    const shown = this.#slices.filter((_, i) => !this.#hidden.has(i));
+    if (!shown.length) return '';
+    const sum = shown.reduce((n, s) => n + (Number.isFinite(s.value) ? s.value : 0), 0);
+    return sum.toLocaleString(undefined, { maximumFractionDigits: 2 });
   }
 
   #onClick = (event: Event): void => {

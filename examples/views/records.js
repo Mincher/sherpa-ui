@@ -32,9 +32,19 @@ export async function init(root) {
   /* NUMBER columns: two picks are the ends of a range, one pick is one value. */
   const numberFields = new Set(['seats', 'spend', 'openTickets', 'health']);
 
-  /* Toggle chips name a STATUS VALUE, not a field — only this view knows that,
-     and they arrive in `active`, separately from the menu chips' `values`. */
-  const statusChips = new Set(['active', 'trial', 'suspended', 'churned']);
+  /* TOGGLE chips are a whole CLAUSE the reader flips on or off — a question
+     with a yes/no answer, not a value of some field. They arrive in `active`,
+     separately from the menu chips' `values`.
+
+     Deliberately over fields NO menu chip covers. Four status toggles used to
+     sit beside the Status and Plan menus, so one field had two controls on one
+     bar and the reader had to guess which was in force.
+     TRAP T-a-toggle-is-a-clause-not-a-value */
+  const TOGGLES = {
+    'has-tickets': ['openTickets', 'gt', 0],
+    'at-risk': ['health', 'lt', 60],
+    unassigned: ['owner', 'eq', 'Unassigned'],
+  };
 
   /* One clause per filtered column heading. The grid reports a ready
      FilterClause and lights the column but does not narrow its own rows —
@@ -44,10 +54,12 @@ export async function init(root) {
 
   const filterFromChips = (values, active = []) => {
     const clauses = [];
-    const statuses = active.filter((id) => statusChips.has(id));
-    // Several statuses at once is an OR; the set ANDs with the menu chips.
-    if (statuses.length === 1) clauses.push(['status', 'eq', statuses[0]]);
-    else if (statuses.length > 1) clauses.push(['status', 'in', statuses]);
+    /* Each ON toggle contributes its own clause, ANDed with the rest — two
+       toggles narrow, they do not widen. */
+    for (const id of active) {
+      const clause = TOGGLES[id];
+      if (clause) clauses.push(clause);
+    }
 
     for (const [field, picked] of Object.entries(values ?? {})) {
       if (!picked?.length) continue;
@@ -128,10 +140,12 @@ export async function init(root) {
      chips AUTO-APPLY by default, and committing is the opt-out for a field
      whose query is expensive. Both behaviours are here side by side. */
   qft.populate([
-    { id: 'active',    label: 'Active',    type: 'data' },
-    { id: 'trial',     label: 'Trial',     type: 'data' },
-    { id: 'suspended', label: 'Suspended', type: 'data' },
-    { id: 'churned',   label: 'Churned',   type: 'data' },
+    /* Three TOGGLES, each a question the data answers yes or no, and none of
+       them a field a menu chip below also filters.
+       TRAP T-a-toggle-is-a-clause-not-a-value */
+    { id: 'has-tickets', label: 'Open tickets', type: 'data' },
+    { id: 'at-risk',     label: 'At risk',      type: 'data' },
+    { id: 'unassigned',  label: 'Unassigned',   type: 'data' },
     /* The STATUS legend's menu. A multi-select over the same field the bar
        chart splits on, so unticking a value and dimming its legend row are the
        same gesture. Not the four toggles above: those are one-tap presets, and
