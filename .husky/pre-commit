@@ -88,4 +88,23 @@ if [ $OWN_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# ONE DECLARATION PER ATTRIBUTE. A `:host([data-x])` rule is a public API: a
+# host sets the attribute and the component restyles. Undeclared, it is a
+# contract between the CSS and nothing — invisible to the TS, to the generated
+# spec, and to an agent reading either.
+#
+# 65 of them were in exactly that state across 31 components, found the moment
+# anything looked. Declaring them changed no behaviour (kind:style writes
+# nothing) and 576 tests stayed green, which is the point: the gap was never
+# visible as a bug.
+echo "🏷️  Checking every :host([data-*]) is declared..."
+PROPS_OUT=$(npm run check:props --silent 2>&1)
+PROPS_RESULT=$?
+
+if [ $PROPS_RESULT -ne 0 ]; then
+  echo "$PROPS_OUT"
+  echo "❌ A host attribute is styled but not declared. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

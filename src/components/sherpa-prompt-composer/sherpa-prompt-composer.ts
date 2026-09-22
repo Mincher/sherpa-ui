@@ -10,6 +10,12 @@ const MAX_HEIGHT = 160;
 export class SherpaPromptComposer extends SherpaElement {
   static override css = new URL('./sherpa-prompt-composer.css', import.meta.url);
   static override html = new URL('./sherpa-prompt-composer.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-no-leading-actions': { type: 'boolean', kind: 'style' },
+  } as const;
   static override observed = ['data-placeholder', 'disabled'];
 
   #input: HTMLTextAreaElement | null = null;

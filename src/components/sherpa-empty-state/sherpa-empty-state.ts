@@ -12,6 +12,8 @@ export class SherpaEmptyState extends SherpaElement {
   static override css = new URL('./sherpa-empty-state.css', import.meta.url);
   static override html = new URL('./sherpa-empty-state.html', import.meta.url);
   static override props = {
+    'data-illustration': { type: 'enum', kind: 'style', values: ['data', 'empty', 'error', 'folder', 'search', 'success'] },
+    'data-size': { type: 'enum', kind: 'style', values: ['lg', 'sm'] },
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
     'data-description': { type: 'string', kind: 'content', to: '.message-text' },
     'data-small-print': { type: 'string', kind: 'content', to: '.small-print-text' },

@@ -33,6 +33,7 @@ anatomy:
               part: step
               attrs:
                 type: button
+                data-index: data-index
               children:
                 - el: span
                   class: marker
@@ -49,8 +50,12 @@ anatomy:
                   children:
                     - el: span
                       class: label
+                      attrs:
+                        data-text: label
                     - el: span
                       class: description
+                      attrs:
+                        data-text: description
 props:
   - $type: prop
     name: data-current-step

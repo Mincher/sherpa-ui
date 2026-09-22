@@ -77,15 +77,8 @@
   --_icon-size: var(--sherpa-theme-content-size-base, 14px);
   margin-block-start: var(--sherpa-display-mode-space-3xs, 2px); /* centre on the 20px heading line */
   color: var(--_badge);
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
   line-height: 1;
 }
-/* info is also the no-status default. warning and critical share a glyph. */
-:host(:is([data-status="info"], :not([data-status]))) .icon::after { content: "\f05a"; } /* circle-info */
-:host([data-status="success"]) .icon::after { content: "\f058"; } /* circle-check */
-:host(:is([data-status="warning"], [data-status="critical"])) .icon::after { content: "\f06a"; } /* circle-exclamation */
-:host([data-status="urgent"]) .icon::after { content: "\f071"; } /* triangle-exclamation */
 
 /* ── Content column ────────────────────────────────────────────────── */
 .content {

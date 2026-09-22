@@ -27,7 +27,7 @@ anatomy:
       attrs:
         aria-hidden: "true"
     - el: dialog
-      class: root
+      class: root sherpa-border-edges
       part: root
       children:
         - el: sherpa-container-header
@@ -165,10 +165,6 @@ events:
     bubbles: true
     composed: true
 tokens:
-  root.border-block-start-width: "{sherpa.border-top}"
-  root.border-block-end-width: "{sherpa.border-bottom}"
-  root.border-inline-start-width: "{sherpa.border-left}"
-  root.border-inline-end-width: "{sherpa.border-right}"
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   root.color: "{sherpa.style-content-base}"

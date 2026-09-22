@@ -85,6 +85,13 @@ const COLUMN_FILTER_BODIES: Record<string, string> = {
 export class SherpaDataGrid extends SherpaElement {
   static override css = new URL('./sherpa-data-grid.css', import.meta.url);
   static override html = new URL('./sherpa-data-grid.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-column-filters': { type: 'boolean', kind: 'style' },
+    'data-filterable': { type: 'boolean', kind: 'style' },
+  } as const;
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().
   static override observed = [

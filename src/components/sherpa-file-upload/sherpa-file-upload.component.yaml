@@ -63,7 +63,7 @@ anatomy:
           children:
             - slot: actions
             - el: button
-              class: clear-all
+              class: clear-all sherpa-border-edges
               part: clear-all
               attrs:
                 type: button
@@ -86,6 +86,8 @@ anatomy:
       children:
         - el: li
           class: file-item
+          attrs:
+            data-index: data-index
           children:
             - el: span
               class: file-icon
@@ -98,14 +100,16 @@ anatomy:
                   class: file-line
                   children:
                     - el: span
-                      class: file-name
+                      class: file-name sherpa-truncate
+                      attrs:
+                        data-text: name
                     - el: span
                       class: file-size
                 - el: span
                   class: file-status
                   part: file-status
             - el: button
-              class: file-remove
+              class: file-remove sherpa-border-edges
               attrs:
                 type: button
                 aria-label: Remove file
@@ -264,10 +268,6 @@ tokens:
   file-remove.inline-size: "{sherpa.structure-height}"
   file-remove.block-size: "{sherpa.structure-height}"
   file-remove.border-color: "{sherpa.style-border-base}"
-  file-remove.border-block-start-width: "{sherpa.border-top}"
-  file-remove.border-block-end-width: "{sherpa.border-bottom}"
-  file-remove.border-inline-start-width: "{sherpa.border-left}"
-  file-remove.border-inline-end-width: "{sherpa.border-right}"
   file-remove.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   file-remove.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   file-remove.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -295,10 +295,6 @@ tokens:
   upload.font-size: "{sherpa.font-size-body-base}"
   upload.font-weight: "{sherpa.font-weight-medium}"
   clear-all.border-color: "{sherpa.theme-border-default-2}"
-  clear-all.border-block-start-width: "{sherpa.border-top}"
-  clear-all.border-block-end-width: "{sherpa.border-bottom}"
-  clear-all.border-inline-start-width: "{sherpa.border-left}"
-  clear-all.border-inline-end-width: "{sherpa.border-right}"
   clear-all.color: "{sherpa.theme-content-body-1}"
   upload.background: "{sherpa.style-indicator-accent}"
   upload.color: "{sherpa.theme-content-body-base-fixed}"

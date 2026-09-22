@@ -74,7 +74,7 @@ anatomy:
       class: ytick-tpl
       children:
         - el: span
-          class: y-tick
+          class: y-tick sherpa-truncate
           children:
             - el: span
               class: y-value
@@ -154,19 +154,11 @@ tokens:
   line.stroke: "{sherpa.data-viz-series-1}"
   area.fill: "{sherpa.data-viz-series-1}"
   x-axis.margin-block-start: "{sherpa.display-mode-space-2xs}"
-  x-axis.font-family: "{sherpa.font-family-mono}"
-  x-axis.font-size: "{sherpa.font-size-body-small}"
-  x-axis.line-height: "{sherpa.theme-content-line-height-small}"
-  x-axis.color: "{sherpa.theme-content-body-1}"
   axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   y-axis.inline-size: "{sherpa.display-mode-size-lg}"
   y-axis.padding-inline-end: "{sherpa.display-mode-space-sm}"
   y-axis.border-inline-end: "{sherpa.border-right}"
-  y-axis.font-family: "{sherpa.font-family-mono}"
-  y-axis.font-size: "{sherpa.font-size-body-small}"
   y-axis.font-weight: "{sherpa.font-weight-regular}"
-  y-axis.line-height: "{sherpa.theme-content-line-height-small}"
-  y-axis.color: "{sherpa.theme-content-body-1}"
   axis-label.color: "{sherpa.theme-content-body-1}"
   axis-label.font-size: "{sherpa.font-size-body-base}"
   axis-label.font-weight: "{sherpa.font-weight-regular}"
@@ -181,7 +173,7 @@ $extensions:
       - $type: method
         name: setSeriesHidden
         args: "index: number, hidden = true"
-        description: Show or hide one series by index — the hook a chart legend toggles.
+        description: Show or hide one series. Hiding re-renders — the axis rescales to what is
     category: chart
     variantAxes:
       - name: Orientation

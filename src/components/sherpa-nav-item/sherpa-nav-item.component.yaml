@@ -34,7 +34,7 @@ anatomy:
           type: button
         children:
           - el: span
-            class: icon
+            class: icon sherpa-icon-box
             part: icon
             attrs:
               aria-hidden: "true"
@@ -43,7 +43,7 @@ anatomy:
             part: content
             children:
               - el: span
-                class: label
+                class: label sherpa-truncate
                 part: label
               - el: span
                 class: badge
@@ -54,7 +54,7 @@ anatomy:
         part: row
         children:
           - el: span
-            class: icon
+            class: icon sherpa-icon-box
             part: icon
             attrs:
               aria-hidden: "true"
@@ -63,7 +63,7 @@ anatomy:
             part: content
             children:
               - el: span
-                class: label
+                class: label sherpa-truncate
                 part: label
               - el: span
                 class: badge
@@ -88,7 +88,7 @@ anatomy:
           aria-hidden: "true"
     promo:
       - el: button
-        class: promo promo-button
+        class: promo sherpa-border-edges promo-button
         part: row
         attrs:
           type: button
@@ -113,7 +113,7 @@ anatomy:
             attrs:
               aria-hidden: "true"
       - el: a
-        class: promo promo-link
+        class: promo sherpa-border-edges promo-link
         part: row
         children:
           - el: span
@@ -264,9 +264,7 @@ events:
       expanded: unknown
 tokens:
   nav.gap: "{sherpa.theme-gap-md}"
-  icon.inline-size: "{sherpa.theme-size-icon-xs}"
-  icon.block-size: "{sherpa.theme-size-icon-xs}"
-  icon.font-size: "{sherpa.theme-size-icon-xs}"
+  icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
   content.gap: "{sherpa.theme-gap-md}"
   badge.padding: "{sherpa.theme-padding-xs}"
   badge.block-size: "{sherpa.display-mode-size-sm}"
@@ -290,10 +288,6 @@ tokens:
   promo.padding: "{sherpa.theme-padding-sm}"
   promo.border-radius: "{sherpa.display-mode-border-rounding-base}"
   promo.border-color: "{sherpa.theme-border-default-2}"
-  promo.border-block-start-width: "{sherpa.border-top}"
-  promo.border-block-end-width: "{sherpa.border-bottom}"
-  promo.border-inline-start-width: "{sherpa.border-left}"
-  promo.border-inline-end-width: "{sherpa.border-right}"
   promo.background: "{sherpa.style-surface-base}"
   promo.color: "{sherpa.theme-content-body-base}"
   promo-icon.inline-size: "{sherpa.display-mode-size-lg}"
@@ -315,7 +309,7 @@ $extensions:
       - $type: method
         name: highlight
         args: "query: string | null"
-        description: Mark a substring of this row's label as a search match.
+        description: Mark a substring of this row's label as a search match. Null/empty clears it.
     category: nav
     booleanProps:
       - hasIcon

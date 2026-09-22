@@ -24,7 +24,7 @@ templates:
 anatomy:
   root:
     el: div
-    class: cell
+    class: cell sherpa-border-edges
     part: cell
     children:
       - el: button
@@ -137,9 +137,6 @@ states:
     name: asc
     selector: ":host([data-sort-direction=\"asc\"])"
   - $type: state
-    name: desc
-    selector: ":host([data-sort-direction=\"desc\"])"
-  - $type: state
     name: focus-visible
     selector: .sort:focus-visible
 events:
@@ -164,10 +161,6 @@ tokens:
   cell.padding: "{sherpa.theme-padding-sm}"
   cell.min-block-size: "{sherpa.structure-height}"
   cell.border-color: "{sherpa.theme-border-default-2}"
-  cell.border-block-start-width: "{sherpa.border-top}"
-  cell.border-block-end-width: "{sherpa.border-bottom}"
-  cell.border-inline-start-width: "{sherpa.border-left}"
-  cell.border-inline-end-width: "{sherpa.border-right}"
   cell.background: "{sherpa.style-surface-base}"
   cell.line-height: "{sherpa.theme-content-line-height-base}"
   sort.inline-size: "{sherpa.theme-size-icon-xs}"

@@ -78,7 +78,7 @@ anatomy:
                         scope: col
                       children:
                         - el: span
-                          class: actions-label
+                          class: actions-label sherpa-truncate
                 - el: tr
                   class: filter-row
                   children:
@@ -124,7 +124,7 @@ anatomy:
                     type: button
                   children:
                     - el: span
-                      class: head-label
+                      class: head-label sherpa-truncate
                 - el: sherpa-quick-filter
                   class: head-filter
                   attrs:
@@ -234,6 +234,8 @@ props:
       (needs `key` in populate) actionsFor(count)              the actions that apply to a selection
       of that size — all of them for 1, only the `multi` ones for 2+, none for 0. A bulk toolbar
       reads this so it cannot disagree with the row menu selectedKeys / selectedRecords read it back
+      Column widths are fixed so long labels truncate; the header grip drags between
+      SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
 states:
   - $type: state
     name: empty
@@ -244,6 +246,9 @@ states:
   - $type: state
     name: advanced-select
     selector: ":host([data-advanced-select])"
+  - $type: state
+    name: single
+    selector: ":host([data-select=\"single\"])"
   - $type: state
     name: filterable
     selector: ":host([data-filterable])"
@@ -260,11 +265,8 @@ states:
     name: actions
     selector: ":host([data-actions])"
   - $type: state
-    name: single
-    selector: ":host([data-select=\"single\"])"
-  - $type: state
     name: focus-visible
-    selector: .select-all:focus-visible
+    selector: .filter-input:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -289,7 +291,7 @@ events:
     composed: true
     detail:
       direction: unknown
-      field: unknown
+      field: boolean
   - $type: event
     name: row-click
     bubbles: true
@@ -358,13 +360,11 @@ tokens:
   head.background: "{sherpa.theme-surface-default-1}"
   head-row.background: "{sherpa.theme-surface-default-1}"
   filter-row.background: "{sherpa.theme-surface-default-1}"
-  select-col.width: "{sherpa.display-mode-space-2xl}"
   select-cell.inline-size: "{sherpa.display-mode-space-2xl}"
   select-cell.padding: "{sherpa.display-mode-space-2xs}"
+  select-col.width: "{sherpa.display-mode-space-2xl}"
   select-head.background: "{sherpa.theme-surface-default-1}"
   select-head.border-block-end: "{sherpa.border-bottom}"
-  select-all.accent-color: "{sherpa.theme-border-accent-2}"
-  row-select.accent-color: "{sherpa.theme-border-accent-2}"
   filter-cell.padding: "{sherpa.display-mode-space-2xs}"
   filter-cell.background: "{sherpa.style-surface-base-1}"
   filter-cell.border-block-end: "{sherpa.border-bottom}"
@@ -427,8 +427,8 @@ tokens:
   head-btn.font-weight: "{sherpa.font-weight-regular}"
   head-btn.line-height: "{sherpa.theme-content-line-height-base}"
   head-btn.color: "{sherpa.theme-content-body-1}"
-  actions-head.padding: "{sherpa.display-mode-space-2xs}"
   actions-cell.border-inline-start: "{sherpa.border-left}"
+  actions-head.padding: "{sherpa.display-mode-space-2xs}"
   actions-cell.border-inline-start-color: "{sherpa.theme-border-default-2}"
   actions-trigger.inline-size: "{sherpa.display-mode-size-2xl}"
   actions-trigger.block-size: "{sherpa.display-mode-size-2xl}"
@@ -440,6 +440,8 @@ tokens:
   action-item.color: "{sherpa.theme-content-body-1}"
   action-icon.inline-size: "{sherpa.theme-content-size-md}"
   group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
+  group-inner.gap: "{sherpa.theme-gap-md}"
+  group-inner.min-block-size: "{sherpa.display-mode-size-lg}"
   row.background: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
   cell.line-height: "{sherpa.theme-content-line-height-base}"
@@ -448,8 +450,6 @@ tokens:
   group-cell.border-block-end: "{sherpa.border-bottom}"
   group-cell.color: "{sherpa.style-content-base}"
   group-cell.line-height: "{sherpa.theme-content-line-height-base}"
-  group-inner.gap: "{sherpa.theme-gap-md}"
-  group-inner.min-block-size: "{sherpa.display-mode-size-lg}"
   group-toggle.inline-size: "{sherpa.display-mode-size-sm}"
   group-toggle.block-size: "{sherpa.display-mode-size-sm}"
   group-toggle.font-size: "{sherpa.font-size-body-small}"
@@ -469,31 +469,31 @@ $extensions:
       - $type: method
         name: setColumnFilter
         args: "field: string, clause: unknown[] | null"
-        description: Set one column's filter from OUTSIDE — a saved view, a deep link, an agent.
+        description: Set one column's filter from OUTSIDE. TRAP
       - $type: method
         name: columnClause
         args: "field: string"
-        description: One column's current filter, as a ready FilterClause — or null.
+        description: One column's filter as a ready FilterClause, or null. TRAP
       - $type: method
         name: suspendColumnFilter
         args: "field: string, suspended = true"
-        description: Suspend or resume one column's filter without losing it.
+        description: Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear.
       - $type: method
         name: openColumnFilter
         args: "field: string, anchor?: HTMLElement"
-        description: Open one column's filter menu, anchored wherever the caller says.
+        description: Open one column's filter menu, anchored where the caller says. TRAP
       - $type: method
         name: clearColumnFilter
         args: "field?: string"
-        description: Drop one column's heading filter, from OUTSIDE the grid.
+        description: Drop one column's heading filter from OUTSIDE; nothing drops them all.
       - $type: method
         name: actionsFor
         args: "count: number"
-        description: The actions that apply to the CURRENT selection.
+        description: "The actions for the CURRENT selection — one row: all; two or more: only"
       - $type: method
         name: select
         args: "keys: readonly string[]"
-        description: Select exactly these rows, by key — a saved view, a deep link, an agent.
+        description: Select exactly these rows, by key. TRAP T-grid-select-remembers-wanted-keys
       - $type: method
         name: clearSelection
         args: ""

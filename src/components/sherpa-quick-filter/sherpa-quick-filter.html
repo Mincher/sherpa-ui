@@ -69,7 +69,9 @@
       <span class="caret-label" part="caret-label"></span>
       <!-- Class hook: an icon-only chip overrides the glyph in CSS
            (:host([data-icon-only]) .caret-glyph::before), not in JS. -->
-      <i class="caret-glyph sherpa-icon-box fa-solid fa-caret-down" aria-hidden="true"></i>
+      <i class="caret-glyph sherpa-icon-box" data-icon="triangle-down" aria-hidden="true"></i>
+      <!-- An icon-only chip shows a funnel instead; CSS picks, JS never swaps. -->
+      <i class="caret-funnel sherpa-icon-box" data-icon="filter" aria-hidden="true"></i>
       <!-- An icon-only chip with data-icon-start shows that glyph here instead.
            JS writes the FA class (#syncText); CSS picks which <i> is visible. -->
       <span class="caret-icon sherpa-icon-box" part="caret-icon" aria-hidden="true"></span>

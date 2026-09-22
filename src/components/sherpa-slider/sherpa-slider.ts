@@ -19,6 +19,7 @@ export class SherpaSlider extends SherpaElement {
   static override css = new URL('./sherpa-slider.css', import.meta.url);
   static override html = new URL('./sherpa-slider.html', import.meta.url);
   static override props = {
+    'data-show-value': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
   } as const;
 

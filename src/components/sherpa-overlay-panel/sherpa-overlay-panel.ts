@@ -15,6 +15,13 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);
   static override html = new URL('./sherpa-overlay-panel.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-expandable': { type: 'boolean', kind: 'style' },
+    'data-external': { type: 'boolean', kind: 'style' },
+  } as const;
   static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
   #dialog(): HTMLDialogElement | null {

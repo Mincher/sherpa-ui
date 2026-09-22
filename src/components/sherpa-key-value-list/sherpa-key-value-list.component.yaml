@@ -28,9 +28,13 @@ anatomy:
         - el: dt
           class: key
           part: key
+          attrs:
+            data-text: key
         - el: dd
           class: value
           part: value
+          attrs:
+            data-text: value
 props:
   - $type: prop
     name: data-orientation

@@ -46,6 +46,11 @@ export class SherpaGaugeChart extends SherpaElement {
   static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   // ONE LINE, deliberately: the spec generator reads only the first line.
+  /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
+  static override props = {
+    'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+  } as const;
+
   static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit'];
 
   override onRender(): void {

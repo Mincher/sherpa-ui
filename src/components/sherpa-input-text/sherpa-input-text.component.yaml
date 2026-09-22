@@ -37,11 +37,11 @@ anatomy:
             class: description
             part: description
           - el: span
-            class: control-row
+            class: control-row sherpa-border-edges
             part: control-row
             children:
               - el: span
-                class: icon icon-start
+                class: icon sherpa-icon-box icon-start
                 part: icon-start
                 attrs:
                   aria-hidden: "true"
@@ -51,7 +51,7 @@ anatomy:
                 attrs:
                   type: text
               - el: span
-                class: icon icon-end
+                class: icon sherpa-icon-box icon-end
                 part: icon-end
                 attrs:
                   aria-hidden: "true"
@@ -74,11 +74,11 @@ anatomy:
             class: description
             part: description
           - el: span
-            class: control-row
+            class: control-row sherpa-border-edges
             part: control-row
             children:
               - el: span
-                class: icon icon-start
+                class: icon sherpa-icon-box icon-start
                 part: icon-start
                 attrs:
                   aria-hidden: "true"
@@ -88,7 +88,7 @@ anatomy:
                 attrs:
                   rows: "3"
               - el: span
-                class: icon icon-end
+                class: icon sherpa-icon-box icon-end
                 part: icon-end
                 attrs:
                   aria-hidden: "true"
@@ -289,22 +289,12 @@ tokens:
   control-row.gap: "{sherpa.structure-space-gap}"
   control-row.min-block-size: "{sherpa.display-mode-size-2xl}"
   control-row.padding-inline: "{sherpa.structure-space-padding}"
-  control-row.border-block-start-width: "{sherpa.border-top}"
-  control-row.border-block-end-width: "{sherpa.border-bottom}"
-  control-row.border-inline-start-width: "{sherpa.border-left}"
-  control-row.border-inline-end-width: "{sherpa.border-right}"
-  control-row.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  control-row.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  control-row.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  control-row.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   control-row.background: "{sherpa.theme-surface-default-base}"
   control.padding-block: "{sherpa.theme-padding-sm}"
   control.color: "{sherpa.theme-content-body-base}"
   control.font-size: "{sherpa.font-size-body-base}"
   control.line-height: "{sherpa.theme-content-line-height-base}"
-  icon.inline-size: "{sherpa.theme-size-icon-xs}"
-  icon.block-size: "{sherpa.theme-size-icon-xs}"
-  icon.font-size: "{sherpa.theme-size-icon-xs}"
+  icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
   icon.color: "{sherpa.theme-content-body-1}"
   actions.gap: "{sherpa.structure-space-gap}"
   message.padding: "{sherpa.theme-padding-xs}"
@@ -319,19 +309,18 @@ $extensions:
       - $type: method
         name: validate
         args: ""
-        description: Check this field and show the result.
+        description: Check this field and show the result. True means acceptable.
       - $type: method
         name: formResetCallback
         args: ""
-        description: "`form.reset()` — put the value back and clear any message."
+        description: Write the message; CSS paints the state. */
       - $type: method
         name: formStateRestoreCallback
         args: "state: string"
-        description: The browser restoring a value — a back-button navigation, or a session
+        description: Back-button or session restore — what setFormValue stored.
       - $type: method
         name: checkValidity
         args: ""
-        description: Native validity, surfaced for form logic.
       - $type: method
         name: focus
         args: ""

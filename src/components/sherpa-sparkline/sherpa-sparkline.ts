@@ -15,6 +15,12 @@ const LINE_SHARE = 0.62;
 export class SherpaSparkline extends SherpaElement {
   static override css = new URL('./sherpa-sparkline.css', import.meta.url);
   static override html = new URL('./sherpa-sparkline.html', import.meta.url);
+
+  /* Written by the component from its own point count; CSS selects on it. */
+  static override props = {
+    'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
+    'data-len': { type: 'string', kind: 'style' },
+  } as const;
   static override observed = ['data-values'];
 
   override onRender(): void {

@@ -4,6 +4,7 @@
  * JS carries text and value; CSS owns the look and all visibility.
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { renderIcon, hasIcon } from '../../core/render-icon.js';
 import { validateField, type FieldRules } from '../../core/validate.js';
 
 /** Mirrored verbatim from the host onto the inner control. */
@@ -26,6 +27,12 @@ type Control = HTMLInputElement | HTMLTextAreaElement;
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
   static override html = new URL('./sherpa-input-text.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-borderless': { type: 'boolean', kind: 'style' },
+  } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
   static readonly formAssociated = true;
@@ -189,15 +196,18 @@ export class SherpaInputText extends SherpaElement {
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);
     if (!el) return;
-    // TRAP T-icon-box-is-not-the-glyph — rewriting className erases the
-    // shared box class, so it must be restated here, not just in the template.
+    // TRAP T-icon-box-is-not-the-glyph — rewriting className erases the shared
+    // box class, so it is restated here; and a NAME must be drawn, never left
+    // as classes, which paint nothing now the icons are SVG.
     const side = sel === '.icon-start' ? 'icon-start' : 'icon-end';
-    const base = `icon sherpa-icon-box ${side}`;
-    if (value && /\bfa-/.test(value)) {
-      el.className = `${base} ${value}`;
+    el.className = `icon sherpa-icon-box ${side}`;
+    el.replaceChildren();
+    if (value && hasIcon(value)) {
       el.removeAttribute('data-glyph');
+      renderIcon(el, value);
     } else {
-      el.className = base;
+      // The raw-character sink stays the `data-glyph` ATTRIBUTE, because the
+      // CSS draws it with `content: attr(data-glyph)`.
       el.setAttribute('data-glyph', value ?? '');
     }
   }

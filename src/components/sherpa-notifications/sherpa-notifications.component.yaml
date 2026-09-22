@@ -45,6 +45,10 @@ anatomy:
           class: notification
           attrs:
             data-interactive: ""
+            data-attr-data-id: id
+            data-attr-data-label: label??title
+            data-attr-data-description: description
+            data-when-unread: unread
           children:
             - el: i
               class: notification-icon
@@ -55,6 +59,7 @@ anatomy:
               class: notification-time
               attrs:
                 slot: trailing
+                data-text: time
             - el: span
               class: notification-pip
               attrs:

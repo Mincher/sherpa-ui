@@ -48,9 +48,12 @@ anatomy:
             type: button
             tabindex: "-1"
             aria-selected: "false"
+            data-attr-data-id: id
           children:
             - el: span
               class: label
+              attrs:
+                data-text: label
 props:
   - $type: prop
     name: data-current-id

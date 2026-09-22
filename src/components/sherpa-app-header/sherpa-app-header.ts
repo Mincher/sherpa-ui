@@ -34,6 +34,14 @@ export class SherpaAppHeader extends SherpaElement {
   static override css = new URL('./sherpa-app-header.css', import.meta.url);
   static override html = new URL('./sherpa-app-header.html', import.meta.url);
   static override props = {
+    'data-account': { type: 'boolean', kind: 'style' },
+    'data-ai': { type: 'boolean', kind: 'style' },
+    'data-back': { type: 'boolean', kind: 'style' },
+    'data-help': { type: 'boolean', kind: 'style' },
+    'data-labs': { type: 'boolean', kind: 'style' },
+    'data-loading': { type: 'boolean', kind: 'style' },
+    'data-menu': { type: 'boolean', kind: 'style' },
+    'data-theme-toggle': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
     'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
   } as const;

@@ -26,7 +26,7 @@ templates:
 anatomy:
   root:
     el: dialog
-    class: root
+    class: root sherpa-border-edges
     part: root
     children:
       - el: div
@@ -85,10 +85,6 @@ events:
     bubbles: true
     composed: true
 tokens:
-  root.border-block-start-width: "{sherpa.border-top}"
-  root.border-block-end-width: "{sherpa.border-bottom}"
-  root.border-inline-start-width: "{sherpa.border-left}"
-  root.border-inline-end-width: "{sherpa.border-right}"
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -106,7 +102,7 @@ $extensions:
       - $type: method
         name: show
         args: ""
-        description: Open as a modal (top layer, backdrop, focus trap).
+        description: Open as a modal — top layer, backdrop, focus trap.
       - $type: method
         name: close
         args: ""

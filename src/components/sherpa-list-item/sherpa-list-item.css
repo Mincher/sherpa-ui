@@ -91,8 +91,9 @@
 }
 :host([data-icon]) .leading,
 :host([data-has-leading]) .leading { display: inline-flex; }
-/* A Font Awesome icon is classes with no text, so a bare :empty would hide it. */
-.icon:not([class*="fa-"]):empty { display: none; }
+/* A drawn icon holds an <svg>, so it is not :empty — this hides only a box
+   nothing was ever written into. */
+.icon:empty { display: none; }
 
 /* Chained :host:not() is broken in shadow DOM — functional form only. */
 :host(:not([data-draggable]):not([data-expandable]):not([data-selectable]):not([data-icon]):not([data-has-leading])) .lead { display: none; }

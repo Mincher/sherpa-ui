@@ -66,7 +66,7 @@ anatomy:
       class: ytick-tpl
       children:
         - el: span
-          class: y-tick
+          class: y-tick sherpa-truncate
           children:
             - el: span
               class: y-value
@@ -132,13 +132,13 @@ tokens:
   title.font-weight: "{sherpa.font-weight-semibold}"
   title.color: "{sherpa.theme-content-body-base}"
   bars.gap: "{sherpa.display-mode-space-xs}"
+  bars.border-block-end: "{sherpa.display-mode-border-width-base}"
   x-axis-row.gap: "{sherpa.display-mode-space-xs}"
   x-axis-row.margin-block-start: "{sherpa.display-mode-space-2xs}"
   bar.border-radius: "{sherpa.display-mode-border-rounding-sm}"
   bar.border-width: "{sherpa.display-mode-border-width-base}"
   bar.border-color: "{sherpa.data-viz-series-1}"
   bar.background: "{sherpa.data-viz-series-1}"
-  bars.border-block-end: "{sherpa.display-mode-border-width-base}"
   bar-label.font-family: "{sherpa.font-family-mono}"
   bar-label.font-size: "{sherpa.font-size-body-small}"
   bar-label.line-height: "{sherpa.theme-content-line-height-small}"

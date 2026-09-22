@@ -27,6 +27,12 @@ export class SherpaChartLegend extends SherpaElement {
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal'] },
+  } as const;
+
   #items: LegendItem[] = [];
   /**
    * The rows toggled OFF, by LABEL. By label and not by index because a

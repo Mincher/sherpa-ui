@@ -18,6 +18,7 @@ export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
   static override props = {
+    'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
   } as const;
 

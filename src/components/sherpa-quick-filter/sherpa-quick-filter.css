@@ -247,15 +247,13 @@
 /* Hidden rather than left to `:empty`, because an active filter does set a value. */
 :host([data-icon-only]) .caret-label { display: none; }
 
-/* A funnel (`f0b0` = fa-filter), not a caret, in CSS so JS never writes a Font
-   Awesome class at runtime. `data-icon-start` overrides it with the JS-written
-   `.caret-icon` — a sort control needs three glyphs, which is data. Both exist
-   from the start, so the choice is CSS and the component never rebuilds. */
-:host([data-icon-only]) .caret-glyph::before {
-  content: "\f0b0";
-}
-
-:host([data-icon-only][data-icon-start]) .caret-glyph { display: none; }
+/* An icon-only chip is a FUNNEL, not a caret. Both drawings are stamped, so
+   the choice is CSS and the component never rebuilds. `data-icon-start`
+   overrides both with the JS-written `.caret-icon` — a sort control needs
+   three glyphs, which is data. */
+.caret-funnel { display: none; }
+:host([data-icon-only]) .caret-glyph { display: none; }
+:host([data-icon-only]:not([data-icon-start])) .caret-funnel { display: inline-flex; }
 
 .caret-icon { display: none; }
 

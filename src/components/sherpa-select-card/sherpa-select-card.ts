@@ -19,6 +19,8 @@ export class SherpaSelectCard extends SherpaElement {
   static override css = new URL('./sherpa-select-card.css', import.meta.url);
   static override html = new URL('./sherpa-select-card.html', import.meta.url);
   static override props = {
+    'data-footer': { type: 'enum', kind: 'style', values: ['none'] },
+    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal'] },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
   } as const;

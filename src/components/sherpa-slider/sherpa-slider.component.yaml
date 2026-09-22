@@ -33,7 +33,7 @@ anatomy:
       class: slider-row
       children:
         - el: input
-          class: value-input value-start
+          class: value-input sherpa-border-edges value-start
           part: value-start
           attrs:
             type: number
@@ -62,7 +62,7 @@ anatomy:
                 type: range
                 aria-label: Maximum
         - el: input
-          class: value-input value-end
+          class: value-input sherpa-border-edges value-end
           part: value
           attrs:
             type: number
@@ -180,10 +180,6 @@ tokens:
   value-input.min-block-size: "{sherpa.display-mode-size-2xl}"
   value-input.padding: "{sherpa.display-mode-space-2xs}"
   value-input.border-color: "{sherpa.theme-border-default-2}"
-  value-input.border-block-start-width: "{sherpa.border-top}"
-  value-input.border-block-end-width: "{sherpa.border-bottom}"
-  value-input.border-inline-start-width: "{sherpa.border-left}"
-  value-input.border-inline-end-width: "{sherpa.border-right}"
   value-input.border-radius: "{sherpa.display-mode-border-rounding-base}"
   value-input.background: "{sherpa.theme-surface-default-base}"
   value-input.color: "{sherpa.theme-content-body-1}"

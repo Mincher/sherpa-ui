@@ -45,7 +45,7 @@ anatomy:
             attrs:
               role: img
           - el: span
-            class: icon
+            class: icon sherpa-icon-box
             part: icon
             attrs:
               aria-hidden: "true"
@@ -66,11 +66,17 @@ anatomy:
             class: caret-label
             part: caret-label
           - el: i
-            class: caret-glyph fa-solid fa-caret-down
+            class: caret-glyph sherpa-icon-box
             attrs:
+              data-icon: triangle-down
+              aria-hidden: "true"
+          - el: i
+            class: caret-funnel sherpa-icon-box
+            attrs:
+              data-icon: filter
               aria-hidden: "true"
           - el: span
-            class: caret-icon
+            class: caret-icon sherpa-icon-box
             part: caret-icon
             attrs:
               aria-hidden: "true"
@@ -214,26 +220,18 @@ tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"
   body.padding-inline: "{sherpa.display-mode-space-2xs}"
-  body.border-width: "{sherpa.border-top}"
-  body.border-color: "{sherpa.style-border-base}"
   body.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   body.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   body.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   body.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
-  body.background: "{sherpa.style-surface-base}"
-  body.color: "{sherpa.theme-content-body-1}"
   body.font-size: "{sherpa.font-size-body-base}"
   body.font-weight: "{sherpa.font-weight-regular}"
   body.line-height: "{sherpa.theme-content-line-height-base}"
   caret.min-inline-size: "{sherpa.display-mode-size-lg}"
   caret.gap: "{sherpa.display-mode-space-2xs}"
-  caret.border-width: "{sherpa.border-top}"
-  caret.border-color: "{sherpa.style-border-base}"
   caret.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   caret.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
-  caret.background: "{sherpa.style-surface-base}"
-  caret.color: "{sherpa.theme-content-body-1}"
-  caret.font-size: "{sherpa.theme-content-size-base}"
+  caret.--_icon-size: "{sherpa.theme-content-size-base}"
   caret-label.font-size: "{sherpa.theme-content-size-base}"
   caret-label.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:

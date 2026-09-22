@@ -128,14 +128,14 @@ tokens:
   label.font-size: "{sherpa.font-size-body-base}"
   label.font-weight: "{sherpa.font-weight-medium}"
   label.line-height: "{sherpa.theme-content-line-height-base}"
-  description.color: "{sherpa.theme-content-body-1}"
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
+  validation.font-size: "{sherpa.font-size-body-small}"
+  validation.line-height: "{sherpa.theme-content-line-height-small}"
+  description.color: "{sherpa.theme-content-body-1}"
   divider.border-block-start: "{sherpa.border-top}"
   options.gap: "{sherpa.display-mode-space-xs}"
   validation.color: "{sherpa.theme-content-body-1}"
-  validation.font-size: "{sherpa.font-size-body-small}"
-  validation.line-height: "{sherpa.theme-content-line-height-small}"
 $extensions:
   sherpa:
     figmaName: Fieldset

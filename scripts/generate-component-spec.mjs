@@ -557,7 +557,13 @@ function generateSpec(name) {
   /* Union the comment's props with the prior spec's — some props live only in
      the spec. But a carried prop must still exist SOMEWHERE in the source, or a
      renamed attribute lingers for ever in a spec that can only grow. */
-  const sourceText = `${ts ?? ''}\n${css ?? ''}\n${html ?? ''}`;
+  /* A prop's own `values: ['a', 'b']` list is NOT evidence that `a` is itself
+     an attribute — every enum value arrives single-quoted, which is the one
+     spelling `attrInUse` trusts. Declaring `data-align`'s values made the
+     phantom `stretch` prop pass the guard that exists to catch it.
+     TRAP T-a-bare-name-must-be-used-not-mentioned */
+  const tsWithoutEnumValues = (ts ?? '').replace(/values:\s*\[[^\]]*\]/g, 'values: []');
+  const sourceText = `${tsWithoutEnumValues}\n${css ?? ''}\n${html ?? ''}`;
   /* USED, not merely MENTIONED — a bare substring search keeps a prop alive on
      the strength of a comment that explains its removal. Hence the three real
      spellings of use. A DOUBLE-quoted match is deliberately not proof:

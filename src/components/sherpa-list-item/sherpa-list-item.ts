@@ -21,6 +21,10 @@ export class SherpaListItem extends SherpaElement {
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
   static override tier = 'sub-component' as const;
   static override props = {
+    'data-draggable': { type: 'boolean', kind: 'style' },
+    'data-expandable': { type: 'boolean', kind: 'style' },
+    'data-interactive': { type: 'boolean', kind: 'style' },
+    'data-selectable': { type: 'boolean', kind: 'style' },
     // `all`: title + description appear twice — in the <button> and the static span.
     'data-label': { type: 'string', kind: 'content', to: '.title', all: true, fallbackAttr: 'data-heading' },
     'data-description': { type: 'string', kind: 'content', to: '.description', all: true },

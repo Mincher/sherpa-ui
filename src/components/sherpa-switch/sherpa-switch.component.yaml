@@ -21,7 +21,7 @@ templates:
 anatomy:
   root:
     el: label
-    class: track
+    class: track sherpa-border-edges
     part: track
     children:
       - el: input
@@ -81,19 +81,17 @@ tokens:
   track.inline-size: "{switch.switch-size.width}"
   track.min-block-size: "{switch.switch-size.height}"
   track.padding: "{switch.switch-size.padding}"
-  track.border-block-start-width: "{sherpa.border-top}"
-  track.border-block-end-width: "{sherpa.border-bottom}"
-  track.border-inline-start-width: "{sherpa.border-left}"
-  track.border-inline-end-width: "{sherpa.border-right}"
   track.border-radius: "{switch.switch-radius.track}"
   track.font-family: "{sherpa.font-family-body}"
   track.font-size: "{sherpa.font-size-body-small}"
   track.font-weight: "{sherpa.font-weight-regular}"
   track.line-height: "{sherpa.theme-content-line-height-small}"
+  track.transition: "{sherpa.motion-base}"
   knob.inline-size: "{switch.switch-size.thumb}"
   knob.block-size: "{switch.switch-size.thumb}"
   knob.border-radius: "{switch.switch-radius.thumb}"
   knob.background: "{sherpa.theme-content-body-4}"
+  knob.transition: "{sherpa.motion-base}"
   label.min-inline-size: "{sherpa.display-mode-size-lg}"
   label.color: "{sherpa.theme-content-body-base-fixed}"
 $extensions:

@@ -72,10 +72,8 @@ props:
     kind: style
     description: >-
       with data-fill on the stack, this item takes the spare space and the others keep their natural
-      size. For a stack inside a fixed-height card — the grid grows, the toolbar above and the pager
-      below stay put. TWO attributes rather than one because a stack cannot see its own children
-      from CSS: `:host(:has(…))` does not parse, and the chained `:host:has(…)` matches every host
-      regardless. So the height is declared on the stack, not detected from it.
+      size. Two attributes, not one: a stack cannot see its own children from CSS — `:host(:has(…))`
+      does not parse, and `:host:has(…)` matches every host.
   - $type: prop
     name: data-measure
     type: string

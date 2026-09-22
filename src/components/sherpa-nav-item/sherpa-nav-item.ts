@@ -25,6 +25,13 @@ export class SherpaNavItem extends SherpaElement {
   static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
   static override html = new URL('./sherpa-nav-item.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-status-dot': { type: 'boolean', kind: 'style' },
+    'data-tier': { type: 'enum', kind: 'style', values: ['2', '3'] },
+  } as const;
   static override observed = [
     'data-icon',
     'data-label',

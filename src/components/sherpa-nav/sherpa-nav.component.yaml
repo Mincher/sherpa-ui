@@ -48,10 +48,10 @@ anatomy:
                         - el: i
                           class: fa-solid fa-cubes
                 - el: span
-                  class: product
+                  class: product sherpa-truncate
                   part: product
                 - el: button
-                  class: hdr-btn pin
+                  class: hdr-btn sherpa-border-edges pin
                   part: pin
                   attrs:
                     type: button
@@ -63,7 +63,7 @@ anatomy:
                       attrs:
                         aria-hidden: "true"
                 - el: button
-                  class: hdr-btn settings
+                  class: hdr-btn sherpa-border-edges settings
                   part: settings
                   attrs:
                     type: button
@@ -79,7 +79,7 @@ anatomy:
               part: quick-zone
               children:
                 - el: div
-                  class: search
+                  class: search sherpa-border-edges
                   part: search
                   children:
                     - el: i
@@ -221,10 +221,6 @@ tokens:
   product.color: "{sherpa.theme-content-body-1}"
   hdr-btn.--_btn-box: "{sherpa.display-mode-space-xl}"
   hdr-btn.--_btn-glyph: "{sherpa.theme-content-size-small}"
-  hdr-btn.border-block-start-width: "{sherpa.border-top}"
-  hdr-btn.border-block-end-width: "{sherpa.border-bottom}"
-  hdr-btn.border-inline-start-width: "{sherpa.border-left}"
-  hdr-btn.border-inline-end-width: "{sherpa.border-right}"
   hdr-btn.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   hdr-btn.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   hdr-btn.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -240,10 +236,6 @@ tokens:
   search.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   search.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   search.border-color: "{sherpa.style-border-base}"
-  search.border-block-start-width: "{sherpa.border-top}"
-  search.border-block-end-width: "{sherpa.border-bottom}"
-  search.border-inline-start-width: "{sherpa.border-left}"
-  search.border-inline-end-width: "{sherpa.border-right}"
   search.background: "{sherpa.style-surface-base}"
   search-icon.color: "{sherpa.theme-content-body-1}"
   search-icon.font-size: "{sherpa.theme-size-icon-xs}"
@@ -275,7 +267,7 @@ $extensions:
       - $type: method
         name: entry
         args: "id: string"
-        description: "What a row shows: its label, and its icon if it has one."
+        description: What a row shows. Read off the stamped ROW, so hand-authored rows work too.
     category: nav
     jsProps:
       - name: state

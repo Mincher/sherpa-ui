@@ -21,6 +21,12 @@ export class SherpaKeyValueList extends SherpaElement {
   static override css = new URL('./sherpa-key-value-list.css', import.meta.url);
   static override html = new URL('./sherpa-key-value-list.html', import.meta.url);
 
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
+  } as const;
+
   #pairs: KeyValuePair[] = [];
 
   override onRender(): void {

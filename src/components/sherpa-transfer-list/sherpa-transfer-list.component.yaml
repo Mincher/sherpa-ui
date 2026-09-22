@@ -99,11 +99,13 @@ anatomy:
           class: row
           attrs:
             role: option
+            data-attr-data-value: value
           children:
             - el: sherpa-list-item
               attrs:
                 data-selectable: ""
                 data-interactive: ""
+                data-attr-data-heading: label
 props:
   - $type: prop
     name: data-source-heading
@@ -163,7 +165,6 @@ $extensions:
       - $type: method
         name: getSelectedValues
         args: ""
-        description: name, and two names for one thing is how they drift.
     category: container
     jsProps:
       - name: selected

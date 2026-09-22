@@ -12,6 +12,8 @@ export class SherpaSectionHeader extends SherpaElement {
   static override css = new URL('./sherpa-section-header.css', import.meta.url);
   static override html = new URL('./sherpa-section-header.html', import.meta.url);
   static override props = {
+    'data-divider': { type: 'enum', kind: 'style', values: ['none'] },
+    'data-size': { type: 'enum', kind: 'style', values: ['lg', 'sm'] },
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
   } as const;
 }

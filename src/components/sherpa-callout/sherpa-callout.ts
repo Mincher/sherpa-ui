@@ -13,6 +13,7 @@ export class SherpaCallout extends SherpaElement {
   static override css = new URL('./sherpa-callout.css', import.meta.url);
   static override html = new URL('./sherpa-callout.html', import.meta.url);
   static override props = {
+    'data-dismissible': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
   } as const;
 

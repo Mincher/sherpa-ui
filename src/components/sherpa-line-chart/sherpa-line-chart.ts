@@ -23,6 +23,7 @@ export class SherpaLineChart extends SherpaElement {
   static override css = new URL('./sherpa-line-chart.css', import.meta.url);
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
   static override props = {
+    'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
     'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },
   } as const;

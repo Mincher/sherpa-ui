@@ -22,15 +22,45 @@ templates:
 anatomy:
   root:
     el: div
-    class: toast
+    class: toast sherpa-border-edges
     part: toast
     attrs:
       role: alert
     children:
       - el: span
-        class: icon
+        class: icon sherpa-icon-box
         part: icon
         attrs:
+          data-icon: status-info
+          data-icon-status: info
+          aria-hidden: "true"
+      - el: span
+        class: icon sherpa-icon-box
+        part: icon
+        attrs:
+          data-icon: status-ok
+          data-icon-status: success
+          aria-hidden: "true"
+      - el: span
+        class: icon sherpa-icon-box
+        part: icon
+        attrs:
+          data-icon: status-warning
+          data-icon-status: warning
+          aria-hidden: "true"
+      - el: span
+        class: icon sherpa-icon-box
+        part: icon
+        attrs:
+          data-icon: status-critical
+          data-icon-status: critical
+          aria-hidden: "true"
+      - el: span
+        class: icon sherpa-icon-box
+        part: icon
+        attrs:
+          data-icon: status-urgent
+          data-icon-status: urgent
           aria-hidden: "true"
       - el: span
         class: content
@@ -104,29 +134,11 @@ states:
     name: leaving
     selector: ":host([data-leaving])"
   - $type: state
-    name: info
-    selector: ":host([data-status=\"info\"])"
-  - $type: state
-    name: success
-    selector: ":host([data-status=\"success\"])"
-  - $type: state
-    name: warning
-    selector: ":host([data-status=\"warning\"])"
-  - $type: state
-    name: critical
-    selector: ":host([data-status=\"critical\"])"
-  - $type: state
-    name: urgent
-    selector: ":host([data-status=\"urgent\"])"
-  - $type: state
     name: value
     selector: ":host([data-value])"
   - $type: state
     name: action
     selector: ":host([data-action])"
-  - $type: state
-    name: not-status
-    selector: ":host(:not([data-status]))"
   - $type: state
     name: focus-visible
     selector: .action:focus-visible
@@ -149,19 +161,13 @@ events:
 tokens:
   toast.gap: "{sherpa.display-mode-space-sm}"
   toast.padding: "{sherpa.theme-padding-lg}"
-  toast.border-block-start-width: "{sherpa.border-top}"
-  toast.border-block-end-width: "{sherpa.border-bottom}"
-  toast.border-inline-start-width: "{sherpa.border-left}"
-  toast.border-inline-end-width: "{sherpa.border-right}"
   toast.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   toast.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   toast.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   toast.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   toast.box-shadow: "{sherpa.display-mode-size-2xs}"
-  icon.inline-size: "{sherpa.theme-content-size-base}"
-  icon.block-size: "{sherpa.theme-content-size-base}"
+  icon.--_icon-size: "{sherpa.theme-content-size-base}"
   icon.margin-block-start: "{sherpa.display-mode-space-3xs}"
-  icon.font-size: "{sherpa.theme-content-size-base}"
   content.gap: "{sherpa.theme-gap-sm}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.font-size-body-base}"
@@ -180,7 +186,7 @@ $extensions:
       - $type: method
         name: dismiss
         args: ""
-        description: "Dismiss the toast: stop the timer, announce, play the leave animation, then"
+        description: Stop the timer, announce, play the leave animation, then remove the node.
     category: container
     booleanProps:
       - hasClose

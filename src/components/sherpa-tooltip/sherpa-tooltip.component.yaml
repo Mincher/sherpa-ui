@@ -90,6 +90,7 @@ tokens:
   bubble.line-height: "{sherpa.theme-content-line-height-small}"
   bubble.border-radius: "{sherpa.display-mode-border-rounding-base}"
   bubble.box-shadow: "{sherpa.display-mode-size-2xs}"
+  bubble.transition: "{sherpa.motion-base}"
 $extensions:
   sherpa:
     figmaName: Tooltip (atom)

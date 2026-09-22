@@ -50,7 +50,8 @@
 }
 
 /* ── Status icon — Figma: a 14px Apex status glyph (content/size/base) in the
-   status hue. Rendered with the Font Awesome solid glyphs (no chip behind it). ── */
+   status hue. The drawing is the Figma status icon, which carries its own
+   colours (no chip behind it). ── */
 .icon {
   flex-shrink: 0;
   display: inline-flex;
@@ -59,17 +60,8 @@
   --_icon-size: var(--sherpa-theme-content-size-base, 14px);
   margin-block-start: var(--sherpa-display-mode-space-3xs, 2px); /* centre on the 20px heading line */
   color: var(--_badge);
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  font-style: normal;
   line-height: 1;
 }
-:host([data-status="info"])     .icon::after { content: "\f05a"; } /* circle-info */
-:host([data-status="success"])  .icon::after { content: "\f058"; } /* circle-check */
-:host([data-status="warning"])  .icon::after { content: "\f06a"; } /* circle-exclamation */
-:host([data-status="critical"]) .icon::after { content: "\f06a"; }
-:host([data-status="urgent"])   .icon::after { content: "\f071"; } /* triangle-exclamation */
-:host(:not([data-status]))      .icon::after { content: "\f05a"; }
 
 /* ── Content ─────────────────────────────────────────────────────────── */
 .content {

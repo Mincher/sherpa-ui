@@ -146,7 +146,7 @@ anatomy:
                 part: title-row
                 children:
                   - el: span
-                    class: view-icon
+                    class: view-icon sherpa-icon-box
                     part: view-icon
                     attrs:
                       aria-hidden: "true"
@@ -306,9 +306,7 @@ tokens:
   row-view.gap: "{sherpa.display-mode-space-2xs}"
   title-row.gap: "{sherpa.display-mode-space-xs}"
   title-row.min-block-size: "{sherpa.display-mode-size-lg}"
-  view-icon.inline-size: "{sherpa.theme-size-icon-xs}"
-  view-icon.block-size: "{sherpa.theme-size-icon-xs}"
-  view-icon.font-size: "{sherpa.theme-size-icon-xs}"
+  view-icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
   view-icon.color: "{sherpa.theme-content-body-1}"
   title.font-size: "{sherpa.font-size-body-large}"
   title.font-weight: "{sherpa.font-weight-regular}"

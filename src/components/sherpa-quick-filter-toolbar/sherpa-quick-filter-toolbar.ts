@@ -79,6 +79,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter-toolbar.css', import.meta.url);
   static override html = new URL('./sherpa-quick-filter-toolbar.html', import.meta.url);
 
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-no-actions': { type: 'boolean', kind: 'style' },
+  } as const;
+
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
   static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
 

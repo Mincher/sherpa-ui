@@ -7250,3 +7250,57 @@ categories, and reads as ON while any of them is.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-a-host-attribute-is-declared-once
+
+A `:host([data-x])` rule is a PUBLIC API: a host sets the attribute and the
+component restyles. Undeclared, it is a contract between the CSS and nothing —
+invisible to the TS, to the generated `.component.yaml`, and to any agent
+reading either.
+
+**65 of them were in that state, across 31 of 58 components.** Measured the
+moment anything looked: `data-align`, `data-gap` and five more on
+`sherpa-stack`; eight on `sherpa-app-header`; four on `sherpa-list-item`. Only
+27 components declared `static props` at all, holding 45 entries between them.
+
+They are now declared as `kind: 'style'`, which generates no DOM writes — it
+says the attribute is REAL. 576 Playwright tests stayed green, which is the
+point: the gap was never visible as a bug, only as a missing contract.
+
+`scripts/check-props.mjs` gates it. Three things it deliberately does not flag,
+because each is already named somewhere true:
+
+| | |
+|---|---|
+| `data-has-*` | the base class writes it from slot presence |
+| `[data-x]` with no `:host()` | an inner element — component-private |
+| `data-status`, `data-look`, `data-elevation`, `data-density`, `data-theme` | CASCADES. An ANCESTOR sets these and any component may read them, so declaring one would claim ownership it does not have |
+
+That last row is why `sherpa-select-checkbox` and `sherpa-select-radio` still
+carry an undeclared `:host([data-status])` and are right to.
+
+- Site: `scripts/check-props.mjs`
+
+### T-a-bare-name-must-be-used-not-mentioned
+
+The spec generator reads the `Public API:` comment, where a wrapped prose
+sentence reads exactly like an entry — `stretch — ONE wide control fills the
+row` is the tail of `data-align`'s description. So a bare (non-`data-*`) name
+must be FOUND in the code, in one of the spellings that means use: a CSS
+selector `[name`, an HTML attribute `name=`, a single-quoted `'name'`, or a
+`dataset` read.
+
+Declaring `data-align`'s values broke that guard. Every enum value arrives
+single-quoted — `values: ['start', 'end', 'between', 'stretch']` — which is
+the one spelling the check trusts, so the phantom `stretch` prop passed the
+test that exists to catch it, and `sherpa-container-footer` grew a second prop
+literally named `stretch`.
+
+The fix blanks `values: [...]` lists before the search. A DOUBLE-quoted match
+was already excluded for the same reason: `"stretch"` is a VALUE in
+`[data-align="stretch"]`.
+
+Worth remembering as a shape: a guard that reads the source for evidence gets
+weaker every time the source gains a new place to spell something.
+
+- Site: `scripts/generate-component-spec.mjs`

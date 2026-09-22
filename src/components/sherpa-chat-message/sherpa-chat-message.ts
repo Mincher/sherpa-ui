@@ -10,6 +10,12 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaChatMessage extends SherpaElement {
   static override css = new URL('./sherpa-chat-message.css', import.meta.url);
   static override html = new URL('./sherpa-chat-message.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-type': { type: 'enum', kind: 'style', values: ['assistant', 'system', 'user'] },
+  } as const;
   static override observed = [
     'data-name', 'data-timestamp', 'data-message',
     'data-author', 'data-time', 'data-content',

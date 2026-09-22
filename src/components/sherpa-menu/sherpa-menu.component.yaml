@@ -23,7 +23,7 @@ templates:
 anatomy:
   root:
     el: div
-    class: menu
+    class: menu sherpa-border-edges
     part: menu
     attrs:
       popover: auto
@@ -264,10 +264,6 @@ tokens:
   menu.padding: "{sherpa.theme-padding-md}"
   menu.padding-block-end: "{sherpa.theme-padding-sm}"
   menu.border-color: "{sherpa.style-border-base}"
-  menu.border-block-start-width: "{sherpa.border-top}"
-  menu.border-block-end-width: "{sherpa.border-bottom}"
-  menu.border-inline-start-width: "{sherpa.border-left}"
-  menu.border-inline-end-width: "{sherpa.border-right}"
   menu.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   menu.border-start-end-radius: "{sherpa.border-rounding-top-right}"
   menu.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
@@ -293,15 +289,13 @@ $extensions:
       - $type: method
         name: show
         args: "trigger?: HTMLElement"
-        description: Open the menu. Pass the trigger to place it under (and to measure against).
+        description: Open the menu under `trigger`, which is also what it measures against.
       - $type: method
         name: hide
         args: ""
-        description: Close the menu.
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"
-        description: Flip the menu open or shut.
     figmaNodeId: "1156:29240"
     category: overlay
     variantAxes:

@@ -77,10 +77,8 @@ props:
       with data-rows AND several body children: only the child marked data-grow takes the spare
       height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID,
       then the pager — the grid grows, the pager stays put. Not needed for the common one-child
-      card. The empty and error overlays are SLOT-DRIVEN (ratified D6): slot content into the empty
-      / error slot and the matching overlay shows automatically. There is no data-state attribute —
-      the base class reflects named-slot presence as data-has-{slot} on the host and CSS keys the
-      overlay off it.
+      card. No data-state attribute: slotting empty / error shows that overlay, via the base class
+      reflecting data-has-{slot}.
   - $type: prop
     name: data-loading
     type: string

@@ -18,6 +18,14 @@ export class SherpaQuickFilter extends SherpaElement {
   static override css = new URL('./sherpa-quick-filter.css', import.meta.url);
   static override html = new URL('./sherpa-quick-filter.html', import.meta.url);
   static override props = {
+    'data-icon-only': { type: 'boolean', kind: 'style' },
+    'data-indicator': { type: 'boolean', kind: 'style' },
+    'data-menu': { type: 'boolean', kind: 'style' },
+    'data-type': { type: 'enum', kind: 'style', values: ['ai'] },
+    'data-plain': { type: 'boolean', kind: 'style' },
+    'data-no-value': { type: 'boolean', kind: 'style' },
+    'data-full-value': { type: 'boolean', kind: 'style' },
+    'data-unsupported': { type: 'boolean', kind: 'style' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
   } as const;
 

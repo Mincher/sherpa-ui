@@ -51,10 +51,10 @@ anatomy:
               - slot: heading
                 children:
                   - el: span
-                    class: title
+                    class: title sherpa-truncate
                     part: title
               - el: span
-                class: description
+                class: description sherpa-truncate
                 part: description
           - el: div
             class: actions
@@ -202,6 +202,7 @@ tokens:
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
   actions.gap: "{sherpa.theme-gap-sm}"
+  toggle.transition: "{sherpa.motion-base}"
   metadata.gap: "{sherpa.theme-gap-lg}"
   metadata.padding: "{sherpa.theme-padding-md}"
   metadata.color: "{sherpa.theme-content-body-1}"

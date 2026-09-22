@@ -14,6 +14,10 @@ export class SherpaContainerHeader extends SherpaElement {
   static override css = new URL('./sherpa-container-header.css', import.meta.url);
   static override html = new URL('./sherpa-container-header.html', import.meta.url);
   static override props = {
+    'data-collapsible': { type: 'boolean', kind: 'style' },
+    'data-dismissible': { type: 'boolean', kind: 'style' },
+    'data-draggable': { type: 'boolean', kind: 'style' },
+    'data-type': { type: 'enum', kind: 'style', values: ['panel'] },
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     // A slotted icon wins over the data-icon glyph.

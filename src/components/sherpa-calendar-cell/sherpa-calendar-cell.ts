@@ -10,6 +10,13 @@ import { SherpaElement } from '../../core/sherpa-element.js';
 export class SherpaCalendarCell extends SherpaElement {
   static override css = new URL('./sherpa-calendar-cell.css', import.meta.url);
   static override html = new URL('./sherpa-calendar-cell.html', import.meta.url);
+
+  /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
+     rule is a public API and belongs in one place. */
+  static override props = {
+    'data-outside': { type: 'boolean', kind: 'style' },
+    'data-state': { type: 'enum', kind: 'style', values: ['range-end', 'range-mid', 'range-start', 'selected', 'today'] },
+  } as const;
   static override observed = ['data-label', 'disabled'];
 
   override onRender(): void {

@@ -28,6 +28,7 @@ export class SherpaToast extends SherpaElement {
   static override css = new URL('./sherpa-toast.css', import.meta.url);
   static override html = new URL('./sherpa-toast.html', import.meta.url);
   static override props = {
+    'data-stacked': { type: 'boolean', kind: 'style' },
     // The heading span holds a <slot>, so a slotted heading must survive —
     // TRAP T-slot-guards-only-when-filled. data-message is the legacy alias.
     'data-heading': {
