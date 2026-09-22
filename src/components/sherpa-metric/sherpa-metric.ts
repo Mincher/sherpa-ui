@@ -59,8 +59,14 @@ export class SherpaMetric extends SherpaElement {
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
-      const sign = data.deltaPercent > 0 ? '+' : '';
-      this.dataset['delta'] = `${sign}${data.deltaPercent}%`;
+      /* ONE decimal. Every caller used to pass a tidy literal like 3.1, so the
+         raw interpolation never showed — until a DERIVED delta arrived and the
+         tile read "-0.6211180124223602%". A percentage is a presentation
+         value, and this is the presentation.
+         TRAP T-a-delta-is-derived-not-declared */
+      const rounded = Number(data.deltaPercent.toFixed(1));
+      const sign = rounded > 0 ? '+' : '';
+      this.dataset['delta'] = `${sign}${rounded}%`;
     }
 
     const trend = data.trend ?? this.#deriveTrend(data.deltaPercent);

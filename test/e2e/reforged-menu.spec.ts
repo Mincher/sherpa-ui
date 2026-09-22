@@ -566,3 +566,57 @@ test('an open menu coalesces scroll repositioning into one frame', async ({ page
   // depends on how many frames the 250ms wait spans.
   expect(r.reads).toBeLessThan(20);
 });
+
+/**
+ * A DRAFT DIES WITH ITS MENU.
+ *
+ * A committing menu holds ticks as a draft until Apply. Closing any other way
+ * — Escape, clicking away — discards them, exactly as Cancel does.
+ *
+ * Without this the draft survived the close: the chip read `["Northwind"]`
+ * while `current` stayed false, so it LOOKED set and filtered nothing.
+ *
+ * TRAP T-a-draft-dies-with-its-menu
+ */
+test('a committing menu discards its draft when closed without Apply', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>; show?: (t?: HTMLElement) => void; hide?: () => void;
+      values: string[];
+    };
+    menu.setAttribute('data-commit', '');
+    menu.innerHTML =
+      '<label slot="menu"><input type="checkbox" value="a" />A</label>' +
+      '<label slot="menu"><input type="checkbox" value="b" />B</label>';
+    const trigger = document.createElement('button');
+    document.getElementById('root')!.append(trigger, menu);
+    await customElements.whenDefined('sherpa-menu');
+    await menu.rendered;
+
+    // Commit one value, so there is a baseline worth restoring.
+    menu.show?.(trigger);
+    await new Promise((res) => setTimeout(res, 200));
+    menu.values = ['a'];
+    const applied = menu.shadowRoot!.querySelector<HTMLElement>('.apply, [data-act="apply"]')
+      ?? Array.from(menu.shadowRoot!.querySelectorAll<HTMLElement>('sherpa-button'))
+        .find((b) => /apply/i.test(b.textContent ?? ''));
+    applied?.click();
+    await new Promise((res) => setTimeout(res, 250));
+    const committed = [...menu.values];
+
+    // Now tick a SECOND value and close WITHOUT applying.
+    menu.show?.(trigger);
+    await new Promise((res) => setTimeout(res, 200));
+    menu.values = ['a', 'b'];
+    const draft = [...menu.values];
+    menu.hide?.();
+    await new Promise((res) => setTimeout(res, 300));
+
+    return { committed, draft, afterClose: [...menu.values] };
+  });
+
+  expect(r.committed).toEqual(['a']);
+  expect(r.draft).toEqual(['a', 'b']);
+  // Back to what Apply last committed — the draft is gone, the commit is not.
+  expect(r.afterClose).toEqual(['a']);
+});

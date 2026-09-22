@@ -6,7 +6,7 @@ import {
   ArrayStore, DataSource, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  countBy, bandBy, seriesBy, reduceRows, bindLegendFilter,
+  countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindLegendFilter,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
@@ -105,24 +105,28 @@ export async function init(root) {
      the source even existed, so a filter never touched them. Each is now the
      same rows reduced a different way, and the sparkline is a real series over
      the day field rather than a drawn squiggle. */
-  show('#m-endpoints', (rows) => ({
-    label: 'Alerts', value: rows.length,
-    values: seriesBy(rows, 'day', DAY_ORDER, 'Alerts').values,
-  }));
-  show('#m-alerts', (rows) => ({
-    label: 'Critical', value: rows.filter((r) => r.severity === 'critical').length,
-    values: seriesBy(rows.filter((r) => r.severity === 'critical'),
-      'day', DAY_ORDER, 'Critical').values,
-  }));
-  show('#m-uptime', (rows) => ({
-    label: 'Mean storage', value: `${Math.round(reduceRows(rows, 'mean', 'storage'))}%`,
-    values: DAY_ORDER.map((d) =>
-      Math.round(reduceRows(rows.filter((r) => r.day === d), 'mean', 'storage'))),
-  }));
-  show('#m-patch', (rows) => ({
-    label: 'Categories', value: countBy(rows, 'category').length,
-    values: countBy(rows, 'category', { order: CATEGORY_ORDER }).map((d) => d.value),
-  }));
+  /* `deltaPercent` from the series the tile already draws. A tile handed only
+     a label and a value is GREY: it derives its trend from the delta and its
+     status from the trend, so without one there is nothing to colour.
+     TRAP T-a-delta-is-derived-not-declared */
+  const tile = (label, value, values) => ({
+    label, value, values, deltaPercent: deltaPercent(values) ?? undefined,
+  });
+
+  show('#m-endpoints', (rows) =>
+    tile('Alerts', rows.length, seriesBy(rows, 'day', DAY_ORDER, 'Alerts').values));
+  show('#m-alerts', (rows) => {
+    const critical = rows.filter((r) => r.severity === 'critical');
+    return tile('Critical', critical.length,
+      seriesBy(critical, 'day', DAY_ORDER, 'Critical').values);
+  });
+  show('#m-uptime', (rows) =>
+    tile('Mean storage', `${Math.round(reduceRows(rows, 'mean', 'storage'))}%`,
+      DAY_ORDER.map((d) =>
+        Math.round(reduceRows(rows.filter((r) => r.day === d), 'mean', 'storage')))));
+  show('#m-patch', (rows) =>
+    tile('Categories', countBy(rows, 'category').length,
+      countBy(rows, 'category', { order: CATEGORY_ORDER }).map((d) => d.value)));
 
   show('#bar', byCategory);
   show('#bar-legend', byCategory);

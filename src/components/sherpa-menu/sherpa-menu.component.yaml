@@ -53,29 +53,6 @@ anatomy:
             class: heading
             part: heading
           - slot: header
-          - el: span
-            class: header-actions
-            part: header-actions
-            children:
-              - el: sherpa-button
-                class: clear
-                part: clear
-                attrs:
-                  data-type: icon
-                  data-size: sm
-                  data-look: transparent
-                  data-icon-start: fa-solid fa-circle-xmark
-                  aria-label: Clear
-              - el: sherpa-button
-                class: remove
-                part: remove
-                attrs:
-                  data-type: icon
-                  data-size: sm
-                  data-look: transparent
-                  data-status: critical
-                  data-icon-start: fa-solid fa-trash
-                  aria-label: Remove
           - el: sherpa-input-text
             class: search
             part: search
@@ -102,6 +79,14 @@ anatomy:
           - el: sherpa-button
             class: today
             part: today
+          - el: sherpa-button
+            class: clear
+            part: clear
+          - el: sherpa-button
+            class: remove
+            part: remove
+            attrs:
+              data-status: critical
           - el: span
             class: footer-spacer
           - el: sherpa-button
@@ -198,14 +183,14 @@ states:
     name: search
     selector: ":host([data-search])"
   - $type: state
+    name: drill
+    selector: ":host([data-drill])"
+  - $type: state
     name: clearable
     selector: ":host([data-clearable])"
   - $type: state
     name: removable
     selector: ":host([data-removable])"
-  - $type: state
-    name: drill
-    selector: ":host([data-drill])"
   - $type: state
     name: calendar
     selector: ":host([data-type=\"calendar\"])"

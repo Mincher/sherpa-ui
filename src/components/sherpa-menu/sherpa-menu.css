@@ -69,26 +69,20 @@
 /* No `@supports (anchor-name)` block — see the positioning note at the top. */
 
 /* ── Header ──────────────────────────────────────────────────────────────
- * Two rows on every menu: [heading | Clear·Remove] then the control that
- * drives the card (a list's search field, a calendar's month stepper).
- * A grid, not a flex column, so the heading and the icon pair share row 1
- * with no extra wrapper element. */
+ * Two rows on every menu: the heading, then the control that drives the card
+ * (a list's search field, a calendar's month stepper). A grid, not a flex
+ * column, so the drill trail can replace the heading in place. */
 .header { display: none; }
-:host(:is([data-heading], [data-has-header], [data-search], [data-clearable], [data-removable])) .header {
+:host(:is([data-heading], [data-has-header], [data-search])) .header {
   display: grid;
-  grid-template-columns: 1fr auto;
   grid-template-areas:
-    "heading actions"
-    "control control";
+    "heading"
+    "control";
   align-items: center;
-  /* Bigger row gap than column gap: the two rows are different things, while
-     the heading and the icon pair beside it ARE one row. */
-  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
   row-gap: var(--sherpa-display-mode-space-sm, 12px);
   flex: 0 0 auto;
 }
 .header .heading { grid-area: heading; }
-.header-actions { grid-area: actions; }
 .header .search { grid-area: control; }
 .header ::slotted(*) { grid-area: control; }
 
@@ -163,15 +157,6 @@
 .remove,
 .footer-spacer { display: none; }
 
-/* ── Header actions ── Clear and Remove, icon-only, at the trailing edge. */
-.header-actions { display: none; }
-:host(:is([data-clearable], [data-removable])) .header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
-  flex: 0 0 auto;
-}
-
 /* Separate attributes: only a removable chip has anything to remove, only a
    menu holding a value has anything to clear. */
 :host([data-clearable]) .clear { display: inline-flex; }
@@ -187,14 +172,12 @@
   --_status-icon: var(--sherpa-theme-content-critical-1, #b72200);
 }
 
-/* A drilled header stacks its slotted control full width; the action pair is
-   chrome, not content, so it stays a hugging row. */
-:host([data-drill]) .header-actions { inline-size: auto; }
-
 /* A calendar keeps Today in the footer's left slot, as the node has it. */
 :host([data-type="calendar"]) .today { display: inline-flex; }
 
-:host([data-type="calendar"]) .footer-spacer {
+/* The spacer splits the row: filter actions lead, the commit pair trails. It
+   earns its place whenever BOTH sides are occupied. */
+:host(:is([data-type="calendar"], [data-clearable], [data-removable])) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -272,7 +255,9 @@
  * (Cancel·Apply), data-removable, data-clearable, Type=calendar (Today). Each
  * control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"])) .footer { display: block; }
+:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable])) .footer {
+  display: block;
+}
 
 /* Cancel and Apply are the COMMIT pair, gated separately now that Today and
    Remove can raise the row on their own. */

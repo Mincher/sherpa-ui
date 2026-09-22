@@ -2561,7 +2561,7 @@ ONE TOO HIGH with everything ticked.
 
 Its LABEL never moves either: the row used to say "Clear all" once everything
 was on, which made it both the select-all control AND the menu's clear — a
-second place to do what the header's Clear button does, and one that moved
+second place to do what the footer's Clear button does, and one that moved
 under the reader depending on what was ticked. `ALL_LABEL` is "Select all",
 always.
 
@@ -2682,7 +2682,7 @@ draft, the count and Cancel all behave as they always did.
 
 Unticking it EMPTIES the set, the way any checkbox unticks what it turned on —
 but the row never RELABELS itself to "Clear all", because emptying the menu is
-the header's Clear button and one action belongs in one place
+the footer's Clear button and one action belongs in one place
 (`T-select-all-is-not-a-value`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -2762,8 +2762,8 @@ same way a tick does.
 
 ### T-today-and-remove-are-menu-chrome
 
-Today and Remove are the menu's HEADER/FOOTER form of actions that are
-otherwise rows.
+Today and Remove are the menu's FOOTER form of actions that are otherwise
+rows.
 
 **Today.** The BUTTON is the menu's — Figma puts Today in the Calendar footer's
 `left` slot — while the BEHAVIOUR is the calendar's, so it calls the calendar's
@@ -7733,3 +7733,44 @@ function was the mistake.
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
+
+### T-a-delta-is-derived-not-declared
+
+`sherpa-metric` derives its TREND from `deltaPercent` and its STATUS from the
+trend (T-metric-status-follows-the-trend). So a tile handed only a `label` and
+a `value` is grey — there is nothing to colour.
+
+That is what happened when the dashboard's tiles stopped being a hardcoded
+table and became adapters over the source: each passed a label, a value and a
+sparkline series, and every tile lost its status ink.
+
+`deltaPercent(values)` in `aggregate.ts` computes it from the series the tile
+already draws — first point to last. `null` when there is nothing to compare:
+fewer than two points, or a first point of zero, where the change is undefined
+rather than infinite.
+
+**And round it.** The component interpolated the raw number, which never showed
+because every earlier caller passed a tidy literal like `3.1`. A derived delta
+arrived and the tile read `-0.6211180124223602%`. One decimal, in the
+component, because a percentage is a presentation value.
+
+- Site: `src/core/aggregate.ts`
+- Site: `src/components/sherpa-metric/sherpa-metric.ts`
+- Site: `examples/views/dashboard.js`
+
+### T-a-draft-dies-with-its-menu
+
+A committing menu holds its ticks as a DRAFT until Apply
+(T-commit-follows-select-mode). Cancel restored the baseline; closing any other
+way — Escape, clicking away — did not.
+
+So a reader who ticked "Northwind" and walked away left the chip holding
+`["Northwind"]` with `current` false: it LOOKED set and filtered nothing. Worse
+than no result, because the control disagreed with the data.
+
+The close branch of `#onToggle` now restores the baseline, guarded by an
+`#applying` flag so Apply and Cancel — which both call `hide()` — keep the
+values they just decided.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`

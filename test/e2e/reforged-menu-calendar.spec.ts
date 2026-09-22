@@ -210,8 +210,6 @@ test('a calendar heads its own two-row header; the footer buttons are default si
                  look: b.getAttribute('data-look'),
                  shown: getComputedStyle(b).display !== 'none' };
       };
-      // The CENTRE, not the top: the heading is 16 tall and the icon pair 24,
-      // and the grid centres both — same row, different tops.
       const rowOf = (c: string) => {
         const e = m.shadowRoot.querySelector('.' + c) as HTMLElement | null;
         if (!e) return null;
@@ -221,23 +219,23 @@ test('a calendar heads its own two-row header; the footer buttons are default si
       const stepper = m.querySelector('.cal-header') as HTMLElement | null;
       const out = {
         heading: getComputedStyle(m.shadowRoot.querySelector('.heading')!).display,
-        headingY: rowOf('heading'), actionsY: rowOf('header-actions'),
-        row1Bottom: (() => {
-          const a = m.shadowRoot.querySelector('.header-actions') as HTMLElement | null;
-          return a ? Math.round(a.getBoundingClientRect().bottom) : null;
-        })(),
+        headingY: rowOf('heading'),
+        row1Bottom: Math.round(
+          (m.shadowRoot.querySelector('.heading') as HTMLElement).getBoundingClientRect().bottom),
         headerW: Math.round((m.shadowRoot.querySelector('.header') as HTMLElement).getBoundingClientRect().width),
         stepper: stepper
           ? { y: Math.round(stepper.getBoundingClientRect().top),
               w: Math.round(stepper.getBoundingClientRect().width) }
           : null,
         ariaLabel: (m.shadowRoot.querySelector('.menu') as HTMLElement).getAttribute('aria-label'),
-        // The footer's LEFT position. Only a calendar fills it now (Today);
-        // Clear moved to the header, so a list footer's left slot is empty.
+        // The footer's LEFT position. Today is the calendar's; Clear leads the
+        // row on any menu that has it.
         today: btn('today'),
         cancel: btn('cancel'), apply: btn('apply'),
-        // The HEADER pair, icon-only at data-size="sm".
-        headerClear: btn('clear'),
+        clear: btn('clear'),
+        // Clear leads, Apply trails — the spacer splits them.
+        clearX: Math.round((m.shadowRoot.querySelector('.clear') as HTMLElement).getBoundingClientRect().left),
+        applyX: Math.round((m.shadowRoot.querySelector('.apply') as HTMLElement).getBoundingClientRect().left),
       };
       m.hide();
       return out;
@@ -250,22 +248,17 @@ test('a calendar heads its own two-row header; the footer buttons are default si
 
   // BOTH variants head their card. A calendar used to hide its heading on the
   // reasoning that the month button already names the view — but the month
-  // names the MONTH, while the heading names the FIELD ("Created"), and with
-  // the Clear/Remove pair in the header there was a row of unlabelled chrome
-  // sitting above the grid.
+  // names the MONTH, while the heading names the FIELD ("Created").
   expect(r.list.heading).not.toBe('none');
   expect(r.calendar.heading).not.toBe('none');
 
   // The name still reaches a screen reader from the card itself too.
   expect(r.calendar.ariaLabel).toBe('Created');
 
-  // A CALENDAR HEADER IS TWO ROWS: heading and the action pair share row 1, and
-  // the slotted stepper takes the whole of row 2. A list header is one row with
-  // nothing slotted into it.
-  expect(r.calendar.headingY).toBe(r.calendar.actionsY);
+  // A CALENDAR HEADER IS TWO ROWS: the heading, then the slotted stepper. A
+  // list header is one row with nothing slotted into it.
   expect(r.calendar.stepper!.y).toBeGreaterThan(r.calendar.headingY!);
-  // …with a row gap of the header's own 12, wider than the 4 between the
-  // heading and the icon pair sharing row 1.
+  // …with a row gap of the header's own 12.
   expect(r.calendar.stepper!.y - r.calendar.row1Bottom!).toBe(12);
   // …spanning the header's full width, so the month button stretches between
   // the two hugging arrows rather than the trio bunching at the start.
@@ -293,13 +286,15 @@ test('a calendar heads its own two-row header; the footer buttons are default si
   expect(r.calendar.today.size).toBeNull();
   expect(r.calendar.today.look).toBeNull();
 
-  // CLEAR IS THE HEADER'S NOW — icon-only, a size up from the drill-back's xs
-  // so the glyph is not lost beside a heading, and transparent because it is
-  // chrome in the header rather than a control in an action bar.
+  // CLEAR IS A FOOTER BUTTON — a labelled control in the action bar, so it is
+  // the DEFAULT look and size, not the transparent icon it was in the header.
+  // It LEADS the row; the commit pair trails behind the spacer.
   for (const shape of [r.list, r.calendar]) {
-    expect(shape.headerClear.shown).toBe(true);
-    expect(shape.headerClear.size).toBe('sm');
-    expect(shape.headerClear.look).toBe('transparent');
+    expect(shape.clear.shown).toBe(true);
+    expect(shape.clear.h).toBe(32);
+    expect(shape.clear.size).toBeNull();
+    expect(shape.clear.look).toBeNull();
+    expect(shape.clearX).toBeLessThan(shape.applyX);
   }
 });
 
@@ -407,8 +402,13 @@ test('the grid keeps one width across day / month / year, INSIDE a hugging menu'
   expect(r['month']!.gridW).toBe(r['day']!.gridW);
   expect(r['year']!.gridW).toBe(r['day']!.gridW);
 
-  // 7 day columns at the node's own 32.
-  expect(r['day']!.cols).toEqual([32, 32, 32, 32, 32, 32, 32]);
+  // 7 EQUAL day columns, flooring at the node's own 32. The grid FILLS the
+  // card, so a wider footer row widens the tracks rather than leaving a gap.
+  expect(r['day']!.cols).toHaveLength(7);
+  for (const c of r['day']!.cols) {
+    expect(c).toBeGreaterThanOrEqual(32);
+    expect(Math.abs(c - r['day']!.cols[0]!)).toBeLessThanOrEqual(0.1);
+  }
 
   // …and 3 EQUAL month/year columns, each a third of that same width. This is
   // the regression: with no stated width, 1fr collapsed to the widest label —
@@ -478,13 +478,13 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   });
 
   // Figma's two footers differ in exactly one position: the Calendar's `left`
-  // slot holds "Today", the List's is empty. Clear no longer competes for that
-  // position at all — it is an icon button in the HEADER — so a calendar shows
-  // both, each in its own region.
+  // slot holds "Today", the List's is empty. Clear leads the same row, after
+  // Today, so a calendar shows both.
   expect(r.calendar.today.shown).toBe(true);
   expect(r.calendar.clear.shown).toBe(true);
-  // …and the header's Clear sits ABOVE the footer's Today, not beside it.
-  expect(r.calendar.clear.y).toBeLessThan(r.calendar.today.y);
+  // …on ONE row now, Today first.
+  expect(r.calendar.clear.y).toBe(r.calendar.today.y);
+  expect(r.calendar.today.x).toBeLessThan(r.calendar.clear.x);
 
   // Today is on the LEFT, away from the pair a thumb reaches for.
   expect(r.calendar.today.x).toBeLessThan(r.calendar.cancel.x);
@@ -503,13 +503,13 @@ test('the calendar footer holds Today on the left, and it drives the calendar', 
   // It stays OPEN — Today picks a date, it does not commit one. Apply does that.
   expect(r.stillOpen).toBe(true);
 
-  // A LIST menu leaves the footer's left slot empty, as Figma has it, and a
-  // clearable one offers Clear from the header instead.
+  // A LIST menu leaves the footer's Today slot empty, as Figma has it, and a
+  // clearable one leads the same row with Clear.
   expect(r.listFooter.today.shown).toBe(false);
   expect(r.listFooter.clear.shown).toBe(true);
 });
 
-test('Remove is a header icon button; the footer keeps Today and the committing pair', async ({ page }) => {
+test('the footer holds all five: Today, Clear, Remove, then the committing pair', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate: (d: unknown) => void; shadowRoot: ShadowRoot;
@@ -556,7 +556,8 @@ test('Remove is a header icon button; the footer keeps Today and the committing 
         shown: getComputedStyle(b).display !== 'none',
         inHeader: header.contains(b),
         size: b.getAttribute('data-size'),
-        label: b.getAttribute('aria-label'),
+        look: b.getAttribute('data-look'),
+        label: (b.textContent ?? '').trim(),
       };
     };
     const before = {
@@ -583,28 +584,31 @@ test('Remove is a header icon button; the footer keeps Today and the committing 
     expect(b.shown).toBe(true);
   }
 
-  // REMOVE IS THE HEADER'S, with Clear beside it. The footer is left with the
-  // three buttons Figma's Calendar variant actually has.
-  expect(r.before.clear.inHeader).toBe(true);
-  expect(r.before.remove.inHeader).toBe(true);
-  expect(r.before.today.inHeader).toBe(false);
-  expect(r.before.cancel.inHeader).toBe(false);
-  expect(r.before.apply.inHeader).toBe(false);
+  // ALL FIVE ARE THE FOOTER'S — the header holds the heading and the stepper
+  // and nothing else.
+  for (const b of [r.before.clear, r.before.remove, r.before.today,
+                   r.before.cancel, r.before.apply]) {
+    expect(b.inHeader).toBe(false);
+  }
 
-  // Clear first, then Remove — the reversible action before the destructive one.
+  // ONE row, in order: Today, Clear, Remove — the reversible action before the
+  // destructive one — then the committing pair behind the spacer.
+  for (const b of [r.before.clear, r.before.remove, r.before.cancel, r.before.apply]) {
+    expect(b.y).toBe(r.before.today.y);
+  }
+  expect(r.before.today.x).toBeLessThan(r.before.clear.x);
   expect(r.before.clear.x).toBeLessThan(r.before.remove.x);
-  // Both icon-only at data-size="sm", named for a screen reader by aria-label
-  // because there is no text to read.
-  for (const b of [r.before.clear, r.before.remove]) expect(b.size).toBe('sm');
+  expect(r.before.remove.x).toBeLessThan(r.before.cancel.x);
+  expect(r.before.cancel.x).toBeLessThan(r.before.apply.x);
+
+  // Labelled, default size and DEFAULT look — an action-bar control, not the
+  // transparent icon each was while it lived in the header.
+  for (const b of [r.before.clear, r.before.remove]) {
+    expect(b.size).toBeNull();
+    expect(b.look).toBeNull();
+  }
   expect(r.before.clear.label).toBe('Clear');
   expect(r.before.remove.label).toBe('Remove');
-
-  // The header sits ABOVE the footer, so the pair never competes with Apply.
-  expect(r.before.remove.y).toBeLessThan(r.before.apply.y);
-
-  // Today, then the committing pair.
-  expect(r.before.today.x).toBeLessThan(r.before.cancel.x);
-  expect(r.before.cancel.x).toBeLessThan(r.before.apply.x);
 
   // THE CARD STILL HOLDS ITS FOOTER. A calendar card hugs its content, and
   // under `max-content` it once sized to the day GRID alone, letting the footer
@@ -667,7 +671,16 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
         cancel: shown(date, '.cancel'),
         apply: shown(date, '.apply'),
       },
-      plain: { commits: plain.hasAttribute('data-commit'), footer: shown(plain, '.footer') },
+      plain: {
+        commits: plain.hasAttribute('data-commit'),
+        clearable: plain.hasAttribute('data-clearable'),
+        footer: shown(plain, '.footer'),
+        clear: shown(plain, '.clear'),
+        today: shown(plain, '.today'),
+        remove: shown(plain, '.remove'),
+        cancel: shown(plain, '.cancel'),
+        apply: shown(plain, '.apply'),
+      },
     };
   });
 
@@ -685,8 +698,14 @@ test('an auto-applying date chip keeps Today and Remove, and drops only Cancel/A
   expect(r.date.cancel).toBe(false);
   expect(r.date.apply).toBe(false);
 
-  // A menu with nothing for the row shows no row.
-  expect(r.plain.footer).toBe(false);
+  // A non-persistent chip is CLEARABLE, and Clear lives in the row now, so the
+  // row is up holding Clear alone — nothing else in it.
+  expect(r.plain.clearable).toBe(true);
+  expect(r.plain.footer).toBe(true);
+  expect(r.plain.clear).toBe(true);
+  for (const s of [r.plain.today, r.plain.remove, r.plain.cancel, r.plain.apply]) {
+    expect(s).toBe(false);
+  }
 });
 
 /**

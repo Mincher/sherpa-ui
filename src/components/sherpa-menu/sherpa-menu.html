@@ -65,22 +65,6 @@
       <p class="heading" part="heading"></p>
       <slot name="header"></slot>
       <!--
-        Clear and Remove act on the filter, not on the draft, so they sit here
-        rather than beside Apply. Both glyphs are free-tier Font Awesome — a Pro
-        glyph renders NOTHING in this webfont, with no warning. Remove's critical
-        ink is re-stated in CSS: a bare [data-status] rule in tokens.css reaches
-        the document only, never a shadow root.
-      -->
-      <span class="header-actions" part="header-actions">
-        <sherpa-button class="clear" part="clear" data-type="icon" data-size="sm"
-                       data-look="transparent" data-icon-start="fa-solid fa-circle-xmark"
-                       aria-label="Clear"></sherpa-button>
-        <sherpa-button class="remove" part="remove" data-type="icon" data-size="sm"
-                       data-look="transparent" data-status="critical"
-                       data-icon-start="fa-solid fa-trash"
-                       aria-label="Remove"></sherpa-button>
-      </span>
-      <!--
         SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
         is nothing here to restyle. It filters the rows the menu already has, so a
         row hidden by a search keeps its ticked state and comes back with it.
@@ -109,7 +93,15 @@
     <sherpa-container-footer class="footer" part="footer" data-align="end">
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
-      <!-- Clear and Remove moved out of here into header-actions. -->
+      <!--
+        Clear and Remove act on the filter, not on the draft, so they lead the
+        row, separated from Cancel·Apply by the spacer. Default look — NOT
+        transparent — as Figma pins them. Remove's critical ink is re-stated in
+        CSS: a bare [data-status] rule in tokens.css reaches the document only,
+        never a shadow root.
+      -->
+      <sherpa-button class="clear" part="clear">Clear</sherpa-button>
+      <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>
       <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>

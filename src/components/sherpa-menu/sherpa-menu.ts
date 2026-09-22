@@ -295,6 +295,12 @@ export class SherpaMenu extends SherpaElement {
       const card = this.#card();
       if (card) this.#cardResize.observe(card);
     } else {
+      /* A COMMITTING menu holds ticks as a DRAFT until Apply. Closing any other
+         way — clicking away, Escape — discards them, exactly as Cancel does.
+         Without this the draft survived: the chip read ["Northwind"] while
+         `current` stayed false, so it LOOKED set and filtered nothing.
+         TRAP T-a-draft-dies-with-its-menu */
+      if (this.#commits && !this.#applying) this.values = this.#baseline;
       this.#openAc?.abort();
       this.#openAc = null;
       this.#cardResize?.disconnect();
@@ -390,19 +396,26 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-commit');
   }
 
+  /** True while Apply or Cancel is closing the card — they own the values. */
+  #applying = false;
+
   #onApply = (): void => {
     // Apply rewrites the baseline Cancel would restore.
+    this.#applying = true;
     this.#baseline = this.values;
     this.emit('menu-apply', { values: this.values });
     this.emit('menu-change', { values: this.values });
     this.hide();
+    this.#applying = false;
   };
 
   #onCancel = (): void => {
     // Restore, THEN report.
+    this.#applying = true;
     this.values = this.#baseline;
     this.emit('menu-cancel', {});
     this.hide();
+    this.#applying = false;
   };
 
   /** Empty the selection and report it — the checkboxes AND a slotted
@@ -424,7 +437,7 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  /** Remove — the header-button form of a `<button value="remove">` row. */
+  /** Remove — the footer-button form of a `<button value="remove">` row. */
   #onRemove = (): void => {
     this.emit('menu-select', { value: 'remove', label: 'Remove' });
     this.hide();

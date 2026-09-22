@@ -159,6 +159,7 @@ export {
   bandBy,
   seriesBy,
   reduceRows,
+  deltaPercent,
   type Aggregate,
   type AggregateOptions,
   type Series,

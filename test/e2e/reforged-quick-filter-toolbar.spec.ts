@@ -844,7 +844,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     const healthMenu = health.querySelector('sherpa-menu')!;
     await (healthMenu as unknown as { rendered: Promise<void> }).rendered;
     const removeBtn = healthMenu.shadowRoot!.querySelector('.remove') as HTMLElement;
-    const removeLabel = removeBtn.getAttribute('aria-label');
+    const removeLabel = (removeBtn.textContent ?? '').trim();
     removeBtn.click();
     await new Promise((res) => setTimeout(res, 200));
 

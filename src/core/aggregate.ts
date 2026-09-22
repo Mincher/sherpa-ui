@@ -145,6 +145,27 @@ export function bandBy(
   }));
 }
 
+/**
+ * The change from the first point to the last, as a percentage.
+ *
+ * A metric tile derives its TREND from this, and its status from the trend
+ * (T-metric-status-follows-the-trend) — so a tile handed only a label and a
+ * value is grey, whatever the numbers did. The dashboard's tiles were exactly
+ * that after they stopped being hardcoded.
+ *
+ * `null` when there is nothing to compare: fewer than two points, or a first
+ * point of zero, where the change is undefined rather than infinite.
+ *
+ * TRAP T-a-delta-is-derived-not-declared
+ */
+export function deltaPercent(values: readonly number[]): number | null {
+  if (values.length < 2) return null;
+  const first = values[0]!;
+  const last = values[values.length - 1]!;
+  if (!Number.isFinite(first) || !Number.isFinite(last) || first === 0) return null;
+  return ((last - first) / Math.abs(first)) * 100;
+}
+
 /* ── Series ────────────────────────────────────────────────────────────── */
 
 /** One named line, as `sherpa-line-chart` takes it. */
