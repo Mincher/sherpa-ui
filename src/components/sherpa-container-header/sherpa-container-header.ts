@@ -6,7 +6,7 @@
  *
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaContainerHeader extends SherpaElement {

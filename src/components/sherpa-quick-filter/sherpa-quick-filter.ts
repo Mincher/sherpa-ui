@@ -4,12 +4,12 @@
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
-import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/store.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/data/store.js';
 import {
   fieldState, filterFace, type FilterFace, type FilterState,
-} from '../../core/filter-state.js';
-import { NON_VALUE_ROWS } from '../../core/icons.js';
+} from '../../core/data/filter-state.js';
+import { NON_VALUE_ROWS } from '../../core/ui/icons.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
 

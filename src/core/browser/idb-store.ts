@@ -15,10 +15,10 @@ import {
   type LoadOptions,
   type LoadResult,
   type Row,
-} from './store.js';
-import { ValidationError } from './validate.js';
+} from '../data/store.js';
+import { ValidationError } from '../data/validate.js';
 // Key, schema guard, totalCount, announce. TRAP T-one-class-to-catch
-import { BaseStore, type StoreOptions } from './base-store.js';
+import { BaseStore, type StoreOptions } from '../data/base-store.js';
 
 /* ── Options ───────────────────────────────────────────────────────────── */
 

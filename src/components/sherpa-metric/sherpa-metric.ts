@@ -3,7 +3,7 @@
  *
  * @method populate(data: MetricData) — the single data path
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {

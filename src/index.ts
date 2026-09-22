@@ -5,7 +5,7 @@
  * styles. The design-token layer (light DOM) is loaded separately via a
  * `<link>`/`@import` of tokens.css, or programmatically with `installTokens()`.
  */
-import { SherpaElement } from './core/sherpa-element.js';
+import { SherpaElement } from './core/ui/sherpa-element.js';
 
 /**
  * Font Awesome 6 (free) CDN. Icons use `fa-solid fa-<name>` classes.
@@ -61,11 +61,11 @@ export function installTokens(): void {
   document.head.appendChild(link);
 }
 
-export { SherpaElement } from './core/sherpa-element.js';
+export { SherpaElement } from './core/ui/sherpa-element.js';
 // CONFIGURE a live element through its own API — the parity door a saved view,
 // a preset and an agent's MCP call all go through.
 // TRAP T-state-is-the-saved-view-half.
-export { applyState, type Populatable } from './core/apply-state.js';
+export { applyState, type Populatable } from './core/ui/apply-state.js';
 // A saved view's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input.
 export {
@@ -73,9 +73,9 @@ export {
   checkViewMarkup,
   type MarkupReport,
   type ParseResult,
-} from './core/view-markup.js';
+} from './core/browser/view-markup.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
-export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
+export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
 
 /* …and the functions that PRODUCE one. Re-exported here so a browser app that
    already imports components does not need the second entry point as well;
@@ -90,17 +90,19 @@ export {
   type Aggregate,
   type AggregateOptions,
   type Series,
-} from './core/aggregate.js';
+} from './core/data/aggregate.js';
 // The app-level state store: what an app knows about ITSELF — theme, selected
 // customer, open panel — addressed by JSON pointer so one value can have many
 // readers.
 export {
   SessionStore,
+  SessionList,
+  type ListOptions as SessionListOptions,
   type PersistOptions as SessionPersistOptions,
-} from './core/session.js';
+} from './core/browser/session.js';
 export {
   getPointer, setPointer, pointersOverlap,
-} from './core/pointer.js';
+} from './core/data/pointer.js';
 /* ── Data layer ──────────────────────────────────────────────────────── */
 /* ── Data layer ────────────────────────────────────────────────────────
    Re-exported WHOLESALE from the headless entry point rather than listed

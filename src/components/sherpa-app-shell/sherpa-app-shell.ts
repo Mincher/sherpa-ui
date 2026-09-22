@@ -4,7 +4,7 @@
  * CSS owns the inset past the overlaying nav rail; this file only mirrors the
  * rail's state onto the host.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);

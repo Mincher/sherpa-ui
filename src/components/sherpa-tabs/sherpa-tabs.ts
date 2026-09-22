@@ -6,7 +6,7 @@
  * @prop {string} currentId — currently active tab id (read/write)
  * @method select(id) — activate a tab by id
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export interface TabDef {
   id: string;

@@ -4,7 +4,7 @@
  * Options come from the `options` slot or from populate(); either way they live
  * in the host's LIGHT DOM.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 

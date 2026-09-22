@@ -16,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const core = new URL('../../dist/core/', import.meta.url);
+const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
 

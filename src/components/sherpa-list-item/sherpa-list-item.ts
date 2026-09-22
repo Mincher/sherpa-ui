@@ -14,7 +14,7 @@
  *
  * @tier sub-component
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);

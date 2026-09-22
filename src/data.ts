@@ -52,7 +52,7 @@ export {
   type SortSpec,
   type Store,
   type StoreChangeDetail,
-} from './core/store.js';
+} from './core/data/store.js';
 export {
   ArrayStore,
   HttpError,
@@ -64,7 +64,7 @@ export {
   type LocalStoreOptions,
   type RestStoreOptions,
   type StoreOptions,
-} from './core/stores.js';
+} from './core/data/stores.js';
 // The REAL local store — IndexedDB. Browser-only in behaviour, headless-SAFE to
 // import: `IdbStore.available` is false in Node and every method rejects rather
 // than throwing at module scope.
@@ -73,7 +73,7 @@ export {
   IdbStore,
   IdbValidationError,
   type IdbStoreOptions,
-} from './core/idb-store.js';
+} from './core/browser/idb-store.js';
 // A view's state kept locally for speed and pushed onward on a schedule.
 // TRAP T-local-first-then-onward.
 export {
@@ -83,14 +83,14 @@ export {
   type SyncOptions,
   type ViewRemote,
   type ViewSync,
-} from './core/view-sync.js';
+} from './core/browser/view-sync.js';
 export {
   DataSource,
   type BindOptions,
   type DataChangeDetail,
   type DataSourceOptions,
   type ViewState,
-} from './core/data-source.js';
+} from './core/data/data-source.js';
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
 export {
@@ -100,7 +100,7 @@ export {
   type PersistOptions, type ViewSnapshot, type ApplyReport,
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
   type SavedViewStore,
-} from './core/persist-view.js';
+} from './core/browser/persist-view.js';
 export {
   EventStore,
   SocketStore,
@@ -108,7 +108,7 @@ export {
   type LiveStoreOptions,
   type PushMessage,
   type SocketStoreOptions,
-} from './core/live-stores.js';
+} from './core/data/live-stores.js';
 export {
   custom,
   email,
@@ -131,7 +131,7 @@ export {
   type Rule,
   type RuleMap,
   type StandardSchema,
-} from './core/validate.js';
+} from './core/data/validate.js';
 // The session store and JSON pointers: app-level state, addressed by pointer.
 // Headless — `persist()` degrades to "nothing kept" with no storage.
 export {
@@ -139,10 +139,10 @@ export {
   SessionList,
   type ListOptions as SessionListOptions,
   type PersistOptions as SessionPersistOptions,
-} from './core/session.js';
-export { getPointer, setPointer, pointersOverlap } from './core/pointer.js';
+} from './core/browser/session.js';
+export { getPointer, setPointer, pointersOverlap } from './core/data/pointer.js';
 // The one datum shape every chart and legend shares.
-export type { ChartDatum, LegendDatum } from './core/chart-datum.js';
+export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
 
 /* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
    so a server can pre-compute it, an MCP tool can answer "count by category",
@@ -155,7 +155,7 @@ export {
   sortDirectionAttr,
   sortDirectionFrom,
   type SortState,
-} from './core/cycle.js';
+} from './core/data/cycle.js';
 
 export {
   aggregateBy,
@@ -167,7 +167,7 @@ export {
   type Aggregate,
   type AggregateOptions,
   type Series,
-} from './core/aggregate.js';
+} from './core/data/aggregate.js';
 
 /* A legend toggle is a FILTER — the rule, with no DOM.
    TRAP T-a-legend-toggle-is-a-filter */
@@ -176,7 +176,7 @@ export {
   bindLegendFilter,
   type LegendFilterOptions,
   type LegendFilterBinding,
-} from './core/legend-filter.js';
+} from './core/data/legend-filter.js';
 
 /* TWO SCOPES: a view filter narrows everything, a component filter narrows one
    component and extends the view without altering it.
@@ -188,7 +188,7 @@ export {
   type ScopedFilter,
   type Scope,
   type Promotion,
-} from './core/filter-scope.js';
+} from './core/data/filter-scope.js';
 
 /* ONE state per filtered field — what a chip, its menu, a column heading and
    that heading's menu all read, so none of them derives its own answer.
@@ -204,4 +204,4 @@ export {
   type FieldFacts,
   type FieldReading,
   type FilterFace,
-} from './core/filter-state.js';
+} from './core/data/filter-state.js';

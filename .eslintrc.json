@@ -117,18 +117,11 @@
       // uses of HTMLElement — a type annotation is erased at compile time and
       // never runs, which is why data-source.ts is on this list despite naming
       // HTMLElement in a signature.
-      "files": [
-        "src/core/store.ts",
-        "src/core/base-store.ts",
-        "src/core/cycle.ts",
-        "src/core/validate.ts",
-        "src/core/pointer.ts",
-        "src/core/chart-datum.ts",
-        "src/core/format-tick.ts",
-        "src/core/live-stores.ts",
-        "src/core/data-source.ts",
-        "src/core/aggregate.ts"
-      ],
+      // The FOLDER is the rule. A hand-kept list of filenames protected a
+      // module the day someone remembered to add it; three DOM-free modules
+      // had drifted outside it. A new file in src/core/data is covered the
+      // moment it lands.
+      "files": ["src/core/data/**/*.ts"],
       "rules": {
         "no-restricted-globals": [
           "error",
@@ -158,9 +151,9 @@
       // between the two: a module that may legitimately touch storage is
       // listed here, and one that may not is listed there.
       "files": [
-        "src/core/stores.ts",
-        "src/core/idb-store.ts",
-        "src/core/view-sync.ts"
+        "src/core/data/stores.ts",
+        "src/core/browser/idb-store.ts",
+        "src/core/browser/view-sync.ts"
       ],
       "rules": {
         "no-restricted-globals": [

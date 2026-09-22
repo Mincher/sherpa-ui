@@ -204,7 +204,7 @@ test('step tracker: data-current-step="0" marks the first step active', async ({
 
 test('coerceNum: absent, empty and unparseable all mean ABSENT; a real 0 survives', async ({ page }) => {
   const got = await page.evaluate(async () => {
-    const { coerceNum } = (await import('/dist/core/sherpa-element.js')) as unknown as {
+    const { coerceNum } = (await import('/dist/core/ui/sherpa-element.js')) as unknown as {
       coerceNum: (raw: string | null | undefined, fb: number, o?: { min?: number; max?: number; int?: boolean }) => number;
     };
     return {

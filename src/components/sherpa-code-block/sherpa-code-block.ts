@@ -10,7 +10,7 @@
  * derived from the code's line count (CSS reveals the gutter — JS only fills it).
  *
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaCodeBlock extends SherpaElement {
   static override css = new URL('./sherpa-code-block.css', import.meta.url);

@@ -3,7 +3,7 @@
  *
  * CSS owns the look and all per-type visibility; JS only wires the buttons.
  */
-import { DATA_PROPS, SherpaElement } from '../../core/sherpa-element.js';
+import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaGridCell extends SherpaElement {
   static override css = new URL('./sherpa-grid-cell.css', import.meta.url);

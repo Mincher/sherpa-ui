@@ -6,7 +6,7 @@
  *
  * @prop {boolean} open — whether the disclosure is expanded (delegates to <details>)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaAccordion extends SherpaElement {
   static override css = new URL('./sherpa-accordion.css', import.meta.url);

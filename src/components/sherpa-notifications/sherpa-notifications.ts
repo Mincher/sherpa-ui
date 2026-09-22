@@ -14,7 +14,7 @@
  *   feed.connect();
  *
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-button/sherpa-button.js';

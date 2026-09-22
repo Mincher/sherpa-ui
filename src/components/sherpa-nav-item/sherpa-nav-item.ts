@@ -7,17 +7,17 @@
  *   data-label       label / heading text
  *   data-badge       trailing badge / count text
  *   data-status-dot  render the trailing chip as a small success/online dot
- *   data-expandable  show a trailing expand chevron
- *   data-expanded    expanded state — rotates the chevron (toggled on chevron click)
+ *   data-expandable  a PARENT row: the whole row toggles, and it opens nothing
+ *   data-expanded    expanded state — rotates the chevron
  *   data-description promo description (promo variant only)
  *   data-current     current item in the nav set
- *   data-href        render the row as a link
+ *   data-href        render the row as a link — IGNORED while data-expandable
  *   data-type     "promo" for the CTA row
  *   disabled         disabled state
  *
  * @tier sub-component
  */
-import { SherpaElement, markMatch } from '../../core/sherpa-element.js';
+import { SherpaElement, markMatch } from '../../core/ui/sherpa-element.js';
 
 let uid = 0;
 
@@ -104,7 +104,10 @@ export class SherpaNavItem extends SherpaElement {
 
     const link = this.$<HTMLAnchorElement>(promo ? '.promo-link' : '.nav-link');
     if (link) {
-      const href = this.dataset['href'];
+      /* An EXPANDABLE row keeps no href even when one is configured: it opens
+         nothing, so a middle-click or a screen reader must not be told it is a
+         link. TRAP T-an-expandable-row-is-not-a-destination */
+      const href = this.hasAttribute('data-expandable') ? undefined : this.dataset['href'];
       if (href) link.setAttribute('href', href);
       else link.removeAttribute('href');
     }
@@ -207,13 +210,10 @@ export class SherpaNavItem extends SherpaElement {
   }
 
   #onClick = (event: MouseEvent): void => {
-    // TRAP T-composed-path-not-target — a host listener sees a RETARGETED target,
-    // so the chevron must be found in the composed path.
-    const path = event.composedPath();
-    const onChevron = path.some(
-      (n) => n instanceof Element && n.classList.contains('expand'),
-    );
-    if (this.hasAttribute('data-expandable') && onChevron) {
+    /* AN EXPANDABLE ROW IS NOT A DESTINATION. The whole row toggles, not just
+       the chevron: a parent groups its children, and the views are the children.
+       TRAP T-an-expandable-row-is-not-a-destination */
+    if (this.hasAttribute('data-expandable')) {
       event.preventDefault();
       event.stopPropagation();
       this.#toggleExpand();

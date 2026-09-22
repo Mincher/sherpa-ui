@@ -21,10 +21,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
  * one contract. `data-locked` is excluded: it is the guard, not a value.
  * TRAP T-the-shared-vocabulary-is-declared-once
  */
-const ELEMENT_TS = readFileSync(join(ROOT, 'src/core/sherpa-element.ts'), 'utf8');
+const ELEMENT_TS = readFileSync(join(ROOT, 'src/core/ui/sherpa-element.ts'), 'utf8');
 const DATA_PROPS_BLOCK = /export const DATA_PROPS = \{([\s\S]*?)\n\} as const/.exec(ELEMENT_TS);
 if (!DATA_PROPS_BLOCK) {
-  console.error('check-ownership: DATA_PROPS not found in src/core/sherpa-element.ts');
+  console.error('check-ownership: DATA_PROPS not found in src/core/ui/sherpa-element.ts');
   process.exit(1);
 }
 const OWNED = [...DATA_PROPS_BLOCK[1].matchAll(/'(data-[\w-]+)':/g)]

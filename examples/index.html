@@ -26,7 +26,10 @@
            [star | Save | caret] group; the records view's toolbar is data type.
            data-reset-on-populate: these filters belong to the VIEW, so the last
            view's picks must not carry into the next. -->
-      <sherpa-quick-filter-toolbar slot="filters" data-type="view"
+      <!-- data-locked: the ★ is a REQUEST here. The favourites list lives in the
+           session store and paints the nav rail, so the app answers by setting
+           data-favourite back. TRAP T-the-star-reports-it-does-not-decide -->
+      <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-locked
                                    data-reset-on-populate></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
@@ -65,6 +68,27 @@
     const viewRoot = document.getElementById('view-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
 
+    /* App state that outlives a view swap. Declared here because the view
+       loader reads /nav/pinned before the theme block further down runs. */
+    const session = new SessionStore({
+      theme: { mode: document.documentElement.dataset.mode ?? 'light' },
+      nav: { pinned: false, favorites: [], recent: [] },
+    });
+    session.persist('/theme/mode');
+    session.persist('/nav/pinned');
+
+    /* Favourites and Recents are STORED ROWS, not views, so a stored shape this
+       release cannot read must be dropped rather than stamped into the rail. */
+    const isRowList = (value) => Array.isArray(value)
+      && value.every((e) => e && typeof e === 'object' && typeof e.view === 'string');
+    session.persist('/nav/favorites', { guard: isRowList });
+    session.persist('/nav/recent', { guard: isRowList });
+
+    /* `by: view` is the identity: starring Records twice is one favourite, and
+       re-visiting a view MOVES it up the Recents list instead of repeating it. */
+    const favorites = session.list('/nav/favorites', { by: 'view' });
+    const recents = session.list('/nav/recent', { by: 'view', max: 5, front: true });
+
     // Shared nav config. An icon is a NAME from the Figma set; an `fa-*` class
     // list still resolves through the alias table. A name the set does not hold
     // prints as its own text, so it must be one that exists.
@@ -76,6 +100,8 @@
         // The component's default Home carries no href — it cannot know where a
         // product's home lives — so the app supplies it.
         { id: 'home', label: 'Home', icon: 'fa-solid fa-house', href: '?view=dashboard' },
+        /* Recent and Favorites are PARENTS. Their children are stamped from the
+           stored lists by refreshNav() below, so they start empty here. */
         { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
         { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
       ],
@@ -102,7 +128,8 @@
     const idForView  = (v) => `view-${v}`;
 
     /** The id of whichever nav row points at this view. settingsSections counts:
-     * Preferences is a real row opening a real view. */
+     * Preferences is a real row opening a real view. Children are deliberately
+     * NOT walked: a Favorites copy of Records must not out-rank the real row. */
     const navRowIdForView = (view) => {
       const all = [...(navConfig.quickItems ?? []),
                    ...(navConfig.sections ?? []).flatMap((s) => s.items ?? []),
@@ -115,6 +142,18 @@
     const HEADLESS_VIEWS = {
       chat: { label: 'Assistant' },
     };
+
+    /** What a stored Favourite or Recent row remembers about a view. The LABEL
+     *  is copied, so a stored row still reads if the config later drops it. */
+    const rowForView = (view) => ({
+      view,
+      label: navConfig.quickItems
+        .concat((navConfig.sections ?? []).flatMap((s) => s.items ?? []))
+        .concat((navConfig.settingsSections ?? []).flatMap((s) => s.items ?? []))
+        .find((i) => viewForHref(i.href) === view)?.label
+        ?? HEADLESS_VIEWS[view]?.label
+        ?? view,
+    });
 
     /* Write the rail's CURRENT row onto the header. The rail is asked what it
        shows rather than the config being read twice. */
@@ -147,8 +186,11 @@
       nav.dataset.activeId = navRowIdForView(name) ?? idForView(name);
 
       /* Through the rail's OWN setter, not a raw dataset write: the setter
-         announces the change, so the app-shell's content inset follows. */
-      nav.state = name === 'settings' ? 'settings' : 'collapsed';
+         announces the change, so the app-shell's content inset follows.
+         A PINNED rail is the reader's choice and survives the swap. */
+      nav.state = name === 'settings' ? 'settings'
+                : session.get('/nav/pinned') ? 'pinned'
+                : 'collapsed';
 
       // 1) Fetch the bespoke content-only markup for the view.
       const markup = await (await fetch(`/template/view/${name}`)).text();
@@ -172,6 +214,12 @@
       if (token !== loadToken) return;
 
       cleanup = await mod.init(viewRoot);
+
+      /* Recorded LAST, so a view that failed to load never enters Recents. The
+         list caps itself at 5 and moves a re-visit up. */
+      recents.add(rowForView(name));
+      // The star shows whether THIS view is already a favourite.
+      syncFavouriteStar(name);
     }
 
     // Populate the shared nav once.
@@ -179,7 +227,71 @@
     /* AWAITED below: populate() defers to the component's render promise, so
        calling it is not the same as the rows existing — and the header reads its
        title off a stamped ROW. */
-    const navReady = nav.populate(navConfig);
+    /* A child row's id must be STABLE and distinct from the view's own row, or
+       starring Records would give two rows claiming id `view-records` and
+       `data-active-id` would light both. */
+    const childId = (parent, view) => `${parent}:${view}`;
+
+    /** A stored row → a nav child. No icon: TRAP T-nav-child-rows-carry-no-icon. */
+    const toChild = (parent) => (row) =>
+      ({ id: childId(parent, row.view), label: row.label, href: `?view=${row.view}` });
+
+    /* Re-stamp the two dynamic parents. A re-populate rebuilds every row, so the
+       reader's OPEN parents must be read back first and handed to the next
+       config — otherwise starring a view snaps its own branch shut. */
+    function refreshNav() {
+      const wasOpen = new Set(
+        nav.shadowRoot?.querySelectorAll('.nav-row[data-expanded="true"]') ?? [],
+      );
+      const openIds = new Set([...wasOpen].map((r) => r.dataset.id));
+
+      for (const item of navConfig.quickItems) {
+        if (item.id !== 'recent' && item.id !== 'favorites') continue;
+        const list = item.id === 'recent' ? recents : favorites;
+        const children = list.all.map(toChild(item.id));
+        // A parent with no children is a plain row, not an empty expander.
+        if (children.length) {
+          item.children = children;
+          item.expanded = openIds.has(item.id);
+        } else {
+          delete item.children;
+          delete item.expanded;
+        }
+      }
+      return nav.populate(navConfig);
+    }
+
+    const navReady = refreshNav();
+
+    /* Both lists paint the SAME rail, so one subscriber each and no other code
+       needs to know a row was added. */
+    favorites.subscribe(() => void refreshNav());
+    recents.subscribe(() => void refreshNav());
+
+    /* ── The ★ ────────────────────────────────────────────────────────
+       The toolbar is `data-locked`, so its star is a REQUEST. The app owns the
+       list, answers by writing data-favourite back, and the rail follows from
+       the list's own subscriber. TRAP T-the-star-reports-it-does-not-decide */
+    const viewToolbar = () => document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
+
+    function syncFavouriteStar(view) {
+      viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ view }));
+    }
+
+    document.addEventListener('view-favorite', () => {
+      const view = viewFromURL();
+      favorites.toggle(rowForView(view));
+      syncFavouriteStar(view);
+    });
+
+    /* The rail REPORTS its mode; the app owns whether the pin is remembered.
+       Settings is a temporary detour, so only the two latching-vs-not modes
+       write. `hover` is a pointer state and never touches the stored value. */
+    nav.addEventListener('nav-state-change', (e) => {
+      const state = e.detail.state;
+      if (state === 'pinned') session.set('/nav/pinned', true);
+      else if (state === 'collapsed') session.set('/nav/pinned', false);
+    });
 
     /* Rows that open no view (Recent, Favorites) never reach the router, so the
        rail's own event updates the header for both cases. */
@@ -277,9 +389,6 @@
 
        The SessionStore holds it and `persist` remembers it, restoring on
        registration so there is no flash of the wrong theme. */
-    const session = new SessionStore({ theme: { mode: document.documentElement.dataset.mode ?? 'light' } });
-    session.persist('/theme/mode');
-
     /* The button shows what you will GET: a moon offers dark, a sun offers
        light. `data-mode` lives on <html>, which the header's shadow CSS cannot
        select, so the glyph is set here. ONE subscriber does both jobs, so

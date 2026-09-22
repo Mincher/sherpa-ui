@@ -15,7 +15,7 @@ import { join, basename } from 'node:path';
 import { chromium } from '@playwright/test';
 
 const DIR = 'src/icons';
-const OUT = 'src/core/icon-paths.ts';
+const OUT = 'src/core/ui/icon-paths.ts';
 
 const files = readdirSync(DIR).filter((f) => f.endsWith('.svg')).sort();
 if (files.length === 0) {

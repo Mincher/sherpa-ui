@@ -3,14 +3,14 @@
  *
  * TRAP T-actions-were-a-slot
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
-import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/icons.js';
+import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,
   type FilterClause, type FilterOp,
-} from '../../core/store.js';
-import { fieldState, stateClause, type FilterState } from '../../core/filter-state.js';
+} from '../../core/data/store.js';
+import { fieldState, stateClause, type FilterState } from '../../core/data/filter-state.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';

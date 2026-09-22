@@ -30,7 +30,7 @@ const RESTORE = `
 test('every access survives a store that throws on touch', async ({ page }) => {
   const r = await page.evaluate(async ({ block, restore }) => {
     const { readText, writeText, readJson, writeJson, removeKey } =
-      (await import('/dist/core/web-storage.js')) as {
+      (await import('/dist/core/browser/web-storage.js')) as {
         readText: (k: string, key: string) => string | null;
         writeText: (k: string, key: string, v: string) => void;
         readJson: <T>(k: string, key: string, fallback: T) => T;
@@ -65,7 +65,7 @@ test('every access survives a store that throws on touch', async ({ page }) => {
 
 test('a stored value this code cannot read is FORGOTTEN, not returned', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const { readJson } = (await import('/dist/core/web-storage.js')) as {
+    const { readJson } = (await import('/dist/core/browser/web-storage.js')) as {
       readJson: <T>(k: string, key: string, fallback: T, guard?: (v: unknown) => boolean) => T;
     };
 

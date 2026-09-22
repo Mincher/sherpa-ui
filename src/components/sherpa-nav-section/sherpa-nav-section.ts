@@ -7,7 +7,7 @@
  *
  * @tier sub-component
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaNavSection extends SherpaElement {
   static override css = new URL('./sherpa-nav-section.css', import.meta.url);

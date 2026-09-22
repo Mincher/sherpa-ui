@@ -5,7 +5,7 @@
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaDialog extends SherpaElement {
   static override css = new URL('./sherpa-dialog.css', import.meta.url);

@@ -4,8 +4,8 @@
  *
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatValue } from '../../core/format-tick.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { formatValue } from '../../core/data/format-tick.js';
 
 /** Fixed point slots; SLOTS-1 segments between them. */
 const SLOTS = 8;

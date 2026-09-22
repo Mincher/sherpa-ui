@@ -9,15 +9,15 @@
  */
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
-} from '../../core/sherpa-element.js';
-import { ORGANISE_ICONS } from '../../core/icons.js';
-import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle.js';
+} from '../../core/ui/sherpa-element.js';
+import { ORGANISE_ICONS } from '../../core/ui/icons.js';
+import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import {
   filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
-} from '../../core/store.js';
+} from '../../core/data/store.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
-} from '../../core/store.js';
+} from '../../core/data/store.js';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';

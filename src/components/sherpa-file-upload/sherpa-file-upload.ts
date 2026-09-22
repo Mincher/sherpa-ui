@@ -3,7 +3,7 @@
  *
  * CSS owns the drag highlight and the disabled look; JS holds the files.
  */
-import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);

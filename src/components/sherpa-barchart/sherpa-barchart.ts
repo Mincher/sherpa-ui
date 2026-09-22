@@ -4,9 +4,9 @@
  *
  * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
  */
-import type { ChartDatum } from '../../core/chart-datum.js';
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/format-tick.js';
+import type { ChartDatum } from '../../core/data/chart-datum.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
 
 /** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;

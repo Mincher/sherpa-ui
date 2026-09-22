@@ -9,9 +9,9 @@
  * TRAP T-legend-caps-at-six-and-rolls-up
  * TRAP T-rollup-row-has-its-own-prototype
  */
-import type { LegendDatum } from '../../core/chart-datum.js';
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { seriesBorderVar, seriesVar } from '../../core/format-tick.js';
+import type { LegendDatum } from '../../core/data/chart-datum.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { seriesBorderVar, seriesVar } from '../../core/data/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';

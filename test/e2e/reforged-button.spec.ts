@@ -190,3 +190,60 @@ test('a disabled TRANSPARENT button dims its ink instead of growing a grey box',
   // The DEFAULT look keeps Figma's inactive treatment: dark ink on grey.
   expect(r.plain.bg).toBe('rgb(179, 179, 195)');
 });
+
+/* ── A trigger button and its slotted menu ───────────────────────────── */
+
+test('a click opens the slotted menu and marks the button open', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
+    el.textContent = 'Options';
+    // appendChild, not `innerHTML +=`: re-parsing would throw away the label node.
+    const m = document.createElement('sherpa-menu');
+    m.setAttribute('slot', 'menu');
+    m.innerHTML = '<button value="a" type="button">A</button>';
+    el.appendChild(m);
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const menu = m as HTMLElement & { open: boolean; rendered?: Promise<void> };
+    await menu.rendered;
+    const trigger = el.shadowRoot!.querySelector('.trigger') as HTMLElement;
+    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+
+    const state = () => ({
+      open: menu.open,
+      active: el.hasAttribute('data-open'),
+      expanded: trigger.getAttribute('aria-expanded'),
+    });
+
+    trigger.click();
+    await settled();
+    const opened = state();
+
+    /* The SECOND click. A real pointer light-dismisses the popover BEFORE the
+       click arrives, so `data-open` — not the menu — decides.
+       TRAP T-a-trigger-click-follows-light-dismiss */
+    trigger.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true }));
+    trigger.click();
+    await settled();
+    const closed = state();
+
+    return { opened, closed };
+  });
+
+  expect(r.opened).toEqual({ open: true, active: true, expanded: 'true' });
+  expect(r.closed).toEqual({ open: false, active: false, expanded: 'false' });
+});
+
+test('a button with no menu still just reports its click', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-button') as HTMLElement & { rendered?: Promise<void> };
+    el.textContent = 'Save';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    let clicks = 0;
+    el.addEventListener('button-click', () => { clicks += 1; });
+    (el.shadowRoot!.querySelector('.trigger') as HTMLElement).click();
+    return { clicks, active: el.hasAttribute('data-open') };
+  });
+  expect(r).toEqual({ clicks: 1, active: false });
+});

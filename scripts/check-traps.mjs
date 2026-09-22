@@ -14,6 +14,8 @@ const SOURCES = [
   'src/*.ts',
   'src/components/*/*.ts',
   'src/core/*.ts',
+  // src/core is split by RUNTIME TIER — data, browser, ui.
+  'src/core/*/*.ts',
   'src/components/*/*.css',
   // A citation in a TEMPLATE was invisible: the comment is the only place some
   // structural rules are written down, and one went undefined for months.

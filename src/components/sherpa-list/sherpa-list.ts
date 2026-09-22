@@ -6,7 +6,7 @@
  *   data-type  (default — dividers between rows) | bordered | plain (no dividers)
  *   data-empty    empty-state message (shown when no rows are present)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 interface ListRow {
   title: string;

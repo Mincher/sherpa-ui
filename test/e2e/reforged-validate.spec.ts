@@ -17,7 +17,7 @@ test('rules() builds a Standard Schema, and reports the first failure per field'
   const r = await page.evaluate(async () => {
     const { rules, required, email, min, number, isValid, isSchema, issuesFor } =
       (await import('/dist/index.js')) as unknown as Record<string, never> &
-        typeof import('../../src/core/validate.js');
+        typeof import('../../src/core/data/validate.js');
 
     const schema = rules({
       // TWO rules on one field: they run IN ORDER and stop at the first that
@@ -73,7 +73,7 @@ test('a rule may be ASYNC, and runs through the same door', async ({ page }) => 
   const r = await page.evaluate(async () => {
     const { rules, custom, validate } = (await import(
       '/dist/index.js'
-    )) as unknown as typeof import('../../src/core/validate.js');
+    )) as unknown as typeof import('../../src/core/data/validate.js');
 
     // "Is this username taken?" is the case this exists for — a check that has
     // to ask something else, with no second mechanism to learn.
@@ -105,8 +105,8 @@ test('a store with a schema refuses a bad write and never announces it', async (
   const r = await page.evaluate(async () => {
     const { ArrayStore, rules, required, min, ValidationError } = (await import(
       '/dist/index.js'
-    )) as unknown as typeof import('../../src/core/stores.js') &
-      typeof import('../../src/core/validate.js');
+    )) as unknown as typeof import('../../src/core/data/stores.js') &
+      typeof import('../../src/core/data/validate.js');
 
     const store = new ArrayStore([{ id: 1, name: 'Ada' }], {
       schema: rules({ name: [required(), min(3)] }),
@@ -172,7 +172,7 @@ test('a store WITHOUT a schema is unchanged', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { ArrayStore } = (await import(
       '/dist/index.js'
-    )) as unknown as typeof import('../../src/core/stores.js');
+    )) as unknown as typeof import('../../src/core/data/stores.js');
 
     // No schema means no check, so this cannot break a caller that had none.
     const store = new ArrayStore([]);

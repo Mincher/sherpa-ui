@@ -3,7 +3,7 @@
  *
  * Separators are drawn by CSS. The last crumb is the current page, so no link.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export interface Crumb {
   label: string;

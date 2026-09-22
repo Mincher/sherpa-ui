@@ -3,7 +3,7 @@
  *
  * JS holds the steps and the current index; CSS draws done / active / to-do.
  */
-import { SherpaElement, coerceNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
 
 export interface Step {
   label: string;

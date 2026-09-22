@@ -3,7 +3,7 @@
  *
  * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';

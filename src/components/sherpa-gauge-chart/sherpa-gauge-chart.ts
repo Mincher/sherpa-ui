@@ -4,8 +4,8 @@
  * TRAP T-gauge-band-is-a-closed-path — the constants below are path geometry,
  * not style.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, radialArea, ringSegmentPath } from '../../core/format-tick.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {

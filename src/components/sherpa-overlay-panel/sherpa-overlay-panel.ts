@@ -6,7 +6,7 @@
  *
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 // Defined before the template stamps them.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';

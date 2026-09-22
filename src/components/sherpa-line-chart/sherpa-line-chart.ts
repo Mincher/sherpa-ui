@@ -2,8 +2,8 @@
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  * CSS owns colour, fill and width.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/format-tick.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 /** Gridlines when data-ticks is absent. */

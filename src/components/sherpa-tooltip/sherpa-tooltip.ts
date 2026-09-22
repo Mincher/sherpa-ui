@@ -3,7 +3,7 @@
  *
  * Ordinary mode is pure CSS; JS runs only for floating (top-layer) mode.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 let uid = 0;
 

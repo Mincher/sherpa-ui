@@ -4,7 +4,7 @@
  * @prop {boolean} checked  — whether the switch is on (delegates to the inner input)
  * @prop {boolean} disabled — disabled state (reflects host attr + inner input)
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);

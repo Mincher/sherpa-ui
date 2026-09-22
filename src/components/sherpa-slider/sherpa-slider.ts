@@ -7,7 +7,7 @@
  * @prop {number} value — the current value (read/write, clamped to min/max)
  * @prop {[number, number]} range — the two ends (read/write); low end first
  */
-import { SherpaElement, coerceNum, clampNum } from '../../core/sherpa-element.js';
+import { SherpaElement, coerceNum, clampNum } from '../../core/ui/sherpa-element.js';
 
 interface SliderData {
   value?: number;

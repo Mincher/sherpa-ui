@@ -174,7 +174,7 @@ function compileTs(def, name, cls) {
   } else {
     L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ...behaviourLines, ` * Generated from ${name}.component.yaml. @fires ${fires}`, ` */`);
   }
-  L.push(`import { SherpaElement } from '../../core/sherpa-element.js';`, '');
+  L.push(`import { SherpaElement } from '../../core/ui/sherpa-element.js';`, '');
   L.push(`export class ${cls} extends SherpaElement {`);
   L.push(`  static override css = new URL('./${name}.css', import.meta.url);`);
   L.push(`  static override html = new URL('./${name}.html', import.meta.url);`);

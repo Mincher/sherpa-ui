@@ -3,9 +3,9 @@
  *
  * JS carries text and value; CSS owns the look and all visibility.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
-import { renderIcon, hasIcon } from '../../core/render-icon.js';
-import { validateField, type FieldRules } from '../../core/validate.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
+import { validateField, type FieldRules } from '../../core/data/validate.js';
 
 /** Mirrored verbatim from the host onto the inner control. */
 const MIRRORED = [

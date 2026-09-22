@@ -3,7 +3,7 @@
  *
  * Enter submits, Shift+Enter newlines. Empty text is never submitted.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 const MAX_HEIGHT = 160;
 

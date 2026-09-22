@@ -4,7 +4,7 @@
  *
  * TRAP T-nav-state-writes-only-the-attribute
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 /** What a stamped row shows. `icon` is undefined on a child row. */
 export interface NavRowInfo {

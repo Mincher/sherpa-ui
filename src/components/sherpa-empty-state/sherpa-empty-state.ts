@@ -6,7 +6,7 @@
  * line (data-small-print or a slotted small-print). CSS handles the icon and what
  * shows; JS only writes the heading, message, and small-print text.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaEmptyState extends SherpaElement {
   static override css = new URL('./sherpa-empty-state.css', import.meta.url);

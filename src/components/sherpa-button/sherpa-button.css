@@ -152,6 +152,20 @@
 
 :host(:focus-visible) { outline: none; }
 
+/* ── Its menu is open ────────────────────────────────────────────────────
+ * The ACTIVE Style mode, the same one the favourite star and an on chip wear.
+ * Real focus is inside the menu, so `:focus-visible` is false — the ring is
+ * drawn from here instead.
+ */
+:host([data-open]) {
+  /* The icons and badge read --_content, so the re-point must happen here. */
+  --_surface: var(--sherpa-theme-surface-active-base, #f2dfff);
+  --_content: var(--sherpa-theme-content-active-1, #8300b6);
+  --_border: var(--sherpa-theme-border-active-2, #c046ff);
+}
+
+:host([data-open]) .trigger { box-shadow: var(--sherpa-focus-ring); }
+
 /* ── Icon-only (square) ─────────────────────────────────────────────────── */
 
 :host([data-type="icon"]) .trigger {

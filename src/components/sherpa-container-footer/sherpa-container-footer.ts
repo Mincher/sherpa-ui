@@ -5,7 +5,7 @@
  *
  * Fires: nothing — slotted controls emit their own events.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaContainerFooter extends SherpaElement {
   static override css = new URL('./sherpa-container-footer.css', import.meta.url);

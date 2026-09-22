@@ -5,7 +5,7 @@
  * data-author / data-time / data-content are back-compat aliases for
  * data-name / data-timestamp / data-message.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaChatMessage extends SherpaElement {
   static override css = new URL('./sherpa-chat-message.css', import.meta.url);

@@ -5,7 +5,7 @@
  *
  * @prop {number} value — the current percentage (read/write, clamped 0–100)
  */
-import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
+import { SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
 
 interface ProgressData {
   value?: number;

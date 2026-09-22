@@ -10,7 +10,7 @@
  *
  * No events — this is a display-only component.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export interface KeyValuePair {
   key: string;

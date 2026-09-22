@@ -2,8 +2,8 @@
  * persist-view.ts — keep a view across a reload, and save named views.
  * TRAP T-persist-defaults-per-tab
  */
-import type { DataSource, ViewState } from './data-source.js';
-import { applyState } from './apply-state.js';
+import type { DataSource, ViewState } from '../data/data-source.js';
+import { applyState } from '../ui/apply-state.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
   isPlainObject, readJson, removeKey, writeJson, type StorageKind,

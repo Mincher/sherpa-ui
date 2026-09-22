@@ -5,7 +5,7 @@
  * Figma's `State` axis has one selected-range variant; the code widens it into
  * start | mid | end, because only the corners that MEET a neighbour are squared.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaCalendarCell extends SherpaElement {
   static override css = new URL('./sherpa-calendar-cell.css', import.meta.url);

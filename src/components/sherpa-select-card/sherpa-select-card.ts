@@ -5,7 +5,7 @@
  * and stay in sync; radio grouping is by hand, as native grouping cannot cross
  * shadow roots.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 

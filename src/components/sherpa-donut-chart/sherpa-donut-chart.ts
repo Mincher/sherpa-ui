@@ -5,9 +5,9 @@
  * stroked circle can express neither the full border nor the rounded corners.
  * TRAP T-hiding-a-series-rescales-the-axis — the rest re-share the full circle.
  */
-import type { ChartDatum } from '../../core/chart-datum.js';
-import { SherpaElement } from '../../core/sherpa-element.js';
-import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/format-tick.js';
+import type { ChartDatum } from '../../core/data/chart-datum.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type DonutSlice = ChartDatum;

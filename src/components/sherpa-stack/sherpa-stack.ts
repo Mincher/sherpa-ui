@@ -4,7 +4,7 @@
  * No JS: direction, gap, alignment and wrapping are all [data-*] selectors in
  * the CSS. The class exists only to give the element a shadow root and sheet.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaStack extends SherpaElement {
   static override css = new URL('./sherpa-stack.css', import.meta.url);

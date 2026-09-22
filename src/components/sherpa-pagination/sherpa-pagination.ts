@@ -6,7 +6,7 @@
  * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
-import { SherpaElement, clampNum } from '../../core/sherpa-element.js';
+import { SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaPagination extends SherpaElement {

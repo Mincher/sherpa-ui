@@ -13,7 +13,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const core = new URL('../../dist/core/', import.meta.url);
+const core = new URL('../../dist/core/data/', import.meta.url);
 const { nextSort, nextToggle, sortDirectionAttr, sortDirectionFrom } =
   await import(new URL('cycle.js', core));
 

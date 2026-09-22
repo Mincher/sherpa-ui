@@ -7,7 +7,7 @@
  * close button, which fires callout-dismiss.
  *
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaCallout extends SherpaElement {
   static override css = new URL('./sherpa-callout.css', import.meta.url);

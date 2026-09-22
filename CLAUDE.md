@@ -154,7 +154,7 @@ connections and saved views with no components and no DOM, for a server, a test
 or an MCP tool. `npm run lint` enforces the boundary; a node test proves the
 entry point stays clean.
 
-### `SherpaElement` base class (`src/core/sherpa-element.ts`)
+### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 
 All components extend this. It handles template fetching (with class-level cache), shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support.
 

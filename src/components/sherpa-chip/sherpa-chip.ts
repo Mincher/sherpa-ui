@@ -6,7 +6,7 @@
  * (data-dismissible), which fires chip-remove so the app can remove it, plus
  * mirroring the data-icon glyph value.
  */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 export class SherpaChip extends SherpaElement {
   static override css = new URL('./sherpa-chip.css', import.meta.url);

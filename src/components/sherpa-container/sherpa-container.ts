@@ -1,5 +1,5 @@
 /** sherpa-container — the base card. CSS owns style, padding and state. */
-import { SherpaElement } from '../../core/sherpa-element.js';
+import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
 interface ContainerState {
   /** Only loading is settable. empty/error are slot-driven, not state. */

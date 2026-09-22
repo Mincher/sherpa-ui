@@ -368,7 +368,8 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
     // fires when the menu commits, which its own test covers.
     const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
-    return { seen, addIsButton: add.localName, addExpanded: add.getAttribute('aria-expanded') };
+    const expanded = () => add.shadowRoot!.querySelector('button')!.getAttribute('aria-expanded');
+    return { seen, addIsButton: add.localName, addExpanded: expanded() };
   }, MOUNT);
 
   expect(r.seen).toEqual([
@@ -377,7 +378,45 @@ test('every cluster button fires the event Figma names for it', async ({ page })
   ]);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');
-  expect(r.addExpanded).toBe('false');
+  // Nothing has opened it, so the trigger has not yet said either way.
+  expect(r.addExpanded).toBe(null);
+});
+
+test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
+  const r = await page.evaluate(async (mount) => {
+    // eslint-disable-next-line no-new-func
+    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+    const el = await mountToolbar('view') as HTMLElement & { available?: (d: unknown) => void };
+    const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    // The Add menu is only stamped when something is LEFT to add.
+    el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
+    await settled();
+
+    const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
+    const trigger = add.shadowRoot!.querySelector('button') as HTMLElement;
+    const menu = add.querySelector('sherpa-menu') as HTMLElement & { open: boolean };
+    const state = () => ({
+      open: menu.open,
+      active: add.hasAttribute('data-open'),
+      expanded: trigger.getAttribute('aria-expanded'),
+    });
+
+    trigger.click();
+    await settled();
+    const opened = state();
+
+    /* The SECOND click. A real pointer light-dismisses the popover before the
+       click lands, which is the case `.click()` alone does not reproduce. */
+    trigger.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true }));
+    trigger.click();
+    await settled();
+    const closed = state();
+
+    return { opened, closed };
+  }, MOUNT);
+
+  expect(r.opened).toEqual({ open: true, active: true, expanded: 'true' });
+  expect(r.closed).toEqual({ open: false, active: false, expanded: 'false' });
 });
 
 test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
@@ -396,6 +435,8 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
         on: el.hasAttribute('data-favourite'),
         icon: star.getAttribute('data-icon-start'),
         pressed: star.getAttribute('aria-pressed'),
+        // The DRAWING, not the name — TRAP T-favourite-star-swaps-its-glyph.
+        d: star.shadowRoot?.querySelector('svg path')?.getAttribute('d') ?? null,
       };
     };
     return { first: await press(), second: await press(), detail };
@@ -403,8 +444,14 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
 
   // The GLYPH carries the state too (outline → solid), so it survives for anyone
   // who cannot tell the brand purple from the default ink.
-  expect(r.first).toEqual({ on: true, icon: 'fa-solid fa-star', pressed: 'true' });
-  expect(r.second).toEqual({ on: false, icon: 'fa-regular fa-star', pressed: 'false' });
+  expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true' });
+  expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false' });
+  /* The PATH must differ. Asserting the name alone is what let the two states
+     resolve to one outline drawing for three months — `fa-solid fa-star` and
+     `fa-regular fa-star` both lose their weight token in `iconName()`. */
+  expect(r.first.d).toBeTruthy();
+  expect(r.second.d).toBeTruthy();
+  expect(r.first.d).not.toBe(r.second.d);
   expect(r.detail).toEqual([true, false]);
 });
 

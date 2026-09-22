@@ -11,7 +11,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const core = new URL('../../dist/core/', import.meta.url);
+// The DATA tier — src/core is split by where a module can run.
+const core = new URL('../../dist/core/data/', import.meta.url);
 const { aggregateBy, countBy, bandBy, seriesBy, reduceRows } =
   await import(new URL('aggregate.js', core));
 

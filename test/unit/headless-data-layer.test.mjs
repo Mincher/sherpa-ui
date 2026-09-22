@@ -20,7 +20,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const core = new URL('../../dist/core/', import.meta.url);
+// The DATA tier — src/core is split by where a module can run.
+const core = new URL('../../dist/core/data/', import.meta.url);
 const { ArrayStore } = await import(new URL('stores.js', core));
 const { DataSource } = await import(new URL('data-source.js', core));
 const { applyOptions, filterRows, sortRows, filterFields } = await import(new URL('store.js', core));
@@ -493,7 +494,7 @@ test('O5: setFilter and setState REPLACE, clearing the parts with them', async (
 });
 
 test('maxRows keeps a live feed bounded, oldest out', async () => {
-  const { ArrayStore } = await import('../../dist/core/stores.js');
+  const { ArrayStore } = await import('../../dist/core/data/stores.js');
 
   // A feed capped at three, filled with five.
   const feed = new ArrayStore([], { key: 'id', maxRows: 3 });
@@ -521,8 +522,8 @@ test('maxRows keeps a live feed bounded, oldest out', async () => {
 });
 
 test('several live stores can feed ONE shared store', async () => {
-  const { ArrayStore } = await import('../../dist/core/stores.js');
-  const { EventStore } = await import('../../dist/core/live-stores.js');
+  const { ArrayStore } = await import('../../dist/core/data/stores.js');
+  const { EventStore } = await import('../../dist/core/data/live-stores.js');
 
   /* THE POINT OF `into`: alerts, builds and deploys arriving on three
      connections and appearing in ONE list. Without it each live store makes its
@@ -641,7 +642,7 @@ test('IdbStore is importable headless and REPORTS its absence rather than preten
      preferences: a missing preference is a default. It is WRONG for records.
      An app that writes a customer into a store which silently kept nothing and
      reported success has lost the customer, so this one rejects. */
-  const { IdbStore } = await import('../../dist/core/idb-store.js');
+  const { IdbStore } = await import('../../dist/core/browser/idb-store.js');
 
   // Merely importing must not throw — a module that reached `indexedDB` at
   // module scope would take a server down on import.
@@ -670,7 +671,7 @@ test('syncViews works with no IndexedDB, no storage and no remote', async () => 
   /* TRAP T-local-first-then-onward. The whole point of three tiers is that
      losing the lower two leaves the top one working. In Node BOTH lower tiers
      are gone, which is the harshest version of that and the easiest to test. */
-  const { syncViews } = await import('../../dist/core/view-sync.js');
+  const { syncViews } = await import('../../dist/core/browser/view-sync.js');
 
   const errors = [];
   const sync = syncViews('records', { onError: (e, stage) => errors.push(stage) });
@@ -691,7 +692,7 @@ test('syncViews pushes to a remote, debounced, and a failed push is REPORTED not
      burst of edits must be ONE request (T-sync-pushes-a-snapshot-not-a-diff),
      and a rejecting server must not break the local save
      (T-local-first-then-onward). */
-  const { syncViews } = await import('../../dist/core/view-sync.js');
+  const { syncViews } = await import('../../dist/core/browser/view-sync.js');
 
   const pushes = [];
   let failNext = false;
@@ -739,7 +740,7 @@ test('RestStore sends the query to the server and trusts the answer', async () =
      plan says build those on demand; testing the seam itself is not speculative.
 
      `fetch` is a Node global, so this runs headless with a stub and no server. */
-  const { RestStore } = await import('../../dist/core/stores.js');
+  const { RestStore } = await import('../../dist/core/data/stores.js');
 
   const calls = [];
   const realFetch = globalThis.fetch;
@@ -793,7 +794,7 @@ test('RestStore sends the query to the server and trusts the answer', async () =
 });
 
 test('a custom buildQuery is the seam a backend translator plugs into', async () => {
-  const { RestStore } = await import('../../dist/core/stores.js');
+  const { RestStore } = await import('../../dist/core/data/stores.js');
 
   const calls = [];
   const realFetch = globalThis.fetch;
@@ -836,8 +837,8 @@ test('a custom buildQuery is the seam a backend translator plugs into', async ()
 });
 
 test('sample checks the first N rows on a read, and writes are always full', async () => {
-  const { ArrayStore } = await import('../../dist/core/stores.js');
-  const { rules, required } = await import('../../dist/core/validate.js');
+  const { ArrayStore } = await import('../../dist/core/data/stores.js');
+  const { rules, required } = await import('../../dist/core/data/validate.js');
   const schema = rules({ name: required() });
 
   /* WHY: a schema on a bulk load costs real time — measured at 100,000 rows,
@@ -880,8 +881,8 @@ test('sample checks the first N rows on a read, and writes are always full', asy
 });
 
 test('a sample never reorders or loses rows', async () => {
-  const { ArrayStore } = await import('../../dist/core/stores.js');
-  const { rules, required } = await import('../../dist/core/validate.js');
+  const { ArrayStore } = await import('../../dist/core/data/stores.js');
+  const { rules, required } = await import('../../dist/core/data/validate.js');
 
   // 200 good rows, a sample of 10. Every row must come back, in order — the
   // checked head and the unchecked tail are one list, not two.

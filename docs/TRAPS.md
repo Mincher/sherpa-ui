@@ -50,7 +50,7 @@ around it with a deferred replay queue (`customLabels`), holding property writes
 until after the whole run is appended. `renderItems()` avoids it by construction:
 attributes only, written before append.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -147,7 +147,7 @@ Read `this.signal` inside `onRender`/`onConnect`; never cache it in a field.
 
 Related: a variant re-stamp does NOT abort it. See `T-restamp-does-not-abort`.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
 
 ### T-restamp-does-not-abort
@@ -164,7 +164,7 @@ component wired in `onConnect`, which does not run again.
 
 A component that needs `this.signal` should wire in `onRender`, never `onConnect`.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
@@ -187,7 +187,7 @@ whitespace, unparseable — as ABSENT. A real `0` survives.
 
 Do not "simplify" it back to `Number(x) || fallback`.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-resize-reschedule-never-drop
 
@@ -216,7 +216,7 @@ place would defeat it — which is why `ArrayStore` copies (`[...rows]`) rather
 than sorting the caller's array. That is a cross-module contract recorded
 nowhere else.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-schema-sample-cost
 
@@ -230,7 +230,7 @@ would disagree. Sample only when the schema purely VALIDATES.
 
 Writes are always checked in full.
 
-- Site: `src/core/base-store.ts`
+- Site: `src/core/data/base-store.ts`
 
 ---
 
@@ -264,7 +264,7 @@ reading as a menu affordance rather than "this column can be sorted". `fa-sort`
 is the neutral pair the state actually means.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/render-icon.ts`
+- Site: `src/core/ui/render-icon.ts`
 
 ### T-actions-were-a-slot
 
@@ -630,7 +630,7 @@ flicker. It stays off, and the menu is where a column is chosen.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/core/cycle.ts`
+- Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-add-menu-batches
@@ -680,7 +680,7 @@ component's own ratified noun-verb events (`sort-change`, `page-change`…). One
 filter change re-populates every bound component, so the grid's own header arrow
 and the toolbar's Sort chip become two views of one value.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-into-merges-on-the-element
 
@@ -706,7 +706,7 @@ handed back, not rebuilt, so a component holding the previous object still sees
 the update; the rows-identity guard upstream already decides whether a push is
 worth making at all.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-signal-not-a-teardown-list
 
@@ -734,9 +734,9 @@ the binding is what makes the source push rows.
 The same token is reused by `persistView` and `onViewPicked`, so one controller
 tears down every binding, listener and persister a view made.
 
-- Site: `src/core/data-source.ts`
-- Site: `src/core/persist-view.ts`
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/data/legend-filter.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -754,7 +754,7 @@ toolbar's Sort chip and the grid's header arrow stay two views of one value.
 `#push` therefore writes every attribute BEFORE it returns early for a
 steer-only bind.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-ignore-is-the-scalpel
 
@@ -779,7 +779,7 @@ An ignored event gets **no listener at all**, rather than a listener that
 returns early — so a view that owns an event owns it outright, with no chance of
 the source having already acted by the time the view's own handler runs.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-adapter-lives-at-the-binding
 
@@ -802,7 +802,7 @@ This is why the no-op push guard compares the ROWS ARRAY and never the adapted
 payload: an `as` adapter builds a new object every call, so comparing its output
 would never match. See `T-no-op-load-guard`.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-steering-events-are-a-closed-list
 
@@ -819,7 +819,7 @@ reads them; it does not ask components to send anything new. So adding an event
 here is a decision about what steers a query, never about what a component
 emits.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-in-flight-ticket-discards-stale
 
@@ -844,7 +844,7 @@ key cannot stop them and the in-flight key can. Without it, 20 identical writes
 in one tick produced 20 store reads even though the first was already fetching
 the answer.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-parts-order-must-be-stable
 
@@ -856,7 +856,7 @@ The composed filter must not re-order itself between loads. If it did,
 (`T-no-op-load-guard`) would stop working — every no-op contribution would cost
 a full load again.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-set-state-merges-page-last
 
@@ -881,7 +881,7 @@ the host's call (sessionStorage, a URL, a server table) — a source that wrote 
 storage would choose for every app that binds one. That is why
 `persist-view.ts` is a separate helper.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-contribute-beats-last-writer
 
@@ -911,7 +911,7 @@ Provenance survives as a bonus: "clear just the column filters" is
 about the same value and quietly ANDing them would make `setFilter` not mean what
 it says.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-coalesce-microtask-not-debounce
 
@@ -931,7 +931,7 @@ layer's.
 
 `load()` stays immediate and public: a caller that awaits it means it.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-push-writes-state-as-attributes
 
@@ -950,7 +950,7 @@ change silently shrank the table with nothing to say why. `filterFields()` in
 `undefined` REMOVES an attribute rather than writing an empty one, so CSS stops
 matching.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-error-is-a-state-not-a-throw
 
@@ -971,7 +971,7 @@ and reloaded ONCE — FORCED, because `#lastLoadKey` was just written and the
 re-clamp must re-read whatever the new page holds — rather than showing an empty
 page.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-toggle-chips-have-no-field
 
@@ -991,7 +991,7 @@ act on them: `active` reaches the app through the event as it always did. A view
 that knows the column translates them itself, which is exactly what `ignore`
 exists for (`T-ignore-is-the-scalpel`).
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-persist-defaults-per-tab
@@ -1015,7 +1015,7 @@ genuinely belongs to the person rather than to the tab.
 a view a reader took the trouble to NAME should outlive the tab, where "where was
 I" state should not.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-storage-access-throws
 
@@ -1025,7 +1025,7 @@ capture.
 
 A failure means the state is not KEPT. It never means the page breaks.
 
-`src/core/web-storage.ts` is the only place that knows this. Before it,
+`src/core/browser/web-storage.ts` is the only place that knows this. Before it,
 `persist-view.ts` and `session.ts` carried a **byte-identical** `storage()`
 function plus their own try/catch at every call site: **nineteen catch blocks
 across three files** guarding one quirk. Three remain, and none of them is
@@ -1049,11 +1049,11 @@ all five functions returned their fallback and none threw. A value stored as
 `not json at all` returned the fallback AND left the key removed; a value the
 guard rejected did the same; a value the guard accepted was kept.
 
-- Site: `src/core/web-storage.ts`
-- Site: `src/core/persist-view.ts`
-- Site: `src/core/session.ts`
-- Site: `src/core/idb-store.ts`
-- Site: `src/core/stores.ts`
+- Site: `src/core/browser/web-storage.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/session.ts`
+- Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/data/stores.ts`
 - Site: `test/e2e/reforged-web-storage.spec.ts`
 
 ### T-one-snapshot-not-a-key-per-concern
@@ -1075,7 +1075,7 @@ outlives the code that made it, and an unrecognised version is ignored WHOLE
 rather than half-applied, because a definition applied in part leaves a screen in
 a state nobody designed.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-restore-before-first-load
 
@@ -1095,8 +1095,8 @@ whose view has no source calls the returned `save` itself.
 `AbortSignal` natively — no second way to say "stop" (see
 `T-signal-not-a-teardown-list`).
 
-- Site: `src/core/persist-view.ts`
-- Site: `src/core/view-sync.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/view-sync.ts`
 
 ### T-apply-degrades-never-throws
 
@@ -1121,7 +1121,7 @@ default is a `console.warn`, because a definition that could not be fully applie
 is worth saying out loud rather than leaving a reader to wonder why half the
 screen moved.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-capture-reads-only-what-is-named
 
@@ -1143,7 +1143,7 @@ beats storing `"[object Function]"`.
 
 `saveViewAs` takes the same `reads` map for the same reason.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-view-library-is-one-vocabulary
 
@@ -1162,7 +1162,7 @@ defaults to the FIRST view, because a set with nothing selected leaves the chip
 blank and a reader looking at data no view claims — which is also what
 `T-persistent-chip-is-a-selector` guards on the toolbar side.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-view-content-is-a-view-definition
 
@@ -1183,7 +1183,7 @@ arrive with a column already filtered. `saveViewAs` stores `content` for the
 same reason: a view of a screen the reader BUILT has to remember that screen, or
 re-opening it would restore the state onto whatever was there instead.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-library-re-read-on-every-pick
 
@@ -1196,7 +1196,7 @@ button wired the presets and then could not restore anything the reader had
 saved.** So the library is RE-READ on every pick. Pass the object only for a
 fixed set of presets.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-values-carries-two-shapes
 
@@ -1218,7 +1218,7 @@ view toolbar has. A change naming no view is IGNORED rather than treated as "no
 view", because you are always in some view and the other chips on that bar fire
 the same event.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-content-first-original-once
@@ -1250,7 +1250,7 @@ Elements a view just built are then addressable by the ids it used, so the
 snapshot can configure them: they did not exist when the listener was wired, so
 `targets.elements` could not have named them.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-derived-id-makes-resave-an-update
 
@@ -1267,7 +1267,7 @@ label; that keeps it addressable rather than colliding on an empty key.
 that can carry a prototype key through — and this object came from storage, which
 a person can edit (`T-storage-access-throws`).
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-store-is-stateless
 
@@ -1289,7 +1289,7 @@ DataSource simply RELOADS: deciding whether a changed row still matches the
 current filter, and where it now sorts, is exactly the work the source already
 does, and re-deriving is cheaper than getting that wrong.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-filter-is-data-not-a-predicate
 
@@ -1306,7 +1306,7 @@ clause the store understands. No translation table exists to drift, and every
 query-building surface shares it — the data grid's column menu today, a Filter
 Panel later. **A second copy anywhere is a second vocabulary.**
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-ops-follow-the-column-type
 
@@ -1323,7 +1323,7 @@ distinction the toolbar's Range switch makes — see
 A `date` offers NO operator list at all: a date is answered by clicking a
 calendar.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-dropped-rows-must-be-countable
@@ -1345,8 +1345,8 @@ This is the only path by which a schema's refusals are readable, which is why
 `DataSource.result` hands back the whole `LoadResult` and not just `rows` and
 `total`.
 
-- Site: `src/core/store.ts`
-- Site: `src/core/base-store.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/base-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-one-collator-for-the-library
@@ -1373,7 +1373,7 @@ Two rules the comparator encodes, both easy to "simplify" wrongly:
 
 Null `direction` is treated as ascending, matching `data-sort-direction`.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-filter-fields-flattens-the-tree
@@ -1392,7 +1392,7 @@ A field can appear in MORE THAN ONE clause — a range is two — and the header
 needs to know THAT it is filtered, not how many times. So the list is
 de-duplicated.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-loose-equal-is-case-insensitive
 
@@ -1407,7 +1407,7 @@ strictly-typed comparison stays available through `lt`/`gt`.
 range, not an empty result. The two ends are swapped into order before the
 comparison rather than rejected.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-pipeline-order-and-no-grouping
 
@@ -1428,7 +1428,7 @@ order rows ARRIVE in: rows are grouped AFTER sorting, so the groups come out in
 sort order and the rows within each keep theirs. `Map.groupBy` keeps insertion
 order, which is exactly that.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 
 ### T-grid-active-flag-is-not-a-tint
 
@@ -1510,7 +1510,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 `T-a-chip-body-cycles-its-states` are the same rule for the toolbar's chips.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/core/filter-state.ts`
+- Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 ### T-grid-column-width-bounds
@@ -1740,7 +1740,7 @@ See `T-grid-read-without-write-is-half-an-api` for the other half of the same
 idea — a value you can read and not write.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 
 ### T-grid-read-without-write-is-half-an-api
@@ -1979,7 +1979,7 @@ onDisconnect()             // teardown — timers, observers
 renderData(data)           // populate() payload
 ```
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-cloning-prototypes-have-no-id
 
@@ -1993,7 +1993,7 @@ variant set. An `id` on a row prototype would make SherpaElement's
 multi-template parser pick it up as a whole tree to stamp, so the component
 would render one row and nothing else.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-coerce-and-clamp-are-shared
 
@@ -2014,7 +2014,7 @@ fallback is returned as given, so a caller's chosen default is never silently
 moved by its own bounds. See `T-number-coercion` for the four ways a hand-
 written parse went wrong.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-a-needle-comes-from-either-direction
 
@@ -2034,9 +2034,9 @@ there is nothing to circle. That rule is `MARKABLE_OPS` in `sherpa-element.ts`,
 next to `markNeedle()`, which is the one decision every caller shares:
 needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
 
-- Site: `src/core/store.ts`
-- Site: `src/core/data-source.ts`
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
@@ -2058,7 +2058,7 @@ back.
 It returns the `<mark>`: nav-item wraps it in a `Range` for the Custom
 Highlight layer, and a caller that only wants it drawn ignores the return.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-declared-only-means-css-owns-it
 
@@ -2077,7 +2077,7 @@ place to hang non-CSS use later — **without** tempting anyone to add a JS
 branch for something CSS already handles correctly. Declaring `data-status` is
 not licence to add a JS status branch.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-harness-serves-font-awesome-locally
 
@@ -2160,7 +2160,7 @@ It is invisible in the numbers a reviewer checks. Chip height, icon width and
 icon height were all exactly right; only the art inside was wrong.
 
 **The icons are Figma's**, exported to `src/icons/` and compiled by
-`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/icon-paths.ts`
+`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/ui/icon-paths.ts`
 with each ink bbox. Font Awesome NAMES still resolve, through `ICON_ALIASES`,
 to the Figma drawing that means the same thing — `house` is Figma's `home`,
 `xmark` its `cross` — so 88 call sites did not have to be rewritten.
@@ -2180,8 +2180,8 @@ a test, where `T-fa-pro-icons-fail-silently` was not. That is why the tests
 measure the PATH: the wrapper is its full size either way.
 
 - Site: `src/core/sherpa-icon.css`
-- Site: `src/core/render-icon.ts`
-- Site: `src/core/render-icon.ts`
+- Site: `src/core/ui/render-icon.ts`
+- Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
@@ -2200,7 +2200,7 @@ FA draws from a `::before` on a class, so an FA value has to become CLASSES
 while a raw character becomes TEXT. `writeIcon` is the one policy; there were
 three.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-the-base-class-names-nothing-visual
 
@@ -2243,7 +2243,7 @@ So the leak was narrow: the base class's own vocabulary, and nothing else. A
 component naming its OWN parts is fine and stays — `sherpa-chart-legend` has
 real rollup rows, and `T-rollup-row-has-its-own-prototype` keeps its name.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-item-template-cannot-compute
 
@@ -2265,7 +2265,7 @@ IT DELIBERATELY CANNOT COMPUTE: no maths, no formatting, no reading component
 state. A derived row keeps its `fill` callback, because a template that could
 compute would be an expression language.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-variant-attrs-or-one-way-door
 
@@ -2279,7 +2279,7 @@ Left empty it is a silent ONE-WAY DOOR — the variant is whatever the element
 was BORN with. That is what `data-multiline` did on `sherpa-input-text`: the
 textarea template existed and was unreachable after first render.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 ### T-template-id-read-once-was-permanent
@@ -2297,7 +2297,7 @@ the fallback path returns the FIRST template's REAL id rather than null: a
 variant component that fell back would otherwise look like it had no template
 and never re-stamp.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-restamp-runs-after-on-change
 
@@ -2322,7 +2322,7 @@ re-measure) without also having to write the text. A prop that FALLS BACK to the
 changed attribute re-syncs too — `data-label` falling back to `data-heading`
 has to re-sync when `data-heading` is what changed.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-shared-sheets-settle-independently
 
@@ -2340,7 +2340,7 @@ CDN outage costs the icons and nothing else.
 Styles are awaited BEFORE any DOM is written, which is what prevents a flash of
 unstyled content; the HTML fetch runs in parallel with them.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-populate-settles-after-render-data
 
@@ -2358,7 +2358,7 @@ about whether the chips exist. Returning the children's promises is what keeps
 `populate()`'s contract true — it settles when the data is in the DOM — for a
 component whose DOM is somebody else's.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 
 ### T-set-removes-on-falsy
@@ -2372,7 +2372,7 @@ stops matching. `true` sets it EMPTY — a bare boolean attribute. Writing
 `"false"` or `"null"` instead would leave the selector matching forever, which
 is the whole failure this rule prevents.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-empty-write-lets-css-collapse
 
@@ -2387,7 +2387,7 @@ A `number` prop whose parse fails resolves to `NaN`, and `'NaN'` is written as
 `''` for the same reason: an empty node collapses, the literal string "NaN"
 does not.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-composed-path-not-target
 
@@ -2408,7 +2408,7 @@ crossed a boundary. `sherpa-data-grid` does that in 11 places.
 Matching a TAG rather than an inner class also matters — see
 `T-path-not-target-finds-chip-host`.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 
@@ -2429,7 +2429,7 @@ The same distinction governs `#reflectSlot`: `assignedNodes()` WITHOUT
 own fallback content, which `flatten: true` would count as "present" and
 collapse by the slot's own `data-has-*` rule.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
 
 ### T-clone-returns-null-never-asserts
@@ -2450,7 +2450,7 @@ matched the wrong node fails here rather than throwing somewhere downstream. A
 caller that cannot proceed without the row should return early; there is
 nothing to assert.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-render-list-keeps-fill-in-the-caller
 
@@ -2471,7 +2471,7 @@ The index passed to `fill` is the LOOP position. A component stamping a
 DIFFERENT index — `sherpa-barchart` writes each datum's original position while
 iterating a filtered list — writes it inside `fill` from its own data.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-row-fragment-cloned-whole
 
@@ -2489,7 +2489,7 @@ carry the attributes too, and it snapshots `[...el.attributes]` — the loop
 removes each directive as it consumes it, and a live `NamedNodeMap` would skip
 entries when one is taken out mid-iteration.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-menu-rows-stay-native-controls
 
@@ -2867,14 +2867,14 @@ which cannot be chosen right now. `stateClause()` is the only part that speaks
 filters; the rest is selection. A transfer list is one state read twice — its
 picked values on the right, its unpicked on the left.
 
-- Site: `src/core/filter-state.ts`
+- Site: `src/core/data/filter-state.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 ### T-one-field-one-filter-menu
 
@@ -2968,7 +2968,7 @@ sign announces as nothing, so the badge's `aria-label` carries the WORD.
 Writing it is ordered AFTER `#syncCountTip`, which owns the count's own label
 and would otherwise wipe it.
 
-- Site: `src/core/store.ts`
+- Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
@@ -3863,7 +3863,7 @@ What is left, end to end:
 bound component shares (`T-populatable-declared-four-times`), and
 `data-source.ts` imports it as a type.
 
-- Site: `src/core/apply-state.ts`
+- Site: `src/core/ui/apply-state.ts`
 
 ### T-state-is-the-saved-view-half
 
@@ -3896,8 +3896,8 @@ is dropped and counted rather than thrown.
 at first — so a view definition could build a whole unique layout and then not set
 a grid's column filter, which is the thing view definitions exist for.
 
-- Site: `src/core/apply-state.ts`
-- Site: `src/core/apply-state.ts`
+- Site: `src/core/ui/apply-state.ts`
+- Site: `src/core/ui/apply-state.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
 - Site: `src/index.ts`
 
@@ -3915,7 +3915,7 @@ element to exist. `el.rendered` now reads straight off the interface; it used to
 need an inline `as { rendered?: … }` cast, because THIS file's copy was the one
 missing the member.
 
-- Site: `src/core/apply-state.ts`
+- Site: `src/core/ui/apply-state.ts`
 
 ### T-state-value-may-be-a-call-list
 
@@ -3934,7 +3934,7 @@ than one: `[['name', clause], ['plan', clause]]` is two calls, `[['a@x']]` is on
 call whose single argument is an array. A single nested array stays one call, which
 keeps the common case unambiguous.
 
-- Site: `src/core/apply-state.ts`
+- Site: `src/core/ui/apply-state.ts`
 
 ### T-attributes-are-the-state-channel
 
@@ -3989,7 +3989,7 @@ What is left is one of each:
 `renderElement` stays: one node, one element, no registry. It is what
 `applyState` and the examples use, and it never claimed to wire anything.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-saved-markup-is-untrusted-input
@@ -4052,8 +4052,8 @@ The snapshot still addresses elements BY ID, through their own API, exactly as
 before: markup carries real `id` attributes, and `onViewPicked` collects them
 from the host after the swap.
 
-- Site: `src/core/view-markup.ts`
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/view-markup.ts`
+- Site: `src/core/browser/persist-view.ts`
 - Site: `test/e2e/reforged-view-markup.spec.ts`
 - Site: `src/index.ts`
 
@@ -4080,7 +4080,7 @@ The records live in an `ArrayStore`, because everything AFTER receiving them —
 sorting, filtering, paging, the schema guard, copy-in/copy-out — is already
 written and correct. `LiveStore` is only about the wire.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-live-store-into-shares-one-feed
 
@@ -4102,7 +4102,7 @@ store, so this only changes WHERE the inner one comes from. A store passed here 
 NOT owned — `rows` and `key` are its own (they may already hold another socket's
 messages), and nothing here disconnects it.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-push-handler-never-throws
 
@@ -4126,7 +4126,7 @@ record from a server is stopped exactly where a bad record from a form is.
 `connection` is a third stage, and `setConnected` dispatches its own `connection`
 event so a UI can show "reconnecting…" rather than guessing from silence.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-eventsource-error-is-not-fatal
 
@@ -4142,7 +4142,7 @@ long-lived page that drops once an hour must not creep up to a ten-second wait. 
 deliberate `disconnect()` must not reconnect, which is what the `#closing` flag
 separates from a drop.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-narrowing-constructor-is-not-useless
 
@@ -4155,7 +4155,7 @@ NARROWING the parameter type.
 
 Delete either one and the type error moves from the call site to nowhere.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-socket-send-refuses-rather-than-queues
 
@@ -4174,7 +4174,7 @@ pushing, and the store has no route back to it. A caller that needs the change t
 stick sends it their own way (a POST, a `SocketStore.send`) and lets the next push
 confirm it.
 
-- Site: `src/core/live-stores.ts`
+- Site: `src/core/data/live-stores.ts`
 
 ### T-standard-schema-is-duck-typed
 
@@ -4205,7 +4205,7 @@ Two details of that contract are honoured and matter downstream:
   Deliberately not a `valid: boolean` — a schema may COERCE (`"42"` → `42`), and
   the caller needs what it settled on rather than only whether it passed.
 
-- Site: `src/core/validate.ts`
+- Site: `src/core/data/validate.ts`
 
 ### T-every-rule-but-required-passes-absent
 
@@ -4229,7 +4229,7 @@ A rule that cannot judge should not object either: `sizeOf` returns null for
 anything that is not a number, string or array, so `min`/`max` pass rather than
 inventing a comparison.
 
-- Site: `src/core/validate.ts`
+- Site: `src/core/data/validate.ts`
 
 ### T-email-check-is-deliberately-loose
 
@@ -4243,7 +4243,7 @@ for.
 `url()` takes the same line from the other end: it uses `URL.canParse`, the
 platform's own parser, so there is no regex to get wrong.
 
-- Site: `src/core/validate.ts`
+- Site: `src/core/data/validate.ts`
 
 ### T-one-function-places-label-and-gridline
 
@@ -4256,7 +4256,7 @@ gridlines drew N−1 interior lines while the axis laid out N+1 flex boundaries.
 `formatTick` is shared for the same reason — the barchart and the line chart cannot
 format the same number two different ways.
 
-- Site: `src/core/format-tick.ts`
+- Site: `src/core/data/format-tick.ts`
 
 ### T-radial-tip-pushes-outward
 
@@ -4274,7 +4274,7 @@ offset by half an octant (22.5°) before flooring — 0° (up) must land squarel
 `block-start`, not on a boundary. Angles run CLOCKWISE from 12 o'clock throughout
 this module, matching how both the donut and the gauge already place their marks.
 
-- Site: `src/core/format-tick.ts`
+- Site: `src/core/data/format-tick.ts`
 
 ### T-ring-segment-needs-two-radius-clamps
 
@@ -4304,7 +4304,7 @@ Two more shapes that are not the general case:
 - A PIE (`inner <= 0`) has a single centre point for its inner "arc", so its
   corners collapse there and the inner half of the outline is skipped.
 
-- Site: `src/core/format-tick.ts`
+- Site: `src/core/data/format-tick.ts`
 
 ### T-series-count-is-ten-not-eleven
 
@@ -4323,7 +4323,7 @@ ramp, its BORDER does not. The border is the series' identity, so it stays put
 whatever the fill is doing — and it is what keeps a translucent mark legible on any
 surface.
 
-- Site: `src/core/format-tick.ts`
+- Site: `src/core/data/format-tick.ts`
 
 ### T-one-datum-shape-for-chart-and-legend
 
@@ -4347,7 +4347,7 @@ holds.
 it, a legend may print a preformatted string ("£1.2k", "42%") because it only
 prints it. The legend widens rather than every chart loosening its own.
 
-- Site: `src/core/chart-datum.ts`
+- Site: `src/core/data/chart-datum.ts`
 
 ### T-populate-vocabulary-is-label-value-description
 
@@ -4386,7 +4386,7 @@ reaching the data path.
 A shape is free to ADD fields nothing else has — a metric's `trend`, a
 notification's `unread`. What it must not do is rename one of these.
 
-- Site: `src/core/chart-datum.ts`
+- Site: `src/core/data/chart-datum.ts`
 
 ### T-schema-guard-belongs-at-the-store
 
@@ -4424,8 +4424,8 @@ Three places apply it, and each does so once:
 - `JsonStore` — its inner `ArrayStore` holds no schema of its own, so the check
   happens once in `JsonStore.load`, never twice.
 
-- Site: `src/core/stores.ts`
-- Site: `src/core/base-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/base-store.ts`
 
 ### T-max-rows-is-oldest-out-by-insertion
 
@@ -4443,9 +4443,9 @@ the announce, so a listener that reads the store sees the same rows the store wi
 hand out. A live feed inserts for ever; that is where an uncapped store would grow
 without bound.
 
-- Site: `src/core/stores.ts`
-- Site: `src/core/base-store.ts`
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 
 ### T-read-check-drops-where-a-write-throws
 
@@ -4470,8 +4470,8 @@ Three consequences that are easy to undo by accident:
 somewhere else, over a wire, shaped by a backend this code does not own. If a schema
 is going to be applied anywhere on a read, it is there.
 
-- Site: `src/core/stores.ts`
-- Site: `src/core/base-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/base-store.ts`
 
 ### T-array-store-copies-both-ways
 
@@ -4491,7 +4491,7 @@ mention. `LocalStore.update` does the same.
 not, for the same reason — a PATCH body is a fragment, and what comes back IS the
 whole record.
 
-- Site: `src/core/stores.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-numeric-keys-compare-as-strings
 
@@ -4503,8 +4503,8 @@ is strict, and `null`/`undefined` never match anything.
 Every `findIndex`/`find` over the key field in this module goes through it, so
 `ArrayStore` and `LocalStore` cannot disagree about whether a row exists.
 
-- Site: `src/core/stores.ts`
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/browser/idb-store.ts`
 
 ### T-fetch-does-not-reject-on-404
 
@@ -4523,7 +4523,7 @@ Two more platform details in the same path:
 - **204 No Content** is the usual answer to a DELETE and has no body to parse, so
   that status (and a `content-length: 0`) returns without calling `.json()`.
 
-- Site: `src/core/stores.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-rest-update-is-patch-not-put
 
@@ -4544,7 +4544,7 @@ client does not have. So `load` passes the options through as query parameters a
 trusts what comes back, believing a server that reports its own total and falling
 back to the page length (the honest answer for an unknown corpus) when it does not.
 
-- Site: `src/core/stores.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-local-store-is-not-for-bulk-data
 
@@ -4561,7 +4561,7 @@ a user has cleared site data mid-session. A failed `setItem` (quota, or storage
 revoked) has nothing useful to do; the in-memory result of the call is still returned
 to the caller.
 
-- Site: `src/core/stores.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-idb-is-the-only-real-local-store
 
@@ -4598,7 +4598,7 @@ headless test proves every method rejects rather than resolving to a lie.
 A failed open is **not cached** — one rejection in a private window must not
 poison a session that is later granted storage.
 
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
@@ -4626,7 +4626,7 @@ lets go. `onversionchange` closes the connection and drops the cached promise,
 so the next call re-opens at the new version. A tab that ignores this hangs the
 other one indefinitely.
 
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 
 ### T-idb-index-narrows-it-never-answers-it
 
@@ -4655,7 +4655,7 @@ not: it would need the store's collation to match `applyOptions`'s
 case-insensitive comparison, and it does not. A "Gold" row would be missed by a
 search for "gold".
 
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 
 **A STRING takes no range at all.** Added 2026-09-22, after every menu chip in
 the Records example returned 0 rows for a single pick while two picks worked.
@@ -4685,7 +4685,7 @@ cleared first. Deleting the whole database is the only true reset, and this
 class deliberately does not offer one — a method that destroys another store's
 data because they happen to share a database name is not a method worth having.
 
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 
 ### T-idb-bulk-is-one-transaction
 
@@ -4702,7 +4702,7 @@ This is the seam a **sync down from a server** writes through, and what seeds a
 store on first run. `replace: true` clears first, for a full refresh where a row
 the server deleted must not survive locally.
 
-- Site: `src/core/idb-store.ts`
+- Site: `src/core/browser/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 
@@ -4744,7 +4744,7 @@ carries the same snapshot anyway.
 An absent tier is not an error. With no IndexedDB, no storage and no remote —
 which is Node — every method still answers, with `{}`.
 
-- Site: `src/core/view-sync.ts`
+- Site: `src/core/browser/view-sync.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/data.ts`
@@ -4769,7 +4769,7 @@ five. `restViewRemote` is a ready-made HTTP one (GET to pull, PUT to push, and a
 404 read as "nothing saved yet") so that every host does not write the same
 twenty lines.
 
-- Site: `src/core/view-sync.ts`
+- Site: `src/core/browser/view-sync.ts`
 
 ### T-session-store-is-the-third-tier
 
@@ -4797,7 +4797,7 @@ A `set` writes THROUGH to storage for the pointer or any ANCESTOR of it: setting
 `/theme` must persist a `/theme/mode` that was registered, or a branch write would
 silently lose what a leaf write keeps.
 
-- Site: `src/core/session.ts`
+- Site: `src/core/browser/session.ts`
 
 ### T-session-persist-defaults-shared
 
@@ -4829,7 +4829,7 @@ This exists because the alternative is what every app was writing: a key constan
 try/catch to read, a try/catch to write, and a wrapper to keep the two in step. Four
 pieces to get right per preference, and the examples were teaching it.
 
-- Site: `src/core/session.ts`
+- Site: `src/core/browser/session.ts`
 
 ### T-shared-values-two-components-must-agree-on
 
@@ -4854,7 +4854,7 @@ duplication was the problem.
 A glyph used by ONE component stays in that component. This is a shared vocabulary,
 not a dumping ground for every icon in the system.
 
-- Site: `src/core/icons.ts`
+- Site: `src/core/ui/icons.ts`
 
 ### T-non-value-rows-is-one-selector
 
@@ -4873,7 +4873,7 @@ while the toolbar and quick-filter excluded only `.qf-all`. Harmless at the time
 chip loop does not reach — but the two were one refactor apart from disagreeing about
 what a pick is.
 
-- Site: `src/core/icons.ts`
+- Site: `src/core/ui/icons.ts`
 
 ### T-pointer-stays-out-of-session
 
@@ -4890,7 +4890,7 @@ It was extracted FROM `render-view.ts` when `SessionStore` needed the same three
 functions. They are RFC 6901's, not ours, so there is exactly one right
 implementation and no reason for two.
 
-- Site: `src/core/pointer.ts`
+- Site: `src/core/data/pointer.ts`
 
 ### T-pointer-escape-decode-order
 
@@ -4899,7 +4899,7 @@ RFC 6901 escapes: `~1` is `/` and `~0` is `~`.
 **ORDER MATTERS — `~1` first, then `~0`.** Reversed, a literal `~1` in a key would
 decode to `~` and then to `/`, which is a different key.
 
-- Site: `src/core/pointer.ts`
+- Site: `src/core/data/pointer.ts`
 
 ### T-pointer-overlap-is-both-directions
 
@@ -4914,7 +4914,7 @@ That is also why a pointer beats a flat key wherever one value has many readers 
 view definition's `$state` bindings, the session store's subscriptions: a subscriber
 can watch a BRANCH and hear about anything beneath it.
 
-- Site: `src/core/pointer.ts`
+- Site: `src/core/data/pointer.ts`
 
 ### T-organise-chips-lead-the-bar
 
@@ -4970,7 +4970,7 @@ and `header.available([...])` close that, and the list is applied AFTER the
 chips so the menu is built over the bar it will add to.
 
 The two scopes must not offer the same field twice, and a field already on
-either bar is never offered again — `offerable()` in `src/core/filter-scope.ts`
+either bar is never offered again — `offerable()` in `src/core/data/filter-scope.ts`
 is the DOM-free rule; the caller supplies the two held-id lists.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
@@ -4997,7 +4997,7 @@ Three parts make it work:
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `src/core/filter-scope.ts`
+- Site: `src/core/data/filter-scope.ts`
 - Site: `examples/views/records.js`
 
 ### T-unavailable-value-sorts-below-a-divider
@@ -5025,7 +5025,7 @@ and the grid splits it into reachable and unreachable exactly as a chip does.
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `src/core/filter-state.ts`
+- Site: `src/core/data/filter-state.ts`
 ### T-number-and-date-lead-with-a-range-switch
 
 `QuickFilterDef.kind` picks what a chip's menu holds:
@@ -5265,7 +5265,7 @@ Without `by`, identity is deep equality by `JSON.stringify` — right for a stor
 entry, which is plain JSON by definition, and wrong for anything holding a
 function or a Date.
 
-- Site: `src/core/session.ts`
+- Site: `src/core/browser/session.ts`
 - Test: `test/unit/session-list.test.mjs`
 
 ### T-clear-all-resets-organise-too
@@ -5594,7 +5594,7 @@ was being routed through a DATA-level mechanism.
 If a future value changes what is DRAWN without changing what is FETCHED, it
 needs this branch too — `#stateKey` will not see it.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 
 ### T-grouped-paging-belongs-to-the-view
@@ -5627,7 +5627,7 @@ The cost is honest and bounded: a grouped view holds the whole result set in the
 browser. That is the price of letting the reader fold, and it is the same price
 the grid's own sort and column filters already pay.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-grid-untyped-column-gets-no-filter-button
 
@@ -5718,7 +5718,7 @@ re-render never accumulates two icons.
 
 The two accepted value forms are `T-icon-value-takes-two-forms`.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-clone-item-is-for-two-destinations
 
@@ -5734,7 +5734,7 @@ only the CHOICE OF PARENT stays in code. That is the boundary — a second reaso
 reach for this instead of `renderItems` would mean the declarative vocabulary is
 missing something.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-persist-view-returns-a-teardown
 
@@ -5754,7 +5754,7 @@ same rule.
 The third argument is per-element and is a FUNCTION, evaluated at save time, so
 it reads live state rather than whatever was true when the wiring ran.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-capture-is-the-save-button
 
@@ -5774,7 +5774,7 @@ captureView({ elements: { grid } }, { grid: ['columnClause', 'selectedKeys'] })
 Omitting the per-element `reads` map reads NOTHING from that element — see
 `T-capture-reads-only-what-is-named`.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-on-view-picked-replaces-hand-wiring
 
@@ -5792,7 +5792,7 @@ one of these hands a teardown back.
 Two callbacks split the work: `onIncomplete` REPLACES the default warn
 (`T-apply-degrades-never-throws`), and `after` does the page-specific half.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-save-view-as-returns-the-whole-set
 
@@ -5813,7 +5813,7 @@ second — `T-derived-id-makes-resave-an-update`.
 It persists SHARED, unlike `persistView`, which defaults per tab — see
 `T-persist-defaults-per-tab`.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 
 ### T-view-state-lives-in-one-object
 
@@ -5833,7 +5833,7 @@ Every control bound to one source reads and writes the SAME view state, which is
 why `T-one-comparator-one-source` holds. `readonly` is the blunt form of
 `T-ignore-is-the-scalpel`.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-result-is-the-hosts-half
 
@@ -5844,7 +5844,7 @@ is why they exist at all).
 It returns a COPY of the container, so a caller cannot steer the source by
 writing to the object it was handed.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-calendar-view-is-not-the-figma-type
 
@@ -6543,7 +6543,7 @@ hole.
 Note it is not enough to only fix the component that was caught: the grid is one
 caller, and the next one will stamp a different element.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-checkbox-rounding-is-flat-sm
 
@@ -6739,7 +6739,7 @@ chip out of it cannot tell whether that chip is what moved. Either compare
 against what you last acted on, or read `picked` — which names only what
 changed — rather than `values`.
 
-- Site: `src/core/persist-view.ts`
+- Site: `src/core/browser/persist-view.ts`
 - Site: `examples/views/records.js`
 - Site: `examples/views/dashboard.js`
 
@@ -7062,7 +7062,7 @@ Four things it cost:
    it — and the tooltip could never disagree with the label because neither had
    the number.
 
-`src/core/aggregate.ts` holds it now: `aggregateBy`, `countBy`, `bandBy`,
+`src/core/data/aggregate.ts` holds it now: `aggregateBy`, `countBy`, `bandBy`,
 `seriesBy`, `reduceRows`. Pure, DOM-free (on the lint boundary), and tested in
 plain Node.
 
@@ -7071,7 +7071,7 @@ sorted and searched. Aggregation is what happens to the answer, not another way
 of asking the question — `applyOptions` still owns the query, and `LoadResult`
 still returns rows.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard.js`
 
 ### T-an-aggregate-returns-the-number
@@ -7095,7 +7095,7 @@ Two related choices in the same module:
 - A **missing value is skipped**, not counted as zero — see
   `T-number-of-null-is-zero`.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard.js`
 - Site: `examples/views/records.js`
 
@@ -7123,7 +7123,7 @@ wrong value.
 A missing health score is not a health score of nought, and averaging it in
 drags the mean toward zero in proportion to how much data is absent.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 
 ### T-a-category-keeps-its-colour
 
@@ -7146,7 +7146,7 @@ countBy(rows, 'sev', { order: ['critical', 'warning', 'info'] })
 category nothing matched is noise, unless the categories are a fixed scale
 (severity levels, storage bands) where a missing one is itself the finding.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard-data.js`
 - Site: `examples/views/records.js`
 
@@ -7167,7 +7167,7 @@ scale — a storage reading of 150 would be counted as a full disk. `bandBy`
 drops values outside the declared edges instead, because folding them into the
 end bands misreports both the count and the scale.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard.js`
 
 ### T-a-series-has-a-value-at-every-point
@@ -7180,7 +7180,7 @@ up across the gap, so a day with no activity reads as a straight line between
 its neighbours rather than a drop to zero. The x-axis is the caller's — the
 days, the buckets, the steps — and the series has to fill it.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 
 ### T-one-class-to-catch
 
@@ -7214,10 +7214,10 @@ because the copy is `instanceof`-incompatible with the original while being
 indistinguishable in a log. If two modules need the same class, it belongs in
 the module they both already import.
 
-- Site: `src/core/base-store.ts`
-- Site: `src/core/idb-store.ts`
-- Site: `src/core/validate.ts`
-- Site: `src/core/stores.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/data/validate.ts`
+- Site: `src/core/data/stores.ts`
 
 ### T-a-suspended-sort-is-one-owners-job
 
@@ -7258,13 +7258,13 @@ ascending rather than at the stale `desc`).
 away" must say so — and a NEW sort drops the memory rather than shadowing it,
 or resuming would jump to a column the reader had moved on from.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/cycle.ts`
+- Site: `src/core/data/cycle.ts`
 - Site: `test/unit/suspended-sort.test.mjs`
 - Site: `test/unit/cycle.test.mjs`
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-bind-locks-what-it-owns
 
@@ -7302,12 +7302,12 @@ value it owns), and `sherpa-grid-cell`'s two-state sort toggle. Grouping and
 filtering were already clean: every component use of `data-group-field` and
 `data-filter-fields` is a READ.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 - Site: `scripts/check-ownership.mjs`
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-one-cycle-for-one-value
 
@@ -7321,7 +7321,7 @@ state keeps, which is precisely what
 `T-a-chip-body-cycles-its-states` ratified an answer to. A rule each component
 re-reads from a document is a rule that drifts; a function is not.
 
-`src/core/cycle.ts` holds it: `nextSort`, `sortDirectionAttr`,
+`src/core/data/cycle.ts` holds it: `nextSort`, `sortDirectionAttr`,
 `sortDirectionFrom`, `nextToggle`. Pure, DOM-free, on the lint boundary —
 they take the current state and return the next one. **Reading it off an
 attribute and writing the result back is not their job**, because for a bound
@@ -7331,7 +7331,7 @@ component that belongs to the source (`T-bind-locks-what-it-owns`).
 cases then read the same way at every call site, and "off is a state, not a
 delete" is stated once for both.
 
-- Site: `src/core/cycle.ts`
+- Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
@@ -7673,7 +7673,7 @@ its source declares no `pageSize`, so nothing was ever sliced. It now says
 `scope: 'all'` outright, because that luck is one added pageSize from running
 out.
 
-- Site: `src/core/data-source.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `examples/views/records.js`
 - Site: `examples/views/dashboard.js`
@@ -7699,7 +7699,7 @@ row can be pressed ON and hold nothing.
 See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
 `notin` into the source rather than hiding a slice.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `examples/views/records.js`
@@ -7744,7 +7744,7 @@ LINE legend is the one that stays a per-chart hide: those labels name two
 SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 - Site: `examples/views/records.js`
@@ -7827,7 +7827,7 @@ The gate checks only `this.dataset`. A local `cal.dataset['value']` is another
 element's business, and counting it reported five phantom gaps.
 
 - Site: `scripts/check-props.mjs`
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-a-bare-name-must-be-used-not-mentioned
 
@@ -7871,7 +7871,7 @@ says so. `sherpa-grid-cell` declared `data-sort-direction` with values
 (T-a-suspended-sort-is-one-owners-job). Its generated spec said so too, which
 is what an agent reads.
 
-`src/core/sherpa-element.ts` now exports two objects:
+`src/core/ui/sherpa-element.ts` now exports two objects:
 
 | | |
 |---|---|
@@ -7887,7 +7887,7 @@ both. That is a fix: each CSS selects on one value and treats the other as the
 default expressed by the attribute's absence, so declaring only the selected
 one under-described the API.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `scripts/check-ownership.mjs`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 
@@ -7953,11 +7953,11 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `src/core/store.ts`
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/core/filter-state.ts`
+- Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/filter-state.test.mjs`
 ### T-one-field-does-not-own-the-whole-map
 
@@ -7974,7 +7974,7 @@ leaves it untouched; an empty list clears it — see
 T-everything-on-is-no-filter.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 
 ### T-everything-on-is-no-filter
@@ -7992,10 +7992,10 @@ keeps its badge and value label, so it reads as set while claiming to be off.
 `values = []` unticks every row and re-derives the face; the `current = false`
 that follows is what makes it read as unset.
 
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/legend-filter.test.mjs`
-- Site: `src/core/filter-state.ts`
+- Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/filter-state.test.mjs`
 ### T-a-legend-keeps-one-row-on
 
@@ -8010,7 +8010,7 @@ The floor is applied in three places, because all three can reach the same
 state: the legend click, a chip pick that unticks everything, and the
 programmatic `set()`.
 
-- Site: `src/core/legend-filter.ts`
+- Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 
 ### T-a-date-chip-names-its-field
@@ -8087,7 +8087,7 @@ Three constraints make it safe:
 The camelCase → kebab mapping matches the props system: `iconStart` becomes
 `data-icon-start`, and a key already spelled `data-*` is taken as written.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-any-component-binds.spec.ts`
 
 ### T-mirroring-skips-value
@@ -8119,7 +8119,7 @@ different work — a legend swatch, an empty state, a nested nav row. That was
 already settled on 2026-09-17 when `renderRows`/`cloneRow` was built, measured
 to fit only 8 of 28 stamp sites, and removed again.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
@@ -8180,7 +8180,7 @@ live listeners reports a leak that is not there. Count them through CDP's
 `DOMDebugger.getEventListeners` instead — which showed zero scroll and resize
 listeners on `window` both before and after five open/close cycles.
 
-- Site: `src/core/sherpa-element.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
@@ -8208,7 +8208,7 @@ caller has already made.
 The axis still compacts. Both are correct for their own job; sharing one
 function was the mistake.
 
-- Site: `src/core/format-tick.ts`
+- Site: `src/core/data/format-tick.ts`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
@@ -8235,7 +8235,7 @@ because every earlier caller passed a tidy literal like `3.1`. A derived delta
 arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 2026-09-22), in the component, because a percentage is a presentation value.
 
-- Site: `src/core/aggregate.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
 - Site: `examples/views/dashboard.js`
 
@@ -8402,7 +8402,7 @@ Nothing in the module knows what a "view" or a "component" is: they are two
 sources, one following the other. A card extending a dashboard, or a panel
 extending a card, is the same relationship with different words.
 
-- Site: `src/core/filter-scope.ts`
+- Site: `src/core/data/filter-scope.ts`
 - Site: `src/data.ts`
 - Site: `examples/views/records.js`
 - Site: `test/unit/filter-scope.test.mjs`
