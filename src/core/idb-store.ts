@@ -255,6 +255,15 @@ export class IdbStore extends BaseStore {
     if (typeof field !== 'string' || !this.#indexes.includes(field)) return null;
     if (value == null) return null;
 
+    /* NO RANGE FOR A STRING. An IndexedDB index is byte-exact; `applyOptions`
+       lower-cases both sides. `IDBKeyRange.only('gold')` therefore skipped
+       every row holding 'Gold' — the seek ANSWERED the query instead of
+       narrowing it, and a chip picking one value returned nothing while two
+       values, which build an `in` and take no range, returned 27.
+       TRAP T-idb-index-narrows-it-never-answers-it */
+    if (typeof value === 'string') return null;
+    if (Array.isArray(value) && value.some((v) => typeof v === 'string')) return null;
+
     try {
       switch (op) {
         case 'eq': return { field, range: IDBKeyRange.only(value as IDBValidKey) };
@@ -271,8 +280,8 @@ export class IdbStore extends BaseStore {
             range: IDBKeyRange.bound(pair[0] as IDBValidKey, pair[1] as IDBValidKey),
           };
         }
-        // `startswith` looks expressible and is not — the store's collation is
-        // case-SENSITIVE, applyOptions is not.
+        // `startswith` and `in` take no range: the first needs a prefix scan
+        // the collation cannot give, the second needs several.
         default: return null;
       }
     } catch {

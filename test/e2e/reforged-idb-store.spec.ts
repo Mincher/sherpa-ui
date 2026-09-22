@@ -92,10 +92,16 @@ test('an INDEX narrows the read without changing the answer', async ({ page }) =
     const or = await same({ filter: ['or', ['tier', 'eq', 'Gold'], ['spend', 'lt', 20]] });
     // A STRING operator is not expressible as a range, so it reads everything.
     const contains = await same({ filter: ['tier', 'contains', 'ol'] });
+    /* THE CASE THAT BROKE IT. applyOptions lower-cases both sides, an
+       IndexedDB index is byte-exact, so `IDBKeyRange.only('gold')` skipped
+       every 'Gold' row. The seek ANSWERED the query instead of narrowing it.
+       Every earlier case here matched exactly, which is why it went unseen. */
+    const lower = await same({ filter: ['tier', 'eq', 'gold'] });
+    const lowerRange = await same({ filter: ['tier', 'between', ['bronze', 'gold']] });
 
     indexed.close();
     plain.close();
-    return { eq, range, and, or, contains };
+    return { eq, range, and, or, contains, lower, lowerRange };
   }, freshDb());
 
   // Every shape agrees with the unindexed store. If an index ever changed an
@@ -105,11 +111,15 @@ test('an INDEX narrows the read without changing the answer', async ({ page }) =
   expect(r.and.indexed).toEqual(r.and.plain);
   expect(r.or.indexed).toEqual(r.or.plain);
   expect(r.contains.indexed).toEqual(r.contains.plain);
+  expect(r.lower.indexed).toEqual(r.lower.plain);
+  expect(r.lowerRange.indexed).toEqual(r.lowerRange.plain);
 
   // …and the answers are the RIGHT ones, not merely equal to each other.
   expect(r.eq.total).toBe(20);
   expect(r.range.indexed).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]);
   expect(r.contains.total).toBe(20); // 'Gold' contains 'ol'; Silver and Bronze do not
+  // 20 Gold rows, found by a lower-case ask. This read 0 before the fix.
+  expect(r.lower.total).toBe(20);
 });
 
 test('putAll is ONE transaction and ONE change event', async ({ page }) => {

@@ -4391,6 +4391,23 @@ case-insensitive comparison, and it does not. A "Gold" row would be missed by a
 search for "gold".
 
 - Site: `src/core/idb-store.ts`
+
+**A STRING takes no range at all.** Added 2026-09-22, after every menu chip in
+the Records example returned 0 rows for a single pick while two picks worked.
+
+`applyOptions` lower-cases both sides; an IndexedDB index is byte-exact. So
+`IDBKeyRange.only('gold')` seeked past every row holding `'Gold'` — the index
+ANSWERED the query instead of narrowing it, which is the one thing this trap
+exists to forbid. Two values built an `in`, which takes no range, so it fell
+back to a full scan and was right.
+
+The same applies to `gt`/`lt`/`between` on a string, and to an array whose
+members are strings. Numbers and dates still narrow.
+
+The `startswith` comment already named the exact cause — "the store's collation
+is case-SENSITIVE, applyOptions is not" — for one operator, while the rest of
+the switch kept the same mistake.
+
 - Site: `test/e2e/reforged-idb-store.spec.ts`
 
 ### T-idb-clear-is-not-a-reset
