@@ -454,6 +454,8 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
       (window as unknown as { __settled: () => Promise<void> }).__settled();
     const menu = (): HTMLElement =>
       el.shadowRoot!.querySelector('.head-cell[data-field="owner"] .head-filter sherpa-menu')!;
+    /* `---` and `[dim]` would show a divider or a dimmed row if either came
+       back. Neither is drawn any more. */
     const read = (): Array<string> => [...menu().children]
       .filter((n) => !n.classList.contains('qf-all'))
       .map((n) => n.tagName === 'HR' ? '---'
@@ -493,12 +495,11 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
   });
 
   expect(r.whole).toEqual(['Ravi Menon', 'Dana Whitlock', 'Unassigned']);
-  /* THE POINT: three values still, with the two no drawn row carries sorted
-     below a divider rather than dropped. Dropping them makes the current
-     filter a one-way door. */
-  expect(r.narrowed).toEqual([
-    'Ravi Menon', '---', 'Dana Whitlock [dim]', 'Unassigned [dim]',
-  ]);
+  /* THE POINT: three values still, in the declared order, none dropped —
+     dropping them makes the current filter a one-way door. They are NOT drawn
+     differently: no divider and no dimming, because the checkbox already says
+     what is picked. TRAP T-unavailable-value-sorts-below-a-divider */
+  expect(r.narrowed).toEqual(['Ravi Menon', 'Dana Whitlock', 'Unassigned']);
   expect(r.stillSelectable).toBe(true);
   expect(r.flags).toEqual({
     type: 'filter', select: 'multiple', clearable: true, search: true, heading: 'Owner',

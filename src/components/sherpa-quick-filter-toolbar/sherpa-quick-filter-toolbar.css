@@ -168,12 +168,6 @@
     var(--sherpa-style-border-base, #b3b3c3);
 }
 
-/* A value no current row carries. Dimmed, not disabled — ticking it is how a
-   user broadens the filter back out. Ink, not opacity (which compounds in dark). */
-.chip label[data-unavailable] .qf-row-label {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-}
-
 /* ── The condition row, and the two bodies it chooses between ────────
  * The menu carries `data-takes` = list | text, written from the <select>.
  * BOTH bodies stay in the DOM, so flipping the condition keeps the reader's

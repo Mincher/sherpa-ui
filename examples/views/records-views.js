@@ -21,11 +21,15 @@ export const RECORDS_VIEWS = {
 
   mine: {
     label: 'My accounts',
-    // A real app reads the signed-in user; the demo picks one owner.
+    /* A real app reads the signed-in user; the demo picks one owner. It must BE
+       an owner the records carry — this named 'Priya Raman', a customer first
+       name that is in no `owner` field, so the view matched zero rows and every
+       filter applied on top of it read as broken.
+       TRAP T-a-chip-filters-the-values-the-data-has */
     snapshot: {
       v: 1,
       source: {
-        filter: ['owner', 'eq', 'Priya Raman'],
+        filter: ['owner', 'eq', 'Ravi Menon'],
         sort: [{ field: 'lastSeen', direction: 'desc' }],
         group: null, search: '', page: 1,
       },

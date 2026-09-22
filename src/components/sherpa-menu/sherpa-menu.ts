@@ -27,7 +27,8 @@ export interface MenuItem {
   /** What a reader sees. Defaults to `value`. */
   label?: string;
   selected?: boolean;
-  /** `false` sorts it below the divider, dimmed but still selectable. */
+  /** Whether a remaining row carries it. Recorded, never drawn: every item is
+   *  listed the same way and the checkbox is the only signal. */
   available?: boolean;
 }
 
@@ -359,8 +360,6 @@ export class SherpaMenu extends SherpaElement {
       box.value = item.value;
       box.checked = !!item.selected;
       if (single) box.name = name;
-      // Dimmed, never disabled: ticking it is how a reader broadens back out.
-      if (item.available === false) row.setAttribute('data-unavailable', '');
       row.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
       return row;
     };
@@ -370,20 +369,18 @@ export class SherpaMenu extends SherpaElement {
        TRAP T-select-all-is-not-a-value */
     const all = !single && this.#items.length ? this.clone('template.menu-all-tpl') : null;
 
-    const reachable = this.#items.filter((i) => i.available !== false);
-    const unreachable = this.#items.filter((i) => i.available === false);
-    const out: Element[] = all ? [all, ...reachable.map(stamp)] : reachable.map(stamp);
-    // Only with something on BOTH sides.
-    if (reachable.length && unreachable.length) {
-      const hr = this.clone('template.menu-divider-tpl');
-      if (hr) out.push(hr);
-    }
-    out.push(...unreachable.map(stamp));
+    /* ONE list, in the order the caller gave. A value no remaining row carries
+       is still listed and still ticks — that is what `available` is for. It
+       does not re-sort or dim: the checkbox already says what is picked, and a
+       divider plus a grey row said it a second, noisier way.
+       TRAP T-unavailable-value-sorts-below-a-divider */
+    const rows = this.#items.map(stamp);
+    const out: Element[] = all ? [all, ...rows] : rows;
     /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
        Remove action — live here too, and a blanket replace ate them the moment
        this stamped late. Only the menu's own items are replaced. */
     for (const node of [...this.children]) {
-      if (node.classList.contains('menu-row') || node.classList.contains('menu-divider')) {
+      if (node.classList.contains('menu-row')) {
         node.remove();
       }
     }

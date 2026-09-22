@@ -5027,22 +5027,28 @@ Three parts make it work:
 it under the filters ALREADY applied — so ticking it changes nothing visible.
 Absent means available.
 
-Such a value is sorted BELOW A DIVIDER rather than DROPPED, for two reasons:
+Such a value is still LISTED rather than DROPPED, for two reasons:
 
 - a value that VANISHES reads as a bug in the list
 - a user cannot broaden a filter back out through a list that hid the way —
   dropping the unreachable values makes the current filter a one-way door
 
+**It is not drawn differently.** Until 2026-09-22 an unavailable value was
+dimmed and re-sorted below a divider. Will's ruling: "Absolutely unnecessary.
+The checkboxes communicate all of that." One list, the caller's order, one
+appearance; `available` is recorded and never painted. The rule this trap
+exists for is DO NOT DROP — the divider was a second, noisier way of saying
+what the checkbox already said.
+
 **A COLUMN heading's menu follows the same rule**, and could not at first: it
 built its list from `this.#rows`, which is the PAGE the grid was handed. Filter
 on another field and three of four owners vanished from the Owner menu. Only
-the host knows the whole column, so it hands it over in `data-column-values`
-and the grid splits it into reachable and unreachable exactly as a chip does.
+the host knows the whole column, so it hands it over in `data-column-values`.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `examples/views/records.js`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
@@ -6720,9 +6726,16 @@ saying the chip and the filter were "ONE FACT said twice… so they cannot
 drift": its filter said `'EMEA'` and its chip said `'emea'`. A comment is not a
 mechanism.
 
+**A SAVED VIEW is the same trap**, and `records-views.js` was the one view file
+this list did not name. Its `mine` view filtered `['owner', 'eq', 'Priya
+Raman']` — "Priya" is a customer FIRST NAME in `records-data.js`, and no
+`owner` field has ever held it. The view matched zero rows on every load, so
+any filter applied on top of it also showed zero and read as a broken filter.
+
 - Site: `examples/views/global-filters.js`
 - Site: `examples/views/records.js`
 - Site: `examples/views/records-data.js`
+- Site: `examples/views/records-views.js`
 - Site: `examples/views/dashboard.js`
 - Site: `examples/views/dashboard-data.js`
 - Site: `examples/views/dashboard-views.js`
