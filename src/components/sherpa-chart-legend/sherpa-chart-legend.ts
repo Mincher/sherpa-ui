@@ -167,6 +167,11 @@ export class SherpaChartLegend extends SherpaElement {
         entry.setAttribute('aria-pressed', String(on));
       }
       entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+      /* A category a FILTER emptied: still there, still toggleable, but drawn
+         inactive so a reader can see it is contributing nothing. Removing the
+         row instead loses the way back — the legend IS how it comes on again.
+         TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
+      entry.toggleAttribute('data-empty', Number(item.value) === 0);
       // Strip the button semantics; `disabled` would say the wrong thing.
       if (readonly) {
         entry.setAttribute('role', 'presentation');

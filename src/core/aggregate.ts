@@ -64,7 +64,9 @@ export interface AggregateOptions {
    */
   order?: readonly string[];
   /** Keep unmentioned categories at zero. Needs `order`. For a fixed scale,
-   *  where a missing category is itself the finding. */
+   *  and for a LEGEND, which lists what EXISTS and is the way back to a
+   *  category a filter emptied.
+   *  TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
   includeEmpty?: boolean;
 }
 

@@ -389,3 +389,48 @@ test('the grid marks what a filter matched, from EITHER direction', async ({ pag
   expect(r.external).toEqual(['Rav']);
   expect(r.exact).toBe(0);
 });
+
+test('the badge is legible, and the tooltip SPELLS the condition', async ({ page }) => {
+  await bar(page);
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"]') as HTMLElement;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+    const read = (): Record<string, unknown> => ({
+      badge: chip.dataset['count'] ?? null,
+      // A two-glyph sign at 12px is a smudge in body weight.
+      weight: getComputedStyle(chip.shadowRoot!.querySelector('.count')!).fontWeight,
+      tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? null,
+    });
+
+    const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
+    gold.checked = true;
+    gold.dispatchEvent(new Event('change', { bubbles: true }));
+    menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await wait();
+    const onEq = read();
+
+    const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
+    field.value = 'notcontains';
+    field.shadowRoot!.querySelector('.control')!
+      .dispatchEvent(new Event('change', { bubbles: true }));
+    menu.conditionValue = 'Ravi';
+    menu.dispatchEvent(new CustomEvent('condition-change', {
+      bubbles: true, composed: true, detail: {},
+    }));
+    await wait();
+    return { onEq, onCondition: read() };
+  });
+
+  // The DEFAULT names no condition — there is nothing to explain.
+  expect(r.onEq).toEqual({ badge: null, weight: '600', tip: 'Gold' });
+  /* A tooltip is where a reader goes to find out what `!∷` MEANS, so it spells
+     the condition rather than repeating the sign. The VALUE is still the ticked
+     "Gold": flipping a condition keeps the ticks, which is the whole point of
+     stamping both bodies.
+     TRAP T-an-operator-decides-pick-or-type */
+  expect(r.onCondition).toEqual({
+    badge: '!∷', weight: '600', tip: 'Does not contain: Gold',
+  });
+});

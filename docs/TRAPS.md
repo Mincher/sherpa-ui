@@ -2879,6 +2879,7 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `examples/views/records.js`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 ### T-native-change-stops-at-the-host
 
 A native `change` is **NOT COMPOSED**: it stops at `sherpa-menu`, the shadow
@@ -7463,6 +7464,33 @@ out.
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `examples/views/records.js`
 - Site: `examples/views/dashboard.js`
+
+### T-a-legend-row-goes-inactive-it-never-vanishes
+
+A filter that empties a category must leave its legend row in place, at zero
+and drawn inactive. It must not drop the row.
+
+`aggregateBy` omits an empty category by default, which is right for a chart —
+a zero slice is a degenerate path and a zero bar is a gap. It is wrong for a
+LEGEND, which is a list of what EXISTS, and it is the control the reader uses
+to switch that category back on. Drop the row and the way back goes with it.
+
+So the legend and the chart take the same `order` but different `includeEmpty`:
+the legend keeps every declared category, the chart draws only what it has.
+They can still share identity per array, because each call returns its own.
+
+`data-empty` on a row is what a FILTER did; `aria-pressed="false"` is what the
+READER did. Both paint the same inactive ink, and they are not the same fact: a
+row can be pressed ON and hold nothing.
+
+See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
+`notin` into the source rather than hiding a slice.
+
+- Site: `src/core/aggregate.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `examples/views/records.js`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-a-legend-toggle-is-a-filter
 

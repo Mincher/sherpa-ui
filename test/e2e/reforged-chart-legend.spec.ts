@@ -520,3 +520,63 @@ test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
   expect(r.resumed).toEqual(['active=24[true]', 'trial=25[true]', 'churned=25[true]']);
   expect(r.off).toEqual([]);
 });
+
+/**
+ * A ROW GOES INACTIVE; IT NEVER VANISHES.
+ *
+ * A filter that empties a category must leave its row in place, at zero and
+ * drawn inactive. Dropping it loses the way back — the legend IS the control
+ * that switches the category on again.
+ *
+ * TRAP T-a-legend-row-goes-inactive-it-never-vanishes
+ */
+test('an emptied category keeps its row, dimmed and still clickable', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await customElements.whenDefined('sherpa-chart-legend');
+    await el.rendered;
+
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const read = (): Array<Record<string, unknown>> =>
+      [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')].map((i) => ({
+        label: i.querySelector('.label')?.textContent ?? '',
+        value: i.querySelector('.value')?.textContent ?? '',
+        empty: i.hasAttribute('data-empty'),
+        // A filter emptied it; the READER did not switch it off.
+        pressed: i.getAttribute('aria-pressed'),
+        ink: getComputedStyle(i).color,
+      }));
+
+    el.populate([
+      { label: 'Free', value: 25, colorIndex: 1 },
+      { label: 'Starter', value: 27, colorIndex: 2 },
+      { label: 'Pro', value: 24, colorIndex: 3 },
+    ]);
+    await settle();
+    const before = read();
+
+    // What `includeEmpty` hands a legend once a filter has emptied one.
+    el.populate([
+      { label: 'Free', value: 1, colorIndex: 1 },
+      { label: 'Starter', value: 0, colorIndex: 2 },
+      { label: 'Pro', value: 1, colorIndex: 3 },
+    ]);
+    await settle();
+    return { before, after: read() };
+  });
+
+  expect(r.before.map((i) => i['label'])).toEqual(['Free', 'Starter', 'Pro']);
+  expect(r.before.every((i) => i['empty'] === false)).toBe(true);
+
+  // THE POINT: three rows still, and the emptied one is still one of them.
+  expect(r.after.map((i) => i['label'])).toEqual(['Free', 'Starter', 'Pro']);
+  expect(r.after[1]).toMatchObject({ label: 'Starter', value: '0', empty: true });
+  // …and it is ON: the reader has not switched it off, a filter emptied it.
+  expect(r.after[1]!['pressed']).toBe('true');
+  // Drawn inactive, so a reader can see it is contributing nothing.
+  expect(r.after[1]!['ink']).not.toBe(r.after[0]!['ink']);
+});

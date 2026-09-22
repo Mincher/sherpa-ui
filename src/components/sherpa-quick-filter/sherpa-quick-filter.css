@@ -138,7 +138,14 @@
   pointer-events: none;
 }
 
-.count { display: none; }
+/* SEMIBOLD, not regular: the badge carries a CONDITION SIGN as well as a
+   count, and `∷` or `!∷` at 12px in body weight is a grey smudge. On `.count`
+   itself, so it does not depend on the badge being shown.
+   TRAP T-an-operator-decides-pick-or-type */
+.count {
+  display: none;
+  font-weight: var(--sherpa-font-weight-semibold, 600);
+}
 :host([data-count]) .count {
   display: inline-flex;
   align-items: center;
@@ -156,7 +163,6 @@
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 

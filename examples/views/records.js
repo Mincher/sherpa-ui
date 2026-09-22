@@ -275,10 +275,17 @@ export async function init(root) {
   const byStatus = (rows) => countBy(rows, 'status', { order: states });
   const byPlan = (rows) => countBy(rows, 'plan', { order: plans });
 
+  /* A LEGEND keeps every category, at zero when a filter empties it: a row
+     that VANISHES reads as a bug, and the reader loses the way back — the
+     legend is how they toggle that category on again.
+     TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
+  const legendStatus = (rows) => countBy(rows, 'status', { order: states, includeEmpty: true });
+  const legendPlan = (rows) => countBy(rows, 'plan', { order: plans, includeEmpty: true });
+
   summary('#r-bar', byStatus);
-  summary('#r-bar-legend', byStatus);
+  summary('#r-bar-legend', legendStatus);
   summary('#r-donut', byPlan);
-  summary('#r-donut-legend', byPlan);
+  summary('#r-donut-legend', legendPlan);
 
   /* TURNING A LEGEND ROW OFF IS A FILTER, not a drawing trick. The old wiring
      called setBarHidden() and the bar vanished from that ONE chart; here the

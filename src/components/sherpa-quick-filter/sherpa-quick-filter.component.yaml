@@ -230,6 +230,7 @@ tokens:
   body.font-size: "{sherpa.font-size-body-base}"
   body.font-weight: "{sherpa.font-weight-regular}"
   body.line-height: "{sherpa.theme-content-line-height-base}"
+  count.font-weight: "{sherpa.font-weight-semibold}"
   caret.min-inline-size: "{sherpa.display-mode-size-lg}"
   caret.gap: "{sherpa.display-mode-space-2xs}"
   caret.border-start-end-radius: "{sherpa.border-rounding-top-right}"

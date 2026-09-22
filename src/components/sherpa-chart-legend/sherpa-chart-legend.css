@@ -99,14 +99,19 @@
   flex: 0 0 auto;
 }
 
-/* Toggled off — dims via the inactive CONTENT ink, never opacity (which would
-   wash out the swatch's translucency and compound in dark mode). .value is named
-   too: its own darker ink would otherwise keep a switched-off number fully dark. */
+/* Toggled off, OR emptied by a filter — dims via the inactive CONTENT ink,
+   never opacity (which would wash out the swatch's translucency and compound in
+   dark mode). .value is named too: its own darker ink would otherwise keep a
+   switched-off number fully dark.
+   TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
 .item[aria-pressed="false"],
-.item[aria-pressed="false"] .value {
+.item[aria-pressed="false"] .value,
+.item[data-empty],
+.item[data-empty] .value {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }
-.item[aria-pressed="false"] .swatch {
+.item[aria-pressed="false"] .swatch,
+.item[data-empty] .swatch {
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
   background: transparent;
 }

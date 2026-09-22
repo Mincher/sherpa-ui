@@ -221,13 +221,24 @@ export class SherpaQuickFilter extends SherpaElement {
 
   #syncCountTip(values: string[]): void {
     const labels = values.map((v) => this.#valueLabel(v));
+    /* The CONDITION in words, never the sign: a tooltip is where a reader goes
+       to find out what `!∷` means, so showing it again answers nothing.
+       TRAP T-an-operator-decides-pick-or-type */
+    const named = this.#conditionName;
+    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
+    const typed = (menu?.conditionValue ?? '').trim();
+    const shown = labels.length ? labels.join(', ') : typed;
+    const text = named && shown ? `${named}: ${shown}` : (shown || named);
+
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
     const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = labels.join(', ');
+    if (tip) tip.dataset['text'] = text;
     const badge = this.$('.count');
     if (!badge) return;
-    if (labels.length > 1) badge.setAttribute('aria-label', `${labels.length} selected: ${labels.join(', ')}`);
-    else badge.removeAttribute('aria-label');
+    if (labels.length > 1) {
+      const count = `${labels.length} selected: ${labels.join(', ')}`;
+      badge.setAttribute('aria-label', named ? `${named}, ${count}` : count);
+    } else badge.removeAttribute('aria-label');
   }
 
   /**
