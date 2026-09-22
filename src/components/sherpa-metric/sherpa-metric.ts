@@ -30,6 +30,16 @@ export class SherpaMetric extends SherpaElement {
   static override html = new URL('./sherpa-metric.html', import.meta.url);
   static override observed = ['data-label', 'data-value', 'data-delta'];
 
+  /* DECLARED, not hand-synced. Both are written by the component itself from
+     the data, and both are read only by CSS — `data-trend` by a `:host()` rule
+     and `data-status` by the `--_status-*` cascade, which has no selector to
+     grep for. Undeclared, the second looked like a half-finished rename.
+     TRAP T-metric-status-follows-the-trend */
+  static override props = {
+    'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
+    'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
+  } as const;
+
   override onRender(): void {
     this.#sync(); // attributes may have been set before the shadow DOM existed
   }

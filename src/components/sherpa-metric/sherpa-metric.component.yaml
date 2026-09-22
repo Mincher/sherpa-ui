@@ -20,7 +20,7 @@ templates:
 anatomy:
   roots:
     - el: p
-      class: label
+      class: label sherpa-truncate
       part: label
     - el: div
       class: row
@@ -66,10 +66,7 @@ props:
     name: data-trend
     type: string
     kind: style
-    description: >-
-      — up | down | flat  (colours the delta + shows the arrow) populate({ name, value, delta,
-      values }) fills all of the above; when `values` is present the embedded sparkline is shown and
-      fed.
+    description: — up | down | flat  (colours the delta + shows the arrow)
   - $type: prop
     name: data-value
     type: string
